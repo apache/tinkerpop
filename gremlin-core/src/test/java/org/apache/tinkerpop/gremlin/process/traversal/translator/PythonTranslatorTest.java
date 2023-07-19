@@ -19,11 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -31,6 +33,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
@@ -60,6 +65,15 @@ public class PythonTranslatorTest {
         final String gremlinAsPython = translator.translate(
                 g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
         assertEquals("g.addV('person').property(Cardinality.list_,'name','marko')", gremlinAsPython);
+    }
+
+    @Test
+    public void shouldTranslateCardinalityValue() {
+        final Map<Object, Object> m = new HashMap<>();
+        m.put("name", VertexProperty.Cardinality.set("marko"));
+        final String gremlinAsPython = translator.translate(
+                g.mergeV(new HashMap<>()).option(Merge.onMatch, m).asAdmin().getBytecode()).getScript();
+        assertEquals("g.merge_v({}).option(Merge.on_match,{'name':CardinalityValue.set_('marko')})", gremlinAsPython);
     }
 
     @Test

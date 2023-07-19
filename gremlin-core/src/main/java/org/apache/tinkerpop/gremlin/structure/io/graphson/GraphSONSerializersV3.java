@@ -87,10 +87,12 @@ class GraphSONSerializersV3 {
     final static class VertexJacksonSerializer extends StdScalarSerializer<Vertex> {
 
         private final boolean normalize;
+        private final TypeInfo typeInfo;
 
-        public VertexJacksonSerializer(final boolean normalize) {
+        public VertexJacksonSerializer(final boolean normalize, final TypeInfo typeInfo) {
             super(Vertex.class);
             this.normalize = normalize;
+            this.typeInfo = typeInfo;
         }
 
         @Override
@@ -100,13 +102,14 @@ class GraphSONSerializersV3 {
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.id());
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.label());
-            writeProperties(vertex, jsonGenerator);
+            writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.VERTEX);
+            writeProperties(vertex, jsonGenerator, serializerProvider);
 
             jsonGenerator.writeEndObject();
 
         }
 
-        private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator) throws IOException {
+        private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
             if (vertex.keys().size() == 0)
                 return;
             jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
@@ -122,7 +125,14 @@ class GraphSONSerializersV3 {
 
                     jsonGenerator.writeStartArray();
                     while (vertexProperties.hasNext()) {
-                        jsonGenerator.writeObject(vertexProperties.next());
+                        // if you writeObject the property directly it treats it as a standalone VertexProperty which
+                        // will write the label duplicating it. we really only want that for embedded types
+                        if (typeInfo == TypeInfo.NO_TYPES) {
+                            VertexPropertyJacksonSerializer.writeVertexProperty(vertexProperties.next(), jsonGenerator,
+                                    serializerProvider, normalize, false);
+                        } else {
+                            jsonGenerator.writeObject(vertexProperties.next());
+                        }
                     }
                     jsonGenerator.writeEndArray();
                 }
@@ -136,9 +146,12 @@ class GraphSONSerializersV3 {
 
         private final boolean normalize;
 
-        public EdgeJacksonSerializer(final boolean normalize) {
+        private final TypeInfo typeInfo;
+
+        public EdgeJacksonSerializer(final boolean normalize, final TypeInfo typeInfo) {
             super(Edge.class);
             this.normalize = normalize;
+            this.typeInfo = typeInfo;
         }
 
 
@@ -149,6 +162,7 @@ class GraphSONSerializersV3 {
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.label());
+            writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.EDGE);
             jsonGenerator.writeStringField(GraphSONTokens.IN_LABEL, edge.inVertex().label());
             jsonGenerator.writeStringField(GraphSONTokens.OUT_LABEL, edge.outVertex().label());
             jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.inVertex().id());
@@ -165,7 +179,10 @@ class GraphSONSerializersV3 {
                 jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
 
                 jsonGenerator.writeStartObject();
-                elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop));
+                if (typeInfo == TypeInfo.NO_TYPES)
+                    elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop.value()));
+                else
+                    elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop));
                 jsonGenerator.writeEndObject();
             }
         }
@@ -200,6 +217,13 @@ class GraphSONSerializersV3 {
 
         @Override
         public void serialize(final VertexProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            writeVertexProperty(property, jsonGenerator, serializerProvider, normalize, includeLabel);
+        }
+
+        private static void writeVertexProperty(final VertexProperty property, final JsonGenerator jsonGenerator,
+                                                final SerializerProvider serializerProvider, final boolean normalize,
+                                                final boolean includeLabel)
                 throws IOException {
             jsonGenerator.writeStartObject();
 
@@ -757,6 +781,16 @@ class GraphSONSerializersV3 {
         @Override
         public boolean isCachable() {
             return true;
+        }
+    }
+
+    /**
+     * When doing untyped serialization graph objects get a special "type" field appended.
+     */
+    private static void writeTypeForGraphObjectIfUntyped(final JsonGenerator jsonGenerator, final TypeInfo typeInfo,
+                                                         final String type) throws IOException {
+        if (typeInfo == TypeInfo.NO_TYPES) {
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, type);
         }
     }
 }

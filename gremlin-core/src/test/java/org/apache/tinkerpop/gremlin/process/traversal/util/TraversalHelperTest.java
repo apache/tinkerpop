@@ -41,8 +41,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -445,5 +443,46 @@ public class TraversalHelperTest {
         assertEquals(4, steps.size());
         assertEquals(3, steps.stream().filter(s -> s instanceof VertexStep).count());
         assertEquals(1, steps.stream().filter(s -> s instanceof FoldStep).count());
+    }
+
+    @Test
+    public void shouldGetStepsOfAssignableClassRecursivelyFromDepthNoTypes() {
+        final Traversal.Admin<?,?> traversal = __.V().repeat(__.out()).project("x").by(out().in().fold()).asAdmin();
+        final List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal);
+        assertEquals(0, steps.size());
+    }
+
+    @Test
+    public void shouldGetStepsOfAssignableClassRecursivelyFromDepthOneType() {
+        final Traversal.Admin<?,?> traversal = __.V().repeat(__.out()).project("x").by(out().in().fold()).asAdmin();
+        final List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, VertexStep.class);
+        assertEquals(3, steps.size());
+        assertThat(steps.stream().allMatch(s -> s instanceof VertexStep), is(true));
+    }
+
+    @Test
+    public void shouldGetStepsOfAssignableClassRecursivelyFromDepthMultipleTypes() {
+        final Traversal.Admin<?,?> traversal = __.V().repeat(__.out()).project("x").by(out().in().fold()).asAdmin();
+        final List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, VertexStep.class, FoldStep.class);
+        assertEquals(4, steps.size());
+        assertEquals(3, steps.stream().filter(s -> s instanceof VertexStep).count());
+        assertEquals(1, steps.stream().filter(s -> s instanceof FoldStep).count());
+    }
+
+    @Test
+    public void shouldGetStepsOfAssignableClassRecursivelyFromDepthEnsureOrder() {
+        final Traversal.Admin<?,?> traversal = __.V().union(
+                __.union(__.values("a"),
+                         __.union(__.values("b"), __.union(__.values("c"))),
+                         __.values("d")),
+                __.values("e")).values("f").asAdmin();
+        final List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, PropertiesStep.class);
+        assertEquals(6, steps.size());
+        assertEquals("c", ((PropertiesStep) steps.get(0)).getPropertyKeys()[0]);
+        assertEquals("b", ((PropertiesStep) steps.get(1)).getPropertyKeys()[0]);
+        assertEquals("d", ((PropertiesStep) steps.get(2)).getPropertyKeys()[0]);
+        assertEquals("a", ((PropertiesStep) steps.get(3)).getPropertyKeys()[0]);
+        assertEquals("e", ((PropertiesStep) steps.get(4)).getPropertyKeys()[0]);
+        assertEquals("f", ((PropertiesStep) steps.get(5)).getPropertyKeys()[0]);
     }
 }

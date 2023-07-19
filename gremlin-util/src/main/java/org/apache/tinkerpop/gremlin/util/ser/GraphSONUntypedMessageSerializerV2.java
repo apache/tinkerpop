@@ -61,15 +61,6 @@ public final class GraphSONUntypedMessageSerializerV2 extends AbstractGraphSONMe
     }
 
     /**
-     * Create a GraphSONMessageSerializer from a {@link GraphSONMapper}. Deprecated, use
-     * {@link #GraphSONUntypedMessageSerializerV2(GraphSONMapper.Builder)} instead.
-     */
-    @Deprecated
-    public GraphSONUntypedMessageSerializerV2(final GraphSONMapper mapper) {
-        super(mapper);
-    }
-
-    /**
      * Create a GraphSONMessageSerializer with a provided {@link GraphSONMapper.Builder}.
      *
      * Note that to make this mapper usable in the context of request messages and responses,

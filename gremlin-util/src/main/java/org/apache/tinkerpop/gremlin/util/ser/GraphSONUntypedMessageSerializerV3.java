@@ -19,27 +19,25 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.UUID;
 
 /**
- * Serialize results to JSON with version 1.0.x schema and serialization which does not embed types.
+ * Serialize results to JSON with version 3.0.x schema and the extended module without embedded types.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMessageSerializerV1 implements MessageTextSerializer<ObjectMapper> {
-    private static final Logger logger = LoggerFactory.getLogger(GraphSONUntypedMessageSerializerV1.class);
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V1_UNTYPED;
+public final class GraphSONUntypedMessageSerializerV3 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializer<ObjectMapper> {
+    private static final Logger logger = LoggerFactory.getLogger(GraphSONUntypedMessageSerializerV3.class);
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V3_UNTYPED;
 
     private static byte[] header;
 
@@ -50,12 +48,27 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
         header = buffer.array();
     }
 
-    public GraphSONUntypedMessageSerializerV1() {
+    /**
+     * Creates a default GraphSONMessageSerializer.
+     *
+     * By default this will internally instantiate a {@link GraphSONMapper} and register
+     * a {@link GremlinServerModule} and {@link GraphSONXModuleV2} to the mapper.
+     *
+     * @see #GraphSONUntypedMessageSerializerV3(GraphSONMapper.Builder)
+     */
+    public GraphSONUntypedMessageSerializerV3() {
         super();
     }
 
-    public GraphSONUntypedMessageSerializerV1(final GraphSONMapper mapper) {
-        super(mapper);
+    /**
+     * Create a GraphSONMessageSerializer with a provided {@link GraphSONMapper.Builder}.
+     *
+     * Note that to make this mapper usable in the context of request messages and responses,
+     * this method will automatically register a {@link GremlinServerModule} to the provided
+     * mapper.
+     */
+    public GraphSONUntypedMessageSerializerV3(final GraphSONMapper.Builder mapperBuilder) {
+        super(mapperBuilder);
     }
 
     @Override
@@ -65,9 +78,7 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        // already set to 1.0 in AbstractGraphSONMessageSerializerV1
-        return builder.addCustomModule(new GremlinServerModule())
-                .typeInfo(TypeInfo.NO_TYPES);
+        return builder.typeInfo(TypeInfo.NO_TYPES).addCustomModule(new GremlinServerModule());
     }
 
     @Override
@@ -78,18 +89,9 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
     @Override
     public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
         try {
-            final Map<String, Object> responseData = mapper.readValue(msg, mapTypeReference);
-            final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
-            final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
-            return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                    .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .statusMessage(String.valueOf(status.get(SerTokens.TOKEN_MESSAGE)))
-                    .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
-                    .result(result.get(SerTokens.TOKEN_DATA))
-                    .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
-                    .create();
+            return mapper.readValue(msg, ResponseMessage.class);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV1.class.getName());
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -99,7 +101,7 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
         try {
             return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractGraphSONMessageSerializerV1.class.getName());
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractGraphSONMessageSerializerV2.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -109,7 +111,7 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
         try {
             return mapper.readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV1.class.getName());
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV2.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -119,7 +121,7 @@ public final class GraphSONUntypedMessageSerializerV1 extends AbstractGraphSONMe
         try {
             return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractGraphSONMessageSerializerV1.class.getName());
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractGraphSONMessageSerializerV2.class.getName());
             throw new SerializationException(ex);
         }
     }

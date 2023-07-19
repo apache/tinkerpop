@@ -113,7 +113,7 @@ public final class GraphSONXModuleV3 extends GraphSONModule {
         addDeserializer(ZoneOffset.class, new JavaTimeSerializersV3.ZoneOffsetJacksonDeserializer());
     }
 
-    public static Builder build() {
+    public static GraphSONModuleBuilder build() {
         return new Builder();
     }
 
@@ -133,7 +133,7 @@ public final class GraphSONXModuleV3 extends GraphSONModule {
         }
 
         @Override
-        public GraphSONModule create(final boolean normalize) {
+        public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
             return new GraphSONXModuleV3(normalize);
         }
     }

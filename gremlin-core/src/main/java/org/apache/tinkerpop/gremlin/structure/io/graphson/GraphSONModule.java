@@ -225,14 +225,14 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
         /**
          * Constructs a new object.
          */
-        protected GraphSONModuleV3(final boolean normalize) {
+        protected GraphSONModuleV3(final boolean normalize, final TypeInfo typeInfo) {
             super("graphson-3.0");
 
             /////////////////////// SERIALIZERS ////////////////////////////
 
             // graph
-            addSerializer(Edge.class, new GraphSONSerializersV3.EdgeJacksonSerializer(normalize));
-            addSerializer(Vertex.class, new GraphSONSerializersV3.VertexJacksonSerializer(normalize));
+            addSerializer(Edge.class, new GraphSONSerializersV3.EdgeJacksonSerializer(normalize, typeInfo));
+            addSerializer(Vertex.class, new GraphSONSerializersV3.VertexJacksonSerializer(normalize, typeInfo));
             addSerializer(VertexProperty.class, new GraphSONSerializersV3.VertexPropertyJacksonSerializer(normalize, true));
             addSerializer(Property.class, new GraphSONSerializersV3.PropertyJacksonSerializer());
             addSerializer(Metrics.class, new GraphSONSerializersV3.MetricsJacksonSerializer());
@@ -242,13 +242,15 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV3(normalize));
             addSerializer(Tree.class, new GraphSONSerializersV3.TreeJacksonSerializer());
 
-            // java.util
-            addSerializer(Map.Entry.class, new JavaUtilSerializersV3.MapEntryJacksonSerializer());
-            addSerializer(Map.class, new JavaUtilSerializersV3.MapJacksonSerializer());
-            addSerializer(List.class, new JavaUtilSerializersV3.ListJacksonSerializer());
-            addSerializer(Set.class, new JavaUtilSerializersV3.SetJacksonSerializer());
+            // java.util - use the standard jackson serializers for collections when types aren't embedded
+            if (typeInfo != TypeInfo.NO_TYPES) {
+                addSerializer(Map.Entry.class, new JavaUtilSerializersV3.MapEntryJacksonSerializer());
+                addSerializer(Map.class, new JavaUtilSerializersV3.MapJacksonSerializer());
+                addSerializer(List.class, new JavaUtilSerializersV3.ListJacksonSerializer());
+                addSerializer(Set.class, new JavaUtilSerializersV3.SetJacksonSerializer());
+            }
 
-            // need to explicitly add serializers for those types because Jackson doesn't do it at all.
+            // need to explicitly add serializers for these types because Jackson doesn't do it at all.
             addSerializer(Integer.class, new GraphSONSerializersV3.IntegerGraphSONSerializer());
             addSerializer(Double.class, new GraphSONSerializersV3.DoubleGraphSONSerializer());
 
@@ -373,8 +375,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             }
 
             @Override
-            public GraphSONModule create(final boolean normalize) {
-                return new GraphSONModuleV3(normalize);
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
+                return new GraphSONModuleV3(normalize, typeInfo);
             }
 
         }
@@ -604,7 +606,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             }
 
             @Override
-            public GraphSONModule create(final boolean normalize) {
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
                 return new GraphSONModuleV2(normalize);
             }
 
@@ -687,7 +689,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             }
 
             @Override
-            public GraphSONModule create(final boolean normalize) {
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
                 return new GraphSONModuleV1(normalize);
             }
         }
@@ -702,9 +704,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
         /**
          * Creates a new {@link GraphSONModule} object.
          *
-         * @param normalize when set to true, keys and objects are ordered to ensure that they are the occur in
+         * @param normalize when set to true, keys and objects are ordered to ensure that they occur in
          *                  the same order.
+         * @param typeInfo allows the module to react to the specified typeinfo given to the mapper
          */
-        GraphSONModule create(final boolean normalize);
+        GraphSONModule create(final boolean normalize, final TypeInfo typeInfo);
     }
 }

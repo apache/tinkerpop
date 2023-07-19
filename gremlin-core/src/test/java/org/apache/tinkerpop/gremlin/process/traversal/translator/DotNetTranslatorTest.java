@@ -200,6 +200,11 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("CardinalityValue.Set(\"test\")", VertexProperty.Cardinality.set("test"));
+    }
+
+    @Test
     public void shouldTranslateHasNull() {
         String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(\"k\",(object) null)", script);

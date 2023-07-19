@@ -18,16 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -39,6 +31,9 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -51,15 +46,13 @@ import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,7 +60,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -76,8 +68,8 @@ import static org.junit.Assert.fail;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONUntypedMessageSerializerV2Test {
-    public static final GraphSONUntypedMessageSerializerV2 SERIALIZER = new GraphSONUntypedMessageSerializerV2();
+public class GraphSONUntypedMessageSerializerV3Test {
+    public static final GraphSONUntypedMessageSerializerV3 SERIALIZER = new GraphSONUntypedMessageSerializerV3();
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -85,7 +77,7 @@ public class GraphSONUntypedMessageSerializerV2Test {
 
     @Test
     public void shouldConfigureIoRegistry() throws Exception {
-        final GraphSONUntypedMessageSerializerV2 serializer = new GraphSONUntypedMessageSerializerV2();
+        final GraphSONUntypedMessageSerializerV3 serializer = new GraphSONUntypedMessageSerializerV3();
         final Map<String, Object> config = new HashMap<String, Object>() {{
             put(AbstractMessageSerializer.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
         }};

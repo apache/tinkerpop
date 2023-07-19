@@ -842,3 +842,132 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the traversal will raise an error
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_age_listX33XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [age: Cardinality.list(33)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 33)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+    And the graph should return 4 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_age_setX33XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [age: Cardinality.set(33)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 33)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+    And the graph should return 4 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_age_setX31XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [age: Cardinality.set(31)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 31)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+    And the graph should return 3 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_age_singleX33XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [age: Cardinality.single(33)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 33)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_age_33_singleX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [age: 33], Cardinality.single)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 33)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_age_setX31X_singleX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [name: "allen", age: Cardinality.set(31)], single)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\", 31)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\")"
+    And the graph should return 3 for count of "g.V().has(\"person\",\"name\",\"allen\").properties(\"age\")"
+
+  @MultiMetaProperties
+  Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_age_singleX31X_singleX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
+      """
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onMatch, [name: "allen", age: Cardinality.single(31)], single)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"marko\")"
+    And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\", 33)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\", 31)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").properties(\"age\")"

@@ -348,7 +348,7 @@ public class GraphSONMessageSerializerV3Test {
 
     @Test
     public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
-        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3.build().create(false));
+        GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3.build());
         GraphSONMessageSerializerV3 graphSONMessageSerializerV3 = new GraphSONMessageSerializerV3(builder);
 
         ResponseMessage rm = convert("hello", graphSONMessageSerializerV3);
@@ -358,7 +358,7 @@ public class GraphSONMessageSerializerV3Test {
 
     @Test
     public void shouldFailOnMessageSerializerWithMapperIfNoGremlinServerModule() {
-        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3.build().create(false));
+        final GraphSONMapper.Builder builder = GraphSONMapper.build().addCustomModule(GraphSONXModuleV3.build());
         final GraphSONMessageSerializerV3 graphSONMessageSerializerV3 = new GraphSONMessageSerializerV3(builder.create());
 
         try {

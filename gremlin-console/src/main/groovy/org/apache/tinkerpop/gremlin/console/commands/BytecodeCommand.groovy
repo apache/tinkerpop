@@ -90,7 +90,7 @@ class BytecodeCommand extends ComplexCommandSupport {
 
     private def static createDefaultBuilder() {
         def builder = GraphSONMapper.build().
-                addCustomModule(GraphSONXModuleV3.build().create(false)).
+                addCustomModule(GraphSONXModuleV3.build()).
                 version(GraphSONVersion.V3_0)
 
         def loadedTinkerGraph = false

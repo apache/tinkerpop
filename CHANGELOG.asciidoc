@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 
+* Allowed `mergeV()` and `property(Map)` to more easily define `Cardinality` values for properties for `onMatch` and `onCreate` options.
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
 * Changed `Gremlin.version()` to read from the more specifically named `tinkerpop-version` attribute.
 * Added warning on vertex property cardinality mismatch when reading GraphML.
@@ -53,6 +54,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Renamed all `MessageSerializer` implementations that used the "d0" suffix to drop that convention.
 * Removed deprecated `GraphSONMessageSerializerGremlinV1d0` as this is now `GraphSONMessageSerializerV1` to be consistent with other naming.
 * Added `GraphSONUntypedMessageSerializerV1` which was formerly `GraphSONMessageSerializerV1d0` to be consistent with other naming.
+* Added `GraphSONUntypedMessageSerializerV3` which essentially matches the format of GraphSON 1.0 in its untyped form.
 * Bumped Groovy to 4.0.9.
 * Bumped GMavenPlus to 2.1.0.
 * Bumped Spark to 3.3.2.
@@ -72,6 +74,7 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 * Fixed bug with `fail` step not working with a `VertexProgram` running on the server.
 * Introduced mime type `application/vnd.gremlin-v1.0+json;typed=false` to allow direct specification of GraphSON 1.0 without types.
 * Introduced mime type `application/vnd.gremlin-v2.0+json;typed=false` to allow direct specification of GraphSON 2.0 without types.
+* Removed `final` class declaration for `LabelStep`
 
 [[release-3-6-4]]
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)
@@ -403,6 +406,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-5-7]]
 === TinkerPop 3.5.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Bumped `jackson-databind` to 2.15.2 to fix security vulnerability.
+* Introduced `maxNumberLength`, `maxStringLength`, and `maxNestingDepth` configs for `GraphSON` serializers.
 * Fixed a memory leak in the Gremlin.Net driver that only occurred if a `CancellationToken` was provided.
 * Fixed gremlin-python `Client` problem where calling `submit()` after` `close()` would hang the system.
 * Added `gremlin.spark.dontDeleteNonEmptyOutput` to stop deleting the output folder if it is not empty in `spark-gremlin`.
@@ -410,9 +415,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Upgraded `gremlin-javascript` and `gremlint` to Node 16.20.0.
 * Upgraded `gremlin-go` to Go 1.20.
 * Improved the python `Translator` class with better handling for `P`, `None` and subclasses of `str`.
+* Fixed bug in `FilterRankingStrategy` that was preventing certain traversals from recognizing labels in child traversals.
 * Added `gremlin-java8.bat` file as a workaround to allow loading the console using Java 8 on Windows.
 * Fixed a bug in `gremlin-server` where timeout tasks were not cancelled and could cause very large memory usage when timeout is large.
 * Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
+* Fixed a bug that caused the `GremlinGroovyScriptEngine` to throw a `MissingMethodException` when calling a static method in __ with the same name as an enum.
 
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: May 1, 2023)

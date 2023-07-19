@@ -1326,6 +1326,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the option step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<TStart, TEnd> Option (object pickToken, IDictionary<object,object> traversalOption, Cardinality cardinality)
+        {
+            Bytecode.AddStep("option", pickToken, traversalOption, cardinality);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the option step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<TStart, TEnd> Option (ITraversal? traversalOption)
         {
             Bytecode.AddStep("option", traversalOption);
