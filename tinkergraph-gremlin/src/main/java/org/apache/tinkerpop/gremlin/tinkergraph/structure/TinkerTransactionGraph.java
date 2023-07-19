@@ -316,7 +316,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Vertex vertex(final Object vertexId) {
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertexIdManager.convert(vertexId));
-        return container == null ? null : container.get();
+        return container == null ? null : container.getWithClone();
     }
 
     @Override
@@ -327,7 +327,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Edge edge(final Object edgeId) {
         final TinkerElementContainer<TinkerEdge> container = edges.get(edgeIdManager.convert(edgeId));
-        return container == null ? null : container.get();
+        return container == null ? null : container.getWithClone();
     }
 
     @Override
@@ -359,7 +359,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 final TinkerElementContainer<C> element = elements.get(iid);
-                return element == null ? null : (T) element.get().clone();
+                return element == null ? null : (T) element.getWithClone();
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?

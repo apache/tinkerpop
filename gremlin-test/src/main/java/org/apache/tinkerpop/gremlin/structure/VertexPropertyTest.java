@@ -547,32 +547,36 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, IteratorUtils.count(stephen.properties("blah")));
             });
 
-            stephen.remove();
+            final Vertex marko2 = graph.vertices(marko.id()).next();
+            final Vertex stephen2 = graph.vertices(stephen.id()).next();
+            stephen2.remove();
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(graph, 1, 0);
-                assertEquals(2, IteratorUtils.count(marko.properties("name")));
-                assertEquals(2, IteratorUtils.count(marko.properties()));
-                assertEquals(0, IteratorUtils.count(marko.properties("blah")));
+                assertEquals(2, IteratorUtils.count(marko2.properties("name")));
+                assertEquals(2, IteratorUtils.count(marko2.properties()));
+                assertEquals(0, IteratorUtils.count(marko2.properties("blah")));
             });
 
+            final Vertex marko3 = graph.vertices(marko.id()).next();
             for (int i = 0; i < 100; i++) {
-                marko.property(VertexProperty.Cardinality.list, "name", "Remove-" + String.valueOf(i));
+                marko3.property(VertexProperty.Cardinality.list, "name", "Remove-" + String.valueOf(i));
             }
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(graph, 1, 0);
-                assertEquals(102, IteratorUtils.count(marko.properties("name")));
-                assertEquals(102, IteratorUtils.count(marko.properties()));
-                assertEquals(0, IteratorUtils.count(marko.properties("blah")));
+                assertEquals(102, IteratorUtils.count(marko3.properties("name")));
+                assertEquals(102, IteratorUtils.count(marko3.properties()));
+                assertEquals(0, IteratorUtils.count(marko3.properties("blah")));
             });
 
             g.V().properties("name").has(T.value, P.test((a, b) -> ((String) a).startsWith((String) b), "Remove-")).forEachRemaining(Property::remove);
+            final Vertex marko4 = graph.vertices(marko.id()).next();
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(graph, 1, 0);
-                assertEquals(2, IteratorUtils.count(marko.properties("name")));
-                assertEquals(2, IteratorUtils.count(marko.properties()));
-                assertEquals(0, IteratorUtils.count(marko.properties("blah")));
+                assertEquals(2, IteratorUtils.count(marko4.properties("name")));
+                assertEquals(2, IteratorUtils.count(marko4.properties()));
+                assertEquals(0, IteratorUtils.count(marko4.properties("blah")));
             });
-            marko.remove();
+            marko4.remove();
             tryCommit(graph, getAssertVertexEdgeCounts(0, 0));
         }
     }

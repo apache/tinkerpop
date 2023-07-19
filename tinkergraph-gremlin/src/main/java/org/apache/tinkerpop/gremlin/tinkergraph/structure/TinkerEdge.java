@@ -95,8 +95,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public void remove() {
-        TinkerIndexHelper.removeElementIndex(this);
         graph.touch(this);
+        TinkerIndexHelper.removeElementIndex(this);
         graph.removeEdge(this.id());
         this.properties = null;
         this.removed = true;

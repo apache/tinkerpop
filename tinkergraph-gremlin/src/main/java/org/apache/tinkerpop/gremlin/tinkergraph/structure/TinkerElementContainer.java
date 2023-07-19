@@ -77,6 +77,14 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
+    public T getWithClone() {
+        if (isDeletedInTx.get()) return null;
+        if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
+        if (isDeleted || null == element) return null;
+
+        return (T)element.clone();
+    }
+
     /**
      * Get current committed value of stored element.
      */

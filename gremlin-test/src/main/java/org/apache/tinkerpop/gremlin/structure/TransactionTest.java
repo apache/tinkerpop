@@ -358,6 +358,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
+        e1 = graph.edges(e1.id()).next();
         e1.property("name", "yyy");
 
         assertEquals("yyy", e1.<String>value("name"));
