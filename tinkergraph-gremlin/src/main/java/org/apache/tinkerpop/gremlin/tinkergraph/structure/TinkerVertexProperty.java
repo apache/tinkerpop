@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -101,8 +102,14 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     public TinkerVertexProperty copy(final TinkerVertex newOwner) {
         final TinkerVertexProperty vp = new TinkerVertexProperty(id, newOwner, key, value);
-        // todo: safe copy properties?
-        vp.properties = properties;
+
+        if (null != properties) {
+            final Map<String, Property> cloned = new ConcurrentHashMap<>();
+            properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(vp)));
+
+            vp.properties = cloned;
+        }
+
         return vp;
     }
 

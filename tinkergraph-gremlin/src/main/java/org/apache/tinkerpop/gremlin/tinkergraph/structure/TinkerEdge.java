@@ -113,7 +113,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
 
         if (properties != null) {
-            Map<String, Property> cloned = new ConcurrentHashMap<>();
+            final Map<String, Property> cloned = new ConcurrentHashMap<>();
             properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(edge)));
 
             edge.properties = cloned;
