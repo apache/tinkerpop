@@ -151,7 +151,5 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         final String dataFile = TestHelper.generateTempFileFromResource(graph.getClass(),
                 GryoResourceAccess.class, path.substring(path.lastIndexOf(File.separator) + 1), "", false).getAbsolutePath();
         graph.traversal().io(dataFile).read().iterate();
-        if (graph.features().graph().supportsTransactions())
-            graph.tx().commit();
     }
 }

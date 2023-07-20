@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -200,5 +201,12 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             return DefaultIdManager.INTEGER;
         else
             throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerTransactionGraph.IdManager.class.getName(), loadGraphWith.name()));
+    }
+
+    @Override
+    protected void readIntoGraph(final Graph graph, final String path) throws IOException {
+        super.readIntoGraph(graph, path);
+
+        graph.tx().commit();
     }
 }

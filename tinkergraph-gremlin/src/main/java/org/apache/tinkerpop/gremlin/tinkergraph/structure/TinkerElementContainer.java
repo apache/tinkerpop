@@ -192,6 +192,9 @@ final class TinkerElementContainer<T extends TinkerElement> {
         reset();
     }
 
+    /**
+     * After the transaction is completed, need to reduce the usage counters to be able to delete the container.
+     */
     private void updateUsesCount() {
         if (isDeletedInTx.get())
             usesInTransactions.decrementAndGet();
