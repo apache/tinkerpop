@@ -211,10 +211,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         this.tx().readWrite();
         final long txNumber = transaction.getTxNumber();
 
-        // mark both related vertices as changed because they contains list of in/out edges
-        touch(outVertex);
-        touch(inVertex);
-
         final TinkerElementContainer<TinkerEdge> newContainer = new TinkerElementContainer<>(idValue);
         // try to add new container or get existing
         TinkerElementContainer<TinkerEdge> container = edges.putIfAbsent(idValue, newContainer);
@@ -342,9 +338,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         final Iterator<T> iterator;
         if (0 == ids.length) {
             iterator = new TinkerGraphIterator<>(
-                    elements.values().stream().map(e -> (T) e.get()).filter(e -> e != null)
-                            // todo: clone only if traversal contains mutating steps
-                            .map(e->(T)((TinkerElement)e).clone()).iterator());
+                    // todo: clone only if traversal contains mutating steps
+                    elements.values().stream().map(c -> (T) c.getWithClone()).filter(e -> e != null).iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -356,8 +351,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 // ids cant be null so all of those filter out
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
-                final TinkerElementContainer<C> element = elements.get(iid);
-                return element == null ? null : (T) element.getWithClone();
+                final TinkerElementContainer<C> container = elements.get(iid);
+                return container == null ? null : (T) container.getWithClone();
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
