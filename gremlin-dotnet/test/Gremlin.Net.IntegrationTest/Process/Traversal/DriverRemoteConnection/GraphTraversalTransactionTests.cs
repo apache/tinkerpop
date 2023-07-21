@@ -33,7 +33,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public static object[][] Graphs => new[] 
         {
             new [] { "gtx" },
-            new [] { "gttx" }
         };
 
         [IgnoreIfTransactionsNotSupportedFact]

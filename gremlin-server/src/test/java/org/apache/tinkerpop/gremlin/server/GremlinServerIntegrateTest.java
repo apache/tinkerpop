@@ -252,7 +252,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldRespondToTimeoutCancelledWsRequest":
             case "shouldRespondToTimeoutCancelledSessionRequest":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 settings.evaluationTimeout = 5000;
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
                 settings.channelizer = WebSocketChannelizer.class.getName();
@@ -263,7 +263,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.channelizer = UnifiedChannelizer.class.getName();
                 break;
             case "shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 settings.evaluationTimeout = 30000;
                 settings.sessionLifetimeTimeout = 5000; // This needs to be shorter because of the delay in scheduling session task.
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
@@ -1192,7 +1192,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Don't test with UnifiedChannelizer since we only want to test the case where a task is cancelled before
         // running which is handled by shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest.
         assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -1219,7 +1218,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
      */
     @Test(timeout = 180000) // Add timeout in case the test hangs.
     public void shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest() throws Exception {
-        assumeNeo4jIsPresent();
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
         final GraphTraversalSource gtx = g.tx().begin();

@@ -89,10 +89,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 settings.maxContentLength = 31;
                 break;
             case "should200OnPOSTTransactionalGraph":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 break;
             case "should200OnPOSTTransactionalGraphInStrictMode":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 settings.strictTransactionManagement = true;
                 break;
             case "should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson":
@@ -559,7 +559,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should200OnPOSTTransactionalGraph() throws Exception {
-        assumeNeo4jIsPresent();
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
@@ -592,7 +591,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should200OnPOSTTransactionalGraphInStrictMode() throws Exception {
-        assumeNeo4jIsPresent();
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());

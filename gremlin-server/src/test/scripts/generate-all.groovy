@@ -62,21 +62,11 @@ globals << [gcrew : traversal().withEmbedded(crew)]
 globals << [ggraph : traversal().withEmbedded(graph)]
 globals << [ggrateful : traversal().withEmbedded(grateful)]
 globals << [gsink : traversal().withEmbedded(sink)]
-
-// dynamically detect existence of gtx as it may or may not be present depending on the -DincludeNeo4j
-// and the configuration of the particular server instance. with docker/gremlin-server.sh the neo4j
-// "tx" configuration is already present and will therefore be enabled.
-def dynamicGtx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["tx"]
-if (dynamicGtx != null)
-    globals << [gtx : traversal().withEmbedded(dynamicGtx)]
+globals << [gtx : traversal().withEmbedded(tx)]
 
 // dynamically detect existence of gimmutable as it is only used in gremlin-go testing suite
 def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]
 if (dynamicGimmutable != null)
     globals << [gimmutable : traversal().withEmbedded(dynamicGimmutable)]
-
-def dynamicGttx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["ttx"]
-if (dynamicGttx != null)
-    globals << [gttx : traversal().withEmbedded(dynamicGttx)]
 
 globals

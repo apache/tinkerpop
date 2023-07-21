@@ -131,7 +131,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
             case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
@@ -165,7 +165,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldBlowTheSessionQueueSize() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat(isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster = TestClientFactory.open();
@@ -207,7 +206,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat(isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster = TestClientFactory.open();
@@ -259,7 +257,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldCloseSessionOnClientClose() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
@@ -307,7 +304,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat("Must use UnifiedChannelizer", isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster1 = TestClientFactory.open();
@@ -416,7 +412,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
@@ -576,7 +571,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     @SuppressWarnings("unchecked")
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
-        assumeNeo4jIsPresent();
 
         try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
 
@@ -643,7 +637,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     @SuppressWarnings("unchecked")
     public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
-        assumeNeo4jIsPresent();
 
         try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
