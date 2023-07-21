@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TinkerVertex extends TinkerElement implements Vertex {
+public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, List<VertexProperty>> properties;
     // Edges should be used by non-transaction Graph due to performance
@@ -50,7 +50,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     // Edge ids are for transactional Graph
     protected Map<String, Set<Object>> outEdgesId;
     protected Map<String, Set<Object>> inEdgesId;
-    private final AbstractTinkerGraph graph;
+    protected final AbstractTinkerGraph graph;
     private boolean allowNullPropertyValues;
     private final boolean isTxMode;
 
@@ -160,7 +160,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
                     graph.vertexPropertyIdManager.convert(optionalId.get()) :
                     graph.vertexPropertyIdManager.getNextId(graph);
 
-            final VertexProperty<V> vertexProperty = new TinkerVertexProperty<V>(idValue, this, key, value);
+            final VertexProperty<V> vertexProperty = createTinkerVertexProperty(idValue, this, key, value);
 
             if (null == this.properties) this.properties = new ConcurrentHashMap<>();
             final List<VertexProperty> list = this.properties.getOrDefault(key, new ArrayList<>());
@@ -228,6 +228,14 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         return isTxMode
                 ? (Iterator) TinkerHelper.getVerticesTx(this, direction, edgeLabels)
                 : (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+    }
+
+    protected <V> TinkerVertexProperty<V> createTinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
+        return new TinkerVertexProperty<V>(vertex, key, value, propertyKeyValues);
+    }
+
+    protected <V> TinkerVertexProperty<V> createTinkerVertexProperty(final Object id, final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
+        return new TinkerVertexProperty<V>(id, vertex, key, value, propertyKeyValues);
     }
 
     @Override

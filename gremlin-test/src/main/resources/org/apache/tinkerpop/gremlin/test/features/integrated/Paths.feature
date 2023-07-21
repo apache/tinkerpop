@@ -18,7 +18,7 @@
 @StepClassIntegrated
 Feature: Step - paths
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @InsertionOrderingRequired
   Scenario: g_V_shortestpath
     Given the modern graph
     And the traversal of

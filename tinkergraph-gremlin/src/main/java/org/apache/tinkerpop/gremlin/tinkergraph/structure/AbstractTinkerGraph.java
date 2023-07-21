@@ -281,6 +281,22 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
+    protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
+        return new TinkerVertex(id, label, graph);
+    }
+
+    protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
+        return new TinkerVertex(id, label, graph, currentVersion);
+    }
+
+    protected TinkerEdge createTinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
+        return new TinkerEdge(id, outVertex, label, inVertex);
+    }
+
+    protected TinkerEdge createTinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
+        return new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+    }
+
     ///////////// Features ///////////////
 
     public class TinkerGraphVertexFeatures implements Features.VertexFeatures {

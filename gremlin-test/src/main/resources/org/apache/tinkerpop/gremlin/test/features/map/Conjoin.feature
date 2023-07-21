@@ -101,19 +101,19 @@ Feature: Step - conjoin()
       | marko |
 
   @MultiProperties @MetaProperties
-  Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_conjoinX1X
+  Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_orderXlocalX_conjoinX1X
     Given the crew graph
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().conjoin("1")
+      g.V().valueMap("location").select(values).unfold().order(Scope.local).conjoin("1")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | san diego1santa cruz1brussels1santa fe |
+      | brussels1san diego1santa cruz1santa fe |
       | centreville1dulles1purcellville |
-      | bremen1baltimore1oakland1seattle |
-      | spremberg1kaiserslautern1aachen |
+      | baltimore1bremen1oakland1seattle |
+      | aachen1kaiserslautern1spremberg |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_conjoinXX
