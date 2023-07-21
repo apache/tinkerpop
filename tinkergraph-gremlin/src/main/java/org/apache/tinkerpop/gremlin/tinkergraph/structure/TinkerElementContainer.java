@@ -82,15 +82,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
-    final AtomicInteger n = new AtomicInteger(0);
     public T getWithClone() {
         if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
         if (isDeleted || null == element) return null;
-        n.incrementAndGet();
-        if (n.get() > 3) {
-            System.out.println("--Cloned " + elementId + " " + n + "times");
-        }
+
         final T cloned = (T) element.clone();
         transactionUpdatedValue.set(cloned);
         return cloned;
