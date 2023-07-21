@@ -198,3 +198,89 @@ g = traversal().withEmbedded(graph)
 g.io("data/tinkerpop-crew.kryo").read().iterate()
 g.V().properties()
 ----
+
+=== Transactions
+
+As of 3.7.0, `TinkerGraph` includes optional transaction support and thread-safety through the `TinkerTransactionGraph`
+class. The default configuration of TinkerGraph remains non-transactional.
+
+==== Transaction Semantics
+
+TinkerTransactionGraph only has support for ThreadLocal transactions, so embedded graph transactions may not be fully
+supported. You can think of the transaction as belonging to a thread, any traversals executed within the same thread
+will share the same transaction even if you attempt to start a new transaction.
+
+TinkerTransactionGraph implements `read committed` isolation level, so it only guards against dirty reads.
+Additionally, it employs optimistic locking as its locking strategy. This reduces complexity in the design as
+there are fewer timeouts that the user needs to manage. However, a consequence of this approach is that a transaction
+will throw a `TransactionException` if two different transactions attempt to lock the same element (see "Best Practices"
+below).
+
+==== Use Cases
+
+These transaction semantics described above may not fit use cases for some production scenarios that require strict
+ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used as a Graph for test
+environments where you still require access to a Graph that supports transactions. TinkerTransactionGraph does fully
+support TinkerPop's `Transaction` interface which still makes it a useful Graph for exploring the Transaction API.
+
+Once you are ready to put your system into production then you can choose a Graph provider that has the
+transaction semantics that fit your application's needs.
+
+==== Best Practices
+
+Errors can occur before a transaction gets committed. Specifically for TinkerTransactionGraph, you may encounter many
+`TransactionException`s in a highly concurrent environment due its optimistic approach to locking. Users should follow
+the try-catch-rollback pattern described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions] section in combination with
+exponential backoff based retries to mitigate this issue.
+
+==== Performance Considerations
+
+While transactions impose minimal impact for mutating workloads, users should expect performance degradation for
+read-only work relative to the non-transactional configuration. However, its approach to locking
+(write-only, optimistic) and its in-memory nature, TinkerTransactionGraph is likely faster than other Graph
+implementations that support transactions.
+
+==== Examples
+
+Constructing a simple graph using TinkerTransactionGraph in Java is presented below:
+
+[source,java]
+----
+Graph graph = TinkerTransactionGraph.open();
+GraphTraversalSource gtx = graph.tx().begin();
+
+try {
+  Vertex marko = gtx.addV("person").property("name","marko").property("age",29).next();
+  Vertex lop = gtx.addV("software").property("name","lop").property("lang","java").next();
+  gtx.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
+
+  gtx.tx().commit();
+} catch (Exception ex) {
+  gtx.tx().rollback();
+}
+----
+
+The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
+property. In case of any errors `rollback()` will be called and no changes will be performed.
+
+To use the embedded TinkerTransactionGraph in Gremlin Console:
+
+[gremlin-groovy]
+----
+gremlin> graph = TinkerTransactionGraph.open() <1>
+gremlin> g = traversal().withEmbedded(graph) <2>
+gremlin> g.addV('test').property('name','one')
+gremlin> g.tx().commit() <3>
+gremlin> g.V().valueMap()
+gremlin> g.addV('test').property('name','two') <4>
+gremlin> g.V().valueMap()
+gremlin> g.tx().rollback() <5>
+gremlin> g.V().valueMap()
+----
+
+<1> Open transactional graph.
+<2> Spawn a GraphTraversalSource with transactional graph.
+<3> Commit the add vertex operation
+<4> Add a second vertex without committing
+<5> Rollback the change
