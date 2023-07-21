@@ -49,6 +49,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
     private ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
 
     /**
+     * Marker for element modified in current transaction.
+     */
+    private ThreadLocal<Boolean> isModifiedInTx = ThreadLocal.withInitial(() -> false);
+
+    /**
      * Count of usages of container in different transactions.
      * Needed to understand whether this element is used in other transactions or it can be deleted during rollback.
      */
@@ -77,12 +82,18 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
+    final AtomicInteger n = new AtomicInteger(0);
     public T getWithClone() {
         if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
         if (isDeleted || null == element) return null;
-
-        return (T)element.clone();
+        n.incrementAndGet();
+        if (n.get() > 3) {
+            System.out.println("--Cloned " + elementId + " " + n + "times");
+        }
+        final T cloned = (T) element.clone();
+        transactionUpdatedValue.set(cloned);
+        return cloned;
     }
 
     /**
@@ -110,7 +121,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
      * Needed to understand if the element has changed in the current transaction
      */
     public boolean isChanged() {
-        return isDeletedInTx.get() || transactionUpdatedValue.get() != null;
+        return isDeletedInTx.get() || isModifiedInTx.get() && transactionUpdatedValue.get() != null;
     }
 
     /**
@@ -149,9 +160,10 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void setDraft(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (transactionUpdatedValue.get() == null)
+        if (!isModifiedInTx.get())
             usesInTransactions.incrementAndGet();
         transactionUpdatedValue.set(transactionElement);
+        isModifiedInTx.set(true);
         tx.markChanged(this);
     }
 
@@ -162,7 +174,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
         // todo: do we need to check version on delete?
         final T updatedValue = transactionUpdatedValue.get();
         return isDeleted ||
-                element != null && updatedValue != null && updatedValue.version() != element.version();
+                element != null && isModifiedInTx.get() && updatedValue != null && updatedValue.version() != element.version();
     }
 
     /**
@@ -198,7 +210,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     private void updateUsesCount() {
         if (isDeletedInTx.get())
             usesInTransactions.decrementAndGet();
-        if (transactionUpdatedValue.get() != null)
+        if (isModifiedInTx.get())
             usesInTransactions.decrementAndGet();
     }
 
@@ -216,6 +228,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     private void reset() {
         transactionUpdatedValue.remove();
         isDeletedInTx.set(false);
+        isModifiedInTx.set(false);
     }
 
     /**
