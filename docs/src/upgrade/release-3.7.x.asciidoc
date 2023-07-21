@@ -332,6 +332,8 @@ We also used this opportunity to convert some of these pure data classes into a 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 
+==== Graph System Providers
+
 ===== Reworked Gremlin Socket Server
 
 The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
@@ -351,3 +353,14 @@ label knows, if there is none then add new one between josh and vadas.
 Another reason is to make E() and V() steps equivalent in terms of use in the middle of traversal.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798]
+
+===== PBiPredicate interface
+
+Custom predicates used in `P` now should implement `PBiPredicate` interface.
+
+It allows to set the name of the predicate that will be used for serialization by overriding `getPredicateName`.
+In previous version `toString` used for this.
+
+In most cases it should be enough just to replace `BiPredicate` with `PBiPredicate` in predicate declaration.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2949[TINKERPOP-2949]
