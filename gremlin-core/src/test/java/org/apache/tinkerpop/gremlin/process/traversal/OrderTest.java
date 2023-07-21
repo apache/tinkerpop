@@ -36,10 +36,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asSet;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asList;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.apache.tinkerpop.gremlin.util.GremlinValueComparator.Type;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asList;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asSet;
 
 import static org.junit.Assert.assertEquals;
 

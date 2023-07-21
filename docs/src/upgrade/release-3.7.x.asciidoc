@@ -157,6 +157,130 @@ gremlin> g.V(1234).valueMap()
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2957[TINKERPOP-2957]
 
+==== TinkerGraph Transactions
+
+===== Introduction
+
+Previously, there was no reference implementation provided for the `Transaction` API as this feature wasn't supported by
+TinkerGraph. Users were instead directed towards the Neo4jGraph provided in `neo4j-gremlin` if they wanted to get access
+to a `Graph` implementation that supported transactions. Unfortunately, the maintenance around this plugin has largely
+been abandoned and is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
+
+As of this version, we are introducing the transactional TinkerGraph, TinkerTransactionGraph, which is TinkerGraph with
+transaction capabilities. The TinkerTransactionGraph has `read committed` isolation level, which is the same as the
+Neo4jGraph provided in `neo4j-gremlin`. Only ThreadLocal transactions are implemented, therefore embedded graph
+transactions may not be fully supported. These transaction semantics may not fit the use case for some production
+scenarios that require strict ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used
+as a Graph for test environments where you still require support for transactions.
+
+===== Usage examples
+
+To use TinkerTransactionGraph remotely, start a Gremlin Server with the `gremlin-server-transaction.yaml` config file.
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g")); <1>
+
+GraphTraversalSource gtx = g.tx().begin(); <2>
+try {
+    gtx.addV('test1').iterate(); <3>
+    gtx.addV('test2').iterate(); <3>
+
+    gtx.tx().commit(); <4>
+} catch (Exception ex) {
+    gtx.tx().rollback(); <5>
+}
+----
+
+<1> Create connection to Gremlin Server with transaction enabled graph.
+<2> Spawn a GraphTraversalSource with opened transaction.
+<3> Make some updates to graph.
+<4> Commit all changes.
+<5> Rollback all changes on error.
+
+One can also use the remote TinkerTransactionGraph in Gremlin Console:
+
+[source,text]
+----
+gremlin> :remote connect tinkerpop.server conf/remote.yaml session <1>
+==>Configured localhost/127.0.0.1:8182-[2e70bf11-12f7-4dfe-8a5e-a3d57f0df304]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"))
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx = g.tx().begin() <2>
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx.addV('test').property('name', 'one')
+==>v[0]
+gremlin> gtx.V().valueMap()
+==>[name:[one]]
+gremlin> g.V().valueMap()
+gremlin> gtx.tx().commit()
+==>null
+gremlin> g.V().valueMap() <3>
+==>[name:[one]]
+gremlin> g.V()
+==>v[0]
+gremlin> gtx = g.tx().begin() <4>
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx.addV('test').property('name', 'two')
+==>v[2]
+gremlin> gtx.V().valueMap()
+==>[name:[one]]
+==>[name:[two]]
+gremlin> g.V().valueMap()
+==>[name:[one]]
+gremlin> gtx.tx().rollback()
+==>null
+gremlin> g.V().valueMap() <5>
+==>[name:[one]]
+----
+
+<1> Open remote Console session and spawn remote graph traversal source for the empty TinkerTransactionGraph.
+<2> Spawn a GraphTraversalSource by opening a transaction.
+<3> The vertex is added in the remote graph until we commit the transaction (which automatically closes the transaction).
+<4> Spawn another GraphTraversalSource by opening a new transaction.
+<5> The second vertex will not bed added to the remote graph since we rolled back the change
+
+To use the embedded TinkerTransactionGraph in Gremlin Console:
+
+[source,text]
+----
+gremlin> graph = TinkerTransactionGraph.open() <1>
+==>tinkertransactiongraph[vertices:0 edges:0]
+gremlin> g = traversal().withEmbedded(graph) <2>
+==>graphtraversalsource[tinkertransactiongraph[vertices:0 edges:0], standard]
+gremlin> g.addV('test').property('name','one')
+==>v[0]
+gremlin> g.tx().commit() <3>
+==>null
+gremlin> g.V().valueMap()
+==>[name:[one]]
+gremlin> g.addV('test').property('name','two') <4>
+==>v[2]
+gremlin> g.V().valueMap()
+==>[name:[one]]
+==>[name:[two]]
+gremlin> g.tx().rollback() <5>
+==>null
+gremlin> g.V().valueMap()
+==>[name:[one]]
+----
+
+<1> Open transactional graph.
+<2> Spawn a GraphTraversalSource with transactional graph.
+<3> Commit the add vertex operation
+<4> Add a second vertex without committing
+<5> Rollback the change
+
+Note that all embedded TinkerTransactionGraph remains ThreadLocal transactions, meaning that all traversal sources spawn
+from the graph will operate within the same transaction scope.
+
+===== Limitations
+At this point, the transactional TinkerGraph comes with performance limitations and thus is only meant for testing
+and not for production use.
+
+Addition documentation can be found in <<transactions,Transactions>> section.
+
+
 ==== Properties on Elements
 
 ===== Introduction

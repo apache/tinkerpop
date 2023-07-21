@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.tools;
+
+package org.apache.tinkerpop.gremlin.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +25,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class CollectionFactory {
+public final class CollectionUtil {
+    private CollectionUtil() {
+    }
 
     public static <E> List<E> asList(final E... elements) {
         return new ArrayList<>(Arrays.asList(elements));
@@ -49,4 +55,23 @@ public class CollectionFactory {
         return map;
     }
 
+    public static <K,V> ConcurrentHashMap<K,V> clone(final ConcurrentHashMap<K,V> map) {
+        final ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>(map.size());
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            V clonedValue;
+            if (entry.getValue() instanceof Set) {
+                clonedValue = (V) ConcurrentHashMap.newKeySet();
+                ((Set) clonedValue).addAll((Set) entry.getValue());
+            } else if (entry.getValue() instanceof ArrayList) {
+                clonedValue = (V)((ArrayList) entry.getValue()).clone();
+            } else {
+                clonedValue = entry.getValue();
+            }
+
+            result.put(entry.getKey(), clonedValue);
+        }
+
+        return result;
+    }
 }

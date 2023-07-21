@@ -29,16 +29,26 @@ public abstract class TinkerElement implements Element {
     protected final Object id;
     protected final String label;
     protected boolean removed = false;
+    protected long currentVersion;
 
     protected TinkerElement(final Object id, final String label) {
         this.id = id;
         this.label = label;
+        currentVersion = -1;
+    }
+
+    protected TinkerElement(final Object id, final String label, final long currentVersion) {
+        this.id = id;
+        this.label = label;
+        this.currentVersion = currentVersion;
     }
 
     @Override
     public int hashCode() {
         return ElementHelper.hashCode(this);
     }
+
+    public abstract  Object clone();
 
     @Override
     public Object id() {
@@ -55,6 +65,8 @@ public abstract class TinkerElement implements Element {
     public boolean equals(final Object object) {
         return ElementHelper.areEqual(this, object);
     }
+
+    public long version() { return this.currentVersion; }
 
     protected static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {
         return new IllegalStateException(String.format("%s with id %s was removed.", clazz.getSimpleName(), id));

@@ -566,7 +566,7 @@ public class VertexTest {
             final List<Vertex> vertices = new ArrayList<>();
             IteratorUtils.fill(graph.vertices(), vertices);
             for (Vertex v : vertices) {
-                v.remove();
+                graph.vertices(v.id()).next().remove();
                 tryCommit(graph);
             }
 

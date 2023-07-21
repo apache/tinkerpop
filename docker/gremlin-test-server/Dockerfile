@@ -37,5 +37,5 @@ ENV GREMLIN_SERVER_VERSION=$GREMLIN_SERVER
 
 EXPOSE 45940-45942 4588
 
-ENTRYPOINT ["/opt/docker-entrypoint.sh", "-n"]
+ENTRYPOINT ["/opt/docker-entrypoint.sh"]
 CMD []

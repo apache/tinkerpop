@@ -44,7 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrat
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
+import org.apache.tinkerpop.gremlin.util.MultiMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;

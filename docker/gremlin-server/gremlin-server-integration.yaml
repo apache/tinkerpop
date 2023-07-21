@@ -26,7 +26,8 @@ graphs: {
   modern: conf/tinkergraph-service.properties,
   crew: conf/tinkergraph-service.properties,
   grateful: conf/tinkergraph-service.properties,
-  sink: conf/tinkergraph-service.properties
+  sink: conf/tinkergraph-service.properties,
+  tx: conf/tinkertransactiongraph-service.properties
 }
 scriptEngines: {
   gremlin-lang : {},

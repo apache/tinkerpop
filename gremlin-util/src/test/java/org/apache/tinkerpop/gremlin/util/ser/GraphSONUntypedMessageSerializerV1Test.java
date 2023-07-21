@@ -457,12 +457,12 @@ public class GraphSONUntypedMessageSerializerV1Test {
                                  .get("value")
                                  .get("2")
                                  .get("value")
-                                 .get("3").get("key").get("value").asText());
+                                 .get("2").get("key").get("value").asText());
         assertEquals("name", converted.get("1")
                                  .get("value")
                                  .get("2")
                                  .get("value")
-                                 .get("3").get("key").get("label").asText());
+                                 .get("2").get("key").get("label").asText());
         
         // check subitem
         assertEquals("lop", converted.get("1")

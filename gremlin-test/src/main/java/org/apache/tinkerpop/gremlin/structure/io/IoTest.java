@@ -311,6 +311,8 @@ public class IoTest {
                 writer.writeGraph(out, graph);
 
                 graph.vertices().forEachRemaining(Element::remove);
+                if (graph.features().graph().supportsTransactions())
+                    graph.tx().commit();
                 try (final InputStream stream = new ByteArrayInputStream(((ByteArrayOutputStream) out).toByteArray())) {
                     reader.readGraph(stream, graph);
                 }

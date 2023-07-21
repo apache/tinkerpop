@@ -36,7 +36,7 @@ globals << [hook : [
     // things now, that test config would have been mixed in with release artifacts and there would have been ugly
     // exclusions to make packaging work properly.
     allowSetOfIdManager = { graph, idManagerFieldName, idManager ->
-        java.lang.reflect.Field idManagerField = graph.class.getDeclaredField(idManagerFieldName)
+        java.lang.reflect.Field idManagerField = graph.class.getSuperclass().getDeclaredField(idManagerFieldName)
         idManagerField.setAccessible(true)
         idManagerField.set(graph, idManager)
     }
@@ -51,7 +51,6 @@ globals << [hook : [
     TinkerFactory.generateTheCrew(crew)
     TinkerFactory.generateGratefulDead(grateful)
     TinkerFactory.generateKitchenSink(sink)
-
   }
 ] as LifeCycleHook]
 
@@ -63,13 +62,7 @@ globals << [gcrew : traversal().withEmbedded(crew)]
 globals << [ggraph : traversal().withEmbedded(graph)]
 globals << [ggrateful : traversal().withEmbedded(grateful)]
 globals << [gsink : traversal().withEmbedded(sink)]
-
-// dynamically detect existence of gtx as it may or may not be present depending on the -DincludeNeo4j
-// and the configuration of the particular server instance. with docker/gremlin-server.sh the neo4j
-// "tx" configuration is already present and will therefore be enabled.
-def dynamicGtx = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["tx"]
-if (dynamicGtx != null)
-    globals << [gtx : traversal().withEmbedded(dynamicGtx)]
+globals << [gtx : traversal().withEmbedded(tx)]
 
 // dynamically detect existence of gimmutable as it is only used in gremlin-go testing suite
 def dynamicGimmutable = context.getBindings(javax.script.ScriptContext.GLOBAL_SCOPE)["immutable"]

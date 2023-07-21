@@ -1,0 +1,57 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+[[tinkertransactiongraph-gremlin]]
+== TinkerTransactionGraph-Gremlin
+
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:tinkerpop-character.png[width=100,float=left] TinkerTransactionGraph is a single machine, in-memory (with 
+optional persistence), transactional graph engine that provides both OLTP and OLAP functionality. It can be deployed with
+TinkerPop and serves as playground with transaction support. It is not suitable for production. 
+
+Main use case is testing enviroment with transaction support. In other cases better to use TinkerGraph.
+
+Constructing a simple graph using TinkerTransactionGraph in Java is presented below:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost").port(8182).create();
+Client client = cluster.connect();
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "gttx"));
+GraphTraversalSource gtx = g.tx().begin();
+
+try {
+  Vertex marko = gtx.addV("person").property("name","marko").property("age",29).next();
+  Vertex lop = gtx.addV("software").property("name","lop").property("lang","java").next();
+  gtx.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
+
+  gtx.tx().commit();
+} catch (Exception ex) {
+  gtx.tx().rollback();
+}
+----
+
+The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
+property. In case of any errors no changes will be performed.
+

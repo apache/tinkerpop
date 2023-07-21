@@ -279,7 +279,7 @@ public class GraphSONMessageSerializerV1Test {
         //check Vertex property
         final Map<String, Map<String, Map>> subTreeMap =  deserializedMap.get("1").get("value");
         final Map<String, Map<String, Map>> subTreeMap2 = subTreeMap.get("2").get("value");
-        final Map<String, String> vertexPropertiesDeep = subTreeMap2.get("3").get("key");
+        final Map<String, String> vertexPropertiesDeep = subTreeMap2.get("2").get("key");
         assertEquals("vadas", vertexPropertiesDeep.get("value"));
         assertEquals("name", vertexPropertiesDeep.get("label"));
 

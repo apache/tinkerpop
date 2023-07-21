@@ -58,11 +58,23 @@ public class AbstractGeneratorTest extends AbstractGremlinTest {
 
     private boolean sameInVertices(final Vertex v, final List<Vertex> inVertices) {
         return inVertices.stream()
-                .allMatch(inVertex -> IteratorUtils.filter(v.vertices(Direction.IN), hv -> hv.value("oid").equals(inVertex.value("oid"))).hasNext());
+                .allMatch(inVertex ->
+                {
+                    final Iterator<Vertex> itty = v.vertices(Direction.IN);
+                    final boolean result = IteratorUtils.filter(itty, hv -> hv.value("oid").equals(inVertex.value("oid"))).hasNext();
+                    CloseableIterator.closeIterator(itty);
+                    return result;
+                });
     }
 
     private boolean sameOutVertices(final Vertex v, final List<Vertex> outVertices) {
         return outVertices.stream()
-                .allMatch(outVertex -> IteratorUtils.filter(v.vertices(Direction.OUT), hv -> hv.value("oid").equals(outVertex.value("oid"))).hasNext());
+                .allMatch(outVertex ->
+                {
+                    final Iterator<Vertex> itty = v.vertices(Direction.OUT);
+                    final boolean result = IteratorUtils.filter(itty, hv -> hv.value("oid").equals(outVertex.value("oid"))).hasNext();
+                    CloseableIterator.closeIterator(itty);
+                    return result;
+                });
     }
 }

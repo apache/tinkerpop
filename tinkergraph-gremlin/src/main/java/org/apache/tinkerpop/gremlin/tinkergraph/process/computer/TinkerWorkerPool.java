@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapReducePool;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.util.function.TriConsumer;
@@ -56,7 +57,7 @@ public final class TinkerWorkerPool implements AutoCloseable {
     private final Queue<TinkerWorkerMemory> workerMemoryPool = new ConcurrentLinkedQueue<>();
     private final List<List<Vertex>> workerVertices = new ArrayList<>();
 
-    public TinkerWorkerPool(final TinkerGraph graph, final TinkerMemory memory, final int numberOfWorkers) {
+    public TinkerWorkerPool(final AbstractTinkerGraph graph, final TinkerMemory memory, final int numberOfWorkers) {
         this.numberOfWorkers = numberOfWorkers;
         this.workerPool = Executors.newFixedThreadPool(numberOfWorkers, THREAD_FACTORY_WORKER);
         this.completionService = new ExecutorCompletionService<>(this.workerPool);
@@ -64,7 +65,7 @@ public final class TinkerWorkerPool implements AutoCloseable {
             this.workerMemoryPool.add(new TinkerWorkerMemory(memory));
             this.workerVertices.add(new ArrayList<>());
         }
-        int batchSize = TinkerHelper.getVertices(graph).size() / this.numberOfWorkers;
+        int batchSize = graph.getVerticesCount() / this.numberOfWorkers;
         if (0 == batchSize)
             batchSize = 1;
         int counter = 0;

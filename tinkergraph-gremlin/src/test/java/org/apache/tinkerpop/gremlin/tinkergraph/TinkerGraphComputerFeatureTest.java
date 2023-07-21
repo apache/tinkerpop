@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Provides;
 import com.google.inject.Stage;
 import io.cucumber.guice.CucumberModules;
 import io.cucumber.junit.Cucumber;
@@ -46,7 +47,12 @@ public class TinkerGraphComputerFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerGraphWorld.ComputerWorld.class);
+            bind(World.class).to(TinkerWorld.ComputerWorld.class);
+        }
+
+        @Provides
+        static TinkerWorld.ComputerWorld provideComputerWorld() {
+            return new TinkerWorld.ComputerWorld(new TinkerWorld.TinkerGraphWorld());
         }
     }
 }

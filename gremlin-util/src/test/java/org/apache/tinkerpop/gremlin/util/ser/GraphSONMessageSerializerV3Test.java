@@ -288,9 +288,9 @@ public class GraphSONMessageSerializerV3Test {
         Iterator<Vertex> vertexKeys = firstTree.keySet().iterator();
 
         Map expectedValues = new HashMap<Integer, String>() {{
-            put(3, "vadas");
-            put(5, "lop");
-            put(7, "josh");
+            put(2, "vadas");
+            put(4, "lop");
+            put(6, "josh");
         }};
         
         Map actualValues = new HashMap<Integer, String>();

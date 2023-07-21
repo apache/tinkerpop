@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class MergeEdgeStepTest {
 
     @Test
     public void shouldValidateWithTokens() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.OUT, new ReferenceVertex(100),
                 T.label, "knows",
@@ -51,7 +51,7 @@ public class MergeEdgeStepTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithTokensBecauseOfBOTH() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.BOTH, new ReferenceVertex(100),
                 T.label, "knows",
@@ -61,7 +61,7 @@ public class MergeEdgeStepTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithTokensBecauseOfValue() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.OUT, new ReferenceVertex(100),
                 T.value, "knows",
@@ -71,7 +71,7 @@ public class MergeEdgeStepTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithTokensBecauseOfBadLabel() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.OUT, new ReferenceVertex(100),
                 T.label, 100000,
@@ -81,7 +81,7 @@ public class MergeEdgeStepTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithTokensBecauseOfWeirdKey() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.OUT, new ReferenceVertex(100),
                 new ReferenceVertex("weird"), 100000,
@@ -91,13 +91,13 @@ public class MergeEdgeStepTest {
 
     @Test
     public void shouldValidateWithoutTokens() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v");
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v");
         MergeEdgeStep.validateMapInput(m, true);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithoutTokens() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,
                 Direction.BOTH, new ReferenceVertex(100),
                 T.label, "knows",
@@ -107,7 +107,7 @@ public class MergeEdgeStepTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithoutTokensBecauseOfWeirdKey() {
-        final Map<Object,Object> m = CollectionFactory.asMap("k", "v",
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 new ReferenceVertex("weird"), 100000);
         MergeEdgeStep.validateMapInput(m, true);
     }
@@ -119,15 +119,15 @@ public class MergeEdgeStepTest {
         final Traverser.Admin traverser = mock(Traverser.Admin.class);
         when(traverser.split()).thenReturn(mock(Traverser.Admin.class));
         final Traversal.Admin onCreateTraversal = mock(Traversal.Admin.class);
-        when(onCreateTraversal.next()).thenReturn(Collections.unmodifiableMap(CollectionFactory.asMap("key1", "value1")));
+        when(onCreateTraversal.next()).thenReturn(Collections.unmodifiableMap(CollectionUtil.asMap("key1", "value1")));
         when(onCreateTraversal.getSideEffects()).thenReturn(mock(TraversalSideEffects.class));
 
         final MergeEdgeStep step = new MergeEdgeStep<>(traversal, true);
         step.addChildOption(Merge.onCreate, onCreateTraversal);
 
-        final Map mergeMap = CollectionFactory.asMap("key2", "value2");
+        final Map mergeMap = CollectionUtil.asMap("key2", "value2");
         final Map onCreateMap = step.onCreateMap(traverser, new LinkedHashMap<>(), mergeMap);
 
-        assertEquals(CollectionFactory.asMap("key1", "value1", "key2", "value2"), onCreateMap);
+        assertEquals(CollectionUtil.asMap("key1", "value1", "key2", "value2"), onCreateMap);
     }
 }

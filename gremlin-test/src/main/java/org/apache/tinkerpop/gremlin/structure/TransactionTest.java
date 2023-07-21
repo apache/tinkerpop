@@ -23,9 +23,11 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -332,8 +334,8 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldRollbackPropertyAutoTransactionByDefault() {
-        final Vertex v1 = graph.addVertex("name", "marko");
-        final Edge e1 = v1.addEdge("l", v1, "name", "xxx");
+        Vertex v1 = graph.addVertex("name", "marko");
+        Edge e1 = v1.addEdge("l", v1, "name", "xxx");
         assertVertexEdgeCounts(graph, 1, 1);
         assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
         assertEquals(e1.id(), graph.edges(e1.id()).next().id());
@@ -344,6 +346,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
+        v1 = graph.vertices(v1.id()).next();
         v1.property(VertexProperty.Cardinality.single, "name", "stephen");
 
         assertEquals("stephen", v1.<String>value("name"));
@@ -351,9 +354,11 @@ public class TransactionTest extends AbstractGremlinTest {
 
         g.tx().rollback();
 
+        v1 = graph.vertices(v1.id()).next();
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
 
+        e1 = graph.edges(e1.id()).next();
         e1.property("name", "yyy");
 
         assertEquals("yyy", e1.<String>value("name"));
@@ -361,6 +366,7 @@ public class TransactionTest extends AbstractGremlinTest {
 
         g.tx().rollback();
 
+        e1 = graph.edges(e1.id()).next();
         assertEquals("xxx", e1.<String>value("name"));
         assertEquals("xxx", graph.edges(e1.id()).next().<String>value("name"));
 
@@ -405,8 +411,10 @@ public class TransactionTest extends AbstractGremlinTest {
         t.start();
         t.join();
 
+        final Iterator<Vertex> vertices = graph.vertices(vid.get().id());
         // this was committed
-        assertThat(graph.vertices(vid.get().id()).hasNext(), is(true));
+        assertThat(vertices.hasNext(), is(true));
+        CloseableIterator.closeIterator(vertices);
 
         try {
             // this was not
