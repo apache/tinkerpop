@@ -34,7 +34,7 @@ public abstract class TinkerElement implements Element {
     protected TinkerElement(final Object id, final String label) {
         this.id = id;
         this.label = label;
-        currentVersion = 0;
+        currentVersion = -1;
     }
 
     protected TinkerElement(final Object id, final String label, final long currentVersion) {

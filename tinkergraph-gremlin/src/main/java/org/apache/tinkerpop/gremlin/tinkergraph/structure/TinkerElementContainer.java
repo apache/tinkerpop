@@ -144,7 +144,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void touch(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (transactionUpdatedValue.get() == transactionElement) return;
+        if (transactionUpdatedValue.get() == transactionElement && isModifiedInTx.get()) return;
 
         setDraft(transactionElement, tx);
     }
@@ -170,7 +170,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
         // todo: do we need to check version on delete?
         final T updatedValue = transactionUpdatedValue.get();
         return isDeleted ||
-                element != null && isModifiedInTx.get() && updatedValue != null && updatedValue.version() != element.version();
+                element != null && updatedValue != null && updatedValue.version() != element.version();
     }
 
     /**
