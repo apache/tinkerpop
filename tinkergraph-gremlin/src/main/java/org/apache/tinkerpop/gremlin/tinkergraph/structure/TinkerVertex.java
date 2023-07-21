@@ -86,7 +86,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
             vertex.outEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) outEdgesId);
 
         if (properties != null) {
-            final ConcurrentHashMap<String, List<VertexProperty>> result = new ConcurrentHashMap<>();
+            final ConcurrentHashMap<String, List<VertexProperty>> result = new ConcurrentHashMap<>(properties.size());
 
             // clone will not work because TinkerVertexProperty contains link to Vertex
             for (Map.Entry<String, List<VertexProperty>> entry : properties.entrySet()) {

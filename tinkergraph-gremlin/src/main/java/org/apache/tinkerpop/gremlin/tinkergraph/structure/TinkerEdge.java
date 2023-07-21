@@ -55,14 +55,14 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     }
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
-        this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(), label, inVertex.id(), currentVersion);
+        this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(), label, inVertex.id(), currentVersion, false);
         if (!isTxMode) {
             this.inVertex = inVertex;
             this.outVertex = outVertex;
         }
     }
 
-    private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion) {
+    private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion, final Boolean skipIndexUpdate) {
         super(id, label, currentVersion);
         isTxMode = graph instanceof TinkerTransactionGraph;
         this.graph = graph;
@@ -71,7 +71,8 @@ public final class TinkerEdge extends TinkerElement implements Edge {
             this.inVertexId = inVertexId;
         }
         this.allowNullPropertyValues = graph.features().edge().supportsNullPropertyValues();
-        TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
+        if (!skipIndexUpdate)
+            TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
 
     @Override
@@ -127,10 +128,10 @@ public final class TinkerEdge extends TinkerElement implements Edge {
             return edge;
         }
 
-        final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
+        final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion, true);
 
         if (properties != null) {
-            final Map<String, Property> cloned = new ConcurrentHashMap<>();
+            final Map<String, Property> cloned = new ConcurrentHashMap<>(properties.size());
             properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(edge)));
 
             edge.properties = cloned;

@@ -104,7 +104,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
         final TinkerVertexProperty vp = new TinkerVertexProperty(id, newOwner, key, value);
 
         if (null != properties) {
-            final Map<String, Property> cloned = new ConcurrentHashMap<>();
+            final Map<String, Property> cloned = new ConcurrentHashMap<>(properties.size());
             properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(vp)));
 
             vp.properties = cloned;

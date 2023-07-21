@@ -56,7 +56,7 @@ public final class CollectionUtil {
     }
 
     public static <K,V> ConcurrentHashMap<K,V> clone(final ConcurrentHashMap<K,V> map) {
-        final ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>(map.size());
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             V clonedValue;
