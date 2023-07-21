@@ -250,16 +250,16 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         final TinkerVertex inVertex = (TinkerVertex) edge.inVertex();
         touch(inVertex);
 
-        if (null != outVertex && null != outVertex.outEdges) {
-            final Set<Object> edges = outVertex.outEdges.get(edge.label());
+        if (null != outVertex && null != outVertex.outEdgesId) {
+            final Set<Object> edges = outVertex.outEdgesId.get(edge.label());
             if (null != edges) {
-                outVertex.outEdges.get(edge.label()).removeIf(e -> e == edge.id());
+                edges.removeIf(e -> e == edge.id());
             }
         }
-        if (null != inVertex && null != inVertex.inEdges) {
-            final Set<Object> edges = inVertex.inEdges.get(edge.label());
+        if (null != inVertex && null != inVertex.inEdgesId) {
+            final Set<Object> edges = inVertex.inEdgesId.get(edge.label());
             if (null != edges) {
-                inVertex.inEdges.get(edge.label()).removeIf(e -> e == edge.id());
+                edges.removeIf(e -> e == edge.id());
             }
         }
 
@@ -332,6 +332,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     private <T extends Element, C extends TinkerElement> Iterator<T> createElementIterator(final Class<T> clazz,
                                                                   final Map<Object, TinkerElementContainer<C>> elements,
                                                                   final IdManager idManager,
+
                                                                   final Object... ids) {
         this.tx().readWrite();
 
@@ -360,6 +361,29 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                         IteratorUtils.filter((Iterator<Vertex>) iterator, t -> this.graphComputerView.legalVertex(t)) :
                         IteratorUtils.filter((Iterator<Edge>) iterator, t -> this.graphComputerView.legalEdge(t.outVertex(), t))) :
                 iterator;
+    }
+    @Override
+    protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        touch(vertex);
+        if (null == vertex.outEdgesId) vertex.outEdgesId = new ConcurrentHashMap<>();
+        Set<Object> edges = vertex.outEdgesId.get(label);
+        if (null == edges) {
+            edges = ConcurrentHashMap.newKeySet();
+            vertex.outEdgesId.put(label, edges);
+        }
+        edges.add(edge.id());
+    }
+
+    @Override
+    protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        touch(vertex);
+        if (null == vertex.inEdgesId) vertex.inEdgesId = new ConcurrentHashMap<>();
+        Set<Object> edges = vertex.inEdgesId.get(label);
+        if (null == edges) {
+            edges = ConcurrentHashMap.newKeySet();;
+            vertex.inEdgesId.put(label, edges);
+        }
+        edges.add(edge.id());
     }
 
     /**

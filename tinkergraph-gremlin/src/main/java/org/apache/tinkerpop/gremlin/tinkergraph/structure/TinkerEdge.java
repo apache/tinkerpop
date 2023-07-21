@@ -41,10 +41,14 @@ import java.util.stream.Collectors;
 public final class TinkerEdge extends TinkerElement implements Edge {
 
     protected Map<String, Property> properties;
-    protected final Object inVertexId;
-    protected final Object outVertexId;
+
+    protected Vertex inVertex = null;
+    protected Object inVertexId = null;
+    protected Vertex outVertex = null;
+    protected Object outVertexId= null;
     private final AbstractTinkerGraph graph;
     private final boolean allowNullPropertyValues;
+    private final boolean isTxMode;
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
        this(id, outVertex, label, inVertex, 0);
@@ -52,13 +56,20 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     protected TinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex, final long currentVersion) {
         this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(), label, inVertex.id(), currentVersion);
+        if (!isTxMode) {
+            this.inVertex = inVertex;
+            this.outVertex = outVertex;
+        }
     }
 
     private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion) {
         super(id, label, currentVersion);
+        isTxMode = graph instanceof TinkerTransactionGraph;
         this.graph = graph;
-        this.outVertexId = outVertexId;
-        this.inVertexId = inVertexId;
+        if (isTxMode) {
+            this.outVertexId = outVertexId;
+            this.inVertexId = inVertexId;
+        }
         this.allowNullPropertyValues = graph.features().edge().supportsNullPropertyValues();
         TinkerIndexHelper.autoUpdateIndex(this, T.label.getAccessor(), this.label, null);
     }
@@ -108,8 +119,14 @@ public final class TinkerEdge extends TinkerElement implements Edge {
     }
 
     @Override
-    // plan D: put synchronized
     public Object clone() {
+        if (!isTxMode) {
+            // shallow copy for non-tx mode
+            final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+            edge.properties = properties;
+            return edge;
+        }
+
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion);
 
         if (properties != null) {
@@ -124,12 +141,12 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Vertex outVertex() {
-        return graph.vertex(this.outVertexId);
+        return isTxMode ? graph.vertex(outVertexId) : outVertex;
     }
 
     @Override
     public Vertex inVertex() {
-        return graph.vertex(this.inVertexId);
+        return isTxMode ? graph.vertex(inVertexId) : inVertex;
     }
 
     @Override

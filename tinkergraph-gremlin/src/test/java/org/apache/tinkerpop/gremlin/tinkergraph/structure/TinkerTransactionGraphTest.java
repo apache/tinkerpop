@@ -231,10 +231,10 @@ public class TinkerTransactionGraphTest {
         // should remove reference from edge to parent vertices
         final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
         final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
-        assertNull(v1afterTx.inEdges);
-        assertEquals(0, v1afterTx.outEdges.get("tests").size());
-        assertEquals(0, v2afterTx.inEdges.get("tests").size());
-        assertNull(v2afterTx.outEdges);
+        assertNull(v1afterTx.inEdgesId);
+        assertEquals(0, v1afterTx.outEdgesId.get("tests").size());
+        assertEquals(0, v2afterTx.inEdgesId.get("tests").size());
+        assertNull(v2afterTx.outEdgesId);
 
         // should remove unused container
         assertEquals(0, g.getEdges().size());
@@ -296,10 +296,10 @@ public class TinkerTransactionGraphTest {
         // should remove reference from edge to parent vertices
         final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
         final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
-        assertNull(v1afterTx.inEdges);
-        assertEquals(0, v1afterTx.outEdges.get("tests").size());
-        assertEquals(0, v2afterTx.inEdges.get("tests").size());
-        assertNull(v2afterTx.outEdges);
+        assertNull(v1afterTx.inEdgesId);
+        assertEquals(0, v1afterTx.outEdgesId.get("tests").size());
+        assertEquals(0, v2afterTx.inEdgesId.get("tests").size());
+        assertNull(v2afterTx.outEdgesId);
 
         countElementsInNewThreadTx(g, 2, 0);
     }
@@ -694,15 +694,15 @@ public class TinkerTransactionGraphTest {
         vertex.properties = new ConcurrentHashMap<>();
         vertex.properties.put("test", new ArrayList<>());
         vertex.properties.get("test").add(vp);
-        vertex.inEdges = new ConcurrentHashMap<>();
-        vertex.inEdges.put("label", ConcurrentHashMap.newKeySet());
-        vertex.inEdges.get("label").add(edge);
+        vertex.inEdgesId = new ConcurrentHashMap<>();
+        vertex.inEdgesId.put("label", ConcurrentHashMap.newKeySet());
+        vertex.inEdgesId.get("label").add(edge);
 
         final TinkerVertex copy = (TinkerVertex) vertex.clone();
         vertex.properties.get("test").remove(vp);
         assertEquals(1, copy.properties.get("test").size());
-        vertex.inEdges.get("label").remove(edge);
-        assertEquals(1, copy.inEdges.get("label").size());
+        vertex.inEdgesId.get("label").remove(edge);
+        assertEquals(1, copy.inEdgesId.get("label").size());
     }
 
     @Test

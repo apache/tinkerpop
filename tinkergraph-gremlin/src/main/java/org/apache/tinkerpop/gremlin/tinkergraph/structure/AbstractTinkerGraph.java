@@ -38,8 +38,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
@@ -279,27 +277,9 @@ public abstract class AbstractTinkerGraph implements Graph {
     }
 
     ///////////// Utility methods ///////////////
-    protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        touch(vertex);
-        if (null == vertex.outEdges) vertex.outEdges = new ConcurrentHashMap<>();
-        Set<Object> edges = vertex.outEdges.get(label);
-        if (null == edges) {
-            edges = ConcurrentHashMap.newKeySet();
-            vertex.outEdges.put(label, edges);
-        }
-        edges.add(edge.id());
-    }
+    protected abstract void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
-    protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        touch(vertex);
-        if (null == vertex.inEdges) vertex.inEdges = new ConcurrentHashMap<>();
-        Set<Object> edges = vertex.inEdges.get(label);
-        if (null == edges) {
-            edges = ConcurrentHashMap.newKeySet();;
-            vertex.inEdges.put(label, edges);
-        }
-        edges.add(edge.id());
-    }
+    protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
     ///////////// Features ///////////////
 

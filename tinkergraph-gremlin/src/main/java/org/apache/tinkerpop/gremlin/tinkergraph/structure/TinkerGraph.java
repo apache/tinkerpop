@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -182,22 +184,22 @@ public final class TinkerGraph extends AbstractTinkerGraph {
 
     @Override
     public void removeEdge(final Object edgeId) {
-        if (!edges.containsKey(edgeId)) return;
-
-        final TinkerEdge edge = (TinkerEdge) edges.get(edgeId);
+        final Edge edge = edges.get(edgeId);
+        // already removed?
+        if (null == edge) return;
 
         final TinkerVertex outVertex = (TinkerVertex) edge.outVertex();
         final TinkerVertex inVertex = (TinkerVertex) edge.inVertex();
 
         if (null != outVertex && null != outVertex.outEdges) {
-            final Set<Object> edges = outVertex.outEdges.get(edge.label());
+            final Set<Edge> edges = outVertex.outEdges.get(edge.label());
             if (null != edges)
-                edges.remove(edge.id());
+                edges.removeIf(e -> e.id() == edgeId);
         }
         if (null != inVertex && null != inVertex.inEdges) {
-            final Set<Object> edges = inVertex.inEdges.get(edge.label());
+            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
             if (null != edges)
-                edges.remove(edge.id());
+                edges.removeIf(e -> e.id() == edgeId);
         }
 
         this.edges.remove(edgeId);
@@ -278,6 +280,28 @@ public final class TinkerGraph extends AbstractTinkerGraph {
                         IteratorUtils.filter((Iterator<Vertex>) iterator, t -> this.graphComputerView.legalVertex(t)) :
                         IteratorUtils.filter((Iterator<Edge>) iterator, t -> this.graphComputerView.legalEdge(t.outVertex(), t))) :
                 iterator;
+    }
+
+    @Override
+    protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        Set<Edge> edges = vertex.outEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.outEdges.put(label, edges);
+        }
+        edges.add(edge);
+    }
+
+    @Override
+    protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
+        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        Set<Edge> edges = vertex.inEdges.get(label);
+        if (null == edges) {
+            edges = new HashSet<>();
+            vertex.inEdges.put(label, edges);
+        }
+        edges.add(edge);
     }
 
     /**

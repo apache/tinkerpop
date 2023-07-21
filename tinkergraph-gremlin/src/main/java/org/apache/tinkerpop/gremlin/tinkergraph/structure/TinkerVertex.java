@@ -44,32 +44,46 @@ import java.util.stream.Collectors;
 public final class TinkerVertex extends TinkerElement implements Vertex {
 
     protected Map<String, List<VertexProperty>> properties;
-    protected Map<String, Set<Object>> outEdges;
-    protected Map<String, Set<Object>> inEdges;
+    // Edges should be used by non-transaction Graph due to performance
+    protected Map<String, Set<Edge>> outEdges;
+    protected Map<String, Set<Edge>> inEdges;
+    // Edge ids are for transactional Graph
+    protected Map<String, Set<Object>> outEdgesId;
+    protected Map<String, Set<Object>> inEdgesId;
     private final AbstractTinkerGraph graph;
     private boolean allowNullPropertyValues;
+    private final boolean isTxMode;
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         super(id, label);
         this.graph = graph;
+        this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         super(id, label, currentVersion);
         this.graph = graph;
+        this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
 
     @Override
-    // plan D: put synchronized
     public Object clone() {
-        final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
-        if (inEdges != null)
-            vertex.inEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdges);
+        if (!isTxMode) {
+            final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+            vertex.inEdgesId = inEdgesId;
+            vertex.outEdgesId = outEdgesId;
+            vertex.properties = properties;
+            return vertex;
+        }
 
-        if (outEdges != null)
-            vertex.outEdges = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) outEdges);
+        final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+        if (inEdgesId != null)
+            vertex.inEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdgesId);
+
+        if (outEdgesId != null)
+            vertex.outEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) outEdgesId);
 
         if (properties != null) {
             final ConcurrentHashMap<String, List<VertexProperty>> result = new ConcurrentHashMap<>();
@@ -194,7 +208,9 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        final Iterator<Edge> edgeIterator = (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
+        final Iterator<Edge> edgeIterator = isTxMode
+                ? (Iterator) TinkerHelper.getEdgesTx(this, direction, edgeLabels)
+                : (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
         return TinkerHelper.inComputerMode(this.graph) ?
                 IteratorUtils.filter(edgeIterator, edge -> this.graph.graphComputerView.legalEdge(this, edge)) :
                 edgeIterator;
@@ -202,13 +218,16 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return TinkerHelper.inComputerMode(this.graph) ?
-                direction.equals(Direction.BOTH) ?
-                        IteratorUtils.concat(
-                                IteratorUtils.map(this.edges(Direction.OUT, edgeLabels), Edge::inVertex),
-                                IteratorUtils.map(this.edges(Direction.IN, edgeLabels), Edge::outVertex)) :
-                        IteratorUtils.map(this.edges(direction, edgeLabels), edge -> edge.vertices(direction.opposite()).next()) :
-                (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+        if (TinkerHelper.inComputerMode(this.graph))
+            return direction.equals(Direction.BOTH) ?
+                    IteratorUtils.concat(
+                            IteratorUtils.map(this.edges(Direction.OUT, edgeLabels), Edge::inVertex),
+                            IteratorUtils.map(this.edges(Direction.IN, edgeLabels), Edge::outVertex)) :
+                    IteratorUtils.map(this.edges(direction, edgeLabels), edge -> edge.vertices(direction.opposite()).next());
+
+        return isTxMode
+                ? (Iterator) TinkerHelper.getVerticesTx(this, direction, edgeLabels)
+                : (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 
     @Override
