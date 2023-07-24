@@ -171,7 +171,7 @@ limitations under the License.
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.3.3</mockito.version>
         <netty.version>4.1.86.Final</netty.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.33</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.0.0</spark.version>
         <powermock.version>2.0.9</powermock.version>
