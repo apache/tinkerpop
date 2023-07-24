@@ -49,6 +49,7 @@ updates:
       - "go"
       - "dependencies"
   - package-ecosystem: "maven"
+    open-pull-requests-limit: 10
     directory: "/"
     schedule:
       interval: "daily"
