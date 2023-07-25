@@ -26,7 +26,9 @@ import org.neo4j.tinkerpop.api.Neo4jEntity;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public final class Neo4jProperty<V> implements Property<V> {
 
     protected final Element element;
