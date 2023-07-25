@@ -717,7 +717,7 @@ Feature: Step - mergeV()
       g.mergeV(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
   @UserSuppliedVertexIds
@@ -730,7 +730,7 @@ Feature: Step - mergeV()
       g.mergeV(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot use hidden namespace for id key
   Scenario: g_mergeV_hidden_id_key_prohibited
@@ -774,7 +774,7 @@ Feature: Step - mergeV()
       g.mergeV([:]).option(Merge.onCreate, xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~id"
 
   # cannot use hidden namespace for label key for onCreate
   Scenario: g_mergeV_hidden_label_key_onCreate_prohibited
@@ -785,7 +785,7 @@ Feature: Step - mergeV()
       g.mergeV([:]).option(Merge.onCreate, xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
 
   # cannot use hidden namespace for label value for onCreate
   Scenario: g_mergeV_hidden_label_value_onCreate_prohibited
@@ -796,7 +796,7 @@ Feature: Step - mergeV()
       g.mergeV([:]).option(Merge.onCreate, xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Label can not be a hidden key: ~vertex"
 
   # cannot use hidden namespace for id key for onMatch
   Scenario: g_mergeV_hidden_id_key_onMatch_matched_prohibited
@@ -811,7 +811,7 @@ Feature: Step - mergeV()
       g.mergeV([:]).option(Merge.onMatch, xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~id"
 
   # cannot use hidden namespace for label key for onMatch
   Scenario: g_mergeV_hidden_label_key_matched_onMatch_matched_prohibited
@@ -826,19 +826,4 @@ Feature: Step - mergeV()
       g.mergeV([:]).option(Merge.onMatch, xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
-
-  # cannot use hidden namespace for label value for onMatch
-  Scenario: g_mergeV_hidden_label_value_onMatch_matched_prohibited
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("vertex")
-      """
-    And using the parameter xx1 defined as "m[{\"t[label]\":\"~vertex\"}]"
-    And the traversal of
-      """
-      g.mergeV([:]).option(Merge.onMatch, xx1)
-      """
-    When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"

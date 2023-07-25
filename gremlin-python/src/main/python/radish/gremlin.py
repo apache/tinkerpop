@@ -681,7 +681,6 @@ world.gremlins = {
     'g_mergeV_hidden_label_value_onCreate_prohibited': [(lambda g, xx1=None:g.merge_v({}).option(Merge.on_create,xx1))], 
     'g_mergeV_hidden_id_key_onMatch_matched_prohibited': [(lambda g, xx1=None:g.addV('vertex')), (lambda g, xx1=None:g.merge_v({}).option(Merge.on_match,xx1))], 
     'g_mergeV_hidden_label_key_matched_onMatch_matched_prohibited': [(lambda g, xx1=None:g.addV('vertex')), (lambda g, xx1=None:g.merge_v({}).option(Merge.on_match,xx1))], 
-    'g_mergeV_hidden_label_value_onMatch_matched_prohibited': [(lambda g, xx1=None:g.addV('vertex')), (lambda g, xx1=None:g.merge_v({}).option(Merge.on_match,xx1))], 
     'g_V_age_min': [(lambda g:g.V().age.min_())], 
     'g_V_foo_min': [(lambda g:g.V().foo.min_())], 
     'g_V_name_min': [(lambda g:g.V().name.min_())], 

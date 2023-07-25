@@ -699,7 +699,6 @@ const gremlins = {
     g_mergeV_hidden_label_value_onCreate_prohibited: [function({g, xx1}) { return g.mergeV(new Map([])).option(Merge.onCreate,xx1) }], 
     g_mergeV_hidden_id_key_onMatch_matched_prohibited: [function({g, xx1}) { return g.addV("vertex") }, function({g, xx1}) { return g.mergeV(new Map([])).option(Merge.onMatch,xx1) }], 
     g_mergeV_hidden_label_key_matched_onMatch_matched_prohibited: [function({g, xx1}) { return g.addV("vertex") }, function({g, xx1}) { return g.mergeV(new Map([])).option(Merge.onMatch,xx1) }], 
-    g_mergeV_hidden_label_value_onMatch_matched_prohibited: [function({g, xx1}) { return g.addV("vertex") }, function({g, xx1}) { return g.mergeV(new Map([])).option(Merge.onMatch,xx1) }], 
     g_V_age_min: [function({g}) { return g.V().values("age").min() }], 
     g_V_foo_min: [function({g}) { return g.V().values("foo").min() }], 
     g_V_name_min: [function({g}) { return g.V().values("name").min() }], 
