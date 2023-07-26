@@ -122,7 +122,7 @@ Feature: Step - concat()
     Given the modern graph
     And the traversal of
       """
-      g.inject("hello", "hi").concat(__.V().values("name"))
+      g.inject("hello", "hi").concat(__.V().order().by(id).values("name"))
       """
     When iterated to list
     Then the result should be unordered
@@ -158,7 +158,8 @@ Feature: Step - concat()
       | Mr.josh |
       | Mr.peter |
 
-  Scenario: g_hasLabelXsoftwareX_asXaX_valuesXnameX_concatXusesX_concatXselectXaXvaluesXlangX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_hasLabelXsoftwareX_asXaX_valuesXnameX_concatXunsesX_concatXselectXaXvaluesXlangX
     Given the modern graph
     And the traversal of
       """

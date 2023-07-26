@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -122,5 +124,33 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
         this.integrateChild(this.concatTraversal);
+    }
+
+    @Override
+    public ConcatStep<S> clone() {
+        final ConcatStep<S> clone = (ConcatStep<S>) super.clone();
+        if (null != this.concatTraversal)
+            clone.concatTraversal = this.concatTraversal.clone();
+        return clone;
+    }
+
+    @Override
+    public List<Traversal.Admin<S, String>> getLocalChildren() {
+        return null == this.concatTraversal ? Collections.emptyList() : Collections.singletonList(this.concatTraversal);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.concatTraversal);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        if (null != this.concatTraversal)
+            result = super.hashCode() ^ this.concatTraversal.hashCode();
+        if (null != this.stringArgsResult)
+            result = super.hashCode() ^ this.stringArgsResult.hashCode();
+        return result;
     }
 }
