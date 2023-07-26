@@ -206,7 +206,7 @@ Feature: Step - mergeE()
       g.mergeE([:])
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
 
   Scenario: g_V_mergeEXemptyX_two_exist
     Given the empty graph
@@ -237,7 +237,7 @@ Feature: Step - mergeE()
       g.mergeE(null)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
 
   # Directions not specified
   Scenario: g_V_mergeEXnullX
@@ -251,7 +251,7 @@ Feature: Step - mergeE()
       g.V().mergeE(null)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX
@@ -332,7 +332,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Vertex id could not be resolved from mergeE"
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX
@@ -345,7 +345,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Vertex id could not be resolved from mergeE"
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists
@@ -757,7 +757,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.IN in onCreate
   @UserSuppliedVertexIds
@@ -775,7 +775,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
   @UserSuppliedVertexIds
@@ -793,7 +793,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
   @UserSuppliedVertexIds
@@ -812,7 +812,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(onCreate, xx2)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # combining mergeV and mergeE when vertices do not exist
   @UserSuppliedVertexIds
