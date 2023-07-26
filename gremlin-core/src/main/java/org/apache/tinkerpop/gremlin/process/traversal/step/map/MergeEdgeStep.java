@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -265,6 +266,10 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         Iterator<Edge> edges = searchEdges(mergeMap);
 
         if (onMatchTraversal != null) {
+            if (onMatchTraversal instanceof ConstantTraversal) {
+                final Map matchMap = onMatchTraversal.next();
+                validateMapInput(matchMap, true);
+            }
 
             edges = IteratorUtils.peek(edges, e -> {
 
