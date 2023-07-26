@@ -1389,7 +1389,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        gremlin-annotations/src/main/java:gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy/target/generated-sources/annotations:gremlin-groovy/target/generated-sources/groovy-stubs/main:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
+                                        gremlin-annotations/src/main/java:gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy/target/generated-sources/annotations:gremlin-groovy/target/generated-sources/groovy-stubs/main:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java:gremlin-util/src/main/java
                                     </sourcepath>
                                     <dependencySourceIncludes>
                                         <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
@@ -1632,7 +1632,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java
+                                        gremlin-language/target/generated-sources/antlr4:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-util/src/main/java
                                     </sourcepath>
                                     <sourceFileIncludes>
                                         <!-- jsr223 -->
@@ -1702,6 +1702,9 @@ limitations under the License.
                                         </include>
                                         <!-- driver -->
                                         <include>org/apache/tinkerpop/gremlin/driver/*.java
+                                        </include>
+                                        <!-- util -->
+                                        <include>org/apache/tinkerpop/gremlin/util/*.java
                                         </include>
                                     </sourceFileIncludes>
                                     <additionalDependencies>

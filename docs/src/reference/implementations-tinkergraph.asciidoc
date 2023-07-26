@@ -268,15 +268,15 @@ To use the embedded TinkerTransactionGraph in Gremlin Console:
 
 [gremlin-groovy]
 ----
-gremlin> graph = TinkerTransactionGraph.open() <1>
-gremlin> g = traversal().withEmbedded(graph) <2>
-gremlin> g.addV('test').property('name','one')
-gremlin> g.tx().commit() <3>
-gremlin> g.V().valueMap()
-gremlin> g.addV('test').property('name','two') <4>
-gremlin> g.V().valueMap()
-gremlin> g.tx().rollback() <5>
-gremlin> g.V().valueMap()
+graph = TinkerTransactionGraph.open() <1>
+g = traversal().withEmbedded(graph) <2>
+g.addV('test').property('name','one')
+g.tx().commit() <3>
+g.V().valueMap()
+g.addV('test').property('name','two') <4>
+g.V().valueMap()
+g.tx().rollback() <5>
+g.V().valueMap()
 ----
 
 <1> Open transactional graph.

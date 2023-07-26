@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM ubuntu:bionic
+FROM --platform=linux/amd64 ubuntu:bionic
 
 LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
