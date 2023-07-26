@@ -854,7 +854,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
 
   # cannot use hidden namespace for label key for onMatch
-  Scenario: g_mergeEXnullX
+  Scenario: g_V_asXvX_mergeEXxx1X_optionXMerge_onMatch_xx2X_optionXMerge_outV_selectXvXX_optionXMerge_inV_selectXvXX
     Given the empty graph
     And the graph initializer of
       """
