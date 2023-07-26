@@ -220,19 +220,14 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
-
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
     it('should commit a simple transaction', async function () {
       const g = traversal().withRemote(txConnection);
@@ -263,19 +258,15 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - rollback', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
 
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
     it('should rollback a simple transaction', async function() {
       const g = traversal().withRemote(txConnection);

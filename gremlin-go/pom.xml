@@ -29,7 +29,6 @@ limitations under the License.
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping go tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
     </properties>
     <build>

@@ -56,7 +56,6 @@ services:
       - ../gremlin-tools/gremlin-socket-server/conf:/python_app/gremlin-socket-server/conf/
 
     environment:
-      - TEST_TRANSACTIONS=${TEST_TRANSACTIONS:-true}
       - DEBIAN_FRONTEND=noninteractive
       - KRB5_CONFIG=./gremlin-test-server/krb5.conf
       - KRB5CCNAME=./test-tkt.cc

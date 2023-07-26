@@ -23,90 +23,72 @@
 
 using System;
 using System.Threading.Tasks;
+using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
-    public class GraphTraversalTransactionTests
+    public class GraphTraversalTransactionTests : IDisposable
     {
-        public static object[][] Graphs => new[] 
-        {
-            new [] { "gtx" },
-        };
+        private readonly IRemoteConnection _connection = new RemoteConnectionFactory().CreateRemoteConnection("gtx");
 
-        [IgnoreIfTransactionsNotSupportedFact]
-        [MemberData(nameof(Graphs))]        
-        public async Task ShouldSupportRemoteTransactionsCommit(string graph)
+        [Fact]
+        public async Task ShouldSupportRemoteTransactionsCommit()
         {
-            var g = GetGts(graph);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
             await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate()).ConfigureAwait(false);
-
+            
             // Assert within the transaction
             var count = await gtx.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
-
+            
             // Vertices should not be visible in a different transaction before commiting
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(0, count);
-
+            
             // Now commit changes to test outside of the transaction
             await tx.CommitAsync().ConfigureAwait(false);
 
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
-
-            EmptyGraph(g);
         }
-
-        [IgnoreIfTransactionsNotSupportedFact]
-        [MemberData(nameof(Graphs))]
-        public async Task ShouldSupportRemoteTransactionsRollback(string graph)
+        
+        [Fact]
+        public async Task ShouldSupportRemoteTransactionsRollback()
         {
-            var g = GetGts(graph);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
             await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate()).ConfigureAwait(false);
-
+            
             // Assert within the transaction
             var count = await gtx.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(2, count);
-
+            
             // Now rollback changes to test outside of the transaction
             await tx.RollbackAsync().ConfigureAwait(false);
 
             count = await g.V().Count().Promise(t => t.Next()).ConfigureAwait(false);
             Assert.Equal(0, count);
-
-            EmptyGraph(g);
+            
+            g.V().Count().Next();
         }
 
-        private GraphTraversalSource GetGts(string graph)
+        public void Dispose()
         {
-            return AnonymousTraversalSource.Traversal().WithRemote(new RemoteConnectionFactory().CreateRemoteConnection(graph));
+            EmptyGraph();
         }
 
-        private static void EmptyGraph(GraphTraversalSource g)
+        private void EmptyGraph()
         {
+            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
             g.V().Drop().Iterate();
         }
     }
-
-    public sealed class IgnoreIfTransactionsNotSupportedFact : TheoryAttribute
-    {
-        public IgnoreIfTransactionsNotSupportedFact()
-        {
-            if (!TransactionsSupported)
-            {
-                Skip = "Transactions not supported";
-            }
-        }
-
-        private static bool TransactionsSupported =>
-            Convert.ToBoolean(Environment.GetEnvironmentVariable("TEST_TRANSACTIONS"));
-    }
+    
 }

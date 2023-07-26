@@ -53,7 +53,6 @@ services:
       - ../../../../../gremlin-tools/gremlin-socket-server/conf:/js_app/gremlin-socket-server/conf/
     environment:
       - DOCKER_ENVIRONMENT=true
-      - TEST_TRANSACTIONS=true
     working_dir: /js_app
     command: >
       bash -c "npm config set cache /tmp --global
