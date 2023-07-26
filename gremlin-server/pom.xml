@@ -105,12 +105,6 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>neo4j-gremlin</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.github.hakky54</groupId>
             <artifactId>logcaptor</artifactId>
             <scope>test</scope>
