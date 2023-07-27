@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -723,12 +724,251 @@ public class TinkerTransactionGraphTest {
     // utility methods
 
     private void countElementsInNewThreadTx(final TinkerTransactionGraph g, final long verticesCount, final long edgesCount) throws InterruptedException {
+        final AtomicLong vCount = new AtomicLong(-1);
+        final AtomicLong eCount = new AtomicLong(-1);
         final Thread thread = new Thread(() -> {
             final GraphTraversalSource gtx = g.tx().begin();
-            assertEquals(verticesCount, (long) gtx.V().count().next());
-            assertEquals(edgesCount, (long) gtx.E().count().next());
+            vCount.set(gtx.V().count().next());
+            eCount.set(gtx.E().count().next());
         });
         thread.start();
         thread.join();
+
+        assertEquals(verticesCount, vCount.get());
+        assertEquals(edgesCount, eCount.get());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().next();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgeForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.E().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgeDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+        gtx.tx().commit();
+
+        gtx.E().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.E().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.V().property("b", 2).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.V().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.V().properties().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.V().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.V().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexPropertyUpdateForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property("a", 1L).iterate();
+        gtx.tx().commit();
+
+        gtx.V().property("a", 2L).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set((long) gtx2.V().values("a").next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.V().values("a").next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).iterate();
+        gtx.tx().commit();
+
+        gtx.E().property("a", 1).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(0, gtx2Read.get());
+        assertEquals(1, (long) gtx.E().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).property("a", 1).iterate();
+        gtx.tx().commit();
+
+        gtx.E().properties().drop().iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set(gtx2.E().properties().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(0, (long) gtx.E().properties().count().next());
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfEdgePropertyUpdateForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("test").from(v1).to(v2).property("a", 1L).iterate();
+        gtx.tx().commit();
+
+        gtx.E().property("a", 2L).iterate();
+
+        final AtomicLong gtx2Read = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2Read.set((long) gtx2.E().values("a").next());
+        });
+        thread.start();
+        thread.join();
+
+        assertEquals(1, gtx2Read.get());
+        assertEquals(2, (long) gtx.E().values("a").next());
     }
 }

@@ -458,6 +458,8 @@ the JVM. The following are only examples used by TinkerPop's automated tests and
     --add-opens=java.base/java.net=ALL-UNNAMED
 ----
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2703[TINKERPOP-2703]
+
 === Upgrading for Providers
 
 ==== Graph Driver Providers
