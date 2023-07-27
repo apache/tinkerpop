@@ -43,7 +43,7 @@ public final class LabelP extends P<String> {
      * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
      */
     @Deprecated
-    public static final class LabelBiPredicate implements BiPredicate<String, String>, Serializable {
+    public static final class LabelBiPredicate implements PBiPredicate<String, String>, Serializable {
         private static final LabelBiPredicate INSTANCE = new LabelBiPredicate();
 
         private LabelBiPredicate() {
