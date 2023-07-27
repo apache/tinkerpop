@@ -853,3 +853,18 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
 
+  # cannot use hidden namespace for label key for onMatch
+  Scenario: g_V_asXvX_mergeEXxx1X_optionXMerge_onMatch_xx2X_optionXMerge_outV_selectXvXX_optionXMerge_inV_selectXvXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"M[outV]\", \"D[IN]\":\"M[inV]\"}]"
+    And using the parameter xx2 defined as "m[{\"~label\":\"vertex\"}]"
+    And the traversal of
+      """
+      g.V().as("v").mergeE(xx1).option(Merge.onMatch,xx2).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"

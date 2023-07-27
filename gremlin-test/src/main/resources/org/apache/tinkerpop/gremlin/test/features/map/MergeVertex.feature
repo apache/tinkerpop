@@ -827,3 +827,14 @@ Feature: Step - mergeV()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
+
+  # cannot use hidden namespace for label key for onMatch
+  Scenario: g_mergeV_hidden_label_key_onMatch_matched_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
+    And the traversal of
+      """
+      g.mergeV([:]).option(Merge.onMatch, xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
