@@ -34,8 +34,8 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.slf4j.Logger;
@@ -85,6 +85,12 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     @Override
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
         this.graphFilter.setEdgeFilter(edgeFilter);
+        return this;
+    }
+
+    @Override
+    public GraphComputer vertexProperties(final Traversal<Vertex, ? extends Property<?>> vertexPropertyFilter) {
+        this.graphFilter.setVertexPropertyFilter(vertexPropertyFilter);
         return this;
     }
 
