@@ -31,10 +31,11 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asc
 
 ==== String concat() Step
 
-Previously string manipulations were only possible using closures, which may or may not be supported by different providers.
-Here we introduce the `concat()`-step as the beginning of a series of string manipulation steps aimed to replace the usage of closure.
+String manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
+different providers. In 3.7.0, we introduce the `concat()`-step as the beginning of a series of string manipulation steps
+aimed to replace the usage of closure.
 
-Previously in 3.6, one needs to use closure if one wishes to add a new vertex with a label like an existing vertex but
+The following example demonstrates the use of a closure to add a new vertex with a label like an existing vertex but
 with some prefix attached:
 
 [source,text]
@@ -45,7 +46,7 @@ gremlin> g.V(13).label()
 ==>prefix_person
 ----
 
-As of this version, `concat()` can be used to operate necessary string concatenations in the Gremlin language syntax.
+With `concat()` step this operation can be performed with standard Gremlin syntax:
 
 [source,text]
 ----
@@ -54,6 +55,8 @@ gremlin> g.addV(constant("prefix_").concat(__.V(1).label()))
 gremlin> g.V(14).label()
 ==>prefix_person
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
 ==== union() Start Step
 
@@ -168,7 +171,7 @@ been abandoned and is only compatible with Neo4j version 3.4, which reached end 
 
 As of this version, we are introducing the transactional TinkerGraph, TinkerTransactionGraph, which is TinkerGraph with
 transaction capabilities. The TinkerTransactionGraph has `read committed` isolation level, which is the same as the
-Neo4jGraph provided in `neo4j-gremlin`. Only ThreadLocal transactions are implemented, therefore embedded graph
+Neo4jGraph provided in `neo4j-gremlin`. Only `ThreadLocal` transactions are implemented, therefore embedded graph
 transactions may not be fully supported. These transaction semantics may not fit the use case for some production
 scenarios that require strict ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used
 as a Graph for test environments where you still require support for transactions.
@@ -280,27 +283,23 @@ and not for production use.
 
 Addition documentation can be found in <<transactions,Transactions>> section.
 
-
 ==== Properties on Elements
 
-===== Introduction
+One of the peculiar aspects of using Gremlin remotely is that if you do something like `v = g.V().next()` you will
+find that the `v`, the `Vertex` object, does not have any properties associated with it, even if the database
+associates some with it. It will be a "reference" only, in that it will only have an `id` and `label`. The reason and
+history for this approach can be found on the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[dev list].
+While this has been a long-standing way TinkerPop operates, it is a confusing point for new users and often forces
+some inconvenience on folks by requiring them to alter queries to transform graph elements to other forms that can
+carry the property data (e.g. `elementMap()`).
 
-By default properties on `Element` are now returned for OLTP requests. Gremlin Server 3.5 and 3.6 can return properties only in some special cases. 
-More history details about serialization of properties can be found in the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[Stephen's post].
+With this new release, properties are finally available on graph elements for all programming languages and are now
+returned by default for OLTP requests. Gremlin Server 3.5 and 3.6 can return properties only in some special cases.
 
-===== Behavior for OLAP queries
+Queries still won't return properties on Elements for OLAP. It deals with references only as it always have
+irrespective of remote or local execution.
 
-Queries still won't return properties on Elements. The main reason for this is performance considerations.
-If you need to get a property, then this can be explicitly configured with `HaltedTraverserStrategy`
-
-[source,java]
-----
-g.withComputer().withStrategies(HaltedTraverserFactoryStrategy.detached())
-----
-
-===== Output comparison for Gremlin Server 3.5/3.6 and 3.7
-
-Let's take a closer look at a Javascript GLV code example in 3.6 and 3.7:
+Consider the following example of this functionality with Javascript:
 
 [source,javascript]
 ----
@@ -311,8 +310,8 @@ console.log(JSON.stringify(result.first()));
 await client.close();
 ----
 
-The result will be different depending on the version of Gremlin Server.
-For 3.5/3.6:
+The result will be different depending on the version of Gremlin Server. For 3.5/3.6:
+
 [source,json]
 ----
 {"id":1,"label":"person"}
@@ -326,17 +325,19 @@ For 3.7:
 
 ===== Enabling the previous behavior
 
-The GLVs in 3.5/3.6 will not be able to work correctly with properties on Elements. If you don't need to get properties then you can do one of the following:
+Note that drivers from earlier versions like 3.5 and 3.6 will not be able to retrieve properties on elements. Older
+drivers connecting to 3.7.x servers should disable this functionality server-side in one of two ways:
 
-* To configure Gremlin Server to not return properties, update Gremlin Server initialization script with `ReferenceElementStrategy`.
-This method is better to use with 3.5/3.6 GLVs.
-For example 
+*Configure Gremlin Server to not return properties* - update Gremlin Server initialization script with
+`ReferenceElementStrategy`. This configuration is essentially the one used in older versions of the server by default.
+
 [source,groovy]
 ----
 globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 ----
 
-* Use config per request `with('materializeProperties', 'tokens')`
+*Disable property inclusion per request* - the `materializeProperties` has a `tokens` option for this purpose.
+
 [source,csharp]
 ----
 g.With("materializeProperties", "tokens").V(1).Next()
@@ -344,7 +345,23 @@ g.With("materializeProperties", "tokens").V(1).Next()
 
 ===== Possible issues
 
-ReferenceElement-type objects are no longer returned - you get a DetachedElement from remote requests. If you have not been implementing the `Element` interfaces then you will need to update the code to use interfaces like `Vertex` and `Edge`.
+`ReferenceElement`-type objects are no longer returned by the server by default. When upgrading existing code to 3.7.0,
+it is possible that this change could have some impact if you directly declared use of those classes. For example:
+
+[source,java]
+----
+ReferenceVertex v = g.V().next();
+----
+
+would need to be changed to:
+
+[source,java]
+----
+Vertex v = g.V().next();
+----
+
+In other words, it would be best to code to the various structural interfaces like `Vertex` and `Edge` rather than
+specific implementations.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
 
@@ -427,6 +444,8 @@ either --add-opens or --add-exports certain modules to enable it to work with Ja
 serialization library which is used with OLAP. If you use OLTP, then you may not need to add any of these options to
 the JVM. The following are only examples used by TinkerPop's automated tests and are placed here for convenience.
 
+[source,text]
+----
     --add-opens=java.base/java.io=ALL-UNNAMED
     --add-opens=java.base/java.nio=ALL-UNNAMED
     --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
@@ -437,6 +456,7 @@ the JVM. The following are only examples used by TinkerPop's automated tests and
     --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
     --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
     --add-opens=java.base/java.net=ALL-UNNAMED
+----
 
 === Upgrading for Providers
 
