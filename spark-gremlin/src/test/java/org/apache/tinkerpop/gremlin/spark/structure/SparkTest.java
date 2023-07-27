@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
@@ -71,7 +72,10 @@ public class SparkTest extends AbstractSparkTest {
             assertEquals(i, Spark.getRDDs().size());
             configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, prefix + i);
             Graph graph = GraphFactory.open(configuration);
-            graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(1).create(graph)).submit().get();
+            graph.compute(SparkGraphComputer.class)
+                .persist(GraphComputer.Persist.VERTEX_PROPERTIES)
+                .vertexProperties(__.properties("dummy"))
+                .program(PageRankVertexProgram.build().iterations(1).create(graph)).submit().get();
             assertNotNull(Spark.getRDD(graphRDDName));
             assertEquals(i + 1, Spark.getRDDs().size());
         }

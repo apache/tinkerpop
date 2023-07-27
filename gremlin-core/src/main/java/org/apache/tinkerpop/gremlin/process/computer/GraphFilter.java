@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
@@ -35,6 +36,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -81,6 +83,7 @@ public final class GraphFilter implements Cloneable, Serializable {
 
     private Traversal.Admin<Vertex, Vertex> vertexFilter = null;
     private Traversal.Admin<Vertex, Edge> edgeFilter = null;
+    private Traversal.Admin<Vertex, ? extends Property<?>> vertexPropertyFilter = null;
     private Map<Direction, Map<String, Legal>> edgeLegality = new EnumMap<>(Direction.class);
     private boolean allowNoEdges = false;
 
@@ -183,6 +186,16 @@ public final class GraphFilter implements Cloneable, Serializable {
     }
 
     /**
+     * Set the filter for selecting vertex properties from the vertices.
+     *
+     * @param vertexPropertyFilter The {@link Traversal} that will either let the vertex property pass or not.
+     */
+    public void setVertexPropertyFilter(final Traversal<Vertex, ? extends Property<?>> vertexPropertyFilter) {
+        this.vertexPropertyFilter = vertexPropertyFilter.asAdmin().clone();
+    }
+
+
+    /**
      * Returns true if the provided vertex meets the vertex-filter criteria.
      * If no vertex filter is provided, then the vertex is considered legal.
      *
@@ -207,6 +220,19 @@ public final class GraphFilter implements Cloneable, Serializable {
     }
 
     /**
+     * Returns an iterator of legal vertex properties. If no vertex property
+     * filter is provided, then all vertex properties are returned.
+     *
+     * @param vertex the vertex whose legal vertex properties are to be accessed.
+     * @return an iterator of vertex properties that are {@link Legal#YES}.
+     */
+    public Iterator<? extends Property<?>> legalVertexProperties(final Vertex vertex) {
+        return null == this.vertexPropertyFilter ?
+            vertex.properties() :
+            TraversalUtil.applyAll(vertex, this.vertexPropertyFilter);
+    }
+
+    /**
      * Get the vertex filter associated with this graph filter.
      *
      * @return the vertex filter or null if no vertex filter was provided.
@@ -225,12 +251,21 @@ public final class GraphFilter implements Cloneable, Serializable {
     }
 
     /**
+     * Get the vertex property filter associated with this graph filter.
+     *
+     * @return the vertex property filter or null if not provided.
+     */
+    public Traversal.Admin<Vertex, ? extends Property<?>> getVertexPropertyFilter() {
+        return this.vertexPropertyFilter;
+    }
+
+    /**
      * Whether filters have been defined.
      *
-     * @return true if either a vertex or edge filter has been provided.
+     * @return true if either a vertex, edge filter, or vertex property filter has been provided.
      */
     public boolean hasFilter() {
-        return this.vertexFilter != null || this.edgeFilter != null;
+        return this.vertexFilter != null || this.edgeFilter != null || this.vertexPropertyFilter != null;
     }
 
     /**
@@ -249,6 +284,15 @@ public final class GraphFilter implements Cloneable, Serializable {
      */
     public boolean hasVertexFilter() {
         return this.vertexFilter != null;
+    }
+
+    /**
+     * Whether a vertex property filter has been defined.
+     *
+     * @return true if a vertex property filter was provided.
+     */
+    public boolean hasVertexPropertyFilter() {
+        return this.vertexPropertyFilter != null;
     }
 
     /**
@@ -312,19 +356,22 @@ public final class GraphFilter implements Cloneable, Serializable {
 
     @Override
     public int hashCode() {
-        return (null == this.edgeFilter ? 111 : this.edgeFilter.hashCode()) ^ (null == this.vertexFilter ? 222 : this.vertexFilter.hashCode());
+        int result = vertexFilter != null ? vertexFilter.hashCode() : 0;
+        result = 31 * result + (edgeFilter != null ? edgeFilter.hashCode() : 0);
+        result = 31 * result + (vertexPropertyFilter != null ? vertexPropertyFilter.hashCode() : 0);
+        return result;
     }
 
     @Override
-    public boolean equals(final Object object) {
-        if (!(object instanceof GraphFilter))
-            return false;
-        else if (((GraphFilter) object).hasVertexFilter() && !((GraphFilter) object).vertexFilter.equals(this.vertexFilter))
-            return false;
-        else if (((GraphFilter) object).hasEdgeFilter() && !((GraphFilter) object).edgeFilter.equals(this.edgeFilter))
-            return false;
-        else
-            return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GraphFilter that = (GraphFilter) o;
+
+        if (!Objects.equals(vertexFilter, that.vertexFilter)) return false;
+        if (!Objects.equals(edgeFilter, that.edgeFilter)) return false;
+        return Objects.equals(vertexPropertyFilter, that.vertexPropertyFilter);
     }
 
     @Override
@@ -335,6 +382,8 @@ public final class GraphFilter implements Cloneable, Serializable {
                 clone.vertexFilter = this.vertexFilter.clone();
             if (null != this.edgeFilter)
                 clone.edgeFilter = this.edgeFilter.clone();
+            if (null != this.vertexPropertyFilter)
+                clone.vertexPropertyFilter = this.vertexPropertyFilter.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -345,11 +394,25 @@ public final class GraphFilter implements Cloneable, Serializable {
     public String toString() {
         if (!this.hasFilter())
             return "graphfilter[none]";
-        else if (this.hasVertexFilter() && this.hasEdgeFilter())
-            return "graphfilter[" + this.vertexFilter + "," + this.edgeFilter + "]";
-        else if (this.hasVertexFilter())
-            return "graphfilter[" + this.vertexFilter + "]";
-        else
-            return "graphfilter[" + this.edgeFilter + "]";
+        StringBuilder builder = new StringBuilder("graphfilter[");
+        boolean needDelimiter = false;
+        if (this.hasVertexFilter()) {
+            builder.append(this.vertexFilter);
+            needDelimiter = true;
+        }
+        if (this.hasEdgeFilter()) {
+            if (needDelimiter) {
+                builder.append(",");
+            }
+            builder.append(this.edgeFilter);
+            needDelimiter = true;
+        }
+        if (this.hasVertexPropertyFilter()) {
+            if (needDelimiter) {
+                builder.append(",");
+            }
+            builder.append(this.vertexPropertyFilter);
+        }
+        return builder.append("]").toString();
     }
 }
