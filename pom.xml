@@ -1899,7 +1899,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>1.6.0</version>
+                        <version>3.1.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
