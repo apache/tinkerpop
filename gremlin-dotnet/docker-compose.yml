@@ -55,7 +55,6 @@ services:
       - ../gremlin-tools/gremlin-socket-server/conf:/gremlin-dotnet/gremlin-socket-server/conf/
     environment:
       - DOCKER_ENVIRONMENT=true
-      - TEST_TRANSACTIONS=true
     working_dir: /gremlin-dotnet
     command: >
       bash -c "dotnet test ./Gremlin.Net.sln -c Release;

@@ -60,7 +60,6 @@ services:
       - RUN_INTEGRATION_TESTS=true
       - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
-      - TEST_TRANSACTIONS=true
       - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-go
       - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/go_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
     working_dir: /go_app
