@@ -43,7 +43,9 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Neo4jNode> {
 
     public static final String LABEL_DELIMINATOR = "::";

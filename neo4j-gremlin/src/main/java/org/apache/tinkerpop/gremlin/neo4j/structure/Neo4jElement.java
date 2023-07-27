@@ -30,7 +30,9 @@ import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public abstract class Neo4jElement implements Element, WrappedElement<Neo4jEntity> {
     protected final Neo4jGraph graph;
     protected final Neo4jEntity baseElement;

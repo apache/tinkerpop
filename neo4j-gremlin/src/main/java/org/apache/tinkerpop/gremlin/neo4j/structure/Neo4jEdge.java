@@ -33,7 +33,9 @@ import java.util.Iterator;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRelationship> {
 
     public Neo4jEdge(final Neo4jRelationship relationship, final Neo4jGraph graph) {
