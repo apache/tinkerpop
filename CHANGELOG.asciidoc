@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.5.8 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed a bug in Gremlin.Net that can lead to an `InvalidOperationException` due to modifying a collection while iterating over it in the serializers.
+* Bumped Netty to 4.1.96
 
 
 [[release-3-5-7]]
