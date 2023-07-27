@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures.FEATURE_REMOVE_EDGES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ADD_PROPERTY;
@@ -529,6 +531,36 @@ public class TransactionMultiThreadedTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_PROPERTY)
+    public void shouldHandleAddingPropertyWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().rollback();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(1, gtx.V(v1.id()).values("test").next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = FEATURE_ADD_PROPERTY)
     public void shouldHandleAddingPropertyWhenOtherTxDeleteEdge() throws InterruptedException {
@@ -663,12 +695,17 @@ public class TransactionMultiThreadedTest extends AbstractGremlinTest {
     }
 
     private void countElementsInNewThreadTx(final GraphTraversalSource g, final long verticesCount, final long edgesCount) throws InterruptedException {
+        final AtomicLong vCount = new AtomicLong(-1);
+        final AtomicLong eCount = new AtomicLong(-1);
         final Thread thread = new Thread(() -> {
             final GraphTraversalSource gtx = g.tx().begin();
-            assertEquals(verticesCount, (long) gtx.V().count().next());
-            assertEquals(edgesCount, (long) gtx.E().count().next());
+            vCount.set(gtx.V().count().next());
+            eCount.set(gtx.E().count().next());
         });
         thread.start();
         thread.join();
+
+        assertEquals(verticesCount, vCount.get());
+        assertEquals(edgesCount, eCount.get());
     }
 }
