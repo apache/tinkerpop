@@ -33,7 +33,9 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final String NAME = "tinkerpop.neo4j";

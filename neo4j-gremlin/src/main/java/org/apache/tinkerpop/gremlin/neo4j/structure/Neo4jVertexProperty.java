@@ -36,7 +36,9 @@ import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
+@Deprecated
 public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
 
     protected final Neo4jVertex vertex;
