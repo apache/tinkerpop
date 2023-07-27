@@ -170,7 +170,7 @@ limitations under the License.
         <log4j.version>1.2.17</log4j.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.3.3</mockito.version>
-        <netty.version>4.1.86.Final</netty.version>
+        <netty.version>4.1.96.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.0.0</spark.version>
