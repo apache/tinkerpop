@@ -217,10 +217,10 @@ limitations under the License.
                                         <resource>NOTICE.txt</resource>
                                         <resource>NOTICE</resource>
                                         <resource>licenses</resource>
-                                        <!--Exclude kryo and minilog licenses to avoid conflict as they are included in
+                                        <!--Exclude kryo and minlog licenses to avoid conflict as they are included in
                                             both gremlin-shaded and gremlin-driver-->
                                         <resource>META-INF/licenses/kryo</resource>
-                                        <resource>META-INF/licenses/minilog</resource>
+                                        <resource>META-INF/licenses/minlog</resource>
                                     </resources>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
