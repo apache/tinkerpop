@@ -28,9 +28,8 @@ import java.util.stream.Stream;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -87,6 +86,11 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
         Iterator<Vertex> vertices = searchVertices(mergeMap);
 
         if (onMatchTraversal != null) {
+            if (onMatchTraversal instanceof ConstantTraversal) {
+                final Map matchMap = onMatchTraversal.next();
+                validateMapInput(matchMap, true);
+            }
+
             // attach the onMatch properties
             vertices = IteratorUtils.peek(vertices, v -> {
 
