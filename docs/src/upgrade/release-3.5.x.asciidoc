@@ -36,7 +36,9 @@ Introduced max number length (10000 chars), string length (20 000 000 chars), an
 constraints for GraphSON deserialization due to security vulnerabilities with earlier versions of Jackson Databind.
 New constraints are not expected to impact most users but can be overriden via GraphSONMapper.Builder or through serializer configuration.
 Example:
-```
+
+[source,yaml]
+----
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0,
       config: {
@@ -45,7 +47,7 @@ serializers:
         maxNestingDepth: 500
       }
   }
-```
+----
 
 == TinkerPop 3.5.6
 
