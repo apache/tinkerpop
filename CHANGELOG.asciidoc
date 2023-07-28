@@ -64,6 +64,7 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Bumped GMavenPlus to 2.1.0.
 * Bumped Spark to 3.3.2.
 * Enabled building and testing with JDK 17.
+* Raised minimum node version for gremlin-javascript and gremlint to node 18
 
 == TinkerPop 3.6.0 (Tinkerheart)
 

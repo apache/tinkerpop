@@ -17,9 +17,9 @@ limitations under the License.
 
 = TinkerPop 3.7.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=225]
 
-*NOT OFFICIALLY NAMED YET*
+*Gremfir Master of the Pan Flute*
 
 == TinkerPop 3.7.0
 
