@@ -117,11 +117,38 @@ public abstract class TinkerWorld implements World {
      * instances required by the Gherkin test suite.
      */
     public static class TinkerTransactionGraphWorld extends TinkerWorld {
-        private static final AbstractTinkerGraph modern = registerTestServices(TinkerFactory.createTxModern());
-        private static final AbstractTinkerGraph classic = registerTestServices(TinkerFactory.createTxClassic());
-        private static final AbstractTinkerGraph crew = registerTestServices(TinkerFactory.createTxTheCrew());
-        private static final AbstractTinkerGraph sink = registerTestServices(TinkerFactory.createTxKitchenSink());
-        private static final AbstractTinkerGraph grateful = registerTestServices(TinkerFactory.createTxGratefulDead());
+        private static final AbstractTinkerGraph modern;
+        private static final AbstractTinkerGraph classic;
+        private static final AbstractTinkerGraph crew;
+        private static final AbstractTinkerGraph sink;
+        private static final AbstractTinkerGraph grateful;
+
+        static {
+            modern = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateModern(modern);
+            modern.tx().commit();
+            registerTestServices(modern);
+
+            classic = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateClassic(classic);
+            classic.tx().commit();
+            registerTestServices(classic);
+
+            crew = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateTheCrew(crew);
+            crew.tx().commit();
+            registerTestServices(crew);
+
+            sink = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateKitchenSink(sink);
+            sink.tx().commit();
+            registerTestServices(sink);
+
+            grateful = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            TinkerFactory.generateGratefulDead(grateful);
+            grateful.tx().commit();
+            registerTestServices(grateful);
+        }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {

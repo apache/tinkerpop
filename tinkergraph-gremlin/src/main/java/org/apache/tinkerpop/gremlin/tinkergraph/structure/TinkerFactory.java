@@ -52,17 +52,6 @@ public final class TinkerFactory {
     }
 
     /**
-     * Create the "classic" graph with transaction support.
-     * @see #createClassic()
-     */
-    public static TinkerTransactionGraph createTxClassic() {
-        final TinkerTransactionGraph g = getTinkerTransactionGraphWithClassicNumberManager();
-        generateClassic(g);
-        g.tx().commit();
-        return g;
-    }
-
-    /**
      * Generate the graph in {@link #createClassic()} into an existing graph.
      */
     public static void generateClassic(final AbstractTinkerGraph g) {
@@ -87,17 +76,6 @@ public final class TinkerFactory {
     public static TinkerGraph createModern() {
         final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
         generateModern(g);
-        return g;
-    }
-
-    /**
-     * Create the "modern" graph with transaction support.
-     * @see #createModern()
-     */
-    public static TinkerTransactionGraph createTxModern() {
-        final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
-        generateModern(g);
-        g.tx().commit();
         return g;
     }
 
@@ -141,19 +119,6 @@ public final class TinkerFactory {
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         final TinkerGraph g = TinkerGraph.open(conf);
         generateTheCrew(g);
-        return g;
-    }
-
-    /**
-     * Create the "the crew" graph with transaction support.
-     * @see #createTheCrew()
-     */
-    public static TinkerTransactionGraph createTxTheCrew() {
-        final Configuration conf = getConfigurationWithCurrentNumberManager();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open(conf);
-        generateTheCrew(g);
-        g.tx().commit();
         return g;
     }
 
@@ -221,17 +186,6 @@ public final class TinkerFactory {
     }
 
     /**
-     * Creates the "kitchen sink" graph with transaction support.
-     * @see #createKitchenSink()
-     */
-    public static TinkerTransactionGraph createTxKitchenSink() {
-        final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
-        generateKitchenSink(g);
-        g.tx().commit();
-        return g;
-    }
-
-    /**
      * Generate the graph in {@link #createKitchenSink()} into an existing graph.
      */
     public static void generateKitchenSink(final AbstractTinkerGraph graph) {
@@ -256,17 +210,6 @@ public final class TinkerFactory {
     }
 
     /**
-     * Creates the "grateful dead" graph with transaction support.
-     * @see #createGratefulDead()
-     */
-    public static TinkerTransactionGraph createTxGratefulDead() {
-        final TinkerTransactionGraph g = getTinkerTransactionGraphWithCurrentNumberManager();
-        generateGratefulDead(g);
-        g.tx().commit();
-        return g;
-    }
-
-    /**
      * Generate the graph in {@link #createGratefulDead()} into an existing graph.
      */
     public static void generateGratefulDead(final AbstractTinkerGraph graph) {
@@ -282,20 +225,12 @@ public final class TinkerFactory {
         return TinkerGraph.open(getConfigurationWithCurrentNumberManager());
     }
 
-    private static TinkerTransactionGraph getTinkerTransactionGraphWithCurrentNumberManager() {
-        return TinkerTransactionGraph.open(getConfigurationWithCurrentNumberManager());
-    }
-
     private static Configuration getConfigurationWithCurrentNumberManager() {
         return getNumberIdManagerConfiguration(INTEGER, INTEGER, LONG);
     }
 
     private static TinkerGraph getTinkerGraphWithClassicNumberManager() {
         return TinkerGraph.open(getConfigurationHWithClassicNumberManager());
-    }
-
-    private static TinkerTransactionGraph getTinkerTransactionGraphWithClassicNumberManager() {
-        return TinkerTransactionGraph.open(getConfigurationHWithClassicNumberManager());
     }
 
     private static Configuration getConfigurationHWithClassicNumberManager() {
