@@ -378,6 +378,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `jcabi-manifests` dependency from `gremlin-core`, `gremlin-driver`, and `gremlin-server`.
 * Fixed a bug that caused the `GremlinGroovyScriptEngine` to throw a `MissingMethodException` when calling a static method in __ with the same name as an enum.
 * Deprecated Neo4j-Gremlin
+* Added `VertexPropertyFilter` to `GraphComputer`
 
 [[release-3-5-6]]
 === TinkerPop 3.5.6 (Release Date: May 1, 2023)
