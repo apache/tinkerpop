@@ -162,15 +162,13 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2957[TINKERPOP-2957]
 
 ==== TinkerGraph Transactions
 
-===== Introduction
-
 Previously, there was no reference implementation provided for the `Transaction` API as this feature wasn't supported by
 TinkerGraph. Users were instead directed towards the Neo4jGraph provided in `neo4j-gremlin` if they wanted to get access
 to a `Graph` implementation that supported transactions. Unfortunately, the maintenance around this plugin has largely
 been abandoned and is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
 
-As of this version, we are introducing the transactional TinkerGraph, TinkerTransactionGraph, which is TinkerGraph with
-transaction capabilities. The TinkerTransactionGraph has `read committed` isolation level, which is the same as the
+As of this version, we are introducing the transactional TinkerGraph, `TinkerTransactionGraph`, which is TinkerGraph with
+transaction capabilities. The `TinkerTransactionGraph` has `read committed` isolation level, which is the same as the
 Neo4jGraph provided in `neo4j-gremlin`. Only `ThreadLocal` transactions are implemented, therefore embedded graph
 transactions may not be fully supported. These transaction semantics may not fit the use case for some production
 scenarios that require strict ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used
@@ -178,7 +176,15 @@ as a Graph for test environments where you still require support for transaction
 
 ===== Usage examples
 
-To use TinkerTransactionGraph remotely, start a Gremlin Server with the `gremlin-server-transaction.yaml` config file.
+To use `TinkerTransactionGraph` remotely, start a Gremlin Server with the included `gremlin-server-transaction.yaml`
+config file.
+
+[source,bash]
+----
+bin/gremlin-server.sh conf/gremlin-server-transaction.yaml
+----
+
+Then to connect with Java:
 
 [source,java]
 ----
@@ -274,14 +280,15 @@ gremlin> g.V().valueMap()
 <4> Add a second vertex without committing
 <5> Rollback the change
 
-Note that all embedded TinkerTransactionGraph remains ThreadLocal transactions, meaning that all traversal sources spawn
-from the graph will operate within the same transaction scope.
+Note that all embedded `TinkerTransactionGraph` remains `ThreadLocal` transactions, meaning that all traversal sources
+spawned from the graph will operate within the same transaction scope.
 
-===== Limitations
-At this point, the transactional TinkerGraph comes with performance limitations and thus is only meant for testing
-and not for production use.
+IMPORTANT: `TinkerTransactionGraph` comes with performance and semantic limitations, where the former is expect to
+be resolved in future versions. Since its primary recommended use case is for testing these limitations should not be
+an impediment. Production use cases for TinkerGraph should generally prefer the non-transactional implementation.
 
-Addition documentation can be found in <<transactions,Transactions>> section.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2975[TINKERPOP-2975],
+link:https://tinkerpop.apache.org/docs/3.7.0/reference/#tinkergraph-gremlin-tx[Reference Documentation - TinkerGraph Transactions]
 
 ==== Properties on Elements
 

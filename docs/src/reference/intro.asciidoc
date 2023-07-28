@@ -477,7 +477,7 @@ the <<connecting-gremlin-server,previous section>> with the exact same caveats p
 
 Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are not required to do so to be considered
 TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into
-<<gremlin-drivers-variants,Gremlin Language Variants> and may allow for more advanced options like better security,
+<<gremlin-drivers-variants,Gremlin Language Variants>> and may allow for more advanced options like better security,
 cluster awareness, batched requests or other features. The details of these different systems are outside the scope
 of this documentation, so be sure to consult their documentation for more information.
 

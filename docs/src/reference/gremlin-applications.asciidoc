@@ -2578,32 +2578,6 @@ simply retry the request later. In the event a client detects a `ResponseStatusC
 which is error code `596`, the client may choose to retry that request. Note that drivers do not have the ability to
 automatically retry and that it is up to the application to provide such logic.
 
-[[testing-remote-providers]]
-==== Testing Remote Providers
-
-As of 3.7.0, it is recommended to use TinkerTransactionGraph, the transactional TinkerGraph, for testing, as it provides
-transactional capabilities on top of exiting TinkerGraph functionalities.
-
-To use TinkerTransactionGraph remotely, start a Gremlin Server with the `gremlin-server-transaction.yaml` config file.
-
-[source,java]
-----
-Cluster cluster = Cluster.build("localhost").port(8182).create();
-Client client = cluster.connect();
-GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
-GraphTraversalSource gtx = g.tx().begin();
-
-try {
-  Vertex marko = gtx.addV("person").property("name","marko").property("age",29).next();
-  Vertex lop = gtx.addV("software").property("name","lop").property("lang","java").next();
-  gtx.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
-
-  gtx.tx().commit();
-} catch (Exception ex) {
-  gtx.tx().rollback();
-}
-----
-
 [[gremlin-server-docker-image]]
 === Docker Image
 
