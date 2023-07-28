@@ -589,14 +589,16 @@ Most OLAP jobs do not require the entire source graph to faithfully execute thei
 ----
 graph.computer().
   vertices(hasLabel("person")).
+  vertexProperties(__.properties("name")).
   edges(bothE("knows")).
   program(PageRankVertexProgram...)
 ----
 
-There are two methods for constructing a `GraphFilter`.
+There are three methods for constructing a `GraphFilter`.
 
 * `vertices(Traversal<Vertex,Vertex>)`: A traversal that will be used that can only analyze a vertex and its properties.
 If the traversal `hasNext()`, the input `Vertex` is passed to the `GraphComputer`.
+* `vertexProperties(Traversal<Vertex, ? extends Property<?>)`: A traversal that will either let the vertex property pass or not.
 * `edges(Traversal<Vertex,Edge>)`: A traversal that will iterate all legal edges for the source vertex.
 
 `GraphFilter` is a "push-down predicate" that providers can reason on to determine the most efficient way to provide
