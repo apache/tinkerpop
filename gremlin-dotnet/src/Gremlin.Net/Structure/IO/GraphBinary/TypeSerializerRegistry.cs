@@ -159,11 +159,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <exception cref="InvalidOperationException">Thrown when no serializer can be found for the type.</exception>
         public ITypeSerializer GetSerializerFor(Type valueType)
         {
-            if (_serializerByType.ContainsKey(valueType))
+            if (_serializerByType.TryGetValue(valueType, out var serializerForType))
             {
-                return _serializerByType[valueType];
+                return serializerForType;
             }
-            
+
             if (IsDictionaryType(valueType, out var dictKeyType, out var dictValueType))
             {
                 var serializerType = typeof(MapSerializer<,>).MakeGenericType(dictKeyType, dictValueType);
@@ -199,7 +199,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 return serializer;
             }
 
-            foreach (var supportedType in _serializerByType.Keys)
+            foreach (var supportedType in new List<Type>(_serializerByType.Keys))
             {
                 if (supportedType.IsAssignableFrom(valueType))
                 {
@@ -245,7 +245,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                                                                     implementedInterface.GetGenericTypeDefinition() ==
                                                                     typeof(IList<>));
         }
-        
+
         /// <summary>
         /// Gets a serializer for the given GraphBinary type.
         /// </summary>
@@ -255,10 +255,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         {
             if (type == DataType.Custom)
                 throw new ArgumentException("Custom type serializers can not be retrieved using this method");
-            
+
             return _serializerByDataType[type];
         }
-        
+
         /// <summary>
         /// Gets a serializer for the given custom type name.
         /// </summary>
@@ -270,14 +270,14 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 ? serializer
                 : throw new InvalidOperationException($"No serializer found for type '{typeName}'.");
         }
-        
+
         /// <summary>
         /// The builder of a <see cref="TypeSerializerRegistry"/>.
         /// </summary>
         public class Builder
         {
             private readonly List<CustomTypeRegistryEntry> _list = new List<CustomTypeRegistryEntry>();
-        
+
             /// <summary>
             /// Creates the <see cref="TypeSerializerRegistry"/>.
             /// </summary>
@@ -293,7 +293,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 if (serializer == null) throw new ArgumentNullException(nameof(serializer));
                 if (serializer.TypeName == null)
                     throw new ArgumentException("serializer custom type name can not be null");
-                
+
                 _list.Add(new CustomTypeRegistryEntry(type, serializer));
                 return this;
             }
