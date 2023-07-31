@@ -26,14 +26,14 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// <summary>
     ///     Optimizes any occurrence of <c>Count()</c>-step followed by an <c>Is()</c>-step.
     /// </summary>
-    public class RangeByIsCountStrategy : AbstractTraversalStrategy
+    public class CountStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = OptimizationNamespace + nameof(RangeByIsCountStrategy);
+        private const string JavaFqcn = OptimizationNamespace + nameof(CountStrategy);
         
         /// <summary>
-        ///     Initializes a new instance of the <see cref="RangeByIsCountStrategy" /> class.
+        ///     Initializes a new instance of the <see cref="CountStrategy" /> class.
         /// </summary>
-        public RangeByIsCountStrategy() : base(JavaFqcn)
+        public CountStrategy() : base(JavaFqcn)
         {
         }
     }
