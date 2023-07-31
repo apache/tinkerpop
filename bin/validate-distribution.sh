@@ -176,7 +176,11 @@ GREMLIN_SHELL_SCRIPT=`find bin/ -name "gremlin*.sh"`
 GREMLIN_BATCH_SCRIPT=`find bin/ -name "gremlin*.bat"`
 
 [ ! -z ${GREMLIN_SHELL_SCRIPT} ] && [ -s ${GREMLIN_SHELL_SCRIPT} ] || { echo "Gremlin shell script is not present or empty"; exit 1; }
-[ ! -z ${GREMLIN_BATCH_SCRIPT} ] && [ -s ${GREMLIN_BATCH_SCRIPT} ] || { echo "Gremlin batch script is not present or empty"; exit 1; }
+
+for file in `echo "$GREMLIN_BATCH_SCRIPT" | tr '\n' '\n'`
+do
+  [ ! -z ${file} ] && [ -s ${file} ] || { echo "Gremlin batch script is not present or empty"; exit 1; }
+done
 echo "OK"
 
 echo "* validating ${COMPONENT}'s legal files ... "
