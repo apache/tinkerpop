@@ -115,6 +115,7 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                     <resources>
                                         <resource>META-INF/licenses/kryo</resource>
+                                        <resource>META-INF/licenses/minlog</resource>
                                     </resources>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
