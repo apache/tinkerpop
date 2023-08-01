@@ -22,7 +22,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
 == TinkerPop 3.5.7
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 31, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.5.7/CHANGELOG.asciidoc#release-3-5-7[changelog] for a
 complete list of all the modifications that are part of this release.
@@ -53,10 +53,13 @@ serializers:
   }
 ----
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2948[TINKERPOP-2948]
+
 ==== Deprecation of Neo4j-Gremlin
 
 Neo4j-Gremlin has been deprecated due to incompatibility with current versions of Neo4j.
-See link:https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin[reference docs] for more information.
+
+See: link:https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin[reference docs] and link:https://issues.apache.org/jira/browse/TINKERPOP-2977[TINKERPOP-2977]
 
 == TinkerPop 3.5.6
 
