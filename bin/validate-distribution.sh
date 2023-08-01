@@ -140,8 +140,9 @@ if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* checking source files ... "
 find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f1 -d: |
-  grep -Pv '^\./docs/(static|(site/home))/(img|images|fonts)/((icons|logos|policy|resources|providers|community|use-cases|gremlin|download)/)?[^/]*\.(png|jpg|ico|pdf|eot|otf|woff|woff2|ttf)$' |
+  grep -Pv '^\./docs/(static|(site/home))/(img|images|fonts)/((icons|logos|policy|resources|providers|community|use-cases|gremlin|download|social)/)?[^/]*\.(png|jpg|ico|pdf|eot|otf|woff|woff2|ttf)$' |
   grep -Pv '^\./docs/gremlint/(src|public)/[^/]*\.(png|jpg|ico)$' |
+  grep -Pv '^\./docs/original/(ai/)?[^/]*\.(png|jpg|ico|ai)$' |
   grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
   grep -Pv '^./gremlin-dotnet/.*\.snk$' |
   grep -Pv '^./gremlin-server/src/test/resources/[^/]*\.(p12|jks)$' |
