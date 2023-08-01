@@ -17,13 +17,13 @@ limitations under the License.
 
 = TinkerPop 3.7.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=225]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 *Gremfir Master of the Pan Flute*
 
 == TinkerPop 3.7.0
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 31, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asciidoc#release-3-7-0[changelog] for a complete list of all the modifications that are part of this release.
 

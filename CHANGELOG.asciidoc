@@ -16,14 +16,14 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.7.0 (NOT OFFICIALLY NAMED YET)
+== TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7.0]]
-=== TinkerPop 3.7.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.0 (Release Date: July 31, 2023)
 
-This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
+This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3-5-7, 3.5.7>>.
 
 * Allowed `mergeV()` and `property(Map)` to more easily define `Cardinality` values for properties for `onMatch` and `onCreate` options.
 * Removed `connectOnStartup` configuration option from gremlin-javascript.
@@ -65,6 +65,138 @@ This release also includes changes from <<release-3-6-XXX, 3.6.XXX>>.
 * Bumped Spark to 3.3.2.
 * Enabled building and testing with JDK 17.
 * Raised minimum node version for gremlin-javascript and gremlint to node 18
+
+==== Bugs
+
+* TINKERPOP-2526 Gremlin Console performance with incomplete multi-line scripts
+* TINKERPOP-2677 Upgrade to Groovy 3.x to fix XStream security vulnerability
+* TINKERPOP-2708 unhandledRejection upon connection failure *(breaking)*
+* TINKERPOP-2734 NullPointerException when calling Client chooseConnection()
+* TINKERPOP-2736 PluginAcceptror interface no more available in 3.5.3+ but referred in documentation
+* TINKERPOP-2741 GraphMLWriter error message is not properly formatted
+* TINKERPOP-2742 IO read may use wrong cardinality for property
+* TINKERPOP-2746 Medium security vulnerabilities on logback-core
+* TINKERPOP-2751 Transaction: tx.commit() hangs up in javascript client-lib
+* TINKERPOP-2754 Javascript client hangs if the server restarts
+* TINKERPOP-2765 Race condition during script creation when using UnifiedChannelizer
+* TINKERPOP-2767 Repeat Out Times traversal hangs indefinitely on first execution
+* TINKERPOP-2768 BranchStep pickToken should be integrated when added as a child option
+* TINKERPOP-2769 gremlin-server does not reply with a timeout response to all timed out requests
+* TINKERPOP-2771 Critical severity security vulnerabilty in commons-configuration 2.7
+* TINKERPOP-2775 Remove dependency on cloudflare CDN
+* TINKERPOP-2796 High severity security vulnerability found in snakeyaml
+* TINKERPOP-2801 Incorrect deprecation notice on gremlin-python
+* TINKERPOP-2803 Incorrect count() with sample() in TinkerGraph
+* TINKERPOP-2805 No results returned for multiple labels to select()
+* TINKERPOP-2809 High severity security vulnerability found in jackson databind
+* TINKERPOP-2815 Critical security vulnerability for apache commons-text
+* TINKERPOP-2816 Gherkin test issues for implementers
+* TINKERPOP-2817  "Could not find a type identifier for the class : class java.lang.Byte" occurs when dumping graph to graphson format
+* TINKERPOP-2820 gremlin-python _close_session race condition/FD leak
+* TINKERPOP-2826 Critical security vulnerability in ivy
+* TINKERPOP-2836 Github actions do not run java driver integration tests
+* TINKERPOP-2840 Test Failures on NonDex
+* TINKERPOP-2843 Security vulnerabilities found in netty version 4.1.77
+* TINKERPOP-2849 Incorrect implementation for GraphTraversalSource.With in gremlin-go
+* TINKERPOP-2855 Performance degradation in TinkerGraph 3.5.4 and 3.5.5
+* TINKERPOP-2856 math() step fails if variable name contains a keyword
+* TINKERPOP-2858 ConcurrentModificationException in ConnectiveStrategy
+* TINKERPOP-2861 Fix incorrect symlinks in source release zip
+* TINKERPOP-2863 HasId Step generates incorrect results when given a list of IDs mid-traversal
+* TINKERPOP-2870 mergeV requires key of 'new' to be quoted
+* TINKERPOP-2878 Incorrect handling of local operations when there are duplicate elements
+* TINKERPOP-2888 DefaultTraversal's applyStrategies performance decrease
+* TINKERPOP-2891 Inconsistent behavior when comparing a counted value with a negative value
+* TINKERPOP-2893 Incorrectly comparing a counted value with multiple predicates
+* TINKERPOP-2901 Incorrect result caused by has(key, predicate)
+* TINKERPOP-2902 Critical security vulnerability in snakeyaml
+* TINKERPOP-2905 gremlin-go gorillaTransporter.logHandler is not initialized correctly and leads to panic
+* TINKERPOP-2911 CountStrategy converts count().is(0) wrongly under ConnectiveStrategy
+* TINKERPOP-2918 Utils.GenerateUserAgent assumes Gremlin.Net.dll to be present when, in some environments, it is not.
+* TINKERPOP-2920 SubgraphStrategy failure when property key not present on vertex in by()
+* TINKERPOP-2922 GroovyTranslator produces a Map not parseable by the grammar
+* TINKERPOP-2925 mergeE() in javascript producing an error
+* TINKERPOP-2926 Gremlin-Java > An UnsupportedOperationException occurs on calling next() after a merge step with the option step modulator if the element does not exist
+* TINKERPOP-2928 element() not working in conjunction with edge properties
+* TINKERPOP-2937 Throw an error when trying to use a closed connection
+* TINKERPOP-2944 Memory leak in Gremlin.Net driver if CancellationToken is used
+* TINKERPOP-2945 TextP.regex() Serialization Failing in Java driver
+* TINKERPOP-2948 PRISMA security vulnerabilty for jackson-databind 2.14.0 *(breaking)*
+* TINKERPOP-2953 Static import for __.values() overriden by Column.values()
+* TINKERPOP-2957 mergeV with sideEffect not correctly updating properties
+* TINKERPOP-2958 ScheduledExecutorService for timeouts are never cancelled
+* TINKERPOP-2965 FilterRankingStrategy removing labels it shouldn't in certain conditions
+
+==== Improvements
+
+* TINKERPOP-1403 Provide support for GraphFilter.vertexProperties() *(breaking)*
+* TINKERPOP-2229 JavaScript GLV: Add GraphBinary Support
+* TINKERPOP-2348 Enable nullable checks
+* TINKERPOP-2373 Bump to Groovy 4.0
+* TINKERPOP-2471 Add logging to Gremlin.Net driver
+* TINKERPOP-2480 User agent for Gremlin drivers
+* TINKERPOP-2622 Enforce ordering semantics in feature tests
+* TINKERPOP-2631 GraphSON float serialization when ujson is used is imprecise
+* TINKERPOP-2633 Support Gremlin Console on Java 17
+* TINKERPOP-2693 Complete GraphBinary support in Python
+* TINKERPOP-2696 Refactor Gherkin test framework to better handle bindings
+* TINKERPOP-2703 Build on JDK17
+* TINKERPOP-2715 remove log4jv1 dependency
+* TINKERPOP-2723 Make GraphBinary the default serialization format for .NET and Python
+* TINKERPOP-2731 Bump to Spark 3.3.0
+* TINKERPOP-2737 Dockerized Build and Test Environments
+* TINKERPOP-2747 Add function callback hooks for gremlin-go authentication
+* TINKERPOP-2748 Medium security vulnerability on netty-all and netty-codec
+* TINKERPOP-2749 Support Windows Build
+* TINKERPOP-2761 Gremlin: use another manifest name for version
+* TINKERPOP-2762 getScopeKeys should respect the order of keys passed in Step
+* TINKERPOP-2764 AWS Neptune returns an inaccessible structured error response
+* TINKERPOP-2772 Add Spark utility to load vertices as RDD
+* TINKERPOP-2776 Add website analytics for TinkerPop apache site
+* TINKERPOP-2779 Floating ConnectedComponent Feature Failures for GitHub Actions on windows
+* TINKERPOP-2785 Inability to Mock Returned Result Types in Gremlin-Go Driver
+* TINKERPOP-2792 Better exception when JavaTranslator finds a method but not the overload
+* TINKERPOP-2794 Allow cancellation of Gremlin.Net async methods
+* TINKERPOP-2798 Add support for mid-traversal E()
+* TINKERPOP-2804 gherkin feature files should be on the classpath
+* TINKERPOP-2806 Provide method for provider plugins to get notified on script/query processing
+* TINKERPOP-2808 Improve Compatibility on ARM machines
+* TINKERPOP-2810 gremlinpython aiohttp dependency requirement too strict
+* TINKERPOP-2813 Improve driver usability for cases where NoHostAvailableException is currently thrown
+* TINKERPOP-2814 Add a SSL handshake timeout configuration to the driver
+* TINKERPOP-2818 exclude mockito-core in gremlin-core [compile scope] (import by jcabi-manifests)
+* TINKERPOP-2824 Properties on Elements *(breaking)*
+* TINKERPOP-2834 CloneVertexProgram optimization on SparkGraphComputer
+* TINKERPOP-2838 Add UserAgent GLV Tests
+* TINKERPOP-2841 Test and Fix Per Request Settings in Go
+* TINKERPOP-2842 Expand GremlinScriptChecker to include request id overrides
+* TINKERPOP-2844 Test and Fix Per Request Settings in Python
+* TINKERPOP-2850 Modifications to mergeV/E semantics
+* TINKERPOP-2852 Update Maven plugin for docker-images building for M1 compatibility
+* TINKERPOP-2853 Gremlin.Net driver should throw better exception message for unsupported GraphBinary type
+* TINKERPOP-2857 GraphSONRecordReader does not allow configure a GraphFilter during deserialization
+* TINKERPOP-2865 Add has steps injected by PartitionStrategy at the end of the filter
+* TINKERPOP-2873 Allow Union of Traversals
+* TINKERPOP-2890 Avoid exceptions on local scope based steps where possible
+* TINKERPOP-2899 SampleGlobalStep samples inefficiently with TraverserSet running into hash collisions
+* TINKERPOP-2912 Improve error message for addE() when traverser is incorrect
+* TINKERPOP-2919 Improve performance of FilterRankingStrategy for deeply nested traversals
+* TINKERPOP-2924 Refactor PropertyMapStep to be able to overwrite map method
+* TINKERPOP-2929 Introduce new marker interfaces to identify whether a step can perform write or delete or both
+* TINKERPOP-2931 Fix a few minor mergeV/E issues
+* TINKERPOP-2934 Optimize ObjectWritable for displaying content of Java Collection or Map to reduce OOM
+* TINKERPOP-2938 Revisit merge step feature tests
+* TINKERPOP-2939 The Merge onMatch map validation is during execution instead of construction
+* TINKERPOP-2941 DO NOT purge the output location if it has content in SparkGraphComputer
+* TINKERPOP-2947 Provide a plain text serializer for HTTP
+* TINKERPOP-2949 More strict handling of predicates
+* TINKERPOP-2954 Pass Gremlin Version from Maven to Java Without Manifests
+* TINKERPOP-2955 Support SSL in WebSocketClient
+* TINKERPOP-2959 Allow the grammar to support parameters
+* TINKERPOP-2963 Introduce new mimeType to return GraphSon-1.0 in text format
+* TINKERPOP-2967 Add untyped GraphSON 3.0 format
+* TINKERPOP-2975 Native transaction support for Tinkerpop
+* TINKERPOP-2977 Deprecate Neo4j-Gremlin
 
 == TinkerPop 3.6.0 (Tinkerheart)
 
