@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-5]]
-=== TinkerPop 3.6.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.6.5 (Release Date: July 31, 2023)
 
 This release also includes changes from <<release-3-5-7, 3.5.7>>.
 
@@ -32,6 +32,28 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 * Introduced mime type `application/vnd.gremlin-v2.0+json;typed=false` to allow direct specification of GraphSON 2.0 without types.
 * Removed `final` class declaration for `LabelStep`.
 * Fixed MergeE/MergeV steps to always throw exception for invalid `onMatch` option.
+
+==== Bugs
+
+* TINKERPOP-2920 SubgraphStrategy failure when property key not present on vertex in by()
+* TINKERPOP-2937 Throw an error when trying to use a closed connection
+* TINKERPOP-2948 PRISMA security vulnerabilty for jackson-databind 2.14.0 *(breaking)*
+* TINKERPOP-2953 Static import for __.values() overriden by Column.values()
+* TINKERPOP-2958 ScheduledExecutorService for timeouts are never cancelled
+* TINKERPOP-2965 FilterRankingStrategy removing labels it shouldn't in certain conditions
+
+==== Improvements
+
+* TINKERPOP-1403 Provide support for GraphFilter.vertexProperties() *(breaking)*
+* TINKERPOP-2938 Revisit merge step feature tests
+* TINKERPOP-2939 The Merge onMatch map validation is during execution instead of construction
+* TINKERPOP-2941 DO NOT purge the output location if it has content in SparkGraphComputer
+* TINKERPOP-2947 Provide a plain text serializer for HTTP
+* TINKERPOP-2954 Pass Gremlin Version from Maven to Java Without Manifests
+* TINKERPOP-2955 Support SSL in WebSocketClient
+* TINKERPOP-2956 Update gremlint version for the published application
+* TINKERPOP-2963 Introduce new mimeType to return GraphSon-1.0 in text format
+* TINKERPOP-2977 Deprecate Neo4j-Gremlin
 
 [[release-3-6-4]]
 === TinkerPop 3.6.4 (Release Date: May 12, 2023)
