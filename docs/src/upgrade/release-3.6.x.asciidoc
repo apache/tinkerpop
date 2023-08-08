@@ -21,6 +21,27 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Tinkerheart*
 
+== TinkerPop 3.6.6
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.6/CHANGELOG.asciidoc#release-3-6.6[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+
+
+==== Graph Driver Providers
+
+
+
+
 == TinkerPop 3.6.5
 
 *Release Date: July 31, 2023*
