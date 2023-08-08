@@ -21,6 +21,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *The Sleeping Gremlin: No. 18 Entr'acte Symphonique*
 
+== TinkerPop 3.5.8
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.8/CHANGELOG.asciidoc#release-3-5-8[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+
+
+==== Graph Driver Providers
+
+
+
 == TinkerPop 3.5.7
 *Release Date: July 31, 2023*
 
