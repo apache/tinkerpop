@@ -135,11 +135,11 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
         private IGraphSONSerializer? TryGetSerializerFor(Type type)
         {
-            if (Serializers.ContainsKey(type))
+            if (Serializers.TryGetValue(type, out var serializer))
             {
-                return Serializers[type];
+                return serializer;
             }
-            foreach (var supportedType in Serializers.Keys)
+            foreach (var supportedType in new List<Type>(Serializers.Keys))
                 if (supportedType.IsAssignableFrom(type))
                 {
                     return Serializers[supportedType];
