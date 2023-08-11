@@ -308,13 +308,15 @@ using `RequestOptionsBuilder`. A good use-case for this feature is to set a per-
 ----
 options := new(RequestOptionsBuilder).
 			SetEvaluationTimeout(5000).
+			SetBatchSize(32).
+			SetMaterializeProperties("tokens").
 			AddBinding("x", 100).
 			Create()
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout`. `RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `evaluationTimeout` and `materializeProperties`.
+`RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
 traversal string.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
@@ -1449,7 +1451,7 @@ request.
 const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `materializeProperties` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
@@ -1839,7 +1841,7 @@ feature is to set a per-request override to the `evaluationTimeout` so that it o
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `materializeProperties` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated). These options are
 available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
@@ -2352,7 +2354,7 @@ request.
 result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'evaluationTimeout': 5000})
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `materializeProperties` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar

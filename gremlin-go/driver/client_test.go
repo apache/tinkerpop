@@ -361,14 +361,15 @@ func TestClientAgainstSocketServer(t *testing.T) {
 			SetEvaluationTimeout(1234).
 			SetBatchSize(12).
 			SetUserAgent("helloWorld").
+			SetMaterializeProperties("tokens").
 			Create())
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
 		assert.Nil(t, err)
 		assert.True(t, ok)
-		expectedResult := fmt.Sprintf("requestId=%v evaluationTimeout=%v, batchSize=%v, userAgent=%v",
-			settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld")
+		expectedResult := fmt.Sprintf("requestId=%v evaluationTimeout=%v, batchSize=%v, userAgent=%v, materializeProperties=%v",
+			settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld", "tokens")
 		assert.Equal(t, expectedResult, result.Data)
 	})
 

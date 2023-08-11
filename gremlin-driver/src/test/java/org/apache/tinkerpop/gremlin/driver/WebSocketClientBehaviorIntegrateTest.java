@@ -534,10 +534,11 @@ public class WebSocketClientBehaviorIntegrateTest {
         // trigger the testing server to return captured request settings
         String response = client.submit("1", RequestOptions.build()
                 .overrideRequestId(settings.PER_REQUEST_SETTINGS_REQUEST_ID)
-                .timeout(1234).userAgent("helloWorld").batchSize(12).create()).one().getString();
+                .timeout(1234).userAgent("helloWorld").batchSize(12)
+                .materializeProperties("tokens").create()).one().getString();
 
-        String expectedResponse = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s",
-                settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld");
+        String expectedResponse = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s, materializeProperties=%s",
+                settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld", "tokens");
         assertEquals(expectedResponse, response);
     }
 }
