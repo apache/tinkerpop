@@ -18,13 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -37,8 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -599,6 +593,27 @@ public class __ {
      */
     public static <A> GraphTraversal<A, String> concat(final String... concatString) {
         return __.<A>start().concat(concatString);
+    }
+
+    /**
+     * @see GraphTraversal#asDate()
+     */
+    public static <A> GraphTraversal<A, Date> asDate() {
+        return __.<A>start().asDate();
+    }
+
+    /**
+     * @see GraphTraversal#dateAdd(DT, int)
+     */
+    public static <A> GraphTraversal<A, Date> dateAdd(final DT dateToken, final int value) {
+        return __.<A>start().dateAdd(dateToken, value);
+    }
+
+    /**
+     * @see GraphTraversal#dateDiff(Date)
+     */
+    public static <A> GraphTraversal<A, Long> dateDiff(final Date value) {
+        return __.<A>start().dateDiff(value);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

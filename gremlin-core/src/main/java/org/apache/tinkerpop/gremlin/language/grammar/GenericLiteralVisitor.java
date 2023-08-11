@@ -31,11 +31,7 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
@@ -78,6 +74,13 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     public String parseString(final GremlinParser.StringNullableLiteralContext stringLiteral) {
         return (String) visitStringNullableLiteral(stringLiteral);
+    }
+
+    /**
+     * Parse a Date based literal context and return the Date.
+     */
+    public Date parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
+        return (Date) visitDateLiteral(dateLiteral);
     }
 
     /**

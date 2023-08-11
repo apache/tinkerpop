@@ -284,6 +284,9 @@ traversalMethod
 	| traversalMethod_element
 	| traversalMethod_call
 	| traversalMethod_concat
+	| traversalMethod_asDate
+	| traversalMethod_dateAdd
+	| traversalMethod_dateDiff
 	;
 traversalMethod_V
 	: 'V' LPAREN genericLiteralVarargs RPAREN
@@ -809,6 +812,19 @@ traversalMethod_concat
 	| 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
 	;
 
+traversalMethod_asDate
+    : 'asDate' LPAREN RPAREN
+    ;
+
+traversalMethod_dateAdd
+    : 'dateAdd' LPAREN traversalDTArgument COMMA integerArgument RPAREN
+    ;
+
+traversalMethod_dateDiff
+	: 'dateDiff' LPAREN nestedTraversal RPAREN #traversalMethod_dateDiff_Traversal
+	| 'dateDiff' LPAREN dateArgument RPAREN #traversalMethod_dateDiff_Date
+    ;
+
 /*********************************************
     ARGUMENT AND TERMINAL RULES
 **********************************************/
@@ -962,6 +978,13 @@ traversalOperator
 traversalPick
     : 'any' | 'Pick.any'
     | 'none' | 'Pick.none'
+    ;
+
+traversalDT
+    : 'second' | 'DT.second'
+    | 'minute' | 'DT.minute'
+    | 'hour' | 'DT.hour'
+    | 'day' | 'DT.day'
     ;
 
 traversalPredicate
@@ -1370,6 +1393,11 @@ stringNullableArgument
     | variable
     ;
 
+dateArgument
+    : dateLiteral
+    | variable
+    ;
+
 genericLiteralArgument
     : genericLiteral
     | variable
@@ -1456,6 +1484,11 @@ traversalBiFunctionArgument
     | variable
     ;
 
+traversalDTArgument
+    : traversalDT
+    | variable
+    ;
+
 traversalStrategyList
     : traversalStrategyExpr?
     ;
@@ -1520,6 +1553,7 @@ genericLiteral
 	| traversalDirection
 	| traversalMerge
 	| traversalPick
+	| traversalDT
 	| structureVertex
 	| genericLiteralCollection
 	| genericLiteralRange
