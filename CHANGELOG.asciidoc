@@ -228,6 +228,7 @@ This release also includes changes from <<release-3-5-7, 3.5.7>>.
 * Introduced mime type `application/vnd.gremlin-v2.0+json;typed=false` to allow direct specification of GraphSON 2.0 without types.
 * Removed `final` class declaration for `LabelStep`.
 * Fixed MergeE/MergeV steps to always throw exception for invalid `onMatch` option.
+* TINKERPOP-2802: Add support for custom deserializers to the Gremlin-Go Driver
 
 ==== Bugs
 
