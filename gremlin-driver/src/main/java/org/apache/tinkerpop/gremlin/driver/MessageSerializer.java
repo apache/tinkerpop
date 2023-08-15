@@ -79,7 +79,8 @@ public interface MessageSerializer<M> {
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException;
 
     /**
-     * The list of mime types that the serializer supports.
+     * The list of mime types that the serializer supports. They should be ordered in preferred ordered where the
+     * greatest fidelity match is first.
      */
     public String[] mimeTypesSupported();
 

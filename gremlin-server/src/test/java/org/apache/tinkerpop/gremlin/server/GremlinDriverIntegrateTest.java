@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.server;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -54,7 +56,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -159,6 +160,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final String nameOfTest = name.getMethodName();
 
         switch (nameOfTest) {
+            case "shouldInterceptRequests":
+                settings.channelizer = HttpChannelizer.class.getName();
+                break;
             case "shouldAliasTraversalSourceVariables":
             case "shouldAliasTraversalSourceVariablesInSession":
                 try {
@@ -209,10 +213,35 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldInterceptRequests() throws Exception {
         final int requestsToMake = 32;
+        final AtomicInteger httpRequests = new AtomicInteger(0);
+
+        final Cluster cluster = TestClientFactory.build().
+                channelizer(Channelizer.HttpChannelizer.class).
+                requestInterceptor(r -> {
+                    httpRequests.incrementAndGet();
+                    return r;
+                }).create();
+
+        try {
+            final Client client = cluster.connect();
+            for (int ix = 0; ix < requestsToMake; ix++) {
+                assertEquals(ix + 1, client.submit(ix + "+1").all().get().get(0).getInt());
+            }
+        } finally {
+            cluster.close();
+        }
+
+        assertEquals(requestsToMake, httpRequests.get());
+    }
+
+    @Test
+    public void shouldInterceptRequestsWithHandshake() throws Exception {
+        final int requestsToMake = 32;
         final AtomicInteger websocketHandshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).maxConnectionPoolSize(1).handshakeInterceptor(r -> {
+                minConnectionPoolSize(1).maxConnectionPoolSize(1).
+                handshakeInterceptor(r -> {
             websocketHandshakeRequests.incrementAndGet();
             return r;
         }).create();

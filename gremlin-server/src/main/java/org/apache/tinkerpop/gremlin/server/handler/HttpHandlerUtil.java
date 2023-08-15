@@ -23,22 +23,18 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
-import org.javatuples.Quartet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
@@ -71,7 +68,16 @@ public class HttpHandlerUtil {
      */
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    static Quartet<String, Map<String, Object>, String, Map<String, String>> getRequestArguments(final FullHttpRequest request) {
+    /**
+     * Convert a http request into a {@link RequestMessage}.
+     */
+    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
+        final String contentType = Optional.ofNullable(request.headers().get(HttpHeaderNames.CONTENT_TYPE)).orElse("application/json");
+
+        // default is just the StandardOpProcessor which maintains compatibility with older versions which only
+        // processed scripts.
+        final RequestMessage.Builder msgBuilder = RequestMessage.build(StandardOpProcessor.OP_PROCESSOR_NAME);
+
         if (request.method() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
@@ -80,6 +86,11 @@ public class HttpHandlerUtil {
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
             if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
+
+            final List<String> requestIdParms = decoder.parameters().get(Tokens.REQUEST_ID);
+            if (requestIdParms != null && requestIdParms.size() > 0) {
+                msgBuilder.overrideRequestId(UUID.fromString(requestIdParms.get(0)));
+            }
 
             // query string parameters - take the first instance of a key only - ignore the rest
             final Map<String, Object> bindings = new HashMap<>();
@@ -93,7 +104,8 @@ public class HttpHandlerUtil {
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
             final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
 
-            return Quartet.with(script, bindings, language, aliases);
+            return msgBuilder.addArg(Tokens.ARGS_GREMLIN, script).addArg(Tokens.ARGS_LANGUAGE, language)
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).addArg(Tokens.ARGS_ALIASES, aliases).create();
         } else {
             final JsonNode body;
             try {
@@ -124,7 +136,15 @@ public class HttpHandlerUtil {
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
             final String language = null == languageNode ? null : languageNode.asText();
 
-            return Quartet.with(scriptNode.asText(), bindings, language, aliases);
+            final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
+            final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
+
+            final JsonNode opNode = body.get("op");
+            final String op = null == opNode ? "" : opNode.asText();
+
+            return msgBuilder.overrideRequestId(requestId).processor(op)
+                    .addArg(Tokens.ARGS_GREMLIN, scriptNode.asText()).addArg(Tokens.ARGS_LANGUAGE, language)
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).addArg(Tokens.ARGS_ALIASES, aliases).create();
         }
     }
 

@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
@@ -78,6 +80,13 @@ public interface Channelizer extends ChannelHandler {
     }
 
     /**
+     * Gets the scheme to use to construct the URL and by default uses HTTP.
+     */
+    public default String getScheme(final boolean sslEnabled) {
+        return sslEnabled ? "https" : "http";
+    }
+
+    /**
      * Base implementation of the client side {@link Channelizer}.
      */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
@@ -126,7 +135,7 @@ public interface Channelizer extends ChannelHandler {
             }
 
             if (sslCtx.isPresent()) {
-                SslHandler sslHandler = sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort());
+                final SslHandler sslHandler = sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort());
                 // TINKERPOP-2814. Remove the SSL handshake timeout so that handshakes that take longer than 10000ms
                 // (Netty default) but less than connectionSetupTimeoutMillis can succeed. This means the SSL handshake
                 // will instead be capped by connectionSetupTimeoutMillis.
@@ -147,14 +156,14 @@ public interface Channelizer extends ChannelHandler {
         private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
         private WebSocketClientHandler handler;
 
-        private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
-        private WebSocketGremlinResponseDecoder webSocketGremlinResponseDecoder;
+        private WebSocketGremlinRequestEncoder gremlinRequestEncoder;
+        private WebSocketGremlinResponseDecoder gremlinResponseDecoder;
 
         @Override
         public void init(final Connection connection) {
             super.init(connection);
-            webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
-            webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+            gremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
+            gremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
         }
 
         /**
@@ -194,7 +203,7 @@ public interface Channelizer extends ChannelHandler {
                     new WebSocketClientHandler.InterceptedWebSocketClientHandshaker13(
                             connection.getUri(), WebSocketVersion.V13, null, true,
                             httpHeaders, maxContentLength, true, false, -1,
-                            cluster.getHandshakeInterceptor()), cluster.getConnectionSetupTimeout(), supportsSsl());
+                            cluster.getRequestInterceptor()), cluster.getConnectionSetupTimeout(), supportsSsl());
 
             final int keepAliveInterval = toIntExact(TimeUnit.SECONDS.convert(
                     cluster.connectionPoolSettings().keepAliveInterval, TimeUnit.MILLISECONDS));
@@ -205,8 +214,8 @@ public interface Channelizer extends ChannelHandler {
             pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
             pipeline.addLast("idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
             pipeline.addLast("ws-handler", handler);
-            pipeline.addLast("gremlin-encoder", webSocketGremlinRequestEncoder);
-            pipeline.addLast("gremlin-decoder", webSocketGremlinResponseDecoder);
+            pipeline.addLast("gremlin-encoder", gremlinRequestEncoder);
+            pipeline.addLast("gremlin-decoder", gremlinResponseDecoder);
         }
 
         @Override
@@ -230,6 +239,71 @@ public interface Channelizer extends ChannelHandler {
                 }
                 throw new ConnectionException(connection.getUri(), errMsg, ex);
             }
+        }
+
+        @Override
+        public String getScheme(boolean sslEnabled) {
+            return sslEnabled ? "wss" : "ws";
+        }
+    }
+
+    /**
+     * Sends requests over the HTTP endpoint. Client functionality is governed by the limitations of the HTTP endpoint,
+     * meaning that sessions are not available and as such {@code tx()} (i.e. transactions) are not available over this
+     * channelizer. Only sessionless requests are possible. Some driver configuration options may not be relevant when
+     * using HTTP, such as {@link Tokens#ARGS_BATCH_SIZE} since HTTP does not stream results back in that fashion.
+     */
+    public final class HttpChannelizer extends AbstractChannelizer {
+
+        private HttpClientCodec handler;
+
+        private HttpGremlinRequestEncoder gremlinRequestEncoder;
+        private HttpGremlinResponseDecoder gremlinResponseDecoder;
+
+        @Override
+        public void init(final Connection connection) {
+            super.init(connection);
+
+            // server does not support sessions so this channerlizer can't support the SessionedClient
+            if (connection.getClient() instanceof Client.SessionedClient)
+                throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", HttpChannelizer.class.getSimpleName()));
+
+            gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor());
+            gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
+        }
+
+        @Override
+        public void connected() {
+            super.connected();
+        }
+
+        @Override
+        public boolean supportsSsl() {
+            final String scheme = connection.getUri().getScheme();
+            return "https".equalsIgnoreCase(scheme);
+        }
+
+        @Override
+        public void configure(final ChannelPipeline pipeline) {
+            final String scheme = connection.getUri().getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))
+                throw new IllegalStateException("Unsupported scheme (only http: or https: supported): " + scheme);
+
+            if (!supportsSsl() && "https".equalsIgnoreCase(scheme))
+                throw new IllegalStateException("To use https scheme ensure that enableSsl is set to true in configuration");
+
+            final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
+            final HttpHeaders httpHeaders = new DefaultHttpHeaders();
+            if(connection.getCluster().isUserAgentOnConnectEnabled()) {
+                httpHeaders.set(UserAgent.USER_AGENT_HEADER_NAME, UserAgent.USER_AGENT);
+            }
+
+            handler = new HttpClientCodec();
+
+            pipeline.addLast("http-codec", handler);
+            pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
+            pipeline.addLast("gremlin-encoder", gremlinRequestEncoder);
+            pipeline.addLast("gremlin-decoder", gremlinResponseDecoder);
         }
     }
 }

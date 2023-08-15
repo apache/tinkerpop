@@ -96,6 +96,14 @@ public final class RequestMessage {
         return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
+    public <T> T getArg(final String key) {
+        return (T) args.get(key);
+    }
+
+    public <T> T getArgOrDefault(final String key, final T def) {
+        return (T) optionalArgs(key).orElse(def);
+    }
+
     public static Builder from(final RequestMessage msg) {
         final Builder builder = build(msg.op)
                 .overrideRequestId(msg.requestId)

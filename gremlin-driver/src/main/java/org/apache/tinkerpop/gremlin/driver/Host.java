@@ -49,7 +49,8 @@ public final class Host {
     Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl);
+        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl,
+                cluster.getChannelizer());
         hostLabel = String.format("Host{address=%s, hostUri=%s}", address, hostUri);
     }
 
@@ -112,9 +113,16 @@ public final class Host {
         makeAvailable();
     }
 
-    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
+    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl, final String channelizerClass) {
+        final Channelizer channelizer;
         try {
-            final String scheme = ssl ? "wss" : "ws";
+            channelizer = (Channelizer) Class.forName(channelizerClass).newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Invalid Channelizer instance: %s", channelizerClass));
+        }
+
+        try {
+            final String scheme = channelizer.getScheme(ssl);
             return new URI(scheme, null, addy.getHostName(), addy.getPort(), path, null, null);
         } catch (URISyntaxException use) {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);
