@@ -37,6 +37,7 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
+	customType            dataType = 0x00
 	intType               dataType = 0x01
 	longType              dataType = 0x02
 	stringType            dataType = 0x03
@@ -223,11 +224,12 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 
 // Format: {steps_length}{step_0}…{step_n}{sources_length}{source_0}…{source_n}
 // Where:
-//		{steps_length} is an Int value describing the amount of steps.
-//		{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
-//      {name} is a String. This is also known as the operator.
-//		{values_length} is an Int describing the amount values.
-//		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
+//
+//			{steps_length} is an Int value describing the amount of steps.
+//			{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
+//	     {name} is a String. This is also known as the operator.
+//			{values_length} is an Int describing the amount values.
+//			{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	var bc Bytecode
 	switch typedVal := value.(type) {
@@ -1323,6 +1325,26 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 	deserializer, ok := deserializers[dataTyp]
 	if !ok {
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dataTyp)
+	}
+
+	return deserializer(data, i)
+}
+
+// {name}{type specific payload}
+func customTypeReader(data *[]byte, i *int) (interface{}, error) {
+	// we need to decrement the index by 1 to be read the 32-bit int with the size of the string
+	*i = *i - 1
+	customTypeName, err := readString(data, i)
+	if err != nil {
+		return nil, err
+	}
+
+	// grab a read lock for the map of deserializers, since these can be updated out-of-band
+	customTypeReaderLock.RLock()
+	defer customTypeReaderLock.RUnlock()
+	deserializer, ok := customDeserializers[customTypeName.(string)]
+	if !ok {
+		return nil, newError(err0409GetSerializerToReadUnknownCustomTypeError, customTypeName)
 	}
 	return deserializer(data, i)
 }
