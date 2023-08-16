@@ -28,7 +28,6 @@ using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
-using Moq;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
@@ -202,18 +201,27 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Fact]
         public void ShouldSerializeWithCustomSerializerForCommonType()
         {
-            var customSerializerMock = new Mock<IGraphSONSerializer>();
-            customSerializerMock.Setup(m => m.Dictify(It.IsAny<int>(), It.IsAny<GraphSONWriter>()))
-                .Returns(new Dictionary<string, dynamic>());
+            var customSerializer = new CustomDummySerializer();
             var customSerializerByType = new Dictionary<Type, IGraphSONSerializer>
             {
-                {typeof(int), customSerializerMock.Object}
+                {typeof(int), customSerializer}
             };
             var writer = new GraphSON2Writer(customSerializerByType);
-
+            
             writer.WriteObject(12);
-
-            customSerializerMock.Verify(m => m.Dictify(It.Is<int>(v => v == 12), It.IsAny<GraphSONWriter>()));
+            
+            Assert.Equal(12, customSerializer.DictifiedLast);
+        }
+        
+        private class CustomDummySerializer : IGraphSONSerializer
+        {
+            public dynamic DictifiedLast { get; private set; }
+            
+            public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
+            {
+                DictifiedLast = objectData;
+                return new Dictionary<string, dynamic>();
+            }
         }
 
         [Theory, MemberData(nameof(Versions))]
