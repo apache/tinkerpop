@@ -17,6 +17,7 @@
 # under the License.
 #
 
+from datetime import datetime
 import json
 import re
 from gremlin_python.statics import long
@@ -198,6 +199,8 @@ def _convert(val, ctx):
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match(r"^s\[.*\]$", val):  # parse set
         return set() if val == "s[]" else set(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
+    elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
+        return datetime.fromtimestamp(int(val[3:-1]))
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf

@@ -24,10 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
-import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
 
 public class DateAddStepTest extends StepTest {
