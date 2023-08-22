@@ -29,7 +29,7 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, Merge, T, Pick, Operator, IO, WithOptions
+from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, T, Pick, Operator, IO, WithOptions
 
 world.gremlins = {
     'g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX': [(lambda g, l1=None:g.V().branch(l1).option('a',__.age).option('b',__.lang).option('b',__.name))], 
@@ -441,12 +441,12 @@ world.gremlins = {
     'g_addVXpersonX_propertyXname_joshX_propertyXage_nullX': [(lambda g:g.addV('person').property('name','josh').property('age',None)), (lambda g:g.V().has('person','age',None))], 
     'g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX': [(lambda g:g.addV('person').property('name','marko').property('friendWeight',None,'acl',None)), (lambda g:g.V().has('person','name','marko').has('friendWeight',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').has('acl',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').count())], 
     'g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX': [(lambda g:g.addV('person').property('name','alice').property(Cardinality.single,'age',50)), (lambda g:g.V().has('person','name','alice').property('age',__.union(__.age,__.constant(1)).sum_())), (lambda g:g.V().has('person','age',50)), (lambda g:g.V().has('person','age',51))], 
-    'g_injectXstrX_asDate': [(lambda g:g.inject('2022-08-02T00:00:00Z').asDate())], 
-    'g_injectX1000X_asDate': [(lambda g:g.inject(1000).asDate())], 
-    'g_injectX2000LX_asDate': [(lambda g, xx1=None:g.inject(xx1).asDate())], 
-    'g_injectX3000dX_asDate': [(lambda g, xx1=None:g.inject(xx1).asDate())], 
-    'g_injectX1_2X_asDate': [(lambda g, xx1=None:g.inject(xx1).asDate())], 
-    'g_injectXnullX_asDate': [(lambda g:g.inject(None).asDate())], 
+    'g_injectXstrX_asDate': [(lambda g:g.inject('2022-08-02T00:00:00Z').as_date())], 
+    'g_injectX1000X_asDate': [(lambda g:g.inject(1000).as_date())], 
+    'g_injectX2000LX_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectX3000dX_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectX1_2X_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectXnullX_asDate': [(lambda g:g.inject(None).as_date())], 
     'g_call': [(lambda g:g.call())], 
     'g_callXlistX': [(lambda g:g.call('--list'))], 
     'g_callXlistX_withXstring_stringX': [(lambda g:g.call('--list').with_('service','tinker.search'))], 
@@ -507,13 +507,13 @@ world.gremlins = {
     'g_E_sampleX1X_count': [(lambda g:g.E().sample(1).count())], 
     'g_V_sampleX1X_byXageX_count': [(lambda g:g.V().sample(1).by('age').count())], 
     'g_V_order_byXnoX_count': [(lambda g:g.V().order().by('no').count())], 
-    'g_injectXdatetimeXstrXX_dateAddXDT_hour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateAdd(DT.hour,2))], 
-    'g_injectXdatetimeXstrXX_dateAddXhour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateAdd(DT.hour,2))], 
-    'g_injectXdatetimeXstrXX_dateAddXhour_1X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateAdd(DT.hour,-1))], 
-    'g_injectXdatetimeXstrXX_dateAddXminute_10X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateAdd(DT.minute,10))], 
-    'g_injectXdatetimeXstrXX_dateAddXsecond_20X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateAdd(DT.second,20))], 
-    'g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).dateDiff(datetime.datetime.utcfromtimestamp(1691539200000 / 1000.0)))], 
-    'g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1691452800000 / 1000.0)).dateDiff(__.inject(datetime.datetime.utcfromtimestamp(1690848000000 / 1000.0))))], 
+    'g_injectXdatetimeXstrXX_dateAddXDT_hour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,2))], 
+    'g_injectXdatetimeXstrXX_dateAddXhour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,2))], 
+    'g_injectXdatetimeXstrXX_dateAddXhour_1X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,-1))], 
+    'g_injectXdatetimeXstrXX_dateAddXminute_10X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.minute,10))], 
+    'g_injectXdatetimeXstrXX_dateAddXsecond_20X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.second,20))], 
+    'g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_diff(datetime.datetime.utcfromtimestamp(1691539200000 / 1000.0)))], 
+    'g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1691452800000 / 1000.0)).date_diff(__.inject(datetime.datetime.utcfromtimestamp(1690848000000 / 1000.0))))], 
     'g_V_EX11X': [(lambda g, eid11=None:g.V().E(eid11))], 
     'g_EX11X_E': [(lambda g, eid11=None:g.E(eid11).E())], 
     'g_V_EXnullX': [(lambda g:g.V().E(None))], 

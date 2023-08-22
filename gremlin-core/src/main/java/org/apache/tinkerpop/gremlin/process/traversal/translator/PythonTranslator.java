@@ -430,6 +430,9 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("all", "all_");
             TO_PYTHON_MAP.put("and", "and_");
             TO_PYTHON_MAP.put("as", "as_");
+            TO_PYTHON_MAP.put("asDate", "as_date");
+            TO_PYTHON_MAP.put("dateAdd", "date_add");
+            TO_PYTHON_MAP.put("dateDiff", "date_diff");
             TO_PYTHON_MAP.put("filter", "filter_");
             TO_PYTHON_MAP.put("from", "from_");
             TO_PYTHON_MAP.put("id", "id_");
