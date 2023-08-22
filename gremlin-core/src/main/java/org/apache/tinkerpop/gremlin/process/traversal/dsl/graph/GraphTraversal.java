@@ -1390,7 +1390,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Date> dateAdd(final DT dateToken, final int value) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateAdd);
+        this.asAdmin().getBytecode().addStep(Symbols.dateAdd, dateToken, value);
         return this.asAdmin().addStep(new DateAddStep<>(this.asAdmin(), dateToken, value));
     }
 
@@ -1402,7 +1402,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Date value) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateAdd);
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
     }
 
@@ -1414,7 +1414,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateAdd);
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, dateTraversal);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }
 

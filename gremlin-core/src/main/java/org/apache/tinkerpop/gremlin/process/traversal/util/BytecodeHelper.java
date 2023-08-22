@@ -146,6 +146,7 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.concat, Collections.singletonList(ConcatStep.class));
             put(GraphTraversal.Symbols.asDate, Collections.singletonList(AsDateStep.class));
             put(GraphTraversal.Symbols.dateAdd, Collections.singletonList(DateAddStep.class));
+            put(GraphTraversal.Symbols.dateDiff, Collections.singletonList(DateDiffStep.class));
             put(GraphTraversal.Symbols.group, Arrays.asList(GroupStep.class, GroupSideEffectStep.class));
             put(GraphTraversal.Symbols.groupCount, Arrays.asList(GroupCountStep.class, GroupCountSideEffectStep.class));
             put(GraphTraversal.Symbols.tree, Arrays.asList(TreeStep.class, TreeSideEffectStep.class));

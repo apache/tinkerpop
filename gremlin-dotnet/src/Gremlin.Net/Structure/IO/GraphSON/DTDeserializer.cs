@@ -1,3 +1,5 @@
+﻿#region License
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -7,7 +9,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,17 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateAddStep;
+#endregion
 
-/**
- * Tokens that are used to denote different periods of time.
- * Used with {@link DateAddStep} step.
- */
-public enum DT {
-    second,
-    minute,
-    hour,
-    day
+using System.IO;
+using System.Text.Json;
+using Gremlin.Net.Process.Traversal;
+
+namespace Gremlin.Net.Structure.IO.GraphSON
+{
+    internal class DTDeserializer : IGraphSONDeserializer
+    {
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
+        {
+            return DT.GetByValue(graphsonObject.GetString() ??
+                                    throw new IOException($"Read null but expected a {nameof(DT)} string representation"));
+        }
+    }
 }

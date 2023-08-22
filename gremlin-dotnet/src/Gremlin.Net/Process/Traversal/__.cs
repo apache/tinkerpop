@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 
@@ -133,6 +134,14 @@ namespace Gremlin.Net.Process.Traversal
             return labels is { Length: 0 }
                 ? new GraphTraversal<object, object>().As(label)
                 : new GraphTraversal<object, object>().As(label, labels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asDate step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AsDate<E2>()
+        {
+            return new GraphTraversal<object, object>().AsDate<E2>();
         }
 
         /// <summary>
@@ -359,6 +368,30 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> CyclicPath()
         {
             return new GraphTraversal<object, object>().CyclicPath();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateAdd step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DateAdd<E2>(DT dateToken, int value)
+        {
+            return new GraphTraversal<object, object>().DateAdd<E2>(dateToken, value);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateDiff step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DateDiff<E2>(DateTimeOffset value)
+        {
+            return new GraphTraversal<object, object>().DateDiff<E2>(value);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateDiff step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DateDiff<E2>(ITraversal dateTraversal)
+        {
+            return new GraphTraversal<object, object>().DateDiff<E2>(dateTraversal);
         }
 
         /// <summary>

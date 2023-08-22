@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
@@ -201,6 +202,15 @@ namespace Gremlin.Net.Process.Traversal
             var args = new List<object>(1 + stepLabels.Length) {stepLabel};
             args.AddRange(stepLabels);
             Bytecode.AddStep("as", args.ToArray());
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the asDate step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> AsDate<TNewEnd>()
+        {
+            Bytecode.AddStep("asDate");
             return Wrap<TStart, TEnd>(this);
         }
 
@@ -565,6 +575,33 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, TEnd> CyclicPath ()
         {
             Bytecode.AddStep("cyclicPath");
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateAdd step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DateAdd<TNewEnd>(DT dateToken, int value)
+        {
+            Bytecode.AddStep("dateAdd", dateToken, value);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DateDiff<TNewEnd>(DateTimeOffset value)
+        {
+            Bytecode.AddStep("dateDiff", value);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DateDiff<TNewEnd>(ITraversal dateTraversal)
+        {
+            Bytecode.AddStep("dateDiff", dateTraversal);
             return Wrap<TStart, TEnd>(this);
         }
 

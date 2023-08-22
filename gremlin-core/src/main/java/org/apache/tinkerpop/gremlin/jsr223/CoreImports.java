@@ -53,7 +53,9 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -66,7 +68,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -196,6 +197,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(VertexProperty.Cardinality.class);
         CLASS_IMPORTS.add(Column.class);
         CLASS_IMPORTS.add(Direction.class);
+        CLASS_IMPORTS.add(DT.class);
         CLASS_IMPORTS.add(Merge.class);
         CLASS_IMPORTS.add(Operator.class);
         CLASS_IMPORTS.add(Order.class);
@@ -347,6 +349,7 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, VertexProperty.Cardinality.values());
         Collections.addAll(ENUM_IMPORTS, Column.values());
         Collections.addAll(ENUM_IMPORTS, Direction.values());
+        Collections.addAll(ENUM_IMPORTS, DT.values());
         Collections.addAll(ENUM_IMPORTS, Merge.values());
         Collections.addAll(ENUM_IMPORTS, Operator.values());
         Collections.addAll(ENUM_IMPORTS, Order.values());

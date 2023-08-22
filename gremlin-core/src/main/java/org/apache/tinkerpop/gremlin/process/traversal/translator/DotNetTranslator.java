@@ -510,6 +510,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         private final static Map<String, String> FROM_CS_MAP = new HashMap<>();
 
         static {
+            TO_CS_MAP.put(GraphTraversal.Symbols.asDate, "AsDate<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.branch, "Branch<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.call, "Call<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
@@ -517,6 +518,8 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.coalesce, "Coalesce<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.concat, "Concat<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.constant, "Constant<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.dateAdd, "DateAdd<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.dateDiff, "DateDiff<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.elementMap, "ElementMap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.flatMap, "FlatMap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.fold, "Fold<object>");

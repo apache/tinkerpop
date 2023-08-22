@@ -616,6 +616,13 @@ public class __ {
         return __.<A>start().dateDiff(value);
     }
 
+    /**
+     * @see GraphTraversal#dateDiff(Traversal)
+     */
+    public static <A> GraphTraversal<A, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
+        return __.<A>start().dateDiff(dateTraversal);
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**

@@ -45,6 +45,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { "g:Float", new FloatConverter() },
             { "g:Double", new DoubleConverter() },
             { "g:Direction", new DirectionDeserializer() },
+            { "g:DT", new DTDeserializer() },
             { "g:Merge", new MergeDeserializer() },
             { "g:UUID", new UuidDeserializer() },
             { "g:Date", new DateDeserializer() },
