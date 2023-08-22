@@ -28,7 +28,11 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -61,6 +65,17 @@ public class SelectStepTest extends StepTest {
         };
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
+        }
+    }
+
+    @Test
+    public void shouldThrowWhenDuplicateKeySupplied() {
+        try {
+            __.select("x", "x");
+            fail("Should throw an exception.");
+        } catch (final Exception re) {
+            assertThat(re, instanceOf(IllegalArgumentException.class));
+            assertThat(re.getMessage(), is("keys must be unique in SelectStep"));
         }
     }
 }

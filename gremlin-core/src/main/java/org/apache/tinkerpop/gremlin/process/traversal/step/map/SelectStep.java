@@ -59,6 +59,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         this.pop = pop;
         this.selectKeys = Arrays.asList(selectKeys);
         this.selectKeysSet = Collections.unmodifiableSet(new HashSet<>(this.selectKeys));
+        if (this.selectKeysSet.size() != this.selectKeys.size()) {
+            throw new IllegalArgumentException("keys must be unique in SelectStep");
+        }
         if (this.selectKeys.size() < 2)
             throw new IllegalArgumentException("At least two select keys must be provided: " + this);
     }

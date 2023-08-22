@@ -29,10 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,6 +50,11 @@ public class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> implemen
 
     public ProjectStep(final Traversal.Admin traversal, final TraversalRing<S, E> traversalRing, final String... projectKeys) {
         super(traversal);
+
+        if (Arrays.stream(projectKeys).collect(Collectors.toSet()).size() != projectKeys.length) {
+            throw new IllegalArgumentException("keys must be unique in ProjectStep");
+        }
+
         this.projectKeys = Arrays.asList(projectKeys);
         this.traversalRing = traversalRing;
     }

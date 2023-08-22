@@ -25,7 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
+==== Improvements
 
+* TINKERPOP-2972 Throw an Exception when a duplicate key is supplied for ProjectStep and SelectStep
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)
