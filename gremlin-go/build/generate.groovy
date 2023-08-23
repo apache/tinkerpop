@@ -92,6 +92,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         '\n' +
         'import (\n' +
         '\t \"errors\"\n' +
+        '\t \"time\"\n' +
         '\t \"math\"\n' +
         '\t \"github.com/apache/tinkerpop/gremlin-go/v3/driver\"\n' +
         ')\n'
@@ -108,7 +109,12 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // solution may become necessary as testing of nulls expands.
     def staticTranslate = [
             g_injectXnull_nullX: "  \"g_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil, nil)}}, ",
-            g_VX1X_valuesXageX_injectXnull_nullX: "  \"g_VX1X_valuesXageX_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p[\"xx1\"]).Values(\"age\").Inject(nil, nil)}}, "
+            g_VX1X_valuesXageX_injectXnull_nullX: "  \"g_VX1X_valuesXageX_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p[\"xx1\"]).Values(\"age\").Inject(nil, nil)}}, ",
+            g_injectXdatetimeXstrXX_dateAddXDT_hour_2X: "  \"g_injectXdatetimeXstrXX_dateAddXDT_hour_2X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(2))}}, ",
+            g_injectXdatetimeXstrXX_dateAddXhour_2X: "  \"g_injectXdatetimeXstrXX_dateAddXhour_2X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(2))}},",
+            g_injectXdatetimeXstrXX_dateAddXhour_1X: "  \"g_injectXdatetimeXstrXX_dateAddXhour_1X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(-1))}},",
+            g_injectXdatetimeXstrXX_dateAddXminute_10X: "  \"g_injectXdatetimeXstrXX_dateAddXminute_10X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Minute, int32(10))}},",
+            g_injectXdatetimeXstrXX_dateAddXsecond_20X: "  \"g_injectXdatetimeXstrXX_dateAddXsecond_20X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Second, int32(20))}},"
     ]
 
     gremlins.each { k,v ->

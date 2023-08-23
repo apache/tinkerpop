@@ -317,6 +317,11 @@ func (anonymousTraversal *anonymousTraversal) As(args ...interface{}) *GraphTrav
 	return anonymousTraversal.graphTraversal().As(args...)
 }
 
+// AsDate adds the AsDate step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) AsDate(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().AsDate(args...)
+}
+
 // Barrier adds the barrier step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Barrier(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Barrier(args...)
@@ -395,6 +400,16 @@ func (anonymousTraversal *anonymousTraversal) Count(args ...interface{}) *GraphT
 // CyclicPath adds the cyclicPath step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) CyclicPath(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().CyclicPath(args...)
+}
+
+// DateAdd adds the DateAdd step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) DateAdd(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().DateAdd(args...)
+}
+
+// DateDiff adds the DateDiff step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) DateDiff(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().DateDiff(args...)
 }
 
 // Dedup adds the dedup step to the GraphTraversal.

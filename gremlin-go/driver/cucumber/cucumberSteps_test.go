@@ -31,6 +31,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
 	"github.com/cucumber/godog"
@@ -42,10 +43,10 @@ type tinkerPopGraph struct {
 }
 
 var parsers map[*regexp.Regexp]func(string, string) interface{}
-var toListLock sync.Mutex
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
+		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfdmn]$`): toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,
 		regexp.MustCompile(`^vp\[(.+)]$`):           toVertexProperty,
@@ -101,6 +102,15 @@ func parseValue(value string, graphName string) interface{} {
 	} else {
 		return parser(extractedValue, graphName)
 	}
+}
+
+// Parse dateTime.
+func toDateTime(stringVal, graphName string) interface{} {
+	val, err := strconv.ParseInt(stringVal, 10, 64)
+	if err != nil {
+		return nil
+	}
+	return time.Unix(val, 0)
 }
 
 // Parse numeric.

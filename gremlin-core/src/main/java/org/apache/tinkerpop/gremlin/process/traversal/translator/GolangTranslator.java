@@ -59,7 +59,7 @@ import java.util.function.BiPredicate;
 public final class GolangTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
-    private final static  String GO_PACKAGE_NAME = "gremlingo.";
+    private final static String GO_PACKAGE_NAME = "gremlingo.";
 
     private GolangTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -133,14 +133,15 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         protected String getSyntax(final Boolean o) {
             return o.toString();
         }
+
         @Override
         protected String getSyntax(final Date o) {
-            return "time.Unix(" + o.getTime() + ", 0)";
+            return "time.UnixMilli(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "time.Unix(" + o.getTime() + ", 0)";
+            return "time.UnixMilli(" + o.getTime() + ")";
         }
 
         @Override

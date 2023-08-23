@@ -80,6 +80,7 @@ const (
 	traversalStrategyType dataType = 0x29
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
+	dtType                dataType = 0x2f
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
@@ -224,11 +225,12 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 
 // Format: {steps_length}{step_0}…{step_n}{sources_length}{source_0}…{source_n}
 // Where:
-//		{steps_length} is an Int value describing the amount of steps.
-//		{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
-//      {name} is a String. This is also known as the operator.
-//		{values_length} is an Int describing the amount values.
-//		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
+//
+//			{steps_length} is an Int value describing the amount of steps.
+//			{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
+//	     {name} is a String. This is also known as the operator.
+//			{values_length} is an Int describing the amount values.
+//			{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	var bc Bytecode
 	switch typedVal := value.(type) {
@@ -709,6 +711,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return scopeType, nil
 	case merge:
 		return mergeType, nil
+	case dt:
+		return dtType, nil
 	case p, Predicate:
 		return pType, nil
 	case textP, TextPredicate:
@@ -988,13 +992,10 @@ func readMap(data *[]byte, i *int) (interface{}, error) {
 			switch reflect.TypeOf(k).Kind() {
 			case reflect.Map:
 				mapData[&k] = v
-				break
 			case reflect.Slice:
 				mapData[fmt.Sprint(k)] = v
-				break
 			default:
 				mapData[k] = v
-				break
 			}
 		}
 	}

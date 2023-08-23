@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import calendar
-import datetime
+
 import json
 import uuid
 import math

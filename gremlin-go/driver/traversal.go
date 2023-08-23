@@ -310,6 +310,27 @@ var MaterializeProperties = materializeProperties{
 	Tokens: "tokens",
 }
 
+type dt string
+
+type dts struct {
+	// time period second
+	Second dt
+	// time period minute
+	Minute dt
+	// time period hour
+	Hour dt
+	// time period day
+	Day dt
+}
+
+// Merge is a set of operations for Vertex and Edge merging.
+var DT = dts{
+	Second: "second",
+	Minute: "minute",
+	Hour:   "hour",
+	Day:    "day",
+}
+
 type merge string
 
 type merges struct {
