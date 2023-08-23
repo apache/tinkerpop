@@ -511,6 +511,7 @@ module.exports = {
   cardinality: toEnum('Cardinality', 'list set single'),
   column: toEnum('Column', 'keys values'),
   direction: toDirectionEnum('Direction', 'BOTH IN OUT from_ to'),
+  dt: toEnum('DT', 'second minute hour day'),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   merge: toEnum('Merge', 'onCreate onMatch outV inV'),

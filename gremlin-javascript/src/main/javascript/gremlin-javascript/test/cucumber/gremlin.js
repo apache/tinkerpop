@@ -39,6 +39,7 @@ const Direction = {
     from_: traversalModule.direction.out,
     to: traversalModule.direction.in
 };
+const DT = traversalModule.dt;
 const Merge = traversalModule.merge;
 const P = traversalModule.P;
 const Pick = traversalModule.pick
@@ -460,6 +461,12 @@ const gremlins = {
     g_addVXpersonX_propertyXname_joshX_propertyXage_nullX: [function({g}) { return g.addV("person").property("name","josh").property("age",null) }, function({g}) { return g.V().has("person","age",null) }], 
     g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX: [function({g}) { return g.addV("person").property("name","marko").property("friendWeight",null,"acl",null) }, function({g}) { return g.V().has("person","name","marko").has("friendWeight",null) }, function({g}) { return g.V().has("person","name","marko").properties("friendWeight").has("acl",null) }, function({g}) { return g.V().has("person","name","marko").properties("friendWeight").count() }], 
     g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX: [function({g}) { return g.addV("person").property("name","alice").property(Cardinality.single,"age",50) }, function({g}) { return g.V().has("person","name","alice").property("age",__.union(__.values("age"),__.constant(1)).sum()) }, function({g}) { return g.V().has("person","age",50) }, function({g}) { return g.V().has("person","age",51) }], 
+    g_injectXstrX_asDate: [function({g}) { return g.inject("2022-08-02T00:00:00Z").asDate() }], 
+    g_injectX1000X_asDate: [function({g}) { return g.inject(1000).asDate() }], 
+    g_injectX2000LX_asDate: [function({g, xx1}) { return g.inject(xx1).asDate() }], 
+    g_injectX3000dX_asDate: [function({g, xx1}) { return g.inject(xx1).asDate() }], 
+    g_injectX1_2X_asDate: [function({g, xx1}) { return g.inject(xx1).asDate() }], 
+    g_injectXnullX_asDate: [function({g}) { return g.inject(null).asDate() }], 
     g_call: [function({g}) { return g.call() }], 
     g_callXlistX: [function({g}) { return g.call("--list") }], 
     g_callXlistX_withXstring_stringX: [function({g}) { return g.call("--list").with_("service","tinker.search") }], 
@@ -520,6 +527,13 @@ const gremlins = {
     g_E_sampleX1X_count: [function({g}) { return g.E().sample(1).count() }], 
     g_V_sampleX1X_byXageX_count: [function({g}) { return g.V().sample(1).by("age").count() }], 
     g_V_order_byXnoX_count: [function({g}) { return g.V().order().by("no").count() }], 
+    g_injectXdatetimeXstrXX_dateAddXDT_hour_2X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.hour,2) }], 
+    g_injectXdatetimeXstrXX_dateAddXhour_2X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.hour,2) }], 
+    g_injectXdatetimeXstrXX_dateAddXhour_1X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.hour,-1) }], 
+    g_injectXdatetimeXstrXX_dateAddXminute_10X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.minute,10) }], 
+    g_injectXdatetimeXstrXX_dateAddXsecond_20X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.second,20) }], 
+    g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX: [function({g}) { return g.inject(new Date(1690934400000)).dateDiff(new Date(1691539200000)) }], 
+    g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX: [function({g}) { return g.inject(new Date(1691452800000)).dateDiff(__.inject(new Date(1690848000000))) }], 
     g_V_EX11X: [function({g, eid11}) { return g.V().E(eid11) }], 
     g_EX11X_E: [function({g, eid11}) { return g.E(eid11).E() }], 
     g_V_EXnullX: [function({g}) { return g.V().E(null) }], 

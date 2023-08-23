@@ -435,6 +435,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal asDate method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asDate(...args) {
+    this.bytecode.addStep('asDate', args);
+    return this;
+  }
+
+  /**
    * Graph traversal barrier method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -590,6 +600,26 @@ class GraphTraversal extends Traversal {
    */
   cyclicPath(...args) {
     this.bytecode.addStep('cyclicPath', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dateAdd method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateAdd(...args) {
+    this.bytecode.addStep('dateAdd', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dateDiff method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateDiff(...args) {
+    this.bytecode.addStep('dateDiff', args);
     return this;
   }
 
@@ -1519,6 +1549,7 @@ const statics = {
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
   and: (...args) => callOnEmptyTraversal('and', args),
   as: (...args) => callOnEmptyTraversal('as', args),
+  asDate: (...args) => callOnEmptyTraversal('asDate', args),
   barrier: (...args) => callOnEmptyTraversal('barrier', args),
   both: (...args) => callOnEmptyTraversal('both', args),
   bothE: (...args) => callOnEmptyTraversal('bothE', args),
@@ -1533,6 +1564,8 @@ const statics = {
   constant: (...args) => callOnEmptyTraversal('constant', args),
   count: (...args) => callOnEmptyTraversal('count', args),
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
+  dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
+  dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
   element: (...args) => callOnEmptyTraversal('element', args),

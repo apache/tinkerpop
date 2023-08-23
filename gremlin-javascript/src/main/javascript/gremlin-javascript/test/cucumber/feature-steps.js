@@ -44,6 +44,7 @@ const merge = traversalModule.merge;
 
 const parsers = [
   [ 'vp\\[(.+)\\]', toVertexProperty ],
+  [ 'dt\\[(.+)\\]', toDateTime ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
@@ -364,6 +365,10 @@ function toDirection(value) {
     return direction["from_"];
   else
     return direction[value.toLowerCase()];
+}
+
+function toDateTime(value) {
+  return new Date(parseInt(value) * 1000);
 }
 
 function toMerge(value) {
