@@ -51,7 +51,7 @@ updates:
     ignore:
       - dependency-name: "prettier"
         update-types: [ "version-update:semver-patch" ]
-      - dependency-name: "@types/node"
+      - dependency-name: "@types/*"
         update-types: [ "version-update:semver-patch" ]
       - dependency-name: "styled-components"
         update-types: [ "version-update:semver-patch" ]
