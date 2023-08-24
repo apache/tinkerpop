@@ -110,6 +110,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     def staticTranslate = [
             g_injectXnull_nullX: "  \"g_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil, nil)}}, ",
             g_VX1X_valuesXageX_injectXnull_nullX: "  \"g_VX1X_valuesXageX_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p[\"xx1\"]).Values(\"age\").Inject(nil, nil)}}, ",
+            // better solution is to use xx1 to pass strongly typed int32 argument to traversal, but it doesn't work now, probably bug
             g_injectXdatetimeXstrXX_dateAddXDT_hour_2X: "  \"g_injectXdatetimeXstrXX_dateAddXDT_hour_2X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(2))}}, ",
             g_injectXdatetimeXstrXX_dateAddXhour_2X: "  \"g_injectXdatetimeXstrXX_dateAddXhour_2X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(2))}},",
             g_injectXdatetimeXstrXX_dateAddXhour_1X: "  \"g_injectXdatetimeXstrXX_dateAddXhour_1X\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(time.UnixMilli(1690934400000)).DateAdd(gremlingo.DT.Hour, int32(-1))}},",

@@ -208,10 +208,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the asDate step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> AsDate<TNewEnd>()
+        public GraphTraversal<TStart, DateTimeOffset> AsDate()
         {
             Bytecode.AddStep("asDate");
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, DateTimeOffset>(this);
         }
 
         /// <summary>
@@ -581,28 +581,28 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the dateAdd step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> DateAdd<TNewEnd>(DT dateToken, int value)
+        public GraphTraversal<TStart, DateTimeOffset> DateAdd(DT dateToken, int value)
         {
             Bytecode.AddStep("dateAdd", dateToken, value);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, DateTimeOffset>(this);
         }
 
         /// <summary>
         ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> DateDiff<TNewEnd>(DateTimeOffset value)
+        public GraphTraversal<TStart, long> DateDiff(DateTimeOffset value)
         {
             Bytecode.AddStep("dateDiff", value);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, long>(this);
         }
 
         /// <summary>
         ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> DateDiff<TNewEnd>(ITraversal dateTraversal)
+        public GraphTraversal<TStart, long> DateDiff(ITraversal dateTraversal)
         {
             Bytecode.AddStep("dateDiff", dateTraversal);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, long>(this);
         }
 
         /// <summary>

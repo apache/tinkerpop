@@ -744,7 +744,7 @@ If the incoming traverser is not a string, number or Date then an `IllegalArgume
 ----
 g.inject(1690934400000).asDate() <1>
 g.inject("2023-08-02T00:00:00Z").asDate() <2>
-g.inject(new Date()).asDate() <3>
+g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
 ----
 
 <1> Convert number to Date

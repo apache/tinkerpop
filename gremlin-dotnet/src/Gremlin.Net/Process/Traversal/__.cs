@@ -139,9 +139,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asDate step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> AsDate<E2>()
+        public static GraphTraversal<object, DateTimeOffset> AsDate()
         {
-            return new GraphTraversal<object, object>().AsDate<E2>();
+            return new GraphTraversal<object, DateTimeOffset>().AsDate();
         }
 
         /// <summary>
@@ -373,25 +373,25 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateAdd step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> DateAdd<E2>(DT dateToken, int value)
+        public static GraphTraversal<object, DateTimeOffset> DateAdd(DT dateToken, int value)
         {
-            return new GraphTraversal<object, object>().DateAdd<E2>(dateToken, value);
+            return new GraphTraversal<object, DateTimeOffset>().DateAdd(dateToken, value);
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateDiff step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> DateDiff<E2>(DateTimeOffset value)
+        public static GraphTraversal<object, long> DateDiff(DateTimeOffset value)
         {
-            return new GraphTraversal<object, object>().DateDiff<E2>(value);
+            return new GraphTraversal<object, long>().DateDiff(value);
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateDiff step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> DateDiff<E2>(ITraversal dateTraversal)
+        public static GraphTraversal<object, long> DateDiff(ITraversal dateTraversal)
         {
-            return new GraphTraversal<object, object>().DateDiff<E2>(dateTraversal);
+            return new GraphTraversal<object, long>().DateDiff(dateTraversal);
         }
 
         /// <summary>
