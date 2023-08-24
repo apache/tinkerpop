@@ -2010,7 +2010,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Removes objects from the traversal stream when the traversal provided as an argument does not return any objects.
+     * Removes objects from the traversal stream when the traversal provided as an argument returns any objects.
      *
      * @param notTraversal the traversal to filter by.
      * @return the traversal with an appended {@link NotStep}.

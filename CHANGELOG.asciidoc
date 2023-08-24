@@ -214,6 +214,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
+* Fix a javadoc comment in GraphTraversal.not method.
 
 
 [[release-3-6-5]]
