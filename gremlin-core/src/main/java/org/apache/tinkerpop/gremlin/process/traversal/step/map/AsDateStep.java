@@ -48,7 +48,10 @@ public final class AsDateStep<S> extends ScalarMapStep<S, Date> {
         final Object object = traverser.get();
         if (object == null)
             throw new IllegalArgumentException("Can't parse null as Date.");
+        if (object instanceof Date)
+            return (Date) object;
         if (object instanceof Number)
+            // numbers handled as milliseconds since January 1, 1970, 00:00:00 GMT.
             return new Date(((Number) object).longValue());
         if (object instanceof String) {
             return DatetimeHelper.parse((String) object);

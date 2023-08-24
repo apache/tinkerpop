@@ -46,7 +46,7 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(604800L, (long)__.__(other).dateDiff(now).next());
+        assertEquals(604800L, (long) __.__(other).dateDiff(now).next());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(-604800L, (long)__.__(now).dateDiff(other).next());
+        assertEquals(-604800L, (long) __.__(now).dateDiff(other).next());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(-604800L, (long)__.__(now).dateDiff(__.__(other)).next());
+        assertEquals(-604800L, (long) __.__(now).dateDiff(__.__(other)).next());
     }
 
     @Test
@@ -87,4 +87,8 @@ public class DateDiffStepTest extends StepTest {
         assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWhenInputIsNotDate() {
+        __.__("2023-08-23T00:00:00Z").dateDiff(new Date()).next();
+    }
 }
