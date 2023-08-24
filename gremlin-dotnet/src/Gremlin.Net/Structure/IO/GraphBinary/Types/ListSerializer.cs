@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -31,7 +32,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// A generic list serializer.
     /// </summary>
     /// <typeparam name="TMember">The type of elements in the list.</typeparam>
-    public class ListSerializer<TMember> : SimpleTypeSerializer<IList<TMember>>
+    public class ListSerializer<TMember> : SimpleTypeSerializer<IList<TMember?>>
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="ListSerializer{TList}" /> class.
@@ -41,24 +42,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(IList<TMember> value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(IList<TMember?> value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Count, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Count, stream, cancellationToken).ConfigureAwait(false);
             
             foreach (var item in value)
             {
-                await writer.WriteAsync(item, stream).ConfigureAwait(false);
+                await writer.WriteAsync(item, stream, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        protected override async Task<IList<TMember>> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<IList<TMember?>> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var length = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
-            var result = new List<TMember>(length);
+            var length = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
+            var result = new List<TMember?>(length);
             for (var i = 0; i < length; i++)
             {
-                result.Add((TMember) await reader.ReadAsync(stream).ConfigureAwait(false));
+                result.Add((TMember?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
             }
 
             return result;

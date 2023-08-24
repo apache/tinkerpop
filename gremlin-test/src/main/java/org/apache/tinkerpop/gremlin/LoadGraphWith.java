@@ -122,15 +122,15 @@ public @interface LoadGraphWith {
         public String location() {
             switch (this) {
                 case CLASSIC:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic-v3d0.kryo";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-classic-v3.kryo";
                 case CREW:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-crew-v3d0.kryo";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-crew-v3.kryo";
                 case MODERN:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern-v3d0.kryo";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-modern-v3.kryo";
                 case GRATEFUL:
-                    return RESOURCE_PATH_PREFIX + "grateful-dead-v3d0.kryo";
+                    return RESOURCE_PATH_PREFIX + "grateful-dead-v3.kryo";
                 case SINK:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-sink-v3d0.kryo";
+                    return RESOURCE_PATH_PREFIX + "tinkerpop-sink-v3.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");

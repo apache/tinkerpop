@@ -22,10 +22,11 @@
 #endregion
 
 using System;
+using Gremlin.Net.Driver.Remote;
+using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
+using Moq;
 using Xunit;
-
-using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.UnitTest.Process.Traversal
 {
@@ -59,7 +60,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             var gLocal = AnonymousTraversalSource.Traversal();
 
-            var gRemote = gLocal.WithRemote(null);
+            var gRemote = gLocal.WithRemote(Mock.Of<IRemoteConnection>());
 
             Assert.Equal(0, gLocal.TraversalStrategies.Count);
             Assert.Equal(1, gRemote.TraversalStrategies.Count);

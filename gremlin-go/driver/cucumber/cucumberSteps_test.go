@@ -24,8 +24,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
-	"github.com/cucumber/godog"
 	"math"
 	"reflect"
 	"regexp"
@@ -33,6 +31,9 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+	"github.com/cucumber/godog"
 )
 
 type tinkerPopGraph struct {
@@ -61,6 +62,7 @@ func init() {
 		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
 		regexp.MustCompile(`^t\[(.+)]$`):            toT,
 		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
+		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
 	}
 }
 
@@ -305,6 +307,21 @@ func toDirection(name, graphName string) interface{} {
 		return gremlingo.Direction.From
 	} else if name == "to" {
 		return gremlingo.Direction.To
+	} else {
+		return name
+	}
+}
+
+func toMerge(name, graphName string) interface{} {
+	// Return as is, since Merge values are just strings.
+	if name == "outV" {
+		return gremlingo.Merge.OutV
+	} else if name == "inV" {
+		return gremlingo.Merge.InV
+	} else if name == "onCreate" {
+		return gremlingo.Merge.OnCreate
+	} else if name == "onMatch" {
+		return gremlingo.Merge.OnMatch
 	} else {
 		return name
 	}
@@ -624,6 +641,9 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 	if fmt.Sprint(expected) == fmt.Sprint(actual) {
 		return true
 	}
+	if len(expected) != len(actual) {
+		return false
+	}
 	expectedCopy := make([]interface{}, len(expected))
 	copy(expectedCopy, expected)
 	for _, a := range actual {
@@ -884,7 +904,7 @@ func TestCucumberFeatures(t *testing.T) {
 		Options: &godog.Options{
 			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues",
 			Format:   "pretty",
-			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/features")},
+			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}

@@ -21,13 +21,13 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTraversal(t *testing.T) {
-	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
 		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
@@ -74,7 +74,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction commit", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -104,7 +103,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction rollback", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -134,7 +132,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction flows", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -175,10 +172,12 @@ func TestTraversal(t *testing.T) {
 		err = tx.Rollback()
 		assert.Nil(t, err)
 		assert.False(t, tx.IsOpen())
+
+		// sessions should be removed when transaction closed
+		assert.Equal(t, 0, len(remote.spawnedSessions))
 	})
 
 	t.Run("Test multi commit Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -213,7 +212,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test multi rollback Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -248,7 +246,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -283,7 +280,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction close", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -319,7 +315,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction close tx from parent", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)

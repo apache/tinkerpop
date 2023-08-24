@@ -23,11 +23,14 @@
 
 using System;
 using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO;
 using Gremlin.Net.Structure.IO.GraphBinary;
 using Gremlin.Net.Structure.IO.GraphSON;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gremlin.Net.Driver
 {
@@ -37,6 +40,8 @@ namespace Gremlin.Net.Driver
     public class GremlinClient : IGremlinClient
     {
         private readonly ConnectionPool _connectionPool;
+        
+        internal ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
@@ -52,8 +57,8 @@ namespace Gremlin.Net.Driver
         /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
         [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
         public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter,
-            ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
+            ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
             : this(gremlinServer, graphSONReader, graphSONWriter, SerializationTokens.GraphSON3MimeType,
                 connectionPoolSettings, webSocketConfiguration, sessionId)
         {
@@ -73,9 +78,9 @@ namespace Gremlin.Net.Driver
         /// </param>
         /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
         [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
-        public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter,
-            string mimeType, ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null)
+        public GremlinClient(GremlinServer gremlinServer, GraphSONReader? graphSONReader, GraphSONWriter? graphSONWriter,
+            string mimeType, ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
         {
             IMessageSerializer messageSerializer;
             switch (mimeType)
@@ -86,8 +91,8 @@ namespace Gremlin.Net.Driver
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON3Writer>(graphSONWriter, nameof(graphSONWriter),
                         mimeType);
                     messageSerializer = new GraphSON3MessageSerializer(
-                        (GraphSON3Reader) graphSONReader ?? new GraphSON3Reader(),
-                        (GraphSON3Writer) graphSONWriter ?? new GraphSON3Writer());
+                        (GraphSON3Reader?) graphSONReader ?? new GraphSON3Reader(),
+                        (GraphSON3Writer?) graphSONWriter ?? new GraphSON3Writer());
                     break;
                 case SerializationTokens.GraphSON2MimeType:
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON2Reader>(graphSONReader, nameof(graphSONReader),
@@ -95,8 +100,8 @@ namespace Gremlin.Net.Driver
                     VerifyGraphSONArgumentTypeForMimeType<GraphSON2Writer>(graphSONWriter, nameof(graphSONWriter),
                         mimeType);
                     messageSerializer = new GraphSON2MessageSerializer(
-                        (GraphSON2Reader) graphSONReader ?? new GraphSON2Reader(),
-                        (GraphSON2Writer) graphSONWriter ?? new GraphSON2Writer());
+                        (GraphSON2Reader?) graphSONReader ?? new GraphSON2Reader(),
+                        (GraphSON2Writer?) graphSONWriter ?? new GraphSON2Writer());
                     break;
                 default:
                     throw new ArgumentException(nameof(mimeType), $"{mimeType} not supported");
@@ -104,7 +109,11 @@ namespace Gremlin.Net.Driver
 
             var connectionFactory =
                 new ConnectionFactory(gremlinServer, messageSerializer,
-                    new WebSocketSettings { WebSocketConfigurationCallback = webSocketConfiguration }, sessionId);
+                    new WebSocketSettings
+                    {
+                        WebSocketConfigurationCallback = webSocketConfiguration,
+                        EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
+                    }, sessionId);
 
             // make sure one connection in pool as session mode
             if (!string.IsNullOrEmpty(sessionId))
@@ -119,14 +128,17 @@ namespace Gremlin.Net.Driver
                     connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
                 }
             }
-            _connectionPool =
-                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
+
+            LoggerFactory = NullLoggerFactory.Instance;
+
+            _connectionPool = new ConnectionPool(connectionFactory,
+                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
         }
 
-        private static void VerifyGraphSONArgumentTypeForMimeType<T>(object argument, string argumentName,
+        private static void VerifyGraphSONArgumentTypeForMimeType<T>(object? argument, string argumentName,
             string mimeType)
         {
-            if (argument != null && !(argument is T))
+            if (argument != null && argument is not T)
             {
                 throw new ArgumentException(
                     $"{argumentName} is not a {typeof(T).Name} but the mime type is: {mimeType}", argumentName);
@@ -150,20 +162,22 @@ namespace Gremlin.Net.Driver
         /// <param name="disableCompression">
         ///     Whether to disable compression. Compression is only supported since .NET 6.
         ///     There it is also enabled by default.
-        ///
+        /// 
         ///     Note that compression might make your application susceptible to attacks like CRIME/BREACH. Compression
         ///     should therefore be turned off if your application sends sensitive data to the server as well as data
         ///     that could potentially be controlled by an untrusted user.
         /// </param>
-        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer messageSerializer = null,
-            ConnectionPoolSettings connectionPoolSettings = null,
-            Action<ClientWebSocketOptions> webSocketConfiguration = null, string sessionId = null,
-            bool disableCompression = false)
+        /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
+        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
+            ConnectionPoolSettings? connectionPoolSettings = null,
+            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null,
+            bool disableCompression = false, ILoggerFactory? loggerFactory = null)
         {
             messageSerializer ??= new GraphBinaryMessageSerializer();
             var webSocketSettings = new WebSocketSettings
             {
-                WebSocketConfigurationCallback = webSocketConfiguration
+                WebSocketConfigurationCallback = webSocketConfiguration,
+                EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
 #if NET6_0_OR_GREATER
                 , UseCompression = !disableCompression
 #endif
@@ -185,8 +199,11 @@ namespace Gremlin.Net.Driver
                     connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
                 }
             }
-            _connectionPool =
-                new ConnectionPool(connectionFactory, connectionPoolSettings ?? new ConnectionPoolSettings());
+
+            LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+
+            _connectionPool = new ConnectionPool(connectionFactory,
+                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
         }
 
         /// <summary>
@@ -195,10 +212,10 @@ namespace Gremlin.Net.Driver
         public int NrConnections => _connectionPool.NrConnections;
 
         /// <inheritdoc />
-        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken = default)
         {
             using var connection = _connectionPool.GetAvailableConnection();
-            return await connection.SubmitAsync<T>(requestMessage).ConfigureAwait(false);
+            return await connection.SubmitAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
         }
 
         #region IDisposable Support

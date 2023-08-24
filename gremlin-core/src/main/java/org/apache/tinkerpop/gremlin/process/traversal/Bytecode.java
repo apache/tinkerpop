@@ -47,7 +47,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Bytecode implements Cloneable, Serializable {
+public class Bytecode implements Cloneable, Serializable {
 
     private static final Object[] EMPTY_ARRAY = new Object[]{};
 
@@ -56,7 +56,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     public Bytecode() {}
 
-    Bytecode(final String sourceName, final Object... arguments) {
+    public Bytecode(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
     }
 

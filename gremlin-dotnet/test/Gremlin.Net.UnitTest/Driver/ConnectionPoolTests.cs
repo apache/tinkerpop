@@ -27,6 +27,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
+using Gremlin.Net.Driver.Messages;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -187,7 +189,8 @@ namespace Gremlin.Net.UnitTest.Driver
             fakedConnection.Setup(f => f.IsOpen).Returns(false);
             mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
 
-            await returnedConnection.SubmitAsync<bool>(null);
+            await returnedConnection.SubmitAsync<bool>(RequestMessage.Build(string.Empty).Create(),
+                CancellationToken.None);
             returnedConnection.Dispose();
 
             Assert.Equal(1, pool.NrConnections);
@@ -389,12 +392,11 @@ namespace Gremlin.Net.UnitTest.Driver
         private static ConnectionPool CreateConnectionPool(IConnectionFactory connectionFactory, int poolSize = 2,
             int reconnectionAttempts = 1)
         {
-            return new ConnectionPool(connectionFactory,
-                new ConnectionPoolSettings
-                {
-                    PoolSize = poolSize, ReconnectionAttempts = reconnectionAttempts,
-                    ReconnectionBaseDelay = TimeSpan.FromMilliseconds(10)   // let the tests execute fast
-                });
+            return new ConnectionPool(connectionFactory, new ConnectionPoolSettings
+            {
+                PoolSize = poolSize, ReconnectionAttempts = reconnectionAttempts,
+                ReconnectionBaseDelay = TimeSpan.FromMilliseconds(10) // let the tests execute fast
+            }, NullLogger<ConnectionPool>.Instance);
         }
     }
 }

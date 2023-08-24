@@ -37,7 +37,7 @@ import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
  */
 public final class GraphMigrator {
 
-    private GraphMigrator() {}
+    private GraphMigrator() { }
 
     /**
      * Use Gryo to pipe the data from one graph to another graph.  Uses readers and writers generated from each

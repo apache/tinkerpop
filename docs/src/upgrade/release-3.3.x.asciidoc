@@ -539,7 +539,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.3.3/CHANGELOG.asc
 
 The Credential DSL has been modified to work as a standard Java-based Gremlin DSL. The now deprecated old approach
 used a "graph wrapping" style that was developed long before the
-link:https://tinkerpop.apache.org/docs/current/reference/#gremlin-java-dsl[recommended method] for building DSLs was
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-java-dsl[recommended method] for building DSLs was
 published. Under this new model, the DSL is initialized via traversal as follows:
 
 [source,java]

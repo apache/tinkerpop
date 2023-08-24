@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 
@@ -36,35 +37,34 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// <summary>
         /// Contains the <see cref="IGraphSONDeserializer" /> instances by their type identifier. 
         /// </summary>
-        protected readonly Dictionary<string, IGraphSONDeserializer> Deserializers = new Dictionary
-            <string, IGraphSONDeserializer>
-            {
-                {"g:Traverser", new TraverserReader()},
-                {"g:Int32", new Int32Converter()},
-                {"g:Int64", new Int64Converter()},
-                {"g:Float", new FloatConverter()},
-                {"g:Double", new DoubleConverter()},
-                {"g:Direction", new DirectionDeserializer()},
-                {"g:Merge", new MergeDeserializer()},
-                {"g:UUID", new UuidDeserializer()},
-                {"g:Date", new DateDeserializer()},
-                {"g:Timestamp", new DateDeserializer()},
-                {"g:Vertex", new VertexDeserializer()},
-                {"g:Edge", new EdgeDeserializer()},
-                {"g:Property", new PropertyDeserializer()},
-                {"g:VertexProperty", new VertexPropertyDeserializer()},
-                {"g:Path", new PathDeserializer()},
-                {"g:T", new TDeserializer()},
+        protected readonly Dictionary<string, IGraphSONDeserializer> Deserializers = new()
+        {
+            { "g:Traverser", new TraverserReader() },
+            { "g:Int32", new Int32Converter() },
+            { "g:Int64", new Int64Converter() },
+            { "g:Float", new FloatConverter() },
+            { "g:Double", new DoubleConverter() },
+            { "g:Direction", new DirectionDeserializer() },
+            { "g:Merge", new MergeDeserializer() },
+            { "g:UUID", new UuidDeserializer() },
+            { "g:Date", new DateDeserializer() },
+            { "g:Timestamp", new DateDeserializer() },
+            { "g:Vertex", new VertexDeserializer() },
+            { "g:Edge", new EdgeDeserializer() },
+            { "g:Property", new PropertyDeserializer() },
+            { "g:VertexProperty", new VertexPropertyDeserializer() },
+            { "g:Path", new PathDeserializer() },
+            { "g:T", new TDeserializer() },
 
-                //Extended
-                {"gx:BigDecimal", new DecimalConverter()},
-                {"gx:Duration", new DurationDeserializer()},
-                {"gx:BigInteger", new BigIntegerDeserializer()},
-                {"gx:Byte", new ByteConverter()},
-                {"gx:ByteBuffer", new ByteBufferDeserializer()},
-                {"gx:Char", new CharConverter()},
-                {"gx:Int16", new Int16Converter() }
-            };
+            //Extended
+            { "gx:BigDecimal", new DecimalConverter() },
+            { "gx:Duration", new DurationDeserializer() },
+            { "gx:BigInteger", new BigIntegerDeserializer() },
+            { "gx:Byte", new ByteConverter() },
+            { "gx:ByteBuffer", new ByteBufferDeserializer() },
+            { "gx:Char", new CharConverter() },
+            { "gx:Int16", new Int16Converter() }
+        };
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphSONReader" /> class.
@@ -101,7 +101,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// </summary>
         /// <param name="graphSon">The GraphSON to deserialize.</param>
         /// <returns>The deserialized object.</returns>
-        public virtual dynamic ToObject(JsonElement graphSon)
+        public virtual dynamic? ToObject(JsonElement graphSon)
         {
             switch (graphSon.ValueKind)
             {
@@ -124,7 +124,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 
             if (graphSon.TryGetProperty(GraphSONTokens.TypeKey, out var graphSonTypeProperty))
             {
-                return ReadValueOfType(graphSon, graphSonTypeProperty.GetString());
+                return ReadValueOfType(graphSon,
+                    graphSonTypeProperty.GetString() ??
+                    throw new IOException("Read GraphSON type key is not a string"));
             }
             return ReadDictionary(graphSon);
             

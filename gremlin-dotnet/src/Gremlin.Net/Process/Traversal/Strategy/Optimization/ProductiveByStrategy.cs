@@ -43,7 +43,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
         ///     Initializes a new instance of the <see cref="ProductiveByStrategy" /> class.
         /// </summary>
         /// <param name="productiveKeys">Specifies keys that will always be productive.</param>
-        public ProductiveByStrategy(IEnumerable<object> productiveKeys = null)
+        public ProductiveByStrategy(IEnumerable<object>? productiveKeys = null)
             : this()
         {
             if (productiveKeys != null)

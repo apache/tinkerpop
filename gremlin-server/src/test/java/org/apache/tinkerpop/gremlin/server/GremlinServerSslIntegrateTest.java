@@ -24,19 +24,27 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.TimeoutException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -52,6 +60,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldEnableSsl":
+            case "shouldEnableWebSocketSsl":
             case "shouldEnableSslButFailIfClientConnectsWithoutIt":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
@@ -150,6 +159,32 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             assertEquals("test", client.submit("'test'").one().getString());
         } finally {
             cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableWebSocketSsl() throws Exception {
+        try (SimpleClient client = TestClientFactory.createSSLWebSocketClient()) {
+            final Map<Object, Object> bindings = new HashMap<>();
+            bindings.put("x", 123);
+            bindings.put("y", 123);
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "x+y")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                System.out.println(result.getStatus());
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() &&
+                            (((int) ((List) result.getResult().getData()).get(0) == 246)));
+                }
+                latch.countDown();
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertThat(pass.get(), is(true));
         }
     }
 

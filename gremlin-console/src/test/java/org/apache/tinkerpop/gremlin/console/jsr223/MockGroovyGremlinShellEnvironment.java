@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
+import org.apache.groovy.groovysh.Groovysh;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
-import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 
 /**

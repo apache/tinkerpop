@@ -130,6 +130,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#E(Object...)
+     */
+    public static <A> GraphTraversal<A, Edge> E(final Object... edgeIdsOrElements) {
+        return __.<A>start().E(edgeIdsOrElements);
+    }
+
+    /**
      * @see GraphTraversal#to(Direction, String...)
      */
     public static GraphTraversal<Vertex, Vertex> to(final Direction direction, final String... edgeLabels) {
@@ -578,6 +585,20 @@ public class __ {
      */
     public static <A> GraphTraversal<A, Double> math(final String expression) {
         return __.<A>start().math(expression);
+    }
+
+    /**
+     * @see GraphTraversal#concat(Traversal)
+     */
+    public static <A> GraphTraversal<A, String> concat(final Traversal<?, String> concatTraversal) {
+        return __.<A>start().concat(concatTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#concat(String...)
+     */
+    public static <A> GraphTraversal<A, String> concat(final String... concatString) {
+        return __.<A>start().concat(concatString);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

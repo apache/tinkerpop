@@ -23,6 +23,13 @@
 # published KEYS file in order for that aspect of the validation
 # to pass.
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # Some quality of life improvements for mac users
+  # Note it is assumed that GNU grep has been installed via `brew install grep`
+  PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
+  sha512sum() { shasum -a 512 "$@"; }
+fi
+
 SCRIPT_DIR=$(cd `dirname $0` ; pwd)
 TMP_DIR="/tmp/tpdv"
 
@@ -133,8 +140,9 @@ if [ "${TYPE}" = "SOURCE" ]; then
 cd ${DIR_NAME}
 echo -n "* checking source files ... "
 find . -type f | xargs -n1 -I {} file {} --mime | grep 'charset=binary' | cut -f1 -d: |
-  grep -Pv '^\./docs/(static|(site/home))/(img|images|fonts)/((icons|logos|policy|resources|providers|community|use-cases|gremlin|download)/)?[^/]*\.(png|jpg|ico|pdf|eot|otf|woff|woff2|ttf)$' |
+  grep -Pv '^\./docs/(static|(site/home))/(img|images|fonts)/((icons|logos|policy|resources|providers|community|use-cases|gremlin|download|social)/)?[^/]*\.(png|jpg|ico|pdf|eot|otf|woff|woff2|ttf)$' |
   grep -Pv '^\./docs/gremlint/(src|public)/[^/]*\.(png|jpg|ico)$' |
+  grep -Pv '^\./docs/original/(ai/)?[^/]*\.(png|jpg|ico|ai)$' |
   grep -Pv '^./gremlin-dotnet/src/images/[^/]*\.(png|ico)$' |
   grep -Pv '^./gremlin-dotnet/.*\.snk$' |
   grep -Pv '^./gremlin-server/src/test/resources/[^/]*\.(p12|jks)$' |
@@ -147,7 +155,7 @@ else
   echo "OK"
 fi
 echo -n "* building project ... "
-touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
+touch {gremlin-dotnet,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript,gremlin-go}/.glv
 LOG_FILE="${TMP_DIR}/mvn-clean-install-${VERSION}.log"
 mvn clean install -q > "${LOG_FILE}" 2>&1 || {
   echo "failed"
@@ -169,7 +177,11 @@ GREMLIN_SHELL_SCRIPT=`find bin/ -name "gremlin*.sh"`
 GREMLIN_BATCH_SCRIPT=`find bin/ -name "gremlin*.bat"`
 
 [ ! -z ${GREMLIN_SHELL_SCRIPT} ] && [ -s ${GREMLIN_SHELL_SCRIPT} ] || { echo "Gremlin shell script is not present or empty"; exit 1; }
-[ ! -z ${GREMLIN_BATCH_SCRIPT} ] && [ -s ${GREMLIN_BATCH_SCRIPT} ] || { echo "Gremlin batch script is not present or empty"; exit 1; }
+
+for file in `echo "$GREMLIN_BATCH_SCRIPT" | tr '\n' '\n'`
+do
+  [ ! -z ${file} ] && [ -s ${file} ] || { echo "Gremlin batch script is not present or empty"; exit 1; }
+done
 echo "OK"
 
 echo "* validating ${COMPONENT}'s legal files ... "

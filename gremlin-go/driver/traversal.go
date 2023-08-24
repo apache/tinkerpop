@@ -153,6 +153,36 @@ var Cardinality = cardinalities{
 	Set:    "set",
 }
 
+type cv struct {
+	Bytecode *Bytecode
+}
+
+type CardValue interface {
+	Single(val interface{}) Bytecode
+	Set(val interface{}) Bytecode
+	List(val interface{}) Bytecode
+}
+
+var CardinalityValue CardValue = &cv{}
+
+func (*cv) Single(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
+	return bc
+}
+
+func (*cv) Set(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
+	return bc
+}
+
+func (*cv) List(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.List, val)
+	return bc
+}
+
 type column string
 
 type columns struct {
@@ -269,6 +299,17 @@ var T = ts{
 	Value: "value",
 }
 
+type materializeProperties struct {
+	All    string
+	Tokens string
+}
+
+// MaterializeProperties is string symbols.
+var MaterializeProperties = materializeProperties{
+	All:    "all",
+	Tokens: "tokens",
+}
+
 type merge string
 
 type merges struct {
@@ -276,12 +317,18 @@ type merges struct {
 	OnCreate merge
 	// OnMatch Merges on match.
 	OnMatch merge
+	// Specify outV in options
+	OutV merge
+	// Specify inV in options
+	InV merge
 }
 
 // Merge is a set of operations for Vertex and Edge merging.
 var Merge = merges{
 	OnCreate: "onCreate",
 	OnMatch:  "onMatch",
+	OutV:     "outV",
+	InV:      "inV",
 }
 
 type operator string

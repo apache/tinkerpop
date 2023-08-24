@@ -23,6 +23,7 @@
 
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -83,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var vertex = g.V(1).Next();
 
             Assert.Equal(new Vertex(1), vertex);
-            Assert.Equal(1, vertex.Id);
+            Assert.Equal(1, vertex!.Id);
         }
 
         [Fact]
@@ -142,7 +143,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var shortestPath =
                 g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<Vertex>(1).Path().Next();
 
-            Assert.Equal(4, shortestPath.Count);
+            Assert.Equal(4, shortestPath!.Count);
             Assert.Equal(new Vertex(6), shortestPath[3]);
         }
 
@@ -245,6 +246,30 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var count = await g.V().Count().Promise(t => t.Next());
 
             Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public async Task ShouldSupportCancellationForPromise()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                await g.V().Promise(t => t.Iterate(), new CancellationToken(true)));
+        }
+        
+        [Fact]
+        public async Task ShouldSupportFurtherTraversalsAfterOneWasCancelled()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection(connectionPoolSize: 1);
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var cts = new CancellationTokenSource();
+            
+            var cancelledTask = g.V().Promise(t => t.Iterate(), cts.Token);
+            cts.Cancel();
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await cancelledTask);
+            
+            Assert.True(await g.V().Promise(t => t.HasNext(), CancellationToken.None));
         }
     }
 }

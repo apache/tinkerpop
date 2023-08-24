@@ -1,5 +1,5 @@
 Apache TinkerPop
-Copyright 2015-2021 The Apache Software Foundation.
+Copyright 2015-2023 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -17,12 +17,23 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
+Jackson-Databind 2.14.0 and Jackson-Core - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.jackson
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
+
+------------------------------------------------------------------------
 JavaTuples 1.2
 ------------------------------------------------------------------------
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty 4.1.62
+Netty 4.1.96
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
+------------------------------------------------------------------------
+Objenesis 3.3 - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
+------------------------------------------------------------------------
+Copyright 2006-2022 Joe Walnes, Henri Tremblay, Leonardo Mesquita

@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -38,8 +40,9 @@ public final class DedupLocalStep<E, S extends Iterable<E>> extends ScalarMapSte
     @Override
     protected Set<E> map(final Traverser.Admin<S> traverser) {
         final Set<E> result = new LinkedHashSet<>();
-        for (final E item : traverser.get()) {
-            result.add(item);
+        final Iterator itty = IteratorUtils.asIterator(traverser.get());
+        while (itty.hasNext()) {
+            result.add((E)itty.next());
         }
         return result;
     }

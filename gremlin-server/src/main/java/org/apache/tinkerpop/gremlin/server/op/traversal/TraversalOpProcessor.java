@@ -19,12 +19,13 @@
 package org.apache.tinkerpop.gremlin.server.op.traversal;
 
 import com.codahale.metrics.Timer;
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
@@ -62,6 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -209,6 +211,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
         final Timer.Context timerContext = traversalOpTimer.time();
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
+            context.setStartedResponse();
             final Graph graph = g.getGraph();
 
             try {
@@ -240,6 +243,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         }
                         context.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+                        graphManager.onQueryError(msg, t);
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
@@ -251,12 +255,13 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                                                              .statusMessage(ex.getMessage())
                                                              .statusAttributeException(ex).create());
                     }
-                    onError(graph, context);
+                    onError(graph, context, ex);
                 }
-            } catch (Exception ex) {
+            } catch (Throwable t) {
+                onError(graph, context, t);
                 // if any exception in the chain is TemporaryException or Failure then we should respond with the
                 // right error code so that the client knows to retry
-                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
                 if (possibleSpecialException.isPresent()) {
                     final Throwable special = possibleSpecialException.get();
                     final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
@@ -271,14 +276,25 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     }
                     context.writeAndFlush(specialResponseMsg.create());
                 } else {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
                     context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
+                            .statusMessage(t.getMessage())
+                            .statusAttributeException(t).create());
+                    if (t instanceof Error) {
+                        //Re-throw any errors to be handled by and set as the result of evalFuture
+                        throw t;
+                    }
                 }
-                onError(graph, context);
             } finally {
                 timerContext.stop();
+
+                // There is a race condition that this query may have finished before the timeoutFuture was created,
+                // though this is very unlikely. This is handled in the settor, if this has already been grabbed.
+                // If we passed this point and the setter hasn't been called, it will cancel the timeoutFuture inside
+                // the setter to compensate.
+                final ScheduledFuture<?> timeoutFuture = context.getTimeoutExecutor();
+                if (null != timeoutFuture)
+                    timeoutFuture.cancel(true);
             }
 
             return null;
@@ -288,7 +304,12 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             final Future<?> executionFuture = context.getGremlinExecutor().getExecutorService().submit(evalFuture);
             if (seto > 0) {
                 // Schedule a timeout in the thread pool for future execution
-                context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
+                context.setTimeoutExecutor(context.getScheduledExecutorService().schedule(() -> {
+                    executionFuture.cancel(true);
+                    if (!context.getStartedResponse()) {
+                        context.sendTimeoutResponse();
+                    }
+                }, seto, TimeUnit.MILLISECONDS));
             }
         } catch (RejectedExecutionException ree) {
             context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.TOO_MANY_REQUESTS)
@@ -297,14 +318,23 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
+      final GraphManager graphManager = ctx.getGraphManager();
+      final RequestMessage msg = ctx.getRequestMessage();
+      graphManager.beforeQueryStart(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
-    protected void onError(final Graph graph, final Context ctx) {
+    protected void onError(final Graph graph, final Context ctx, Throwable error) {
+        final GraphManager graphManager = ctx.getGraphManager();
+        final RequestMessage msg = ctx.getRequestMessage();
+        graphManager.onQueryError(msg, error); 
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
+        final GraphManager graphManager = ctx.getGraphManager();
+        final RequestMessage msg = ctx.getRequestMessage();
+        graphManager.onQuerySuccess(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
@@ -365,7 +395,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
             if (!nettyContext.channel().isActive()) {
-                onError(graph, context);
+                onError(graph, context, new ChannelException("Channel is not active - cannot write any more results"));
                 break;
             }
 
@@ -397,7 +427,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
 
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
-                        onError(graph, context);
+                        onError(graph, context, ex);
                         break;
                     }
 

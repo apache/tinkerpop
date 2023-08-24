@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -574,6 +575,13 @@ public final class StarGraph implements Graph, Serializable {
                         else
                             this.inEdges = inEdges;
                     }
+                }
+                if (graphFilter.hasVertexPropertyFilter()) {
+                    Set<String> retainSet = new HashSet<>();
+                    graphFilter.legalVertexProperties(this).forEachRemaining(property -> {
+                        retainSet.add(property.key());
+                    });
+                    this.vertexProperties.keySet().removeIf(key -> !retainSet.contains(key));
                 }
                 return Optional.of(this);
             } else {

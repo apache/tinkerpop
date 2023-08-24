@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -73,8 +74,9 @@ public class PageRankVertexProgramTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldExecutePageRankWithEpsilonBreak() throws Exception {
         if (graphProvider.getGraphComputer(graph).features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
-            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass()).
-                    program(PageRankVertexProgram.build().epsilon(0.00001d).iterations(30).create(graph)).submit().get(); // by using epsilon 0.00001, we should get iterations 11
+            final ComputerResult result = graph.compute(graphProvider.getGraphComputer(graph).getClass())
+                .vertexProperties(__.properties("name", "age", "lang"))
+                .program(PageRankVertexProgram.build().epsilon(0.00001d).iterations(30).create(graph)).submit().get(); // by using epsilon 0.00001, we should get iterations 11
             result.graph().traversal().V().forEachRemaining(v -> {
                 assertEquals(3, v.keys().size()); // name, age/lang, pageRank
                 assertTrue(v.keys().contains("name"));

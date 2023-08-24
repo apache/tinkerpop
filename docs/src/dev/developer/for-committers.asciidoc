@@ -70,6 +70,44 @@ On the day of the meeting, the meeting organizer will create a Google Hangout (o
 At that point, all who are interested can attend.  Meeting minutes should be
 taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
 
+== Media Content Submission
+
+Tinkerpop hosts link:https://www.twitch.tv/apachetinkerpop[Twitch streams] for various knowledge sharing sessions and
+demos, as well as a link:https://www.youtube.com/@apachetinkerpop[YouTube channel] to upload video content.
+Everyone in the community is welcome to submit contents to stream or upload, abiding the following process:
+
+. Send a DISCUSS thread to the dev mailing list that describes the topic, the platform it goes to, who will present it
+and a date to do it.
+. If the proposal comes from someone who isn't an official TinkerPop committer, then they must obtain a committer
+"sponsor", who is responsible for and endorses the content. (This can be asked on the DISCUSS thread).
+. The proposal must achieve lazy consensus at minimum.
+. After obtaining approval from the DISCUSS thread, start planning and promoting your stream/video!
+
+The process above applies to two content models: a class of content and individual content. A class of content refers
+to a content series which would encompass several individual streams or recordings, whereas individual content would
+be a single one-off stream or recording (which presumably does not fit into an established class). Proposing either
+a class of content or individual content both require a DISCUSS thread as written above, but once a class is
+established, content makers are free to make content under the model defined by that class without having a special
+DISCUSS thread for each recording or stream. You may, of course, use the dev list to organize a particular stream or
+recording for a particular content class.
+
+The following bullets represent current content classes:
+
+* A __Contributorcast__ is like a podcast and is held by contributors to the TinkerPop project. They may or may not be
+official committers, but they should have submitted merged pull requests of significance or have some recognized
+standing in Stackoverflow, Discord or just generally the TinkerPop Community. At least one official committer must
+be on the stream and those committers are in charge of content presented and those other contributors they invite to
+join. There is no particular format for this content and it is meant to be informal in its style but informational and
+more often than not about TinkerPop itself.
+* __TinkerPop Wide__ streams are about the wider TinkerPop Community. They focus on third-party tools, libraries, graph
+system implementations and applications that are powered by TinkerPop, but might also stretch into the general graph
+world. An official committer must host the stream.
+
+All media needs to achieve a certain level of consistency and quality with existing content. Content creators and
+their guests should abide by the community guidelines for link:https://safety.twitch.tv/s/article/Community-Guidelines?language=en_US[Twitch],
+link:https://www.youtube.com/howyoutubeworks/policies/community-guidelines/[YouTube] and the
+link:https://community.apache.org/contributors/etiquette[ASF] when producing media.
+
 == Release Notes
 
 There is a two-pronged approach to maintaining the change log and preparing the release notes.
@@ -143,8 +181,10 @@ Please refrain from creating arbitrary tags, as they produce permanent clutter.
 == Runtimes
 
 Each programming language has a runtime that TinkerPop supports. In general, TinkerPop will attempt to support the
-current LTS version for a particular major version for the lifetime of its minor and patch releases. Part of each
-major release cycle, should include some analysis of the current runtime supported.
+current LTS version for a particular major version for the lifetime of its minor and patch releases. A deprecation
+notice will be applied to the last release of TinkerPop that will support an outdated runtime and the runtime will be
+updated in the following release. Part of each major release cycle, should include some analysis of the current runtime
+supported.
 
 * Java - Typically, TinkerPop will find itself bound to the version held by its major dependencies like Apache Spark.
 * Javascript - Consult link:https://github.com/nodejs/Release[nodejs/Release] for the current active LTS of node and link:https://nodejs.org/en/download/releases/[here] for npm compatibility.
@@ -174,7 +214,8 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed. This is a field usually only set by committers.
+which that particular issue will completed. This is a field usually only set by committers and should only be set
+when the issue is being closed with a completed disposition (e.g. "Done", "Fixed", etc.).
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
 required improvements.
@@ -546,6 +587,28 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 Tag filters can be applied to Intellij at execution time by adding a system properties of
 `-Dcucumber.filter.tags=<step-filter>`.
 
+[[gremlin-socket-server-tests]]
+=== Gremlin Socket Server Tests
+`gremlin-socket-server` is an included test server for driver tests which require predefined server
+behavior. Typically, this is to test scenarios such as the server closing the connection or returning
+an error code but other response behavior can be added as needed for tests.
+
+Gremlin socket server uses the request id of incoming messages to determine how to respond.
+Request ids are defined in `gremlin-tools/gremlin-socket-server/conf/*.yaml`. The server side
+behavior for each request id is implemented in `TestWSGremlinInitializer`.
+
+To add new server side behavior, define a new request id in the config yaml, then add a corresponding
+field in `SocketServerSettings`. In `TestWSGremlinInitializer`, add a new block to the if else chain in the
+decode method which matches the request id. Define all server behavior and responses in this block.
+
+To write the driver test, send a request message to the gremlin socket server port as if it were a normal
+gremlin server. Override the request id on the request with one defined in the config yaml and gremlin
+socket server will respond according to the defined behavior.
+
+Ensure that the socket server is running during driver tests. By default, a docker image for
+`gremlin-socket-server` is built during `mvn install`. The simplest way to use the socket server during
+driver tests is to run a gremlin socket server container during the integration phase of driver tests.
+
 == Developing Benchmarks
 
 Benchmarks are a useful tool to track performance between TinkerPop versions and also as tools to aid development
@@ -878,79 +941,3 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The XML files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
-
-[[io]]
-== IO Documentation and Testing
-
-The link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Documentation] provides more details into GraphML and GraphSON
-with a special focus on the needs of developers who are working directly with these formats. GraphSON gets
-the greatest focus here as it is used as the primary IO format for link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs].
-This documentation is largely generated from the `gremlin-io-test` module found under `gremlin-tools`. The
-`gremlin-io-test` module also includes a testing framework which validates that formats don't break between TinkerPop
-versions. Unfortunately, this module requires some maintenance to ensure that the documentation and tests both stay
-updated.
-
-The `gremlin-io-test` module contains a set of files in the test resources that are statically bound to the version in
-which they were generated. Older versions should never be modified. The only time changes to these resources should be
-accepted should be for the current `SNAPSHOT` version. The test resources are generated from the `Model` class which
-contains the objects that will undergo serialization for purpose of testing. Note that these same objects in the
-`Model` are also used to generate documentation.
-
-To generate these test resources and documentation snippets based on the `Model`, use this Maven command:
-
-[source,text]
-----
-mvn clean install -pl :gremlin-io-test -Dio
-----
-
-This command will generate two directories in the `/target` output directory of `gremlin-io-test`: `test-case-data`
-and `dev-docs`. The contents of `test-case-data` represents the serialized `Model` objects that can be copied to the
-test resources and the contents of the `dev-docs` contains asciidoc snippets that can be copied to the IO documentation.
-
-Generating data files in the fashion mentioned above with Maven is only good for versions of TinkerPop on the 3.3.x
-line because the `gremlin-io-test` module did not exist in 3.2.x. Of course, compatibility is still tested back to
-those older versions. To generate test data from 3.2.x, there are Groovy scripts in the comments of the
-`graphson.asciidoc` files that can copy/pasted to the Gremlin Console. They will generate the batch of test files
-needed for `gremlin-io-test`.
-
-When does this command need to be executed?
-
-1. If a new object is added to the `Model` - in this case, the newly created data files should be copied to the
-appropriate test resource directory for the current `SNAPSHOT` version and the appropriate asciidoc snippet added to
-the IO asciidocs.
-2. After the release of a new TinkerPop version - in this case, a new test resource directory should be created for
-the `SNAPSHOT` version and the generated `test-case-data` copied in appropriately.
-
-The second case, does require some additional discussion. When a new version is added the following classes will need
-to be updated in the following ways:
-
-*GraphBinaryCompatibility* - Include new GraphBinary 1.0 enums for the current `SNAPSHOT`.
-
-[source,java]
-----
-V1_3_4_3("3.4.3", "1.0", "v1"),
-V1_3_4_4("3.4.4", "1.0", "v1");
-----
-
-*GraphSONCompatibility* - Include new GraphSON enums for each of the various GraphSON configurations and versions.
-
-[source,java]
-----
-V1D0_3_3_x("3.3.x", "1.0", "v1d0"),
-V2D0_PARTIAL_3_3_x("3.3.x", "2.0", "v2d0-partial"),
-V2D0_NO_TYPE_3_3_x("3.3.x", "2.0", "v2d0-no-types"),
-V3D0_PARTIAL_3_3_x("3.3.x", "3.0", "v3d0");
-----
-
-*GraphBinaryCompatibilityTest* - Add the newly included `GraphBinaryCompatibility` enums to the test parameters being
-careful to match the appropriate "mapper" to the right version.
-
-*GraphSONUntypedCompatibilityTest* - Add the newly included GraphSON 1.0 and 2.0 "untyped" enums to the test parameters
-being careful to match the appropriate "mapper" to the right version.
-
-*GraphSONTypedCompatibilityTest* - Add the newly included GraphSON 3.0 and 2.0 "typed" enums to the test parameters
-being careful to match the appropriate "mapper" to the right version.
-
-At this point, all of the IO tests are rigged up properly and assuming the test resources are available a standard
-`mvn clean install` should execute the compatibility tests and validate that everything is working as expected and
-that there are no breaks in serialization processes.

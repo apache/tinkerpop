@@ -33,6 +33,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.is;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
 
 /**
@@ -318,4 +320,21 @@ public class TernaryBooleanLogicsTest extends AbstractGremlinProcessTest {
         checkHasNext(false, g.inject(1).filter(xor.apply(ERROR, ERROR)));
     }
 
+    /**
+     * Child traversals should propagate error states to their parent traversal if and only if the parent step is a
+     * filter step.
+     */
+    @Test
+    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
+    public void testErrorPropagation() {
+        final P ERROR = P.lt(Double.NaN);
+
+        // Propagates Error to parent not()
+        checkHasNext(false, g.inject(1).not(not(is(ERROR))));
+        checkHasNext(false, g.inject(1).not(is(ERROR)));
+
+        // Does not propagate Error through non-filter parent
+        checkHasNext(true, g.inject(1).not(union((is(ERROR)))));
+        checkHasNext(false, g.inject(1).union((is(ERROR))));
+    }
 }

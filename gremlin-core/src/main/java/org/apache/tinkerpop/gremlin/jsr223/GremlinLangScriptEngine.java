@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
+import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -32,6 +33,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Map;
 
 /**
  * A {@link GremlinScriptEngine} implementation that evaluates Gremlin scripts using {@code gremlin-language}. As it
@@ -104,7 +106,9 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
         if (!(o instanceof GraphTraversalSource))
             throw new IllegalArgumentException("g is of type " + o.getClass().getSimpleName() + " and is not an instance of TraversalSource");
 
-        final GremlinAntlrToJava antlr = new GremlinAntlrToJava((GraphTraversalSource) o);
+        final Map<String, Object> m = context.getBindings(ScriptContext.ENGINE_SCOPE);
+        final GremlinAntlrToJava antlr = new GremlinAntlrToJava((GraphTraversalSource) o,
+                new VariableResolver.DefaultVariableResolver(m));
 
         try {
             return GremlinQueryParser.parse(script, antlr);

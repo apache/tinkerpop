@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal.Strategy
@@ -83,10 +84,10 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         /// <summary>
         ///     Gets the configuration of the strategy.
         /// </summary>
-        public Dictionary<string, dynamic> Configuration { get; } = new Dictionary<string, dynamic>();
+        public Dictionary<string, dynamic?> Configuration { get; } = new();
 
         /// <inheritdoc />
-        public bool Equals(AbstractTraversalStrategy other)
+        public bool Equals(AbstractTraversalStrategy? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -94,18 +95,18 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         }
 
         /// <inheritdoc />
-        public virtual void Apply<S, E>(ITraversal<S, E> traversal)
+        public virtual void Apply<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)
         {
         }
 
         /// <inheritdoc />
-        public virtual Task ApplyAsync<S, E>(ITraversal<S, E> traversal)
+        public virtual Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

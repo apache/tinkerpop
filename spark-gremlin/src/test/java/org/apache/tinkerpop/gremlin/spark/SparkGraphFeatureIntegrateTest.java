@@ -48,18 +48,16 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepIndex and not @StepInject and " +
+        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepE and not @StepIndex and not @StepInject and " +
                "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
                "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
                "not @GraphComputerVerificationInjectionNotSupported and " +
@@ -67,17 +65,12 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
                "not @TinkerServiceRegistry",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
-        features = { "../gremlin-test/features" },
+        features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class SparkGraphFeatureIntegrateTest {
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
-
-    /**
-     * May need to improve the definition of result equality with map&lt;list&gt; - TINKERPOP-2622
-     */
-    private static final String skipReasonOrdering = "There are some internal ordering issues with result where equality is not required but is being enforced";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
         add(Pair.with("g_V_both_both_count", skipReasonLength));
@@ -93,15 +86,6 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX", skipReasonLength));
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX", skipReasonLength));
         add(Pair.with("g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count", skipReasonLength));
-        add(Pair.with("g_V_order_byXname_descX_barrier_dedup_age_name", skipReasonOrdering));
-        add(Pair.with("g_V_group_byXoutE_countX_byXnameX", skipReasonOrdering));
-        add(Pair.with("g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_descX", skipReasonOrdering));
-        add(Pair.with("g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX", skipReasonOrdering));
-        add(Pair.with("g_withStrategiesXProductiveByStrategyX_V_group_byXageX", skipReasonOrdering));
-        add(Pair.with("g_V_order_byXoutE_count_descX", skipReasonOrdering));
-        add(Pair.with("g_V_both_both_dedup_byXoutE_countX_name", skipReasonOrdering));
-        add(Pair.with("g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX", skipReasonOrdering));
-        add(Pair.with("g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX", skipReasonOrdering));
     }};
 
     public static final class ServiceModule extends AbstractModule {

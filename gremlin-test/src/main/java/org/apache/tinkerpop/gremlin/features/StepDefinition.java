@@ -32,11 +32,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -75,7 +74,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -129,17 +127,18 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> s + "m"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), s -> s + "n"));
 
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next().toString()));
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
             final Iterator<Object> itty = g.V().has("name", s).id();
-            final Translator.ScriptTranslator.TypeTranslator typeTranslator = new GroovyTranslator.LanguageTypeTranslator(false);
-            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ? typeTranslator.apply("g", itty.next()).getScript() : s, Vertex.DEFAULT_LABEL);
+            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ?
+                    world.convertIdToScript(itty.next(), Vertex.class) : s, Vertex.DEFAULT_LABEL);
         }));
-        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> getEdgeIdString(g, s)));
-        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> getEdgeIdString(g, s)));
+        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
+        add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
+        add(Pair.with(Pattern.compile("M\\[(.*)\\]"), s -> String.format("Merge.%s", s)));
 
         // the following force ignore conditions as they cannot be parsed by the grammar at this time. the grammar will
         // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way for certain
@@ -216,6 +215,7 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), T::valueOf));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
+        add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
         add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
@@ -277,8 +277,13 @@ public final class StepDefinition {
 
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
-        final String gremlin = tryUpdateDataFilePath(docString);
-        traversal = parseGremlin(applyParameters(gremlin));
+        try {
+            final String gremlin = tryUpdateDataFilePath(docString);
+            traversal = parseGremlin(applyParameters(gremlin));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            error = ex;
+        }
     }
 
     @When("iterated to list")
@@ -352,6 +357,13 @@ public final class StepDefinition {
 
     @Then("the graph should return {int} for count of {string}")
     public void theGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
+        assertThatNoErrorWasThrown();
+
+        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
+    }
+
+    @Then("debug the graph should return {int} for count of {string}")
+    public void debugTheGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
         assertThatNoErrorWasThrown();
 
         assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());

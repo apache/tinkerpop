@@ -43,11 +43,12 @@ class Client:
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session=None,
-                 **transport_kwargs):
+                 enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
         self._closed = False
         self._url = url
         self._headers = headers
+        self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
         if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
@@ -136,14 +137,18 @@ class Client:
             processor='session', op='close',
             args={'session': str(self._session)})
         conn = self._pool.get(True)
-        return conn.write(message).result()
+        try:
+            write_result_set = conn.write(message).result()
+            return write_result_set.all().result()  # wait for _receive() to finish
+        except protocol.GremlinServerError:
+            pass
 
     def _get_connection(self):
         protocol = self._protocol_factory()
         return connection.Connection(
             self._url, self._traversal_source, protocol,
             self._transport_factory, self._executor, self._pool,
-            headers=self._headers)
+            headers=self._headers, enable_user_agent_on_connect=self._enable_user_agent_on_connect)
 
     def submit(self, message, bindings=None, request_options=None):
         return self.submit_async(message, bindings=bindings, request_options=request_options).result()
@@ -156,6 +161,9 @@ class Client:
         return self.submit_async(message, bindings, request_options)
 
     def submit_async(self, message, bindings=None, request_options=None):
+        if self.is_closed():
+            raise Exception("Client is closed")
+
         log.debug("message '%s'", str(message))
         args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
         processor = ''

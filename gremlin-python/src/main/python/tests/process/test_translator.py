@@ -350,6 +350,35 @@ class TestTraversalStrategies(object):
         # 98
         tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter')),
                      "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
+        # 99
+        tests.append([g.V().coalesce(__.E(),__.addE('person')),
+                     "g.V().coalesce(__.E(),__.addE('person'))"])
+        # 100
+        tests.append([g.inject(1).E(),
+                     "g.inject(1).E()"])
+
+        # 99
+        tests.append([g.V().has("p1", starting_with("foo")),
+                     "g.V().has('p1',startingWith('foo'))"])
+
+        # 100
+        tests.append([g.V().has("p1", ending_with("foo")),
+                     "g.V().has('p1',endingWith('foo'))"])
+
+        # 101
+        class SuperStr(str):
+            pass
+        tests.append([g.V(SuperStr("foo_id")),
+                     "g.V('foo_id')"])
+
+        # 102
+        tests.append([g.V().has("p1", containing(SuperStr("foo"))),
+                     "g.V().has('p1',containing('foo'))"])
+
+        # 103
+        tests.append([g.V().has("p1", None),
+                     "g.V().has('p1',null)"])
+
 
         tlr = Translator().of('g')
 

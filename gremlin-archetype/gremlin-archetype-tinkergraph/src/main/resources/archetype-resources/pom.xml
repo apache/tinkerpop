@@ -67,7 +67,7 @@ limitations under the License.
         <profile>
             <id>jdk11</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[11,18)</jdk>
             </activation>
             <build>
                 <plugins>

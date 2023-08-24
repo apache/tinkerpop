@@ -21,9 +21,10 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"golang.org/x/text/language"
 	"runtime"
 	"time"
+
+	"golang.org/x/text/language"
 )
 
 // ClientSettings is used to modify a Client's settings on initialization.
@@ -33,7 +34,7 @@ type ClientSettings struct {
 	LogVerbosity      LogVerbosity
 	Logger            Logger
 	Language          language.Tag
-	AuthInfo          *AuthInfo
+	AuthInfo          AuthInfoProvider
 	TlsConfig         *tls.Config
 	KeepAliveInterval time.Duration
 	WriteDeadline     time.Duration
@@ -48,6 +49,7 @@ type ClientSettings struct {
 	MaximumConcurrentConnections int
 	// Initial amount of instantiated connections. Default: 1
 	InitialConcurrentConnections int
+	EnableUserAgentOnConnect     bool
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -65,17 +67,18 @@ type Client struct {
 // Important note: to avoid leaking a connection, always close the Client.
 func NewClient(url string, configurations ...func(settings *ClientSettings)) (*Client, error) {
 	settings := &ClientSettings{
-		TraversalSource:   "g",
-		TransporterType:   Gorilla,
-		LogVerbosity:      Info,
-		Logger:            &defaultLogger{},
-		Language:          language.English,
-		AuthInfo:          &AuthInfo{},
-		TlsConfig:         &tls.Config{},
-		KeepAliveInterval: keepAliveIntervalDefault,
-		WriteDeadline:     writeDeadlineDefault,
-		ConnectionTimeout: connectionTimeoutDefault,
-		EnableCompression: false,
+		TraversalSource:          "g",
+		TransporterType:          Gorilla,
+		LogVerbosity:             Info,
+		Logger:                   &defaultLogger{},
+		Language:                 language.English,
+		AuthInfo:                 &AuthInfo{},
+		TlsConfig:                &tls.Config{},
+		KeepAliveInterval:        keepAliveIntervalDefault,
+		WriteDeadline:            writeDeadlineDefault,
+		ConnectionTimeout:        connectionTimeoutDefault,
+		EnableCompression:        false,
+		EnableUserAgentOnConnect: true,
 		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
 		// size is zero, then a useful default size is used. The I/O buffer sizes
 		// do not limit the size of the messages that can be sent or received.
@@ -91,14 +94,15 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	}
 
 	connSettings := &connectionSettings{
-		authInfo:          settings.AuthInfo,
-		tlsConfig:         settings.TlsConfig,
-		keepAliveInterval: settings.KeepAliveInterval,
-		writeDeadline:     settings.WriteDeadline,
-		connectionTimeout: settings.ConnectionTimeout,
-		enableCompression: settings.EnableCompression,
-		readBufferSize:    settings.ReadBufferSize,
-		writeBufferSize:   settings.WriteBufferSize,
+		authInfo:                 settings.AuthInfo,
+		tlsConfig:                settings.TlsConfig,
+		keepAliveInterval:        settings.KeepAliveInterval,
+		writeDeadline:            settings.WriteDeadline,
+		connectionTimeout:        settings.ConnectionTimeout,
+		enableCompression:        settings.EnableCompression,
+		readBufferSize:           settings.ReadBufferSize,
+		writeBufferSize:          settings.WriteBufferSize,
+		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
@@ -144,15 +148,26 @@ func (client *Client) Close() {
 	client.connections.close()
 }
 
-// Submit submits a Gremlin script to the server and returns a ResultSet.
-func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
+// SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
+func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, client.session, bindings...)
+	request := makeStringRequest(traversalString, client.traversalSource, client.session, requestOptions)
 	result, err := client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
 	}
 	return result, err
+}
+
+// Submit submits a Gremlin script to the server and returns a ResultSet. Submit can optionally accept a map of bindings
+// to be applied to the traversalString, it is preferred however to instead wrap any bindings into a RequestOptions
+// struct and use SubmitWithOptions().
+func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
+	requestOptionsBuilder := new(RequestOptionsBuilder)
+	if len(bindings) > 0 {
+		requestOptionsBuilder.SetBindings(bindings[0])
+	}
+	return client.SubmitWithOptions(traversalString, requestOptionsBuilder.Create())
 }
 
 // submitBytecode submits Bytecode to the server to execute and returns a ResultSet.

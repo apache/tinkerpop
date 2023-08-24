@@ -23,38 +23,50 @@ RUN_INTEGRATION_TESTS=
 INCLUDE_NEO4J=
 BUILD_JAVA_DOCS=
 BUILD_USER_DOCS=
-
-function usage {
-  echo -e "\nUsage: `basename $0` [OPTIONS]" \
-          "\nBuild the current local TinkerPop project in a Docker container." \
-          "\n\nOptions are:\n" \
-          "\n\t-t, --tests              run standard test suite" \
-          "\n\t-i, --integration-tests  run integration tests" \
-          "\n\t-n, --neo4j              include Neo4j" \
-          "\n\t-j, --java-docs          build Java docs" \
-          "\n\t-d, --docs               build user docs" \
-          "\n\t-h, --help               show this message" \
-          "\n"
-}
+INCLUDE_GO=
+INCLUDE_PYTHON=
+INCLUDE_DOTNET=
+INCLUDE_JAVASCRIPT=
+INCLUDE_CONSOLE=
 
 while [ ! -z "$1" ]; do
   case "$1" in
-    -t | --tests ) RUN_TESTS=true; shift ;;
-    -i | --integration-tests ) RUN_INTEGRATION_TESTS=true; shift ;;
-    -n | --neo4j ) INCLUDE_NEO4J=true; shift ;;
-    -j | --java-docs ) BUILD_JAVA_DOCS=true; shift ;;
-    -d | --docs ) BUILD_USER_DOCS=true; shift ;;
-    -h | --help ) usage; exit 0 ;;
-    *) usage 1>&2; exit 1 ;;
+    -t  | --tests ) RUN_TESTS=true; shift ;;
+    -i  | --integration-tests ) RUN_INTEGRATION_TESTS=true; shift ;;
+    -n  | --neo4j ) INCLUDE_NEO4J=true; shift ;;
+    -j  | --java-docs ) BUILD_JAVA_DOCS=true; shift ;;
+    -d  | --docs ) BUILD_USER_DOCS=true; shift ;;
+    -go | --golang ) INCLUDE_GO=true; shift ;;
+    -py | --python ) INCLUDE_PYTHON=true; shift ;;
+    -dn | --dotnet ) INCLUDE_DOTNET=true; shift ;;
+    -js | --javascript ) INCLUDE_JAVASCRIPT=true; shift ;;
+    -c  | --console ) INCLUDE_CONSOLE=true; shift ;;
   esac
 done
 
-TINKERPOP_BUILD_OPTIONS=""
+# To prevent Docker in Docker, skip building images and deactivate Docker profiles.
+TINKERPOP_BUILD_OPTIONS="-DskipImageBuild -P -glv-js,-glv-go,-glv-python"
 
 [ -z "${RUN_TESTS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DskipTests"
 [ -z "${RUN_INTEGRATION_TESTS}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DskipIntegrationTests=false"
 [ -z "${INCLUDE_NEO4J}" ] || TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -DincludeNeo4j"
 [ -z "${BUILD_JAVA_DOCS}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -Dmaven.javadoc.skip=true"
+
+# If any of these GLVs are selected then create a minimal build to reduce build/test times
+# as the user is likely not interested in the other modules.
+if [[ -n ${INCLUDE_GO} || -n ${INCLUDE_PYTHON} || -n ${INCLUDE_DOTNET} || -n ${INCLUDE_JAVASCRIPT} || -n ${INCLUDE_CONSOLE} ]]; then
+  # gremlin-server, gremlin-test and neo4j-gremlin are minimal dependencies needed to start a server for GLV testing.
+  TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -am -pl gremlin-server,gremlin-test,neo4j-gremlin"
+
+  [ -n "${INCLUDE_GO}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS},gremlin-go"
+  [ -n "${INCLUDE_PYTHON}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS},gremlin-python"
+  [ -n "${INCLUDE_DOTNET}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS},gremlin-dotnet,:gremlin-dotnet-source"
+  [ -n "${INCLUDE_JAVASCRIPT}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS},gremlin-javascript"
+  [ -n "${INCLUDE_CONSOLE}" ] && TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS},gremlin-console"
+else
+  # When building everything, deactivate dotnet tests to prevent Docker in Docker.
+  TINKERPOP_BUILD_OPTIONS="${TINKERPOP_BUILD_OPTIONS} -pl -:gremlin-dotnet-tests"
+fi
 
 # If the tmpfs (in-memory filesystem exists, use it)
 TINKERMEM_PATH=$(cd .. ; echo `pwd`/tinkermem)
@@ -67,7 +79,7 @@ if [ -d "${TINKERMEM_PATH}" ]; then
   cd ${TINKERMEM_PATH}
 fi
 
-touch {gremlin-dotnet,gremlin-go,gremlin-dotnet/src,gremlin-dotnet/test,gremlin-python,gremlin-javascript}/.glv
+touch gremlin-dotnet/src/.glv
 
 # use a custom maven settings.xml
 if [ -r "settings.xml" ]; then
@@ -78,6 +90,7 @@ fi
 
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 mvn clean install process-resources --batch-mode ${TINKERPOP_BUILD_OPTIONS} || exit 1
+
 [ -z "${BUILD_JAVA_DOCS}" ] || mvn process-resources -Djavadoc || exit 1
 
 if [ ! -z "${BUILD_USER_DOCS}" ]; then

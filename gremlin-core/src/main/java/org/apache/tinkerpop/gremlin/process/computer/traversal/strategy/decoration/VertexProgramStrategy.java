@@ -82,7 +82,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         while (!(currentStep instanceof EmptyStep)) {
             if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {  // todo: is there a general solution?
                 currentLabels.addAll(currentStep.getLabels());
-                currentStep.getLabels().forEach(currentStep::removeLabel);
+                currentStep.clearLabels();
             } else {
                 currentLabels.forEach(currentStep::addLabel);
                 currentLabels.clear();
@@ -104,7 +104,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
-            final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>();
+            final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>(traversal.getBytecode());
             final Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
             final Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(currentStep);
             if (!(firstLegalOLAPStep instanceof EmptyStep)) {

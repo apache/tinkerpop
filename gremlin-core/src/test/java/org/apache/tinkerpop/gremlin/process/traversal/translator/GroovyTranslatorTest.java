@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -120,8 +121,10 @@ public class GroovyTranslatorTest {
         final String script = translator.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
+            put("x", 4);
+            put("+x", 8);
         }})).getScript();
-        assertEquals("g.V().id().is([((int) 3):(\"32\"),([(int) 1, (int) 2, 3.1d]):((int) 4)])", script);
+        assertEquals("g.V().id().is([((int) 3):\"32\",([(int) 1, (int) 2, 3.1d]):(int) 4,\"x\":(int) 4,\"+x\":(int) 8])", script);
     }
 
     @Test
@@ -159,6 +162,11 @@ public class GroovyTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("VertexProperty.Cardinality.set(\"test\")", VertexProperty.Cardinality.set("test"));
+    }
+
+    @Test
     public void shouldTranslateDateUsingLanguageTypeTranslator() {
         final Translator.ScriptTranslator t = GroovyTranslator.of("g",
                 new GroovyTranslator.LanguageTypeTranslator(false));
@@ -166,7 +174,6 @@ public class GroovyTranslatorTest {
         final Date date = Date.from(ZonedDateTime.of(2018, 03, 22, 0, 0, 0, 0, UTC).toInstant());
         assertEquals("g.inject(datetime('2018-03-22T00:00:00Z'),datetime('2018-03-22T00:35:44.741Z'))",
                 t.translate(g.inject(date, datetime)).getScript());
-
     }
 
     @Test
@@ -176,7 +183,19 @@ public class GroovyTranslatorTest {
 
         assertEquals("g.addE(\"knows\").from(new Vertex(1I,\"person\"))",
                 t.translate(g.addE("knows").from(new ReferenceVertex(1, "person"))).getScript());
+    }
 
+    @Test
+    public void shouldTranslateMapsUsingLanguageTypeTranslator() {
+        final Translator.ScriptTranslator t = GroovyTranslator.of("g",
+                new GroovyTranslator.LanguageTypeTranslator(false));
+        final String script = t.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
+            put(3, "32");
+            put(Arrays.asList(1, 2, 3.1d), 4);
+            put("x", 4);
+            put("+x", 8);
+        }})).getScript();
+        assertEquals("g.V().id().is([(3I):\"32\",([1I, 2I, 3.1D]):4I,\"x\":4I,\"+x\":8I])", script);
     }
 
     @Test

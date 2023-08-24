@@ -21,7 +21,8 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 
 import java.util.ArrayList;
@@ -52,6 +53,8 @@ final class ConnectionPool {
     public static final int MAX_POOL_SIZE = 8;
     public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 8;
     public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 16;
+    // A small buffer in millis used for comparing if a connection was created within a certain amount of time.
+    private static final int CONNECTION_SETUP_TIME_DELTA = 25;
 
     public final Host host;
     private final Cluster cluster;
@@ -67,12 +70,29 @@ final class ConnectionPool {
     private final String poolLabel;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
+    private final AtomicReference<ConnectionResult> latestConnectionResult = new AtomicReference<>(new ConnectionResult());
 
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     private volatile int waiter = 0;
     private final Lock waitLock = new ReentrantLock(true);
     private final Condition hasAvailableConnection = waitLock.newCondition();
+    ConnectionFactory connectionFactory;
+
+    /**
+     * The result of a connection attempt. A null value for failureCause means that the connection attempt was successful.
+     */
+    public class ConnectionResult {
+        private long timeOfConnectionAttempt;
+        private Throwable failureCause;
+
+        public ConnectionResult() {}
+
+        public Throwable getFailureCause() { return failureCause; }
+        public long getTime() { return timeOfConnectionAttempt; }
+        public void setFailureCause(Throwable cause) { failureCause = cause; }
+        public void setTimeNow() { timeOfConnectionAttempt = System.currentTimeMillis(); }
+    }
 
     public ConnectionPool(final Host host, final Client client) {
         this(host, client, Optional.empty(), Optional.empty());
@@ -80,9 +100,15 @@ final class ConnectionPool {
 
     public ConnectionPool(final Host host, final Client client, final Optional<Integer> overrideMinPoolSize,
                           final Optional<Integer> overrideMaxPoolSize) {
+        this(host, client, overrideMinPoolSize, overrideMaxPoolSize, new ConnectionFactory.DefaultConnectionFactory());
+    }
+
+    ConnectionPool(final Host host, final Client client, final Optional<Integer> overrideMinPoolSize,
+                          final Optional<Integer> overrideMaxPoolSize, final ConnectionFactory connectionFactory) {
         this.host = host;
         this.client = client;
         this.cluster = client.cluster;
+        this.connectionFactory = connectionFactory;
         poolLabel = "Connection Pool {host=" + host + "}";
 
         final Settings.ConnectionPoolSettings settings = settings();
@@ -99,18 +125,26 @@ final class ConnectionPool {
             final List<CompletableFuture<Void>> connectionCreationFutures = new ArrayList<>();
             for (int i = 0; i < minPoolSize; i++) {
                 connectionCreationFutures.add(CompletableFuture.runAsync(() -> {
+                    final ConnectionResult result = new ConnectionResult();
                     try {
-                        this.connections.add(new Connection(host.getHostUri(), this, settings.maxInProcessPerConnection));
+                        this.connections.add(connectionFactory.create(this));
                         this.open.incrementAndGet();
                     } catch (ConnectionException e) {
+                        result.setFailureCause(e);
                         throw new CompletionException(e);
+                    } finally {
+                        result.setTimeNow();
+                        if ((latestConnectionResult.get() == null) ||
+                                (latestConnectionResult.get().getTime() < result.getTime())) {
+                            latestConnectionResult.set(result);
+                        }
                     }
-                }, cluster.executor()));
+                }, cluster.connectionScheduler()));
             }
 
             CompletableFuture.allOf(connectionCreationFutures.toArray(new CompletableFuture[0])).join();
         } catch (CancellationException ce) {
-            logger.warn("Initialization of connections cancelled for {}", getPoolInfo(), ce);
+            logger.warn("Initialization of connections cancelled for {}", this.getPoolInfo(), ce);
             throw ce;
         } catch (CompletionException ce) {
             // Some connections might have been initialized. Close the connection pool gracefully to close them.
@@ -244,12 +278,23 @@ final class ConnectionPool {
         return bin.size();
     }
 
+    /**
+     * Calls close on connections in the pool gathering close futures from both active connections and ones in the
+     * bin.
+     */
     private CompletableFuture<Void> killAvailableConnections() {
-        final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
+        final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size() + bin.size());
         for (Connection connection : connections) {
             final CompletableFuture<Void> future = connection.closeAsync();
             future.thenRun(open::decrementAndGet);
             futures.add(future);
+        }
+
+        // Without the ones in the bin the close for the ConnectionPool won't account for their shutdown and could
+        // lead to scenario where the bin connections stay open after the channel executor is closed which then
+        // leads to close operation getting rejected in Connection.close() for channel.newPromise().
+        for (Connection connection : bin) {
+            futures.add(connection.closeAsync());
         }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -289,21 +334,32 @@ final class ConnectionPool {
     }
 
     private void newConnection() {
-        cluster.executor().submit(() -> {
-            addConnectionIfUnderMaximum();
+        cluster.connectionScheduler().submit(() -> {
+            // seems like this should be decremented first because if addConnectionIfUnderMaximum fails there is
+            // nothing that wants to decrement this number and so it leaves things in a state where you could
+            // newConnection() doesn't seem to get called at all because it believes connections are being currently
+            // created. this seems to lead to situations where the client can never borrow a connection and it's as
+            // though it can't reconnect at all. this was hard to test but it seemed to happen regularly after
+            // introduced the ConnectionFactory that enabled a way to introduce connection jitters (i.e. failures in
+            // creation of a Connection) at which point it seemed to happen with some regularity.
             scheduledForCreation.decrementAndGet();
+            addConnectionIfUnderMaximum();
             return null;
         });
     }
 
     private boolean addConnectionIfUnderMaximum() {
+        final int openCountToActOn;
+
         while (true) {
-            int opened = open.get();
+            final int opened = open.get();
             if (opened >= maxPoolSize)
                 return false;
 
-            if (open.compareAndSet(opened, opened + 1))
+            if (open.compareAndSet(opened, opened + 1)) {
+                openCountToActOn = opened;
                 break;
+            }
         }
 
         if (isClosed()) {
@@ -311,13 +367,23 @@ final class ConnectionPool {
             return false;
         }
 
+        final ConnectionResult result = new ConnectionResult();
         try {
-            connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
-        } catch (ConnectionException ce) {
-            logger.error("Connections were under max, but there was an error creating the connection.", ce);
+            connections.add(connectionFactory.create(this));
+        } catch (Exception ex) {
             open.decrementAndGet();
+            logger.error(String.format(
+                    "Connections[%s] were under maximum allowed[%s], but there was an error creating a new connection",
+                            openCountToActOn, maxPoolSize),
+                    ex);
             considerHostUnavailable();
+            result.setFailureCause(ex);
             return false;
+        } finally {
+            result.setTimeNow();
+            if (latestConnectionResult.get().getTime() < result.getTime()) {
+                latestConnectionResult.set(result);
+            }
         }
 
         announceAllAvailableConnection();
@@ -326,7 +392,7 @@ final class ConnectionPool {
 
     private boolean destroyConnection(final Connection connection) {
         while (true) {
-            int opened = open.get();
+            final int opened = open.get();
             if (opened <= minPoolSize)
                 return false;
 
@@ -349,9 +415,10 @@ final class ConnectionPool {
         // only close the connection for good once it is done being borrowed or when it is dead
         if (connection.isDead() || connection.borrowed.get() == 0) {
             if (bin.remove(connection)) {
-                connection.closeAsync();
-                // TODO: Log the following message on completion of the future returned by closeAsync.
-                logger.debug("{} destroyed", connection.getConnectionInfo());
+                final CompletableFuture<Void> closeFuture = connection.closeAsync();
+                closeFuture.whenComplete((v, t) -> {
+                    logger.debug("Destroyed {}{}{}", connection.getConnectionInfo(), System.lineSeparator(), this.getPoolInfo());
+                });
             }
         }
     }
@@ -383,24 +450,61 @@ final class ConnectionPool {
             logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
-        logger.error("Timed-out ({} {}) waiting for connection on {} - possibly unavailable", timeout, unit, host);
+        final StringBuilder cause = new StringBuilder("Potential Cause: ");
+        final ConnectionResult res = latestConnectionResult.get();
+        // If a connection attempt failed within a request's maxWaitForConnection then it likely contributed to that
+        // request getting a TimeoutException.
+        if (((System.currentTimeMillis() - res.getTime()) < (cluster.getMaxWaitForConnection() + CONNECTION_SETUP_TIME_DELTA)) &&
+                (res.getFailureCause() != null)) {
+            // Assumes that the root cause will give better information about why the connection failed.
+            cause.append(ExceptionHelper.getRootCause(res.getFailureCause()).getMessage());
+        } else if (open.get() >= maxPoolSize) {
+            cause.append(Client.TOO_MANY_IN_FLIGHT_REQUESTS);
+        } else {
+            cause.setLength(0);
+        }
+        // if we get to this point, we waited up to maxWaitForConnection from the pool and did not get a Connection.
+        // this can either mean the pool is exhausted or the host is unavailable. for the former, this could mean
+        // the connection pool and/or server is not sized correctly for the workload as connections are not freeing up
+        // to keep up requests and for the latter it could mean anything from a network hiccup to the server simply
+        // being down. it is critical that the caller be able to discern between these two. the following error
+        // message written to the log should provide some insight into the state of the connection pool telling the
+        // user if the pool was running at maximum.
+        final String timeoutErrorMessage = String.format(
+                "Timed-out (%s %s) waiting for connection on %s. %s%s%s",
+                timeout, unit, host, cause.toString(), System.lineSeparator(), this.getPoolInfo());
+
+        logger.error(timeoutErrorMessage);
 
         // if we timeout borrowing a connection that might mean the host is dead (or the timeout was super short).
         // either way supply a function to reconnect
+        final TimeoutException timeoutException = new TimeoutException(timeoutErrorMessage);
         this.considerHostUnavailable();
 
-        throw new TimeoutException("Timed-out waiting for connection on " + host + " - possibly unavailable");
+        throw timeoutException;
     }
 
+    /**
+     * On a failure to get a {@link Connection} this method is called to determine if the {@link Host} should be
+     * marked as unavailable and to establish a background reconnect operation.
+     */
     public void considerHostUnavailable() {
-        // called when a connection is "dead" due to a non-recoverable error.
-        host.makeUnavailable(this::tryReconnect);
+        // if there is at least one available connection the host has to still be around (or is perhaps on its way out
+        // but we'll stay optimistic in this check). no connections also means "unhealthy". unsure if there is an ok
+        // "no connections" state we can get into. in any event if there are no connections then we'd just try to
+        // immediately reconnect below anyway so perhaps that state isn't really something to worry about.
+        final boolean maybeUnhealthy = connections.stream().allMatch(Connection::isDead);
+        if (maybeUnhealthy) {
+            // immediately fire off an attempt to reconnect because there are no active connections.
+            host.tryReconnectingImmediately(this::tryReconnect);
 
-        // if the host is unavailable then we should release the connections
-        connections.forEach(this::definitelyDestroyConnection);
-
-        // let the load-balancer know that the host is acting poorly
-        this.cluster.loadBalancingStrategy().onUnavailable(host);
+            // let the load-balancer know that the host is acting poorly
+            if (!host.isAvailable()) {
+                // if the host is unavailable then we should release the connections
+                connections.forEach(this::definitelyDestroyConnection);
+                this.cluster.loadBalancingStrategy().onUnavailable(host);
+            }
+        }
     }
 
     /**
@@ -412,7 +516,13 @@ final class ConnectionPool {
 
         Connection connection = null;
         try {
-            connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+            // rather than rely on borrowConnection() infrastructure and the pool create a brand new Connection
+            // instance solely for the purpose of this ping. this ensures that if the pool is overloaded that we
+            // make an honest attempt at validating host health without failing over some timeout waiting for a
+            // connection in the pool. not sure if we should try to keep this connection if it succeeds and if the
+            // pool needs it. for now that seems like an unnecessary added bit of complexity for dealing with this
+            // error state
+            connection = connectionFactory.create(this);
             final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
             final CompletableFuture<ResultSet> f = new CompletableFuture<>();
             connection.write(ping, f);
@@ -422,9 +532,13 @@ final class ConnectionPool {
             this.cluster.loadBalancingStrategy().onAvailable(h);
             return true;
         } catch (Exception ex) {
-            logger.debug("Failed reconnect attempt on {}", h, ex);
-            if (connection != null) definitelyDestroyConnection(connection);
+            logger.error(String.format("Failed reconnect attempt on %s%s%s",
+                            h, System.lineSeparator(), this.getPoolInfo()), ex);
             return false;
+        } finally {
+            if (connection != null) {
+                connection.closeAsync();
+            }
         }
     }
 
@@ -511,15 +625,57 @@ final class ConnectionPool {
         return connections.stream().map(Connection::getChannelId).collect(Collectors.toSet());
     }
 
+    /**
+     * Gets a message that describes the state of the connection pool.
+     */
     public String getPoolInfo() {
+        return getPoolInfo(null);
+    }
+
+    /**
+     * Gets a message that describes the state of the connection pool.
+     *
+     * @param connectionToCallout the connection from the pool to identify more clearly in the message
+     */
+    public String getPoolInfo(final Connection connectionToCallout) {
         final StringBuilder sb = new StringBuilder("ConnectionPool (");
-        sb.append(host);
-        sb.append(") - ");
-        connections.forEach(c -> {
-            sb.append(c);
-            sb.append(",");
-        });
+        sb.append(host.toString());
+        sb.append(")");
+
+        if (connections.isEmpty()) {
+            sb.append("- no connections in pool");
+        } else {
+            final int connectionCount = connections.size();
+            sb.append(System.lineSeparator());
+            sb.append(String.format("Connection Pool Status (size=%s max=%s min=%s toCreate=%s bin=%s)",
+                    connectionCount, maxPoolSize, minPoolSize, this.scheduledForCreation.get(), bin.size()));
+            sb.append(System.lineSeparator());
+
+            appendConnections(sb, connectionToCallout, connections);
+            sb.append(System.lineSeparator());
+            sb.append("-- bin --");
+            sb.append(System.lineSeparator());
+            appendConnections(sb, connectionToCallout, new ArrayList<>(bin));
+        }
+
         return sb.toString().trim();
+    }
+
+    private void appendConnections(final StringBuilder sb, final Connection connectionToCallout,
+                                   final List<Connection> connections) {
+        final int connectionCount = connections.size();
+        for (int ix = 0; ix < connectionCount; ix++) {
+            final Connection c = connections.get(ix);
+            if (c.equals(connectionToCallout))
+                sb.append("==> ");
+            else
+                sb.append("> ");
+
+            sb.append(c.getConnectionInfo(false));
+
+            if (ix < connectionCount - 1)
+                sb.append(System.lineSeparator());
+        }
     }
 
     @Override

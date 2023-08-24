@@ -23,7 +23,7 @@ This section provides details on Gremlin language operational semantics. Describ
 them with tests in the Gremlin test suite makes it easier for providers to implement the language and for the
 TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
 an integrated approach to testing Gremlin queries, the `@StepClassSemantics` oriented tests found
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features[here] are especially focused to the
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here] are especially focused to the
 definitions found in this section. References to the location of specific tests can be found throughout the
 sub-sections below.
 
@@ -110,24 +110,24 @@ casting for these two types can vary depending on a Graph provider.
 This section of the document attempts to more clearly define the semantics for different types of value comparison
 within the Gremlin language and reference implementation. There are four concepts related to value comparison:
 
-[[gremlin-semantics-equality]]
-===== Equality
+**Equality**
+
 Equality semantics is used by the equality operators (`P.eq/neq`) and contains operators derived from them
 (`P.within/without`). It is also used for implicit `P.eq` comparisons, for example `g.V().has("age", 25)` - equality
 semantics are used to look up vertices by `age` when considering the value.
 
-[[gremlin-semantics-comparability]]
-===== Comparability
+**Comparability**
+
 Comparability semantics is used by the compare operators (`P.lt/lte/gt/gte`) and operators derived from them
 (`P.inside/outside/between`) and defines the semantics of how to compare two values.
 
-[[gremlin-semantics-orderability]]
-===== Orderability
+**Orderability**
+
 Orderability semantics defines how two values are compared in the context of an `order()` operation. These semantics
 have important differences from Comparability.
 
-[[gremlin-semantics-equivalence]]
-===== Equivalence
+**Equivalence**
+
 Equivalence semantics are slightly different from Equality and are used for operations such as `dedup()` and `group()`.
 Key differences include handling of numeric types and NaN.
 
@@ -138,21 +138,22 @@ Comparability semantics are not complete with respect to binary boolean semantic
 ternary boolean semantics for Comparability that includes a third boolean state - `ERROR`, with its own well-defined
 semantics.
 
-==== Ternary Boolean Logics
+=== Ternary Boolean Logics
 
 When evaluating boolean value expressions, we sometimes encounter situations that cannot be proved as either `TRUE` or
 `FALSE`. Common `ERROR` cases are Comparability against `NaN`, cross-type Comparability (e.g. `String` vs `Numeric`), or
 other invalid arguments to other boolean value expressions.
 
 Rather than throwing an exception and halting the traversal, we extend normal binary boolean logics and introduce a
-third boolean option option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
+third boolean option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
 implementation, `ERROR` is an internal representation only and will not be propagated back to the client as an
 exception - it will eventually hit a binary reduction operation and be reduced to `FALSE` (thus quietly filters the
 solution that produced the `ERROR`). Before that happens though, it will be treated as its own boolean value with its
 own semantics that can be used in other boolean value expressions, such as Connective predicates (`P.and/or`) and
 negation (`P.not`).
 
-===== Ternary Boolean Semantics for `AND`:
+==== Ternary Boolean Semantics for `AND`
+
 |===
 |A|B|AND|Intuition
 
@@ -166,7 +167,9 @@ negation (`P.not`).
 | `ERROR` | `FALSE` | `FALSE` | `X && FALSE == FALSE`
 | `ERROR` | `ERROR` | `ERROR` | `X && X == X`
 |===
-===== Ternary Boolean Semantics for `OR`:
+
+==== Ternary Boolean Semantics for `OR`
+
 |===
 |A|B|OR|Intuition
 
@@ -180,7 +183,9 @@ negation (`P.not`).
 | `ERROR` | `FALSE` | `ERROR` | `X \|\| FALSE == X`
 | `ERROR` | `ERROR` | `ERROR` | `X \|\| X == X`
 |===
-===== Ternary Boolean Semantics for `OR`:
+
+==== Ternary Boolean Semantics for `NOT`
+
 The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERROR` values. The key idea is that, for an
 `ERROR` value, we can neither prove nor disprove the expression, and hence stick with `ERROR`.
 |===
@@ -193,29 +198,36 @@ The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERR
 
 [[gremlin-semantics-equality-comparability]]
 === Equality and Comparability
+
 <<Equality,Equality>> and <<Comparability,Comparability>> can be understood to be semantically aligned with one another.
 As mentioned above, <<Equality,Equality>> is used for `P.eq/neq` (and derived predicates) and
 <<Comparability,Comparability>> is used for `P.lt/lte/gt/gte` (and derived predicates).
 If we define Comparability using a `compare()` function over `A` and `B` as follows:
-```
+
+[source,text]
+----
 If (A, B) are Comparable per Gremlin semantics, then:
   For A < B,  Comparability.compare(A, B) < 0
   For A > B,  Comparability.compare(A, B) > 0
   For A == B, Comparability.compare(A, B) == 0
 If (A, B) not Comparable, then:
               Comparability.compare(A, B) => ERROR
-```
+----
+
 Then we can define Equality using an `equals()` function over `A` and `B` that acts as a strict binary
 reduction of `Comparability.compare(A, B) == 0`:
-```
+
+[source,text]
+----
 For any (A, B):
   Comparability.compare(A, B) == 0     implies Equality.equals(A, B) == TRUE
   Comparability.compare(A, B) <> 0     implies Equality.equals(A, B) == FALSE
   Comparability.compare(A, B) => ERROR implies Equality.equals(A, B) == FALSE
-```
+----
 
 The following table illustrates how <<Equality,Equality>> and <<Comparability,Comparability>> operate under various
 classes of comparison:
+
 |===
 |Class|Arguments|<<Comparability,Comparability>>|<<Equality,Equality>>
 
@@ -254,37 +266,45 @@ Edge cases:
 ** `Float.±Infinity` and `Double.±Infinity` adhere to the same type promotion rules.
 * As described above `NaN` is not <<Equality,Equal>> and not <<Comparability,Comparable>> to any Number (including itself).
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests - Scenarios prefixed with "Primitives_Number_"]
 
 ===== nulltype
+
 As described in the table above, `null == null`, but is not <<Equality,Equal>> and not <<Comparability,Comparable>> to
 any non-`null` value.
 
 ===== Boolean
+
 For Booleans, `TRUE == TRUE`, `FALSE == FALSE`, `TRUE != FALSE`, and `FALSE < TRUE`.
 
 ===== String
+
 We assume the common lexicographical order over unicode strings. `A` and `B` are compared lexicographically, and
 `A == B` if `A` and `B` are lexicographically equal.
 
 ===== UUID
+
 UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
 String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== Date
+
 Dates are evaluated based on the numerical comparison of Unix Epoch time.
 
 ===== Graph Element (Vertex / Edge / VertexProperty)
+
 If they are the same type of Element, these are compared by the value of their `T.id` according to the semantics for
 the particular primitive type used for ids (implementation-specific). Elements of different types are
 not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== Property
+
 Properties are compared first by key (String semantics), then by value, according to the semantics for the particular
 primitive type of the value. Properties with values in different type families are
 not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
 ===== List
+
 Lists are compared pairwise, element-by-element, in their natural list order. For each element, if the pairs are
 <<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair whose
 `Comparability.compare()` value is non-zero (`-1`, `1`, or `ERROR`), and we return that value. Lists can be evaluated
@@ -311,10 +331,12 @@ Empty lists are equal to other empty lists and less than non-empty lists.
 |===
 
 ===== Path
+
 <<Equality and Comparability,Equality and Comparability>> semantics for `Paths` are similar to those for `Lists`, described above (though
 `Paths` and `Lists` are still of different types and thus not <<Equality,Equal>> and not <<Comparability,Comparable>>).
 
 ===== Set
+
 `Sets` are compared pairwise, element-by-element, in the same way as `Lists`, but they are compared in sorted order
 using <<Orderability,Orderability>> semantics to sort (described further below). We use <<Orderability,Orderability>>
 semantics for ordering so that `Sets` containing multiple element types can be properly sorted before being compared.
@@ -330,20 +352,27 @@ For example:
 
 Sets do introduce a bit of semantic stickiness, in that on the one hand they do respect type promotion semantics for
 Equality and Comparability:
-```
+
+[source,text]
+----
 {1, 2} == {1.0, 2.0}
-```
+----
+
 But on the other hand they also allow two elements that would be equal (and thus duplicates) according to type
 promotion:
-```
+
+[source,text]
+----
 {1, 1.0, 2} is a valid set and != {1, 2}
-```
+----
+
 We allow some "wiggle-room" in the implementation for providers to decide how to handle this logical inconsistency. The
 reference implementation allows for semantically equivalent numerics to appear in a set (e.g `{1, 1.0}`), while at the
 same time evaluating the same semantically equivalent numerics as equal during pairwise comparison across sets (e.g.
 `{1,2} == {1.0,2.0}`).
 
 ===== Map
+
 'Map' semantics can be thought of as similar to `Set` semantics for the entry set the comprises the `Map`. So again,
 we compare pairwise, entry-by-entry, in the same way as `Lists`, and again, we first sort the entries using
 <<Orderability,Orderability>> semantics. Map entries are compared first by key, then by value using the
@@ -375,6 +404,8 @@ To achieve this globally complete order, we need to address any cases in Compara
 values (for cases of in-process JVM implementations, like the TinkerGraph).
 
 We define the type space, and the global order across the type space as follows:
+
+[source,text]
 ----
 1.  nulltype
 2.  Boolean
@@ -415,17 +446,21 @@ One key difference to note is that we use Orderability semantics to compare valu
 `Path`, `Map`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
 
 ===== Numeric Ordering
+
 Same as Comparability, except `NaN` is equivalent to `NaN` and is greater than all other Numbers, including `+Infinity`.
 Additionally, because of type promotion (`1` == `1.0`), numbers of the same value but of different numeric types will
 not have a stable sort order (`1` can appear either before or after `1.0`).
 
 ===== Property
+
 Same as Comparability, except Orderability semantics are used for the property value.
 
 ===== Iterables (Path, List, Set, Map)
+
 Same as Comparability, except Orderability semantics apply for the pairwise element-by-element comparisons.
 
 ===== Unknown Types
+
 For Orderability semantics, we allow for the possibility of "unknown" types. If the "unknown" arguments are of the same
 type, we use `java.lang.Object#equals()` and `java.lang.Comparable` (if implemented) to determine their natural order.
 If the unknown arguments are of different types or do not define a natural order, we order first by Class,
@@ -438,7 +473,8 @@ Equivalence defines how TinkerPop deals with two values to be grouped or de-dupl
 for the `dedup()` and `group()` steps in Gremlin.
 
 For example:
-[code]
+
+[source,text]
 ----
 // deduplication needs equivalence over two property values
 gremlin> g.V().dedup().by("name")
@@ -478,8 +514,8 @@ The following table maps the notions proposed above to the various `P` operators
 
 ==== See Also
 
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Equality.feature[Equality Tests],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features/Comparability.feature[Comparability Tests]
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
 == Steps
 
@@ -488,6 +524,7 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[call-step]]
 === call()
 
 *Description:* Provides support for provider-specific service calls.
@@ -572,6 +609,100 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[[concat-step]]
+=== concat()
+
+*Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
+
+*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+* `String...` - If one or more String values are provided, they will be concatenated together with the
+incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
+* `Traversal` - The `Traversal` value must resolve to a `String`. The first result returned from the traversal will be
+concatenated with the incoming traverser.
+
+Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
+concatenated, the `null` value will be propagated and returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConcatStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
+
+[[dedup-step]]
+=== dedup()
+
+*Description:* Removes repeatedly seen results from the Traversal Stream.
+
+*Syntax:* `dedup()` | `dedup(labels)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `labels` - If `dedup()` is provided a list of labels, then it will ensure that the de-duplication
+is not with respect to the current traverser object, but to the path history of the traverser.
+
+For Example:
+
+[source,groovy]
+----
+g.V().as('a').out('created').as('b').in('created').as('c').
+  dedup('a','b').select('a','b','c')
+----
+
+will filter out any such `a` and `b` pairs which have previously been seen.
+
+*Modulation:*
+
+* `by()` - Performs dedup according to the property specified in the by modulation. For example:
+`g.V().dedup().by("name")` will filter out vertices with duplicate names.
+
+*Considerations:*
+
+* There is no guarantee that ordering of results will be preserved across a dedup step.
+* There is no guarantee which element is selected as the survivor when filtering duplicates.
+
+For example, given a graph with the following three vertices:
+
+[width="100%",options="header"]
+|=========================================================
+|name |age
+|Alex |38
+|Bob |45
+|Chloe |38
+|=========================================================
+
+and the traversal of:
+
+[source,groovy]
+----
+g.V().order().by("name", Order.asc).
+  dedup().by("age").values("name")
+----
+
+can return any of:
+
+`["Alex", "Bob"]`, `["Bob", "Alex"]`, `["Bob", "Chloe"]`, or `["Chloe", "Bob"]`
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DedupGlobalStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
+
+[[element-step]]
 === element()
 
 *Description:* Traverse from `Property` to its `Element`.
@@ -592,6 +723,7 @@ None
 
 None
 
+[[merge-e-step]]
 === mergeE()
 
 *Description:* Provides upsert-like functionality for edges.
@@ -607,8 +739,12 @@ None
 *Arguments:*
 
 * `searchCreate` - A `Map` used to match an `Edge` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
+* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
 * `onMatch` - A `Map` used to update the `Edge` that is found using the `searchCreate` criteria.
+* `outV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.OUT` key,
+or else another `Map` used to search for that `Vertex`
+* `inV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.IN` key,
+or else another `Map` used to search for that `Vertex`
 
 The `searchCreate` and `onCreate` `Map` instances must consist of any combination of:
 
@@ -620,38 +756,42 @@ The `onMatch` `Map` instance only allows for `String` keys as the `id` and `labe
 the incident vertices. Values for these valid keys that are `null` will be treated according to the semantics of the
 `addE()` step.
 
-The incoming traverser to this step may be either a `Map` or a `Vertex`. If it is a `Vertex`, it will be assigned to
-the `IN` and `OUT` elements of the `searchCreate`. If it is a `Map` then it will be treated as though it were passed in
-as an argument to `mergeE()`. If `mergeV(Map)` is used, then it will override any settings determined from the incoming
-`Traverser` if `IN` or `OUT` is specified. If those keys are not present, then the assumption is that the `Map` search
-criteria applies to both incoming and outgoing edges of the traverser `Vertex`. If `mergeV(Traversal)` is used, the
-`Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+`mergeE()`. If `mergeE(Map)` is used, then it will override the incoming `Traverser`. If `mergeE(Traversal)` is used,
+the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
 If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `Map`
-instance to be applied.
+instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Null `Map` |Empty `Map`
-|Search |Filters all edges |Matches all edges
-|Create |No new edge |New edge with defaults
-|Update |No update to matched edge |No update to matched edge
+|Event |Empty `Map` (or Null)
+|Search |Matches all edges
+|Create |New edge with defaults
+|Update |No update to matched edge
 |=========================================================
 
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge creation if the `Graph` does not
-support user supplied identifiers.
+support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label`, and
+`Direction.OUT/IN` do not need to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
+(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
 
 *Modulation:*
 
 * `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
 resolve to a `Map`.
+* `option(Merge.outV/inV)` can also accept a `Traversal` that resolves to a `Vertex`, allowing `mergeE` to be combined
+with `mergeV` via a `select` operation.
 
 *Exceptions*
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
+* If `T.id`, `T.label`, and/or `Direction.IN/OUT` are specified in `searchCreate`, they cannot be overriden in `onCreate`.
+* For late binding of the from and to vertices, `Direction.OUT` must be set to `Merge.outV` and `Direction.IN` must
+be set to `Merge.inV`. Other combinations are not allowed and will result in exception.
 
 *Considerations:*
 
@@ -661,6 +801,7 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
+[[merge-v-step]]
 === mergeV()
 
 *Description:* Provides upsert-like functionality for vertices.
@@ -676,13 +817,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 *Arguments:*
 
 * `searchCreate` - A `Map` used to match a `Vertex` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` that is the override to the default of `searchCreate`.
+* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
 * `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
 The `searchCreate` and `onCreate` `Map` instances must consists of any combination of `T.id`, `T.label`, or arbitrary
 `String` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `String` keys
-as the `id` and `label` of a `Vertex` are immutable. Values for these valid keys that are `null` will be treated
-according to the semantics of the `addV()` step.
+as the `id` and `label` of a `Vertex` are immutable. `null` Values for these valid keys are not allowed.
 
 The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
@@ -690,18 +830,20 @@ the `Traversal` argument must resolve to a `Map` and it would also override the 
 `onMatch` arguments are assigned via modulation as described below.
 
 If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `Map`
-instance to be applied.
+instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Null `Map` |Empty `Map`
-|Search |Filters all vertices |Matches all vertices
-|Create |No new vertex |New vertex with defaults
-|Update |No update to matched vertex |No update to matched vertex
+|Event |Empty `Map` (or Null)
+|Search |Matches all vertices
+|Create |New vertex with defaults
+|Update |No update to matched vertex
 |=========================================================
 
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex creation if the `Graph` does not
-support user supplied identifiers.
+support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label` do not need
+to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
+(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
 
 *Modulation:*
 
@@ -713,6 +855,7 @@ resolve to a `Map`.
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
+* If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overriden in `onCreate`.
 
 *Considerations:*
 

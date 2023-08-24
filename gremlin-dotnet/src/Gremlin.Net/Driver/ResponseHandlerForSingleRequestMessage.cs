@@ -33,13 +33,13 @@ namespace Gremlin.Net.Driver
         public Task<ResultSet<T>> Result => _tcs.Task;
 
         private readonly TaskCompletionSource<ResultSet<T>> _tcs =
-            new TaskCompletionSource<ResultSet<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
         
-        private readonly List<T> _result = new List<T>();
+        private readonly List<T> _result = new();
 
         public void HandleReceived(ResponseMessage<List<object>> received)
         {
-            foreach (var d in received.Result.Data)
+            foreach (var d in received.Result.Data!)
             {
                 _result.Add((T) d);
             }
@@ -55,6 +55,11 @@ namespace Gremlin.Net.Driver
         public void HandleFailure(Exception objException)
         {
             _tcs.TrySetException(objException);
+        }
+
+        public void Cancel()
+        {
+            _tcs.SetCanceled();
         }
     }
 }

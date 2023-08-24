@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
@@ -54,7 +55,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.Matchers.either;
@@ -75,10 +75,10 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         return Arrays.asList(new Object[][]{
                 {"v1", GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
-                        .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                        .addCustomModule(GraphSONXModuleV2.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
-                        .addCustomModule(GraphSONXModuleV3d0.build().create(false))
+                        .addCustomModule(GraphSONXModuleV3.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
@@ -456,7 +456,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     }
 
     public static class PExt<V> extends P<V> {
-        public PExt(final BiPredicate<V, V> biPredicate, final V value) {
+        public PExt(final PBiPredicate<V, V> biPredicate, final V value) {
             super(biPredicate, value);
         }
 

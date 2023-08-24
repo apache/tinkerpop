@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.exception;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 
 import java.util.Collections;
 import java.util.List;

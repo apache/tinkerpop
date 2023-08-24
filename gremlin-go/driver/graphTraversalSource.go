@@ -91,7 +91,8 @@ func (gts *GraphTraversalSource) WithPath(args ...interface{}) *GraphTraversalSo
 // WithSack adds a sack to be used throughout the life of a spawned Traversal.
 func (gts *GraphTraversalSource) WithSack(args ...interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.AddSource("withSack", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	source.bytecode.AddSource("withSack", int32Args(args)...)
 	return source
 }
 
@@ -121,7 +122,23 @@ func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *G
 // With provides a configuration to a traversal in the form of a key value pair.
 func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *GraphTraversalSource {
 	source := gts.clone()
-	source.bytecode.AddSource("with", key, value)
+
+	var optionsStrategy TraversalStrategy = nil
+	for _, v := range gts.bytecode.sourceInstructions {
+		if v.operator == "withStrategies" &&
+			v.arguments[0].(*traversalStrategy).name == decorationNamespace+"OptionsStrategy" {
+			optionsStrategy = v.arguments[0]
+			break
+		}
+	}
+
+	if optionsStrategy == nil {
+		optionsStrategy = OptionsStrategy(map[string]interface{}{key.(string): value})
+		return source.WithStrategies(optionsStrategy)
+	}
+
+	options := optionsStrategy.(*traversalStrategy)
+	options.configuration[key.(string)] = value
 	return source
 }
 
@@ -172,7 +189,8 @@ func (gts *GraphTraversalSource) Call(args ...interface{}) *GraphTraversal {
 // Inject inserts arbitrary objects to start the traversal.
 func (gts *GraphTraversalSource) Inject(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
-	traversal.Bytecode.AddStep("inject", args...)
+	// Force int32 serialization for valid number values for server compatibility
+	traversal.Bytecode.AddStep("inject", int32Args(args)...)
 	return traversal
 }
 
@@ -194,6 +212,13 @@ func (gts *GraphTraversalSource) MergeE(args ...interface{}) *GraphTraversal {
 func (gts *GraphTraversalSource) MergeV(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
 	traversal.Bytecode.AddStep("mergeV", args...)
+	return traversal
+}
+
+// Union allows for a multi-branched start to a traversal.
+func (gts *GraphTraversalSource) Union(args ...interface{}) *GraphTraversal {
+	traversal := gts.GetGraphTraversal()
+	traversal.Bytecode.AddStep("union", args...)
 	return traversal
 }
 

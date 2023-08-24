@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
@@ -41,7 +38,7 @@ import java.util.function.BiPredicate;
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Contains implements BiPredicate<Object, Collection> {
+public enum Contains implements PBiPredicate<Object, Collection> {
 
     /**
      * The first object is within the {@code Collection} provided in the second object. The second object may not be

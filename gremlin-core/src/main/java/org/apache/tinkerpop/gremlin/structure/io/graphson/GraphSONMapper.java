@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
+import org.apache.tinkerpop.shaded.jackson.core.JsonFactory;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.StreamReadConstraints;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
@@ -61,31 +63,30 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONMapper implements Mapper<ObjectMapper> {
+    public static final int DEFAULT_MAX_NUMBER_LENGTH = 10000;
 
     private final List<SimpleModule> customModules;
     private final boolean loadCustomSerializers;
     private final boolean normalize;
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
+    private final StreamReadConstraints streamReadConstraints;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
         this.loadCustomSerializers = builder.loadCustomModules;
         this.normalize = builder.normalize;
         this.version = builder.version;
-
-        if (null == builder.typeInfo)
-            this.typeInfo = builder.version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
-        else
-            this.typeInfo = builder.typeInfo;
+        this.streamReadConstraints = builder.streamReadConstraintsBuilder.build();
+        this.typeInfo = builder.typeInfo;
     }
 
     @Override
     public ObjectMapper createMapper() {
-        final ObjectMapper om = new ObjectMapper();
+        final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        final GraphSONModule graphSONModule = version.getBuilder().create(normalize);
+        final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo);
         om.registerModule(graphSONModule);
         customModules.forEach(om::registerModule);
 
@@ -93,11 +94,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (loadCustomSerializers)
             om.findAndRegisterModules();
 
-        // graphson 3.0 only allows type - there is no option to remove embedded types
-        if (version == GraphSONVersion.V3_0 && typeInfo == TypeInfo.NO_TYPES)
-            throw new IllegalStateException(String.format("GraphSON 3.0 does not support %s", TypeInfo.NO_TYPES));
-
-        if (version == GraphSONVersion.V3_0 || (version == GraphSONVersion.V2_0 && typeInfo != TypeInfo.NO_TYPES)) {
+        if ((version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) && typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
@@ -137,8 +134,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                         .typeProperty(GraphSONTokens.CLASS);
                 om.setDefaultTyping(typer);
             }
+        } else if (version == GraphSONVersion.V3_0) {
+
         } else {
-            throw new IllegalStateException("Unknown GraphSONVersion : " + version);
+            throw new IllegalStateException("Unknown GraphSONVersion: " + version);
         }
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
@@ -174,6 +173,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         builder.loadCustomModules = mapper.loadCustomSerializers;
         builder.normalize = mapper.normalize;
         builder.typeInfo = mapper.typeInfo;
+        builder.streamReadConstraintsBuilder = mapper.streamReadConstraints.rebuild();
 
         return builder;
     }
@@ -195,15 +195,14 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
     public static class Builder implements Mapper.Builder<Builder> {
         private List<SimpleModule> customModules = new ArrayList<>();
+        private List<GraphSONModule.GraphSONModuleBuilder> customModuleBuilders = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V3_0;
-
-        /**
-         * GraphSON 2.0/3.0 should have types activated by default (3.0 does not have a typeless option), and 1.0
-         * should use no types by default.
-         */
+        private boolean includeDefaultXModule = false;
+        private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
+                .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
         private TypeInfo typeInfo = null;
 
         private Builder() {
@@ -243,6 +242,25 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
+         * Supplies a mapper module builder to be lazily constructed. The advantage to using this mechanism over
+         * {@link #addCustomModule(SimpleModule)} is that if the module is constructed with {@link TypeInfo} it can
+         * inherit it from the value supplied to {@link #typeInfo(TypeInfo)} (as well as the {@link #normalize(boolean)}
+         * option.
+         */
+        public Builder addCustomModule(final GraphSONModule.GraphSONModuleBuilder moduleBuilder) {
+            this.customModuleBuilders.add(moduleBuilder);
+            return this;
+        }
+
+        /**
+         * Supply a default extension module of V2_0 and V3_0 for serialization/deserialization.
+         */
+        public Builder addDefaultXModule(final boolean includeDefaultXModule) {
+            this.includeDefaultXModule = includeDefaultXModule;
+            return this;
+        }
+
+        /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
          * the one supplied to the {@link #addCustomModule(SimpleModule)};
          */
@@ -270,14 +288,54 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             return this;
         }
 
+        public Builder maxNumberLength(final int maxNumLength) {
+            this.streamReadConstraintsBuilder.maxNumberLength(maxNumLength);
+            return this;
+        }
+
+        public Builder maxNestingDepth(final int maxNestingDepth) {
+            this.streamReadConstraintsBuilder.maxNestingDepth(maxNestingDepth);
+            return this;
+        }
+
+        public Builder maxStringLength(final int maxStringLength) {
+            this.streamReadConstraintsBuilder.maxStringLength(maxStringLength);
+            return this;
+        }
+
         public GraphSONMapper create() {
             registries.forEach(registry -> {
                 final List<Pair<Class, SimpleModule>> simpleModules = registry.find(GraphSONIo.class, SimpleModule.class);
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
             });
 
+            typeInfo = inferTypeInfo(typeInfo, version);
+
+            // finish building off the modules.
+            customModuleBuilders.forEach(b -> {
+                this.addCustomModule(b.create(this.normalize, typeInfo));
+            });
+
+            if (includeDefaultXModule) {
+                if (this.version == GraphSONVersion.V2_0) {
+                    this.addCustomModule(GraphSONXModuleV2.build().create(this.normalize, typeInfo));
+                } else if (this.version == GraphSONVersion.V3_0) {
+                    this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
+                }
+            }
+
             return new GraphSONMapper(this);
         }
 
+        /**
+         * User the version to infer the {@link TypeInfo} if it is not explicitly supplied. GraphSON 1.0 defaults to
+         * no types, since it's Jackson type system is fairly impenetrable, but we otherwise use types.
+         */
+        private static TypeInfo inferTypeInfo(final TypeInfo typeInfo, final GraphSONVersion version) {
+            if (null == typeInfo)
+                return version == GraphSONVersion.V1_0 ? TypeInfo.NO_TYPES : TypeInfo.PARTIAL_TYPES;
+            else
+                return typeInfo;
+        }
     }
 }

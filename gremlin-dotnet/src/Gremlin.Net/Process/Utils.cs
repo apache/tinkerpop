@@ -22,8 +22,11 @@
 #endregion
 
 using System;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver;
+using static System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Gremlin.Net.Process
 {
@@ -32,6 +35,12 @@ namespace Gremlin.Net.Process
     /// </summary>
     internal static class Utils
     {
+        /// <summary>
+        /// The user agent which is sent with connection requests if enabled.
+        /// </summary>
+        public static string UserAgent => _userAgent ??= GenerateUserAgent();
+        private static string? _userAgent;
+        
         /// <summary>
         /// Waits the completion of the provided Task.
         /// When an AggregateException is thrown, the inner exception is thrown.
@@ -44,7 +53,7 @@ namespace Gremlin.Net.Process
             }
             catch (AggregateException ex)
             {
-                if (ex.InnerExceptions.Count == 1)
+                if (ex.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();   
                 }
@@ -62,6 +71,25 @@ namespace Gremlin.Net.Process
             {
                 t.Exception?.Handle(_ => true);
             }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        /// <summary>
+        ///  Returns a user agent for connection request headers.
+        ///
+        /// Format:
+        /// "[Application Name] [GLV Name].[Version] [Language Runtime Version] [OS].[Version] [CPU Architecture]"
+        /// </summary>
+        private static string GenerateUserAgent()
+        {
+            var applicationName = Assembly.GetEntryAssembly()?.GetName().Name?
+                                                        .Replace(' ', '_') ?? "NotAvailable";
+            var driverVersion = Tokens.GremlinVersion;
+            var languageVersion = Environment.Version.ToString().Replace(' ', '_');
+            var osName = Environment.OSVersion.Platform.ToString().Replace(' ', '_');
+            var osVersion = Environment.OSVersion.Version.ToString().Replace(' ', '_');
+            var cpuArchitecture = OSArchitecture.ToString().Replace(' ', '_');
+            
+            return $"{applicationName} gremlin-dotnet.{driverVersion} {languageVersion} {osName}.{osVersion} {cpuArchitecture}";
         }
     }
 }

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Map;
+
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
@@ -34,9 +36,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Map;
-
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
@@ -61,6 +62,8 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Edge> get_g_V_hasXperson_name_marko_X_mergeEXlabel_knowsX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated();
 
     public abstract Traversal<Map<Object,Object>, Edge> get_g_injectXlabel_knows_out_marko_in_vadasX_mergeE();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeE_with_outV_inV_options();
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
@@ -119,7 +122,7 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
             traversal.next();
             fail("Should have failed as vertices are not created");
         } catch (Exception ex) {
-            assertThat(ex.getMessage(), endsWith("could not be found and edge could not be created"));
+            assertThat(ex.getMessage(), endsWith("Vertex id could not be resolved from mergeE: 100"));
         }
         assertEquals(0, IteratorUtils.count(g.E()));
     }
@@ -192,11 +195,26 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
         assertEquals(1, IteratorUtils.count(g.V(100).out("knows").hasId(101)));
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeE_with_outV_inV_options() {
+        g.addV("person").property(T.id, 1)
+         .addV("person").property(T.id, 2)
+         .iterate();
+
+        final Traversal<Edge, Edge> traversal = get_g_mergeE_with_outV_inV_options();
+        printTraversalForm(traversal);
+
+        assertEquals(1, IteratorUtils.count(traversal));
+        assertEquals(1, IteratorUtils.count(g.V(1).out("knows").hasId(2)));
+    }
+
     public static class Traversals extends MergeEdgeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_mergeEXlabel_self_weight_05X() {
-            return g.V().mergeE(asMap(T.label, "self", "weight", 0.5d));
+            return g.V().as("v").mergeE(asMap(T.label, "self", "weight", 0.5d, Direction.OUT, Merge.outV, Direction.IN, Merge.inV)).option(Merge.outV, select("v")).option(Merge.inV, select("v"));
         }
 
         @Override
@@ -241,6 +259,13 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
         @Override
         public Traversal<Map<Object,Object>, Edge> get_g_injectXlabel_knows_out_marko_in_vadasX_mergeE() {
             return g.inject((Map<Object,Object>) asMap(T.label, "knows", Direction.IN, new ReferenceVertex(101), Direction.OUT, new ReferenceVertex(100))).mergeE();
+        }
+
+        @Override
+        public Traversal<Edge,Edge> get_g_mergeE_with_outV_inV_options() {
+            return g.mergeE(asMap(T.label, "knows", Direction.OUT, Merge.outV, Direction.IN, Merge.inV))
+                    .option(Merge.outV, asMap(T.id, 1))
+                    .option(Merge.inV, asMap(T.id, 2));
         }
     }
 }

@@ -102,7 +102,7 @@ public class GraphBinaryWriter {
         if (serializer instanceof TransformSerializer) {
             // For historical reasons, there are types that need to be transformed into another type
             // before serialization, e.g., Map.Entry
-            TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
+            final TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
             write(transformSerializer.transform(value), buffer);
             return;
         }
@@ -118,7 +118,7 @@ public class GraphBinaryWriter {
      * <p>Note that for simple types, the provided information will be <code>null</code>.</p>
      */
     public <T> void writeFullyQualifiedNull(final Class<T> objectClass, Buffer buffer, final Object information) throws IOException {
-        TypeSerializer<T> serializer = registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = registry.getSerializer(objectClass);
         serializer.write(null, buffer, this);
     }
 

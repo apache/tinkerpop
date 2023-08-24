@@ -21,6 +21,8 @@
 
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -33,7 +35,16 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             var label = graphsonObject.TryGetProperty("label", out var labelProperty)
                 ? labelProperty.GetString()
                 : Vertex.DefaultLabel;
-            return new Vertex(id, label);
+
+            dynamic?[]? properties = null;
+            if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
+                && propertiesObject.ValueKind == JsonValueKind.Object)
+            {
+                properties = propertiesObject.EnumerateObject()
+                    .SelectMany(p => (reader.ToObject(p.Value) as IEnumerable<object>)!).ToArray();
+            }
+
+            return new Vertex(id, label, properties);
         }
     }
 }

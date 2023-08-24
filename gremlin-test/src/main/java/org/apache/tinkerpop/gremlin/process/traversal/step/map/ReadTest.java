@@ -59,7 +59,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_readXkryoX() throws IOException {
-        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
+        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXkryoX(fileToRead);
         printTraversalForm(traversal);
         traversal.iterate();
@@ -75,7 +75,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_read_withXreader_gryoX() throws IOException {
-        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3d0.kryo", "").getAbsolutePath().replace('\\', '/');
+        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GryoResourceAccess.class, "tinkerpop-modern-v3.kryo", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_gryoX(fileToRead);
         printTraversalForm(traversal);
         traversal.iterate();
@@ -91,7 +91,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_readXjsonX() throws IOException {
-        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
+        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_readXjsonX(fileToRead);
         printTraversalForm(traversal);
         traversal.iterate();
@@ -107,7 +107,7 @@ public abstract class ReadTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_IO_READ)
     public void g_io_read_withXreader_graphsonX() throws IOException {
-        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3d0.json", "").getAbsolutePath().replace('\\', '/');
+        final String fileToRead = TestHelper.generateTempFileFromResource(ReadTest.class, GraphSONResourceAccess.class, "tinkerpop-modern-v3.json", "").getAbsolutePath().replace('\\', '/');
         final Traversal<Object,Object> traversal = get_g_io_read_withXreader_graphsonX(fileToRead);
         printTraversalForm(traversal);
         traversal.iterate();

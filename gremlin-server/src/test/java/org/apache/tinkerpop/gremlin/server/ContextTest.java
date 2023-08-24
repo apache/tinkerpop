@@ -20,9 +20,10 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import java.util.function.BiFunction;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ContextTest {
@@ -174,5 +176,35 @@ public class ContextTest {
         // ensure the frame was released
         Mockito.verify(frame, Mockito.times(1)).tryRelease();
         Mockito.verify(ctx, Mockito.times(1)).flush();
+    }
+
+    @Test
+    public void shouldParseParametersFromScriptRequest()
+    {
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                .addArg(Tokens.ARGS_GREMLIN, "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
+                .create();
+        final Settings settings = new Settings();
+        final Context context = new Context(request, ctx, settings, null, null, null);
+
+        assertEquals(1000, context.getRequestTimeout());
+        assertEquals("tokens", context.getMaterializeProperties());
+    }
+
+    @Test
+    public void shouldSkipInvalidMaterializePropertiesParameterFromScriptRequest()
+    {
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                .addArg(Tokens.ARGS_GREMLIN,
+                        "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
+                .create();
+        final Settings settings = new Settings();
+        final Context context = new Context(request, ctx, settings, null, null, null);
+
+        assertEquals(1000, context.getRequestTimeout());
+        // "all" is default value
+        assertEquals("all", context.getMaterializeProperties());
     }
 }

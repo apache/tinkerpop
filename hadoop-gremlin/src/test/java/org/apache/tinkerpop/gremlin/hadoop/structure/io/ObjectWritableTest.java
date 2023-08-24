@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -45,5 +48,16 @@ public class ObjectWritableTest {
         assertEquals(0, ObjectWritable.empty().compareTo(object));
         assertEquals(0, object.compareTo(ObjectWritable.empty()));
         assertEquals(0, object.compareTo(object));
+    }
+
+    @Test
+    public void shouldDumpStringSize() {
+        final Map<String, String> content = new HashMap();
+        content.put("a", "123456");
+        content.put("b", "567890");
+        final ObjectWritable object = new ObjectWritable(content);
+        final String f = object.toString();
+        assertTrue(f.startsWith(content.getClass().toString()));
+        assertTrue(f.endsWith(content.size()+""));
     }
 }

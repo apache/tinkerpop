@@ -21,7 +21,6 @@
 
 #endregion
 
-using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
 // tag::traversalSourceUsing[]
@@ -63,7 +62,7 @@ var marko = g.V().Has("person", "name", "marko").Next();
 var peopleMarkoKnows = g.V().Has("person", "name", "marko").Out("knows").ToList();
 // end::basicGremlinMarkoKnows[]
 
-            Assert.Equal("person", marko.Label);
+            Assert.Equal("person", marko!.Label);
             Assert.Equal(2, peopleMarkoKnows.Count);
         }
     }

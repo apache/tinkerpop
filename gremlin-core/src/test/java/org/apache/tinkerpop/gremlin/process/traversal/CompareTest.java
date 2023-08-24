@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
 import org.javatuples.Pair;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,10 +31,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asList;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asSet;
 import static org.junit.Assert.assertEquals;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asList;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asSet;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

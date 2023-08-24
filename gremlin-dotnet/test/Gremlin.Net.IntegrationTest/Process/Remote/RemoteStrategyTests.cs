@@ -34,7 +34,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
 {
     public class RemoteStrategyTests
     {
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Fact]
@@ -93,5 +93,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
             TraversalStrategies.Add(traversalStrategy);
             Bytecode = bytecode;
         }
+
+        public override Bytecode Bytecode { get; }
     }
 }

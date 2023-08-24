@@ -24,7 +24,7 @@ from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, \
-    Pick, Operator, IO, WithOptions
+    Pick, Operator, IO, WithOptions, Merge
 from radish import given, when, then, world
 from hamcrest import *
 
@@ -33,13 +33,6 @@ label = __.label
 inV = __.inV
 project = __.project
 tail = __.tail
-direction = {
-    "OUT": Direction.OUT,
-    "IN": Direction.IN,
-    "BOTH": Direction.BOTH,
-    "from_": Direction.OUT,
-    "to": Direction.IN,
-}
 
 ignores = []
 
@@ -237,7 +230,9 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^t\[.*\]$", val):  # parse instance of T enum
         return T[val[2:-1]]
     elif isinstance(val, str) and re.match(r"^D\[.*\]$", val):  # parse instance of Direction enum
-        return direction[__alias_direction(val[2:-1])]
+        return Direction[__alias_direction(val[2:-1])]
+    elif isinstance(val, str) and re.match(r"^M\[.*\]$", val):  # parse instance of Merge enum
+        return Merge[__alias_merge(val[2:-1])]
     elif isinstance(val, str) and re.match(r"^null$", val):  # parse null to None
         return None
     elif isinstance(val, str) and re.match(r"^true$", val):  # parse to boolean
@@ -250,6 +245,19 @@ def _convert(val, ctx):
 
 def __alias_direction(d):
     return "from_" if d == "from" else d
+
+
+def __alias_merge(m):
+    if m == "inV":
+        return "in_v"
+    elif m == "outV":
+        return "out_v"
+    elif m == "onCreate":
+        return "on_create"
+    elif m == "onMatch":
+        return "on_match"
+    else:
+        return
 
 
 def __find_cached_element(ctx, graph_name, identifier, element_type):

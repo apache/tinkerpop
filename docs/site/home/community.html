@@ -19,22 +19,33 @@ limitations under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop</title>
+    <title>Apache TinkerPop: Community</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
-          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
     <link href="css/responsive.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css"
-          integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/animate.css" rel="stylesheet"/>
+    <link href="css/fonts.css" rel="stylesheet">
     <link href="css/prism.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        /* We explicitly disable cookie tracking to avoid privacy issues */
+        _paq.push(['disableCookies']);
+        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function() {
+            var u="https://analytics.apache.org/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '27']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
 </head>
 <body>
 <!-- header -->
@@ -58,6 +69,21 @@ limitations under the License.
                         <li class="nav-item">
                             <a class="nav-link" href="download.html">Download</a>
                         </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tools
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                                <li><a class="dropdown-item" href="providers.html">Graph Systems</a></li>
+                                <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="https://gremlify.com/">Gremlify: Try Gremlin</a></li>
+                                <li><a class="dropdown-item" href="https://tinkerpop.apache.org/gremlint">Gremlint: Lint Gremlin</a></li>
+                                <li><a class="dropdown-item" href="https://www.gremlator.com/">Gremlator: Translate Gremlin</a></li>
+                            </ul>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
@@ -80,6 +106,7 @@ limitations under the License.
                             </ul>
 
                         </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
@@ -109,48 +136,31 @@ limitations under the License.
 
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Community
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users">User
-                                    Mailing List</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">Developer
-                                    Mailing List</a></li>
-                                <li><a class="dropdown-item" href="https://discord.gg/ndMpKZcBEE" target="_blank"><img
-                                        src="img/discord_logo.png" class="nav-icon">Join us on Discord</a></li>
-                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/">Issue
-                                    Tracker</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a>
-                                </li>
-                                <li><a class="dropdown-item" href="providers.html">Data System Support</a></li>
-                                <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img
-                                        src="img/github-logo.png" class="nav-icon">GitHub</a></li>
-                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img
-                                        src="img/twitter-logo.png" class="nav-icon">Twitter</a></li>
+                                <li><a class="dropdown-item" href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-logo.png" class="nav-icon"/>Discord</a></li>
+                                <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon"/>Answer Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon"/>Stack Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon"/>User Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon"/>Developer Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon"/>Issue Tracker</a></li>
+                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon"/>GitHub</a></li>
+                                <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon"/>Twitch</a></li>
+                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon"/>Twitter</a></li>
+                                <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon"/>YouTube</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
+                                <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
                             </ul>
-
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="https://tinkerpop.apache.org/gremlint/">Gremlint</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button"
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown5" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Apache Software
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown5">
                                 <li><a class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
                                 <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
                                 <li><a class="dropdown-item"
@@ -237,8 +247,8 @@ limitations under the License.
 
 
                     <!-- clojure -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                    <div class="accordion-item" id="lang-clojure">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                 <img src="img/community/clojure.png" class="img-fluid me-3" alt="img">Clojure
@@ -271,8 +281,8 @@ limitations under the License.
                     </div>
 
                     <!-- elixer -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
+                    <div class="accordion-item" id="lang-elixer">
+                        <h2 class="accordion-header" >
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                 <img src="img/community/elixer.png" class="img-fluid me-3" alt="img">Elixer
@@ -302,8 +312,8 @@ limitations under the License.
                     </div>
 
                     <!-- go -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading3">
+                    <div class="accordion-item" id="lang-go">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                                 <img src="img/community/go.png" class="img-fluid me-3" alt="img">Go
@@ -338,7 +348,7 @@ result, err := g.V().Out("knows").In("created").ToList()
                                             </div>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
-                                                    <code class="language-go-module">COMING SOON</code>
+                                                    <code class="language-go-module">go get github.com/apache/tinkerpop/gremlin-go/v3&#64;v3.6.4</code>
                                                 </div>
                                                 <p class="medium black">Go Module</p>
                                             </div>
@@ -347,7 +357,7 @@ result, err := g.V().Out("knows").In("created").ToList()
                                   </div>
 
                                   <div class="mt-4 text-center text-blue ft-17">
-                                      <a href="https://github.com/apache/tinkerpop/blob/master/gremlin-go/README.md"
+                                      <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-go"
                                          target="_blank"><u>Learn More</u></a>
                                   </div>
 
@@ -375,8 +385,8 @@ result, err := g.V().Out("knows").In("created").ToList()
                     </div>
 
                     <!-- groovy -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading4">
+                    <div class="accordion-item" id="lang-groovy">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
                                 <img src="img/community/groovy.png" class="img-fluid me-3" alt="img">Groovy
@@ -410,7 +420,7 @@ def l = g.V().out('knows').in('created').toList()
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <code class="language-groovy">implementation
-                                                        'org.apache.tinkerpop:gremlin-groovy:3.6.0'</code>
+                                                        'org.apache.tinkerpop:gremlin-groovy:3.6.4'</code>
                                                 </div>
                                                 <p class="medium black">Gradle</p>
                                             </div>
@@ -428,8 +438,8 @@ def l = g.V().out('knows').in('created').toList()
                     </div>
 
                     <!-- haskell -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading5">
+                    <div class="accordion-item" id="lang-haskell">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
                                 <img src="img/community/haskell.png" class="img-fluid me-3" alt="img">Haskell
@@ -459,8 +469,8 @@ def l = g.V().out('knows').in('created').toList()
                     </div>
 
                     <!-- java -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading6">
+                    <div class="accordion-item" id="lang-java">
+                        <h2 class="accordion-header">
                             <button class="accordion-button " type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse6" aria-expanded="true" aria-controls="collapse6">
                                 <img src="img/community/java.png" class="img-fluid me-3" alt="img">Java
@@ -470,7 +480,7 @@ def l = g.V().out('knows').in('created').toList()
                                         src="img/community/tool.png" class="img-fluid " alt="img"></div>
                             </button>
                         </h2>
-                        <div id="collapse6" class="accordion-collapse collapse show" aria-labelledby="heading6"
+                        <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="heading6"
                              data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                                 <div class="d-flex align-items-start">
@@ -498,7 +508,7 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
 &lt;dependency&gt;
   &lt;groupId&gt;org.apache.tinkerpop&lt;/groupId&gt;
   &lt;artifactId&gt;gremlin-driver&lt;/artifactId&gt;
-  &lt;version&gt;3.6.0&lt;/version&gt;
+  &lt;version&gt;3.6.4&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
                                                 </div>
                                                 <p class="medium black">Maven</p>
@@ -521,7 +531,10 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
                                         <p class="ft-17 mb-2">
                                             Third-Party Libraries and Tools
                                         </p>
-                                        <p class="ft-17">- <a class="text-blue" href="http://syncleus.com/Ferma/"
+                                        <p class="ft-17">- <a class="text-blue" href="https://github.com/eclipse/jnosql"
+                                                              target="_blank">Eclipse JNoSQL</a>: An Object Graph Mapper (OGM)
+                                            for Apache TinkerPop.
+                                            <br>- <a class="text-blue" href="http://syncleus.com/Ferma/"
                                                               target="_blank">Ferma</a>: An Object Graph Mapper (OGM)
                                             for Apache TinkerPop.
                                             <br>- <a class="text-blue" href="https://github.com/karthicks/gremlin-ogm"
@@ -542,8 +555,8 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
                     </div>
 
                     <!-- javascript -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading7">
+                    <div class="accordion-item" id="lang-javascript">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
                                 <img src="img/community/javascript.png" class="img-fluid me-3" alt="img">Javascript
@@ -626,8 +639,8 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
                     </div>
 
                     <!-- kotlin -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading8">
+                    <div class="accordion-item" id="lang-kotlin">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
                                 <img src="img/community/kotlin.png" class="img-fluid me-3" alt="img">Kotlin
@@ -658,8 +671,8 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
 
 
                     <!-- c# -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading9">
+                    <div class="accordion-item" id="lang-csharp">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
                                 <img src="img/community/c-sharp-logo-png.png" class="img-fluid me-3" alt="img">.NET
@@ -690,7 +703,7 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
                                             </div>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
-                                                    <pre><code class="language-plain">dotnet add package Gremlin.Net --version 3.6.0</code></pre>
+                                                    <pre><code class="language-plain">dotnet add package Gremlin.Net --version 3.6.4</code></pre>
                                                 </div>
                                                 <p class="medium black">NuGet</p>
                                             </div>
@@ -723,8 +736,8 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
                     </div>
 
                     <!-- python -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading10">
+                    <div class="accordion-item" id="lang-python">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
                                 <img src="img/community/python.png" class="img-fluid me-3" alt="img">Python
@@ -809,8 +822,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                     </div>
 
                     <!-- php -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading11">
+                    <div class="accordion-item" id="lang-php">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
                                 <img src="img/community/php.png" class="img-fluid me-3" alt="img">PHP
@@ -840,8 +853,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                     </div>
 
                     <!-- ruby -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading12">
+                    <div class="accordion-item" id="lang-ruby">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
                                 <img src="img/community/ruby.png" class="img-fluid me-3" alt="img">Ruby
@@ -876,8 +889,8 @@ l = g.V().both()[1:3].toList()</code></pre>
 
 
                     <!-- rust -->
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading13">
+                    <div class="accordion-item" id="lang-rust">
+                        <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
                                 <img src="img/community/rust.png" class="img-fluid me-3" alt="img">Rust
@@ -908,8 +921,8 @@ l = g.V().both()[1:3].toList()</code></pre>
                 </div>
 
                 <!-- scala -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading14">
+                <div class="accordion-item" id="lang-scala">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse14" aria-expanded="false" aria-controls="collapse14">
                             <img src="img/community/scala.png" class="img-fluid me-3" alt="img">Scala
@@ -946,11 +959,12 @@ l = g.V().both()[1:3].toList()</code></pre>
                         </div>
                     </div>
                 </div>
+
                 <h2 class="ft-25 black bold mt-5 mb-4">Docker</h2>
 
                 <!-- docker -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading15">
+                <div class="accordion-item" id="docker">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
                             <img src="img/community/docker.png" class="img-fluid me-3" alt="img">Docker
@@ -996,8 +1010,9 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                 <!-- compilers/transpilers -->
                 <h2 class="ft-25 black bold mt-5 mb-4">Compilers and Transpilers</h2>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading16">
+
+                <div class="accordion-item" id="pilers">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse16" aria-expanded="false" aria-controls="collapse16">
                             <img src="img/community/compiler.png" class="img-fluid me-3" alt="img">Compilers and
@@ -1038,8 +1053,9 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                 <!-- poweredby -->
                 <h2 class="ft-25 black bold mt-5 mb-4">Powered By</h2>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading17">
+
+                <div class="accordion-item" id="powered-by">
+                    <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapse17" aria-expanded="false" aria-controls="collapse17">
                             <img src="img/community/powered-by.png" class="img-fluid me-3" alt="img">Powered By
@@ -1067,6 +1083,9 @@ l = g.V().both()[1:3].toList()</code></pre>
                                         your graph structure and intuitive results visualization options. It is
                                         compatible with Apache TinkerPop-enabled graph databases over Gremlin Server
                                         protocol.
+                                        <br>- <a class="text-blue" href="https://graph.build/"
+                                                 target="_blank">graph.build</a>: graph.build is a graph data
+                                        production platform and it works with any database that supports Gremlin. 
                                         <br>- <a class="text-blue"
                                                  href="https://bricaud.github.io/graphexp/graphexp.html"
                                                  target="_blank">Graphexp</a>: Interactive visualization of the Gremlin
@@ -1077,6 +1096,9 @@ l = g.V().both()[1:3].toList()</code></pre>
                                         <br>- <a class="text-blue" href="https://github.com/bechbd/gremlin-ide"
                                                  target="_blank">gremlin-ide</a>: An IDE for Apache TinkerPop-enabled
                                         databases using React and Electron.
+                                        <br>- <a class="text-blue" href="https://www.gremlator.com/"
+                                                 target="_blank">Gremlator</a>: A helpful tool that translates Gremlin
+                                        written in one programming language to the format of another.
                                         <br>- <a class="text-blue" href="https://gremlify.com/"
                                                  target="_blank">gremlify</a>: A Gremlin workspace for queries and
                                         visualization.
@@ -1102,11 +1124,7 @@ l = g.V().both()[1:3].toList()</code></pre>
                                         any TinkerPop-enabled graph system. Linkurious provides enterprise-ready
                                         security (authentication, access rights, audit) and flexibility (API,
                                         linkurious.js JS graph visualization library) to help software architects
-                                        successfully deploy graph capabilities within their organizations.
-                                        <br>- <a class="text-blue"
-                                                 href="ttps://customer.precisely.com/s/article/Spectrum-Technology-Platform-Data-Hub-Module"
-                                                 target="_blank">Precisely Spectrum Data Hub Module</a>: Uses Gremlin
-                                        OLTP to query Neo4j-powered master data management based graph database.
+                                        successfully deploy graph capabilities within their organizations.                                        
                                         <br>- <a class="text-blue" href="https://www.stackstate.com/" target="_blank">StackState</a>:
                                         Monitoring and AIOps allowing users to utilize Gremlin for analytical functions.
                                         <br>- <a class="text-blue" href="https://github.com/aws/graph-notebook"
@@ -1137,9 +1155,9 @@ l = g.V().both()[1:3].toList()</code></pre>
         <div class="row d-flex justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="ju-box">
-                    <h2 class="ft-40 text-blue bold">Join Us on</h2>
-                    <p class="bold">Join us on our Discord Chat</p>
-                    <a href="https://discord.gg/ndMpKZcBEE"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                    <h2 class="ft-40 text-blue bold">Join Us</h2>
+                    <p class="bold">Join us on our Discord Server</p>
+                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
                 </div>
             </div>
         </div>
@@ -1153,15 +1171,13 @@ l = g.V().both()[1:3].toList()</code></pre>
             <div class="row">
                 <div class="col-md-4">
                     <div class="bold ft-25">Apache TinkerPop™</div>
-                    <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases
-                        (OLTP) and graph analytic systems (OLAP).</p>
+                    <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/ndMpKZcBEE"><img
-                                src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img
-                                src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img
-                                src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">
@@ -1172,6 +1188,7 @@ l = g.V().both()[1:3].toList()</code></pre>
                                 <li><a href="index.html">Home</a></li>
                                 <li><a href="download.html">Downloads</a></li>
                                 <li><a href="https://tinkerpop.apache.org/docs/current">Documentation</a></li>
+                                <li><a href="https://privacy.apache.org/policies/privacy-policy-public.html" target="_blank">Privacy Policy</a></li>
                             </ul>
                         </div>
                         <div class="col-lg-6">
@@ -1196,7 +1213,7 @@ l = g.V().both()[1:3].toList()</code></pre>
         <div class="container">
             <div class="row">
                 <div class="col-12">
-                    Copyright © 2015-2022 The Apache Software Foundation
+                    Copyright © 2015-2023 The Apache Software Foundation
                 </div>
             </div>
         </div>
@@ -1204,10 +1221,14 @@ l = g.V().both()[1:3].toList()</code></pre>
 </footer>
 <script src="js/jquery-1.11.1.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"
-        integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="js/wow.min.js"></script>
 <script src="js/my.js"></script>
 <script src="js/prism.js"></script>
+<script>
+    jQuery(document).ready(function($) {
+        const hash = window.location.hash;
+        if (hash) $(hash + " > h2 > button.accordion-button").click();
+    });
+</script>
 </body>
 </html>

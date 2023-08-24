@@ -23,7 +23,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -42,58 +44,69 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(P value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(P value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
             ICollection args = value.Value is ICollection ? value.Value : new List<object> {value.Value};
 
             var argsLength = value.Other == null ? args.Count : args.Count + 1;
-            
-            await writer.WriteValueAsync(value.OperatorName, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(argsLength, stream, false).ConfigureAwait(false);
+
+            await writer.WriteNonNullableValueAsync(value.OperatorName, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(argsLength, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var arg in args)
             {
-                await writer.WriteAsync(arg, stream).ConfigureAwait(false);
+                await writer.WriteAsync(arg, stream, cancellationToken).ConfigureAwait(false);
             }
 
             if (value.Other != null)
             {
-                await writer.WriteAsync(value.Other, stream).ConfigureAwait(false);
+                await writer.WriteAsync(value.Other, stream, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        protected override async Task<P> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<P> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var operatorName = (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false);
-            var argsLength = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
+            var operatorName = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var argsLength =
+                (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
 
-            var args = new object[argsLength];
+            var args = new object?[argsLength];
             for (var i = 0; i < argsLength; i++)
             {
-                args[i] = await reader.ReadAsync(stream).ConfigureAwait(false);
+                args[i] = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             }
 
             if (operatorName == "and" || operatorName == "or")
             {
                 
-                return new P(operatorName, (P) args[0], (P) args[1]);
+                return new P(operatorName, SafelyCastToP(args[0]), SafelyCastToP(args[1]));
             }
 
             if (operatorName == "not")
             {
-                return new P(operatorName, (P) args[0]);
+                return new P(operatorName, SafelyCastToP(args[0]));
             }
 
             if (argsLength == 1)
             {
                 if (DataType == DataType.TextP)
                 {
-                    return new TextP(operatorName, (string) args[0]);
+                    return new TextP(operatorName,
+                        (string?) args[0] ?? throw new IOException("Read null but expected a string"));
                 }
                 return new P(operatorName, args[0]);
             }
             return new P(operatorName, args);
+        }
+        
+        private static P SafelyCastToP([NotNull] object? pObject)
+        {
+            if (pObject == null) throw new IOException("Read null but expected P");
+            return (P) pObject;
         }
     }
 }

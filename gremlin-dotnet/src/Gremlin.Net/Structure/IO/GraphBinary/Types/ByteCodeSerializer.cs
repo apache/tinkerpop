@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -41,63 +42,74 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Bytecode value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Bytecode value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await WriteInstructionsAsync(value.StepInstructions, stream, writer).ConfigureAwait(false);
-            await WriteInstructionsAsync(value.SourceInstructions, stream, writer).ConfigureAwait(false);
+            await WriteInstructionsAsync(value.StepInstructions, stream, writer, cancellationToken)
+                .ConfigureAwait(false);
+            await WriteInstructionsAsync(value.SourceInstructions, stream, writer, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private static async Task WriteInstructionsAsync(IReadOnlyCollection<Instruction> instructions, Stream stream,
-            GraphBinaryWriter writer)
+            GraphBinaryWriter writer, CancellationToken cancellationToken)
         {
-            await writer.WriteValueAsync(instructions.Count, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(instructions.Count, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var instruction in instructions)
             {
-                await writer.WriteValueAsync(instruction.OperatorName, stream, false).ConfigureAwait(false);
-                await WriteArgumentsAsync(instruction.Arguments, stream, writer).ConfigureAwait(false);
+                await writer.WriteNonNullableValueAsync(instruction.OperatorName, stream, cancellationToken)
+                    .ConfigureAwait(false);
+                await WriteArgumentsAsync(instruction.Arguments, stream, writer, cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
 
-        private static async Task WriteArgumentsAsync(object[] arguments, Stream stream, GraphBinaryWriter writer)
+        private static async Task WriteArgumentsAsync(object?[] arguments, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken)
         {
-            await writer.WriteValueAsync(arguments.Length, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(arguments.Length, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var value in arguments)
             {
-                await writer.WriteAsync(value, stream).ConfigureAwait(false);
+                await writer.WriteAsync(value, stream, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        protected override async Task<Bytecode> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Bytecode> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
             var result = new Bytecode();
 
-            var stepsLength = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
+            var stepsLength = (int) await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
             for (var i = 0; i < stepsLength; i++)
             {
-                result.AddStep((string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false),
-                    await ReadArgumentsAsync(stream, reader).ConfigureAwait(false));
+                result.AddStep(
+                    (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
+                    await ReadArgumentsAsync(stream, reader, cancellationToken).ConfigureAwait(false));
             }
             
-            var sourcesLength = await stream.ReadIntAsync().ConfigureAwait(false);
+            var sourcesLength = await stream.ReadIntAsync(cancellationToken).ConfigureAwait(false);
             for (var i = 0; i < sourcesLength; i++)
             {
-                result.AddSource((string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false),
-                    await ReadArgumentsAsync(stream, reader).ConfigureAwait(false));
+                result.AddSource(
+                    (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
+                    await ReadArgumentsAsync(stream, reader, cancellationToken).ConfigureAwait(false));
             }
             
             return result;
         }
 
-        private static async Task<object[]> ReadArgumentsAsync(Stream stream, GraphBinaryReader reader)
+        private static async Task<object?[]> ReadArgumentsAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken)
         {
-            var valuesLength = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
-            var values = new object[valuesLength];
+            var valuesLength =
+                (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
+            var values = new object?[valuesLength];
             for (var i = 0; i < valuesLength; i++)
             {
-                values[i] = await reader.ReadAsync(stream).ConfigureAwait(false);
+                values[i] = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             }
             return values;
         }

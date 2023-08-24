@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-python</artifactId>
     <name>Apache TinkerPop :: Gremlin Python</name>
@@ -29,8 +29,8 @@ limitations under the License.
         <!-- provides a way to convert maven.test.skip value to skipTests for use in skipping python tests -->
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <TEST_TRANSACTIONS>false</TEST_TRANSACTIONS>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
+        <tinkerpop.root.dir>${project.parent.basedir}</tinkerpop.root.dir>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -67,6 +67,19 @@ limitations under the License.
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>src/main/python/gremlin_python/driver/useragent.py</file>
+                    <replacements>
+                        <replacement>
+                            <token>gremlin_version = ".*"</token>
+                            <value>gremlin_version = "${project.version}"</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -82,102 +95,33 @@ limitations under the License.
             </activation>
             <build>
                 <plugins>
-                    <!-- need to create python-reports directory at this point or else pytest can't write the report to it -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
+                            <!--
+                            copy source files in python directory to target/, to keep testing separate from packaging.
+                            we use target/python3 for testing and target/python-packaged for distribution tasks.
+                            -->
                             <execution>
-                                <id>create-python-reports-directory</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/python-reports"/>
-                                        <mkdir dir="${project.build.directory}/python-packaged/env"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <!-- copy files in python directory to target/py and run virtual env to sandbox python.
-                                 there is no need to "activate" the virtualenv because all calls to python occur
-                                 directly from bin/ -->
-                            <execution>
-                                <id>setup-py-env</id>
+                                <id>setup-env</id>
                                 <phase>process-resources</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <!-- seems like we need a few different copies of the same source. all the
-                                             different python stuff doesn't seem to want to share. we use
-                                             /python3 for basic tests and stuff and /python-packaged for distribution
-                                             tasks. some of the problem seems to stem from the python lifecycle not
-                                             binding perfectly well to the maven lifecycle (integration tests seems to
-                                             cause troubles specifically). note that the commands to install wheel are
-                                             largely for safety in case someone is using an older version of virtualenv
-                                             (which doesn't install wheel by default) -->
+                                        <!-- pytest will create python-reports inside target/python3/python-reports
+                                        as docker compose cannot access outside its working directory -->
                                         <copy todir="${project.build.directory}/python3">
                                             <fileset dir="src/main/python"/>
                                         </copy>
-                                        <exec dir="${project.build.directory}/python3" executable="python3"
-                                              failonerror="true">
-                                            <arg line="--version"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python3" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--version"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python3" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--python=python3 env"/>
-                                        </exec>
-                                        <!-- pin setuptools before the breaking change at
-                                             https://github.com/pypa/setuptools/issues/2086 with removal of lib2to3.
-                                             not sure if this our code that is causing this problem though. the error
-                                             in travis shows as:
-                                             Setup script exited with error in radish-parse_type setup command: use_2to3 is invalid.-->
-                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install setuptools&lt;58.0.0"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python3" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install wheel radish-bdd PyHamcrest aenum isodate kerberos six"/>
-                                        </exec>
                                         <copy todir="${project.build.directory}/python-packaged">
                                             <fileset dir="src/main/python"/>
                                         </copy>
-                                        <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--python=python3 env"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
-                                              failonerror="true">
-                                            <arg line="install wheel"/>
-                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>native-python3-build</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-
                             <!--
                             build/package python source distribution and wheel archive. the version is bound to an
                             environment variable that gets used in setup.py to dynamically construct a module
@@ -191,23 +135,21 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python-packaged"
-                                              failonerror="true">
+                                        <exec executable="docker-compose" failonerror="true">
+                                            <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
                                             <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py sdist bdist_wheel"/>
+                                            <arg line="up --build --abort-on-container-exit gremlin-python-package"/>
                                         </exec>
                                     </target>
                                 </configuration>
                             </execution>
 
                             <!--
-                            use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
-                            this has to be an integration-test because we need gremlin-server running and the standard
-                            test phase doesn't have a pre/post event like integration-test does.
+                            use docker-compose to run unit tests, radish, and integration tests.
                             -->
                             <execution>
-                                <id>native-python3-test</id>
+                                <id>python-tests</id>
                                 <phase>integration-test</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -215,36 +157,23 @@ limitations under the License.
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
-                                              failonerror="true">
-                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
+                                        <exec executable="docker-compose" failonerror="true">
+                                            <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
-                                            <env key="KRB5_CONFIG" value="${project.build.directory}/kdc/krb5.conf"/>
-                                            <env key="KRB5CCNAME" value="${project.build.directory}/kdc/test-tkt.cc"/>
-                                            <arg line="setup.py test"/>
+                                            <env key="GREMLIN_SERVER" value="${project.version}"/>
+                                            <env key="ABS_PROJECT_HOME" value="${project.basedir}/../"/>
+                                            <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
+                                            <arg line="up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests"/>
                                         </exec>
-                                        <!-- radish seems to like all dependencies in place -->
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python3"
-                                              failonerror="true">
-                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
+                                        <exec executable="docker-compose" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py install"/>
+                                            <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
+                                            <arg line="down"/>
                                         </exec>
-                                        <!-- run for graphson 3.0 -->
-                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
-                                              failonerror="true">
-                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
+                                        <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
-                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.gremlin-v3.0+json&quot;"/> <!-- -no-line-jump -->
-                                        </exec>
-                                        <!-- run for graphbinary 1.0 -->
-                                        <exec executable="env/bin/radish" dir="${project.build.directory}/python3"
-                                              failonerror="true">
-                                            <env key="TEST_TRANSACTIONS" value="${TEST_TRANSACTIONS}"/>
-                                            <env key="PYTHONPATH" value=""/>
-                                            <env key="PYTHONIOENCODING" value="utf-8:surrogateescape"/>
-                                            <arg line="-f dots -e -t -b ${project.build.directory}/python3/radish ${project.basedir}/../gremlin-test/features/ --user-data=&quot;serializer=application/vnd.graphbinary-v1.0&quot;"/> <!-- -no-line-jump -->
+                                            <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
+                                            <arg line="image prune --filter label=maintainer=dev@tinkerpop.apache.org -f"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -271,12 +200,7 @@ limitations under the License.
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
-                                <groupId>org.apache.tinkerpop</groupId>
-                                <artifactId>neo4j-gremlin</artifactId>
-                                <version>${project.version}</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.codehaus.groovy</groupId>
+                                <groupId>org.apache.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
                                 <type>pom</type>
@@ -308,175 +232,40 @@ limitations under the License.
                                     </scripts>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>gremlin-server-start</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <properties>
-                                        <property>
-                                            <name>skipTests</name>
-                                            <value>${skipTests}</value>
-                                        </property>
-                                        <property>
-                                            <name>gremlinServerDir</name>
-                                            <value>${gremlin.server.dir}</value>
-                                        </property>
-                                        <property>
-                                            <name>settingsFile</name>
-                                            <value>${gremlin.server.dir}/src/test/resources/org/apache/tinkerpop/gremlin/server/gremlin-server-integration.yaml</value>
-                                        </property>
-                                        <property>
-                                            <name>executionName</name>
-                                            <value>${project.name}</value>
-                                        </property>
-                                        <property>
-                                            <name>projectBaseDir</name>
-                                            <value>${project.basedir}</value>
-                                        </property>
-                                    </properties>
-                                    <scripts>
-                                        <script>${gremlin.server.dir}/src/test/scripts/test-server-start.groovy</script>
-                                    </scripts>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>gremlin-server-stop</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <properties>
-                                        <property>
-                                            <name>skipTests</name>
-                                            <value>${skipTests}</value>
-                                        </property>
-                                        <property>
-                                            <name>executionName</name>
-                                            <value>${project.name}</value>
-                                        </property>
-                                    </properties>
-                                    <scripts>
-                                        <script>${gremlin.server.dir}/src/test/scripts/test-server-stop.groovy</script>
-                                    </scripts>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-        <!--
-          This profile will include neo4j for purposes of transactional testing within Gremlin Server.
-          Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
-        -->
         <profile>
-            <id>include-neo4j</id>
+            <id>glv-python-skipped-warning</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>includeNeo4j</name>
-                </property>
+                <file>
+                    <missing>.glv</missing>
+                </file>
             </activation>
-            <properties>
-                <TEST_TRANSACTIONS>true</TEST_TRANSACTIONS>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.gmavenplus</groupId>
-                        <artifactId>gmavenplus-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.neo4j</groupId>
-                                <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                                <version>0.9-3.4.0</version>
-                                <exclusions>
-                                    <exclusion>
-                                        <groupId>org.neo4j</groupId>
-                                        <artifactId>neo4j-kernel</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-lang3</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-text</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>com.github.ben-manes.caffeine</groupId>
-                                        <artifactId>caffeine</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.scala-lang</groupId>
-                                        <artifactId>scala-library</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.scala-lang</groupId>
-                                        <artifactId>scala-reflect</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.slf4j</groupId>
-                                        <artifactId>slf4j-api</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.slf4j</groupId>
-                                        <artifactId>slf4j-nop</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.apache.lucene</groupId>
-                                        <artifactId>lucene-core</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>io.dropwizard.metrics</groupId>
-                                        <artifactId>metrics-core</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>io.netty</groupId>
-                                        <artifactId>netty-all</artifactId>
-                                    </exclusion>
-                                    <exclusion>
-                                        <groupId>org.ow2.asm</groupId>
-                                        <artifactId>asm</artifactId>
-                                    </exclusion>
-                                </exclusions>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.scala-lang</groupId>
-                                <artifactId>scala-library</artifactId>
-                                <version>2.11.8</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.scala-lang</groupId>
-                                <artifactId>scala-reflect</artifactId>
-                                <version>2.11.8</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.apache.lucene</groupId>
-                                <artifactId>lucene-core</artifactId>
-                                <version>5.5.0</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>io.dropwizard.metrics</groupId>
-                                <artifactId>metrics-core</artifactId>
-                                <version>4.0.2</version>
-                            </dependency>
-                            <dependency>
-                                <groupId>org.neo4j</groupId>
-                                <artifactId>neo4j-kernel</artifactId>
-                                <version>3.4.11</version>
-                                <exclusions>
-                                    <exclusion>
-                                        <groupId>io.netty</groupId>
-                                        <artifactId>netty-all</artifactId>
-                                    </exclusion>
-                                </exclusions>
-                            </dependency>
-                        </dependencies>
+                        <groupId>com.github.ekryd.echo-maven-plugin</groupId>
+                        <artifactId>echo-maven-plugin</artifactId>
+                        <version>1.3.2</version>
+                        <executions>
+                            <execution>
+                                <id>skipped-python-glv-warning</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>echo</goal>
+                                </goals>
+                                <configuration>
+                                    <message>
+                                        Skipping Python GLV build. Activate by creating file tinkerpop/gremlin-python/.glv
+                                    </message>
+                                    <level>WARNING</level>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -511,14 +300,21 @@ limitations under the License.
                                 <configuration>
                                     <target>
                                         <!--
-                                        seems like https://github.com/pypa/twine/issues/338 is the reason to stay bound
-                                        to this old version of twine. as long as keyring gets in the way and can't be
-                                        disabled as described then you don't get a prompt for the password on deploy
-                                        to pypi
+                                        set up and run virtual env to sandbox python. there is no need to "activate"
+                                        the virtualenv because all calls to python occur directly from bin/
+                                        -->
+                                        <mkdir dir="${project.build.directory}/python-packaged/env"/>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="virtualenv"
+                                              failonerror="true">
+                                            <arg line="--python=python3 env"/>
+                                        </exec>
+                                        <!--
+                                        Moving off of 1.12.1 due to incompatibility, password prompt should no longer be
+                                        an issue with API token access.
                                          -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
                                               failonerror="true">
-                                            <arg line="install twine==1.12.1"/>
+                                            <arg line="install twine==4.0.2"/>
                                         </exec>
 					                    <!-- check the dist for errors before deploying -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"

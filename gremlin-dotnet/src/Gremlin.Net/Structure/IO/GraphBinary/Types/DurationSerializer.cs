@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -40,17 +41,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(TimeSpan value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(TimeSpan value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await stream.WriteLongAsync((long) value.TotalSeconds).ConfigureAwait(false);
-            await stream.WriteIntAsync(value.Milliseconds * 1_000_000).ConfigureAwait(false);
+            await stream.WriteLongAsync((long) value.TotalSeconds, cancellationToken).ConfigureAwait(false);
+            await stream.WriteIntAsync(value.Milliseconds * 1_000_000, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<TimeSpan> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<TimeSpan> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var seconds = await stream.ReadLongAsync().ConfigureAwait(false);
-            var nanoseconds = await stream.ReadIntAsync().ConfigureAwait(false);
+            var seconds = await stream.ReadLongAsync(cancellationToken).ConfigureAwait(false);
+            var nanoseconds = await stream.ReadIntAsync(cancellationToken).ConfigureAwait(false);
 
             return TimeSpan.FromSeconds(seconds) + TimeSpan.FromMilliseconds(nanoseconds / 1_000_000);
         }

@@ -14,11 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+:docinfo: shared
+:docinfodir: ../../
+:toc-position: left
+
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
-
-:toc-position: left
 
 = Introduction
 
@@ -191,7 +194,8 @@ The following bullets provide some tips to consider when implementing the struct
 * `VertexProperty`
 ** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
 can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
-meta-properties, the `VertexProperty` needs to be implemented as an `Element`.
+meta-properties, the `VertexProperty` needs to be implemented as an `Element`. `VertexProperty` should return empty
+iterable for properties if meta-properties is not supported.
 
 [[olap-implementations]]
 ==== OLAP Implementations
@@ -811,7 +815,7 @@ by way of a system property - simply set `-DtestIteratorLeaks=false".
 
 The Gherkin Test Suite is a language agnostic set of tests that verify Gremlin semantics. It provides a unified set of
 tests that validate many TinkerPop components internally. The tests themselves can be found in `gremlin-tests/features`
-(link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/features[here]) with their syntax described in the
+(link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here]) with their syntax described in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[TinkerPop Developer Documentation].
 
 TinkerPop provides some infrastructure, for JVM based graphs, to help make it easier for providers to implement these
@@ -838,18 +842,19 @@ The following is just an example as taken from TinkerGraph:
 @CucumberOptions(
         tags = "not @RemoteOnly",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        features = { "../gremlin-test/features" },
+        features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml",
         objectFactory = GuiceFactory.class})
 ----
 
 The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
 choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
-`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/current/dev/developer/#gherkin-tags[here]),
+`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]),
 as will most providers. The "glue" will be the same for all test implementers as it refers to a package containing
 TinkerPop's test infrastructure in `gremlin-test` (unless of course, a provider needs to develop their own
 infrastructure for some reason). The "features" is the path to the actual Gherkin test files that should be made
-available locally. The "plugin" defines a JUnit style output, which happens to be understood by Maven.
+available locally. The files can be referenced on the classpath assuming `gremlin-test` is a dependency. The "plugin"
+defines a JUnit style output, which happens to be understood by Maven.
 
 The "objectFactory" is the last component. Cucumber relies on dependency injection to get a `World` implementation into
 the test infrastructure. Providers may choose from multiple available implementations, but TinkerPop chose to use
@@ -987,6 +992,14 @@ Server returns for a single request.  Again, this description of Gremlin Server'
 out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a
 particular language or style of processing.
 
+It is recommended but not required that a driver include a `User-Agent` header as part of any web socket
+handshake request to Gremlin Server. Gremlin Server uses the user agent in building usage metrics
+as well as debugging. The standard format for connection user agents is:
+
+`"[Application Name] [GLV Name].[Version] [Language Runtime Version] [OS].[Version] [CPU Architecture]"`
+For example:
+`"MyTestApplication Gremlin-Java.3.5.4 11.0.16.1 Mac_OS_X.12.6.1 aarch64"`
+
 To formulate a request to Gremlin Server, a `RequestMessage` needs to be constructed.  The `RequestMessage` is a
 generalized representation of a request that carries a set of "standard" values in addition to optional ones that are
 dependent on the operation being performed.  A `RequestMessage` has these fields:
@@ -1077,14 +1090,18 @@ Gremlin Server will send:
 |498 |REQUEST ERROR MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
 |499 |REQUEST ERROR INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
 |500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
+|595 |SERVER ERROR FAIL STEP | A server error that is produced when the `fail()` step is triggered. The returned exception will include information consistent with the `Failure` interface.
 |596 |SERVER ERROR TEMPORARY |A server error occurred, but it was temporary in nature and therefore the client is free to retry it's request as-is with the potential for success.
 |597 |SERVER ERROR EVALUATION |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
 |598 |SERVER ERROR TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
 |599 |SERVER ERROR SERIALIZATION |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
-NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/current/dev/io[IO Reference Documentation] for more
+NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
+
+NOTE: Tinkerpop provides a test server which may be useful for testing drivers. Details can be found
+link:https://tinkerpop.apache.org/docs/current/dev/developer/#gremlin-socket-server-tests[here]
 
 === OpProcessors Arguments
 
@@ -1431,21 +1448,6 @@ name of the plugin to activate.
 
 NOTE: When `:install` is used logging dependencies related to link:http://www.slf4j.org/[SLF4J] are filtered out so as
 not to introduce multiple logger bindings (which generates warning messages to the logs).
-
-A plugin can do much more than just import classes.  One can expand the Gremlin language with new functions or steps,
-provide useful commands to make repetitive or complex tasks easier to execute, or do helpful integrations with other
-systems.  The secret to doing so lies in the `PluginAcceptor`.  As mentioned earlier, the `PluginAcceptor` provides
-access to the host of the plugin.  It provides several important methods for doing so:
-
-. `addBinding` - These two function allow the plugin to inject whatever context it wants to the host.  For example,
-doing `addBinding('x',1)` would place a variable of `x` with a value of 1 into the console at the time of the plugin load.
-. `eval` - Evaluates a script in the context of the host at the time of plugin startup.  For example, doing
-`eval("sum={x,y->x+y}")` would create a `sum` function that would be available to the user of the Console after the
-load of the plugin.
-. `environment` - Provides context from the host environment.  For the console, the environment will return a `Map`
-containing a reference to the `IO` stream and the `Groovysh` instance.  These classes represent very low-level access
-to the underpinnings of the console.  Access to `Groovysh` allows for advanced features such as registering new
-commands (e.g. like the `:plugin` or `:remote` commands).
 
 Plugins can also tie into the `:remote` and `:submit` commands.  Recall that a `:remote` represents a different
 context within which Gremlin is executed, when issued with `:submit`.  It is encouraged to use this integration point

@@ -19,22 +19,33 @@ limitations under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop</title>
+    <title>Apache TinkerPop: Home</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
-          integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
     <link href="css/responsive.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.css"
-          integrity="sha512-K2J6Yt6ElUYEMPcTr0wm555AAyiqkgYiUgPIW18FT88/aYSNDk0EvGjsln/TEu3ee/jaHf0xoXzFppSbBtUXbQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="css/animate.css" rel="stylesheet"/>
     <link href="css/prism.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="css/fonts.css" rel="stylesheet">
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        /* We explicitly disable cookie tracking to avoid privacy issues */
+        _paq.push(['disableCookies']);
+        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function() {
+            var u="https://analytics.apache.org/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '27']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
 </head>
 <body>
 <!-- header -->
@@ -58,6 +69,21 @@ limitations under the License.
                         <li class="nav-item">
                             <a class="nav-link" href="download.html">Download</a>
                         </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Tools
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                                <li><a class="dropdown-item" href="providers.html">Graph Systems</a></li>
+                                <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="https://gremlify.com/">Gremlify: Try Gremlin</a></li>
+                                <li><a class="dropdown-item" href="https://tinkerpop.apache.org/gremlint">Gremlint: Lint Gremlin</a></li>
+                                <li><a class="dropdown-item" href="https://www.gremlator.com/">Gremlator: Translate Gremlin</a></li>
+                            </ul>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
@@ -80,6 +106,7 @@ limitations under the License.
                             </ul>
 
                         </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
@@ -109,48 +136,31 @@ limitations under the License.
 
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Community
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users">User
-                                    Mailing List</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org">Developer
-                                    Mailing List</a></li>
-                                <li><a class="dropdown-item" href="https://discord.gg/ndMpKZcBEE" target="_blank"><img
-                                        src="img/discord_logo.png" class="nav-icon">Join us on Discord</a></li>
-                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/">Issue
-                                    Tracker</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a>
-                                </li>
-                                <li><a class="dropdown-item" href="providers.html">Data System Support</a></li>
-                                <li><a class="dropdown-item" href="community.html">Languages and Tools</a></li>
-                                <li><a class="dropdown-item"
-                                       href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img
-                                        src="img/github-logo.png" class="nav-icon">GitHub</a></li>
-                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img
-                                        src="img/twitter-logo.png" class="nav-icon">Twitter</a></li>
+                                <li><a class="dropdown-item" href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-logo.png" class="nav-icon"/>Discord</a></li>
+                                <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon"/>Answer Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon"/>Stack Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon"/>User Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon"/>Developer Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon"/>Issue Tracker</a></li>
+                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon"/>GitHub</a></li>
+                                <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon"/>Twitch</a></li>
+                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon"/>Twitter</a></li>
+                                <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon"/>YouTube</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
+                                <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
                             </ul>
-
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="https://tinkerpop.apache.org/gremlint/">Gremlint</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown4" role="button"
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown5" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Apache Software
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown5">
                                 <li><a class="dropdown-item" href="https://www.apache.org/">Apache Homepage</a></li>
                                 <li><a class="dropdown-item" href="https://www.apache.org/licenses/">License</a></li>
                                 <li><a class="dropdown-item"
@@ -179,7 +189,7 @@ limitations under the License.
                 <h1 class="ft-40 bold black mb-3">Apache TinkerPop™</h1>
                 <p>Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic
                     systems (OLAP).</p>
-                <a href="https://discord.gg/ndMpKZcBEE" target="_blank"><img src="img/discord_button.png" alt="img"
+                <a href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-button.png" alt="img"
                                                                              class="img-fluid"></a>
             </div>
         </div>
@@ -200,30 +210,30 @@ limitations under the License.
                 <div class="dd-box">
                     <div class="text-center">
                         <h2 class="ft-30 bold black mb-2">Downloads & Documentation</h2>
-                        <p class="mb-3 mb-md-5 medium ">Released: 4-April-2022</p>
+                        <p class="mb-3 mb-md-5 medium ">Released: 12-May-2023</p>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 border-right text-center">
-                            <h3 class="ft-25 bold black mb-4">TinkerPop 3.6.0 Downloads</h3>
+                            <h3 class="ft-25 bold black mb-6">TinkerPop 3.6.4 Downloads</h3>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-24.svg" class="img-fluid mb-2" alt="img"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.0/apache-tinkerpop-gremlin-console-3.6.0-bin.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.4/apache-tinkerpop-gremlin-console-3.6.4-bin.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="img">Gremlin
                                         Console</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-25.svg" class="img-fluid mb-2" alt="img"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.0/apache-tinkerpop-gremlin-server-3.6.0-bin.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.4/apache-tinkerpop-gremlin-server-3.6.4-bin.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="img">Gremlin
                                         Server</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <img src="img/group-26.svg" class="img-fluid mb-2" alt="img"><br>
                                     <a class="text-blue"
-                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.0/apache-tinkerpop-3.6.0-src.zip"><img
+                                       href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.4/apache-tinkerpop-3.6.4-src.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid"
                                             alt="img">Source</a>
                                 </div>
@@ -233,7 +243,6 @@ limitations under the License.
                             <h3 class="ft-25 bold black mb-4">Documentation</h3>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-
                                     <div class="dropdown text-start">
                                         <button class="btn btn-theme btn-cust w-100 dropdown-toggle text-start"
                                                 type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
@@ -275,7 +284,59 @@ limitations under the License.
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-2 mb-1">
+                            &nbsp;
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-go"><img src="img/community/go.png" class="img-fluid me-3" title="Go" alt="Go"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-groovy"><img src="img/community/groovy.png" class="img-fluid me-3" title="Groovy" alt="Groovy"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-java"><img src="img/community/java.png" class="img-fluid me-3" title="Java" alt="Java"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-javascript"><img src="img/community/javascript.png" class="img-fluid me-3" title="Javascript" alt="Javascript" width="44"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-csharp"><img src="img/community/c-sharp-logo-png.png" class="img-fluid me-3" title="C#" alt="C#"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html#lang-python"><img src="img/community/python.png" class="img-fluid me-3" title="Python" alt="Python"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="community.html"><img src="img/tools.png" class="img-fluid me-3" title="More Languages and Tools" alt="More Languages and Tools" width="40"></a>
+                        </div>
+                        <div class="col-1 mb-1">
+                            <a href="providers.html"><img src="img/community/db.png" class="img-fluid me-3" title="Graph Systems" alt="Graph Systems"></a>
+                        </div>
+                        <div class="col-2 mb-1">
+                            &nbsp;
+                        </div>
+                    </div>
 
+                    <div class="row">
+                        <div class="col-3">
+                            &nbsp;
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <a class="text-blue" href="https://gremlify.com">
+                                <img src="img/link-arrow.svg" class="me-2 img-fluid" alt="img" style="max-height: 16px"/>Try Gremlin</a>
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <a class="text-blue" href="https://gremlint.com">
+                                <img src="img/link-arrow.svg" class="me-2 img-fluid" alt="img" style="max-height: 16px"/>Lint Gremlin</a>
+                        </div>
+                        <div class="col-md-2 mt-3">
+                            <a class="text-blue" href="https://www.gremlator.com">
+                                <img src="img/link-arrow.svg" class="me-2 img-fluid" alt="img" style="max-height: 16px"/>Translate Gremlin</a>
+                        </div>
+                        <div class="col-3 mt-3">
+                            &nbsp;
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -401,8 +462,6 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                 <a class="btn btn-theme btn-cust" href="gremlin.html"><img src="img/link.svg" class="img-fluid me-2"
                                                                            alt="img">Learn More</a>
             </div>
-
-
         </div>
     </div>
 </div>
@@ -507,8 +566,8 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                 <div class="col">
                     <div class="com-box">
                         <div>
-                            <a class="text-blue " href="https://discord.gg/ndMpKZcBEE"><img src="img/discord.png" class="img-fluid mb-4 " alt="img"></a><br>
-                            <a class="text-blue " href="https://discord.gg/ndMpKZcBEE">Discord</a>
+                            <a class="text-blue " href="https://discord.gg/tinkerpop"><img src="img/discord.png" class="img-fluid mb-4 " alt="img"></a><br>
+                            <a class="text-blue " href="https://discord.gg/tinkerpop">Discord</a>
                         </div>
                     </div>
                 </div>
@@ -616,7 +675,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                     <div class="mb-3">
                                         <p class="mb-0"><a class="medium text-blue"
                                                            href="https://ketrinadrawsalot.tumblr.com/" target="_blank">
-                                            Ketrina Yim</a><span class="medium">(Committer)</span></p>
+                                            Ketrina Thompson</a><span class="medium">(Committer)</span></p>
                                         <p class="mb-0"><span class="medium">Year : 2009</span></p>
                                         <p class="mb-0">Illustrator, creator of Gremlin and his merry band of
                                             robots.</p>
@@ -649,7 +708,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                     <div class="mb-3">
                                         <p class="mb-0"><a class="medium text-blue"
                                                            href="https://github.com/FlorianHockmann/" target="_blank">Florian
-                                            Hockmann </a><span class="medium">(PMC Chair)</span></p>
+                                            Hockmann </a><span class="medium">(PMC)</span></p>
                                         <p class="mb-0"><span class="medium">Year : 2017</span></p>
                                         <p class="mb-0">.NET libraries, mailing list support.</p>
                                     </div>
@@ -659,7 +718,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                     <div class="mb-3">
                                         <p class="mb-0"><a class="medium text-blue"
                                                            href="https://www.kelvinlawrence.net/" target="_blank">Kelvin
-                                            Lawrence </a><span class="medium">(PMC)</span></p>
+                                            Lawrence </a><span class="medium">(PMC Chair)</span></p>
                                         <p class="mb-0"><span class="medium">Year : 2017</span></p>
                                         <p class="mb-0">Gremlin language, Python GLV, documentation and mailing list support.</p>
                                     </div>
@@ -669,7 +728,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                     <div class="mb-3">
                                         <p class="mb-0"><a class="medium text-blue"
                                                            href="https://www.linkedin.com/in/divijvaidya/"
-                                                           target="_blank">Divij Vaidya </a><span class="medium">(Committer)</span>
+                                                           target="_blank">Divij Vaidya </a><span class="medium">(PMC)</span>
                                         </p>
                                         <p class="mb-0"><span class="medium">Year : 2019</span></p>
                                         <p class="mb-0">Gremlin server-client interaction.</p>
@@ -704,6 +763,74 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                         </p>
                                         <p class="mb-0"><span class="medium">Year : 2022</span></p>
                                         <p class="mb-0">Gremlin language and general core development</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0"><a class="medium text-blue"
+                                                           href="https://www.linkedin.com/in/davebechberger/"
+                                                           target="_blank">Dave Bechberger </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2022</span></p>
+                                        <p class="mb-0">Gremlin language, documentation, mailing list and Discord support</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0"><a class="medium text-blue" href="https://www.linkedin.com/in/simon-zhao-69a792ab/"
+                                                           target="_blank">Simon Zhao </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2022</span></p>
+                                        <p class="mb-0">Golang GLV</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0"><a class="medium text-blue" href="https://www.linkedin.com/in/xiazcy/"
+                                                           target="_blank">Yang Xia </a><span class="medium">(PMC)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2022</span></p>
+                                        <p class="mb-0">Go GLV development, Docker and Windows build improvements</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0">
+                                            <a class="medium text-blue"
+                                               href="https://www.linkedin.com/in/valentyn-kahamlyk-2bb4874b/"
+                                               target="_blank">Valentyn Kahamlyk </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2022</span></p>
+                                        <p class="mb-0">Go and Python GLV development, </p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0">
+                                            <a class="medium text-blue"
+                                               href="https://github.com/L0Lmaker"
+                                               target="_blank">Rithin Kumar  </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2022</span></p>
+                                        <p class="mb-0">Golang GLV</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0"><a class="medium text-blue" href="https://github.com/kenhuuu"
+                                                           target="_blank">Ken Hu </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2023</span></p>
+                                        <p class="mb-0">General project maintenance</p>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <p class="mb-0"><a class="medium text-blue" href="https://github.com/Cole-Greer"
+                                                           target="_blank">Cole Greer </a><span class="medium">(Committer)</span>
+                                        </p>
+                                        <p class="mb-0"><span class="medium">Year : 2023</span></p>
+                                        <p class="mb-0">ARM Support, General Maintenance of Server/Core/GLVs</p>
                                     </div>
                                 </div>
                             </div>
@@ -872,9 +999,9 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
         <div class="row d-flex justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="ju-box">
-                    <h2 class="ft-40 text-blue bold">Join Us on</h2>
-                    <p class="bold">Join us on our Discord Chat</p>
-                    <a href="https://discord.gg/ndMpKZcBEE"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                    <h2 class="ft-40 text-blue bold">Join Us</h2>
+                    <p class="bold">Join us on our Discord Server</p>
+                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
                 </div>
             </div>
         </div>
@@ -888,15 +1015,13 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
             <div class="row">
                 <div class="col-md-4">
                     <div class="bold ft-25">Apache TinkerPop™</div>
-                    <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases
-                        (OLTP) and graph analytic systems (OLAP).</p>
+                    <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/ndMpKZcBEE"><img
-                                src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img
-                                src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img
-                                src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">
@@ -907,6 +1032,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                                 <li><a href="index.html">Home</a></li>
                                 <li><a href="download.html">Downloads</a></li>
                                 <li><a href="https://tinkerpop.apache.org/docs/current">Documentation</a></li>
+                                <li><a href="https://privacy.apache.org/policies/privacy-policy-public.html" target="_blank">Privacy Policy</a></li>
                             </ul>
                         </div>
                         <div class="col-lg-6">
@@ -931,7 +1057,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
         <div class="container">
             <div class="row">
                 <div class="col-12">
-                    Copyright © 2015-2022 The Apache Software Foundation
+                    Copyright © 2015-2023 The Apache Software Foundation
                 </div>
             </div>
         </div>
@@ -939,11 +1065,9 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
 </footer>
 <script src="js/jquery-1.11.1.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"
-        integrity="sha512-Eak/29OTpb36LLo2r47IpVzPBLXnAMPAVypbSZiZ4Qkf8p/7S/XRG5xp7OKWPPYfJT6metI+IORkR5G8F900+g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="js/wow.min.js"></script>
 <script src="js/my.js"></script>
 <script src="js/prism.js"></script>
 </body>
 </html>
-    
+

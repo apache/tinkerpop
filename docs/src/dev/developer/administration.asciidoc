@@ -121,9 +121,10 @@ The vote result is available here:
 [include the link to the vote result thread from private]
 ----
 
-If the candidate does not (yet) have an Apache account, then please note that fact in the notification email. Provide
-the board 72 hours to respond with objection before extending the invite to the new PMC member. Once that time has
-elapsed, the invite may be sent to the new PMC member. The following template may be used for the invitation (be sure
+If the candidate does not (yet) have an Apache account, then please note that fact in the notification email.
+It is important to verify that this NOTICE was actually included in the
+link:https://mail-search.apache.org/members/private-arch/board[board archive] to ensure that is has been delivered to the board.
+After verifying this, the invite may be sent to the new PMC member. The following template may be used for the invitation (be sure
 to copy private@ when sending the email):
 
 [source,text]

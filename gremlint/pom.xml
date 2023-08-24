@@ -21,15 +21,15 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlint</artifactId>
     <name>Apache TinkerPop :: Gremlint</name>
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <npm.version>8.1.0</npm.version>
-        <node.version>v16.13.0</node.version>
+        <npm.version>9.6.7</npm.version>
+        <node.version>v18.17.0</node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -53,7 +53,7 @@ limitations under the License.
                 <artifactId>gmavenplus-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
+                        <groupId>org.apache.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
                         <type>pom</type>
@@ -81,8 +81,8 @@ limitations under the License.
                             <scripts>
                                 <script>
                                     def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\","/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/gremlint/package.json")
+                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\","/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
                                     file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
                                 </script>
                             </scripts>
@@ -119,7 +119,7 @@ limitations under the License.
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments>ci</arguments>
                         </configuration>
                     </execution>
                     <execution>

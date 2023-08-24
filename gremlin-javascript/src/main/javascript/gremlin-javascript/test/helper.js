@@ -27,8 +27,24 @@ const DriverRemoteConnection = require('../lib/driver/driver-remote-connection')
 const Client = require('../lib/driver/client');
 const PlainTextSaslAuthenticator = require('../lib/driver/auth/plain-text-sasl-authenticator');
 
-const serverUrl = 'ws://localhost:45940/gremlin';
-const serverAuthUrl = 'wss://localhost:45941/gremlin';
+const yaml = require('js-yaml');
+const fs   = require('fs');
+
+let serverUrl;
+let serverAuthUrl;
+let socketServerUrl;
+let sockerServerConfigPath;
+if (process.env.DOCKER_ENVIRONMENT === 'true') {
+  serverUrl = 'ws://gremlin-server-test-js:45940/gremlin';
+  serverAuthUrl = 'wss://gremlin-server-test-js:45941/gremlin';
+  socketServerUrl = 'ws://gremlin-socket-server-js:';
+  sockerServerConfigPath = '/js_app/gremlin-socket-server/conf/test-ws-gremlin.yaml';
+} else {
+  serverUrl = 'ws://localhost:45940/gremlin';
+  serverAuthUrl = 'wss://localhost:45941/gremlin';
+  socketServerUrl = 'ws://localhost:';
+  sockerServerConfigPath = '../../../../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml';
+}
 
 /** @returns {DriverRemoteConnection} */
 exports.getConnection = function getConnection(traversalSource) {
@@ -60,4 +76,40 @@ exports.getSessionClient = function getSessionClient(traversalSource) {
     'session': sessionId.toString(),
     mimeType: process.env.CLIENT_MIMETYPE,
   });
+};
+
+function getMimeTypeFromSocketServerSettings(socketServerSettings) {
+  let mimeType;
+  switch(socketServerSettings.SERIALIZER) {
+    case "GraphSONV2":
+      mimeType = 'application/vnd.gremlin-v2.0+json';
+      break;
+    case "GraphSONV3":
+      mimeType = 'application/vnd.gremlin-v3.0+json';
+      break;
+    case "GraphBinaryV1":
+    default:
+      mimeType = 'application/vnd.graphbinary-v1.0';
+      break;
+  }
+  return mimeType;
+}
+
+exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(traversalSource) {
+  const settings = exports.getGremlinSocketServerSettings();
+  const url = socketServerUrl + settings.PORT + '/gremlin';
+  let mimeType = getMimeTypeFromSocketServerSettings(settings)
+  return new Client(url, { traversalSource, mimeType });
+};
+
+exports.getGremlinSocketServerClientNoUserAgent = function getGremlinSocketServerClient(traversalSource) {
+  const settings = exports.getGremlinSocketServerSettings();
+  const url = socketServerUrl + settings.PORT + '/gremlin';
+  let mimeType = getMimeTypeFromSocketServerSettings(settings)
+  return new Client(url, { traversalSource, mimeType, enableUserAgentOnConnect:false });
+};
+
+exports.getGremlinSocketServerSettings = function getGremlinSocketServerSettings() {
+  const settings = yaml.load(fs.readFileSync(sockerServerConfigPath, 'utf8'));
+  return settings;
 };

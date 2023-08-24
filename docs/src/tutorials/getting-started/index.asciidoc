@@ -15,6 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 
+:docinfo: shared
+:docinfodir: ../../
+
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
@@ -69,7 +72,8 @@ plugin activated: tinkerpop.tinkergraph
 gremlin>
 ----
 
-TIP: Windows users may use the included `bin/gremlin.bat` file to start the Gremlin Console.
+TIP: Windows users may use the included `bin/gremlin.bat` (`bin/gremlin-java8.bat` for Java 8) file to start the Gremlin
+Console.
 
 The Gremlin Console is a link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL environment],
 which provides a nice way to learn Gremlin as you get immediate feedback for the code that you enter. This eliminates
@@ -613,6 +617,12 @@ g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate();
 v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
+----
+[source,go]
+----
+v1, err := g.AddV("person").Property("name", "marko").Next()
+v2, err := g.AddV("person").Property("name", "stephen").Next()
+g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
 ----
 
 === Conclusion

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +41,7 @@ public final class RequestOptions {
     private final UUID overrideRequestId;
     private final String userAgent;
     private final String language;
+    private final String materializeProperties;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
@@ -50,6 +51,7 @@ public final class RequestOptions {
         this.overrideRequestId = builder.overrideRequestId;
         this.userAgent = builder.userAgent;
         this.language = builder.language;
+        this.materializeProperties = builder.materializeProperties;
     }
 
     public Optional<UUID> getOverrideRequestId() {
@@ -80,6 +82,8 @@ public final class RequestOptions {
         return Optional.ofNullable(language);
     }
 
+    public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
+
     public static Builder build() {
         return new Builder();
     }
@@ -91,6 +95,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private UUID overrideRequestId = null;
         private String userAgent = null;
+        private String materializeProperties = null;
         private String language = null;
         private boolean maintainStateAfterException = false;
 
@@ -156,6 +161,14 @@ public final class RequestOptions {
          */
         public Builder language(final String language) {
             this.language = language;
+            return this;
+        }
+
+        /**
+         * Sets the materializeProperties identifier to be sent on the request.
+         */
+        public Builder materializeProperties(final String materializeProperties) {
+            this.materializeProperties = materializeProperties;
             return this;
         }
 

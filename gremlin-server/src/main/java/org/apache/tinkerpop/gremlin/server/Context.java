@@ -18,22 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
+import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -51,8 +57,13 @@ public class Context {
     private final ScheduledExecutorService scheduledExecutorService;
     private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
     private final long requestTimeout;
+    private final String materializeProperties;
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
+    private final AtomicBoolean startedResponse = new AtomicBoolean(false);
+    private ScheduledFuture<?> timeoutExecutor = null;
+    private boolean timeoutExecutorGrabbed = false;
+    private final Object timeoutExecutorLock = new Object();
 
     /**
      * The type of the request as determined by the contents of {@link Tokens#ARGS_GREMLIN}.
@@ -88,6 +99,26 @@ public class Context {
         this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
         this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
+        this.materializeProperties = determineMaterializeProperties();
+    }
+
+    public void setTimeoutExecutor(final ScheduledFuture<?> timeoutExecutor) {
+        synchronized (timeoutExecutorLock) {
+            this.timeoutExecutor = timeoutExecutor;
+
+            // Timeout was grabbed before we got here, this means the query executed before the timeout was created.
+            if (timeoutExecutorGrabbed) {
+                // Cancel the timeout.
+                this.timeoutExecutor.cancel(true);
+            }
+        }
+    }
+
+    public ScheduledFuture<?> getTimeoutExecutor() {
+        synchronized (timeoutExecutorLock) {
+            timeoutExecutorGrabbed = true;
+            return this.timeoutExecutor;
+        }
     }
 
     /**
@@ -98,6 +129,10 @@ public class Context {
      */
     public long getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public String getMaterializeProperties() {
+        return materializeProperties;
     }
 
     public boolean isFinalResponseWritten() {
@@ -150,6 +185,43 @@ public class Context {
      */
     public GremlinExecutor getGremlinExecutor() {
         return gremlinExecutor;
+    }
+
+    /**
+     * Returns the user agent (if any) which was sent from the client during the web socket handshake.
+     * Returns empty string if no user agent exists
+     */
+    public String getUserAgent() {
+        return getChannelHandlerContext().channel().hasAttr(WsUserAgentHandler.USER_AGENT_ATTR_KEY) ?
+                getChannelHandlerContext().channel().attr(WsUserAgentHandler.USER_AGENT_ATTR_KEY).get() : "";
+    }
+
+    /**
+     * Gets whether the server has started processing the response for this request.
+     */
+    public boolean getStartedResponse() { return startedResponse.get(); }
+
+    /**
+     * Signal that the server has started processing the response.
+     */
+    public void setStartedResponse() { startedResponse.set(true); }
+
+    /**
+     * Writes a default timeout error response message to the underlying channel.
+     */
+    public void sendTimeoutResponse() {
+        sendTimeoutResponse(String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", requestMessage));
+    }
+
+    /**
+     * Writes a specific timeout error response message to the underlying channel.
+     */
+    public void sendTimeoutResponse(final String message) {
+        logger.warn(message);
+        writeAndFlush(ResponseMessage.build(requestMessage)
+                .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                .statusMessage(message)
+                .statusAttributeException(new InterruptedException()).create());
     }
 
     /**
@@ -230,5 +302,37 @@ public class Context {
                 GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
 
         return timeoutDefinedInScript.orElse(seto);
+    }
+
+    private String determineMaterializeProperties() {
+        // with() in Script request has the highest priority
+        if (requestContentType == RequestContentType.SCRIPT) {
+            final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
+            if (mp.isPresent())
+                return mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                        ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                        : Tokens.MATERIALIZE_PROPERTIES_ALL;
+        }
+
+        final Map<String, Object> args = requestMessage.getArgs();
+        // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL
+        return args.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)
+                && args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                : Tokens.MATERIALIZE_PROPERTIES_ALL;
+    }
+
+    public void handleDetachment(final List<Object> aggregate) {
+        if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+            final Object firstElement = aggregate.get(0);
+
+            if (firstElement instanceof Element) {
+                for (int i = 0; i < aggregate.size(); i++)
+                    aggregate.set(i, ReferenceFactory.detach((Element) aggregate.get(i)));
+            } else if (firstElement instanceof AbstractTraverser) {
+                for (final Object item : aggregate)
+                    ((AbstractTraverser) item).detach();
+            }
+        }
     }
 }

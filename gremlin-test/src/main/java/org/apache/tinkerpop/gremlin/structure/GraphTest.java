@@ -919,7 +919,7 @@ public class GraphTest extends AbstractGremlinTest {
         int counter = 0;
         for (Vertex v : vertices) {
             counter = counter + 1;
-            v.remove();
+            graph.vertices(v.id()).next().remove();
 
             if ((counter + 1) % 2 == 0) {
                 final int currentCounter = counter;
@@ -976,8 +976,8 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldEvaluateConnectivityPatterns() {
-        final Vertex a;
-        final Vertex b;
+        Vertex a;
+        Vertex b;
         final Vertex c;
         final Vertex d;
         if (graph.features().vertex().supportsUserSuppliedIds()) {
@@ -1011,10 +1011,10 @@ public class GraphTest extends AbstractGremlinTest {
         });
 
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            final Vertex va = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
-            final Vertex vb = graph.vertices(graphProvider.convertId("2", Vertex.class)).next();
-            final Vertex vc = graph.vertices(graphProvider.convertId("3", Vertex.class)).next();
-            final Vertex vd = graph.vertices(graphProvider.convertId("4", Vertex.class)).next();
+            Vertex va = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
+            Vertex vb = graph.vertices(graphProvider.convertId("2", Vertex.class)).next();
+            Vertex vc = graph.vertices(graphProvider.convertId("3", Vertex.class)).next();
+            Vertex vd = graph.vertices(graphProvider.convertId("4", Vertex.class)).next();
 
             assertEquals(a, va);
             assertEquals(b, vb);
@@ -1031,6 +1031,14 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(1l, IteratorUtils.count(vd.edges(Direction.OUT)));
 
             final Edge i = a.addEdge(graphProvider.convertLabel("hates"), b);
+
+            a = graph.vertices(a.id()).next();
+            b = graph.vertices(b.id()).next();
+
+            va = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
+            vb = graph.vertices(graphProvider.convertId("2", Vertex.class)).next();
+            vc = graph.vertices(graphProvider.convertId("3", Vertex.class)).next();
+            vd = graph.vertices(graphProvider.convertId("4", Vertex.class)).next();
 
             assertEquals(1l, IteratorUtils.count(va.edges(Direction.IN)));
             assertEquals(2l, IteratorUtils.count(va.edges(Direction.OUT)));

@@ -23,11 +23,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/google/uuid"
 	"math"
 	"math/big"
 	"reflect"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Version 1.0
@@ -37,6 +38,7 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
+	customType            dataType = 0x00
 	intType               dataType = 0x01
 	longType              dataType = 0x02
 	stringType            dataType = 0x03
@@ -223,11 +225,12 @@ func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSer
 
 // Format: {steps_length}{step_0}…{step_n}{sources_length}{source_0}…{source_n}
 // Where:
-//		{steps_length} is an Int value describing the amount of steps.
-//		{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
-//      {name} is a String. This is also known as the operator.
-//		{values_length} is an Int describing the amount values.
-//		{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
+//
+//			{steps_length} is an Int value describing the amount of steps.
+//			{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
+//	     {name} is a String. This is also known as the operator.
+//			{values_length} is an Int describing the amount values.
+//			{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
 func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	var bc Bytecode
 	switch typedVal := value.(type) {
@@ -283,6 +286,10 @@ func intWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerial
 }
 
 func shortWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+	switch v := value.(type) {
+	case int8:
+		value = int16(v)
+	}
 	err := binary.Write(buffer, binary.BigEndian, value.(int16))
 	return buffer.Bytes(), err
 }
@@ -316,10 +323,17 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 // Format: {length}{value_0}...{value_n}
 func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	var v big.Int
-	if reflect.TypeOf(value).Kind() == reflect.Ptr {
-		v = *(value.(*big.Int))
-	} else {
-		v = value.(big.Int)
+	switch val := value.(type) {
+	case uint:
+		v = *(new(big.Int).SetUint64(uint64(val)))
+	case uint64:
+		v = *(new(big.Int).SetUint64(val))
+	default:
+		if reflect.TypeOf(value).Kind() == reflect.Ptr {
+			v = *(value.(*big.Int))
+		} else {
+			v = value.(big.Int)
+		}
 	}
 	signedBytes := getSignedBytesFromBigInt(&v)
 	err := binary.Write(buffer, binary.BigEndian, int32(len(signedBytes)))
@@ -422,7 +436,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	return buffer.Bytes(), nil
 }
 
-//Format: {Key}{Value}{parent}
+// Format: {Key}{Value}{parent}
 func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := value.(*Property)
 
@@ -441,7 +455,7 @@ func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 	return buffer.Bytes(), nil
 }
 
-//Format: {Id}{Label}{Value}{parent}{properties}
+// Format: {Id}{Label}{Value}{parent}{properties}
 func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	vp := value.(*VertexProperty)
 	_, err := typeSerializer.write(vp.Id, buffer)
@@ -464,7 +478,7 @@ func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerialize
 	return buffer.Bytes(), nil
 }
 
-//Format: {Labels}{Objects}
+// Format: {Labels}{Objects}
 func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	p := value.(*Path)
 	_, err := typeSerializer.write(p.Labels, buffer)
@@ -637,13 +651,13 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return bytecodeType, nil
 	case string:
 		return stringType, nil
-	case *big.Int:
+	case uint, uint64, *big.Int:
 		return bigIntegerType, nil
 	case int64, int, uint32:
 		return longType, nil
 	case int32, uint16:
 		return intType, nil
-	case int16:
+	case int8, int16: // GraphBinary doesn't have a type for signed 8-bit integer, serializing int8 as Short instead.
 		return shortType, nil
 	case uint8:
 		return byteType, nil
@@ -1038,11 +1052,11 @@ func durationReader(data *[]byte, i *int) (interface{}, error) {
 
 // {fully qualified id}{unqualified label}
 func vertexReader(data *[]byte, i *int) (interface{}, error) {
-	return vertexReaderNullByte(data, i, true)
+	return vertexReaderReadingProperties(data, i, true)
 }
 
-// {fully qualified id}{unqualified label}{[unused null byte]}
-func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, error) {
+// {fully qualified id}{unqualified label}{fully qualified properties}
+func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (interface{}, error) {
 	var err error
 	v := new(Vertex)
 	v.Id, err = readFullyQualifiedNullable(data, i, true)
@@ -1054,33 +1068,43 @@ func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, e
 		return nil, err
 	}
 	v.Label = label.(string)
-	if unusedByte {
-		*i += 2
+	if readProperties {
+		v.Properties, err = readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return v, nil
 }
 
-// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{unused null byte}
+// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{fully qualified properties}
 func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	var err error
 	e := new(Edge)
 	e.Id, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	label, err := readUnqualified(data, i, stringType, false)
 	if err != nil {
 		return nil, err
 	}
 	e.Label = label.(string)
-	v, err := vertexReaderNullByte(data, i, false)
+	v, err := vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
 	e.InV = *v.(*Vertex)
-	v, err = vertexReaderNullByte(data, i, false)
+	v, err = vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
 	e.OutV = *v.(*Vertex)
-	*i += 4
+	*i += 2
+	e.Properties, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	return e, nil
 }
 
@@ -1118,7 +1142,15 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 
-	*i += 4
+	*i += 2
+
+	props, err := readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+
+	vp.Properties = props
+
 	return vp, nil
 }
 
@@ -1312,6 +1344,26 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 	deserializer, ok := deserializers[dataTyp]
 	if !ok {
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dataTyp)
+	}
+
+	return deserializer(data, i)
+}
+
+// {name}{type specific payload}
+func customTypeReader(data *[]byte, i *int) (interface{}, error) {
+	// we need to decrement the index by 1 to be read the 32-bit int with the size of the string
+	*i = *i - 1
+	customTypeName, err := readString(data, i)
+	if err != nil {
+		return nil, err
+	}
+
+	// grab a read lock for the map of deserializers, since these can be updated out-of-band
+	customTypeReaderLock.RLock()
+	defer customTypeReaderLock.RUnlock()
+	deserializer, ok := customDeserializers[customTypeName.(string)]
+	if !ok {
+		return nil, newError(err0409GetSerializerToReadUnknownCustomTypeError, customTypeName)
 	}
 	return deserializer(data, i)
 }

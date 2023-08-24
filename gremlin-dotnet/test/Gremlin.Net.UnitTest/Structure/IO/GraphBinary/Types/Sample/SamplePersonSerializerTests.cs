@@ -43,15 +43,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             
             await writer.WriteAsync(expected, serializationStream);
             serializationStream.Position = 0;
-            var actual = (SamplePerson) await reader.ReadAsync(serializationStream);
+            var actual = (SamplePerson?) await reader.ReadAsync(serializationStream);
             
             Assert.Equal(expected, actual);
         }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task ReadValueAndWriteValueShouldBeSymmetric(bool nullable)
+        
+        [Fact]
+        public async Task ReadNullableValueAndWriteNullableValueShouldBeSymmetric()
         {
             var expected = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
             var registry = TypeSerializerRegistry.Build()
@@ -60,12 +58,65 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             var reader = CreateGraphBinaryReader(registry);
             var serializationStream = new MemoryStream();
 
-            await writer.WriteValueAsync(expected, serializationStream, nullable).ConfigureAwait(false);
+            await writer.WriteNullableValueAsync(expected, serializationStream).ConfigureAwait(false);
             serializationStream.Position = 0;
-            var actual = (SamplePerson)await reader.ReadValueAsync<SamplePerson>(serializationStream, nullable)
+            var actual = (SamplePerson?)await reader.ReadNullableValueAsync<SamplePerson>(serializationStream)
                 .ConfigureAwait(false);
             
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task ReadNonNullableValueAndWriteNonNullableValueShouldBeSymmetric()
+        {
+            var expected = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
+            var registry = TypeSerializerRegistry.Build()
+                .AddCustomType(typeof(SamplePerson), new SamplePersonSerializer()).Create();
+            var writer = CreateGraphBinaryWriter(registry);
+            var reader = CreateGraphBinaryReader(registry);
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteNonNullableValueAsync(expected, serializationStream).ConfigureAwait(false);
+            serializationStream.Position = 0;
+            var actual = (SamplePerson)await reader.ReadNonNullableValueAsync<SamplePerson>(serializationStream)
+                .ConfigureAwait(false);
+            
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task WriteThrowsExceptionWhenNoWriterIsRegisteredForCustomType()
+        {
+            var sample = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
+            var registryWithoutType = TypeSerializerRegistry.Build().Create();
+            var writer = CreateGraphBinaryWriter(registryWithoutType);
+            var serializationStream = new MemoryStream();
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await writer.WriteAsync(sample, serializationStream);
+            });
+        }
+
+        [Fact]
+        public async Task ReadThrowsExceptionWhenNoReaderIsRegisteredForCustomType()
+        {
+            var sample = new SamplePerson("Olivia", new DateTimeOffset(2010, 4, 29, 5, 30, 3, TimeSpan.FromHours(1)));
+            var registryWithType = TypeSerializerRegistry.Build()
+                .AddCustomType(typeof(SamplePerson), new SamplePersonSerializer()).Create();
+            var writer = CreateGraphBinaryWriter(registryWithType);
+            var serializationStream = new MemoryStream();
+            
+            await writer.WriteAsync(sample, serializationStream);
+            serializationStream.Position = 0;
+            
+            var registryWithoutType = TypeSerializerRegistry.Build().Create();
+            var reader = CreateGraphBinaryReader(registryWithoutType);
+            
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await reader.ReadAsync(serializationStream);
+            });
         }
 
         private static GraphBinaryWriter CreateGraphBinaryWriter(TypeSerializerRegistry registry) =>

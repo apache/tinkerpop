@@ -23,6 +23,7 @@
 
 using System.Collections;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -45,21 +46,24 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         /// <summary>
         /// Currently not supported.
         /// </summary>
-        protected override Task WriteValueAsync(TList value, Stream stream, GraphBinaryWriter writer)
+        protected override Task WriteValueAsync(TList value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException("Writing a BulkSet is not supported");
         }
 
         /// <inheritdoc />
-        protected override async Task<TList> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<TList> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var length = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
+            var length = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
 
             var result = new TList();
             for (var i = 0; i < length; i++)
             {
-                var value = await reader.ReadAsync(stream).ConfigureAwait(false);
-                var bulk = (long) await reader.ReadValueAsync<long>(stream, false).ConfigureAwait(false);
+                var value = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+                var bulk = (long)await reader.ReadNonNullableValueAsync<long>(stream, cancellationToken)
+                    .ConfigureAwait(false);
                 for (var j = 0; j < bulk; j++)
                 {
                     result.Add(value);

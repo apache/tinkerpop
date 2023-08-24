@@ -23,11 +23,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Gremlin.Net.Driver.Remote
 {
@@ -38,49 +41,37 @@ namespace Gremlin.Net.Driver.Remote
     {
         private readonly IGremlinClient _client;
         private readonly string _traversalSource;
-        
+        private readonly ILogger<DriverRemoteConnection> _logger;
+
         /// <summary>
         /// Filter on these keys provided to OptionsStrategy and apply them to the request. Note that
         /// "scriptEvaluationTimeout" was deprecated in 3.3.9 but still supported in server implementations and will
         /// be removed in later versions. 
         /// </summary>
-        private readonly List<String> _allowedKeys = new List<string> 
-                    {Tokens.ArgsEvalTimeout, "scriptEvaluationTimeout", Tokens.ArgsBatchSize, 
-                     Tokens.RequestId, Tokens.ArgsUserAgent};
+        private readonly List<string> _allowedKeys = new()
+        {
+            Tokens.ArgsEvalTimeout, "scriptEvaluationTimeout", Tokens.ArgsBatchSize,
+            Tokens.RequestId, Tokens.ArgsUserAgent, Tokens.ArgMaterializeProperties
+        };
 
-        private readonly string _sessionId;
+        private readonly string? _sessionId;
         private string Processor => IsSessionBound ? Tokens.ProcessorSession : Tokens.ProcessorTraversal;
 
         /// <inheritdoc />
         public bool IsSessionBound => _sessionId != null;
-
-        /// <summary>
-        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
-        /// </summary>
-        /// <param name="host">The host to connect to.</param>
-        /// <param name="port">The port to connect to.</param>
-        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
-        public DriverRemoteConnection(string host, int port):this(host, port, "g")
-        {
-        }
-
+        
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" />.
         /// </summary>
         /// <param name="host">The host to connect to.</param>
         /// <param name="port">The port to connect to.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
+        /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
-        public DriverRemoteConnection(string host, int port, string traversalSource):this(new GremlinClient(new GremlinServer(host, port)), traversalSource)
-        {
-        }
-
-        /// <summary>
-        ///     Initializes a new <see cref="IRemoteConnection" /> using "g" as the default remote TraversalSource name.
-        /// </summary>
-        /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
-        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
-        public DriverRemoteConnection(IGremlinClient client):this(client, "g")
+        public DriverRemoteConnection(string host, int port, string traversalSource = "g",
+            ILoggerFactory? loggerFactory = null) : this(
+            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory), traversalSource,
+            logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
         }
 
@@ -89,33 +80,49 @@ namespace Gremlin.Net.Driver.Remote
         /// </summary>
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
-        /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
-        public DriverRemoteConnection(IGremlinClient client, string traversalSource)
+        /// <exception cref="ArgumentNullException">Thrown when client or the traversalSource is null.</exception>
+        public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g")
+            : this(client, traversalSource, null)
+        {
+        }
+
+        private DriverRemoteConnection(IGremlinClient client, string traversalSource, string? sessionId = null,
+            ILogger<DriverRemoteConnection>? logger = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
-        }
 
-        private DriverRemoteConnection(IGremlinClient client, string traversalSource, Guid sessionId)
-            : this(client, traversalSource)
-        {
-            _sessionId = sessionId.ToString();
+            if (logger == null)
+            {
+                var loggerFactory = client is GremlinClient gremlinClient
+                    ? gremlinClient.LoggerFactory
+                    : NullLoggerFactory.Instance;
+
+                logger = loggerFactory.CreateLogger<DriverRemoteConnection>();
+            }
+            _logger = logger;
+            _sessionId = sessionId;
         }
 
         /// <summary>
         ///     Submits <see cref="Bytecode" /> for evaluation to a remote Gremlin Server.
         /// </summary>
         /// <param name="bytecode">The <see cref="Bytecode" /> to submit.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A <see cref="ITraversal" /> allowing to access the results and side-effects.</returns>
-        public async Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode)
+        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode,
+            CancellationToken cancellationToken = default)
         {
             var requestId = Guid.NewGuid();
-            var resultSet = await SubmitBytecodeAsync(requestId, bytecode).ConfigureAwait(false);
-            return new DriverRemoteTraversal<S, E>(_client, requestId, resultSet);
+            var resultSet = await SubmitBytecodeAsync(requestId, bytecode, cancellationToken).ConfigureAwait(false);
+            return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }
 
-        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode)
+        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode,
+            CancellationToken cancellationToken)
         {
+            _logger.SubmittingBytecode(bytecode, requestid);
+            
             var requestMsg =
                 RequestMessage.Build(Tokens.OpsBytecode)
                     .Processor(Processor)
@@ -125,15 +132,15 @@ namespace Gremlin.Net.Driver.Remote
 
             if (IsSessionBound)
             {
-                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId);
+                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId!);
             }
 
             var optionsStrategyInst = bytecode.SourceInstructions.Find(
                 s => s.OperatorName == "withStrategies" && s.Arguments[0] is OptionsStrategy);
             if (optionsStrategyInst != null)
             {
-                OptionsStrategy optionsStrategy = optionsStrategyInst.Arguments[0];
-                foreach (KeyValuePair<string,dynamic> pair in optionsStrategy.Configuration)
+                OptionsStrategy optionsStrategy = optionsStrategyInst.Arguments[0]!;
+                foreach (var pair in optionsStrategy.Configuration)
                 {
                     if (_allowedKeys.Contains(pair.Key))
                     {
@@ -141,14 +148,14 @@ namespace Gremlin.Net.Driver.Remote
                     }
                 }
             }
-            
-            return await _client.SubmitAsync<Traverser>(requestMsg.Create()).ConfigureAwait(false);
+
+            return await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
         public RemoteTransaction Tx(GraphTraversalSource g)
         {
-            var session = new DriverRemoteConnection(_client, _traversalSource, Guid.NewGuid());
+            var session = new DriverRemoteConnection(_client, _traversalSource, Guid.NewGuid().ToString(), _logger);
             return new RemoteTransaction(session, g);
         }
 

@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -40,17 +41,20 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Binding value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Binding value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Key, stream, false).ConfigureAwait(false);
-            await writer.WriteAsync(value.Value, stream).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Key, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<Binding> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Binding> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var key = (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false);
-            var value = await reader.ReadAsync(stream).ConfigureAwait(false);
+            var key = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var value = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             return new Binding(key, value);
         }
     }

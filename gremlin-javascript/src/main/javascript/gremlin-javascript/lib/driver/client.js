@@ -39,8 +39,13 @@ class Client {
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
+   * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
+   * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {String} [options.processor] The name of the opProcessor to use, leave it undefined or set 'session' when session mode.
    * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
+   * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
+   * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
+   * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
    * @constructor
    */
   constructor(url, options = {}) {
@@ -79,6 +84,7 @@ class Client {
    * @property {Number} batchSize - Indicates whether the Power component is present.
    * @property {String} userAgent - The size in which the result of a request is to be 'batched' back to the client
    * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
+   * @property {String} materializeProperties - Indicates whether element properties should be returned or not.
    */
 
   /**

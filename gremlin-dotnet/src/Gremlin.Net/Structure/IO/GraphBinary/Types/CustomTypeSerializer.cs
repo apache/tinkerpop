@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -40,15 +41,27 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         public DataType DataType => DataType.Custom;
 
         /// <inheritdoc />
-        public abstract Task WriteAsync(object value, Stream stream, GraphBinaryWriter writer);
+        public abstract Task WriteAsync(object value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default);
 
         /// <inheritdoc />
-        public abstract Task WriteValueAsync(object value, Stream stream, GraphBinaryWriter writer, bool nullable);
+        public abstract Task WriteNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default);
 
         /// <inheritdoc />
-        public abstract Task<object> ReadAsync(Stream stream, GraphBinaryReader reader);
+        public abstract Task WriteNonNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default);
 
         /// <inheritdoc />
-        public abstract Task<object> ReadValueAsync(Stream stream, GraphBinaryReader reader, bool nullable);
+        public abstract Task<object?> ReadAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default);
+
+        /// <inheritdoc />
+        public abstract Task<object?> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default);
+
+        /// <inheritdoc />
+        public abstract Task<object> ReadNonNullableValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default);
     }
 }

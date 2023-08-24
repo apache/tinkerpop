@@ -33,7 +33,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
     {
         private readonly IRemoteConnection _connection = new RemoteConnectionFactory().CreateRemoteConnection("gtx");
 
-        [IgnoreIfTransactionsNotSupportedFact]
+        [Fact]
         public async Task ShouldSupportRemoteTransactionsCommit()
         {
             var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
@@ -57,7 +57,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Equal(2, count);
         }
         
-        [IgnoreIfTransactionsNotSupportedFact]
+        [Fact]
         public async Task ShouldSupportRemoteTransactionsRollback()
         {
             var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
@@ -90,18 +90,5 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             g.V().Drop().Iterate();
         }
     }
-
-    public sealed class IgnoreIfTransactionsNotSupportedFact : FactAttribute
-    {
-        public IgnoreIfTransactionsNotSupportedFact()
-        {
-            if (!TransactionsSupported)
-            {
-                Skip = "Transactions not supported";
-            }
-        }
-
-        private static bool TransactionsSupported =>
-            Convert.ToBoolean(Environment.GetEnvironmentVariable("TEST_TRANSACTIONS"));
-    }
+    
 }

@@ -169,14 +169,10 @@ public class TraversalTest {
         }
 
         @Override
-        public void addStarts(final Iterator starts) {
-
-        }
+        public void addStarts(final Iterator starts) { }
 
         @Override
-        public void addStart(final Traverser.Admin start) {
-
-        }
+        public void addStart(final Traverser.Admin start) { }
 
         @Override
         public boolean hasStarts() {
@@ -184,9 +180,7 @@ public class TraversalTest {
         }
 
         @Override
-        public void setPreviousStep(final Step step) {
-
-        }
+        public void setPreviousStep(final Step step) { }
 
         @Override
         public Step getPreviousStep() {
@@ -194,9 +188,7 @@ public class TraversalTest {
         }
 
         @Override
-        public void setNextStep(final Step step) {
-
-        }
+        public void setNextStep(final Step step) { }
 
         @Override
         public Step getNextStep() {
@@ -209,14 +201,10 @@ public class TraversalTest {
         }
 
         @Override
-        public void setTraversal(final Traversal.Admin traversal) {
-
-        }
+        public void setTraversal(final Traversal.Admin traversal) { }
 
         @Override
-        public void reset() {
-
-        }
+        public void reset() { }
 
         @Override
         public Step clone() {
@@ -229,19 +217,16 @@ public class TraversalTest {
         }
 
         @Override
-        public void addLabel(final String label) {
-
-        }
+        public void addLabel(final String label) { }
 
         @Override
-        public void removeLabel(final String label) {
-
-        }
+        public void removeLabel(final String label) { }
 
         @Override
-        public void setId(final String id) {
+        public void clearLabels() { }
 
-        }
+        @Override
+        public void setId(final String id) { }
 
         @Override
         public String getId() {
@@ -358,6 +343,11 @@ public class TraversalTest {
         @Override
         public boolean isLocked() {
             return false;
+        }
+
+        @Override
+        public void lock() {
+
         }
 
         @Override

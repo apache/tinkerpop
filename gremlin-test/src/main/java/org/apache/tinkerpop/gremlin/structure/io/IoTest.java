@@ -92,7 +92,6 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.FEATURE_STRING_VALUES;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -312,6 +311,8 @@ public class IoTest {
                 writer.writeGraph(out, graph);
 
                 graph.vertices().forEachRemaining(Element::remove);
+                if (graph.features().graph().supportsTransactions())
+                    graph.tx().commit();
                 try (final InputStream stream = new ByteArrayInputStream(((ByteArrayOutputStream) out).toByteArray())) {
                     reader.readGraph(stream, graph);
                 }
@@ -534,7 +535,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v1d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v1.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -576,7 +577,7 @@ public class IoTest {
             graph.addVertex(T.id, new CustomId("vertex", id));
 
             final SimpleModule module = new SimpleModule();
-            module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
+            module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1());
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create();
 
@@ -657,7 +658,7 @@ public class IoTest {
         }
     }
 
-    public static final class GraphSONV2D0Test extends AbstractGremlinTest {
+    public static final class GraphSONV2Test extends AbstractGremlinTest {
         private Io.Builder<GraphSONIo> graphson;
 
         @Before
@@ -683,7 +684,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v2d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v2.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -724,7 +725,7 @@ public class IoTest {
             final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
             graph.addVertex(T.id, new CustomId("vertex", id));
 
-            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV2d0();
+            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV2();
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().version(GraphSONVersion.V2_0).addCustomModule(module).create()).create();
 
@@ -780,7 +781,7 @@ public class IoTest {
         }
     }
 
-    public static final class GraphSONV3D0Test extends AbstractGremlinTest {
+    public static final class GraphSONV3Test extends AbstractGremlinTest {
         private Io.Builder<GraphSONIo> graphson;
 
         @Before
@@ -806,7 +807,7 @@ public class IoTest {
                 final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
                 w.writeGraph(bos, graph);
 
-                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v3d0.json"));
+                final String expected = streamToString(getResourceAsStream(GraphSONResourceAccess.class, "tinkerpop-classic-normalized-v3.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
             }
         }
@@ -847,7 +848,7 @@ public class IoTest {
             final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
             graph.addVertex(T.id, new CustomId("vertex", id));
 
-            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV3d0();
+            final SimpleModule module = new CustomId.CustomIdTinkerPopJacksonModuleV3();
             final GraphWriter writer = graph.io(graphson).writer().mapper(
                     graph.io(graphson).mapper().version(GraphSONVersion.V3_0).addCustomModule(module).create()).create();
 

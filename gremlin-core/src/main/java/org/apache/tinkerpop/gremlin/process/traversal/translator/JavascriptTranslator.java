@@ -188,6 +188,15 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            script.append("CardinalityValue." + inst.getArguments()[0] + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
+        }
+
+        @Override
         protected Script produceScript(final Set<?> o) {
             return produceScript(new ArrayList<>(o));
         }
@@ -337,23 +346,13 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
-                // typically cover implementations (generally worked for Text prior to 3.6.0)
-                final BiPredicate<?, ?> tp = p.getBiPredicate();
-                if (tp instanceof Text.RegexPredicate) {
-                    final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "notRegex" : "regex";
-                    script.append("TextP.").append(regexToken).append("(");
-                } else if (tp instanceof Text) {
-                    script.append("TextP.").append(((Text) p.getBiPredicate()).name()).append("(");
-                } else {
-                    script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
-                }
+                script.append("TextP.").append(p.getPredicateName()).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
                 // generated the way it was written which was P.and(P).and(P)
                 final List<P<?>> list = ((ConnectiveP) p).getPredicates();
-                final String connector = p instanceof OrP ? "or" : "and";
+                final String connector = p.getPredicateName();
                 for (int i = 0; i < list.size(); i++) {
                     produceScript(list.get(i));
 
@@ -366,7 +365,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append("P.").append(p.getBiPredicate().toString()).append("(");
+                script.append("P.").append(p.getPredicateName()).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");

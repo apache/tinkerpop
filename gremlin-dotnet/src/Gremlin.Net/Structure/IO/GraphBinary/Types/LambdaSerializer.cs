@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -40,21 +41,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(ILambda value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(ILambda value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Language, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.LambdaExpression, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Arguments, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Language, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.LambdaExpression, stream, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Arguments, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<ILambda> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<ILambda> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var language = (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false);
-            var expression = (string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false);
+            var language = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var expression = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
             
             // discard the arguments
-            await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
+            await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
 
             return new StringBasedLambda(expression, language);
         }

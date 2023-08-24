@@ -37,27 +37,31 @@ namespace Gremlin.Net.Driver
         void HandleReceived(ResponseMessage<List<object>> received);
         void Finalize(Dictionary<string, object> statusAttributes);
         void HandleFailure(Exception objException);
+        void Cancel();
     }
 
     internal class Connection : IConnection
     {
         private readonly IMessageSerializer _messageSerializer;
         private readonly Uri _uri;
-        private readonly WebSocketConnection _webSocketConnection;
-        private readonly string _username;
-        private readonly string _password;
-        private readonly string _sessionId;
+        private readonly IWebSocketConnection _webSocketConnection;
+        private readonly string? _username;
+        private readonly string? _password;
+        private readonly string? _sessionId;
         private readonly bool _sessionEnabled;
-        private readonly ConcurrentQueue<RequestMessage> _writeQueue = new ConcurrentQueue<RequestMessage>();
+
+        private readonly ConcurrentQueue<(RequestMessage msg, CancellationToken cancellationToken)> _writeQueue = new();
 
         private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
-            new ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage>();
+            new();
+
+        private readonly ConcurrentDictionary<Guid, CancellationTokenRegistration> _cancellationByRequestId = new();
         private int _connectionState = 0;
         private int _writeInProgress = 0;
         private const int Closed = 1;
 
-        public Connection(IClientWebSocket clientWebSocket, Uri uri, string username, string password, IMessageSerializer messageSerializer,
-            WebSocketSettings webSocketSettings, string sessionId)
+        public Connection(IWebSocketConnection webSocketConnection, Uri uri, string? username, string? password,
+            IMessageSerializer messageSerializer, string? sessionId)
         {
             _uri = uri;
             _username = username;
@@ -68,7 +72,7 @@ namespace Gremlin.Net.Driver
                 _sessionEnabled = true;
             }
             _messageSerializer = messageSerializer;
-            _webSocketConnection = new WebSocketConnection(clientWebSocket, webSocketSettings);
+            _webSocketConnection = webSocketConnection;
         }
 
         public async Task ConnectAsync(CancellationToken cancellationToken)
@@ -81,11 +85,19 @@ namespace Gremlin.Net.Driver
 
         public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
 
-        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage)
+        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken)
         {
             var receiver = new ResponseHandlerForSingleRequestMessage<T>();
             _callbackByRequestId.GetOrAdd(requestMessage.RequestId, receiver);
-            _writeQueue.Enqueue(requestMessage);
+
+            _cancellationByRequestId.GetOrAdd(requestMessage.RequestId, cancellationToken.Register(() =>
+            {
+                if (_callbackByRequestId.TryRemove(requestMessage.RequestId, out var responseHandler))
+                {
+                    responseHandler.Cancel();
+                }
+            }));
+            _writeQueue.Enqueue((requestMessage, cancellationToken));
             BeginSendingMessages();
             return receiver.Result;
         }
@@ -119,7 +131,8 @@ namespace Gremlin.Net.Driver
             var receivedMsg = await _messageSerializer.DeserializeMessageAsync(received).ConfigureAwait(false);
             if (receivedMsg == null)
             {
-                ThrowMessageDeserializedNull();
+                throw new InvalidOperationException(
+                    "Received data deserialized into null object message. Cannot operate on it.");
             }
 
             try
@@ -128,16 +141,20 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception e)
             {
-                if (receivedMsg.RequestId != null &&
-                    _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
+                if (receivedMsg!.RequestId != null)
                 {
-                    responseHandler?.HandleFailure(e);
+                    if(_callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
+                    {
+                        responseHandler?.HandleFailure(e);
+                        
+                    }
+                    if (_cancellationByRequestId.TryRemove(receivedMsg.RequestId.Value, out var cancellation))
+                    {
+                        cancellation.Dispose();
+                    }
                 }
             }
         }
-
-        private static void ThrowMessageDeserializedNull() =>
-            throw new InvalidOperationException("Received data deserialized into null object message. Cannot operate on it.");
 
         private void HandleReceivedMessage(ResponseMessage<List<object>> receivedMsg)
         {
@@ -152,12 +169,19 @@ namespace Gremlin.Net.Driver
 
             if (receivedMsg.RequestId == null) return;
 
+            _callbackByRequestId.TryGetValue(receivedMsg.RequestId.Value, out var responseHandler);
             if (status.Code != ResponseStatusCode.NoContent)
-                _callbackByRequestId[receivedMsg.RequestId.Value].HandleReceived(receivedMsg);
+            {
+                responseHandler?.HandleReceived(receivedMsg);
+            }
 
             if (status.Code == ResponseStatusCode.Success || status.Code == ResponseStatusCode.NoContent)
             {
-                _callbackByRequestId[receivedMsg.RequestId.Value].Finalize(status.Attributes);
+                if (_cancellationByRequestId.TryRemove(receivedMsg.RequestId.Value, out var cancellation))
+                {
+                    cancellation.Dispose();
+                }
+                responseHandler?.Finalize(status.Attributes);
                 _callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out _);
             }
         }
@@ -171,7 +195,7 @@ namespace Gremlin.Net.Driver
             var message = RequestMessage.Build(Tokens.OpsAuthentication).Processor(Tokens.ProcessorTraversal)
                 .AddArgument(Tokens.ArgsSasl, SaslArgument()).Create();
 
-            _writeQueue.Enqueue(message);
+            _writeQueue.Enqueue((message, CancellationToken.None));
             BeginSendingMessages();
         }
 
@@ -195,7 +219,13 @@ namespace Gremlin.Net.Driver
             {
                 try
                 {
-                    await SendMessageAsync(msg).ConfigureAwait(false);
+                    await SendMessageAsync(msg.msg, msg.cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException e) when (msg.cancellationToken == e.CancellationToken)
+                {
+                    // Send was cancelled for this message -> silently catch as we want to continue sending from this
+                    //  connection. The task responsible for submitting this message will be cancelled by the
+                    //  `ResponseHandlerForSingleRequestMessage`.
                 }
                 catch (Exception e)
                 {
@@ -234,24 +264,27 @@ namespace Gremlin.Net.Driver
                 cb.HandleFailure(exception);
             }
             _callbackByRequestId.Clear();
+            DisposeCancellationRegistrations();
         }
 
-        private async Task SendMessageAsync(RequestMessage message)
+        private async Task SendMessageAsync(RequestMessage message, CancellationToken cancellationToken)
         {
             if (_sessionEnabled)
             {
                 message = RebuildSessionMessage(message);
             }
-            var serializedMsg = await _messageSerializer.SerializeMessageAsync(message).ConfigureAwait(false);
+
+            var serializedMsg = await _messageSerializer.SerializeMessageAsync(message, cancellationToken)
+                .ConfigureAwait(false);
 #if NET6_0_OR_GREATER
             if (message.Processor == Tokens.OpsAuthentication)
             {
                 // Don't compress a message that contains credentials to prevent attacks like CRIME or BREACH
-                await _webSocketConnection.SendMessageUncompressedAsync(serializedMsg).ConfigureAwait(false);
+                await _webSocketConnection.SendMessageUncompressedAsync(serializedMsg, cancellationToken).ConfigureAwait(false);
                 return;
             }
 #endif
-            await _webSocketConnection.SendMessageAsync(serializedMsg).ConfigureAwait(false);
+            await _webSocketConnection.SendMessageAsync(serializedMsg, cancellationToken).ConfigureAwait(false);
         }
 
         private RequestMessage RebuildSessionMessage(RequestMessage message)
@@ -267,7 +300,7 @@ namespace Gremlin.Net.Driver
             {
                 msgBuilder.AddArgument(kv.Key, kv.Value);
             }
-            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId);
+            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId!);
             return msgBuilder.Create();
         }
 
@@ -288,7 +321,7 @@ namespace Gremlin.Net.Driver
             // build a request to close this session
             var msg = RequestMessage.Build(Tokens.OpsClose).Processor(Tokens.ProcessorSession).Create();
 
-            await SendMessageAsync(msg).ConfigureAwait(false);
+            await SendMessageAsync(msg, CancellationToken.None).ConfigureAwait(false);
         }
 
         #region IDisposable Support
@@ -306,9 +339,21 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
+                {
                     _webSocketConnection?.Dispose();
+                    DisposeCancellationRegistrations();
+                }
                 _disposed = true;
             }
+        }
+
+        private void DisposeCancellationRegistrations()
+        {
+            foreach (var cancellation in _cancellationByRequestId.Values)
+            {
+                cancellation.Dispose();
+            }
+            _cancellationByRequestId.Clear();
         }
 
         #endregion

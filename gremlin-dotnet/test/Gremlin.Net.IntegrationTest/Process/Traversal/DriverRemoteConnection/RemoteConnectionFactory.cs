@@ -32,36 +32,45 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
     internal class RemoteConnectionFactory : IDisposable
     {
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
-        private readonly IList<DriverRemoteConnectionImpl> _connections = new List<DriverRemoteConnectionImpl>();
+        private readonly IList<IDisposable> _cleanUp = new List<IDisposable>();
         private readonly IMessageSerializer _messageSerializer;
 
-        public RemoteConnectionFactory(IMessageSerializer messageSerializer = null)
+        public RemoteConnectionFactory(IMessageSerializer? messageSerializer = null)
         {
             _messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
         }
-        
-        public IRemoteConnection CreateRemoteConnection()
+
+        public IRemoteConnection CreateRemoteConnection(int connectionPoolSize = 2)
         {
             // gmodern is the standard test traversalsource that the main body of test uses
-            return CreateRemoteConnection("gmodern");
+            return CreateRemoteConnection("gmodern", connectionPoolSize);
         }
 
-        public IRemoteConnection CreateRemoteConnection(string traversalSource)
+        public IRemoteConnection CreateRemoteConnection(string traversalSource,
+            int connectionPoolSize = 2,
+            IMessageSerializer? messageSerializer = null)
         {
-            var c = new DriverRemoteConnectionImpl(
-                new GremlinClient(new GremlinServer(TestHost, TestPort), _messageSerializer,
-                    connectionPoolSettings: new ConnectionPoolSettings {PoolSize = 2}),
-                traversalSource);
-            _connections.Add(c);
+            var c = new DriverRemoteConnectionImpl(CreateClient(messageSerializer, connectionPoolSize), traversalSource);
+            _cleanUp.Add(c);
+            return c;
+        }
+
+        public IGremlinClient CreateClient(IMessageSerializer? messageSerializer = null, int connectionPoolSize = 2)
+        {
+            var c = new GremlinClient(new GremlinServer(TestHost, TestPort),
+                    messageSerializer ?? _messageSerializer,
+                    connectionPoolSettings: new() { PoolSize = connectionPoolSize });
+
+            _cleanUp.Add(c);
             return c;
         }
 
         public void Dispose()
         {
-            foreach (var connection in _connections)
+            foreach (var connection in _cleanUp)
             {
                 connection.Dispose();
             }

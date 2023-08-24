@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
@@ -54,6 +54,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest",
         method = "g_VX1X_V_valuesXnameX",
+        reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeTest",
+        method = "*",
         reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest",
@@ -124,6 +128,14 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
         method = "g_V_hasXk_withinXcXX_valuesXkX",
         reason = "Requires some test data initialization with addV()")
 @Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_V_hasXname_regexXTinkerXX",
+        reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest",
+        method = "g_V_hasXname_regexXTinkerUnicodeXX",
+        reason = "Requires some test data initialization with addV()")
+@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest",
         method = "g_injectX1_null_nullX_path",
         reason = "The inject() step is not supported by GraphComputer")
@@ -135,6 +147,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 
     public GraphBinaryRemoteGraphComputerProvider() {
-        super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create(), true);
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V1).create(), true);
     }
 }

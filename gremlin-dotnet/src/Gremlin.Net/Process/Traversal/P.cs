@@ -41,7 +41,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="operatorName">The name of the predicate.</param>
         /// <param name="value">The value of the predicate.</param>
         /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
-        public P(string operatorName, dynamic value, P other = null)
+        public P(string operatorName, dynamic? value, P? other = null)
         {
             OperatorName = operatorName;
             Value = value;
@@ -56,12 +56,12 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the value of the predicate.
         /// </summary>
-        public dynamic Value { get; }
+        public dynamic? Value { get; }
 
         /// <summary>
         ///     Gets an optional other predicate that is used as an argument for this predicate.
         /// </summary>
-        public P Other { get; }
+        public P? Other { get; }
 
         /// <summary>
         ///     Returns a composed predicate that represents a logical AND of this predicate and another.
@@ -83,86 +83,86 @@ namespace Gremlin.Net.Process.Traversal
             return new P("or", this, otherPredicate);
         }
 
-        public static P Between(params object[] args)
+        public static P Between(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("between", value);
         }
 
-        public static P Eq(params object[] args)
+        public static P Eq(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("eq", value);
         }
 
-        public static P Gt(params object[] args)
+        public static P Gt(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("gt", value);
         }
 
-        public static P Gte(params object[] args)
+        public static P Gte(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("gte", value);
         }
 
-        public static P Inside(params object[] args)
+        public static P Inside(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("inside", value);
         }
 
-        public static P Lt(params object[] args)
+        public static P Lt(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("lt", value);
         }
 
-        public static P Lte(params object[] args)
+        public static P Lte(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("lte", value);
         }
 
-        public static P Neq(params object[] args)
+        public static P Neq(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("neq", value);
         }
 
-        public static P Not(params object[] args)
+        public static P Not(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("not", value);
         }
 
-        public static P Outside(params object[] args)
+        public static P Outside(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("outside", value);
         }
 
-        public static P Test(params object[] args)
+        public static P Test(params object[]? args)
         {
-            var value = args != null && args.Length == 1 ? args[0] : args;
+            var value = args is { Length: 1 } ? args[0] : args;
             return new P("test", value);
         }
 
-        public static P Within(params object[] args)
+        public static P Within(params object[]? args)
         {
-            var x = args != null && args.Length == 1 && args[0] is ICollection collection ? collection : args;
+            var x = args is { Length: 1 } && args[0] is ICollection collection ? collection : args;
             return new P("within", ToGenericList(x));
         }
 
-        public static P Without(params object[] args)
+        public static P Without(params object[]? args)
         {
-            var x = args != null && args.Length == 1 && args[0] is ICollection collection ? collection : args;
+            var x = args is { Length: 1 } && args[0] is ICollection collection ? collection : args;
             return new P("without", ToGenericList(x));
         }
 
 
-        private static List<object> ToGenericList(IEnumerable collection)
+        private static List<object> ToGenericList(IEnumerable? collection)
         {
             return collection?.Cast<object>().ToList() ?? Enumerable.Empty<object>().ToList();
         }

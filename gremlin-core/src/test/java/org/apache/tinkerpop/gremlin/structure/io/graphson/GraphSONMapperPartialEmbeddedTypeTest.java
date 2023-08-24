@@ -64,20 +64,19 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
-                        .addCustomModule(GraphSONXModuleV2d0.build().create(false))
+                        .addCustomModule(GraphSONXModuleV2.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
-                        .addCustomModule(GraphSONXModuleV3d0.build().create(false))
+                        .addCustomModule(GraphSONXModuleV3.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
 
-    @Parameterized.Parameter(1)
-    public ObjectMapper mapper;
-
-
     @Parameterized.Parameter(0)
     public String version;
+
+    @Parameterized.Parameter(1)
+    public ObjectMapper mapper;
 
     @Test
     public void elementOrderShouldNotMatter() throws Exception {
@@ -199,7 +198,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
-    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
+    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV2() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
                 .typeInfo(TypeInfo.PARTIAL_TYPES)
@@ -216,7 +215,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
-    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV2d0() throws Exception {
+    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV2() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V2_0)
                 .typeInfo(TypeInfo.NO_TYPES)
@@ -233,7 +232,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
-    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV1d0() throws Exception {
+    public void shouldHandleMapWithTypesUsingEmbedTypeSettingV1() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V1_0)
                 .typeInfo(TypeInfo.PARTIAL_TYPES)
@@ -250,7 +249,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
-    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV1d0() throws Exception {
+    public void shouldNotHandleMapWithTypesUsingEmbedTypeSettingV1() throws Exception {
         final ObjectMapper mapper = GraphSONMapper.build()
                 .version(GraphSONVersion.V1_0)
                 .typeInfo(TypeInfo.NO_TYPES)

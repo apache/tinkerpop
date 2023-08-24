@@ -38,6 +38,10 @@ using Xunit.Abstractions;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
+    [CollectionDefinition(nameof(GherkinTestDefinition), DisableParallelization = true)]
+    public class GherkinTestDefinition { }
+
+    [Collection(nameof(GherkinTestDefinition))]
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =
@@ -45,16 +49,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_injectX0X_mergeVXselectXcXX_optionXonMatch_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_label_person_name_stephenX_withSideEffectXm_label_person_name_stephen_age_19X_injectX0X_mergeVXselectXcXX_optionXonCreate_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_injectXlabel_person_name_marko_label_person_name_stephenX_mergeVXidentityX", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXa_label_knows_out_marko_in_vadasX_mergeEXselectXaXX", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX_exists", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_label_person_name_stephenX_withSideEffectXm_label_person_name_stephen_age_19X_mergeVXselectXcXX_optionXonCreate_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
-                {"g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option", IgnoreReason.MergeVEWithTraversalNotSupportedInTranslation},
+                {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported}
             };
 
         private static class Keywords
@@ -119,7 +114,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     }
 
                     StepBlock? currentStep = null;
-                    StepDefinition stepDefinition = null;
+                    StepDefinition? stepDefinition = null;
                     foreach (var step in scenario.Steps)
                     {
                         var previousStep = currentStep;
@@ -243,13 +238,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
         }
 
-        private Exception ExecuteStep(StepDefinition instance, StepBlock stepBlock, Step step)
+        private Exception? ExecuteStep(StepDefinition instance, StepBlock stepBlock, Step step)
         {
             var attribute = Attributes[stepBlock];
             var methodAndParameters = instance.GetType().GetMethods()
                 .Select(m =>
                 {
-                    var attr = (BddAttribute) m.GetCustomAttribute(attribute);
+                    var attr = (BddAttribute?) m.GetCustomAttribute(attribute);
                     
                     if (attr == null)
                     {
@@ -260,7 +255,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     {
                         return null;
                     }
-                    var parameters = new List<object>();
+                    var parameters = new List<object?>();
                     for (var i = 1; i < match.Groups.Count; i++)
                     {
                         parameters.Add(match.Groups[i].Value);
@@ -363,7 +358,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException($"No step definition class matches Given '{stepText}'");
             }
-            return (StepDefinition) Activator.CreateInstance(type);
+            return (StepDefinition) Activator.CreateInstance(type)!;
         }
 
         private ICollection<Type> GetStepDefinitionTypes()
@@ -382,7 +377,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private IEnumerable<Feature> GetFeatures()
         {
             var rootPath = GetRootPath();
-            var path = Path.Combine(rootPath, "gremlin-test", "features");
+            var path = Path.Combine(rootPath, "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features");
             var files = Directory.GetFiles(path, "*.feature", SearchOption.AllDirectories);
             foreach (var gherkinFile in files)
             {
@@ -396,9 +391,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             var codeBaseUrl = new Uri(GetType().GetTypeInfo().Assembly.Location);
             var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
-            DirectoryInfo rootDir = null;
-            for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath));
-                dir.Parent != null;
+            DirectoryInfo? rootDir = null;
+            for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath)!);
+                dir!.Parent != null;
                 dir = dir.Parent)
             {
                 if (dir.Name == "gremlin-dotnet" && dir.GetFiles("pom.xml").Length == 1)

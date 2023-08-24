@@ -42,7 +42,7 @@ import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
 
@@ -134,7 +134,7 @@ public class ParameterizedGroovyTranslatorTest {
 
     @Test
     public void shouldHandleSet() {
-        final Script script = translator.translate(g.V().id().is(new HashSet<Object>() {{
+        final Script script = translator.translate(g.V().id().is(new LinkedHashSet<Object>() {{
             add(3);
             add(Arrays.asList(1, 2, 3.1d));
             add(3);
@@ -144,11 +144,12 @@ public class ParameterizedGroovyTranslatorTest {
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(5, bindings.size());
         assertEquals(Integer.valueOf(3), bindings.get("_args_0"));
-        assertEquals("3", bindings.get("_args_1"));
-        assertEquals(Integer.valueOf(1), bindings.get("_args_2"));
-        assertEquals(Integer.valueOf(2), bindings.get("_args_3"));
-        assertEquals(Double.valueOf(3.1), bindings.get("_args_4"));
-        assertEquals("g.V().id().is([_args_0, _args_1, [_args_2, _args_3, _args_4]] as Set)", script.getScript());
+        assertEquals(Integer.valueOf(1), bindings.get("_args_1"));
+        assertEquals(Integer.valueOf(2), bindings.get("_args_2"));
+        assertEquals(Double.valueOf(3.1), bindings.get("_args_3"));
+        assertEquals("3", bindings.get("_args_4"));
+
+        assertEquals("g.V().id().is([_args_0, [_args_1, _args_2, _args_3], _args_4] as Set)", script.getScript());
     }
 
     @Test
@@ -166,7 +167,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals(Integer.valueOf(2), bindings.get("_args_3"));
         assertEquals(Double.valueOf(3.1), bindings.get("_args_4"));
         assertEquals(Integer.valueOf(4), bindings.get("_args_5"));
-        assertEquals("g.V().id().is([(_args_0):(_args_1),([_args_2, _args_3, _args_4]):(_args_5)])", script.getScript());
+        assertEquals("g.V().id().is([(_args_0):_args_1,([_args_2, _args_3, _args_4]):_args_5])", script.getScript());
     }
 
     @Test

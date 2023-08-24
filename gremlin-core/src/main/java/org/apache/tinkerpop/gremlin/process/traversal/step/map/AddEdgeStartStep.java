@@ -24,9 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -40,10 +40,8 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -51,7 +49,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
-        implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
+        implements Writing<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -115,13 +113,13 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             final Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
             if (!(theTo instanceof Vertex))
                 throw new IllegalStateException(String.format(
-                        "addE(%s) could not find a Vertex for to() - encountered: %s", edgeLabel,
+                        "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                         null == theTo ? "null" : theTo.getClass().getSimpleName()));
 
             final Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
             if (!(theFrom instanceof Vertex))
                 throw new IllegalStateException(String.format(
-                        "addE(%s) could not find a Vertex for from() - encountered: %s", edgeLabel,
+                        "The value given to addE(%s).from() must resolve to a Vertex but %s was specified instead", edgeLabel,
                         null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
 
             Vertex toVertex = (Vertex) theTo;

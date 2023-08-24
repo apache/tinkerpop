@@ -24,6 +24,9 @@
 'use strict';
 
 const crypto = require('crypto');
+const os = require('os');
+
+const gremlinVersion = '3.7.1-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 exports.toLong = function toLong(value) {
   return new Long(value);
@@ -79,3 +82,38 @@ class ImmutableMap extends Map {
 }
 
 exports.ImmutableMap = ImmutableMap;
+
+function generateUserAgent() {
+  const applicationName = (process.env.npm_package_name || 'NotAvailable').replace('_', ' ');
+  let runtimeVersion;
+  let osName;
+  let osVersion;
+  let cpuArch;
+  runtimeVersion = osName = osVersion = cpuArch = 'NotAvailable';
+  if (process != null) {
+    if (process.version) {
+      runtimeVersion = process.version.replace(' ', '_');
+    }
+    if (process.arch) {
+      cpuArch = process.arch.replace(' ', '_');
+    }
+  }
+  if (os != null) {
+    osName = os.platform().replace(' ', '_');
+    osVersion = os.release().replace(' ', '_');
+  }
+
+  const userAgent = `${applicationName} Gremlin-Javascript.${gremlinVersion} ${runtimeVersion} ${osName}.${osVersion} ${cpuArch}`;
+
+  return userAgent;
+}
+
+exports.getUserAgentHeader = function getUserAgentHeader() {
+  return 'User-Agent';
+};
+
+const userAgent = generateUserAgent();
+
+exports.getUserAgent = function getUserAgent() {
+  return userAgent;
+};

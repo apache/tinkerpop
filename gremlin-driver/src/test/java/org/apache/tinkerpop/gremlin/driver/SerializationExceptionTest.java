@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
 
 import java.io.IOException;

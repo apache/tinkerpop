@@ -57,22 +57,22 @@ public class IoCustomTest extends AbstractGremlinTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        final SimpleModule moduleV1d0 = new SimpleModule();
-        moduleV1d0.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1d0());
+        final SimpleModule moduleV1 = new SimpleModule();
+        moduleV1.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1());
 
-        final SimpleModule moduleV2d0 = new CustomId.CustomIdTinkerPopJacksonModuleV2d0();
-        final SimpleModule modulev3d0 = new CustomId.CustomIdTinkerPopJacksonModuleV3d0();
+        final SimpleModule moduleV2 = new CustomId.CustomIdTinkerPopJacksonModuleV2();
+        final SimpleModule modulev3 = new CustomId.CustomIdTinkerPopJacksonModuleV3();
 
         return Arrays.asList(new Object[][]{
                 {"graphson-v1-embedded", true,
-                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
                 {"graphson-v2-embedded", true,
-                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2d0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
                 {"graphson-v3", true,
-                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V3_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(modulev3d0).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V3_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(modulev3d0).create()).create()},
+                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V3_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(modulev3).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V3_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V3_0)).mapper().addCustomModule(modulev3).create()).create()},
                 {"gryo-v1", true,
                         (Function<Graph, GraphReader>) g -> g.io(GryoIo.build(GryoVersion.V1_0)).reader().mapper(g.io(GryoIo.build(GryoVersion.V1_0)).mapper().version(GryoVersion.V1_0).addCustom(CustomId.class).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(GryoIo.build(GryoVersion.V1_0)).writer().mapper(g.io(GryoIo.build(GryoVersion.V1_0)).mapper().version(GryoVersion.V1_0).addCustom(CustomId.class).create()).create()},
@@ -138,6 +138,8 @@ public class IoCustomTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
     public void shouldProperlySerializeCustomId() throws Exception {
         graph.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
+        if (graph.features().graph().supportsTransactions())
+            graph.tx().commit();
 
         final GraphWriter writer = writerMaker.apply(graph);
         final GraphReader reader = readerMaker.apply(graph);

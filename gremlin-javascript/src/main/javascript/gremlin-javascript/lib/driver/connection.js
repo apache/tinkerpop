@@ -64,6 +64,7 @@ class Connection extends EventEmitter {
    * @param {GraphSONWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
+   * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
@@ -81,7 +82,7 @@ class Connection extends EventEmitter {
      */
     this.mimeType = options.mimeType || defaultMimeType;
 
-    // A map containing the request id and the handler
+    // A map containing the request id and the handler. The id should be in lower case to prevent string comparison issues.
     this._responseHandlers = {};
     this._reader = options.reader || this._getDefaultReader(this.mimeType);
     this._writer = options.writer || this._getDefaultWriter(this.mimeType);
@@ -97,6 +98,7 @@ class Connection extends EventEmitter {
     this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
+    this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
 
     this._pingEnabled = this.options.pingEnabled === false ? false : true;
     this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
@@ -116,9 +118,16 @@ class Connection extends EventEmitter {
     }
 
     this.emit('log', 'ws open');
+    let headers = this.options.headers;
+    if (this._enableUserAgentOnConnect) {
+      if (!headers) {
+        headers = [];
+      }
+      headers[utils.getUserAgentHeader()] = utils.getUserAgent();
+    }
 
     this._ws = new WebSocket(this.url, {
-      headers: this.options.headers,
+      headers: headers,
       ca: this.options.ca,
       cert: this.options.cert,
       pfx: this.options.pfx,
@@ -157,7 +166,8 @@ class Connection extends EventEmitter {
 
   /** @override */
   submit(processor, op, args, requestId) {
-    const rid = requestId || utils.getUuid();
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    const rid = (requestId || utils.getUuid()).toLowerCase();
     return this.open().then(
       () =>
         new Promise((resolve, reject) => {
@@ -185,7 +195,8 @@ class Connection extends EventEmitter {
 
   /** @override */
   stream(processor, op, args, requestId) {
-    const rid = requestId || utils.getUuid();
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    const rid = (requestId || utils.getUuid()).toLowerCase();
 
     const readableStream = new Stream.Readable({
       objectMode: true,
@@ -257,7 +268,7 @@ class Connection extends EventEmitter {
 
   _handleError(err) {
     this.emit('log', `ws error ${err}`);
-    this._cleanupWebsocket();
+    this._cleanupWebsocket(err);
     this.emit('socketError', err);
   }
 
@@ -299,6 +310,8 @@ class Connection extends EventEmitter {
       return;
     }
 
+    // TINKERPOP-2847: Use lower case to prevent string comparison issues.
+    response.requestId = response.requestId.toLowerCase();
     const handler = this._responseHandlers[response.requestId];
 
     if (!handler) {
@@ -361,7 +374,7 @@ class Connection extends EventEmitter {
   /**
    * clean websocket context
    */
-  _cleanupWebsocket() {
+  _cleanupWebsocket(err) {
     if (this._pingInterval) {
       clearInterval(this._pingInterval);
     }
@@ -371,6 +384,17 @@ class Connection extends EventEmitter {
     }
     this._pongTimeout = null;
 
+    // Invoke waiting callbacks to complete Promises when closing the websocket
+    Object.keys(this._responseHandlers).forEach((requestId) => {
+      const handler = this._responseHandlers[requestId];
+      const isStreamingResponse = handler.result instanceof Stream.Readable;
+      if (isStreamingResponse) {
+        handler.callback(null);
+      } else {
+        const cause = err ? err : new Error('Connection has been closed.');
+        handler.callback(cause);
+      }
+    });
     this._ws.removeAllListeners();
     this._openPromise = null;
     this._closePromise = null;

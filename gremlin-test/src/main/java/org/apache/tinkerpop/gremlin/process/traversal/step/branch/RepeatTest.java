@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -107,7 +108,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     // NESTED LOOP
 
-    public abstract Traversal<Vertex, Path> get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name();
+    public abstract Traversal<Vertex, Path> get_g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX();
 
     public abstract Traversal<Vertex, Path> get_g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX();
 
@@ -361,9 +362,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name() {
+    public void g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX() {
         // This traversal gets optimised by the RepeatUnrollStrategy
-        final Traversal<Vertex, Path> traversal_unrolled = get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name();
+        final Traversal<Vertex, Path> traversal_unrolled = get_g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX();
         final Path pathOriginal = traversal_unrolled.next();
         assertFalse(traversal_unrolled.hasNext());
         assertEquals(3, pathOriginal.size());
@@ -375,7 +376,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
         g = g.withoutStrategies(RepeatUnrollStrategy.class);
 
-        final Traversal<Vertex, Path> traversal = get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name();
+        final Traversal<Vertex, Path> traversal = get_g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX();
         printTraversalForm(traversal);
         final Path path = traversal.next();
         assertFalse(traversal.hasNext());
@@ -565,9 +566,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXout_repeatXoutX_timesX1XX_timesX1X_limitX1X_path_by_name() {
+        public Traversal<Vertex, Path> get_g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX() {
             // NB We need to prevent the RepeatUnrollStrategy from applying to properly exercise this test as this traversal can be simplified
-            return g.V().repeat(out().repeat(out()).times(1)).times(1).limit(1).path().by("name");
+            return g.V().repeat(out().repeat(out().order().by("name", Order.desc)).times(1)).times(1).limit(1).path().by("name");
         }
 
         @Override

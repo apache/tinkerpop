@@ -39,7 +39,7 @@ class DriverRemoteConnection(RemoteConnection):
                  username="", password="", kerberized_service='',
                  message_serializer=None, graphson_reader=None,
                  graphson_writer=None, headers=None, session=None,
-                 **transport_kwargs):
+                 enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
@@ -55,6 +55,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__graphson_writer = graphson_writer
         self.__headers = headers
         self.__session = session
+        self.__enable_user_agent_on_connect = enable_user_agent_on_connect
         self.__transport_kwargs = transport_kwargs
 
         # keeps a list of sessions that have been spawned from this DriverRemoteConnection
@@ -76,6 +77,7 @@ class DriverRemoteConnection(RemoteConnection):
                                      kerberized_service=kerberized_service,
                                      headers=headers,
                                      session=session,
+                                     enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
@@ -150,9 +152,14 @@ class DriverRemoteConnection(RemoteConnection):
                                       graphson_writer=self.__graphson_writer,
                                       headers=self.__headers,
                                       session=uuid.uuid4(),
+                                      enable_user_agent_on_connect=self.__enable_user_agent_on_connect,
                                       **self.__transport_kwargs)
         self.__spawned_sessions.append(conn)
         return conn
+
+    def remove_session(self, session_based_connection):
+        session_based_connection.close()
+        self.__spawned_sessions.remove(session_based_connection)
 
     def commit(self):
         log.info("Submitting commit graph operation.")
@@ -168,7 +175,7 @@ class DriverRemoteConnection(RemoteConnection):
                                  if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
         request_options = None
         if options_strategy:
-            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent']
+            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent', 'materializeProperties']
             request_options = {allowed: options_strategy[1].configuration[allowed] for allowed in allowed_keys
                                if allowed in options_strategy[1].configuration}
         return request_options

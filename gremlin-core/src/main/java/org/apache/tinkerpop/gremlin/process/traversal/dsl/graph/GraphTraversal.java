@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
@@ -80,6 +81,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
@@ -329,6 +331,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
         this.asAdmin().getBytecode().addStep(Symbols.V, ids);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
+    }
+
+    /**
+     * A {@code E} step is usually used to start a traversal but it may also be used mid-traversal.
+     *
+     * @param edgeIdsOrElements edges to inject into the traversal
+     * @return the traversal with an appended {@link GraphStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#e-step" target="_blank">Reference Documentation - E Step</a>
+     * @since 3.7.0
+     */
+    public default GraphTraversal<S, Edge> E(final Object... edgeIdsOrElements) {
+        // a single null is [null]
+        final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
+        this.asAdmin().getBytecode().addStep(Symbols.E, ids);
+        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
     }
 
     /**
@@ -1102,7 +1119,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Vertex> mergeV(final Map<Object, Object> searchCreate) {
-        MergeVertexStep.validateMapInput(searchCreate, false);
         this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
         final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
@@ -1146,7 +1162,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final Map<Object, Object> searchCreate) {
         // get a construction time exception if the Map is bad
-        MergeEdgeStep.validateMapInput(searchCreate, false);
         this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
@@ -1396,6 +1411,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service, params) :
                 new CallStep(this.asAdmin(), false, service, params, childTraversal.asAdmin());
         return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Concatenate strings.
+     *
+     * @return the traversal with an appended {@link ConcatStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#concat-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @since 3.7.0
+     */
+    public default GraphTraversal<S, String> concat(final Traversal<?, String> concatTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.concat, concatTraversal);
+        return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatTraversal));
+    }
+
+    /**
+     * Concatenate strings.
+     *
+     * @return the traversal with an appended {@link ConcatStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#concat-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @since 3.7.0
+     */
+    public default GraphTraversal<S, String> concat(final String... concatStrings) {
+        this.asAdmin().getBytecode().addStep(Symbols.concat, concatStrings);
+        return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatStrings));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -1797,39 +1836,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
         if (id instanceof P) {
             return this.hasId((P) id);
-        } else {
-            Object[] ids;
-            if (id instanceof Object[]) {
-                ids = (Object[]) id;
-            } else {
-                ids = new Object[] {id};
-            }
-            int size = ids.length;
-            int capacity = size;
+        }
+        else {
+            this.asAdmin().getBytecode().addStep(Symbols.hasId, id, otherIds);
 
+            //using ArrayList given P.within() turns all arguments into lists
+            final List<Object> ids = new ArrayList<>();
+            if (id instanceof Object[]) {
+                Collections.addAll(ids, (Object[]) id);
+            } else if (id instanceof Collection) {
+                // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
+                // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
+                ids.addAll((Collection<?>) id);
+            } else
+                ids.add(id);
+
+            // unrolling ids from lists works cleaner with Collection too, as otherwise they will need to
+            // be turned into array first
             if (otherIds != null) {
                 for (final Object i : otherIds) {
-                    if (i != null && i.getClass().isArray()) {
-                        final Object[] tmp = (Object[]) i;
-                        int newLength = size + tmp.length;
-                        if (capacity < newLength) {
-                            ids = Arrays.copyOf(ids, capacity = size + tmp.length);
-                        }
-                        System.arraycopy(tmp, 0, ids, size, tmp.length);
-                        size = newLength;
-                    } else {
-                        if (capacity == size) {
-                            ids = Arrays.copyOf(ids, capacity = size * 2);
-                        }
-                        ids[size++] = i;
-                    }
-                }
-                if (capacity > size) {
-                    ids = Arrays.copyOf(ids, size);
+                    if (id instanceof Object[]) {
+                        Collections.addAll(ids, (Object[]) i);
+                    } else if (i instanceof Collection) {
+                        ids.addAll((Collection<?>) i);
+                    } else
+                        ids.add(i);
                 }
             }
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, ids);
-            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.length == 1 ? P.eq(ids[0]) : P.within(ids)));
+
+            return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
         }
     }
 
@@ -1975,7 +2010,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Removes objects from the traversal stream when the traversal provided as an argument does not return any objects.
+     * Removes objects from the traversal stream when the traversal provided as an argument returns any objects.
      *
      * @param notTraversal the traversal to filter by.
      * @return the traversal with an appended {@link NotStep}.
@@ -2532,6 +2567,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * If a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
+     * If a {@link CardinalityValueTraversal} is specified as a value then it will override any
+     * {@link VertexProperty.Cardinality} specified for the {@code key}.
      * <p />
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
@@ -2545,13 +2582,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         if (key instanceof VertexProperty.Cardinality) {
-            if (value instanceof Map) { //Handle the property(Cardinality, Map) signature
-                final Map<Object, Object> map = (Map)value;
+            // expect property(Cardinality, Map) where Map has entry type of either:
+            // + <String<k>,CardinalityValue<v>> = property(v.cardinality, k, v.value) - overrides the Cardinality provided by "key"
+            // + <String<k>,Object<v>> = property(key, k, v) - uses Cardinality of key
+            if (value instanceof Map) {
+                // Handle the property(Cardinality, Map) signature
+                final Map<Object, Object> map = (Map) value;
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                    property(key, entry.getKey(), entry.getValue());
+                    final Object val = entry.getValue();
+                    if (val instanceof CardinalityValueTraversal) {
+                        final CardinalityValueTraversal cardVal = (CardinalityValueTraversal) val;
+                        property(cardVal.getCardinality(), entry.getKey(), cardVal.getValue());
+                    } else {
+                        // explicitly cast to avoid a possible recursive call.
+                        property((VertexProperty.Cardinality) key, entry.getKey(), entry.getValue());
+                    }
                 }
                 return this;
-            } else if (value == null) { // Just return the input if you pass a null
+            } else if (value == null) {
+                // Just return the input if you pass a null
                 return this;
             } else {
                 return this.property((VertexProperty.Cardinality) key, value, null == keyValues ? null : keyValues[0],
@@ -2559,18 +2608,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                 Arrays.copyOfRange(keyValues, 1, keyValues.length) :
                                 new Object[]{});
             }
-        } else  { //handles if cardinality is not the first parameter
+        } else  {
+            // handles if cardinality is not the first parameter
             return this.property(null, key, value, keyValues);
         }
     }
-    
+
     /**
      * When a {@link Map} is supplied then each of the key/value pairs in the map will
      * be added as property.  This method is the long-hand version of looping through the 
      * {@link #property(Object, Object, Object...)} method for each key/value pair supplied.
      * <p/>
+     * A value may use a {@link CardinalityValueTraversal} to allow specification of the
+     * {@link VertexProperty.Cardinality} along with the property value itself.
+     * <p/>
      * If a {@link Map} is not supplied then an exception is thrown.
-     * <p /> 
+     * <p />
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)}
      * as {@code property(null, key, value, keyValues}.
      *
@@ -2582,7 +2635,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> property(final Map<Object, Object> value) {
         if (value != null) {
             for (Map.Entry<Object, Object> entry : value.entrySet()) {
-                property(null, entry.getKey(), entry.getValue());
+                final Object val = entry.getValue();
+                if (val instanceof CardinalityValueTraversal) {
+                    final CardinalityValueTraversal cardVal = (CardinalityValueTraversal) val;
+                    property(cardVal.getCardinality(), entry.getKey(), cardVal.getValue());
+                } else {
+                    property(null, entry.getKey(), entry.getValue());
+                }
             }
         }
         return this;
@@ -3278,6 +3337,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+     * the documentation of such steps to understand the usage context.
+     *
+     * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
+     * @return the traversal with the modulated step
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+     * @since 3.7.0
+     */
+    public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final Map<Object, Object> m, final VertexProperty.Cardinality cardinality) {
+        this.asAdmin().getBytecode().addStep(Symbols.option, merge, m, cardinality);
+        // do explicit cardinality for every single pair in the map
+        for (Object k : m.keySet()) {
+            final Object o = m.get(k);
+            if (!(o instanceof CardinalityValueTraversal))
+                m.put(k, new CardinalityValueTraversal(cardinality, o));
+        }
+        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
+        return this;
+    }
+
+    /**
      * This step modifies {@link #choose(Function)} to specifies the available choices that might be executed.
      *
      * @param traversalOption the option as a traversal
@@ -3417,6 +3499,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String write = "write";
         public static final String call = "call";
         public static final String element = "element";
+        public static final String concat = "concat";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

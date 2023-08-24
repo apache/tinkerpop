@@ -1,19 +1,14 @@
 Apache TinkerPop
-Copyright 2015-2022 The Apache Software Foundation.
+Copyright 2015-2023 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Apache Groovy 2.5.14 (AL ASF)
+Apache Groovy 4.0.9 (AL ASF)
 ------------------------------------------------------------------------
-This product includes/uses ANTLR (http://www.antlr2.org/)
-developed by Terence Parr 1989-2006
-
-This product bundles icons from the famfamfam.com silk icons set
-http://www.famfamfam.com/lab/icons/silk/
-Licensed under the Creative Commons Attribution Licence v2.5
-http://creativecommons.org/licenses/by/2.5/
+This product includes/uses ANTLR4 (https://github.com/antlr/antlr4)
+Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
 
 ------------------------------------------------------------------------
 Apache Ivy 2.3.0 (AL ASF)
@@ -28,6 +23,25 @@ which is open source software, available under
 the terms of a BSD style license.
 The original software and related information is available
 at http://www.jcraft.com/jsch/.
+
+------------------------------------------------------------------------
+HPPC 0.7.1
+------------------------------------------------------------------------
+HPPC borrowed code, ideas or both from:
+
+ * Apache Lucene, http://lucene.apache.org/
+   (Apache license)
+ * Fastutil, http://fastutil.di.unimi.it/
+   (Apache license)
+ * Koloboke, https://github.com/OpenHFT/Koloboke
+   (Apache license)
+
+------------------------------------------------------------------------
+Jackson-Databind 2.14.0 and Jackson-Core - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.jackson
+------------------------------------------------------------------------
+It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
+been in development since 2007.
+It is currently developed by a community of developers.
 
 ------------------------------------------------------------------------
 JavaTuples 1.2
@@ -49,18 +63,11 @@ LongAdder), which was released with the following comments:
     http://creativecommons.org/publicdomain/zero/1.0/
 
 ------------------------------------------------------------------------
-HPPC 0.7.1
-------------------------------------------------------------------------
-HPPC borrowed code, ideas or both from:
-
- * Apache Lucene, http://lucene.apache.org/
-   (Apache license)
- * Fastutil, http://fastutil.di.unimi.it/
-   (Apache license)
- * Koloboke, https://github.com/OpenHFT/Koloboke
-   (Apache license)
-
-------------------------------------------------------------------------
-Netty 4.1.72
+Netty 4.1.96
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
+
+------------------------------------------------------------------------
+Objenesis 3.3 - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
+------------------------------------------------------------------------
+Copyright 2006-2022 Joe Walnes, Henri Tremblay, Leonardo Mesquita

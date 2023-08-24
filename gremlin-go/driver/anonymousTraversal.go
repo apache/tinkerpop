@@ -45,6 +45,8 @@ func Traversal_() AnonymousTraversalSource {
 type AnonymousTraversal interface {
 	// T__ creates an empty GraphTraversal.
 	T__(args ...interface{}) *GraphTraversal
+	// E adds the e step to the GraphTraversal.
+	E(args ...interface{}) *GraphTraversal
 	// V adds the v step to the GraphTraversal.
 	V(args ...interface{}) *GraphTraversal
 	// AddE adds the addE step to the GraphTraversal.
@@ -79,6 +81,8 @@ type AnonymousTraversal interface {
 	Coalesce(args ...interface{}) *GraphTraversal
 	// Coin adds the coin step to the GraphTraversal.
 	Coin(args ...interface{}) *GraphTraversal
+	// Concat adds the Concat step to the GraphTraversal.
+	Concat(args ...interface{}) *GraphTraversal
 	// ConnectedComponent adds the connectedComponent step to the GraphTraversal.
 	ConnectedComponent(args ...interface{}) *GraphTraversal
 	// Constant adds the constant step to the GraphTraversal.
@@ -278,6 +282,11 @@ func (anonymousTraversal *anonymousTraversal) T__(args ...interface{}) *GraphTra
 	return anonymousTraversal.Inject(args...)
 }
 
+// E adds the e step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) E(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().E(args...)
+}
+
 // V adds the v step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) V(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().V(args...)
@@ -361,6 +370,11 @@ func (anonymousTraversal *anonymousTraversal) Coalesce(args ...interface{}) *Gra
 // Coin adds the coin step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Coin(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Coin(args...)
+}
+
+// Concat adds the Concat step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Concat(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Concat(args...)
 }
 
 // ConnectedComponent adds the connectedComponent step to the GraphTraversal.

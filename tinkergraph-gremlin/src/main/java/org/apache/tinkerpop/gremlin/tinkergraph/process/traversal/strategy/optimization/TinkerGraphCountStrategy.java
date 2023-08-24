@@ -29,8 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -41,8 +39,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This strategy will do a direct {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper#getVertices}
- * size call if the traversal is a count of the vertices and edges of the graph or a one-to-one map chain thereof.
+ * This strategy will do a graph size call if the traversal is a count of the vertices and edges of the graph
+ * or a one-to-one map chain thereof.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
@@ -68,12 +66,16 @@ public final class TinkerGraphCountStrategy extends AbstractTraversalStrategy<Tr
                 0 != ((GraphStep) steps.get(0)).getIds().length ||
                 !(steps.get(steps.size() - 1) instanceof CountGlobalStep))
             return;
+
         for (int i = 1; i < steps.size() - 1; i++) {
             final Step current = steps.get(i);
-            if (!(//current instanceof MapStep ||  // MapSteps will not necessarily emit an element as demonstrated in https://issues.apache.org/jira/browse/TINKERPOP-1958
-                    current instanceof IdentityStep ||
-                    current instanceof NoOpBarrierStep ||
-                    current instanceof CollectingBarrierStep) ||
+            // used to include "current instanceof MapStep" but they will not necessarily emit an element as
+            // demonstrated in https://issues.apache.org/jira/browse/TINKERPOP-1958
+            //
+            // used to include "current instanceof CollectingBarrierStep" but those steps like sample() can filter
+            // demonstrated in https://issues.apache.org/jira/browse/TINKERPOP-1958
+            if (!(current instanceof IdentityStep ||
+                    current instanceof NoOpBarrierStep) ||
                     (current instanceof TraversalParent &&
                             TraversalHelper.anyStepRecursively(s -> (s instanceof SideEffectStep || s instanceof AggregateGlobalStep), (TraversalParent) current)))
                 return;

@@ -193,6 +193,16 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            final String card = inst.getArguments()[0].toString();
+            script.append("CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
+        }
+
+        @Override
         protected Script produceScript(final Set<?> o) {
             final Iterator<?> iterator = o.iterator();
             script.append("new HashSet<object> {");
@@ -364,7 +374,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         if (null == instArg) {
                             script.append("(IDictionary<object,object>) null");
                         } else {
-                            if (instArg instanceof Traversal) {
+                            if (instArg instanceof Traversal || instArg instanceof Bytecode) {
                                 script.append("(ITraversal) ");
                             } else {
                                 script.append("(IDictionary<object,object>) ");
@@ -443,6 +453,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                                             script.append("(object) ");
                                         }
                                     }
+                                } else if (methodName.equals(GraphTraversal.Symbols.property)) {
+                                    if (instArgs[0] instanceof VertexProperty.Cardinality && instArgs.length == 3) {
+                                        script.append("(object) ");
+                                    }
                                 }
                             }
                             convertToScript(instArg);
@@ -459,17 +473,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
-                // typically cover implementations (generally worked for Text prior to 3.6.0)
-                final BiPredicate<?, ?> tp = p.getBiPredicate();
-                if (tp instanceof Text.RegexPredicate) {
-                    final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "NotRegex" : "Regex";
-                    script.append("TextP.").append(regexToken).append("(");
-                } else if (tp instanceof Text) {
-                    script.append("TextP.").append(SymbolHelper.toCSharp(((Text) p.getBiPredicate()).name())).append("(");
-                } else {
-                    script.append("TextP.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
-                }
+                script.append("TextP.").append(SymbolHelper.toCSharp(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
                 // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
@@ -488,7 +492,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append("P.").append(SymbolHelper.toCSharp(p.getBiPredicate().toString())).append("(");
+                script.append("P.").append(SymbolHelper.toCSharp(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             }
             script.append(")");
@@ -511,6 +515,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.choose, "Choose<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.coalesce, "Coalesce<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.concat, "Concat<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.constant, "Constant<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.elementMap, "ElementMap<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.flatMap, "FlatMap<object>");

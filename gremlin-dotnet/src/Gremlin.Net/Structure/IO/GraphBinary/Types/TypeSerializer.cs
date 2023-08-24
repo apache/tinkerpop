@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal.Strategy;
 
@@ -42,12 +43,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Type value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Type value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
             if (typeof(AbstractTraversalStrategy).IsAssignableFrom(value))
             {
-                var strategyInstance = (AbstractTraversalStrategy) Activator.CreateInstance(value);
-                await writer.WriteValueAsync(strategyInstance.Fqcn, stream, false).ConfigureAwait(false);
+                var strategyInstance = (AbstractTraversalStrategy?)Activator.CreateInstance(value) ??
+                                       throw new IOException(
+                                           $"Cannot write the strategy {value} because an instance of that strategy could not be created");
+                await writer.WriteNonNullableValueAsync(strategyInstance.Fqcn, stream, cancellationToken)
+                    .ConfigureAwait(false);
             }
             else
             {
@@ -58,7 +63,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         /// <summary>
         /// Currently not supported.
         /// </summary>
-        protected override Task<Type> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override Task<Type> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException("Reading a Type is not supported");
         }

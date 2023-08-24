@@ -155,6 +155,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             } catch (final UnsupportedOperationException e) {
                 assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
             }
+            try {
+                new BadGraphComputer().vertexProperties(__.properties("type"));
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
         } else {
             fail("Should not support graph filter: " + BadGraphComputer.class);
         }
@@ -194,6 +200,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
+            throw GraphComputer.Exceptions.graphFilterNotSupported();
+        }
+
+        @Override
+        public GraphComputer vertexProperties(Traversal<Vertex, ? extends Property<?>> vertexPropertyFilter) {
             throw GraphComputer.Exceptions.graphFilterNotSupported();
         }
 
@@ -1756,13 +1767,19 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             } catch (final UnsupportedOperationException e) {
                 assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
             }
+            try {
+                graphProvider.getGraphComputer(graph).vertexProperties(__.properties("prop1", "prop2"));
+                fail("Should throw an unsupported operation exception");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.graphFilterNotSupported().getMessage(), e.getMessage());
+            }
             return;
         }
         /// VERTEX PROGRAM
-        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("software")).vertexProperties(__.properties("dummy")).program(new VertexProgramM(VertexProgramM.SOFTWARE_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).program(new VertexProgramM(VertexProgramM.PEOPLE_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.KNOWS_ONLY)).submit().get();
-        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).vertexProperties(__.properties("name")).edges(__.bothE("knows")).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).vertices(__.hasLabel("person")).edges(__.<Vertex>bothE("knows").has("weight", P.gt(0.5f))).program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_WELL_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).edges(__.<Vertex>bothE().limit(0)).program(new VertexProgramM(VertexProgramM.VERTICES_ONLY)).submit().get();
         graphProvider.getGraphComputer(graph).edges(__.<Vertex>outE().limit(1)).program(new VertexProgramM(VertexProgramM.ONE_OUT_EDGE_ONLY)).submit().get();
@@ -1800,6 +1817,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             fail();
         } catch (final IllegalArgumentException e) {
             assertEquals(e.getMessage(), GraphComputer.Exceptions.edgeFilterAccessesAdjacentVertices(__.<Vertex>out().outE()).getMessage());
+        }
+        try {
+            // VertexProgramM.PEOPLE_KNOWS_ONLY needs name property
+            graphProvider.getGraphComputer(graph)
+                .vertices(__.hasLabel("person")).edges(__.bothE("knows")).vertexProperties(__.properties("dummy"))
+                .program(new VertexProgramM(VertexProgramM.PEOPLE_KNOWS_ONLY)).submit().get();
+        } catch (final ExecutionException e) {
+            assertTrue(e.getMessage().contains("The property does not exist as the key has no associated value for the provided element"));
         }
     }
 
@@ -2122,8 +2147,12 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         assertEquals(6, graph2.traversal().V().values(PageRankVertexProgram.PAGE_RANK).count().next().intValue());
         assertEquals(24, graph2.traversal().V().values().count().next().intValue());
         //
-        final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass())
-                .program(TraversalVertexProgram.build().traversal(g.V().groupCount("m").by(__.values(PageRankVertexProgram.PAGE_RANK).count()).label().asAdmin()).create(graph2)).persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
+        final ComputerResult result3 = graph2.compute(graphProvider.getGraphComputer(graph2).getClass()).
+                program(TraversalVertexProgram.build().traversal(
+                        g.V().groupCount("m").
+                                by(__.values(PageRankVertexProgram.PAGE_RANK).count()).
+                              label().asAdmin()).create(graph2)).
+                persist(GraphComputer.Persist.EDGES).result(GraphComputer.ResultGraph.NEW).submit().get();
         final Graph graph3 = result3.graph();
         final Memory memory3 = result3.memory();
         assertTrue(memory3.keys().contains("m"));

@@ -33,11 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -176,7 +174,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateWithPlainTextOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
@@ -202,7 +200,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 

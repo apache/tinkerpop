@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -38,14 +39,20 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <param name="requestMessage">The message to serialize.</param>
         /// <param name="stream">The stream to write to.</param>
         /// <param name="writer">A <see cref="GraphBinaryWriter"/> that can be used to write nested values.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A task that represents the asynchronous write operation.</returns>
-        public async Task WriteValueAsync(RequestMessage requestMessage, MemoryStream stream, GraphBinaryWriter writer)
+        public async Task WriteValueAsync(RequestMessage requestMessage, MemoryStream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await stream.WriteByteAsync(GraphBinaryWriter.VersionByte).ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.RequestId, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Operation, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Processor, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(requestMessage.Arguments, stream, false).ConfigureAwait(false);
+            await stream.WriteByteAsync(GraphBinaryWriter.VersionByte, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(requestMessage.RequestId, stream, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(requestMessage.Operation, stream, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(requestMessage.Processor, stream, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(requestMessage.Arguments, stream, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

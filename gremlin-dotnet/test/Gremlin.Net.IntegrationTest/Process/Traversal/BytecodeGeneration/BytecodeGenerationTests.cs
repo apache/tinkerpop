@@ -110,7 +110,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void AnonymousTraversal_OutXnullX()
         {
-            Assert.Throws<ArgumentNullException>(() => __.Out(null));
+            Assert.Throws<ArgumentNullException>(() => __.Out(null!));
         }
     }
 }

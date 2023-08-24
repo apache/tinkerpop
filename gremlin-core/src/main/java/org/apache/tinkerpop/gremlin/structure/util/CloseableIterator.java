@@ -25,12 +25,12 @@ import java.io.Closeable;
 import java.util.Iterator;
 
 /**
- * An extension of {@code Iterator} that implements {@code Closeable} which allows a {@link Graph} implementation
+ * An extension of {@code Iterator} that implements {@code AutoCloseable} which allows a {@link Graph} implementation
  * that hold open resources to provide the user the option to release those resources.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface CloseableIterator<T> extends Iterator<T>, Closeable {
+public interface CloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
     /**
      * Wraps an existing {@code Iterator} in a {@code CloseableIterator}. If the {@code Iterator} is already of that
@@ -56,6 +56,10 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    static <T> CloseableIterator<T> empty() {
+        return EmptyCloseableIterator.instance();
     }
 
     class EmptyCloseableIterator<T> extends DefaultCloseableIterator<T> {

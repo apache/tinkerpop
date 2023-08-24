@@ -24,6 +24,7 @@
 using System;
 using System.IO;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -41,11 +42,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(decimal value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(decimal value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
             var (unscaledValue, scale) = GetUnscaledValueAndScale(value);
-            await writer.WriteValueAsync(scale, stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(unscaledValue, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(scale, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(unscaledValue, stream, cancellationToken).ConfigureAwait(false);
         }
         
         private static (BigInteger, int) GetUnscaledValueAndScale(decimal input)
@@ -74,10 +76,13 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task<decimal> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<decimal> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var scale = (int) await reader.ReadValueAsync<int>(stream, false).ConfigureAwait(false);
-            var unscaled = (BigInteger) await reader.ReadValueAsync<BigInteger>(stream, false).ConfigureAwait(false);
+            var scale = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var unscaled = (BigInteger)await reader.ReadNonNullableValueAsync<BigInteger>(stream, cancellationToken)
+                .ConfigureAwait(false);
 
             return ConvertScaleAndUnscaledValue(scale, unscaled);
         }

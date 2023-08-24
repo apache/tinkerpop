@@ -20,12 +20,15 @@ under the License.
 package gremlingo
 
 import (
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
-	"testing"
 )
 
-func Test(t *testing.T) {
+func TestProtocol(t *testing.T) {
 	t.Run("Test protocol connect error.", func(t *testing.T) {
 		connSettings := newDefaultConnectionSettings()
 		connSettings.authInfo, connSettings.tlsConfig = nil, nil
@@ -36,5 +39,53 @@ func Test(t *testing.T) {
 			nil, nil)
 		assert.NotNil(t, err)
 		assert.Nil(t, protocol)
+	})
+
+	t.Run("Test protocol close wait", func(t *testing.T) {
+		wg := &sync.WaitGroup{}
+		protocol := &gremlinServerWSProtocol{
+			closed: true,
+			mutex:  sync.Mutex{},
+			wg:     wg,
+		}
+		wg.Add(1)
+
+		done := make(chan bool)
+
+		go func() {
+			protocol.close(true)
+			done <- true
+		}()
+
+		select {
+		case <-time.After(1 * time.Second):
+			// Ok. Close must wait.
+		case <-done:
+			t.Fatal("protocol.close is not waiting")
+		}
+	})
+
+	t.Run("Test protocol close no wait", func(t *testing.T) {
+		wg := &sync.WaitGroup{}
+		protocol := &gremlinServerWSProtocol{
+			closed: true,
+			mutex:  sync.Mutex{},
+			wg:     wg,
+		}
+		wg.Add(1)
+
+		done := make(chan bool)
+
+		go func() {
+			protocol.close(false)
+			done <- true
+		}()
+
+		select {
+		case <-time.After(1 * time.Second):
+			t.Fatal("protocol.close is waiting")
+		case <-done:
+			// Ok. Close must not wait.
+		}
 	})
 }

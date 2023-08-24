@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import java.util.function.BiPredicate;
-
 /**
  * Predefined {@code Predicate} values that can be used as {@code String} filters.
  *
@@ -27,8 +25,7 @@ import java.util.function.BiPredicate;
  */
 public class TextP extends P<String> {
 
-    @SuppressWarnings("WeakerAccess")
-    public TextP(final BiPredicate<String, String> biPredicate, final String value) {
+    public TextP(final PBiPredicate<String, String> biPredicate, final String value) {
         super(biPredicate, value);
     }
 

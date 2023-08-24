@@ -37,7 +37,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static string GetMessage(IgnoreReason reason)
         {
-            string reasonSuffix = null;
+            string? reasonSuffix = null;
             switch (reason)
             {
                 case IgnoreReason.NoReason:
@@ -60,13 +60,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// The GLV suite does not test against a graph that has null property values enabled.
         /// </summary>
-        NullPropertyValuesNotSupportedOnTestGraph,
-
-        /// <summary>
-        /// VarAsBindingASTTransformation isn't capable of properly casting arguments so the DotNetTranslator can't
-        /// produce the right Gremlin. These tests could be static translated but there are a lot of them so it would
-        /// be better to solve this more directly.
-        /// </summary>
-        MergeVEWithTraversalNotSupportedInTranslation
+        NullPropertyValuesNotSupportedOnTestGraph
     }
 }

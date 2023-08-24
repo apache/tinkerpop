@@ -52,12 +52,18 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
+ * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
 @Graph.OptIn("org.apache.tinkerpop.gremlin.neo4j.NativeNeo4jSuite")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.structure.TransactionMultiThreadedTest",
+        method = "*",
+        reason = "Some scenarios are supported by Neo4jGraph")
+@Deprecated
 public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     static {

@@ -24,7 +24,7 @@ The Reference Documentation makes some general assumptions about the reader:
 
 1. They have a sense of what a graph is - not sure? see link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html#whygraph[Practical Gremlin - Why Graph?]
 1. They know what it means for a graph system to be TinkerPop-enabled - not sure? see link:https://tinkerpop.apache.org/providers.html[TinkerPop-enabled Providers]
-1. They know what the role of Gremlin is - not sure? see link:link:https://tinkerpop.apache.org/gremlin.html[Introduction to Gremlin]
+1. They know what the role of Gremlin is - not sure? see link:https://tinkerpop.apache.org/gremlin.html[Introduction to Gremlin]
 
 Given those assumptions, it's possible to dive more quickly into the details without spending a lot of time repeating
 what is written elsewhere.
@@ -477,7 +477,7 @@ the <<connecting-gremlin-server,previous section>> with the exact same caveats p
 
 Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are not required to do so to be considered
 TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into
-<<gremlin-drivers-variants,Gremlin Language Variants> and may allow for more advanced options like better security,
+<<gremlin-drivers-variants,Gremlin Language Variants>> and may allow for more advanced options like better security,
 cluster awareness, batched requests or other features. The details of these different systems are outside the scope
 of this documentation, so be sure to consult their documentation for more information.
 

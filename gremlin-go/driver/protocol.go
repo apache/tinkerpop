@@ -30,7 +30,7 @@ import (
 type protocol interface {
 	readLoop(resultSets *synchronizedMap, errorCallback func())
 	write(request *request) error
-	close() (err error)
+	close(wait bool) error
 }
 
 const authenticationFailed = uint16(151)
@@ -52,13 +52,14 @@ type gremlinServerWSProtocol struct {
 }
 
 func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, errorCallback func()) {
+	defer protocol.wg.Done()
+
 	for {
 		// Read from transport layer. If the channel is closed, this will error out and exit.
 		msg, err := protocol.transporter.Read()
 		protocol.mutex.Lock()
 		if protocol.closed {
 			protocol.mutex.Unlock()
-			protocol.wg.Done()
 			return
 		}
 		protocol.mutex.Unlock()
@@ -67,7 +68,6 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 			_ = protocol.transporter.Close()
 			protocol.logHandler.logf(Error, readLoopError, err.Error())
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 
@@ -76,14 +76,12 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 		if err != nil {
 			protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.readLoop()", err.Error())
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 
 		err = protocol.responseHandler(resultSets, resp)
 		if err != nil {
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
-			protocol.wg.Done()
 			return
 		}
 	}
@@ -125,15 +123,12 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
 		// Server has requested basic auth.
 		authInfo := protocol.transporter.getAuthInfo()
-		if authInfo.getUseBasicAuth() {
-			username := []byte(authInfo.Username)
-			password := []byte(authInfo.Password)
-
+		if ok, username, password := authInfo.GetBasicAuth(); ok {
 			authBytes := make([]byte, 0)
 			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, username...)
+			authBytes = append(authBytes, []byte(username)...)
 			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, password...)
+			authBytes = append(authBytes, []byte(password)...)
 			encoded := base64.StdEncoding.EncodeToString(authBytes)
 			request := makeBasicAuthRequest(encoded)
 			err := protocol.write(&request)
@@ -161,21 +156,27 @@ func (protocol *gremlinServerWSProtocol) write(request *request) error {
 	return protocol.transporter.Write(bytes)
 }
 
-func (protocol *gremlinServerWSProtocol) close() (err error) {
+func (protocol *gremlinServerWSProtocol) close(wait bool) error {
+	var err error
+
 	protocol.mutex.Lock()
 	if !protocol.closed {
 		err = protocol.transporter.Close()
 		protocol.closed = true
 	}
 	protocol.mutex.Unlock()
-	protocol.wg.Wait()
-	return
+
+	if wait {
+		protocol.wg.Wait()
+	}
+
+	return err
 }
 
 func newGremlinServerWSProtocol(handler *logHandler, transporterType TransporterType, url string, connSettings *connectionSettings, results *synchronizedMap,
 	errorCallback func()) (protocol, error) {
 	wg := &sync.WaitGroup{}
-	transport, err := getTransportLayer(transporterType, url, connSettings)
+	transport, err := getTransportLayer(transporterType, url, connSettings, handler)
 	if err != nil {
 		return nil, err
 	}

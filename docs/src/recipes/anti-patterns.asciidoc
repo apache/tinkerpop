@@ -263,3 +263,61 @@ g.V().choose(label).
 
 <1> Note, that tokens use a `fold()` reducer by default.
 <2> `by("name")` doesn't use a token, but falls into the same category as the String `"name"` is translated into an optimized traversal.
+
+[has-traversal]
+== has() and Traversal Arguments
+
+There is an understandable assumption that the `has(String,Traversal)` overload indicates that the value returned by
+the `Traversal` argument will be used as the comparative value for the specified property key. There are often similar
+assumptions that values of `P` can take a `Traversal` argument to achieve a similar end as in
+`has(String, eq(Traversal))`. Unfortunately, neither of these work as assumed.
+
+Starting with the latter issue of `P` and `Traversal` it should be noted that while `P` values take `Object` and thus
+a `Traversal` it does not mean the `Traversal` will be resolved to a result that will be comparable. `P` will rather
+do a compare on the raw `Traversal` object which of course will always return `false` (unless for some odd reason you
+happen to store that `Traversal` object in your graph):
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', eq(constant('josh')))
+eq(constant('josh'))
+----
+
+As for the former issue with `has(String,Traversal)`, this requires a bit more explanation. The `Traversal` object is
+meant to be treated as a `Predicate`, meaning that if it returns a value the `has()` will allow the traverser to pass:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', constant('josh')) <1>
+g.V().has('name', constant('josh').is('xyz')) <2>
+----
+
+<1> `constant()` always returns a value so all vertices pass through the `has()`
+<2> By adding `is()` this `Traversal` will no longer return a value so no vertices pass through the `has()`
+
+These examples are a bit contrived for sake of demonstration, but the common pattern folks attempt appears as follows:
+
+[gremlin-groovy,modern]
+----
+g.withSideEffect('x',['name': 'josh']).V().has('name', select('x').select('name'))
+----
+
+The above example represents a commonly seen mistake where we try to dynamically inject the value "josh" from a
+`Map` stored in a side-effect named "x". As we can see, since `select('x').select('name')` returns a value the `has()`
+succeeds for every single vertex which is unexpected. The correct way to do this dynamic injection is with `where()`
+as in the following example:
+
+[gremlin-groovy,modern]
+----
+g.withSideEffect('x',['name': 'josh']).V().as('a').where('a',eq('x')).by('name')
+----
+
+As a final note on this topic, it's worth noting how `has(String,Traversal)` can be used. Note that the traverser that
+starts the `Traversal` argument is the `Property` value being compared. Therefore, if we wanted to find all the
+vertices that had the "name" of "josh" we would do:
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', is('josh'))
+----
+

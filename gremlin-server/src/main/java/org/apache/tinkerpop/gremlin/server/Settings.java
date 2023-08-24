@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -336,7 +337,8 @@ public class Settings {
      * @return a {@link Constructor} to parse a Gremlin Server YAML
      */
     protected static Constructor createDefaultYamlConstructor() {
-        final Constructor constructor = new Constructor(Settings.class);
+        final LoaderOptions options = new LoaderOptions();
+        final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.addPropertyParameters("graphs", String.class, String.class);
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
@@ -346,7 +348,7 @@ public class Settings {
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
-        serializerSettingsDescription.putMapPropertyType("config", String.class, Object.class);
+        serializerSettingsDescription.addPropertyParameters("config", String.class, Object.class);
         constructor.addTypeDescription(serializerSettingsDescription);
 
         final TypeDescription scriptEngineSettingsDescription = new TypeDescription(ScriptEngineSettings.class);

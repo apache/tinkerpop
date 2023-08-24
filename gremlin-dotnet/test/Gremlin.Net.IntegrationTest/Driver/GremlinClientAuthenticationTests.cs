@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Net.Security;
@@ -36,14 +35,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
 {
     public class GremlinClientAuthenticationTests
     {
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestSecureServerPort"]);
         private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
 
         public static bool IgnoreCertificateValidationLiveDangerouslyWheeeeeeee(
               object sender,
-              X509Certificate certificate,
-              X509Chain chain,
+              X509Certificate? certificate,
+              X509Chain? chain,
               SslPolicyErrors sslPolicyErrors)
         {
            return true;
@@ -52,7 +51,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         [Fact]
         public async Task ShouldThrowForMissingCredentials()
         {
-            ClientWebSocketOptions optionsSet = null;
+            ClientWebSocketOptions? optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {
@@ -76,7 +75,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         [InlineData("stephen", "wrongPassword")]
         public async Task ShouldThrowForWrongCredentials(string username, string password)
         {
-            ClientWebSocketOptions optionsSet = null;
+            ClientWebSocketOptions? optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {
@@ -99,7 +98,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ScriptShouldBeEvaluatedAndResultReturnedForCorrectCredentials(string requestMsg,
             string expectedResponse)
         {
-            ClientWebSocketOptions optionsSet = null;
+            ClientWebSocketOptions? optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {

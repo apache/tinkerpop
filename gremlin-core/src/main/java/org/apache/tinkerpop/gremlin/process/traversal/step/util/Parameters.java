@@ -135,7 +135,6 @@ public class Parameters implements Cloneable, Serializable {
     public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
         final List<E> list = (List<E>) this.parameters.get(key);
         return (null == list) ? (null == defaultValue ? Collections.emptyList() : Collections.singletonList(defaultValue.get())) : list;
-
     }
 
     /**

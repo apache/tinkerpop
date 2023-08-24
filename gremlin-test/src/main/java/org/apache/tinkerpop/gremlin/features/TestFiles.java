@@ -38,26 +38,28 @@ public class TestFiles {
     static {
         try {
             final List<String> kryoResources = Arrays.asList(
-                    "tinkerpop-modern-v3d0.kryo",
-                    "grateful-dead-v3d0.kryo",
-                    "tinkerpop-classic-v3d0.kryo",
-                    "tinkerpop-crew-v3d0.kryo",
-                    "tinkerpop-sink-v3d0.kryo");
+                    "tinkerpop-modern-v3.kryo",
+                    "grateful-dead-v3.kryo",
+                    "tinkerpop-classic-v3.kryo",
+                    "tinkerpop-crew-v3.kryo",
+                    "tinkerpop-sink-v3.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName,
                         Storage.toPath(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
             }
 
             final List<String> graphsonResources = Arrays.asList(
-                    "tinkerpop-modern-typed-v2d0.json",
-                    "tinkerpop-modern-v3d0.json",
-                    "grateful-dead-typed-v2d0.json",
-                    "grateful-dead-v3d0.json",
-                    "tinkerpop-classic-typed-v2d0.json",
-                    "tinkerpop-classic-v3d0.json",
-                    "tinkerpop-crew-typed-v2d0.json",
-                    "tinkerpop-crew-v3d0.json",
-                    "tinkerpop-sink-v3d0.json");
+                    "tinkerpop-modern-typed-v2.json",
+                    "tinkerpop-modern-v3.json",
+                    "grateful-dead-typed-v2.json",
+                    "grateful-dead-v3.json",
+                    "tinkerpop-classic-typed-v2.json",
+                    "tinkerpop-classic-v3.json",
+                    "tinkerpop-classic-byteid-v3.json",
+                    "tinkerpop-classic-byteid-typed-v2.json",
+                    "tinkerpop-crew-typed-v2.json",
+                    "tinkerpop-crew-v3.json",
+                    "tinkerpop-sink-v3.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName,
                         Storage.toPath(TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "")));
@@ -80,7 +82,7 @@ public class TestFiles {
     }
 
     public static String getInputLocation(final LoadGraphWith.GraphData graphData, final boolean useGraphSON) {
-        final String type = useGraphSON ? "-v3d0.json" : "-v3d0.kryo";
+        final String type = useGraphSON ? "-v3.json" : "-v3.kryo";
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL))
             return PATHS.get("grateful-dead" + type);

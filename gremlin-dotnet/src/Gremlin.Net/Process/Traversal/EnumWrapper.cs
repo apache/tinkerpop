@@ -47,12 +47,12 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="enumValue">The value of the enum.</param>
         protected EnumWrapper(string enumName, string enumValue)
         {
-            EnumName = enumName;
-            EnumValue = enumValue;
+            EnumName = enumName ?? throw new ArgumentNullException(nameof(enumName));
+            EnumValue = enumValue ?? throw new ArgumentNullException(nameof(enumValue));
         }
 
         /// <inheritdoc />
-        public bool Equals(EnumWrapper other)
+        public bool Equals(EnumWrapper? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -60,7 +60,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -73,8 +73,7 @@ namespace Gremlin.Net.Process.Traversal
         {
             unchecked
             {
-                return ((EnumName != null ? EnumName.GetHashCode() : 0) * 397) ^
-                       (EnumValue != null ? EnumValue.GetHashCode() : 0);
+                return (EnumName.GetHashCode() * 397) ^ EnumValue.GetHashCode();
             }
         }
 

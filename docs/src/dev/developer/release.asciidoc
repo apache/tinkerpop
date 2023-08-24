@@ -34,6 +34,8 @@ execute.
 IMPORTANT: The following instructions assume that the release manager's <<development-environment,environment>> is setup
 properly for release and includes a `.glv` files in the various GLV modules, so that they all build in full.
 
+WARNING: The release process needs to be conducted in a Linux environment.
+
 == Development Versions
 
 A "development version" or "snapshot" (in Java parlance) is not an "official" release. Artifacts produced for a
@@ -96,6 +98,10 @@ link:https://dist.apache.org/repos/dist/dev/tinkerpop/KEYS[development] and
 link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directories and committed
 using Apache Subversion (SVN).
 
+NOTE: If you are a committer, you will require the assistance of a PMC member to upload
+your key into the link:https://dist.apache.org/repos/dist/release/tinkerpop/KEYS[release] distribution directory. This
+can also be done during Release & Promote when release files are uploaded.
+
 == Pre-flight Check
 
 The "pre-flight check" is a list of things performed by the release manager during the weeks leading up to a scheduled
@@ -126,9 +132,6 @@ during this period.
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
-.. Be sure that `gremlin-io-test` has been updated (from 3.3.0 on - this module was not available prior to the 3.3.x line)
-... This is typically a post-release task, but it's worth checking to be sure in case the step was somehow overlooked.
-... Instructions for updating the module are described in the <<io,IO Documentation and Testing Section>>.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -210,7 +213,13 @@ current release was under development as this new release will have those change
 . `git diff` and review the updated files
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. This step should update the Gremlin.Net project file and Gremlin Javascript package file with the newly bumped version.
-. `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have a gray background and do not show the results of the commands.
+. `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up
+through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have
+a gray background and do not show the results of the commands. In the event of failure, especially with `GraphComputer`
+related code examples, they best recourse is to take the time to test the example manually. While `process-docs.sh`
+tries to output the errors it can often point out a red herring where running the example manually will immediately
+showcase the problem. Unless you immediately know what is wrong, it is almost never a good idea to try to debug the
+problem based on the error shown by `process-docs.sh`.
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step handled
 document generation and this step now merely needs to upload what was generated. Note that this step will be responsible
 for generating javadoc.
@@ -229,11 +238,14 @@ for generating javadoc.
 .. `cd ..; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . `git commit -a -m "TinkerPop xx.yy.zz release"` and push
-. `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
+. `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push origin xx.yy.zz`
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
 == Release & Promote
+
+NOTE: Certain steps can only be performed by a PMC member. If you are a committer, please enlist
+the help of a PMC member for those steps.
 
 . Login to link:https://repository.apache.org/[Apache Nexus] and release the previously closed repository.
 . Deploy the GLVs
@@ -241,10 +253,13 @@ for generating javadoc.
 .. `mvn clean install -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 .. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
-.. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm` - prefer direct deploy with `npm publish --otp <otp>` from `gremlin-javscript/src/main/javascript/gremlin-javascript/`
-.. `mvn deploy -pl gremlint -DskipTests -Dnpm` - prefer direct deploy with `npm publish --otp <otp>` from `gremlint/`
-.. `git tag gremlin-go/v3.6.1`
-.. `git push --tags`
+.. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
+... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-javscript/src/main/javascript/gremlin-javascript/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
+.. `mvn deploy -pl gremlint -DskipTests -Dnpm`
+... Consider direct deploy with `npm publish --otp <otp>` from `gremlint/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
+.. `git tag gremlin-go/v3.6.3`
+.. `git push origin gremlin-go/v3.6.3`
+.. `GOPROXY=proxy.golang.org go list -m github.com/apache/tinkerpop/gremlin-go/v3@v3.6.3`
 . Review the GLV releases
 .. link:https://pypi.org/project/gremlinpython/[gremlin-python - PyPi]
 .. link:https://www.nuget.org/packages/Gremlin.Net/[Gremlin.Net - nuget]
@@ -252,15 +267,15 @@ for generating javadoc.
 .. link:https://www.npmjs.com/package/gremlin[gremlin - npm]
 .. link:https://www.npmjs.com/package/gremlint[gremlint - npm]
 .. link:https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3[gremlin-go - go packages]
-. Deploy the Docker images
+. Deploy the Docker images *(PMC member)*
 .. `mvn deploy -pl gremlin-console -DskipTests -DdockerImages`
 .. `mvn deploy -pl gremlin-server -DskipTests -DdockerImages`
 . Review the deployed Docker images at link:https://hub.docker.com/r/tinkerpop/gremlin-console/[Console]
 and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
-. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz`
-. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz`
-. Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`.
-. `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"`
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/tinkerpop dev; svn up dev/xx.yy.zz` *(PMC member)*
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/tinkerpop release; mkdir release/xx.yy.zz` *(PMC member)*
+. Copy release files from `dev/xx.yy.zz` to `release/xx.yy.zz`. *(PMC member)*
+. `cd release; svn add xx.yy.zz/; svn ci -m "TinkerPop xx.yy.zz release"` *(PMC member)*
 . Wait for Apache Sonatype to sync the artifacts to link:https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[Maven Central].
 . Report the release through link:https://reporter.apache.org/addrelease.html?tinkerpop[reporter.apache.org] (an email reminder should arrive shortly following the svn command above to do the release)
 . Update homepage with references in `/site` to latest distribution and to other internal links elsewhere on the page.
@@ -269,6 +284,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 .. Update `community.html`, specifically the version numbers for our official releases.
 .. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Update `docs/gremlint/package.json` with the latest version of gremlint.
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
@@ -279,8 +295,8 @@ if `3.2.0` is present and `3.2.1` is released then remove `3.2.0`.  However, if 
 code is still under potential development, it may stay.
 . Announce release - see <<email-templates,templates>> for suggested form
 .. Email `dev@`/`gremlin-users@` mailing lists
-.. Tweet from `@apachetinkerpop`
-.. Message the "Announcement" Discord channel
+.. Tweet from `@apachetinkerpop` *(PMC member)*
+.. Message the "Announcement" Discord channel *(PMC member)*
 
 == Post-release Tasks
 
@@ -289,7 +305,10 @@ performed during the VOTE period at the release manager's discretion, though it 
 VOTE is eminent before reopening development. When there are multiple release managers, it's best to coordinate these
 tasks as one individual may simply just handle them all.
 
-. Perform JIRA administration tasks:
+NOTE: Certain steps can only be performed by a PMC member. If you are a committer, please enlist
+the help of a PMC member for those steps.
+
+. Perform JIRA administration tasks *(PMC member)*:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
 . Prepare Git administration tasks. Apply the following steps as needed per release branch:
@@ -387,7 +406,7 @@ Thank you very much,
 
 The template below refers to the "name of release line" and the "release line logo". Every release line has a name
 and logo. For example, 3.1.x had the name, "A 187 On The Undercover Gremlinz" and the logo shown
-link:https://tinkerpop.apache.org/docs/current/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
+link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#_tinkerpop_3_1_0[here] in the upgrade documentation.
 
 [source,text]
 ----
@@ -412,7 +431,6 @@ https://tinkerpop.apache.org/javadocs/xx.yy.zz/core/ (core javadoc)
 https://tinkerpop.apache.org/javadocs/xx.yy.zz/full/ (full javadoc)
 https://tinkerpop.apache.org/dotnetdocs/xx.yy.zz/ (.NET API docs)
 https://tinkerpop.apache.org/jsdocs/xx.yy.zz/ (Javascript API docs)
-https://tinkerpop.apache.org/docs/xx.yy.zz/some-new-content/ (some new content) [NEW!]
 
 The release notes are available here:
 
@@ -421,6 +439,10 @@ https://github.com/apache/tinkerpop/blob/xx.yy.zz/CHANGELOG.asciidoc#release-xx-
 The Central Maven repo has sync'd as well:
 
 https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
+
+Go artifacts are available via Go Package Manager:
+
+https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3@xx.yy.zz
 
 Python artifacts are available in pypi:
 
@@ -434,7 +456,6 @@ https://www.nuget.org/packages/Gremlin.Net.Template/xx.yy.zz
 Javascript artifacts are available in npm:
 
 https://www.npmjs.com/package/gremlin/v/xx.yy.zz
-https://www.npmjs.com/package/gremlint/v/xx.yy.zz
 
 Gremlint is available in npm:
 

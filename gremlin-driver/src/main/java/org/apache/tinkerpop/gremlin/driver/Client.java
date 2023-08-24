@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -41,18 +41,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
@@ -66,11 +66,14 @@ import java.util.stream.Collectors;
 public abstract class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    public static final String TOO_MANY_IN_FLIGHT_REQUESTS = "Number of active requests exceeds pool size. " +
+            "Consider increasing the value for maxConnectionPoolSize.";
 
     protected final Cluster cluster;
     protected volatile boolean initialized;
     protected final Client.Settings settings;
-    protected Throwable initializationFailure = null;
+
+    private static final Random random = new Random();
 
     Client(final Cluster cluster, final Client.Settings settings) {
         this.cluster = cluster;
@@ -212,15 +215,6 @@ public abstract class Client {
         cluster.init();
 
         initializeImplementation();
-
-        // throw an error if no host is available even after initialization is complete.
-        if (cluster.availableHosts().isEmpty()) {
-            if (this.initializationFailure != null) {
-                throw new NoHostAvailableException(this.initializationFailure);
-            } else {
-                throw new NoHostAvailableException();
-            }
-        }
 
         initialized = true;
         return this;
@@ -369,6 +363,7 @@ public abstract class Client {
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
         options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
         options.getLanguage().ifPresent(lang -> request.addArg(Tokens.ARGS_LANGUAGE, lang));
+        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
         return submitAsync(request.create());
     }
@@ -436,8 +431,9 @@ public abstract class Client {
      */
     public final static class ClusteredClient extends Client {
 
-        protected ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
+        private Throwable initializationFailure = null;
 
         ClusteredClient(final Cluster cluster, final Client.Settings settings) {
             super(cluster, settings);
@@ -504,7 +500,11 @@ public abstract class Client {
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts;
             if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
-                // TODO: not sure what should be done if unavailable - select new host and re-submit traversal?
+                // looking at this code about putting the Host on the RequestMessage in light of 3.5.4, not sure
+                // this is being used as intended here. server side usage is to place the channel.remoteAddress
+                // in this token in the status metadata for the response. can't remember why it is being used this
+                // way here exactly. created TINKERPOP-2821 to examine this more carefully to clean this up in a
+                // future version.
                 final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
                 msg.getArgs().remove(Tokens.ARGS_HOST);
                 possibleHosts = IteratorUtils.of(host);
@@ -512,14 +512,17 @@ public abstract class Client {
                 possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
             }
 
-            // you can get no possible hosts in more than a few situations. perhaps the servers are just all down.
-            // or perhaps the client is not configured properly (disables ssl when ssl is enabled on the server).
-            if (!possibleHosts.hasNext())
-                throwNoHostAvailableException();
-
-            final Host bestHost = possibleHosts.next();
+            // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
+            // going straight to a fast NoHostAvailableException as was the case in versions 3.5.4 and earlier
+            final Host bestHost = possibleHosts.hasNext() ? possibleHosts.next() : chooseRandomHost();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+        }
+
+        private Host chooseRandomHost() {
+            final List<Host> hosts = new ArrayList<>(cluster.allHosts());
+            final int ix = random.nextInt(hosts.size());
+            return hosts.get(ix);
         }
 
         /**
@@ -527,32 +530,15 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            // use a special executor here to initialize the Host instances as the worker thread pool may be
-            // insufficiently sized for this task and the parallel initialization of the ConnectionPool. if too small
-            // tasks may be schedule in such a way as to produce a deadlock: TINKERPOP-2550
-            //
-            // the cost of this single threaded executor here should be fairly small because it is only used once at
-            // initialization and shutdown. since users will typically construct a Client once for the life of their
-            // application there shouldn't be tons of thread pools being created and destroyed.
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-initializer").build();
-            final ExecutorService hostExecutor = Executors.newSingleThreadExecutor(threadFactory);
-
             try {
                 CompletableFuture.allOf(cluster.allHosts().stream()
-                        .map(host -> CompletableFuture.runAsync(() -> initializeConnectionSetupForHost.accept(host), hostExecutor))
-                        .toArray(CompletableFuture[]::new))
+                                .map(host -> CompletableFuture.runAsync(
+                                        () -> initializeConnectionSetupForHost.accept(host), cluster.hostScheduler()))
+                                .toArray(CompletableFuture[]::new))
                         .join();
             } catch (CompletionException ex) {
-                Throwable cause = ExceptionUtils.getRootCause(ex);
-                if (null != cause) {
-                    logger.error("", cause);
-                    this.initializationFailure = cause;
-                } else {
-                    logger.error("", ex);
-                    this.initializationFailure = ex;
-                }
-            } finally {
-                hostExecutor.shutdown();
+                logger.error("Initialization failed", ex);
+                this.initializationFailure = ex;
             }
 
             // throw an error if there is no host available after initializing connection pool.
@@ -563,14 +549,14 @@ public abstract class Client {
             final List<Host> unavailableHosts = cluster.allHosts()
                     .stream().filter(host -> !host.isAvailable()).collect(Collectors.toList());
             if (!unavailableHosts.isEmpty()) {
-                CompletableFuture.runAsync(() -> handleUnavailableHosts(unavailableHosts));
+                handleUnavailableHosts(unavailableHosts);
             }
         }
 
         private void throwNoHostAvailableException() {
+            final Throwable rootCause = ExceptionUtils.getRootCause(initializationFailure);
             // allow the certain exceptions to propagate as a cause
-            if (initializationFailure != null && (initializationFailure instanceof SSLException ||
-                                                  initializationFailure instanceof ConnectException)) {
+            if (rootCause instanceof SSLException || rootCause instanceof ConnectException) {
                 throw new NoHostAvailableException(initializationFailure);
             } else {
                 throw new NoHostAvailableException();
@@ -611,15 +597,15 @@ public abstract class Client {
             }
         };
 
-        private void handleUnavailableHosts(List<Host> unavailableHosts) {
+        private void handleUnavailableHosts(final List<Host> unavailableHosts) {
             // start the re-initialization attempt for each of the unavailable hosts through Host.makeUnavailable().
-            try {
-                CompletableFuture.allOf(unavailableHosts.stream()
-                        .map(host -> CompletableFuture.runAsync(() -> host.makeUnavailable(this::tryReInitializeHost)))
-                        .toArray(CompletableFuture[]::new))
-                        .join();
-            } catch (CompletionException ex) {
-                logger.error("", (ex.getCause() == null) ? ex : ex.getCause());
+            for (Host host : unavailableHosts) {
+                final CompletableFuture<Void> f = CompletableFuture.runAsync(
+                        () -> host.makeUnavailable(this::tryReInitializeHost), cluster.hostScheduler());
+                f.exceptionally(t -> {
+                    logger.error("", (t.getCause() == null) ? t : t.getCause());
+                    return null;
+                });
             }
         }
 
@@ -675,6 +661,7 @@ public abstract class Client {
                 options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
                 options.getOverrideRequestId().ifPresent(request::overrideRequestId);
                 options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
+                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
                 return submitAsync(request.create());
             } catch (RuntimeException re) {
@@ -728,7 +715,11 @@ public abstract class Client {
         @Override
         protected void initializeImplementation() {
             // no init required
-            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            if (close.isDone()) {
+                throw new IllegalStateException("Client is closed");
+            } else if (cluster.availableHosts().isEmpty()) {
+                throw new NoHostAvailableException();
+            }
         }
 
         /**
@@ -835,7 +826,7 @@ public abstract class Client {
                 selectedHost.makeAvailable();
             } catch (RuntimeException ex) {
                 logger.error("Could not initialize client for {}", host, ex);
-                this.initializationFailure = ex;
+                throw new NoHostAvailableException(ex);
             }
         }
 

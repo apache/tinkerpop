@@ -25,12 +25,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -158,6 +159,26 @@ public class IteratorUtilsTest {
     }
 
     @Test
+    public void shouldConvertPrimitiveArrayToIterator() {
+        final int[] array = new int[]{0, 1, 2, 3};
+
+        assertEquals(4, IteratorUtils.count(IteratorUtils.asIterator(array)));
+
+        final Iterator itty = IteratorUtils.asIterator(array);
+        for (int i = 0; i < array.length; i++) {
+            assertEquals(i, itty.next());
+        }
+    }
+
+    @Test
+    public void shouldConvertNullToIterator() {
+        Iterator itty = IteratorUtils.asIterator(null);
+
+        assertEquals(null, itty.next());
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
     public void shouldConvertThrowableToIterator() {
         final Exception ex = new Exception("test1");
         assertIterator(IteratorUtils.asIterator(ex), 1);
@@ -174,7 +195,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertMapToIterator() {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new LinkedHashMap<>();
         m.put("key1", "val1");
         m.put("key2", "val2");
         m.put("key3", "val3");
@@ -238,7 +259,7 @@ public class IteratorUtilsTest {
 
     @Test
     public void shouldConvertMapToList() {
-        final Map<String,String> m = new HashMap<>();
+        final Map<String,String> m = new LinkedHashMap<>();
         m.put("key1", "val1");
         m.put("key2", "val2");
         m.put("key3", "val3");
@@ -594,6 +615,17 @@ public class IteratorUtilsTest {
         assertTrue(itty.hasNext());
         assertEquals("c", itty.next());
         assertFalse(itty.hasNext());
+    }
+
+    @Test
+    public void testPeek() {
+        final List<Integer> list = Arrays.asList(0, 1, 2, 3, 4, 5);
+        final AtomicInteger counter = new AtomicInteger();
+        final Iterator<Integer> it = IteratorUtils.peek(list.iterator(), i -> counter.incrementAndGet());
+        for (int i = 0; i < list.size(); i++) {
+            assertEquals(i, it.next().intValue());
+        }
+        assertEquals(list.size(), counter.get());
     }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {

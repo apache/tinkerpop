@@ -73,7 +73,7 @@ public class TraversalSourceSelfMethodVisitorTest {
     }
 
     @Test
-    public void testTraversalSourceSelfMethod() {
+    public void shouldParseTraversalSourceSelfMethod() {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.TraversalSourceSelfMethodContext ctx = parser.traversalSourceSelfMethod();

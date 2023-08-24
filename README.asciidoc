@@ -15,6 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 == TinkerPop3
+image:https://img.shields.io/maven-central/v/org.apache.tinkerpop/gremlin-driver?color=brightgreen[link="https://mvnrepository.com/artifact/org.apache.tinkerpop/gremlin-driver"]
+image:https://img.shields.io/nuget/v/Gremlin.Net?color=brightgreen[link="https://www.nuget.org/packages/Gremlin.Net"]
+image:https://img.shields.io/pypi/v/gremlinpython?color=brightgreen[link="https://pypi.org/project/gremlinpython/"]
+image:https://img.shields.io/npm/v/gremlin?color=brightgreen[link="https://www.npmjs.com/package/gremlin"]
+image:https://badge.fury.io/go/github.com%2Fapache%2Ftinkerpop%2Fgremlin-go%2Fv3.svg[link="https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3"]
+
+image:https://codecov.io/gh/apache/tinkerpop/branch/master/graph/badge.svg?token=TojD2nR5Qd[link="https://codecov.io/gh/apache/tinkerpop"]
 
 image:https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="https://tinkerpop.apache.org"]
 
@@ -33,6 +40,8 @@ TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 11` for 
 
 [source,bash]
 mvn clean install
+
+Please see the xref:docs/src/dev/developer/development-environment.asciidoc#building-on-windows[Building on Windows] section for Windows specific build instructions.
 
 The zip distributions can be found in the following directories:
 

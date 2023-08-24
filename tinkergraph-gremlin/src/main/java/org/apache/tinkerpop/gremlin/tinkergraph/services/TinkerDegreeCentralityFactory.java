@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.LongStream;
 
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
  * Count the IN/OUT/BOTH edges for a set of vertices. Demonstrates a {@link Service.Type#Streaming} service.
@@ -52,7 +52,7 @@ public class TinkerDegreeCentralityFactory extends TinkerServiceRegistry.TinkerS
         );
     }
 
-    public TinkerDegreeCentralityFactory(final TinkerGraph graph) {
+    public TinkerDegreeCentralityFactory(final AbstractTinkerGraph graph) {
         super(graph, NAME);
     }
 

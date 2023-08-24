@@ -22,7 +22,9 @@
  */
 'use strict';
 
-const {Given, Then, When} = require('cucumber');
+const {Given, Then, When, setDefaultTimeout} = require('cucumber');
+// Setting Cucumber timeout to 10s for Floating Errors on Windows on GitHub Actions
+setDefaultTimeout(10 * 1000);
 const chai = require('chai')
 chai.use(require('chai-string'));
 const expect = chai.expect;
@@ -38,10 +40,7 @@ const __ = graphTraversalModule.statics;
 const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
-
-// Determines whether the feature maps (m[]), are deserialized as objects (true) or maps (false).
-// Use false for GraphSON3.
-const mapAsObject = false;
+const merge = traversalModule.merge;
 
 const parsers = [
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -59,7 +58,8 @@ const parsers = [
   [ 'm\\[(.+)\\]', toMap ],
   [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
-  [ 'D\\[(.+)\\]', toDirection ]
+  [ 'D\\[(.+)\\]', toDirection ],
+  [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
 const ignoreReason = {
@@ -131,17 +131,30 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   });
 });
 
+var removeProperties = function(p) {
+  if (p === undefined) {   
+  } else if (p instanceof graphModule.Vertex || p instanceof graphModule.Edge) {
+    p.properties = undefined;
+  } else if (p instanceof Array) {
+    p.forEach(removeProperties)
+  } else if (p instanceof Map) {
+    removeProperties(Array.from(p.keys()))
+    removeProperties(Array.from(p.values()))
+  } else if (p instanceof graphModule.Path) {
+    removeProperties(p.objects)
+  }
+
+  return p
+}
+
 When('iterated to list', function () {
-  return this.traversal.toList().then(list => this.result = list).catch(err => this.result = err);
+  return this.traversal.toList().then(list => this.result = removeProperties(list)).catch(err => this.result = err);
 });
 
 When('iterated next', function () {
   return this.traversal.next().then(it => {
-    this.result = it.value;
-    if (this.result instanceof Path) {
-      // Compare using the objects array
-      this.result = this.result.objects;
-    }
+    // for Path compare using the objects array
+    this.result = removeProperties(it.value instanceof Path ? it.value.objects : it.value )
   }).catch(err => this.result = err);
 });
 
@@ -348,11 +361,13 @@ function toT(value) {
 function toDirection(value) {
   // swap Direction.from alias
   if (value === 'from')
-    return direction["out"];
-  else if (value === 'to')
-    return direction["in"];
+    return direction["from_"];
   else
     return direction[value.toLowerCase()];
+}
+
+function toMerge(value) {
+  return merge[value];
 }
 
 function toArray(stringList) {
@@ -378,13 +393,6 @@ function parseMapValue(value) {
   }
   if (typeof value !== 'object') {
     return value;
-  }
-  if (mapAsObject) {
-    const result = {};
-    Object.keys(value).forEach(key => {
-      result[parseMapValue.call(this, key)] = parseMapValue.call(this, value[key]);
-    });
-    return result;
   }
   const map = new Map();
   Object.keys(value).forEach(key => {

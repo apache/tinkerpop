@@ -22,7 +22,7 @@
  */
 'use strict';
 
-const { Traversal } = require('./traversal');
+const { Traversal, cardinality } = require('./traversal');
 const { Transaction } = require('./transaction');
 const remote = require('../driver/remote-connection');
 const Bytecode = require('./bytecode');
@@ -337,6 +337,16 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('call', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
+
+  /**
+   * union GraphTraversalSource method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  union(...args) {
+    const b = new Bytecode(this.bytecode).addStep('union', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
 }
 
 /**
@@ -361,6 +371,16 @@ class GraphTraversal extends Traversal {
    */
   V(...args) {
     this.bytecode.addStep('V', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal E method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  E(...args) {
+    this.bytecode.addStep('E', args);
     return this;
   }
 
@@ -520,6 +540,16 @@ class GraphTraversal extends Traversal {
    */
   coin(...args) {
     this.bytecode.addStep('coin', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal concat method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  concat(...args) {
+    this.bytecode.addStep('concat', args);
     return this;
   }
 
@@ -1433,6 +1463,45 @@ class GraphTraversal extends Traversal {
   }
 }
 
+class CardinalityValue extends Bytecode {
+  /**
+   * Creates a new instance of {@link CardinalityValue}.
+   * @param {String} card
+   * @param {Object} value
+   */
+  constructor(card, value) {
+    super();
+    this.addSource('CardinalityValueTraversal', [card, value]);
+  }
+
+  /**
+   * Create a value with single cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static single(value) {
+    return new CardinalityValue(cardinality.single, value);
+  }
+
+  /**
+   * Create a value with list cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static list(value) {
+    return new CardinalityValue(cardinality.list, value);
+  }
+
+  /**
+   * Create a value with set cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static set(value) {
+    return new CardinalityValue(cardinality.set, value);
+  }
+}
+
 function callOnEmptyTraversal(fnName, args) {
   const g = new GraphTraversal(null, null, new Bytecode());
   return g[fnName].apply(g, args);
@@ -1443,6 +1512,7 @@ function callOnEmptyTraversal(fnName, args) {
  * @type {Object}
  */
 const statics = {
+  E: (...args) => callOnEmptyTraversal('E', args),
   V: (...args) => callOnEmptyTraversal('V', args),
   addE: (...args) => callOnEmptyTraversal('addE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),
@@ -1459,6 +1529,7 @@ const statics = {
   choose: (...args) => callOnEmptyTraversal('choose', args),
   coalesce: (...args) => callOnEmptyTraversal('coalesce', args),
   coin: (...args) => callOnEmptyTraversal('coin', args),
+  concat: (...args) => callOnEmptyTraversal('concat', args),
   constant: (...args) => callOnEmptyTraversal('constant', args),
   count: (...args) => callOnEmptyTraversal('count', args),
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
@@ -1543,5 +1614,6 @@ const statics = {
 module.exports = {
   GraphTraversal,
   GraphTraversalSource,
+  CardinalityValue,
   statics,
 };

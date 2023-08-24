@@ -329,16 +329,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final P<?> p) {
             if (p instanceof TextP) {
-                // special case the RegexPredicate since it isn't an enum. toString() for the final default will
-                // typically cover implementations (generally worked for Text prior to 3.6.0)
+                // special case the RegexPredicate since it's named in python "not_regex"
                 final BiPredicate<?, ?> tp = p.getBiPredicate();
                 if (tp instanceof Text.RegexPredicate) {
                     final String regexToken = ((Text.RegexPredicate) p.getBiPredicate()).isNegate() ? "not_regex" : "regex";
                     script.append("TextP.").append(regexToken).append("(");
-                } else if (tp instanceof Text) {
-                    script.append("TextP.").append(((Text) p.getBiPredicate()).name()).append("(");
                 } else {
-                    script.append("TextP.").append(p.getBiPredicate().toString()).append("(");
+                    script.append("TextP.").append(p.getPredicateName()).append("(");
                 }
                 convertToScript(p.getValue());
             } else if (p instanceof ConnectiveP) {
@@ -358,9 +355,18 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                     }
                 }
             } else {
-                script.append("P.").append(resolveSymbol(p.getBiPredicate().toString())).append("(");
+                script.append("P.").append(resolveSymbol(p.getPredicateName())).append("(");
                 convertToScript(p.getValue());
             }
+            script.append(")");
+            return script;
+        }
+
+        @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            script.append("CardinalityValue." + resolveSymbol(inst.getArguments()[0].toString()) + "(");
+            convertToScript(inst.getArguments()[1]);
             script.append(")");
             return script;
         }
@@ -433,6 +439,8 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("max", "max_");
             TO_PYTHON_MAP.put("mergeE", "merge_e");
             TO_PYTHON_MAP.put("mergeV", "merge_v");
+            TO_PYTHON_MAP.put("inV", "in_v");
+            TO_PYTHON_MAP.put("outV", "out_v");
             TO_PYTHON_MAP.put("onCreate", "on_create");
             TO_PYTHON_MAP.put("onMatch", "on_match");
             TO_PYTHON_MAP.put("min", "min_");

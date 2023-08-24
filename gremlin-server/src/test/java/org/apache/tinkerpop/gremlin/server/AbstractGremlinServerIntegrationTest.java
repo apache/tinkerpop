@@ -21,7 +21,8 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
 import org.apache.tinkerpop.gremlin.server.op.OpLoader;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
@@ -117,6 +119,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public void startServer() throws Exception {
+        startServerAsync().join();
+    }
+
+    public CompletableFuture<ServerGremlinExecutor> startServerAsync() throws Exception {
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
         overriddenSettings = overrideSettings(settings);
@@ -131,7 +137,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
         this.server = new GremlinServer(overriddenSettings);
 
-        server.start().join();
+        return server.start();
     }
 
     @After
@@ -144,7 +150,7 @@ public abstract class AbstractGremlinServerIntegrationTest {
         // calling close() on TinkerGraph does not free resources quickly enough. adding a clear() call let's gc
         // cleanup earlier
         server.getServerGremlinExecutor().getGraphManager().getAsBindings().values().stream()
-                .filter(g -> g instanceof TinkerGraph).forEach(g -> ((TinkerGraph) g).clear());
+                .filter(g -> g instanceof AbstractTinkerGraph).forEach(g -> ((AbstractTinkerGraph) g).clear());
 
         if (server != null) {
             server.stop().join();
@@ -177,25 +183,9 @@ public abstract class AbstractGremlinServerIntegrationTest {
         return (directory.delete());
     }
 
-    protected static void tryIncludeNeo4jGraph(final Settings settings) {
-        if (isNeo4jPresent()) {
-            deleteDirectory(new File("/tmp/neo4j"));
-            settings.graphs.put("graph", "conf/neo4j-empty.properties");
-        }
-    }
-
-    protected static boolean isNeo4jPresent() {
-        try {
-            Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
-    }
-
-    protected static void assumeNeo4jIsPresent() {
-        boolean neo4jIncludedForTesting = isNeo4jPresent();
-        assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
+    protected static void useTinkerTransactionGraph(final Settings settings) {
+        logger.info("Running transactional tests using TinkerTransactionGraph");
+        settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
     }
 
     private boolean shouldTestUnified() {

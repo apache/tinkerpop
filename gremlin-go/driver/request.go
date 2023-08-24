@@ -19,7 +19,9 @@ under the License.
 
 package gremlingo
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 // request represents a request to the server.
 type request struct {
@@ -34,8 +36,7 @@ const sessionProcessor = "session"
 const stringOp = "eval"
 const stringProcessor = ""
 
-// Bindings should be a key-object map (different from Binding class in Bytecode).
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, bindings ...map[string]interface{}) (req request) {
+func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": stringGremlin,
@@ -47,11 +48,35 @@ func makeStringRequest(stringGremlin string, traversalSource string, sessionId s
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
 	}
-	if len(bindings) > 0 {
-		newArgs["bindings"] = bindings[0]
+	var requestId uuid.UUID
+	if requestOptions.requestID == uuid.Nil {
+		requestId = uuid.New()
+	} else {
+		requestId = requestOptions.requestID
 	}
+
+	if requestOptions.bindings != nil {
+		newArgs["bindings"] = requestOptions.bindings
+	}
+
+	if requestOptions.evaluationTimeout != 0 {
+		newArgs["evaluationTimeout"] = requestOptions.evaluationTimeout
+	}
+
+	if requestOptions.batchSize != 0 {
+		newArgs["batchSize"] = requestOptions.batchSize
+	}
+
+	if requestOptions.userAgent != "" {
+		newArgs["userAgent"] = requestOptions.userAgent
+	}
+
+	if requestOptions.materializeProperties != "" {
+		newArgs["materializeProperties"] = requestOptions.materializeProperties
+	}
+
 	return request{
-		requestID: uuid.New(),
+		requestID: requestId,
 		op:        stringOp,
 		processor: newProcessor,
 		args:      newArgs,
@@ -75,12 +100,96 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sess
 		newProcessor = sessionProcessor
 		newArgs["session"] = sessionId
 	}
+
+	for k, v := range extractReqArgs(bytecodeGremlin) {
+		newArgs[k] = v
+	}
+
 	return request{
 		requestID: uuid.New(),
 		op:        bytecodeOp,
 		processor: newProcessor,
 		args:      newArgs,
 	}
+}
+
+// allowedReqArgs contains the arguments that will be extracted from the
+// bytecode and sent with the request.
+var allowedReqArgs = map[string]bool{
+	"evaluationTimeout":     true,
+	"batchSize":             true,
+	"requestId":             true,
+	"userAgent":             true,
+	"materializeProperties": true,
+}
+
+// extractReqArgs extracts request arguments from the provided bytecode.
+func extractReqArgs(bytecode *Bytecode) map[string]interface{} {
+	args := make(map[string]interface{})
+
+	for _, insn := range bytecode.sourceInstructions {
+		switch insn.operator {
+		case "withStrategies":
+			for k, v := range extractWithStrategiesReqArgs(insn) {
+				args[k] = v
+			}
+		case "with":
+			if k, v := extractWithReqArg(insn); k != "" {
+				args[k] = v
+			}
+		}
+	}
+
+	return args
+}
+
+// extractWithStrategiesReqArgs extracts request arguments from the passed
+// "withStrategies" source instruction. Only OptionsStrategy is considered.
+func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
+	args := make(map[string]interface{})
+
+	for _, strategyInterface := range insn.arguments {
+		strategy, ok := strategyInterface.(*traversalStrategy)
+		if !ok {
+			// (*GraphTraversalSource).WithStrategies accepts
+			// TraversalStrategy parameters only. Thus, this
+			// should be unreachable.
+			continue
+		}
+
+		if strategy.name != decorationNamespace+"OptionsStrategy" {
+			continue
+		}
+
+		for k, v := range strategy.configuration {
+			if allowedReqArgs[k] {
+				args[k] = v
+			}
+		}
+	}
+
+	return args
+}
+
+// extractWithReqArg extracts a request argument from the passed "with" source
+// instruction.
+func extractWithReqArg(insn instruction) (key string, value interface{}) {
+	if len(insn.arguments) != 2 {
+		// (*GraphTraversalSource).With accepts two parameters. Thus,
+		// this should be unreachable.
+		return "", nil
+	}
+
+	key, ok := insn.arguments[0].(string)
+	if !ok {
+		return "", nil
+	}
+
+	if !allowedReqArgs[key] {
+		return "", nil
+	}
+
+	return key, insn.arguments[1]
 }
 
 func makeBasicAuthRequest(auth string) (req request) {

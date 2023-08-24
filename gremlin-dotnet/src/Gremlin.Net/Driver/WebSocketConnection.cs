@@ -27,17 +27,35 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Gremlin.Net.Process;
 
 namespace Gremlin.Net.Driver
 {
-    internal class WebSocketConnection : IDisposable
+    internal interface IWebSocketConnection : IDisposable
+    {
+        Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+        Task CloseAsync();
+        Task SendMessageAsync(byte[] message, CancellationToken cancellationToken);
+#if NET6_0_OR_GREATER
+        Task SendMessageUncompressedAsync(byte[] message, CancellationToken cancellationToken);
+#endif
+        Task<byte[]> ReceiveMessageAsync();
+        bool IsOpen { get; }
+    }
+
+    internal class WebSocketConnection : IWebSocketConnection
     {
         private const int ReceiveBufferSize = 1024;
         private const WebSocketMessageType MessageType = WebSocketMessageType.Binary;
         private readonly IClientWebSocket _client;
+        private const string userAgentHeaderName = "User-Agent";
 
         public WebSocketConnection(IClientWebSocket client, WebSocketSettings settings)
         {
+            if (settings.EnableUserAgentOnConnect)
+            {
+                client.Options.SetRequestHeader(userAgentHeaderName, Utils.UserAgent);
+            }
             _client = client;
 
 #if NET6_0_OR_GREATER
@@ -75,19 +93,19 @@ namespace Gremlin.Net.Driver
                                             _client.State == WebSocketState.CloseSent;
         
 #if NET6_0_OR_GREATER
-        public async Task SendMessageUncompressedAsync(byte[] message)
+        public async Task SendMessageUncompressedAsync(byte[] message, CancellationToken cancellationToken)
         {
             await _client.SendAsync(new ArraySegment<byte>(message), MessageType,
                     WebSocketMessageFlags.EndOfMessage | WebSocketMessageFlags.DisableCompression,
-                    CancellationToken.None)
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
 #endif
         
-        public async Task SendMessageAsync(byte[] message)
+        public async Task SendMessageAsync(byte[] message, CancellationToken cancellationToken)
         {
             await
-                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, CancellationToken.None)
+                _client.SendAsync(new ArraySegment<byte>(message), MessageType, true, cancellationToken)
                     .ConfigureAwait(false);
         }
 
@@ -106,7 +124,7 @@ namespace Gremlin.Net.Driver
                     throw new ConnectionClosedException(received.CloseStatus, received.CloseStatusDescription);
                 }
 
-                ms.Write(receiveBuffer.Array, receiveBuffer.Offset, received.Count);
+                ms.Write(receiveBuffer.Array!, receiveBuffer.Offset, received.Count);
             } while (!received.EndOfMessage);
 
             return ms.ToArray();

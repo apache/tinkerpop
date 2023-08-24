@@ -37,3 +37,29 @@ class TestStatics(object):
         assert isinstance(first, Pop)
         assert first == Pop.first
         statics.unload_statics(globals())
+
+    def test_singlebyte(self):
+        assert -128 == statics.SingleByte(-128)
+        assert 1 == statics.SingleByte(1)
+        assert 127 == statics.SingleByte(127)
+        try:
+            statics.SingleByte(128)
+            raise Exception("SingleByte should throw a value error if input is larger than 127")
+        except ValueError:
+            pass
+
+        try:
+            statics.SingleByte(-129)
+            raise Exception("SingleByte should throw a value error if input is smaller than -128")
+        except ValueError:
+            pass
+
+    def test_singlechar(self):
+        assert 'a' == statics.SingleChar('a')
+        assert chr(76) == statics.SingleChar(chr(76))
+        assert chr(57344) == statics.SingleChar(chr(57344))
+        try:
+            statics.SingleChar('abc')
+            raise Exception("SingleChar should throw a value error if input is not a single character string")
+        except ValueError:
+            pass

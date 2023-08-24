@@ -80,10 +80,22 @@ public final class TinkerProperty<V> implements Property<V> {
     @Override
     public void remove() {
         if (this.element instanceof Edge) {
+            ((AbstractTinkerGraph) this.element.graph()).touch((TinkerEdge) this.element);
             ((TinkerEdge) this.element).properties.remove(this.key);
-            TinkerHelper.removeIndex((TinkerEdge) this.element, this.key, this.value);
+            TinkerIndexHelper.removeIndex((TinkerEdge) this.element, this.key, this.value);
         } else {
+            final TinkerVertex vertex = (TinkerVertex) ((TinkerVertexProperty) this.element).element();
+            ((AbstractTinkerGraph) vertex.graph()).touch(vertex);
             ((TinkerVertexProperty) this.element).properties.remove(this.key);
         }
+    }
+
+    @Override
+    public Object clone() {
+        return new TinkerProperty(element, key, value);
+    }
+
+    public TinkerProperty copy(final Element newOwner) {
+        return new TinkerProperty(newOwner, key, value);
     }
 }

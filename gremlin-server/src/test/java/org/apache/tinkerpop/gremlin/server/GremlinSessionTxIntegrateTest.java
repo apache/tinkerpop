@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -26,9 +27,11 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -53,11 +56,23 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
 
-        deleteDirectory(new File("/tmp/neo4j"));
-        settings.graphs.put("graph", "conf/neo4j-empty.properties");
+        settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
 
         switch (nameOfTest) {
             case "shouldExecuteBytecodeInSession":
+                break;
+            case "shouldTimeoutTxBytecode":
+                settings.processors.clear();
+
+                // OpProcessor setting
+                final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
+                processorSettings.className = SessionOpProcessor.class.getCanonicalName();
+                processorSettings.config = new HashMap<>();
+                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
+                settings.processors.add(processorSettings);
+
+                // Unified setting
+                settings.sessionLifetimeTimeout = 3000L;
                 break;
         }
 
@@ -65,8 +80,40 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    @Ignore("TINKERPOP-2832")
+    public void shouldTimeoutTxBytecode() throws Exception {
+
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV("person").addE("link").iterate();
+        gtx.tx().commit();
+
+        assertEquals(1L, g.V().count().next().longValue());
+        assertEquals(1L, g.E().count().next().longValue());
+
+        try {
+            gtx = g.tx().begin();
+
+            assertEquals(1L, gtx.V().count().next().longValue());
+            assertEquals(1L, gtx.E().count().next().longValue());
+
+            // wait long enough for the session to die
+            Thread.sleep(4000);
+
+            // the following should fail with a dead session
+            gtx.V().count().iterate();
+            fail("Session is dead - a new one should not reopen to server this request");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldCommitTxBytecodeInSession() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -100,7 +147,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldCommitTxBytecodeInSessionWithExplicitTransactionObject() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -121,7 +167,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldRollbackTxBytecodeInSession() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -151,7 +196,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldCommitTxBytecodeInSessionOnCloseOfGtx() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -181,7 +225,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldCommitTxBytecodeInSessionOnCloseTx() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -211,7 +254,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldOpenAndCloseObsceneAmountOfSessions() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -244,7 +286,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldCommitTxBytecodeInSessionReusingGtxAcrossThreads() throws Exception {
-        assumeNeo4jIsPresent();
 
         final ExecutorService service = Executors.newFixedThreadPool(2);
 
@@ -277,7 +318,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldSpawnMultipleTraversalSourceInSameTransaction() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -326,8 +366,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldCommitRollbackInScriptUsingGremlinLang() throws Exception {
-        assumeNeo4jIsPresent();
-
         final Cluster cluster = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
                 sessionId(name.getMethodName()).

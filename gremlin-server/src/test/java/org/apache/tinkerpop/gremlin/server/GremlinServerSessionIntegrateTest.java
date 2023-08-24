@@ -21,16 +21,18 @@ package org.apache.tinkerpop.gremlin.server;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
@@ -51,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -128,7 +131,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
             case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
@@ -162,7 +165,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldBlowTheSessionQueueSize() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat(isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster = TestClientFactory.open();
@@ -204,7 +206,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat(isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster = TestClientFactory.open();
@@ -256,7 +257,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldCloseSessionOnClientClose() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster1 = TestClientFactory.open();
         final Client client1 = cluster1.connect(name.getMethodName());
@@ -304,7 +304,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions() throws Exception {
-        assumeNeo4jIsPresent();
         assumeThat("Must use UnifiedChannelizer", isUsingUnifiedChannelizer(), is(true));
 
         final Cluster cluster1 = TestClientFactory.open();
@@ -413,7 +412,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
     @Test
     public void shouldRollbackOnEvalExceptionForManagedTransaction() throws Exception {
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.open();
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
@@ -573,7 +571,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     @SuppressWarnings("unchecked")
     public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
-        assumeNeo4jIsPresent();
 
         try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
 
@@ -640,7 +637,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
     @Test
     @SuppressWarnings("unchecked")
     public void shouldExecuteInSessionWithTransactionManagement() throws Exception {
-        assumeNeo4jIsPresent();
 
         try (final SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage addRequest = RequestMessage.build(Tokens.OPS_EVAL)
@@ -696,5 +692,31 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             assertEquals(ResponseStatusCode.SUCCESS, checkAgainstResponses.get(0).getStatus().getCode());
             assertThat(((List<Boolean>) checkAgainstResponses.get(0).getResult().getData()).get(0), is(false));
         }
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2751
+     */
+    @Test(timeout=30000)
+    public void shouldThrowExceptionOnTransactionUnsupportedGraph() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        final GraphTraversalSource gtx = g.tx().begin();
+        assertThat(gtx.tx().isOpen(), is(true));
+
+        gtx.addV("person").iterate();
+        assertEquals(1, (long) gtx.V().count().next());
+
+        try {
+            // Without Neo4j plugin this should fail on gremlin-server
+            gtx.tx().commit();
+            fail("commit should throw exception on non-transaction supported graph");
+        } catch (Exception ex){
+            final Throwable root = ExceptionHelper.getRootCause(ex);
+            assertEquals("Graph does not support transactions", root.getMessage());
+        }
+
+        cluster.close();
     }
 }

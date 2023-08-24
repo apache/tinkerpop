@@ -543,7 +543,12 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public boolean isLocked();
 
         /**
-         * Gets the {@link Graph} instance associated to this {@link Traversal}.
+         * Lock the traversal and perform any final adjustments to it after strategy application.
+         */
+        public void lock();
+
+        /**
+         * Gets the {@link Graph} instance associated directly to this {@link Traversal} or through its parent.
          */
         public Optional<Graph> getGraph();
 

@@ -22,17 +22,29 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
+/**
+ * Parses Gremlin strings to an {@code Object}, typically to a {@link Traversal}.
+ */
 public class GremlinQueryParser {
     private static final Logger log = LoggerFactory.getLogger(GremlinQueryParser.class);
     private static final GremlinErrorListener errorListener = new GremlinErrorListener();
 
+    /**
+     * Parse Gremlin string using a default {@link GremlinAntlrToJava} object.
+     */
     public static Object parse(final String query) {
         return parse(query, new GremlinAntlrToJava());
     }
 
+    /**
+     * Parse Gremlin string using a specified {@link GremlinAntlrToJava} object.
+     */
     public static Object parse(final String query, final GremlinVisitor<Object> visitor)  {
         final CharStream in = CharStreams.fromString(query);
         final GremlinLexer lexer = new GremlinLexer(in);

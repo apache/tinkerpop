@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -41,20 +42,22 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(TMember[] value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(TMember[] value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Length, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Length, stream, cancellationToken).ConfigureAwait(false);
             
             foreach (var item in value)
             {
-                await writer.WriteAsync(item, stream).ConfigureAwait(false);
+                await writer.WriteAsync(item, stream, cancellationToken).ConfigureAwait(false);
             }
         }
         
         /// <summary>
         /// Currently not supported as GraphBinary has no array data type.
         /// </summary>
-        protected override Task<TMember[]> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override Task<TMember[]> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException("Reading an array is not supported");
         }

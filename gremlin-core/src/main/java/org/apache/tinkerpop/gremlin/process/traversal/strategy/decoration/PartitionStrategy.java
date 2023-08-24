@@ -126,7 +126,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         // writes.
         final Optional<Graph.Features.VertexFeatures> vertexFeatures;
         if (includeMetaProperties) {
-            final Graph graph = TraversalHelper.getRootTraversal(traversal).getGraph().orElseThrow(
+            final Graph graph = traversal.getGraph().orElseThrow(
                     () -> new IllegalStateException("PartitionStrategy does not work with anonymous Traversals when includeMetaProperties is enabled"));
             final Graph.Features.VertexFeatures vf = graph.features().vertex();
             final boolean supportsMetaProperties = vf.supportsMetaProperties();
@@ -139,16 +139,28 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         // no need to add has after mutating steps because we want to make it so that the write partition can
         // be independent of the read partition.  in other words, i don't need to be able to read from a partition
-        // in order to write to it.
+        // in order to write to it. Seems like ElementStep isn't necessary here? a Property can't be loaded that
+        // isn't within the partition so element() could only ever traverse back to something within the partition.
         final List<Step> stepsToInsertHasAfter = new ArrayList<>();
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
 
-        // all steps that return a vertex need to have has(partitionKey,within,partitionValues) injected after it
-        stepsToInsertHasAfter.forEach(step -> TraversalHelper.insertAfterStep(
-                new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions)))), step, traversal));
+        // all steps that return a vertex need to have has(partitionKey,within,partitionValues) injected after it.
+        // attempt to put the partition filter at the end of other has() following that step so that the order of
+        // the has() is maintained on the chance that order up to that point is somehow intentional. this seems
+        // only relevant to Vertex/Edge steps and not properties where this order would seemingly have less
+        // significance to read performance
+        stepsToInsertHasAfter.forEach(step -> {
+            // find the last has() following the insert step
+            Step insertAfter = step;
+            while (insertAfter.getNextStep() instanceof HasStep) {
+                insertAfter = insertAfter.getNextStep();
+            }
+            TraversalHelper.insertAfterStep(
+                    new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions)))), insertAfter, traversal);
+        });
 
         if (vertexFeatures.isPresent()) {
             final List<PropertiesStep> propertiesSteps = TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal);
@@ -215,8 +227,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
                 step instanceof AddEdgeStep || step instanceof AddVertexStep ||
-                step instanceof AddEdgeStartStep || step instanceof AddVertexStartStep ||
-                (includeMetaProperties && step instanceof AddPropertyStep)
+                        step instanceof AddEdgeStartStep || step instanceof AddVertexStartStep ||
+                        (includeMetaProperties && step instanceof AddPropertyStep)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {

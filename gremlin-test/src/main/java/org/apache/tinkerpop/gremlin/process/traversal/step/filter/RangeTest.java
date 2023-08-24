@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -86,6 +87,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXageX_skipX1X_valuesXnameX();
 
     public abstract Traversal<Vertex, List<Double>> get_g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X();
+
+    public abstract Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X(final Object vid1);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -349,6 +352,14 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_valuesXageX_rangeXlocal_20_30X() {
+        final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_rangeXlocal_20_30X(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(29), traversal);
+    }
+
     public static class Traversals extends RangeTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
@@ -443,6 +454,11 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, List<Double>> get_g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X() {
             return g.V().outE().values("weight").fold().order(local).skip(local, 2);
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_VX1X_valuesXageX_rangeXlocal_20_30X(final Object vid1) {
+            return g.V(vid1).values("age").range(Scope.local, 20, 30);
         }
     }
 }

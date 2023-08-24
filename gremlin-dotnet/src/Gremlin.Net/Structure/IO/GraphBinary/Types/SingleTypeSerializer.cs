@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -37,47 +38,54 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         /// A serializer for <see cref="int"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<int> IntSerializer = new SingleTypeSerializer<int>(DataType.Int,
-            (value, stream) => stream.WriteIntAsync(value), stream => stream.ReadIntAsync());
-        
+            (value, stream, cancellationToken) => stream.WriteIntAsync(value, cancellationToken),
+            (stream, cancellationToken) => stream.ReadIntAsync(cancellationToken));
+
         /// <summary>
         /// A serializer for <see cref="long"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<long> LongSerializer = new SingleTypeSerializer<long>(DataType.Long,
-            (value, stream) => stream.WriteLongAsync(value), stream => stream.ReadLongAsync());
+            (value, stream, cancellationToken) => stream.WriteLongAsync(value, cancellationToken),
+            (stream, cancellationToken) => stream.ReadLongAsync(cancellationToken));
 
         /// <summary>
         /// A serializer for <see cref="double"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<double> DoubleSerializer =
-            new SingleTypeSerializer<double>(DataType.Double, (value, stream) => stream.WriteDoubleAsync(value),
-                stream => stream.ReadDoubleAsync());
+            new SingleTypeSerializer<double>(DataType.Double,
+                (value, stream, cancellationToken) => stream.WriteDoubleAsync(value, cancellationToken),
+                (stream, cancellationToken) => stream.ReadDoubleAsync(cancellationToken));
 
         /// <summary>
         /// A serializer for <see cref="float"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<float> FloatSerializer =
-            new SingleTypeSerializer<float>(DataType.Float, (value, stream) => stream.WriteFloatAsync(value),
-                stream => stream.ReadFloatAsync());
+            new SingleTypeSerializer<float>(DataType.Float,
+                (value, stream, cancellationToken) => stream.WriteFloatAsync(value, cancellationToken),
+                (stream, cancellationToken) => stream.ReadFloatAsync(cancellationToken));
 
         /// <summary>
         /// A serializer for <see cref="short"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<short> ShortSerializer =
-            new SingleTypeSerializer<short>(DataType.Short, (value, stream) => stream.WriteShortAsync(value),
-                stream => stream.ReadShortAsync());
+            new SingleTypeSerializer<short>(DataType.Short,
+                (value, stream, cancellationToken) => stream.WriteShortAsync(value, cancellationToken),
+                (stream, cancellationToken) => stream.ReadShortAsync(cancellationToken));
 
         /// <summary>
         /// A serializer for <see cref="bool"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<bool> BooleanSerializer =
-            new SingleTypeSerializer<bool>(DataType.Boolean, (value, stream) => stream.WriteBoolAsync(value),
-                stream => stream.ReadBoolAsync());
+            new SingleTypeSerializer<bool>(DataType.Boolean,
+                (value, stream, cancellationToken) => stream.WriteBoolAsync(value, cancellationToken),
+                (stream, cancellationToken) => stream.ReadBoolAsync(cancellationToken));
 
         /// <summary>
         /// A serializer for <see cref="byte"/> values.
         /// </summary>
         public static readonly SingleTypeSerializer<byte> ByteSerializer = new SingleTypeSerializer<byte>(DataType.Byte,
-            (value, stream) => stream.WriteByteAsync(value), stream => stream.ReadByteAsync());
+            (value, stream, cancellationToken) => stream.WriteByteAsync(value, cancellationToken),
+            (stream, cancellationToken) => stream.ReadByteAsync(cancellationToken));
     }
     
     /// <summary>
@@ -86,10 +94,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// </summary>
     public class SingleTypeSerializer<T> : SimpleTypeSerializer<T>
     {
-        private readonly Func<T, Stream, Task> _writeFunc;
-        private readonly Func<Stream, Task<T>> _readFunc;
+        private readonly Func<T, Stream, CancellationToken, Task> _writeFunc;
+        private readonly Func<Stream, CancellationToken, Task<T>> _readFunc;
 
-        internal SingleTypeSerializer(DataType dataType, Func<T, Stream, Task> writeFunc, Func<Stream, Task<T>> readFunc)
+        internal SingleTypeSerializer(DataType dataType, Func<T, Stream, CancellationToken, Task> writeFunc,
+            Func<Stream, CancellationToken, Task<T>> readFunc)
             : base(dataType)
         {
             _writeFunc = writeFunc;
@@ -97,15 +106,17 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(T value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(T value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await _writeFunc.Invoke(value, stream).ConfigureAwait(false);
+            await _writeFunc.Invoke(value, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<T> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<T> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            return await _readFunc.Invoke(stream).ConfigureAwait(false);
+            return await _readFunc.Invoke(stream, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -75,6 +75,98 @@ describe('Client', function () {
         });
     });
 
+    it('should handle Vertex properties for bytecode request', function () {
+      return client.submit(new Bytecode().addStep('V', [1]))
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
+        });
+    });
+
+    it('should skip Vertex properties for bytecode request with tokens', function () {
+      return client.submit(new Bytecode().addStep('V', [1]), null, {'materializeProperties': 'tokens'})
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first().object;
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+        });
+    });
+
+    it('should handle Vertex properties for gremlin request', function () {
+      return client.submit('g.V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          let age, name
+          if (vertex.properties instanceof Array) {
+            age = vertex.properties[1]
+            name = vertex.properties[0]
+          } else {
+            age = vertex.properties.age[0]
+            name = vertex.properties.name[0]
+          }
+          assert.strictEqual(age.value, 29);
+          assert.strictEqual(name.value, 'marko');
+        });
+    });
+
+    it('should skip Vertex properties for gremlin request with tokens', function () {
+      return client.submit('g.with("materializeProperties", "tokens").V(1)')
+        .then(function (result) {
+          assert.ok(result);
+          assert.strictEqual(result.length, 1);
+          const vertex = result.first();
+          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+        });
+    });
+
+    it('should handle VertexProperties properties for gremlin request', async function () {
+      const crewClient = helper.getClient('gcrew');
+      await crewClient.open();
+
+      const result = await crewClient.submit('g.V(7)');
+
+      assert.ok(result);
+      assert.strictEqual(result.length, 1);
+      const vertex = result.first();
+      
+      assertVertexProperties(vertex);
+
+      await crewClient.close();
+    });
+
+    it('should handle VertexProperties properties for bytecode request', async function () {
+      const crewClient = helper.getClient('gcrew');
+      await crewClient.open();
+
+      const result = await crewClient.submit(new Bytecode().addStep('V', [7]));
+
+      assert.ok(result);
+      assert.strictEqual(result.length, 1);
+      const vertex = result.first().object;
+      
+      assertVertexProperties(vertex);
+
+      await crewClient.close();
+    });
+
     it('should be able to stream results from the gremlin server', (done) => {
       const output = [];
       let calls = 0;
@@ -107,5 +199,71 @@ describe('Client', function () {
       assert.strictEqual(output.length, 3);
       assert.ok(output[0] instanceof graphModule.Vertex);
     });
+
+    it("should reject pending traversal promises if connection closes", async () => {
+      const closingClient = helper.getClient('gmodern');
+      await closingClient.open();
+      const timeout = 10000;
+      const startTime = Date.now();
+      let isRejected = false;
+      
+      const pending = async function submitTraversals() {
+        while (Date.now() < startTime + timeout) {
+          try {
+            await closingClient.submit(new Bytecode().addStep('V', []).addStep('tail', []));
+          } catch (e) {
+            isRejected = true;
+            return;
+          }
+        }
+      };
+      const pendingPromise = pending();
+
+      await closingClient.close();
+      await pendingPromise;
+      assert.strictEqual(isRejected, true);
+    });
+
+    it("should end streams on traversals if connection closes", async () => {
+      const closingClient = helper.getClient('gmodern');
+      await closingClient.open();
+      let isRejected = false;
+
+      const readable = client.stream('g.V().limit(3)', {}, { batchSize: 2 });
+
+      readable.on('end', () => {
+        isRejected = true;
+      });
+
+      await closingClient.close();
+      for await (const result of readable) {
+        // Consume the stream
+      }
+
+      assert.strictEqual(isRejected, true);
+    });
   });
 });
+
+function assertVertexProperties(vertex) {
+  assert.ok(vertex instanceof graphModule.Vertex);
+  let locations;
+  if (vertex.properties instanceof Array) {
+    locations = vertex.properties.filter(p => p.key == 'location');
+  } else {
+    locations = vertex.properties.location
+  }
+  assert.strictEqual(locations.length, 3);
+
+  const vertexProperty = locations[0];
+  assert.strictEqual(vertexProperty.value, 'centreville');
+  if (vertexProperty.properties instanceof Array) {
+    assert.strictEqual(vertexProperty.properties[0].key, 'startTime');
+    assert.strictEqual(vertexProperty.properties[0].value, 1990);
+    assert.strictEqual(vertexProperty.properties[1].key, 'endTime');
+    assert.strictEqual(vertexProperty.properties[1].value, 2000);
+  } else {
+    assert.strictEqual(vertexProperty.properties.startTime, 1990);
+    assert.strictEqual(vertexProperty.properties.endTime, 2000);
+  }
+}

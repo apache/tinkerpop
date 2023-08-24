@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal.Strategy;
 
@@ -42,16 +43,18 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
 
         /// <inheritdoc />
         protected override async Task WriteValueAsync(AbstractTraversalStrategy value, Stream stream,
-            GraphBinaryWriter writer)
+            GraphBinaryWriter writer, CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(GremlinType.FromFqcn(value.Fqcn), stream, false).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Configuration, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(GremlinType.FromFqcn(value.Fqcn), stream, cancellationToken)
+                .ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Configuration, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Currently not supported.
         /// </summary>
-        protected override Task<AbstractTraversalStrategy> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override Task<AbstractTraversalStrategy> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException("Reading a TraversalStrategy is not supported");
         }

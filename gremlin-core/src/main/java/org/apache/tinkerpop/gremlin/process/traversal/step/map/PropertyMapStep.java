@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,15 +60,19 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
     protected int tokens;
     protected Traversal.Admin<Element, ? extends Property> propertyTraversal;
 
-    private Parameters parameters = new Parameters();
-    private TraversalRing<K, E> traversalRing;
+    protected Parameters parameters = new Parameters();
+    protected TraversalRing<K, E> traversalRing;
 
-    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
+    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, TraversalRing<K, E> traversalRing, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
         this.returnType = propertyType;
         this.propertyTraversal = null;
-        this.traversalRing = new TraversalRing<>();
+        this.traversalRing = traversalRing;
+    }
+
+    public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
+        this(traversal, propertyType, new TraversalRing<>(), propertyKeys);
     }
 
     public PropertyMapStep(final Traversal.Admin traversal, final int options, final PropertyType propertyType, final String... propertyKeys) {
@@ -80,48 +83,9 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
     @Override
     protected Map<K, E> map(final Traverser.Admin<Element> traverser) {
         final Map<Object, Object> map = new LinkedHashMap<>();
-        final Element element = traverser.get();
-        final boolean isVertex = element instanceof Vertex;
-        if (this.returnType == PropertyType.VALUE) {
-            if (includeToken(WithOptions.ids)) map.put(T.id, element.id());
-            if (element instanceof VertexProperty) {
-                if (includeToken(WithOptions.keys)) map.put(T.key, ((VertexProperty<?>) element).key());
-                if (includeToken(WithOptions.values)) map.put(T.value, ((VertexProperty<?>) element).value());
-            } else {
-                if (includeToken(WithOptions.labels)) map.put(T.label, element.label());
-            }
-        }
-
-        final Iterator<? extends Property> properties = null == this.propertyTraversal ?
-                element.properties(this.propertyKeys) :
-                TraversalUtil.applyAll(traverser, this.propertyTraversal);
-
-        while (properties.hasNext()) {
-            final Property<?> property = properties.next();
-            final Object value = this.returnType == PropertyType.VALUE ? property.value() : property;
-            if (isVertex) {
-                map.compute(property.key(), (k, v) -> {
-                    final List<Object> values = v != null ? (List<Object>) v : new ArrayList<>();
-                    values.add(value);
-                    return values;
-                });
-            } else {
-                map.put(property.key(), value);
-            }
-        }
-        if (!traversalRing.isEmpty()) {
-            // will cop a ConcurrentModification if a key is dropped so need this little copy here
-            final Set<Object> keys = new HashSet<>(map.keySet());
-            for (final Object key : keys) {
-                map.compute(key, (k, v) -> {
-                    final TraversalProduct product = TraversalUtil.produce(v, (Traversal.Admin) this.traversalRing.next());
-
-                    // compute() should take the null and remove the key
-                    return product.isProductive() ? product.get() : null;
-                });
-            }
-            this.traversalRing.reset();
-        }
+        addIncludedOptions(traverser.get(), map);
+        addElementProperties(traverser, map);
+        applyTraversalRingToMap(map);
         return (Map) map;
     }
 
@@ -174,6 +138,10 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
         return propertyKeys;
     }
 
+    public Traversal.Admin<Element, ? extends Property> getPropertyTraversal() {
+        return propertyTraversal;
+    }
+
     public String toString() {
         return StringFactory.stepString(this, Arrays.asList(this.propertyKeys),
                 this.traversalRing, this.returnType.name().toLowerCase());
@@ -216,7 +184,79 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
         return this.tokens;
     }
 
-    private boolean includeToken(final int token) {
+    protected boolean includeToken(final int token) {
         return 0 != (this.tokens & token);
+    }
+
+    protected void addIncludedOptions(Element element, Map<Object, Object> map){
+        if (this.returnType == PropertyType.VALUE) {
+            if (includeToken(WithOptions.ids)) map.put(T.id, getElementId(element));
+            if (element instanceof VertexProperty) {
+
+                if (includeToken(WithOptions.keys)) map.put(T.key, getVertexPropertyKey((VertexProperty<?>) element));
+                if (includeToken(WithOptions.values)) map.put(T.value, getVertexPropertyValue((VertexProperty<?>) element));
+            } else {
+                if (includeToken(WithOptions.labels)) map.put(T.label, getElementLabel(element));
+            }
+        }
+    }
+
+    protected Object getElementId(Element element){
+        return element.id();
+    }
+
+    protected String getElementLabel(Element element){
+        return element.label();
+    }
+
+    protected String getVertexPropertyKey(VertexProperty<?> vertexProperty){
+        return vertexProperty.key();
+    }
+
+    protected Object getVertexPropertyValue(VertexProperty<?> vertexProperty){
+        return vertexProperty.value();
+    }
+
+    protected void addElementProperties(final Traverser.Admin<Element> traverser, Map<Object, Object> map){
+        final Element element = traverser.get();
+        final boolean isVertex = element instanceof Vertex;
+
+        final Iterator<? extends Property> properties = null == this.propertyTraversal ?
+                element.properties(this.propertyKeys) :
+                TraversalUtil.applyAll(traverser, this.propertyTraversal);
+
+        while (properties.hasNext()) {
+            final Property<?> property = properties.next();
+            final Object value = this.returnType == PropertyType.VALUE ? property.value() : property;
+            if (isVertex) {
+                map.compute(property.key(), (k, v) -> {
+                    final List<Object> values = v != null ? (List<Object>) v : new ArrayList<>();
+                    values.add(value);
+                    return values;
+                });
+            } else {
+                map.put(property.key(), value);
+            }
+        }
+    }
+
+    protected void applyTraversalRingToMap(Map<Object, Object> map){
+        if (!traversalRing.isEmpty()) {
+            // will cop a ConcurrentModification if a key is dropped so need this little copy here
+            final List<Object> keys = new ArrayList<>(map.keySet());
+            for (final Object key : keys) {
+                map.compute(key, (k, v) -> {
+                    final TraversalProduct product = TraversalUtil.produce(v, (Traversal.Admin) this.traversalRing.next());
+
+                    // compute() should take the null and remove the key
+                    return product.isProductive() ? product.get() : null;
+                });
+            }
+            this.traversalRing.reset();
+        }
+    }
+
+    public TraversalRing<K, E> getTraversalRing() {
+        return traversalRing;
     }
 }

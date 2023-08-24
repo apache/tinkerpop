@@ -36,14 +36,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
         public string Name { get; }
         public DateTimeOffset BirthDate { get; }
 
-        public bool Equals(SamplePerson other)
+        public bool Equals(SamplePerson? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return Name == other.Name && BirthDate.Equals(other.BirthDate);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

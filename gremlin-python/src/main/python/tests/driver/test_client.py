@@ -17,6 +17,7 @@
 # under the License.
 #
 import asyncio
+import os
 import threading
 import uuid
 
@@ -25,14 +26,15 @@ from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.strategies import OptionsStrategy
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
 from gremlin_python.statics import *
 from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-test_no_auth_url = 'ws://localhost:45940/gremlin'
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 
 def test_connection(connection):
@@ -83,6 +85,10 @@ def test_client_error(client):
     except GremlinServerError as ex:
         assert 'exceptions' in ex.status_attributes
         assert 'stackTrace' in ex.status_attributes
+        assert str(ex) == f"{ex.status_code}: {ex.status_message}"
+
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
 def test_client_connection_pool_after_error(client):
@@ -98,6 +104,28 @@ def test_client_connection_pool_after_error(client):
         assert gse.status_code == 597
         assert client.available_pool_size == 1
 
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+
+
+def test_client_no_hang_if_submit_on_closed(client):
+    assert client.submit('1 + 1').all().result()[0] == 2
+    client.close()
+    try:
+        # should fail since not hang if closed
+        client.submit('1 + 1').all().result()
+        assert False
+    except Exception as ex:
+        assert True
+
+
+def test_client_close_all_connection_in_pool(client):
+    client = Client(test_no_auth_url, 'g', pool_size=1, session="75e9620e-da98-41e3-9378-0336db803de0")
+    assert client.available_pool_size == 1
+    client.submit('2+2').all().result()
+    client.close()
+    assert client.available_pool_size == 0
+
 
 def test_client_side_timeout_set_for_aiohttp(client):
     client = Client(test_no_auth_url, 'gmodern',
@@ -110,6 +138,9 @@ def test_client_side_timeout_set_for_aiohttp(client):
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
         assert str(err) == ""
+
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
 async def async_connect(enable):
@@ -125,6 +156,25 @@ async def async_connect(enable):
 def test_from_event_loop():
     assert not asyncio.get_event_loop().run_until_complete(async_connect(False))
     assert asyncio.get_event_loop().run_until_complete(async_connect(True))
+
+
+def test_client_gremlin(client):
+    result_set = client.submit('g.V(1)')
+    result = result_set.all().result()
+    assert 1 == len(result)
+    vertex = result[0]
+    assert type(vertex) is Vertex
+    assert 1 == vertex.id
+    assert 2 == len(vertex.properties)
+    assert 'name' == vertex.properties[0].key
+    assert 'marko' == vertex.properties[0].value
+    ##
+    result_set = client.submit('g.with("materializeProperties", "tokens").V(1)')
+    result = result_set.all().result()
+    assert 1 == len(result)
+    vertex = result[0]
+    assert 1 == vertex.id
+    assert 0 == len(vertex.properties)
 
 
 def test_client_bytecode(client):

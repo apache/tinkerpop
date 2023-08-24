@@ -23,12 +23,16 @@ import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
 
+import org.apache.groovy.groovysh.ExitNotification
+import org.apache.groovy.groovysh.Groovysh
+import org.apache.groovy.groovysh.InteractiveShellRunner
+import org.apache.groovy.groovysh.commands.SetCommand
 import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
+import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
 import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
-import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.SubmitCommand
 import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
@@ -37,11 +41,7 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Failure
-import org.apache.tinkerpop.gremlin.process.traversal.Step
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_NL_O_P_S_SE_SL_Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation
 import org.apache.tinkerpop.gremlin.structure.Edge
@@ -49,11 +49,7 @@ import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.util.Gremlin
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
-import org.codehaus.groovy.tools.shell.ExitNotification
-import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
-import org.codehaus.groovy.tools.shell.InteractiveShellRunner
-import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.fusesource.jansi.Ansi
 import sun.misc.Signal
 import sun.misc.SignalHandler
@@ -120,11 +116,13 @@ class Console {
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
 
+        org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
         def imports = (ImportCustomizer) CoreGremlinPlugin.instance().getCustomizers("gremlin-groovy").get()[0]
-        imports.getClassPackages().collect { Mediator.IMPORT_SPACE + it.getName() + Mediator.IMPORT_WILDCARD }.each { groovy.execute(it) }
-        imports.getMethodClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
-        imports.getEnumClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
-        imports.getFieldClasses().collect { Mediator.IMPORT_STATIC_SPACE + it.getCanonicalName() + Mediator.IMPORT_WILDCARD}.each{ groovy.execute(it) }
+        ic.addStarImports(imports.getClassPackages().collect() { it.getName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getMethodClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getEnumClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        ic.addStaticStars(imports.getFieldClasses().collect() { it.getCanonicalName() }.toArray(new String[0]))
+        groovy.getCompilerConfiguration().addCompilationCustomizers(ic)
 
         final InteractiveShellRunner runner = new InteractiveShellRunner(groovy, handlePrompt)
         runner.reader.setHandleUserInterrupt(false)

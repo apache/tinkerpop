@@ -27,11 +27,11 @@ namespace Gremlin.Net.Driver
     {
         private readonly WebSocketSettings _webSocketSettings;
         private readonly GremlinServer _gremlinServer;
-        private readonly string _sessionId;
+        private readonly string? _sessionId;
         private readonly IMessageSerializer _messageSerializer;
 
         public ConnectionFactory(GremlinServer gremlinServer, IMessageSerializer messageSerializer,
-            WebSocketSettings webSocketSettings, string sessionId)
+            WebSocketSettings webSocketSettings, string? sessionId)
         {
             _gremlinServer = gremlinServer;
             _messageSerializer = messageSerializer;
@@ -41,8 +41,9 @@ namespace Gremlin.Net.Driver
 
         public IConnection CreateConnection()
         {
-            return new Connection(ProxyClientWebSocket.CreateClientWebSocket(), _gremlinServer.Uri, _gremlinServer.Username, 
-                _gremlinServer.Password, _messageSerializer, _webSocketSettings, _sessionId);
+            return new Connection(
+                new WebSocketConnection(ProxyClientWebSocket.CreateClientWebSocket(), _webSocketSettings),
+                _gremlinServer.Uri, _gremlinServer.Username, _gremlinServer.Password, _messageSerializer, _sessionId);
         }
     }
 }

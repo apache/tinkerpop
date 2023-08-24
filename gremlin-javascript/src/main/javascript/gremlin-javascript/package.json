@@ -14,22 +14,22 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^6.2.2"
+    "ws": "^8.11.0"
   },
   "devDependencies": {
-    "chai": "~4.1.2",
+    "chai": "~4.3.6",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
-    "cucumber": "~4.2.1",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "grunt": "^1.4.1",
-    "grunt-cli": "~1.3.2",
+    "cucumber": "~6.0.7",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "grunt": "^1.5.3",
+    "grunt-cli": "~1.4.3",
     "grunt-jsdoc": "~2.4.1",
-    "mocha": "^9.2.2",
-    "prettier": "^2.5.1"
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.0"
   },
   "repository": {
     "type": "git",
@@ -43,15 +43,18 @@
     "test": "npm run unit-test && npm run integration-test",
     "unit-test": "mocha test/unit/*",
     "integration-test": "npm run integration-test-graphson30 && npm run integration-test-graphbinary",
-    "integration-test-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' ./node_modules/mocha/bin/mocha test/integration -t 5000",
-    "integration-test-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha test/integration -t 5000",
+    "integration-test-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
+    "integration-test-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
     "TODO": "# test other mime types like graphbinary stringd",
     "features": "npm run features-graphson30 && npm run features-graphbinary",
-    "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
-    "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/features/",
+    "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
+    "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
+    "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",
     "lint": "eslint --ext .js ."
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   }
 }

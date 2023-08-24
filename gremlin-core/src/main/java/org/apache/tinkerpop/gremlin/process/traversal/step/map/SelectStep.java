@@ -77,9 +77,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 bindings.put(selectKey, (E) product.get());
             }
 
-            // bindings should be the same size as keys or else there was an uproductive by() in which case we filter
-            // with an EmptyTraverser
-            if (bindings.size() != selectKeys.size()) return EmptyTraverser.instance();
+            // bindings should be the same size as unique keys or else there was an unproductive by() in which case
+            // we filter with an EmptyTraverser.
+            if (bindings.size() != selectKeysSet.size()) return EmptyTraverser.instance();
 
         } catch (KeyNotFoundException nfe) {
             return EmptyTraverser.instance();
@@ -147,6 +147,17 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public Set<String> getScopeKeys() {
         return this.selectKeysSet;
+    }
+
+    /**
+     * Get the keys for this SelectStep. Unlike {@link SelectStep#getScopeKeys()}, this returns a list possibly with
+     * a duplicate key. This guarantees to return the keys in the same order as passed in.
+     * TODO: getScopeKeys should return order-aware data structure instead of HashSet so that graph providers can
+     *       get the keys in the order passed in a query, and can associate them with by-traversals in a correct sequence.
+     *
+     */
+    public List<String> getSelectKeys() {
+        return this.selectKeys;
     }
 
     public Map<String, Traversal.Admin<Object, E>> getByTraversals() {

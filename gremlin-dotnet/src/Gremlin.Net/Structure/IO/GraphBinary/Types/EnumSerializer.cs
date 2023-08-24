@@ -23,8 +23,10 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
+using Barrier = Gremlin.Net.Process.Traversal.Barrier;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
 {
@@ -34,7 +36,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     public static class EnumSerializers
     {
         /// <summary>
-        /// A serializer for <see cref="Barrier"/> values.
+        /// A serializer for <see cref="Process.Traversal.Barrier"/> values.
         /// </summary>
         public static readonly EnumSerializer<Barrier> BarrierSerializer =
             new EnumSerializer<Barrier>(DataType.Barrier, Barrier.GetByValue);
@@ -115,15 +117,20 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(TEnum value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(TEnum value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteAsync(value.EnumValue, stream).ConfigureAwait(false);
+            await writer.WriteAsync(value.EnumValue, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<TEnum> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<TEnum> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var enumValue = (string) await reader.ReadAsync(stream).ConfigureAwait(false);
+            // This should probably be `reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)` instead,
+            // but it's the same in other GLVs and changing this would be a breaking change for the GraphBinary format.
+            var enumValue = (string?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            if (enumValue == null) throw new IOException($"Read null as a value for {DataType}");
             return _readFunc.Invoke(enumValue);
         }
     }

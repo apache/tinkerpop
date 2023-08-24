@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -47,7 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -567,7 +566,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -595,7 +594,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -679,6 +678,32 @@ public class TinkerGraphTest {
                 property("y", "z").iterate();
 
         assertThat(g.V("id").hasNext(), is(true));
+    }
+
+    /**
+     * Validating that start-step hasId() unwraps ids in lists in addition to ids in arrays as per TINKERPOP-2863
+     */
+    @Test
+    public void shouldCheckWithinListsOfIdsForStartStepHasId() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expectedStartTraversal = g.V().hasId(1, 2).toList();
+
+        assertEquals(expectedStartTraversal, g.V().hasId(new Integer[]{1, 2}).toList());
+        assertEquals(expectedStartTraversal,g.V().hasId(Arrays.asList(1, 2)).toList());
+    }
+
+    /**
+     * Validating that mid-traversal hasId() also unwraps ids in lists in addition to ids in arrays as per TINKERPOP-2863
+     */
+    @Test
+    public void shouldCheckWithinListsOfIdsForMidTraversalHasId() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expectedMidTraversal = g.V().has("name", "marko").outE("knows").inV().hasId(2, 4).toList();
+
+        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(new Integer[]{2, 4}).toList());
+        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList());
     }
 
     @Test
@@ -808,42 +833,42 @@ public class TinkerGraphTest {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).to(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for from() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).from() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property("k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: null", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for to() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
 
         try {
             g.V(1).as("v").values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("v").from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("addE(link) could not find a Vertex for from() - encountered: String", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
         }
     }
 
@@ -962,7 +987,7 @@ public class TinkerGraphTest {
         }
     }
 
-    public static class CustomClassResolver extends GryoClassResolverV1d0 {
+    public static class CustomClassResolver extends GryoClassResolverV1 {
         private ColorToTinkerGraphSerializer colorToGraphSerializer = new ColorToTinkerGraphSerializer();
 
         public Registration getRegistration(final Class clazz) {

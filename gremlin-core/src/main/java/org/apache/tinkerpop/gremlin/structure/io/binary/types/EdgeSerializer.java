@@ -18,15 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -41,20 +43,17 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         final Object id = context.read(buffer);
         final String label = context.readValue(buffer, String.class, false);
 
-        final ReferenceVertex inV = new ReferenceVertex(context.read(buffer),
-                                                        context.readValue(buffer, String.class, false));
-        final ReferenceVertex outV = new ReferenceVertex(context.read(buffer),
-                                                         context.readValue(buffer, String.class, false));
+        final Object inVId = context.read(buffer);
+        final String inVLabel = context.readValue(buffer, String.class, false);
+        final Object outVId = context.read(buffer);
+        final String outVLabel = context.readValue(buffer, String.class, false);
 
-        // discard the parent vertex - we only send "references so this should always be null, but will we change our
-        // minds someday????
+        // discard the parent vertex
         context.read(buffer);
 
-        // discard the properties - as we only send "references" this should always be null, but will we change our
-        // minds some day????
-        context.read(buffer);
+        final List<Property> properties = context.read(buffer);
 
-        return new ReferenceEdge(id, label, inV, outV);
+        return new DetachedEdge(id, label, properties, outVId, outVLabel, inVId, inVLabel);
     }
 
     @Override
@@ -68,11 +67,14 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
         context.write(value.outVertex().id(), buffer);
         context.writeValue(value.outVertex().label(), buffer, false);
 
-        // we don't serialize the parent Vertex for edges. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
+        // we don't serialize the parent Vertex for edges.
         context.write(null, buffer);
-        // we don't serialize properties for graph vertices/edges. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
-        context.write(null, buffer);
+        if (value.properties() == null) {
+            context.write(null, buffer);
+        }
+        else {
+            final List<?> asList = IteratorUtils.toList(value.properties());
+            context.write(asList, buffer);
+        }
     }
 }

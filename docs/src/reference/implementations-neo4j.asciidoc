@@ -15,7 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 [[neo4j-gremlin]]
-== Neo4j-Gremlin
+== Neo4j-Gremlin (Deprecated)
+
+WARNING: Deprecated: Neo4j-Gremlin is not compatible with versions of Neo4j beyond 3.4 (Reached End of Life March 31, 2020).
+For this reason, use of Neo4j-Gremlin is not recommended for production environments. Neo4j-Gremlin is expected to
+remain compatible with upcoming releases of TinkerPop, however long term support is not guaranteed. Neo4j-Gremlin may
+be dropped from future versions of TinkerPop if compatibility cannot reasonably be maintained. Alternative TinkerPop
+enabled graph providers can be found on the link:https://tinkerpop.apache.org/providers.html[TinkerPop site].
 
 [source,xml]
 ----

@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -59,6 +60,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingP
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.SparkVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkInterceptorStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.SparkSingleIterationStrategy;
+import org.apache.tinkerpop.gremlin.spark.process.computer.traversal.strategy.optimization.interceptor.SparkCloneVertexProgramInterceptor;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
@@ -68,6 +70,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkIOUtil;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.UnshadedKryoShimService;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -282,28 +285,26 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     }
                 }
             }
-            final InputRDD inputRDD;
-            final OutputRDD outputRDD;
+            final InputRDD inputRDD = SparkIOUtil.createInputRDD(hadoopConfiguration);
             final boolean filtered;
+            // if the input class can filter on load, then set the filters
+            if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
+                GraphFilterAware.storeGraphFilter(graphComputerConfiguration, hadoopConfiguration, this.graphFilter);
+                filtered = false;
+            } else if (inputRDD instanceof GraphFilterAware) {
+                ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
+                filtered = false;
+            } else if (this.graphFilter.hasFilter()) {
+                filtered = true;
+            } else {
+                filtered = false;
+            }
+
+            final OutputRDD outputRDD;
             try {
-                inputRDD = InputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, Object.class)) ?
-                        hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputRDD.class, InputRDD.class).newInstance() :
-                        InputFormatRDD.class.newInstance();
                 outputRDD = OutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, Object.class)) ?
                         hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_WRITER, OutputRDD.class, OutputRDD.class).newInstance() :
                         OutputFormatRDD.class.newInstance();
-                // if the input class can filter on load, then set the filters
-                if (inputRDD instanceof InputFormatRDD && GraphFilterAware.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_READER, InputFormat.class, InputFormat.class))) {
-                    GraphFilterAware.storeGraphFilter(graphComputerConfiguration, hadoopConfiguration, this.graphFilter);
-                    filtered = false;
-                } else if (inputRDD instanceof GraphFilterAware) {
-                    ((GraphFilterAware) inputRDD).setGraphFilter(this.graphFilter);
-                    filtered = false;
-                } else if (this.graphFilter.hasFilter()) {
-                    filtered = true;
-                } else {
-                    filtered = false;
-                }
             } catch (final InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -314,10 +315,22 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
             SparkMemory memory = null;
             // delete output location
+            final boolean dontDeleteNonEmptyOutput =
+                    graphComputerConfiguration.getBoolean(Constants.GREMLIN_SPARK_DONT_DELETE_NON_EMPTY_OUTPUT, false);
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
             if (null != outputLocation) {
-                if (outputToHDFS && fileSystemStorage.exists(outputLocation))
-                    fileSystemStorage.rm(outputLocation);
+                if (outputToHDFS && fileSystemStorage.exists(outputLocation)) {
+                    if (dontDeleteNonEmptyOutput) {
+                        // DON'T delete the content if the folder is not empty
+                        if (fileSystemStorage.ls(outputLocation).size() == 0) {
+                            fileSystemStorage.rm(outputLocation);
+                        } else {
+                            throw new IllegalStateException("The output location '" + outputLocation + "' is not empty");
+                        }
+                    } else {
+                        fileSystemStorage.rm(outputLocation);
+                    }
+                }
                 if (outputToSpark && sparkContextStorage.exists(outputLocation))
                     sparkContextStorage.rm(outputLocation);
             }
@@ -331,7 +344,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 updateLocalConfiguration(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 boolean partitioned = false;
-                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = inputRDD.readGraphRDD(graphComputerConfiguration, sparkContext);
+                JavaPairRDD<Object, VertexWritable> loadedGraphRDD = SparkIOUtil.loadVertices(inputRDD, graphComputerConfiguration, sparkContext);
                 // if there are vertex or edge filters, filter the loaded graph rdd prior to partitioning and persisting
                 if (filtered) {
                     this.logger.debug("Filtering the loaded graphRDD: " + this.graphFilter);
@@ -370,6 +383,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 ////////////////////////////////
                 if (null != this.vertexProgram) {
                     memory = new SparkMemory(this.vertexProgram, this.mapReducers, sparkContext);
+                    // build a shortcut (which reduces the total Spark stages from 3 to 2) for CloneVertexProgram since it does nothing
+                    // and this improves the overall performance a lot
+                    if (this.vertexProgram.getClass().equals(CloneVertexProgram.class) &&
+                        !graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {
+                        graphComputerConfiguration.setProperty(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR, SparkCloneVertexProgramInterceptor.class.getName());
+                    }
                     /////////////////
                     // if there is a registered VertexProgramInterceptor, use it to bypass the GraphComputer semantics
                     if (graphComputerConfiguration.containsKey(Constants.GREMLIN_HADOOP_VERTEX_PROGRAM_INTERCEPTOR)) {

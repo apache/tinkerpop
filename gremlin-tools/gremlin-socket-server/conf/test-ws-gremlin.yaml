@@ -1,0 +1,56 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# This file is to be used to configure an instance of Gremlin-Socket-Server as
+# well as any driver trying to run tests against it.
+# Gremlin-Socket-Server listens for requests with the specific request ids below
+# and triggers response behavior accordingly. Driver's should use the request id
+# corresponding with the desired behavior whenever sending a  request to
+#  gremlin-socket-server.
+
+# Port exposed by gremlin-socket-server
+PORT: 45943
+
+# Configures which serializer will be used. Ex: GraphBinaryV1 or GraphSONV2
+SERIALIZER: GraphBinaryV1
+
+# If a request with this ID comes to the server, the server responds back with a single
+# vertex picked from Modern graph.
+SINGLE_VERTEX_REQUEST_ID: 6457272a-4018-4538-b9ae-08dd5ddc0aa1
+
+# If a request with this ID comes to the server, the server responds back with a single
+# vertex picked from Modern graph. After a 2 second delay, server sends a Close WebSocket
+# frame on the same connection.
+SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID: 3cb39c94-9454-4398-8430-03485d08bdae
+
+# Server waits for 1 second, then responds with a 500 error status code
+FAILED_AFTER_DELAY_REQUEST_ID: edf79c8b-1d32-4102-a5d2-a5feeca40864
+
+# Server waits for 1 second then responds with a close web socket frame
+CLOSE_CONNECTION_REQUEST_ID: 0150143b-00f9-48a7-a268-28142d902e18
+
+# Same as CLOSE_CONNECTION_REQUEST_ID
+CLOSE_CONNECTION_REQUEST_ID_2: 3c4cf18a-c7f2-4dad-b9bf-5c701eb33000
+
+# If a request with this ID comes to the server, the server responds with the user agent (if any)
+# that was captured during the web socket handshake.
+USER_AGENT_REQUEST_ID: 20ad7bfb-4abf-d7f4-f9d3-9f1d55bee4ad
+
+# If a request with this ID comes to the server, the server responds with a string containing all overridden
+# per request settings from the request message. String will be of the form
+# "requestId=19436d9e-f8fc-4b67-8a76-deec60918424 evaluationTimeout=1234, batchSize=12, userAgent=testUserAgent"
+PER_REQUEST_SETTINGS_REQUEST_ID: 19436d9e-f8fc-4b67-8a76-deec60918424

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM tinkerpop:hadoop-HADOOP_VERSION
+FROM --platform=linux/amd64 tinkerpop:hadoop-HADOOP_VERSION
 
 RUN mkdir -p /usr/src/tinkerpop
 WORKDIR /usr/src/tinkerpop

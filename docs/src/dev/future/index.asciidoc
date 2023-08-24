@@ -1,5 +1,3 @@
-= TinkerPop Future
-
 ////
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -16,9 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+:docinfo: shared
+:docinfodir: ../../
+:toc-position: left
+
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-:toc-position: left
+*x.y.z*
+
+= TinkerPop Future
 
 This document offers a rough view at what features can be expected from future releases and catalogs proposals for
 changes that might be better written and understood in a document form as opposed to a dev list post.
@@ -42,14 +47,14 @@ in each release line represent unreleased changes only. Once an official release
 are removed with new items taking their place as they are planned. The release line is removed from the roadmap
 completely when it is no longer maintained.
 
-== 3.7.x - Target 22Q4
+== 3.7.x - Target 2023H1
 
-Development has not yet started on the 3.7.x release line with a targeted release date for the initial release of the
-line of 22H2.
+The development of the 3.7.x release line is currently under way with a target release date for the initial release of
+the line of 23H1.
 
-* Add support for traversals as parameters for `V()`, `is()`, and `has()`
+* Add support for traversals as parameters for `V()`, `is()`, and `has()` (includes `Traversal` arguments to `P`)
 * Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
-* Add mid-traversal `E()` support
+* Add mid-traversal `E()` support (link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798])
 * Allow properties on elements (as opposed to just references) for remote traversals
 * Add subgraph/tree structure in all GLVs
 * List functions (`concat()`/etc.)
@@ -58,19 +63,9 @@ line of 22H2.
 * Date/Time manipulation functions (`dateAdd()`, `dateDiff()`, etc.)
 * Add string manipulation functions (`split()`, `substring()` etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
 * Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
-
-== 3.6.x - Target 22Q3
-
-The initial release of this line was produced April 2022 with the next follow-on release targeted for 22Q3.
-
-
-
-== 3.5.x - Target 22Q3
-
-This initial release of this line was produced in May 2021 with the next follow-on release targeted for 22Q3.
-
-* GraphBinary support for Javascript (link:https://issues.apache.org/jira/browse/TINKERPOP-2229[TINKERPOP-2229])
-* Gremlin Language Variant for Go (link:https://issues.apache.org/jira/browse/TINKERPOP-2692[TINKERPOP-2692])
+* Type conversion with `cast()` step
+* Mutation steps for `clone()` of an `Element` and for `moveE()` for edges.
+* Add a language element to merge `Map` objects more easily.
 
 = Proposals
 
@@ -101,6 +96,8 @@ story.
 |=========================================================
 |Proposal |Description |Targets |Resolved
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |4.0.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |N
 |=========================================================
 
 = Appendix

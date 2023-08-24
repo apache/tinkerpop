@@ -29,7 +29,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 {
     public class TestTraversal : DefaultTraversal<object, object>
     {
-        public TestTraversal(List<object> traverserObjs)
+        public TestTraversal(List<object?> traverserObjs)
         {
             var traversers = new List<Traverser>(traverserObjs.Count);
             traverserObjs.ForEach(o => traversers.Add(new Traverser(o)));
@@ -37,7 +37,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             Bytecode = new Bytecode();
         }
 
-        public TestTraversal(IReadOnlyList<object> traverserObjs, IReadOnlyList<long> traverserBulks)
+        public TestTraversal(IReadOnlyList<object?> traverserObjs, IReadOnlyList<long> traverserBulks)
         {
             var traversers = new List<Traverser>(traverserObjs.Count);
             traversers.AddRange(traverserObjs.Select((t, i) => new Traverser(t, traverserBulks[i])));
@@ -49,5 +49,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             TraversalStrategies = traversalStrategies;
         }
+
+        public override Bytecode Bytecode { get; } = new();
     }
 }

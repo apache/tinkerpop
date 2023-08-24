@@ -67,8 +67,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGryoV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v1d0.kryo"));
+    public void shouldWriteClassicGraphAsGryoV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v1.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -77,8 +77,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGryoV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v1d0.kryo"));
+    public void shouldWriteModernGraphAsGryoV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v1.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -87,8 +87,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGryoV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v1d0.kryo"));
+    public void shouldWriteCrewGraphAsGryoV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v1.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -97,8 +97,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteSinkGraphAsGryoV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v1d0.kryo"));
+    public void shouldWriteSinkGraphAsGryoV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v1.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
     }
@@ -107,8 +107,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGryoV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v3d0.kryo"));
+    public void shouldWriteClassicGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -117,8 +117,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGryoV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v3d0.kryo"));
+    public void shouldWriteModernGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -127,8 +127,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGryoV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v3d0.kryo"));
+    public void shouldWriteCrewGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -137,8 +137,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteSinkGraphAsGryoV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v3d0.kryo"));
+    public void shouldWriteSinkGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
     }
@@ -147,7 +147,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTClassicGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTClassicGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -157,7 +157,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTModernGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTModernGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -167,7 +167,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTCrewGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTCrewGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
@@ -177,7 +177,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTSinkGraphAsGryoV3d0() throws IOException {
+    public void shouldWriteDEFAULTSinkGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
@@ -207,8 +207,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSONV1d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v1d0.json"));
+    public void shouldWriteClassicGraphAsGraphSONV1NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -217,8 +217,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGraphSONV1d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v1d0.json"));
+    public void shouldWriteModernGraphAsGraphSONV1NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -227,8 +227,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGraphSONV1d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v1d0.json"));
+    public void shouldWriteCrewGraphAsGraphSONV1NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
     }
@@ -238,7 +238,7 @@ public class IoDataGenerationTest {
      */
     @Test
     public void shouldWriteKitchenSinkAsGraphSONNoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v1d0.json"));
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
     }
@@ -247,8 +247,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphNormalizedAsGraphSONV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v1d0.json"));
+    public void shouldWriteClassicGraphNormalizedAsGraphSONV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
     }
@@ -257,8 +257,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphNormalizedAsGraphSONV1d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v1d0.json"));
+    public void shouldWriteModernGraphNormalizedAsGraphSONV1() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().normalize(true).version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os, TinkerFactory.createModern());
         os.close();
     }
@@ -267,8 +267,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSONV1d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-typed-v1d0.json"));
+    public void shouldWriteClassicGraphAsGraphSONV1WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-typed-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -278,8 +278,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGraphSONV1d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-typed-v1d0.json"));
+    public void shouldWriteModernGraphAsGraphSONV1WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-typed-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -289,8 +289,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGraphSONV1d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-typed-v1d0.json"));
+    public void shouldWriteCrewGraphAsGraphSONV1WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-typed-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
@@ -301,7 +301,7 @@ public class IoDataGenerationTest {
      */
     @Test
     public void shouldWriteKitchenSinkAsGraphSONWithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-typed-v1d0.json"));
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-typed-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create().writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
@@ -311,8 +311,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSONV2d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v2d0.json"));
+    public void shouldWriteClassicGraphAsGraphSONV2NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -322,8 +322,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGraphSOV2d0NNoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v2d0.json"));
+    public void shouldWriteModernGraphAsGraphSOV2NNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -333,8 +333,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGraphSONV2d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v2d0.json"));
+    public void shouldWriteCrewGraphAsGraphSONV2NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
@@ -344,8 +344,8 @@ public class IoDataGenerationTest {
      * No assertions. Just write out the graph for convenience
      */
     @Test
-    public void shouldWriteKitchenSinkAsGraphSONV2d0NoTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v2d0.json"));
+    public void shouldWriteKitchenSinkAsGraphSONV2NoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
@@ -355,8 +355,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphNormalizedAsGraphSONV2d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v2d0.json"));
+    public void shouldWriteClassicGraphNormalizedAsGraphSONV2() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).normalize(true).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -366,8 +366,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphNormalizedAsGraphSONV2d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v2d0.json"));
+    public void shouldWriteModernGraphNormalizedAsGraphSONV2() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.NO_TYPES).normalize(true).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -377,8 +377,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSONV2d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-typed-v2d0.json"));
+    public void shouldWriteClassicGraphAsGraphSONV2WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-typed-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -388,8 +388,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGraphSONV2d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-typed-v2d0.json"));
+    public void shouldWriteModernGraphAsGraphSONV2WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-typed-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -399,8 +399,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGraphSONV2d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-typed-v2d0.json"));
+    public void shouldWriteCrewGraphAsGraphSONV2WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-typed-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
@@ -410,8 +410,8 @@ public class IoDataGenerationTest {
      * No assertions. Just write out the graph for convenience
      */
     @Test
-    public void shouldWriteKitchenSinkAsGraphSONV2d0WithTypes() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-typed-v2d0.json"));
+    public void shouldWriteKitchenSinkAsGraphSONV2WithTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-typed-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()
                 .writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
@@ -421,8 +421,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v3d0.json"));
+    public void shouldWriteClassicGraphAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -432,8 +432,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v3d0.json"));
+    public void shouldWriteModernGraphAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -443,8 +443,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteCrewGraphAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v3d0.json"));
+    public void shouldWriteCrewGraphAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createTheCrew());
         os.close();
@@ -454,8 +454,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteSinkGraphAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v3d0.json"));
+    public void shouldWriteSinkGraphAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createKitchenSink());
         os.close();
@@ -465,7 +465,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTClassicGraphAsGraphSONV3d0() throws IOException {
+    public void shouldWriteDEFAULTClassicGraphAsGraphSONV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
@@ -476,7 +476,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTModernGraphAsGraphSONV3d0() throws IOException {
+    public void shouldWriteDEFAULTModernGraphAsGraphSONV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
@@ -487,7 +487,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTCrewGraphAsGraphSONV3d0() throws IOException {
+    public void shouldWriteDEFAULTCrewGraphAsGraphSONV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-crew.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createTheCrew());
@@ -498,7 +498,7 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteDEFAULTSinkGraphAsGraphSONV3d0() throws IOException {
+    public void shouldWriteDEFAULTSinkGraphAsGraphSONV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-sink.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).create()).create()
                 .writeGraph(os, TinkerFactory.createKitchenSink());
@@ -509,8 +509,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicGraphNormalizedAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v3d0.json"));
+    public void shouldWriteClassicGraphNormalizedAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic-normalized-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).normalize(true).create()).create()
                 .writeGraph(os, TinkerFactory.createClassic());
         os.close();
@@ -520,8 +520,8 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteModernGraphNormalizedAsGraphSONV3d0() throws IOException {
-        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v3d0.json"));
+    public void shouldWriteModernGraphNormalizedAsGraphSONV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-modern-normalized-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0).normalize(true).create()).create()
                 .writeGraph(os, TinkerFactory.createModern());
         os.close();
@@ -553,7 +553,7 @@ public class IoDataGenerationTest {
 
         // read from a Gryo 3.0 file for now
         final GraphReader reader = GryoReader.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/gryo/grateful-dead-v3d0.kryo")) {
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/gryo/grateful-dead-v3.kryo")) {
             reader.readGraph(stream, g);
         }
 
@@ -592,11 +592,11 @@ public class IoDataGenerationTest {
 
         }).iterate();
 
-        final OutputStream os = new FileOutputStream(new File(tempPath, "grateful-dead-v1d0.kryo"));
+        final OutputStream os = new FileOutputStream(new File(tempPath, "grateful-dead-v1.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V1_0).create()).create().writeGraph(os, ng);
         os.close();
 
-        final OutputStream os8 = new FileOutputStream(new File(tempPath, "grateful-dead-v3d0.kryo"));
+        final OutputStream os8 = new FileOutputStream(new File(tempPath, "grateful-dead-v3.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os8, ng);
         os8.close();
 
@@ -605,11 +605,11 @@ public class IoDataGenerationTest {
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os9, ng);
         os9.close();
 
-        final OutputStream os2 = new FileOutputStream(new File(tempPath, "grateful-dead-v1d0.json"));
+        final OutputStream os2 = new FileOutputStream(new File(tempPath, "grateful-dead-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.NO_TYPES).create()).create().writeGraph(os2, g);
         os2.close();
 
-        final OutputStream os3 = new FileOutputStream(new File(tempPath, "grateful-dead-v2d0.json"));
+        final OutputStream os3 = new FileOutputStream(new File(tempPath, "grateful-dead-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0)
                 .typeInfo(TypeInfo.NO_TYPES).create())
                 .create()
@@ -620,18 +620,18 @@ public class IoDataGenerationTest {
         GraphMLWriter.build().create().writeGraph(os4, g);
         os4.close();
 
-        final OutputStream os5 = new FileOutputStream(new File(tempPath, "grateful-dead-typed-v1d0.json"));
+        final OutputStream os5 = new FileOutputStream(new File(tempPath, "grateful-dead-typed-v1.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create().writeGraph(os5, g);
         os5.close();
 
-        final OutputStream os6 = new FileOutputStream(new File(tempPath, "grateful-dead-typed-v2d0.json"));
+        final OutputStream os6 = new FileOutputStream(new File(tempPath, "grateful-dead-typed-v2.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V2_0)
                 .typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create()
                 .writeGraph(os6, g);
         os6.close();
 
-        final OutputStream os7 = new FileOutputStream(new File(tempPath, "grateful-dead-v3d0.json"));
+        final OutputStream os7 = new FileOutputStream(new File(tempPath, "grateful-dead-v3.json"));
         GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V3_0)
                 .typeInfo(TypeInfo.PARTIAL_TYPES).create())
                 .create()

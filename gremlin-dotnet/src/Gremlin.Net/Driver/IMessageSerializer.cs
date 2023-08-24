@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 
@@ -36,14 +37,18 @@ namespace Gremlin.Net.Driver
         ///     Serializes a <see cref="RequestMessage"/>.
         /// </summary>
         /// <param name="requestMessage">The <see cref="RequestMessage"/> to serialize.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The serialized message.</returns>
-        Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage);
-        
+        Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage,
+            CancellationToken cancellationToken = default);
+
         /// <summary>
         ///     Deserializes a <see cref="ResponseMessage{T}"/> from a byte array.
         /// </summary>
         /// <param name="message">The serialized message to deserialize.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The deserialized <see cref="ResponseMessage{T}"/>.</returns>
-        Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message);
+        Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
+            CancellationToken cancellationToken = default);
     }
 }

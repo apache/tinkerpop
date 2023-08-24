@@ -51,7 +51,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 radishGremlinFile = new File("${projectBaseDir}/gremlin-python/src/main/python/radish/gremlin.py")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
-gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "features").toString())
+gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())
 
 gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
         (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },
@@ -93,7 +93,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'from gremlin_python.process.traversal import TraversalStrategy\n' +
                     'from gremlin_python.process.graph_traversal import __\n' +
                     'from gremlin_python.structure.graph import Graph\n' +
-                    'from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, Merge, T, Pick, Operator, IO, WithOptions\n')
+                    'from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, Merge, T, Pick, Operator, IO, WithOptions\n')
 
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better

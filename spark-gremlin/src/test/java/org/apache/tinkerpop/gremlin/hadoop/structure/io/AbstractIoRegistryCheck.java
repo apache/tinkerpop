@@ -63,7 +63,7 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
 
     private static final int NUMBER_OF_VERTICES = 1000;
 
-    public void checkGryoV1d0IoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
+    public void checkGryoV1IoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
         final File input = TestHelper.generateTempFile(this.getClass(), "gryo-io-registry", ".kryo");
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
@@ -75,7 +75,7 @@ public abstract class AbstractIoRegistryCheck extends AbstractGremlinTest {
         input.deleteOnExit();
     }
 
-    public void checkGryoV3d0IoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
+    public void checkGryoV3IoRegistryCompliance(final HadoopGraph graph, final Class<? extends GraphComputer> graphComputerClass) throws Exception {
         final File input = TestHelper.generateTempFile(this.getClass(), "gryo-io-registry", ".kryo");
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         graph.configuration().setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());

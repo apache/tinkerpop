@@ -24,9 +24,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -34,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import java.io.File;
@@ -205,6 +207,7 @@ public final class Cluster {
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
+                .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
@@ -476,8 +479,12 @@ public final class Cluster {
         return manager.executor;
     }
 
-    ScheduledExecutorService scheduler() {
-        return manager.scheduler;
+    ScheduledExecutorService hostScheduler() {
+        return manager.hostScheduler;
+    }
+
+    ScheduledExecutorService connectionScheduler() {
+        return manager.connectionScheduler;
     }
 
     Settings.ConnectionPoolSettings connectionPoolSettings() {
@@ -561,6 +568,14 @@ public final class Cluster {
         return builder.build();
     }
 
+    /**
+     * Checks if cluster is configured to send a User Agent header
+     * in the web socket handshake
+     */
+    public boolean isUserAgentOnConnectEnabled() {
+        return manager.isUserAgentOnConnectEnabled();
+    }
+
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -597,6 +612,7 @@ public final class Cluster {
         private HandshakeInterceptor interceptor = HandshakeInterceptor.NO_OP;
         private AuthProperties authProps = new AuthProperties();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private boolean enableUserAgentOnConnect = true;
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -780,7 +796,7 @@ public final class Cluster {
          * {@link #maxSimultaneousUsagePerConnection} setting, but is slightly different in that it refers to
          * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
          * be borrowed once to have multiple requests executed against it.  This number controls the maximum
-         * number of requests whereas {@link #maxInProcessPerConnection} controls the times borrowed.
+         * number of requests whereas {@link #maxSimultaneousUsagePerConnection} controls the times borrowed.
          */
         public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
             this.maxInProcessPerConnection = maxInProcessPerConnection;
@@ -984,12 +1000,19 @@ public final class Cluster {
         /**
          * Sets the duration of time in milliseconds provided for connection setup to complete which includes WebSocket
          * handshake and SSL handshake. Beyond this duration an exception would be thrown.
-         *
-         * Note that this value should be greater that SSL handshake timeout defined in
-         * {@link io.netty.handler.ssl.SslHandler} since WebSocket handshake include SSL handshake.
          */
         public Builder connectionSetupTimeoutMillis(final long connectionSetupTimeoutMillis) {
             this.connectionSetupTimeoutMillis = connectionSetupTimeoutMillis;
+            return this;
+        }
+
+        /**
+         * Configures whether cluster will send a user agent during
+         * web socket handshakes
+         * @param enableUserAgentOnConnect true enables the useragent. false disables the useragent.
+         */
+        public Builder enableUserAgentOnConnect(final boolean enableUserAgentOnConnect) {
+            this.enableUserAgentOnConnect = enableUserAgentOnConnect;
             return this;
         }
 
@@ -999,7 +1022,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1D0.simpleInstance();
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1.simpleInstance();
             return new Cluster(this);
         }
     }
@@ -1018,10 +1041,14 @@ public final class Cluster {
             return b;
         }
 
-        void shutdown() {
+        /**
+         * Gracefully shutsdown the event loop and returns the termination future which signals that all jobs are done.
+         */
+        Future<?> shutdown() {
             // Do not provide a quiet period (default is 2s) to accept more requests. Once we have decided to shutdown,
             // no new requests should be accepted.
-            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS).awaitUninterruptibly();
+            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS);
+            return group.terminationFuture();
         }
     }
 
@@ -1038,13 +1065,26 @@ public final class Cluster {
         private final Supplier<RequestMessage.Builder> validationRequest;
         private final HandshakeInterceptor interceptor;
 
+        /**
+         * Thread pool for requests.
+         */
         private final ScheduledThreadPoolExecutor executor;
-        private final ScheduledThreadPoolExecutor scheduler;
+
+        /**
+         * Thread pool for background work related to the {@link Host}.
+         */
+        private final ScheduledThreadPoolExecutor hostScheduler;
+
+        /**
+         * Thread pool for background work related to the {@link Connection} and {@link ConnectionPool}.
+         */
+        private final ScheduledThreadPoolExecutor connectionScheduler;
 
         private final int nioPoolSize;
         private final int workerPoolSize;
         private final int port;
         private final String path;
+        private final boolean enableUserAgentOnConnect;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -1057,6 +1097,7 @@ public final class Cluster {
             this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
             this.interceptor = builder.interceptor;
+            this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
@@ -1102,9 +1143,14 @@ public final class Cluster {
             // the executor above should be reserved for reading/writing background tasks that wont interfere with each
             // other if the thread pool is 1 otherwise tasks may be schedule in such a way as to produce a deadlock
             // as in TINKERPOP-2550. not sure if there is a way to only require the worker pool for all of this. as it
-            // sits now the worker pool probably doesn't need to be a scheduled executor type
-            this.scheduler = new ScheduledThreadPoolExecutor(1,
-                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-scheduler").build());
+            // sits now the worker pool probably doesn't need to be a scheduled executor type.
+            this.hostScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-host-scheduler-%d").build());
+
+            // we distinguish between the hostScheduler and the connectionScheduler because you can end in deadlock
+            // if all the possible jobs the driver allows for go to a single thread pool.
+            this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
             validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
         }
@@ -1199,24 +1245,33 @@ public final class Cluster {
             if (closeFuture.get() != null)
                 return closeFuture.get();
 
+            final List<CompletableFuture<Void>> clientCloseFutures = new ArrayList<>(openedClients.size());
             for (WeakReference<Client> openedClient : openedClients) {
                 final Client client = openedClient.get();
-                if (client != null && !client.isClosing()) {
-                    client.close();
+                if (client != null) {
+                    // best to call close() even if the Client is already closing so that we can be sure that
+                    // any background client closing operations are included in this shutdown future
+                    clientCloseFutures.add(client.closeAsync());
                 }
             }
 
-            final CompletableFuture<Void> closeIt = new CompletableFuture<>();
-            closeFuture.set(closeIt);
+            // when all the clients are fully closed then shutdown the netty event loop. not sure why this needs to
+            // block here, but if it doesn't then factory.shutdown() below doesn't seem to want to ever complete.
+            // ideally, this should all be async, but i guess it wasn't before this change so just going to leave it
+            // for now as this really isn't the focus on this change
+            CompletableFuture.allOf(clientCloseFutures.toArray(new CompletableFuture[0])).join();
 
-            scheduler.submit(() -> {
-                factory.shutdown();
+            final CompletableFuture<Void> closeIt = new CompletableFuture<>();
+            // shutdown the event loop. that shutdown can trigger some final jobs to get scheduled so add a listener
+            // to the termination event to shutdown remaining thread pools
+            factory.shutdown().awaitUninterruptibly().addListener(f -> {
+                executor.shutdown();
+                hostScheduler.shutdown();
+                connectionScheduler.shutdown();
                 closeIt.complete(null);
             });
 
-            // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
-            executor.shutdown();
-            scheduler.shutdown();
+            closeFuture.set(closeIt);
 
             return closeIt;
         }
@@ -1228,6 +1283,14 @@ public final class Cluster {
         @Override
         public String toString() {
             return String.join(", ", contactPoints.stream().map(InetSocketAddress::toString).collect(Collectors.<String>toList()));
+        }
+
+        /**
+         * Checks if cluster is configured to send a User Agent header
+         * in the web socket handshake
+         */
+        public boolean isUserAgentOnConnectEnabled() {
+            return enableUserAgentOnConnect;
         }
     }
 }

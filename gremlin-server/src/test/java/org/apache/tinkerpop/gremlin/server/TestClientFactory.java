@@ -30,6 +30,7 @@ public final class TestClientFactory {
 
     public static final int PORT = 45940;
     public static final URI WEBSOCKET_URI = URI.create("ws://localhost:" + PORT + "/gremlin");
+    public static final URI SSL_WEBSOCKET_URI = URI.create("wss://localhost:" + PORT + "/gremlin");
     public static final String HTTP = "http://localhost:" + PORT;
     public static final String RESOURCE_PATH = "conf/remote-objects.yaml";
 
@@ -38,7 +39,7 @@ public final class TestClientFactory {
     }
 
     public static Cluster.Builder build(final String address) {
-        return Cluster.build(address).port(45940);
+        return Cluster.build(address).port(PORT);
     }
 
     public static Cluster open() {
@@ -47,6 +48,10 @@ public final class TestClientFactory {
 
     public static WebSocketClient createWebSocketClient() {
         return new WebSocketClient(WEBSOCKET_URI);
+    }
+
+    public static WebSocketClient createSSLWebSocketClient() {
+        return new WebSocketClient(SSL_WEBSOCKET_URI);
     }
 
     public static String createURLString() {

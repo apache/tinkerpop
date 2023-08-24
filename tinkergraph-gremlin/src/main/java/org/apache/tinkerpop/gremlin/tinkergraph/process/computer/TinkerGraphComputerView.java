@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.VertexComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -30,15 +32,18 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,14 +54,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TinkerGraphComputerView {
 
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
     protected final Map<String, VertexComputeKey> computeKeys;
     private Map<Element, Map<String, List<VertexProperty<?>>>> computeProperties;
     private final Set<Object> legalVertices = new HashSet<>();
     private final Map<Object, Set<Object>> legalEdges = new HashMap<>();
     private final GraphFilter graphFilter;
+    private final Set<String> retainVertexProperties;
 
-    public TinkerGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
+    public TinkerGraphComputerView(final AbstractTinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
         this.graph = graph;
         this.computeKeys = new HashMap<>();
         computeKeys.forEach(key -> this.computeKeys.put(key.getKey(), key));
@@ -75,6 +81,11 @@ public final class TinkerGraphComputerView {
                     this.graphFilter.legalEdges(vertex).forEachRemaining(edge -> edges.add(edge.id()));
                 }
             });
+        }
+        if (this.graphFilter.hasVertexPropertyFilter()) {
+            retainVertexProperties = new HashSet<>(Arrays.asList(((PropertiesStep) graphFilter.getVertexPropertyFilter().getStartStep()).getPropertyKeys()));
+        } else {
+            retainVertexProperties = null;
         }
     }
 
@@ -97,19 +108,26 @@ public final class TinkerGraphComputerView {
     public List<VertexProperty<?>> getProperty(final TinkerVertex vertex, final String key) {
         // if the vertex property is already on the vertex, use that.
         final List<VertexProperty<?>> vertexProperty = this.getValue(vertex, key);
-        return vertexProperty.isEmpty() ? (List) TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList()) : vertexProperty;
-        //return isComputeKey(key) ? this.getValue(vertex, key) : (List) TinkerHelper.getProperties(vertex).getOrDefault(key, Collections.emptyList());
+        return vertexProperty.isEmpty() ? (List) getPropertiesMap(vertex).getOrDefault(key, Collections.emptyList()) : vertexProperty;
     }
 
     public List<Property> getProperties(final TinkerVertex vertex) {
         final List<Property> list = new ArrayList<>();
-        for (final List<VertexProperty> properties : TinkerHelper.getProperties(vertex).values()) {
+        for (final List<VertexProperty> properties : getPropertiesMap(vertex).values()) {
             list.addAll(properties);
         }
         for (final List<VertexProperty<?>> properties : this.computeProperties.getOrDefault(vertex, Collections.emptyMap()).values()) {
             list.addAll(properties);
         }
         return list;
+    }
+
+    private Map<String, List<VertexProperty>> getPropertiesMap(final TinkerVertex vertex) {
+        Map<String, List<VertexProperty>> propertiesMap = TinkerHelper.getProperties(vertex);
+        if (retainVertexProperties != null) {
+            propertiesMap.keySet().retainAll(retainVertexProperties);
+        }
+        return propertiesMap;
     }
 
     public void removeProperty(final TinkerVertex vertex, final String key, final VertexProperty property) {

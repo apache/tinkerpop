@@ -3,6 +3,7 @@ github:
   homepage: https://tinkerpop.apache.org/
   dependabot_alerts: false
   dependabot_updates: false
+  del_branch_on_merge: true
   labels:
     - tinkerpop
     - gremlin

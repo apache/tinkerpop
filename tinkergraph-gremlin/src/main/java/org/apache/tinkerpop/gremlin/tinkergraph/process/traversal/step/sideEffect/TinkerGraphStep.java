@@ -19,8 +19,10 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -29,9 +31,9 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphIterator;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -66,7 +68,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     }
 
     private Iterator<? extends Edge> edges() {
-        final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         Iterator<Edge> iterator;
         // ids are present, filter on them first
@@ -77,7 +79,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         else
             iterator = null == indexedContainer ?
                     this.iteratorList(graph.edges()) :
-                    TinkerHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
+                    TinkerIndexHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
                                 .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
                                 .collect(Collectors.<Edge>toList()).iterator();
 
@@ -88,7 +90,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     }
 
     private Iterator<? extends Vertex> vertices() {
-        final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
+        final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         Iterator<? extends Vertex> iterator;
         // ids are present, filter on them first
@@ -99,7 +101,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         else
             iterator = (null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
-                    IteratorUtils.filter(TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
+                    IteratorUtils.filter(TinkerIndexHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).iterator(),
                                          vertex -> HasContainer.testAll(vertex, this.hasContainers)));
 
         iterators.add(iterator);
@@ -108,7 +110,7 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
     }
 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
-        final Set<String> indexedKeys = ((TinkerGraph) this.getTraversal().getGraph().get()).getIndexedKeys(indexedClass);
+        final Set<String> indexedKeys = ((AbstractTinkerGraph) this.getTraversal().getGraph().get()).getIndexedKeys(indexedClass);
 
         final Iterator<HasContainer> itty = IteratorUtils.filter(hasContainers.iterator(),
                 c -> c.getPredicate().getBiPredicate() == Compare.eq && indexedKeys.contains(c.getKey()));
@@ -132,8 +134,21 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         try {
             while (iterator.hasNext()) {
                 final E e = iterator.next();
-                if (HasContainer.testAll(e, this.hasContainers))
-                    list.add(e);
+                try {
+                    if (HasContainer.testAll(e, this.hasContainers))
+                        list.add(e);
+                } catch (GremlinTypeErrorException ex) {
+                    if (getTraversal().isRoot() || !(getTraversal().getParent() instanceof FilterStep)) {
+                        /*
+                         * Either we are at the top level of the query, or our parent query is not a FilterStep and thus
+                         * cannot handle a GremlinTypeErrorException. In any of these cases we do a binary reduction
+                         * from ERROR -> FALSE and filter the solution quietly.
+                         */
+                    } else {
+                        // not a ternary -> binary reducer, pass the ERROR on
+                        throw ex;
+                    }
+                }
             }
         } finally {
             // close the old iterator to release resources since we are returning a new iterator (over list)

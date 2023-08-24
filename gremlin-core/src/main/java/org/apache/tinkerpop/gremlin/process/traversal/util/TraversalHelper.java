@@ -54,14 +54,17 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -290,6 +293,61 @@ public final class TraversalHelper {
         return list;
     }
 
+    /**
+     * Get steps of the specified classes throughout the traversal.
+     */
+    public static List<Step<?,?>> getStepsOfAssignableClassRecursively(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?,?>> list = new ArrayList<>();
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            for (Class<?> stepClass : stepClasses) {
+                if (stepClass.isAssignableFrom(step.getClass()))
+                    list.add(step);
+            }
+
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(localChild, stepClasses));
+                }
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    list.addAll(TraversalHelper.getStepsOfAssignableClassRecursively(globalChild, stepClasses));
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Get steps of the specified classes throughout the traversal, collecting them in a fashion that orders them
+     * from the deepest steps first.
+     */
+    public static List<Step<?,?>> getStepsOfAssignableClassRecursivelyFromDepth(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?,?>> list = new ArrayList<>();
+        final Stack<Step<?,?>> stack = new Stack<>();
+
+        traversal.getSteps().forEach(stack::push);
+
+        while (!stack.isEmpty()) {
+            final Step<?,?> current = stack.pop();
+            list.add(current);
+
+            if (current instanceof TraversalParent) {
+                ((TraversalParent) current).getLocalChildren().forEach(localChild -> localChild.getSteps().forEach(stack::push));
+                ((TraversalParent) current).getGlobalChildren().forEach(globalChild -> globalChild.getSteps().forEach(stack::push));
+            }
+        }
+
+        // sort by depth
+        list.sort(DepthComparator.instance());
+
+        return list.stream().filter(s -> {
+            for (Class<?> stepClass : stepClasses) {
+                if (stepClass.isAssignableFrom(s.getClass()))
+                    return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+    }
+
     public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.isRoot())) {
             if (traversal.getParent().getLocalChildren().contains(traversal))
@@ -465,7 +523,19 @@ public final class TraversalHelper {
      * @param traversal the root traversal to start application
      */
     public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal) {
-        consumer.accept(traversal);
+        applyTraversalRecursively(consumer, traversal, false);
+    }
+
+    /**
+     * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
+     *
+     * @param consumer  the function to apply to the each traversal in the tree
+     * @param traversal the root traversal to start application
+     */
+    public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal,
+                                                 final boolean applyToChildrenOnly) {
+        if (!applyToChildrenOnly)
+            consumer.accept(traversal);
 
         // we get accused of concurrentmodification if we try a for(Iterable)
         final List<Step> steps = traversal.getSteps();

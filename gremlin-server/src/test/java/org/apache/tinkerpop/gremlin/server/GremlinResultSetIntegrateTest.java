@@ -20,12 +20,8 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -36,14 +32,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +50,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +75,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final MessageSerializer<GraphBinaryMapper> graphBinaryMessageSerializerV1 = new GraphBinaryMessageSerializerV1();
 
         return Arrays.asList(new Object[][]{
-                {Serializers.GRAPHBINARY_V1D0, graphBinaryMessageSerializerV1}
+                {Serializers.GRAPHBINARY_V1, graphBinaryMessageSerializerV1}
         });
     }
 
@@ -147,21 +144,21 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandleVertexResult() throws Exception {
         final ResultSet results = client.submit("gmodern.V(1).next()");
         final Vertex v = results.all().get().get(0).getVertex();
-        assertThat(v, instanceOf(ReferenceVertex.class));
+        assertThat(v, instanceOf(DetachedVertex.class));
     }
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
         final ResultSet results = client.submit("gmodern.V().properties('name').next()");
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
-        assertThat(v, instanceOf(ReferenceVertexProperty.class));
+        assertThat(v, instanceOf(DetachedVertexProperty.class));
     }
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
         final ResultSet results = client.submit("gmodern.E().next()");
         final Edge e = results.all().get().get(0).getEdge();
-        assertThat(e, instanceOf(ReferenceEdge.class));
+        assertThat(e, instanceOf(DetachedEdge.class));
     }
 
     @Test

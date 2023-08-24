@@ -21,9 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.junit.Ignore;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -65,5 +69,36 @@ public class OrderLocalStepTest extends StepTest {
             __.inject(list).order(Scope.local).by().by(__.identity(), Order.shuffle).iterate();
             __.inject(list).order(Scope.local).by(__.identity(), Order.shuffle).by().iterate();
         }
+    }
+
+    @Test
+    public void shouldHandleSingleValue() {
+        testOrderLocalStep(1, 1);
+    }
+
+    @Test
+    public void shouldHandleEmptyArray() {
+        testOrderLocalStep(new int[0], new ArrayList<>());
+    }
+
+    @Test
+    public void shouldHandlePrimitiveArray() {
+        testOrderLocalStep(new int[] {2,-1,3}, Arrays.asList(-1,2,3));
+    }
+
+    @Test
+    public void shouldHandleObjectArray() {
+        testOrderLocalStep(new Integer[] {2,1,3}, Arrays.asList(1,2,3));
+    }
+
+    private void testOrderLocalStep(final Object input, final Object expectedResult) {
+        final Traversal.Admin traversal = mock(Traversal.Admin.class);
+        when(traversal.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
+        final Traverser.Admin traverser = mock(Traverser.Admin.class);
+        when(traverser.get()).thenReturn(input);
+
+        final OrderLocalStep orderStep = new OrderLocalStep<>(traversal);
+        final Object result = orderStep.map(traverser);
+        assertEquals(expectedResult, result);
     }
 }

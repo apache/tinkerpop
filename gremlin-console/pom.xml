@@ -21,10 +21,18 @@ limitations under the License.
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-console</artifactId>
     <name>Apache TinkerPop :: Gremlin Console</name>
+    <properties>
+    <!--Testing in macOs on ARM reveals that the linux/arm64/v8 console
+        container is quite unstable at this time and results in frequent freezes.
+        It is believed the issue lies with the ARM docker engine. The stability of ARM
+        images is likely to improve overtime and this omition should be intermittently
+        re-evaluated.-->
+        <docker.platforms>linux/amd64<!--,linux/arm64/v8--></docker.platforms>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -55,6 +63,11 @@ limitations under the License.
             <artifactId>logback-classic</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.17.1</version>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>
@@ -81,7 +94,7 @@ limitations under the License.
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
-            <version>1.56</version>
+            <version>1.58</version>
             <scope>test</scope>
             <classifier>standalone</classifier>
             <exclusions>
@@ -130,6 +143,11 @@ limitations under the License.
                     <artifactId>jopt-simple</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-cli-picocli</artifactId>
+            <version>${groovy.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -231,6 +249,10 @@ limitations under the License.
                                         <resource>NOTICE.txt</resource>
                                         <resource>NOTICE</resource>
                                         <resource>licenses</resource>
+                                        <!--Exclude kryo and minlog licenses to avoid conflict as they are included in
+                                            both gremlin-shaded and gremlin-driver-->
+                                        <resource>META-INF/licenses/kryo</resource>
+                                        <resource>META-INF/licenses/minlog</resource>
                                     </resources>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
@@ -248,14 +270,6 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/jbcrypt</resource>
                                     <file>src/main/static/licenses/jbcrypt</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-log</resource>
-                                    <file>src/main/static/licenses/jcabi-log</file>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
-                                    <resource>META-INF/licenses/jcabi-manifests</resource>
-                                    <file>src/main/static/licenses/jcabi-manifests</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/jline2</resource>
@@ -277,17 +291,61 @@ limitations under the License.
                                     <resource>META-INF/licenses/slf4j</resource>
                                     <file>src/main/static/licenses/slf4j</file>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/treelayout</resource>
+                                    <file>src/main/static/licenses/treelayout</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/logback</resource>
+                                    <file>src/main/static/licenses/logback</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/antlr4</resource>
+                                    <file>src/main/static/licenses/antlr4</file>
+                                </transformer>
                             </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <configuration>
+                        <images>
+                            <image>
+                                <name>tinkerpop/gremlin-console:${project.version}</name>
+                                <build>
+                                    <dockerFile>${project.build.directory}/../Dockerfile</dockerFile>
+                                    <args>
+                                        <GREMLIN_CONSOLE_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_CONSOLE_DIR>
+                                    </args>
+                                    <tags>
+                                        <!-- docker.tags.* properties are empty if project.version is a pre-release
+                                            resulting in no additional tags -->
+                                        <tag>${docker.tags.majorVersion.minorVersion}</tag>
+                                        <tag>${docker.tags.latest}</tag>
+                                    </tags>
+                                    <buildx>
+                                        <platforms>
+                                            <platform>${docker.platforms}</platform>
+                                        </platforms>
+                                    </buildx>
+                                </build>
+                            </image>
+                        </images>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
-        <!-- activates the building of python components and requires that python be installed on the system. use
-             the .glv file in gremlin-python as an indicator to activate -->
+        <!-- activates the building of python components through Docker.
+             use the .glv file in gremlin-python as an indicator to activate -->
         <profile>
             <id>console-integration-tests</id>
             <activation>
@@ -303,84 +361,6 @@ limitations under the License.
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>create-python-reports-directory</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipIntegrationTests}</skip>
-                                    <target>
-                                        <mkdir dir="${project.build.directory}/python-reports"/>
-                                        <mkdir dir="${project.build.directory}/python/env"/>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <!-- copy files in python directory to target/python and run virtual env to sandbox python.
-                                 there is no need to "activate" the virtualenv because all calls to python occur
-                                 directly from bin/ -->
-                            <execution>
-                                <id>setup-py-env</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipIntegrationTests}</skip>
-                                    <target>
-                                        <copy todir="${project.build.directory}/python">
-                                            <fileset dir="src/test/python"/>
-                                        </copy>
-                                        <exec dir="${project.build.directory}/python" executable="python3"
-                                              failonerror="true">
-                                            <arg line="--version"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--version"/>
-                                        </exec>
-                                        <exec dir="${project.build.directory}/python" executable="virtualenv"
-                                              failonerror="true">
-                                            <arg line="--python=python3 env"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>native-python-build</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipIntegrationTests}</skip>
-                                    <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py build --build-lib ${project.build.outputDirectory}/Lib"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>copy-gremlinsh</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipIntegrationTests}</skip>
-                                    <target>
-                                        <copy todir="${project.build.directory}/python/gremlin-console">
-                                            <fileset dir="${project.build.directory}/apache-tinkerpop-gremlin-console-${project.version}-standalone"/>
-                                        </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-
                             <!--
                             use pytest to execute native python tests - output of xunit output is configured in setup.cfg.
                             must run on integration tests because package phase has to execute to get the console binaries
@@ -395,10 +375,14 @@ limitations under the License.
                                 <configuration>
                                     <skip>${skipIntegrationTests}</skip>
                                     <target>
-                                        <exec executable="env/bin/python" dir="${project.build.directory}/python"
-                                              failonerror="true">
-                                            <env key="PYTHONPATH" value=""/>
-                                            <arg line="setup.py test"/>
+                                        <exec executable="docker" failonerror="true">
+                                            <!-- This build command relies on Docker's caching mechanism to reduce the amount of times it is run. -->
+                                            <arg line="build -t gremlin-console-test:py3.8jre11 ./src/test/python/docker"/>
+                                        </exec>
+                                        <exec executable="docker" failonerror="true">
+                                            <arg line="run --rm --mount type=bind,src=${project.basedir}/src/test/python,dst=/console_app
+                                            --mount type=bind,src=${project.basedir}/target/apache-tinkerpop-gremlin-console-${project.version}-standalone,dst=/console_app/gremlin-console
+                                            gremlin-console-test:py3.8jre11"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -429,79 +413,26 @@ limitations under the License.
                             <skip>true</skip>
                         </configuration>
                     </plugin>
+
                     <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>docker-image-build</id>
+                                <id>docker:build</id>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <buildArgs>
-                                        <GREMLIN_CONSOLE_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_CONSOLE_DIR>
-                                    </buildArgs>
-                                </configuration>
+                                <phase>package</phase>
                             </execution>
                             <execution>
-                                <id>docker-image-tag-minor-version</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-tag-latest</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push</id>
-                                <phase>deploy</phase>
+                                <id>docker:push</id>
                                 <goals>
                                     <goal>push</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-minor-version</id>
                                 <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-latest</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <repository>tinkerpop/gremlin-console</repository>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

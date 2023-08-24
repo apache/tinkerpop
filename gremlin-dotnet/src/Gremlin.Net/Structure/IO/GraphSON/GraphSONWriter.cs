@@ -24,6 +24,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -39,45 +40,44 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// </summary>
     public abstract class GraphSONWriter
     {
-        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
-            {Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping};
-        
+        private static readonly JsonSerializerOptions JsonOptions = new()
+            { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+
         /// <summary>
         /// Contains the information of serializers by type.
         /// </summary>
-        protected readonly Dictionary<Type, IGraphSONSerializer> Serializers = new Dictionary
-            <Type, IGraphSONSerializer>
-            {
-                {typeof(ITraversal), new TraversalSerializer()},
-                {typeof(Bytecode), new BytecodeSerializer()},
-                {typeof(Binding), new BindingSerializer()},
-                {typeof(RequestMessage), new RequestMessageSerializer()},
-                {typeof(int), new Int32Converter()},
-                {typeof(long), new Int64Converter()},
-                {typeof(float), new FloatConverter()},
-                {typeof(double), new DoubleConverter()},
-                {typeof(Guid), new UuidSerializer()},
-                {typeof(DateTimeOffset), new DateSerializer()},
-                {typeof(Type), new ClassSerializer()},
-                {typeof(EnumWrapper), new EnumSerializer()},
-                {typeof(P), new PSerializer()},
-                {typeof(TextP), new TextPSerializer()},
-                {typeof(Vertex), new VertexSerializer()},
-                {typeof(Edge), new EdgeSerializer()},
-                {typeof(Property), new PropertySerializer()},
-                {typeof(VertexProperty), new VertexPropertySerializer()},
-                {typeof(AbstractTraversalStrategy), new TraversalStrategySerializer()},
-                {typeof(ILambda), new LambdaSerializer()},
+        protected readonly Dictionary<Type, IGraphSONSerializer> Serializers = new()
+        {
+            { typeof(ITraversal), new TraversalSerializer() },
+            { typeof(Bytecode), new BytecodeSerializer() },
+            { typeof(Binding), new BindingSerializer() },
+            { typeof(RequestMessage), new RequestMessageSerializer() },
+            { typeof(int), new Int32Converter() },
+            { typeof(long), new Int64Converter() },
+            { typeof(float), new FloatConverter() },
+            { typeof(double), new DoubleConverter() },
+            { typeof(Guid), new UuidSerializer() },
+            { typeof(DateTimeOffset), new DateSerializer() },
+            { typeof(Type), new ClassSerializer() },
+            { typeof(EnumWrapper), new EnumSerializer() },
+            { typeof(P), new PSerializer() },
+            { typeof(TextP), new TextPSerializer() },
+            { typeof(Vertex), new VertexSerializer() },
+            { typeof(Edge), new EdgeSerializer() },
+            { typeof(Property), new PropertySerializer() },
+            { typeof(VertexProperty), new VertexPropertySerializer() },
+            { typeof(AbstractTraversalStrategy), new TraversalStrategySerializer() },
+            { typeof(ILambda), new LambdaSerializer() },
 
-                //Extended
-                {typeof(decimal), new DecimalConverter()},
-                {typeof(TimeSpan), new DurationSerializer()},
-                {typeof(BigInteger), new BigIntegerSerializer()},
-                {typeof(byte), new ByteConverter()},
-                {typeof(byte[]), new ByteBufferSerializer()},
-                {typeof(char), new CharConverter() },
-                {typeof(short), new Int16Converter() }
-            };
+            //Extended
+            { typeof(decimal), new DecimalConverter() },
+            { typeof(TimeSpan), new DurationSerializer() },
+            { typeof(BigInteger), new BigIntegerSerializer() },
+            { typeof(byte), new ByteConverter() },
+            { typeof(byte[]), new ByteBufferSerializer() },
+            { typeof(char), new CharConverter() },
+            { typeof(short), new Int16Converter() }
+        };
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphSONWriter" /> class.
@@ -106,7 +106,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// <returns>The serialized GraphSON.</returns>
         public virtual string WriteObject(dynamic objectData)
         {
-            return JsonSerializer.Serialize(ToDict(objectData), _jsonOptions);
+            return JsonSerializer.Serialize(ToDict(objectData), JsonOptions);
         }
 
         /// <summary>
@@ -114,7 +114,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         /// </summary>
         /// <param name="objectData">The object to transform.</param>
         /// <returns>A GraphSON representation of the object ready to be serialized.</returns>
-        public dynamic ToDict(dynamic objectData)
+        [return: NotNullIfNotNull("objectData")]
+        public dynamic? ToDict(dynamic? objectData)
         {
             if (objectData != null)
             {
@@ -132,13 +133,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             return objectData;         
         }
 
-        private IGraphSONSerializer TryGetSerializerFor(Type type)
+        private IGraphSONSerializer? TryGetSerializerFor(Type type)
         {
-            if (Serializers.ContainsKey(type))
+            if (Serializers.TryGetValue(type, out var serializer))
             {
-                return Serializers[type];
+                return serializer;
             }
-            foreach (var supportedType in Serializers.Keys)
+            foreach (var supportedType in new List<Type>(Serializers.Keys))
                 if (supportedType.IsAssignableFrom(type))
                 {
                     return Serializers[supportedType];

@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
@@ -41,15 +42,17 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(ITraversal value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(ITraversal value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Bytecode, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Bytecode, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Currently not supported.
         /// </summary>
-        protected override Task<ITraversal> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override Task<ITraversal> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException("Reading a traversal is not supported");
         }

@@ -22,6 +22,7 @@
 #endregion
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -29,7 +30,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// <summary>
     /// A <see cref="Property"/> serializer.
     /// </summary>
-    public class PropertySerializer : SimpleTypeSerializer<Property>
+    public class 
+        PropertySerializer : SimpleTypeSerializer<Property>
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="PropertySerializer" /> class.
@@ -39,23 +41,26 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Key, stream, false).ConfigureAwait(false);
-            await writer.WriteAsync(value.Value, stream).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Key, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent element
-            await writer.WriteAsync(null, stream).ConfigureAwait(false);
+            await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        protected override async Task<Property> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<Property> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var p = new Property((string) await reader.ReadValueAsync<string>(stream, false).ConfigureAwait(false),
-                await reader.ReadAsync(stream).ConfigureAwait(false));
+            var p = new Property(
+                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
+                await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
 
             // discard parent element
-            await reader.ReadAsync(stream).ConfigureAwait(false);
+            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             
             return p;
         }

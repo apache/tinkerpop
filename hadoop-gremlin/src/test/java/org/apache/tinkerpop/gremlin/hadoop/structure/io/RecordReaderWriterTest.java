@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,7 +35,12 @@ import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.features.TestFiles;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
+import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -84,6 +90,16 @@ public abstract class RecordReaderWriterTest {
         }
     }
 
+    protected Configuration configureWithFilter(Configuration config) {
+        GraphFilter filter = new GraphFilter();
+        filter.setVertexFilter(__.hasLabel("artist"));
+        String labelKey = "filter";
+        final BaseConfiguration filterConfig = new BaseConfiguration();
+        VertexProgramHelper.serialize(filter, filterConfig, labelKey);
+        config.set(Constants.GREMLIN_HADOOP_GRAPH_FILTER, filterConfig.getProperty(labelKey).toString());
+        return config;
+    }
+
     protected Configuration configure(final File outputDirectory) {
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
@@ -102,7 +118,7 @@ public abstract class RecordReaderWriterTest {
         return splits;
     }
 
-    private static void validateFileSplits(final List<FileSplit> fileSplits, final Configuration configuration,
+    private void validateFileSplits(final List<FileSplit> fileSplits, final Configuration configuration,
                                            final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass,
                                            final Optional<Class<? extends OutputFormat<NullWritable, VertexWritable>>> outFormatClass) throws Exception {
 
@@ -116,6 +132,12 @@ public abstract class RecordReaderWriterTest {
         final OutputFormat<NullWritable, VertexWritable> outputFormat = outFormatClass.isPresent() ? ReflectionUtils.newInstance(outFormatClass.get(), configuration) : null;
         final RecordWriter<NullWritable, VertexWritable> writer = null == outputFormat ? null : outputFormat.getRecordWriter(job);
 
+        GraphFilter graphFilter = null;
+        if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null) {
+            graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration),
+                    Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+        }
+
         boolean foundKeyValue = false;
         for (final FileSplit split : fileSplits) {
             logger.info("\treading file split {}", split.getPath().getName() + " ({}", split.getStart() + "..." + (split.getStart() + split.getLength()), "{} {} bytes)");
@@ -128,27 +150,39 @@ public abstract class RecordReaderWriterTest {
                 assertTrue(progress >= lastProgress);
                 assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
                 final VertexWritable vertexWritable = (VertexWritable) reader.getCurrentValue();
+                if (graphFilter != null) {
+                    // check whether the filter takes effect
+                    assertTrue(vertexWritable.get().applyGraphFilter(graphFilter).isPresent());
+                }
                 if (null != writer) writer.write(NullWritable.get(), vertexWritable);
                 vertexCount++;
                 outEdgeCount = outEdgeCount + (int) IteratorUtils.count(vertexWritable.get().edges(Direction.OUT));
                 inEdgeCount = inEdgeCount + (int) IteratorUtils.count(vertexWritable.get().edges(Direction.IN));
                 //
                 final Vertex vertex = vertexWritable.get();
-                assertEquals(Integer.class, vertex.id().getClass());
-                if (vertex.value("name").equals("SUGAR MAGNOLIA")) {
-                    foundKeyValue = true;
-                    assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
-                    assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
+                if (getInputFilename().startsWith("grateful-dead-v")) {
+                    assertEquals(Integer.class, vertex.id().getClass());
+                    if (vertex.value("name").equals("SUGAR MAGNOLIA")) {
+                        foundKeyValue = true;
+                        assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
+                        assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
+                    }
+                } else if (getInputFilename().startsWith("tinkerpop-classic-byteid-")) {
+                    assertTrue(vertex.id().getClass().equals(Byte.class));
                 }
                 lastProgress = progress;
             }
         }
 
-        assertEquals(8049, outEdgeCount);
-        assertEquals(8049, inEdgeCount);
-        assertEquals(outEdgeCount, inEdgeCount);
-        assertEquals(808, vertexCount);
-        assertTrue(foundKeyValue);
+        if (getInputFilename().startsWith("grateful-dead-v") && graphFilter == null) {
+            assertEquals(8049, outEdgeCount);
+            assertEquals(8049, inEdgeCount);
+            assertEquals(808, vertexCount);
+            assertTrue(foundKeyValue);
+        }
+        if (graphFilter == null) {
+            assertEquals(outEdgeCount, inEdgeCount);
+        }
 
         if (null != writer) {
             writer.close(new TaskAttemptContextImpl(configuration, job.getTaskAttemptID()));

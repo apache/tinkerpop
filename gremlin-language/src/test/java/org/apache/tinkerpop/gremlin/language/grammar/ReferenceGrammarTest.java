@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(Parameterized.class)
 public class ReferenceGrammarTest extends AbstractGrammarTest {
-    private static final String featureDir = Paths.get("..", "gremlin-test", "features").toString();
+    private static final String featureDir = Paths.get("..", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString();
     private static final String docsDir = Paths.get("..", "docs", "src").toString();
 
     private static final Pattern edgePattern = Pattern.compile(".*e\\d.*");

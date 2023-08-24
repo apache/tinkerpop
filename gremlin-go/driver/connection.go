@@ -42,21 +42,24 @@ type connection struct {
 }
 
 type connectionSettings struct {
-	authInfo          *AuthInfo
-	tlsConfig         *tls.Config
-	keepAliveInterval time.Duration
-	writeDeadline     time.Duration
-	connectionTimeout time.Duration
-	enableCompression bool
-	readBufferSize    int
-	writeBufferSize   int
+	authInfo                 AuthInfoProvider
+	tlsConfig                *tls.Config
+	keepAliveInterval        time.Duration
+	writeDeadline            time.Duration
+	connectionTimeout        time.Duration
+	enableCompression        bool
+	readBufferSize           int
+	writeBufferSize          int
+	enableUserAgentOnConnect bool
 }
 
 func (connection *connection) errorCallback() {
 	connection.logHandler.log(Error, errorCallback)
 	connection.state = closedDueToError
-	err := connection.protocol.close()
-	if err != nil {
+
+	// This callback is called from within protocol.readLoop. Therefore,
+	// it cannot wait for it to finish to avoid a deadlock.
+	if err := connection.protocol.close(false); err != nil {
 		connection.logHandler.logf(Error, failedToCloseInErrorCallback, err.Error())
 	}
 }
@@ -68,7 +71,7 @@ func (connection *connection) close() error {
 	connection.logHandler.log(Info, closeConnection)
 	var err error
 	if connection.protocol != nil {
-		err = connection.protocol.close()
+		err = connection.protocol.close(true)
 	}
 	connection.state = closed
 	return err
@@ -92,10 +95,11 @@ func (connection *connection) activeResults() int {
 
 // createConnection establishes a connection with the given parameters. A connection should always be closed to avoid
 // leaking connections. The connection has the following states:
-// 		initialized: connection struct is created but has not established communication with server
-// 		established: connection has established communication established with the server
-// 		closed: connection was closed by the user.
-//		closedDueToError: connection was closed internally due to an error.
+//
+//	initialized: connection struct is created but has not established communication with server
+//	established: connection has established communication established with the server
+//	closed: connection was closed by the user.
+//	closedDueToError: connection was closed internally due to an error.
 func createConnection(url string, logHandler *logHandler, connSettings *connectionSettings) (*connection, error) {
 	conn := &connection{
 		logHandler,

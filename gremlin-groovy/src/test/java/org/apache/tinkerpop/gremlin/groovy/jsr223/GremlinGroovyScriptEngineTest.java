@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformat
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
@@ -36,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -124,7 +126,6 @@ public class GremlinGroovyScriptEngineTest {
     public void shouldPromoteDefinedVarsInInterpreterModeWithNoBindings() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new InterpreterModeGroovyCustomizer());
         engine.eval("def addItUp = { x, y -> x + y }");
-        engine.eval("def class A { def sub(int x, int y) {x - y}}");
         assertEquals(3, engine.eval("int xxx = 1 + 2"));
         assertEquals(4, engine.eval("yyy = xxx + 1"));
         assertEquals(7, engine.eval("def zzz = yyy + xxx"));
@@ -140,7 +141,6 @@ public class GremlinGroovyScriptEngineTest {
             assertThat(root, instanceOf(MissingPropertyException.class));
         }
 
-        assertEquals(9, engine.eval("new A().sub(10, 1)"));
         assertEquals(10, engine.eval("addItUp(zzz,xxx)"));
     }
 
@@ -477,6 +477,7 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldProduceBindingsForVars() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
+                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
                 (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
 
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
@@ -486,7 +487,7 @@ public class GremlinGroovyScriptEngineTest {
         final Traversal.Admin<Vertex, Vertex> t = (Traversal.Admin<Vertex, Vertex>)
                 engine.eval("g.V(v1Id).has(\"person\",\"age\",29).has('person','active',x).in(\"knows\")." +
                         System.lineSeparator() +
-                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3)." +
+                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3).mergeV(__.identity())." +
                         System.lineSeparator() +
                         "choose(__.out().count()).option(two, __.values(\"name\")).option(three, __.values(\"age\"))." +
                         System.lineSeparator() +
@@ -514,7 +515,7 @@ public class GremlinGroovyScriptEngineTest {
         assertThat(bytecodeBindings.containsKey("two"), is(true));
         assertThat(bytecodeBindings.containsKey("three"), is(true));
 
-        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
+        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).merge_v(__.identity()).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
     }
 
     @Test
@@ -616,5 +617,30 @@ public class GremlinGroovyScriptEngineTest {
         bindings.put("g", g);
         ambiguousNullEngine.eval("g.V().hasId(null)", bindings);
         ambiguousNullEngine.eval("g.V().hasId(P.eq(1), null)", bindings);
+    }
+
+    /**
+     * Reproducer for TINKERPOP-2953.
+     */
+    @Test
+    public void shouldBeAbleToCallStaticallyImportedValuesMethodWithArgument() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Object values = engine.eval("values('a')");
+        assertTrue(values instanceof GraphTraversal);
+    }
+
+    @Test
+    public void shouldBeAbleToCallStaticallyImportedValuesMethodWithoutArguments() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.eval("values()");
+        // values() is evaluated ambiguously by Groovy and could either be Column.values() or __.values()
+        // so assume it works if no "groovy.lang.MissingMethodException: No signature of method" thrown.
+    }
+
+    @Test
+    public void shouldBeAbleToCallColumnEnumConstantValues() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Object values = engine.eval("values");
+        assertEquals(Column.values, values);
     }
 }

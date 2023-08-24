@@ -33,7 +33,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="obj">The object of the traverser.</param>
         /// <param name="bulk">The number of traversers represented in this traverser.</param>
-        public Traverser(dynamic obj, long bulk = 1)
+        public Traverser(dynamic? obj, long bulk = 1)
         {
             Object = obj;
             Bulk = bulk;
@@ -42,7 +42,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the object of this traverser.
         /// </summary>
-        public dynamic Object { get; }
+        public dynamic? Object { get; }
 
         /// <summary>
         ///     Gets the number of traversers represented in this traverser.
@@ -50,7 +50,7 @@ namespace Gremlin.Net.Process.Traversal
         public long Bulk { get; internal set; }
 
         /// <inheritdoc />
-        public bool Equals(Traverser other)
+        public bool Equals(Traverser? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -58,7 +58,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;

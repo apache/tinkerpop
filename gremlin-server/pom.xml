@@ -21,10 +21,19 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Apache TinkerPop :: Gremlin Server</name>
+    <properties>
+        <!--
+        provides a way to convert maven.exec.skip value to skipImageBuild for use in skipping image building for testing
+        under incompatible platforms
+        -->
+        <maven.exec.skip>false</maven.exec.skip> <!-- default -->
+        <skipImageBuild>${maven.exec.skip}</skipImageBuild>
+        <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -33,7 +42,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>gremlin-driver</artifactId>
+            <artifactId>gremlin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -73,6 +82,12 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-driver</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.carrotsearch</groupId>
             <artifactId>junit-benchmarks</artifactId>
             <version>0.7.2</version>
@@ -84,9 +99,9 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tinkerpop</groupId>
-            <artifactId>neo4j-gremlin</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${guice.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -148,9 +163,93 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
+            <!--
+            gremlin server image will be generated on each build as language variants will need the latest to do
+            their work.
+            -->
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <id>build-image</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipImageBuild}</skip>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-f</argument>
+                                <argument>./Dockerfile</argument>
+                                <argument>--build-arg</argument>
+                                <argument>GREMLIN_SERVER_DIR=target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</argument>
+                                <argument>-t</argument>
+                                <argument>tinkerpop/gremlin-server:${project.version}</argument>
+                                <argument>.</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>remove-dangling-images</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipImageBuild}</skip>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>image</argument>
+                                <argument>prune</argument>
+                                <argument>--filter</argument>
+                                <argument>label=maintainer=dev@tinkerpop.apache.org</argument>
+                                <argument>-f</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <configuration>
+                        <images>
+                            <image>
+                                <name>tinkerpop/gremlin-server:${project.version}</name>
+                                <build>
+                                    <dockerFile>${project.build.directory}/../Dockerfile</dockerFile>
+                                    <args>
+                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
+                                    </args>
+                                    <tags>
+                                        <!-- docker.tags.* properties are empty if project.version is a pre-release
+                                            resulting in no additional tags -->
+                                        <tag>${docker.tags.majorVersion.minorVersion}</tag>
+                                        <tag>${docker.tags.latest}</tag>
+                                    </tags>
+                                    <buildx>
+                                        <platforms>
+                                            <platform>${docker.platforms}</platform>
+                                        </platforms>
+                                    </buildx>
+                                </build>
+                            </image>
+                        </images>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
     <profiles>
+
         <profile>
             <id>use-epoll</id>
             <activation>
@@ -168,129 +267,6 @@ limitations under the License.
                             <systemPropertyVariables>
                                 <gremlin.server.epoll>true</gremlin.server.epoll>
                             </systemPropertyVariables>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-
-        <profile>
-            <!--
-              This profile will include neo4j for purposes of transactional testing within Gremlin Server.
-              Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
-            -->
-            <id>include-neo4j</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>includeNeo4j</name>
-                </property>
-            </activation>
-            <dependencies>
-                <!-- TESTING -->
-                <!-- *** WARNING *** -->
-                <dependency>
-                    <groupId>org.neo4j</groupId>
-                    <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.9-3.4.0</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.neo4j</groupId>
-                            <artifactId>neo4j-kernel</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.commons</groupId>
-                            <artifactId>commons-lang3</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.commons</groupId>
-                            <artifactId>commons-text</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>com.github.ben-manes.caffeine</groupId>
-                            <artifactId>caffeine</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-library</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.scala-lang</groupId>
-                            <artifactId>scala-reflect</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-nop</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-core</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>io.dropwizard.metrics</groupId>
-                            <artifactId>metrics-core</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>io.netty</groupId>
-                            <artifactId>netty-all</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.ow2.asm</groupId>
-                            <artifactId>asm</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                    <version>2.11.8</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                    <version>2.11.8</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-core</artifactId>
-                    <version>5.5.0</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>io.dropwizard.metrics</groupId>
-                    <artifactId>metrics-core</artifactId>
-                    <version>4.0.2</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.neo4j</groupId>
-                    <artifactId>neo4j-kernel</artifactId>
-                    <version>3.4.11</version>
-                    <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>io.netty</groupId>
-                            <artifactId>netty-all</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <!-- *** WARNING *** -->
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -318,78 +294,24 @@ limitations under the License.
                         </configuration>
                     </plugin>
                     <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>dockerfile-maven-plugin</artifactId>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>docker-image-build</id>
+                                <id>docker:build</id>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <buildArgs>
-                                        <GREMLIN_SERVER_DIR>target/apache-tinkerpop-${project.artifactId}-${project.version}-standalone</GREMLIN_SERVER_DIR>
-                                    </buildArgs>
-                                </configuration>
+                                <phase>package</phase>
                             </execution>
                             <execution>
-                                <id>docker-image-tag-minor-version</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-tag-latest</id>
-                                <goals>
-                                    <goal>tag</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push</id>
-                                <phase>deploy</phase>
+                                <id>docker:push</id>
                                 <goals>
                                     <goal>push</goal>
                                 </goals>
-                                <configuration>
-                                    <tag>${project.version}</tag>
-                                    <skip>${only.when.is.snapshot.used}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-minor-version</id>
                                 <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-image-push-latest</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>push</goal>
-                                </goals>
-                                <configuration>
-                                    <tag>latest</tag>
-                                    <skip>${only.when.is.prerelease.version}</skip>
-                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <repository>tinkerpop/gremlin-server</repository>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

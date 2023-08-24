@@ -21,9 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 	"math/big"
 	"os"
 	"reflect"
@@ -33,6 +30,10 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
 const personLabel = "Person"
@@ -44,6 +45,7 @@ const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
 const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
 const testServerModernGraphAlias = "gmodern"
 const testServerGraphAlias = "gimmutable"
+const testServerCrewGraphAlias = "gcrew"
 const manualTestSuiteName = "manual"
 const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
 
@@ -55,14 +57,15 @@ var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valenty
 
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
-		authInfo:          &AuthInfo{},
-		tlsConfig:         &tls.Config{},
-		keepAliveInterval: keepAliveIntervalDefault,
-		writeDeadline:     writeDeadlineDefault,
-		connectionTimeout: connectionTimeoutDefault,
-		enableCompression: false,
-		readBufferSize:    0,
-		writeBufferSize:   0,
+		authInfo:                 &AuthInfo{},
+		tlsConfig:                &tls.Config{},
+		keepAliveInterval:        keepAliveIntervalDefault,
+		writeDeadline:            writeDeadlineDefault,
+		connectionTimeout:        connectionTimeoutDefault,
+		enableCompression:        false,
+		enableUserAgentOnConnect: true,
+		readBufferSize:           0,
+		writeBufferSize:          0,
 	}
 }
 
@@ -89,7 +92,7 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	assert.Nil(t, <-promise)
 }
 
-func getTestGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+func getTestGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
@@ -103,7 +106,7 @@ func getTestGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *Gr
 	return g
 }
 
-func initializeGraph(t *testing.T, url string, auth *AuthInfo, tls *tls.Config) *GraphTraversalSource {
+func initializeGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
 	g := getTestGraph(t, url, auth, tls)
 
 	// Drop the graph and check that it is empty.
@@ -379,7 +382,7 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, connection)
 		assert.Equal(t, established, connection.state)
 		defer deferredCleanup(t, connection)
-		request := makeStringRequest("g.V().count()", "g", "")
+		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
@@ -397,7 +400,7 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, connection)
 		assert.Equal(t, established, connection.state)
 		defer deferredCleanup(t, connection)
-		request := makeStringRequest("g.V().count()", "g", "")
+		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
@@ -433,7 +436,7 @@ func TestConnection(t *testing.T) {
 		err = connection.close()
 		assert.Nil(t, err)
 		assert.Equal(t, closed, connection.state)
-		request := makeStringRequest("g.V().count()", "g", "")
+		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, resultSet)
 		assert.Equal(t, newError(err0102WriteConnectionClosedError), err)
@@ -449,7 +452,7 @@ func TestConnection(t *testing.T) {
 		assert.Equal(t, established, connection.state)
 		assert.Nil(t, err)
 		time.Sleep(120 * time.Second)
-		request := makeStringRequest("g.V().count()", "g", "")
+		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
 		resultSet, err := connection.write(&request)
 		assert.Nil(t, resultSet)
 		assert.NotNil(t, err)
@@ -857,7 +860,7 @@ func TestConnection(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, r)
 		assert.Equal(t, 1, len(r))
-		metrics := r[0].result.(*TraversalMetrics)
+		metrics := r[0].Data.(*TraversalMetrics)
 		assert.NotNil(t, metrics)
 		assert.GreaterOrEqual(t, len(metrics.Metrics), 2)
 
@@ -878,7 +881,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result.(*GremlinType))
+		assert.Equal(t, prop, r.Data.(*GremlinType))
 
 		resetGraph(t, g)
 	})
@@ -897,7 +900,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result.(*BigDecimal))
+		assert.Equal(t, prop, r.Data.(*BigDecimal))
 
 		resetGraph(t, g)
 	})
@@ -916,7 +919,7 @@ func TestConnection(t *testing.T) {
 
 		r, err := g.V().HasLabel("type_test").Values("data").Next()
 		assert.Nil(t, err)
-		assert.Equal(t, prop, r.result)
+		assert.Equal(t, prop, r.Data)
 
 		resetGraph(t, g)
 	})
@@ -980,7 +983,6 @@ func TestConnection(t *testing.T) {
 				})
 			assert.Nil(t, err)
 			assert.NotNil(t, remote)
-			defer remote.Close()
 
 			session1, _ := remote.CreateSession()
 			assert.NotNil(t, session1.client.session)
@@ -992,6 +994,9 @@ func TestConnection(t *testing.T) {
 			session3, _ := remote.CreateSession()
 			assert.NotNil(t, session3.client.session)
 			assert.Equal(t, 3, len(remote.spawnedSessions))
+
+			remote.Close()
+			assert.Equal(t, 0, len(remote.spawnedSessions))
 		})
 
 		t.Run("Test session failures", func(t *testing.T) {
@@ -1120,5 +1125,109 @@ func TestConnection(t *testing.T) {
 
 		// This routine.
 		assert.Equal(t, startCount, runtime.NumGoroutine())
+	})
+
+	t.Run("Test per-request arguments", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		defer g.remoteConnection.Close()
+
+		reqArgsTests := []struct {
+			msg       string
+			traversal *GraphTraversal
+			nilErr    bool
+		}{
+			{
+				"Traversal must time out (With)",
+				g.
+					With("evaluationTimeout", 10).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must finish (With)",
+				g.
+					With("evaluationTimeout", 10000).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				true,
+			},
+			{
+				"evaluationTimeout is overridden and traversal must time out (With)",
+				g.
+					With("evaluationTimeout", 10000).With("evaluationTimeout", 10).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must time out (OptionsStrategy)",
+				g.
+					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10})).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				false,
+			},
+			{
+				"Traversal must finish (OptionsStrategy)",
+				g.
+					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10000})).
+					Inject(1).
+					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
+				true,
+			},
+		}
+
+		gotErrs := make([]<-chan error, len(reqArgsTests))
+
+		// Run tests in parallel.
+		for i, tt := range reqArgsTests {
+			gotErrs[i] = tt.traversal.Iterate()
+		}
+
+		// Check error promises.
+		for i, tt := range reqArgsTests {
+			assert.Equal(t, <-gotErrs[i] == nil, tt.nilErr, tt.msg)
+		}
+	})
+
+	t.Run("Get all properties when materializeProperties is all", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", MaterializeProperties.All).V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithProperties(t, r)
+	})
+
+	t.Run("Skip properties when materializeProperties is tokens", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// vertex contains 2 properties, name and age
+		r, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithoutProperties(t, r)
+	})
+
+	t.Run("Get all properties when no materializeProperties", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		r, err := g.V().Has("person", "name", "marko").Next()
+		assert.Nil(t, err)
+
+		AssertMarkoVertexWithProperties(t, r)
 	})
 }

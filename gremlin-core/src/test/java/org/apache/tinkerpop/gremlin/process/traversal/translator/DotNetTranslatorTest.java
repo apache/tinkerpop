@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -35,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -192,6 +194,17 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityWithProperty() {
+        assertEquals("g.V().HasLabel(\"person\").Property(Cardinality.Single,\"name\",(object) null)", translator.translate(
+                g.V().hasLabel("person").property(VertexProperty.Cardinality.single, "name", null)).getScript());
+    }
+
+    @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("CardinalityValue.Set(\"test\")", VertexProperty.Cardinality.set("test"));
+    }
+
+    @Test
     public void shouldTranslateHasNull() {
         String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(\"k\",(object) null)", script);
@@ -201,8 +214,8 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateMergeVNull() {
-        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).asAdmin().getBytecode()).getScript();
-        assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null)", script);
+        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).mergeV(__.identity()).asAdmin().getBytecode()).getScript();
+        assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null).MergeV((ITraversal) __.Identity())", script);
     }
 
     @Test

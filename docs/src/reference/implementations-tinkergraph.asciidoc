@@ -160,6 +160,9 @@ also be specified.  If this value is not included (default), then the graph will
 loaded/persisted to disk.
 |=========================================================
 
+NOTE: To use <<tinkergraph-gremlin-tx, transactions>>, configure `gremlin.graph` as
+`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph`.
+
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
 properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully
 qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values
@@ -198,3 +201,157 @@ g = traversal().withEmbedded(graph)
 g.io("data/tinkerpop-crew.kryo").read().iterate()
 g.V().properties()
 ----
+
+[[tinkergraph-gremlin-tx]]
+=== Transactions
+
+`TinkerGraph` includes optional transaction support and thread-safety through the `TinkerTransactionGraph` class.
+The default configuration of TinkerGraph remains non-transactional.
+
+NOTE: This feature was first made available in TinkerPop 3.7.0.
+
+==== Transaction Semantics
+
+`TinkerTransactionGraph` only has support for `ThreadLocal` transactions, so embedded graph transactions may not be fully
+supported. You can think of the transaction as belonging to a thread, any traversals executed within the same thread
+will share the same transaction even if you attempt to start a new transaction.
+
+`TinkerTransactionGraph` provides the `read committed` transaction isolation level. This means that it will always try to
+guard against dirty reads. While you may notice stricter isolation semantics in some cases, you should not depend on
+this behavior as it may change in the future.
+
+`TinkerTransactionGraph` employs optimistic locking as its locking strategy. This reduces complexity in the design as
+there are fewer timeouts that the user needs to manage. However, a consequence of this approach is that a transaction
+will throw a `TransactionException` if two different transactions attempt to lock the same element (see "Best Practices"
+below).
+
+[[testing-remote-providers]]
+==== Testing Remote Providers
+
+These transaction semantics described above may not fit use cases for some production scenarios that require strict
+ACID-like transactions. Therefore, it is recommended that `TinkerTransactionGraph` be used as a `Graph` for test
+environments where you still require access to a `Graph` that supports transactions. `TinkerTransactionGraph` does fully
+support TinkerPop's `Transaction` interface which still makes it a useful `Graph` for exploring the
+<<transactions,Transaction API>>.
+
+A common scenario where this sort of testing is helpful is with <<connecting-rgp, Remote Graph Providers>>, where
+developing unit tests might be hard against a graph service. Instead, configure `TinkerTransactionGraph`, either in an
+embedded style if using Java or with Gremlin Server for other cases.
+
+[source,java]
+----
+// consider this class that returns the results of some Gremlin. by constructing the
+// GraphService in a way that takes a GraphTraversalSource it becomes possible to
+// execute getPersons() under any graph system.
+public class GraphService {
+    private final GraphTraversalSource g;
+
+    public GraphService(GraphTraversalSource g) {
+        this.g = g;
+    }
+
+    public List<Vertex> getPersons() {
+        return g.V().hasLabel("person").toList();
+    }
+}
+
+// when writing tests for the GraphService it becomes possible to configure the test
+// to run in a variety of scenarios. here we decide that TinkerTransactionGraph is a
+// suitable test graph replacement for our actual production graph.
+public class GraphServiceTest {
+    private static final TinkerTransactionGraph graph = TinkerTransactionGraph().open();
+    private static final GraphTraversalSource g = traversal.withEmbedded(graph);
+    private static final GraphService service = new GraphService(g);
+
+    @Test
+    public void shouldGetPersons() {
+        final List<Vertex> persons = service.getPersons();
+        assertEquals(6, persons.size());
+    }
+}
+
+// or perhaps, since we're using a remote graph provider, we feel it would be better to
+// start Gremlin Server with a TinkerTransactionGraph configured using a docker container,
+// embedding it directly in our tests or running it as a separate process like:
+//
+// bin/gremlin-server.sh conf/gremlin-server-transaction.yaml
+//
+// and then connect to it with a driver in more of an integration test style. obviously,
+// with this approach you could also configure your production graph directly or use custom
+// build options to trigger different test configurations for a more dynamic approach
+public class GraphServiceTest {
+    private static final GraphTraversalSource g = traversal.withRemote(
+            new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+    private static final GraphService service = new GraphService(g);
+
+    @Test
+    public void shouldGetPersons() {
+        final List<Vertex> persons = service.getPersons();
+        assertEquals(6, persons.size());
+    }
+}
+----
+
+WARNING: There can be subtle behavioral differences between TinkerGraph and the graph ultimately intended for use.
+Be aware of the differences when writing tests to ensure that you are testing behaviors of your applications
+appropriately.
+
+==== Best Practices
+
+Errors can occur before a transaction gets committed. Specifically for `TinkerTransactionGraph`, you may encounter many
+`TransactionException` errors in a highly concurrent environment due its optimistic approach to locking. Users should
+follow the try-catch-rollback pattern described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions] section in combination with
+exponential backoff based retries to mitigate this issue.
+
+==== Performance Considerations
+
+While transactions impose minimal impact for mutating workloads, users should expect performance degradation for
+read-only work relative to the non-transactional configuration. However, its approach to locking
+(write-only, optimistic) and its in-memory nature, TinkerTransactionGraph is likely faster than other `Graph`
+implementations that support transactions.
+
+==== Examples
+
+Constructing a simple graph using `TinkerTransactionGraph` in Java is presented below:
+
+[source,java]
+----
+Graph graph = TinkerTransactionGraph.open();
+g = traversal().withEmbedded(graph)
+GraphTraversalSource gtx = g.tx().begin();
+
+try {
+  Vertex marko = gtx.addV("person").property("name","marko").property("age",29).next();
+  Vertex lop = gtx.addV("software").property("name","lop").property("lang","java").next();
+  gtx.addE("created").from(marko).to(lop).property("weight",0.6d).iterate();
+
+  gtx.tx().commit();
+} catch (Exception ex) {
+  gtx.tx().rollback();
+}
+----
+
+The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
+property. In case of any errors `rollback()` will be called and no changes will be performed.
+
+To use the embedded TinkerTransactionGraph in Gremlin Console:
+
+[gremlin-groovy]
+----
+graph = TinkerTransactionGraph.open() <1>
+g = traversal().withEmbedded(graph) <2>
+g.addV('test').property('name','one')
+g.tx().commit() <3>
+g.V().valueMap()
+g.addV('test').property('name','two') <4>
+g.V().valueMap()
+g.tx().rollback() <5>
+g.V().valueMap()
+----
+
+<1> Open transactional graph.
+<2> Spawn a GraphTraversalSource with transactional graph.
+<3> Commit the add vertex operation
+<4> Add a second vertex without committing
+<5> Rollback the change

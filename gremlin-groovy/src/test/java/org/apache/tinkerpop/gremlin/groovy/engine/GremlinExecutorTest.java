@@ -356,14 +356,14 @@ public class GremlinExecutorTest {
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
-                    .evaluationTimeoutOverride(250L).create();
-            gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
+                    .evaluationTimeoutOverride(100L).create();
+            gremlinExecutor.eval("Thread.sleep(9000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
             fail("This script should have timed out with an exception");
         } catch (Exception ex) {
             assertEquals(TimeoutException.class, ex.getCause().getClass());
         }
 
-        assertTrue(timeOutCount.await(2000, TimeUnit.MILLISECONDS));
+        assertTrue(timeOutCount.await(10000, TimeUnit.MILLISECONDS));
 
         assertFalse(successCalled.get());
         assertFalse(failureCalled.get());

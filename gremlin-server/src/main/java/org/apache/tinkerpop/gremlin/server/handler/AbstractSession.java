@@ -23,13 +23,12 @@ import groovy.lang.GroovyRuntimeException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.driver.Client;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
@@ -75,6 +74,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -110,6 +110,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     protected final GraphManager graphManager;
     protected final ConcurrentMap<String, Session> sessions;
     protected final Set<String> aliasesUsedBySession = new HashSet<>();
+    protected final AtomicBoolean sessionTaskStarted = new AtomicBoolean(false);
 
     /**
      * The reason that a particular session closed. The reason for the close is generally not important as a
@@ -175,6 +176,10 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         final FutureTask<?> sf = (FutureTask) sessionFuture.get();
         if (sf != null && !sf.isDone()) {
             sf.cancel(mayInterruptIfRunning);
+
+            if (!sessionTaskStarted.get()) {
+                sendTimeoutResponseForUncommencedTask();
+            }
         }
     }
 
@@ -205,6 +210,12 @@ public abstract class AbstractSession implements Session, AutoCloseable {
     public GremlinScriptEngine getScriptEngine(final SessionTask sessionTask, final String language) {
         return sessionTask.getGremlinExecutor().getScriptEngineManager().getEngineByName(language);
     }
+
+    /**
+     * Respond to the client with the specific timeout response for this Session implementation.
+     * This is for situations where the Session hasn't started running.
+     */
+    protected abstract void sendTimeoutResponseForUncommencedTask();
 
     @Override
     public void setSessionCancelFuture(final ScheduledFuture<?> f) {
@@ -269,8 +280,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
 
             if (itty.isPresent())
                 handleIterator(sessionTask, itty.get());
-        } catch (Exception ex) {
-            handleException(sessionTask, ex);
+        } catch (Throwable t) {
+            handleException(sessionTask, t);
         } finally {
             timer.stop();
         }
@@ -673,6 +684,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                 throw new IllegalStateException(String.format(
                         "Bytecode in request is not a recognized graph operation: %s", bytecode.toString()));
             }
+        } else {
+            throw Graph.Exceptions.transactionsNotSupported();
         }
     }
 
@@ -723,6 +736,8 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         final Map<String, Object> responseMetaData = generateResponseMetaData(sessionTask, code, itty);
         final Map<String, Object> statusAttributes = generateStatusAttributes(sessionTask, code, itty);
         try {
+            sessionTask.handleDetachment(aggregate);
+
             if (useBinary) {
                 return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
                         .code(code)
@@ -737,7 +752,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                         .code(code)
                         .statusAttributes(statusAttributes)
                         .responseMetaData(responseMetaData)
-                        .result(aggregate).create()));
+                        .result(aggregate).create(), nettyContext.alloc()));
             }
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);

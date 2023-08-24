@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -61,6 +60,12 @@ public class GolangTranslatorTest {
         final String gremlinAsGo = translator.translate(
                 g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
         assertEquals("g.AddV(\"person\").Property(gremlingo.Cardinality.List, \"name\", \"marko\")", gremlinAsGo);
+    }
+
+    @Test
+    public void shouldTranslateCardinalityValue() {
+        assertEquals("g.Inject(gremlingo.CardinalityValue.Set(\"test\"))", translator.translate(
+                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getBytecode()).getScript());
     }
 
     @Test
@@ -108,7 +113,7 @@ public class GolangTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(int32(1)).V()." +
+        assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(1).V()." +
                         "Filter(&gremlingo.Lambda{Script:\"x -> x.get().label() == 'person'\", Language:\"\"})." +
                         "FlatMap(&gremlingo.Lambda{Script:\"it.get().vertices(Direction.OUT)\", Language:\"\"})." +
                         "Map(&gremlingo.Lambda{Script:\"x -> x : len(x.get().value('name'))\", Language:\"\"})." +

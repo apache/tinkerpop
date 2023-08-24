@@ -420,6 +420,7 @@ public class GroovyTranslatorTests
             { _g.V().Has("runways", P.Inside(3, 5)), "g.V().has('runways', P.inside([3, 5]))" },
             { _g.V("44").OutE().ElementMap<object>(), "g.V('44').outE().elementMap()" },
             { _g.V("44").ValueMap<object, object>().By(__.Unfold<object>()), "g.V('44').valueMap().by(__.unfold())" },
+            { _g.V().E("1"), "g.V().E('1')" },
 
             // TODO: Support WithOptions
             {
@@ -485,7 +486,7 @@ public class GroovyTranslatorTests
         }
     }
 
-    private void AssertTranslation(string expectedTranslation, params object[] objs)
+    private void AssertTranslation(string expectedTranslation, params object?[]? objs)
     {
         AssertTraversalTranslation($"g.inject({expectedTranslation})", _g.Inject(objs));
     }

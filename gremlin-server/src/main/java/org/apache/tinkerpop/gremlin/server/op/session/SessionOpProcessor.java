@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.gremlin.server.op.session;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -67,6 +67,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -406,6 +407,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         // final Timer.Context timerContext = traversalOpTimer.time();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
+            context.setStartedResponse();
             final Graph graph = g.getGraph();
 
             try {
@@ -450,10 +452,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     }
                     onError(graph, context);
                 }
-            } catch (Exception ex) {
+            } catch (Throwable t) {
+                onError(graph, context);
                 // if any exception in the chain is TemporaryException or Failure then we should respond with the
                 // right error code so that the client knows to retry
-                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
                 if (possibleSpecialException.isPresent()) {
                     final Throwable special = possibleSpecialException.get();
                     final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
@@ -468,15 +471,26 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     }
                     context.writeAndFlush(specialResponseMsg.create());
                 } else {
-                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), ex);
+                    logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
                     context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(ex.getMessage())
-                            .statusAttributeException(ex).create());
+                            .statusMessage(t.getMessage())
+                            .statusAttributeException(t).create());
                 }
-                onError(graph, context);
+                if (t instanceof Error) {
+                    //Re-throw any errors to be handled by and set as the result of evalFuture
+                    throw t;
+                }
             } finally {
                 // todo: timer matter???
                 //timerContext.stop();
+
+                // There is a race condition that this query may have finished before the timeoutFuture was created,
+                // though this is very unlikely. This is handled in the settor, if this has already been grabbed.
+                // If we passed this point and the setter hasn't been called, it will cancel the timeoutFuture inside
+                // the setter to compensate.
+                final ScheduledFuture<?> timeoutFuture = context.getTimeoutExecutor();
+                if (null != timeoutFuture)
+                    timeoutFuture.cancel(true);
             }
 
             return null;
@@ -490,7 +504,12 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         final Future<?> executionFuture = session.getGremlinExecutor().getExecutorService().submit(evalFuture);
         if (seto > 0) {
             // Schedule a timeout in the thread pool for future execution
-            context.getScheduledExecutorService().schedule(() -> executionFuture.cancel(true), seto, TimeUnit.MILLISECONDS);
+            context.setTimeoutExecutor(context.getScheduledExecutorService().schedule(() -> {
+                executionFuture.cancel(true);
+                if (!context.getStartedResponse()) {
+                    context.sendTimeoutResponse();
+                }
+            }, seto, TimeUnit.MILLISECONDS));
         }
     }
 
@@ -523,10 +542,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                 .statusAttributes(attributes)
                                 .create());
 
-                    } catch (Exception ex) {
+                    } catch (Throwable t) {
+                        onError(graph, context);
                         // if any exception in the chain is TemporaryException or Failure then we should respond with the
                         // right error code so that the client knows to retry
-                        final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                        final Optional<Throwable> possibleSpecialException = determineIfSpecialException(t);
                         if (possibleSpecialException.isPresent()) {
                             final Throwable special = possibleSpecialException.get();
                             final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
@@ -542,12 +562,15 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                             context.writeAndFlush(specialResponseMsg.create());
                         } else {
                             logger.warn(String.format("Exception processing a Traversal on request [%s] to %s the transaction.",
-                                    msg.getRequestId(), commit ? "commit" : "rollback"), ex);
+                                    msg.getRequestId(), commit ? "commit" : "rollback"), t);
                             context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                    .statusMessage(ex.getMessage())
-                                    .statusAttributeException(ex).create());
+                                    .statusMessage(t.getMessage())
+                                    .statusAttributeException(t).create());
                         }
-                        onError(graph, context);
+                        if (t instanceof Error) {
+                            //Re-throw any errors to be handled by and set as the result the FutureTask
+                            throw t;
+                        }
                     }
 
                     return null;
@@ -556,6 +579,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 throw new IllegalStateException(String.format(
                         "Bytecode in request is not a recognized graph operation: %s", bytecode.toString()));
             }
+        } else {
+            throw Graph.Exceptions.transactionsNotSupported();
         }
     }
 

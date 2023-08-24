@@ -33,8 +33,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -66,7 +68,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     private Persist persist = null;
 
     private VertexProgram<?> vertexProgram;
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
     private TinkerMemory memory;
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
@@ -82,7 +84,7 @@ public final class TinkerGraphComputer implements GraphComputer {
      */
     private final ExecutorService computerService = Executors.newSingleThreadExecutor(threadFactoryBoss);
 
-    public TinkerGraphComputer(final TinkerGraph graph) {
+    public TinkerGraphComputer(final AbstractTinkerGraph graph) {
         this.graph = graph;
     }
 
@@ -125,6 +127,12 @@ public final class TinkerGraphComputer implements GraphComputer {
     @Override
     public GraphComputer edges(final Traversal<Vertex, Edge> edgeFilter) {
         this.graphFilter.setEdgeFilter(edgeFilter);
+        return this;
+    }
+
+    @Override
+    public GraphComputer vertexProperties(Traversal<Vertex, ? extends Property<?>> vertexPropertyFilter) {
+        this.graphFilter.setVertexPropertyFilter(vertexPropertyFilter);
         return this;
     }
 

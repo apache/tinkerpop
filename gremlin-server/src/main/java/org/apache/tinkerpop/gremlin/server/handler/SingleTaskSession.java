@@ -50,6 +50,11 @@ public class SingleTaskSession extends AbstractSession {
         return false;
     }
 
+    @Override
+    public void sendTimeoutResponseForUncommencedTask() {
+        onlySessionTask.sendTimeoutResponse();
+    }
+
     /**
      * This implementation only take a single {@link SessionTask} on construction - no additional tasks can be
      * submitted.
@@ -61,6 +66,8 @@ public class SingleTaskSession extends AbstractSession {
 
     @Override
     public void run() {
+        sessionTaskStarted.set(true);
+
         // allow the Session to know about the thread that is running it - the thread really only has relevance
         // once the session has started.
         this.sessionThread = Thread.currentThread();

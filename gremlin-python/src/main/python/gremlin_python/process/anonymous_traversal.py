@@ -54,7 +54,7 @@ class AnonymousTraversalSource(object):
         return self.with_remote(remote_connection)
 
     def with_remote(self, remote_connection):
-        return self.with_graph(Graph()).withRemote(remote_connection)
+        return self.with_graph(Graph()).with_remote(remote_connection)
 
 
 def traversal(traversal_source_class=GraphTraversalSource):

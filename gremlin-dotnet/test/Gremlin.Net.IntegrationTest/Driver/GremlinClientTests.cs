@@ -24,19 +24,22 @@
 using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
 {
     public class GremlinClientTests
     {
-        private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
-        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
+        private readonly RequestMessageProvider _requestMessageProvider = new();
+        private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Theory]
@@ -64,7 +67,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
                 var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
 
-                Assert.Equal(responseMsgSize, response.Length);
+                Assert.Equal(responseMsgSize, response!.Length);
             }
         }
 
@@ -103,6 +106,23 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 Assert.Contains($"ServerEvaluationError: No such property: {requestMsg}",
                     exception.Message);
             }
+        }
+
+        [Fact]
+        public async Task ShouldSupportCancellation()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+            const int sleepTime = 5000;
+            var requestMsg = _requestMessageProvider.GetSleepMessage(sleepTime);
+            var cts = new CancellationTokenSource();
+
+            var submitTask = gremlinClient.SubmitAsync<object>(requestMsg, cts.Token);
+            await Task.Delay(TimeSpan.FromMilliseconds(sleepTime * 0.1), CancellationToken.None);
+            cts.Cancel();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(() => submitTask);
+            Assert.True(submitTask.IsCanceled);
         }
 
         [Fact]
@@ -226,7 +246,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ShouldConfigureWebSocketOptionsAsSpecified()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            ClientWebSocketOptions optionsSet = null;
+            ClientWebSocketOptions? optionsSet = null;
             var expectedKeepAliveInterval = TimeSpan.FromMilliseconds(11);
             var webSocketConfiguration =
                 new Action<ClientWebSocketOptions>(options =>
@@ -273,6 +293,34 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     // do nothing
                 }
             }
+        }
+
+        [Fact]
+        public void ShouldLogWithProvidedLoggerFactory()
+        {
+            var loggerFactoryMock = new Mock<ILoggerFactory>();
+            var loggerMock = new Mock<ILogger>();
+            loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            
+            using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactoryMock.Object);
+
+            loggerMock.VerifyMessageWasLogged(LogLevel.Information, "connections");
+        }
+        
+        [Fact]
+        public void ShouldNotLogForDisabledLogLevel()
+        {
+            var loggerFactoryMock = new Mock<ILoggerFactory>();
+            var loggerMock = new Mock<ILogger>();
+            loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(false);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            
+            using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactoryMock.Object);
+
+            loggerMock.VerifyNothingWasLogged();
         }
     }
 }

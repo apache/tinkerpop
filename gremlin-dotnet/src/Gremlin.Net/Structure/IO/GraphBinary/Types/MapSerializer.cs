@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary.Types
@@ -32,7 +33,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-    public class MapSerializer<TKey, TValue> : SimpleTypeSerializer<IDictionary<TKey, TValue>>
+    public class MapSerializer<TKey, TValue> : SimpleTypeSerializer<IDictionary<TKey, TValue?>> where TKey : notnull
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="MapSerializer{TKey, TValue}" /> class.
@@ -42,27 +43,30 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(IDictionary<TKey, TValue> value, Stream stream, GraphBinaryWriter writer)
+        protected override async Task WriteValueAsync(IDictionary<TKey, TValue?> value, Stream stream,
+            GraphBinaryWriter writer, CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Count, stream, false).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Count, stream, cancellationToken).ConfigureAwait(false);
 
             foreach (var key in value.Keys)
             {
-                await writer.WriteAsync(key, stream).ConfigureAwait(false);
-                await writer.WriteAsync(value[key], stream).ConfigureAwait(false);
+                await writer.WriteAsync(key, stream, cancellationToken).ConfigureAwait(false);
+                await writer.WriteAsync(value[key], stream, cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        protected override async Task<IDictionary<TKey, TValue>> ReadValueAsync(Stream stream, GraphBinaryReader reader)
+        protected override async Task<IDictionary<TKey, TValue?>> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
         {
-            var length = await stream.ReadIntAsync().ConfigureAwait(false);
-            var result = new Dictionary<TKey, TValue>(length);
+            var length = await stream.ReadIntAsync(cancellationToken).ConfigureAwait(false);
+            var result = new Dictionary<TKey, TValue?>(length);
             
             for (var i = 0; i < length; i++)
             {
-                var key = (TKey) await reader.ReadAsync(stream).ConfigureAwait(false);
-                var value = (TValue) await reader.ReadAsync(stream).ConfigureAwait(false);
+                var key = (TKey?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+                if (key == null) throw new IOException("Read null as the key for a dictionary.");
+                var value = (TValue?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
                 result.Add(key, value);
             }
 

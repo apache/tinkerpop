@@ -24,27 +24,27 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
- * Predefined {@code Predicate} values that can be used with
+ * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
+ * 
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
-    protected BiPredicate<V, V> biPredicate;
+    protected PBiPredicate<V, V> biPredicate;
     protected V value;
     protected V originalValue;
 
-    public P(final BiPredicate<V, V> biPredicate, final V value) {
+    public P(final PBiPredicate<V, V> biPredicate, final V value) {
         this.value = value;
         this.originalValue = value;
         this.biPredicate = biPredicate;
     }
 
-    public BiPredicate<V, V> getBiPredicate() {
+    public PBiPredicate<V, V> getBiPredicate() {
         return this.biPredicate;
     }
 
@@ -55,6 +55,11 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public V getOriginalValue() {
         return originalValue;
     }
+
+    /*
+     * Get the name of the predicate
+     */
+    public String getPredicateName() { return biPredicate.getPredicateName(); }
 
     /**
      * Gets the current value to be passed to the predicate for testing.
@@ -252,7 +257,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      *
      * @since 3.0.0-incubating
      */
-    public static P test(final BiPredicate biPredicate, final Object value) {
+    public static P test(final PBiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
     }
 

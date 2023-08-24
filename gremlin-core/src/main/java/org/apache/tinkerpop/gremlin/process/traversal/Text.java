@@ -20,8 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.regex.Pattern; 
+import java.util.regex.Pattern;
 import java.util.regex.Matcher; 
 
 /**
@@ -31,7 +30,7 @@ import java.util.regex.Matcher;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @since 3.4.0
  */
-public enum Text implements BiPredicate<String, String> {
+public enum Text implements PBiPredicate<String, String> {
 
     /**
      * Evaluates if the first string starts with the second.
@@ -171,7 +170,7 @@ public enum Text implements BiPredicate<String, String> {
     /**
      * Allows for a compiled version of the regex pattern.
      */
-    public static class RegexPredicate implements BiPredicate<String, String>, Serializable {
+    public static class RegexPredicate implements PBiPredicate<String, String>, Serializable {
 
         private final Pattern pattern;
         private final boolean negate;
@@ -197,7 +196,7 @@ public enum Text implements BiPredicate<String, String> {
         }
 
         @Override
-        public BiPredicate<String, String> negate() {
+        public PBiPredicate<String, String> negate() {
             return new RegexPredicate(pattern.pattern(), !negate);
         }
 
@@ -217,6 +216,11 @@ public enum Text implements BiPredicate<String, String> {
         @Override
         public String toString() {
             return String.format("regex(%s)", pattern.pattern());
+        }
+
+        @Override
+        public String getPredicateName() {
+            return isNegate() ? "notRegex" : "regex";
         }
     }
 }

@@ -24,8 +24,7 @@
 using System;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure;
-
+using Microsoft.Extensions.Logging;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 namespace Gremlin.Net.Template
@@ -37,15 +36,18 @@ namespace Gremlin.Net.Template
 
         private static void Main()
         {
-            using (var client = new GremlinClient(new GremlinServer(GremlinServerHostname, GremlinServerPort)))
+            var loggerFactory = LoggerFactory.Create(builder =>
             {
-                var g = Traversal().WithRemote(new DriverRemoteConnection(client));
-                var service = new Service(g);
-                var creators = service.FindCreatorsOfSoftware("lop");
-                foreach (var c in creators)
-                {
-                    Console.WriteLine(c);
-                }
+                builder.AddConsole();
+            });
+            using var connection = new DriverRemoteConnection(new GremlinClient(
+                new GremlinServer(GremlinServerHostname, GremlinServerPort), loggerFactory: loggerFactory));
+            var g = Traversal().WithRemote(connection);
+            var service = new Service(g);
+            var creators = service.FindCreatorsOfSoftware("lop");
+            foreach (var c in creators)
+            {
+                Console.WriteLine(c);
             }
         }
     }

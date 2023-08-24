@@ -19,11 +19,10 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
@@ -84,9 +83,9 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
                 // if the request came in on a session then the serialization must occur that same thread except
                 // in the case of errors for reasons described above.
                 if (null == session || !o.getStatus().getCode().isSuccess())
-                    serialized = new Frame(textSerializer.serializeResponseAsString(o));
+                    serialized = new Frame(textSerializer.serializeResponseAsString(o, ctx.alloc()));
                 else
-                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get());
+                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o, ctx.alloc())).get());
 
                 objects.add(serialized);
             }
@@ -102,7 +101,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
                 objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
             } else {
                 final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
-                objects.add(textSerializer.serializeResponseAsString(error));
+                objects.add(textSerializer.serializeResponseAsString(error, ctx.alloc()));
             }
         }
     }

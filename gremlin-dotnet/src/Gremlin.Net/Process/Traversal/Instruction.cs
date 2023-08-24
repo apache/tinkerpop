@@ -36,10 +36,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="operatorName">The name of the operator.</param>
         /// <param name="arguments">The arguments.</param>
-        public Instruction(string operatorName, params dynamic[] arguments)
+        public Instruction(string operatorName, params dynamic?[] arguments)
         {
-            OperatorName = operatorName;
-            Arguments = arguments;
+            OperatorName = operatorName ?? throw new ArgumentNullException(nameof(operatorName));
+            Arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
         }
 
         /// <summary>
@@ -50,18 +50,18 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets the arguments.
         /// </summary>
-        public dynamic[] Arguments { get; }
+        public dynamic?[] Arguments { get; }
 
         /// <summary>
         ///     String representation of the <see cref="Instruction"/>.
         /// </summary>
         public override string ToString()
         {
-            return OperatorName + " [" + String.Join(",", Arguments) + "]";
+            return $"{OperatorName}({string.Join(", ", Arguments.Select(a => a ?? "null"))})";
         }
 
         /// <inheritdoc />
-        public bool Equals(Instruction other)
+        public bool Equals(Instruction? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -69,7 +69,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -83,15 +83,10 @@ namespace Gremlin.Net.Process.Traversal
             unchecked
             {
                 var hash = 19;
-                if (OperatorName != null)
-                {
-                    hash = hash * 397 + OperatorName.GetHashCode();
-                }
+                hash = hash * 397 + OperatorName.GetHashCode();
 
-                if (Arguments != null)
-                {
-                    hash = Arguments.Aggregate(hash, (current, value) => current * 31 + value.GetHashCode());
-                }
+                hash = Arguments.Aggregate(hash,
+                    (current, value) => current * 31 + (value == null ? 0 : value.GetHashCode()));
 
                 return hash;
             }

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.IO;
 using System.Numerics;
 using System.Text.Json;
 
@@ -31,6 +32,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphson, GraphSONReader reader)
         {
             var bigInteger = graphson.ValueKind == JsonValueKind.String ? graphson.GetString() : graphson.GetRawText();
+            if (bigInteger == null) throw new IOException("Read null, but expected a BigInteger string representation");
             return BigInteger.Parse(bigInteger);
         }
     }

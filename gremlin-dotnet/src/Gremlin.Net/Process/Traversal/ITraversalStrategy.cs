@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gremlin.Net.Process.Traversal
@@ -35,12 +36,13 @@ namespace Gremlin.Net.Process.Traversal
         ///     Applies the strategy to the given <see cref="ITraversal" />.
         /// </summary>
         /// <param name="traversal">The <see cref="ITraversal" /> the strategy should be applied to.</param>
-        void Apply<S, E>(ITraversal<S, E> traversal);
+        void Apply<TStart, TEnd>(ITraversal<TStart, TEnd> traversal);
 
         /// <summary>
         ///     Applies the strategy to the given <see cref="ITraversal" /> asynchronously.
         /// </summary>
         /// <param name="traversal">The <see cref="ITraversal" /> the strategy should be applied to.</param>
-        Task ApplyAsync<S, E>(ITraversal<S, E> traversal);
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal, CancellationToken cancellationToken = default);
     }
 }

@@ -27,7 +27,7 @@ type transporter interface {
 	Read() ([]byte, error)
 	Close() error
 	IsClosed() bool
-	getAuthInfo() *AuthInfo
+	getAuthInfo() AuthInfoProvider
 }
 
 type websocketConn interface {

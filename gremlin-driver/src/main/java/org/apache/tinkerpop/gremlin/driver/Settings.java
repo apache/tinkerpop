@@ -19,8 +19,10 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -99,6 +101,11 @@ final class Settings {
     public String protocol = null;
 
     /**
+     * Toggles if user agent should be sent in web socket handshakes.
+     */
+    public boolean enableUserAgentOnConnect = true;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -106,10 +113,11 @@ final class Settings {
     public static Settings read(final InputStream stream) {
         Objects.requireNonNull(stream);
 
-        final Constructor constructor = new Constructor(Settings.class);
+        final LoaderOptions options = new LoaderOptions();
+        final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
-        settingsDescription.putListPropertyType("hosts", String.class);
-        settingsDescription.putListPropertyType("serializers", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("hosts", String.class);
+        settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final Yaml yaml = new Yaml(constructor);
@@ -142,6 +150,9 @@ final class Settings {
 
         if (conf.containsKey("protocol"))
             settings.protocol = conf.getString("protocol");
+
+        if (conf.containsKey("enableUserAgentOnConnect"))
+            settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
@@ -395,13 +406,9 @@ final class Settings {
         public String validationRequest = "''";
 
         /**
-         *
          * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket
          * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not
          * complete by then.
-         *
-         * Note that this value should be greater that SSL handshake timeout defined in
-         * {@link io.netty.handler.ssl.SslHandler} since WebSocket handshake include SSL handshake.
          */
         public long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
     }

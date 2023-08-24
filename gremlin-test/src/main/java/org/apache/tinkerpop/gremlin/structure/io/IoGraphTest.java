@@ -53,9 +53,9 @@ public class IoGraphTest extends AbstractGremlinTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"graphml", IoCore.graphml(), false, true, ".xml"},
-                {"graphsonv1d0", GraphSONIo.build(GraphSONVersion.V1_0), true, true, ".json"},
-                {"graphsonv2d0", GraphSONIo.build(GraphSONVersion.V2_0), true, true, ".json"},
-                {"graphsonv3d0", GraphSONIo.build(GraphSONVersion.V3_0), true, true, ".json"},
+                {"graphsonv1", GraphSONIo.build(GraphSONVersion.V1_0), true, true, ".json"},
+                {"graphsonv2", GraphSONIo.build(GraphSONVersion.V2_0), true, true, ".json"},
+                {"graphsonv3", GraphSONIo.build(GraphSONVersion.V3_0), true, true, ".json"},
                 {"gryo-v3", GryoIo.build(GryoVersion.V1_0), false, false, ".kryo"},
                 {"gryo-v3", GryoIo.build(GryoVersion.V3_0), false, false, ".kryo"}
         });

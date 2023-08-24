@@ -17,17 +17,392 @@ limitations under the License.
 
 = TinkerPop 3.7.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
-*NOT OFFICIALLY NAMED YET*
+*Gremfir Master of the Pan Flute*
+
+== TinkerPop 3.7.1
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.1/CHANGELOG.asciidoc#release-3-7-1[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+
+
+==== Graph Driver Providers
+
+
+
 
 == TinkerPop 3.7.0
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: July 31, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asciidoc#release-3-7-0[changelog] for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== String concat() Step
+
+String manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
+different providers. In 3.7.0, we introduce the `concat()`-step as the beginning of a series of string manipulation steps
+aimed to replace the usage of closure.
+
+The following example demonstrates the use of a closure to add a new vertex with a label like an existing vertex but
+with some prefix attached:
+
+[source,text]
+----
+gremlin> g.V(1).map{"prefix_" + it.get().label}.as('a').addV(select('a'))
+==>v[13]
+gremlin> g.V(13).label()
+==>prefix_person
+----
+
+With `concat()` step this operation can be performed with standard Gremlin syntax:
+
+[source,text]
+----
+gremlin> g.addV(constant("prefix_").concat(__.V(1).label()))
+==>v[14]
+gremlin> g.V(14).label()
+==>prefix_person
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+
+==== union() Start Step
+
+The `union()`-step could only be used mid-traversal after a start step. The typical workaround for this issue was to
+use `inject()` with a dummy value to start the traversal and then utilize `union()`:
+
+[source,text]
+----
+gremlin> g.inject(0).union(V().has('name','vadas'),
+......1>                   V().has('software','name','lop').in('created')).
+......2>   values('name')
+==>vadas
+==>marko
+==>josh
+==>peter
+----
+
+As of this version, `union()` can be used more directly to avoid the workaround:
+
+[source,text]
+----
+gremlin> g.union(V().has('name','vadas'),
+......1>         V().has('software','name','lop').in('created')).
+......2>   values('name')
+==>vadas
+==>marko
+==>josh
+==>peter
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2873[TINKERPOP-2873]
+
+==== Map and Cardinality
+
+Relatively recent changes to the Gremlin language have allowed properties to be set by way of a `Map`. As it pertains
+to vertices, a `Map` can be given to `mergeV()` and `property()` steps. The limitation was that setting `Cardinality`
+with this syntax was not possible without reverting back to `property()` steps that took a `Cardinality` as an argument
+in some way. The following paragraphs show how changes for in 3.6.5 make this syntax much better for multi-properties.
+
+The `mergeV()` step makes it much easier to write upsert-like traversals. Of course, if you had a graph that required
+the use of multi-properties, some of the ease of `mergeV()` was lost. It typically meant falling back to traversals
+using `sideEffect()` or similar direct uses of `property()` to allow it to work properly:
+
+[source,groovy]
+----
+g.mergeV([(T.id): '1234']).
+  option(onMatch, sideEffect(property(single,'age', 20).
+                             property(set,'city','miami')).constant([:]))
+----
+
+For this version, `mergeV()` gets two new bits of syntax. First, it is possible to individually define the cardinality
+for each property value in the `Map` for `onCreate` or `onMerge` events. Therefore, the above example could be written
+as:
+
+[source,text]
+----
+gremlin> g.addV().property(id,1234).property('age',19).property(set, 'city', 'detroit')
+==>v[1234]
+gremlin> g.mergeV([(T.id): 1234]).
+......1>   option(onMatch, ['age': single(20), 'city': set('miami')])
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami],age:[20]]
+----
+
+The other option available is to provide a default `Cardinality` to the `option()` as follows, continuing from the
+previous example:
+
+[source,text]
+----
+gremlin> g.mergeV([(T.id): 1234]).
+......1>     option(onMatch, ['age': 21, 'city': set('orlando')], single)
+==>v[1234]
+gremlin> g.mergeV([(T.id): 1234]).
+......1>     option(onMatch, ['age': 22, 'city': set('boston')], single)
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami,orlando,boston],age:[22]]
+----
+
+In the above example, any property value that does not have its cardinality explicitly defined, will be assumed to be
+the cardinality of the argument specified.
+
+For `property(Map)` the `Cardinality` could be set universally for the `Map` with `property(Cardinality, Map)` but
+there was no mechanism to set that value individually. Using the same pattern above and constructing a
+`CardinalityValue` now allows this possibility.
+
+[source,text]
+----
+gremlin> g.addV().property(id,1234).property('age',19).property(set, 'city', 'detroit')
+==>v[1234]
+gremlin> g.V(1234).property(['age': 20, 'city': set('miami')])
+==>v[1234]
+gremlin> g.V(1234).property(['age': single(21), 'city': set('orlando')])
+==>v[1234]
+gremlin> g.V(1234).property(single, ['age': 21, 'city': set('boston')])
+==>v[1234]
+gremlin> g.V(1234).valueMap()
+==>[city:[detroit,miami,orlando,boston],age:[21]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2957[TINKERPOP-2957]
+
+==== TinkerGraph Transactions
+
+Previously, there was no reference implementation provided for the `Transaction` API as this feature wasn't supported by
+TinkerGraph. Users were instead directed towards the Neo4jGraph provided in `neo4j-gremlin` if they wanted to get access
+to a `Graph` implementation that supported transactions. Unfortunately, the maintenance around this plugin has largely
+been abandoned and is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
+
+As of this version, we are introducing the transactional TinkerGraph, `TinkerTransactionGraph`, which is TinkerGraph with
+transaction capabilities. The `TinkerTransactionGraph` has `read committed` isolation level, which is the same as the
+Neo4jGraph provided in `neo4j-gremlin`. Only `ThreadLocal` transactions are implemented, therefore embedded graph
+transactions may not be fully supported. These transaction semantics may not fit the use case for some production
+scenarios that require strict ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used
+as a Graph for test environments where you still require support for transactions.
+
+===== Usage examples
+
+To use `TinkerTransactionGraph` remotely, start a Gremlin Server with the included `gremlin-server-transaction.yaml`
+config file.
+
+[source,bash]
+----
+bin/gremlin-server.sh conf/gremlin-server-transaction.yaml
+----
+
+Then to connect with Java:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g")); <1>
+
+GraphTraversalSource gtx = g.tx().begin(); <2>
+try {
+    gtx.addV('test1').iterate(); <3>
+    gtx.addV('test2').iterate(); <3>
+
+    gtx.tx().commit(); <4>
+} catch (Exception ex) {
+    gtx.tx().rollback(); <5>
+}
+----
+
+<1> Create connection to Gremlin Server with transaction enabled graph.
+<2> Spawn a GraphTraversalSource with opened transaction.
+<3> Make some updates to graph.
+<4> Commit all changes.
+<5> Rollback all changes on error.
+
+One can also use the remote TinkerTransactionGraph in Gremlin Console:
+
+[source,text]
+----
+gremlin> :remote connect tinkerpop.server conf/remote.yaml session <1>
+==>Configured localhost/127.0.0.1:8182-[2e70bf11-12f7-4dfe-8a5e-a3d57f0df304]
+gremlin> g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"))
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx = g.tx().begin() <2>
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx.addV('test').property('name', 'one')
+==>v[0]
+gremlin> gtx.V().valueMap()
+==>[name:[one]]
+gremlin> g.V().valueMap()
+gremlin> gtx.tx().commit()
+==>null
+gremlin> g.V().valueMap() <3>
+==>[name:[one]]
+gremlin> g.V()
+==>v[0]
+gremlin> gtx = g.tx().begin() <4>
+==>graphtraversalsource[emptygraph[empty], standard]
+gremlin> gtx.addV('test').property('name', 'two')
+==>v[2]
+gremlin> gtx.V().valueMap()
+==>[name:[one]]
+==>[name:[two]]
+gremlin> g.V().valueMap()
+==>[name:[one]]
+gremlin> gtx.tx().rollback()
+==>null
+gremlin> g.V().valueMap() <5>
+==>[name:[one]]
+----
+
+<1> Open remote Console session and spawn remote graph traversal source for the empty TinkerTransactionGraph.
+<2> Spawn a GraphTraversalSource by opening a transaction.
+<3> The vertex is added in the remote graph until we commit the transaction (which automatically closes the transaction).
+<4> Spawn another GraphTraversalSource by opening a new transaction.
+<5> The second vertex will not bed added to the remote graph since we rolled back the change
+
+To use the embedded TinkerTransactionGraph in Gremlin Console:
+
+[source,text]
+----
+gremlin> graph = TinkerTransactionGraph.open() <1>
+==>tinkertransactiongraph[vertices:0 edges:0]
+gremlin> g = traversal().withEmbedded(graph) <2>
+==>graphtraversalsource[tinkertransactiongraph[vertices:0 edges:0], standard]
+gremlin> g.addV('test').property('name','one')
+==>v[0]
+gremlin> g.tx().commit() <3>
+==>null
+gremlin> g.V().valueMap()
+==>[name:[one]]
+gremlin> g.addV('test').property('name','two') <4>
+==>v[2]
+gremlin> g.V().valueMap()
+==>[name:[one]]
+==>[name:[two]]
+gremlin> g.tx().rollback() <5>
+==>null
+gremlin> g.V().valueMap()
+==>[name:[one]]
+----
+
+<1> Open transactional graph.
+<2> Spawn a GraphTraversalSource with transactional graph.
+<3> Commit the add vertex operation
+<4> Add a second vertex without committing
+<5> Rollback the change
+
+Note that all embedded `TinkerTransactionGraph` remains `ThreadLocal` transactions, meaning that all traversal sources
+spawned from the graph will operate within the same transaction scope.
+
+IMPORTANT: `TinkerTransactionGraph` comes with performance and semantic limitations, where the former is expect to
+be resolved in future versions. Since its primary recommended use case is for testing these limitations should not be
+an impediment. Production use cases for TinkerGraph should generally prefer the non-transactional implementation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2975[TINKERPOP-2975],
+link:https://tinkerpop.apache.org/docs/3.7.0/reference/#tinkergraph-gremlin-tx[Reference Documentation - TinkerGraph Transactions]
+
+==== Properties on Elements
+
+One of the peculiar aspects of using Gremlin remotely is that if you do something like `v = g.V().next()` you will
+find that the `v`, the `Vertex` object, does not have any properties associated with it, even if the database
+associates some with it. It will be a "reference" only, in that it will only have an `id` and `label`. The reason and
+history for this approach can be found on the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[dev list].
+While this has been a long-standing way TinkerPop operates, it is a confusing point for new users and often forces
+some inconvenience on folks by requiring them to alter queries to transform graph elements to other forms that can
+carry the property data (e.g. `elementMap()`).
+
+With this new release, properties are finally available on graph elements for all programming languages and are now
+returned by default for OLTP requests. Gremlin Server 3.5 and 3.6 can return properties only in some special cases.
+
+Queries still won't return properties on Elements for OLAP. It deals with references only as it always have
+irrespective of remote or local execution.
+
+Consider the following example of this functionality with Javascript:
+
+[source,javascript]
+----
+const client = new Client('ws://localhost:8182/gremlin',{traversalSource: 'gmodern'});
+await client.open();
+const result = await client.submit('g.V(1)');
+console.log(JSON.stringify(result.first()));
+await client.close();
+----
+
+The result will be different depending on the version of Gremlin Server. For 3.5/3.6:
+
+[source,json]
+----
+{"id":1,"label":"person"}
+----
+
+For 3.7:
+[source,json]
+----
+{"id":1,"label":"person","properties":{"name":[{"id":0,"label":"name","value":"marko","key":"name"}],"age":[{"id":1,"label":"age","value":29,"key":"age"}]}}
+---- 
+
+===== Enabling the previous behavior
+
+Note that drivers from earlier versions like 3.5 and 3.6 will not be able to retrieve properties on elements. Older
+drivers connecting to 3.7.x servers should disable this functionality server-side in one of two ways:
+
+*Configure Gremlin Server to not return properties* - update Gremlin Server initialization script with
+`ReferenceElementStrategy`. This configuration is essentially the one used in older versions of the server by default.
+
+[source,groovy]
+----
+globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+----
+
+*Disable property inclusion per request* - the `materializeProperties` has a `tokens` option for this purpose.
+
+[source,csharp]
+----
+g.With("materializeProperties", "tokens").V(1).Next()
+----
+
+===== Possible issues
+
+`ReferenceElement`-type objects are no longer returned by the server by default. When upgrading existing code to 3.7.0,
+it is possible that this change could have some impact if you directly declared use of those classes. For example:
+
+[source,java]
+----
+ReferenceVertex v = g.V().next();
+----
+
+would need to be changed to:
+
+[source,java]
+----
+Vertex v = g.V().next();
+----
+
+In other words, it would be best to code to the various structural interfaces like `Vertex` and `Edge` rather than
+specific implementations.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2824[TINKERPOP-2824]
+
+==== Gremlin.NET: Nullable Annotations
+
+Gremlin.NET now uses link:https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references#nullable-variable-annotations[nullable annotations]
+to state wether an argument or a return value can be null or not. This should make it much less likely to get a
+`NullReferenceException` from Gremlin.NET.
+
+This change required to make some breaking changes but most users should not be affected by this as the breaking
+changes are limited to APIs that are mostly intended for graph driver providers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 
 ==== Removed connectOnStartup javascript
 
@@ -44,3 +419,122 @@ drc.open().catch(err => {
    // Handle error upon open.
 })
 ----
+
+==== Creation of New `gremlin-util` Module
+
+`gremlin-driver` has been refactored and several classes have been extracted to a new `gremlin-util` module. Any classes
+which are utilized by both `gremlin-driver` and `gremlin-server` have been extracted to `gremlin-util`. This includes
+the entire `tinkerpop.gremlin.driver.ser` and `tinkerpop.gremlin.driver.message` packages as well as
+`tinkerpop.gremlin.driver.MessageSerializer` and `tinkerpop.gremlin.driver.Tokens`. For a full list of the migrated
+classes, see: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819].
+All migrated classes have had their packages updated to reflect this change. For these classes, packages have changed
+from `tinkerpop.gremlin.driver.*` to `tinkerpop.gremlin.util.*`. For example
+`org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1` has been updated to
+`org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1`. All imports of these classes should be updated
+to reflect this change. All server config files which declare a list of serializers should also be updated to
+reflect the new location of serializer classes.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2819[TINKERPOP-2819]
+
+==== Removal of `gremlin-driver` from `gremlin-server`
+
+`gremlin-driver` is no longer a dependency of `gremlin-server` and thus will no longer be packaged in server
+distributions. Any app which makes use of both `gremlin-driver` and `gremlin-server` will now need to directly
+include both modules.
+
+==== Serializer Renaming
+
+Serializers tended to have a standard suffix that denotes the version. It usually appears as something like "V1d0".
+The "d0" portion of this has always been a bit superfluous and was actually not used when GraphBinary was introduced,
+preferring a simple "V1". To bring greater consistency to the naming the "d0" has been dropped from all places where
+it was referenced that way.
+
+There was a bit of a misnaming in the early days of TinkerPop 3.x where typed versus untyped json was mixed up among
+the GraphSON `MessageSerializer` implementations. For GraphSON 1.0, untyped GraphSON was referred to as
+`GraphSONMessageSerializerV1d0` and typed as `GraphSONMessageSerializerGremlinV1d0`, but for version 2.0 of GraphSON,
+the idea of untyped GraphSON was left behind and so typed GraphSON became `GraphSONMessageSerializerV2d0` which
+followed to version 3.0. With the return of typed and untyped GraphSON for 3.6.5, it seemed important to unify all
+of this naming and given the previously mentioned removal of the "d0" we now have:
+
+* `GraphSONMessageSerializerV1` is now typed GraphSON 1.0
+* `GraphSONMessageSerializerGremlinV1d0` is removed.
+* `GraphSONUntypedMessageSerializerV1` is now untyped GraphSON 1.0
+* `GraphSONMessageSerializerV2` is now typed GraphSON 2.0
+* `GraphSONMessageSerializerGremlinV2d0` is removed - it was deprecated in 3.4.0 actually and served little purpose
+* `GraphSONUntypedMessageSerializerV2` is now untyped GraphSON 2.0
+* `GraphSONMessageSerializerV3` is typed GraphSON 3.0 as it always has been
+* `GraphSONUntypedMessageSerializerV3` is untyped GraphSON 3.0 which is newly added
+
+==== Building and Running with JDK 17
+
+You can now run TinkerPop with Java 17. Be advised that there are some issues with reflection and so you may need to
+either --add-opens or --add-exports certain modules to enable it to work with Java 17. This mostly affects the Kryo
+serialization library which is used with OLAP. If you use OLTP, then you may not need to add any of these options to
+the JVM. The following are only examples used by TinkerPop's automated tests and are placed here for convenience.
+
+[source,text]
+----
+    --add-opens=java.base/java.io=ALL-UNNAMED
+    --add-opens=java.base/java.nio=ALL-UNNAMED
+    --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+    --add-opens=java.base/java.lang=ALL-UNNAMED
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+    --add-opens=java.base/java.util=ALL-UNNAMED
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+    --add-opens=java.base/java.net=ALL-UNNAMED
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2703[TINKERPOP-2703]
+
+=== Upgrading for Providers
+
+==== Graph Driver Providers
+
+===== Gremlin.NET: Nullable Reference Types
+
+Enabling nullable reference types comes with some breaking changes in Gremlin.NET which can affect driver providers.
+
+GraphBinary APIs changed to make better use of nullable reference types. Instead of one method `WriteValueAsync` and
+one method `ReadValueAsync`, there are now methods `WriteNullableValueAsync` and `ReadNullableValueAsync` that allow
+`null` values and methods `WriteNonNullableValueAsync` and `ReadNonNullableValueAsync` that do not allow `null` values.
+
+Some `set` property accessors were removed from some pure data classes in the `Structure` and the `Driver.Messages`
+namespaces to initialize these properties directly from the constructor which ensures that they are really not `null`.
+We also used this opportunity to convert some of these pure data classes into a `record`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
+
+==== Graph System Providers
+
+===== Reworked Gremlin Socket Server
+
+The `SimpleSocketServer` from `gremlin-driver` has been brought into a new module `gremlin-tools/gremlin-socket-server`
+and it has been adapted to be usable by all drivers for testing. See more about creating gremlin socket server tests
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-socket-server-tests[here].
+
+===== Mid-traversal E()
+
+Traversals now support mid-traversal E()-steps.
+
+Prior to this change you were limited to using E()-step only at the start of traversal, but now you can this step in
+the middle. This improvement makes it easier for users to build certain types of queries. For example, get edges with
+label knows, if there is none then add new one between josh and vadas.
+
+`g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas")))`
+
+Another reason is to make E() and V() steps equivalent in terms of use in the middle of traversal.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798]
+
+===== PBiPredicate interface
+
+Custom predicates used in `P` now should implement `PBiPredicate` interface.
+
+It allows to set the name of the predicate that will be used for serialization by overriding `getPredicateName`.
+In previous version `toString` used for this.
+
+In most cases it should be enough just to replace `BiPredicate` with `PBiPredicate` in predicate declaration.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-2949[TINKERPOP-2949]

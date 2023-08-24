@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO.GraphBinary;
@@ -62,13 +63,36 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             };
             var msg = RequestMessage.Build("eval").OverrideRequestId(Guid.Parse("4005b374-b121-401b-9157-ab1f1ecc894e"))
                 .AddArgument("gremlin", "'Hello' + 'World'").Create();
-
-            var serializer = new GraphBinaryMessageSerializer();
+            var serializer = CreateMessageSerializer();
 
             var actual = await serializer.SerializeMessageAsync(msg);
 
 
             Assert.Equal(expected, actual);
+        }
+        
+        [Fact]
+        public async Task SerializeMessageAsyncShouldSupportCancellation()
+        {
+            var serializer = CreateMessageSerializer();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                await serializer.SerializeMessageAsync(RequestMessage.Build(string.Empty).Create(),
+                    new CancellationToken(true)));
+        }
+    
+        [Fact]
+        public async Task DeserializeMessageAsyncShouldSupportCancellation()
+        {
+            var serializer = CreateMessageSerializer();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                await serializer.DeserializeMessageAsync(Array.Empty<byte>(), new CancellationToken(true)));
+        }
+
+        private static GraphBinaryMessageSerializer CreateMessageSerializer()
+        {
+            return new GraphBinaryMessageSerializer();
         }
     }
 }

@@ -77,7 +77,7 @@ class Traversal(object):
     def iterate(self):
         self.bytecode.add_step("none")
         while True:
-            try: self.nextTraverser()
+            try: self.next_traverser()
             except StopIteration: return self
 
     def nextTraverser(self):
@@ -165,13 +165,23 @@ Column = Enum('Column', ' keys values')
 statics.add_static('keys', Column.keys)
 statics.add_static('values', Column.values)
 
-Direction = Enum('Direction', ' BOTH IN OUT')
+# alias from_ and to
+Direction = Enum(
+    value='Direction',
+    names=[
+        ('BOTH', 'BOTH'),
+        ('IN', 'IN'),
+        ('OUT', 'OUT'),
+        ('from_', "OUT"),
+        ('to', 'IN'),
+    ],
+)
 
 statics.add_static('OUT', Direction.OUT)
 statics.add_static('IN', Direction.IN)
 statics.add_static('BOTH', Direction.BOTH)
-statics.add_static('from_', Direction.IN)
-statics.add_static('to', Direction.BOTH)
+statics.add_static('from_', Direction.OUT)
+statics.add_static('to', Direction.IN)
 
 GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
 
@@ -184,10 +194,12 @@ GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
 statics.add_static('V1_0', GryoVersion.V1_0)
 statics.add_static('V3_0', GryoVersion.V3_0)
 
-Merge = Enum('Merge', ' on_create on_match')
+Merge = Enum('Merge', ' on_create on_match out_v in_v')
 
 statics.add_static('on_create', Merge.on_create)
 statics.add_static('on_match', Merge.on_match)
+statics.add_static('in_v', Merge.in_v)
+statics.add_static('out_v', Merge.out_v)
 
 Order = Enum('Order', ' asc desc shuffle')
 
@@ -803,6 +815,24 @@ class Bytecode(object):
         @staticmethod
         def rollback():
             return Bytecode._create_graph_op("tx", "rollback")
+
+
+class CardinalityValue(Bytecode):
+    def __init__(self, cardinality, val):
+        super().__init__()
+        self.add_source("CardinalityValueTraversal", cardinality, val)
+
+    @classmethod
+    def single(cls, val):
+        return CardinalityValue(Cardinality.single, val)
+
+    @classmethod
+    def list_(cls, val):
+        return CardinalityValue(Cardinality.list_, val)
+
+    @classmethod
+    def set_(cls, val):
+        return CardinalityValue(Cardinality.set_, val)
 
 
 '''

@@ -160,11 +160,11 @@ describe('Traversal', function () {
   describe("more complex traversals", function() {
     it('should return paths of value maps', function() {
       const g = traversal().withRemote(connection);
-      return g.V(1).out().in_().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
+      return g.V(1).out().order().in_().order().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
         assert.strictEqual(list[0].objects[0].get('name')[0], "marko");
-        assert.strictEqual(list[0].objects[1].get('name')[0], "lop");
+        assert.strictEqual(list[0].objects[1].get('name')[0], "vadas");
         assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
     });
@@ -220,82 +220,79 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
-
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
-    it('should commit a simple transaction', function () {
+    it('should commit a simple transaction', async function () {
       const g = traversal().withRemote(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
-      return Promise.all([
+      await Promise.all([
         gtx.addV("person").property("name", "jorge").iterate(),
         gtx.addV("person").property("name", "josh").iterate()
-      ]).then(() => {
-        return gtx.V().count().next();
-      }).then(function (r) {
-        // assert within the transaction....
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
+      ]);
 
-        // now commit changes to test outside of the transaction
-        return tx.commit();
-      }).then(() => {
-        return g.V().count().next();
-      }).then(function (r) {
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
-      });
+      let r = await gtx.V().count().next();
+      // assert within the transaction....
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+
+      // now commit changes to test outside of the transaction
+      await tx.commit();
+
+      r = await g.V().count().next();
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+      // connection closing async, so need to wait
+      while (tx._sessionBasedConnection.isOpen) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.ok(!tx._sessionBasedConnection.isOpen);
     });
   });
   describe('support remote transactions - rollback', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
 
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
-    it('should rollback a simple transaction', function() {
+    it('should rollback a simple transaction', async function() {
       const g = traversal().withRemote(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
-      return Promise.all([
+      await Promise.all([
         gtx.addV("person").property("name", "jorge").iterate(),
         gtx.addV("person").property("name", "josh").iterate()
-      ]).then(() => {
-        return gtx.V().count().next();
-      }).then(function (r) {
-        // assert within the transaction....
-        assert.ok(r);
-        assert.strictEqual(r.value, 2);
+      ]);
 
-        // now rollback changes to test outside of the transaction
-        return tx.rollback();
-      }).then(() => {
-        return g.V().count().next();
-      }).then(function (r) {
-        assert.ok(r);
-        assert.strictEqual(r.value, 0);
-      });
+      let r = await gtx.V().count().next();
+      // assert within the transaction....
+      assert.ok(r);
+      assert.strictEqual(r.value, 2);
+
+      // now rollback changes to test outside of the transaction
+      await tx.rollback();
+
+      r = await g.V().count().next();
+      assert.ok(r);
+      assert.strictEqual(r.value, 0);
+      // connection closing async, so need to wait
+      while (tx._sessionBasedConnection.isOpen) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.ok(!tx._sessionBasedConnection.isOpen);
     });
   });
 });

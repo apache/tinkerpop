@@ -29,20 +29,33 @@ namespace Gremlin.Net.Driver.Messages
     ///     The message returned from the server.
     /// </summary>
     /// <typeparam name="T">The type of the data returned.</typeparam>
-    public class ResponseMessage<T>
+    public record ResponseMessage<T>
     {
         /// <summary>
-        ///     Gets or sets the identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.
+        ///     Initializes a new instance of the <see cref="ResponseMessage{T}" /> record.
         /// </summary>
-        public Guid? RequestId { get; set; }
+        /// <param name="requestId">The identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.</param>
+        /// <param name="status">Status information about this <see cref="ResponseMessage{T}"/>.</param>
+        /// <param name="result">The result with its data and optional meta information.</param>
+        public ResponseMessage(Guid? requestId, ResponseStatus status, ResponseResult<T> result)
+        {
+            RequestId = requestId;
+            Status = status;
+            Result = result;
+        }
+        
+        /// <summary>
+        ///     Gets the identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.
+        /// </summary>
+        public Guid? RequestId { get; }
 
         /// <summary>
-        ///     Gets or sets status information about this <see cref="ResponseMessage{T}"/>.
+        ///     Gets status information about this <see cref="ResponseMessage{T}"/>.
         /// </summary>
-        public ResponseStatus Status { get; set; }
+        public ResponseStatus Status { get; }
 
         /// <summary>
-        ///     Gets or sets the result with its data and optional meta information.
+        ///     Gets the result with its data and optional meta information.
         /// </summary>
         public ResponseResult<T> Result { get; set; }
     }

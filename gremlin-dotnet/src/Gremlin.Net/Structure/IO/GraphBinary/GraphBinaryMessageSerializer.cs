@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
@@ -48,7 +49,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
-        public GraphBinaryMessageSerializer(TypeSerializerRegistry registry = null)
+        public GraphBinaryMessageSerializer(TypeSerializerRegistry? registry = null)
         {
             _reader = new GraphBinaryReader(registry);
             _writer = new GraphBinaryWriter(registry);
@@ -67,21 +68,24 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         }
 
         /// <inheritdoc />
-        public async Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage)
+        public async Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage,
+            CancellationToken cancellationToken = default)
         {
-            var stream = new MemoryStream();
-            await stream.WriteByteAsync((byte) Header.Length).ConfigureAwait(false);
-            await stream.WriteAsync(Header).ConfigureAwait(false);
-            await _requestSerializer.WriteValueAsync(requestMessage, stream, _writer).ConfigureAwait(false);
+            using var stream = new MemoryStream();
+            await stream.WriteByteAsync((byte) Header.Length, cancellationToken).ConfigureAwait(false);
+            await stream.WriteAsync(Header, cancellationToken).ConfigureAwait(false);
+            await _requestSerializer.WriteValueAsync(requestMessage, stream, _writer, cancellationToken)
+                .ConfigureAwait(false);
             var bytes = stream.ToArray();
             return bytes;
         }
 
         /// <inheritdoc />
-        public async Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message)
+        public async Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
+            CancellationToken cancellationToken = default)
         {
-            var stream = new MemoryStream(message);
-            return await _responseSerializer.ReadValueAsync(stream, _reader).ConfigureAwait(false);
+            using var stream = new MemoryStream(message);
+            return await _responseSerializer.ReadValueAsync(stream, _reader, cancellationToken).ConfigureAwait(false);
         }
     }
 }

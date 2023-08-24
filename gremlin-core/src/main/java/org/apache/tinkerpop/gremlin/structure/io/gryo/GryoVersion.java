@@ -178,8 +178,8 @@ import java.util.function.Supplier;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum GryoVersion {
-    V1_0("1.0", initV1d0Registrations(), GryoClassResolverV1d0::new),
-    V3_0("3.0", initV3d0Registrations(), GryoClassResolverV3d0::new);
+    V1_0("1.0", initV1Registrations(), GryoClassResolverV1::new),
+    V3_0("3.0", initV3Registrations(), GryoClassResolverV3::new);
 
     private final String versionNumber;
     private final List<TypeRegistration<?>> registrations;
@@ -230,7 +230,7 @@ public enum GryoVersion {
         return versionNumber;
     }
 
-    public static List<TypeRegistration<?>> initV3d0Registrations() {
+    public static List<TypeRegistration<?>> initV3Registrations() {
         return new ArrayList<TypeRegistration<?>>() {{
             add(GryoTypeReg.of(byte[].class, 25));
             add(GryoTypeReg.of(char[].class, 26));
@@ -302,11 +302,11 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
 
-            add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV3d0.EdgeSerializer()));
-            add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV3d0.VertexSerializer()));
-            add(GryoTypeReg.of(Property.class, 67, new GryoSerializersV3d0.PropertySerializer()));
-            add(GryoTypeReg.of(VertexProperty.class, 68, new GryoSerializersV3d0.VertexPropertySerializer()));
-            add(GryoTypeReg.of(Path.class, 59, new GryoSerializersV3d0.PathSerializer()));
+            add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV3.EdgeSerializer()));
+            add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV3.VertexSerializer()));
+            add(GryoTypeReg.of(Property.class, 67, new GryoSerializersV3.PropertySerializer()));
+            add(GryoTypeReg.of(VertexProperty.class, 68, new GryoSerializersV3.VertexPropertySerializer()));
+            add(GryoTypeReg.of(Path.class, 59, new GryoSerializersV3.PathSerializer()));
             // skip 55
             add(GryoTypeReg.of(B_O_Traverser.class, 75));
             add(GryoTypeReg.of(O_Traverser.class, 76));
@@ -318,14 +318,14 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
 
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
-            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3d0.DefaultRemoteTraverserSerializer()));
+            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3.DefaultRemoteTraverserSerializer()));
 
-            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3d0.BytecodeSerializer()));
-            add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3d0.PSerializer()));
-            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3d0.TextPSerializer()));
+            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3.BytecodeSerializer()));
+            add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3.TextPSerializer()));
             add(GryoTypeReg.of(Text.RegexPredicate.class, 197));                                       // ***LAST ID***
-            add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3d0.LambdaSerializer()));
-            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3d0.BindingSerializer()));
+            add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3.LambdaSerializer()));
+            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
             add(GryoTypeReg.of(Scope.class, 128));
             add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));
@@ -373,8 +373,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Tree.class, 61));
             add(GryoTypeReg.of(HashSet.class, 62));
             add(GryoTypeReg.of(BulkSet.class, 64));
-            add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3d0.MetricsSerializer()));
-            add(GryoTypeReg.of(TraversalMetrics.class, 70, new GryoSerializersV3d0.TraversalMetricsSerializer()));
+            add(GryoTypeReg.of(Metrics.class, 69, new GryoSerializersV3.MetricsSerializer()));
+            add(GryoTypeReg.of(TraversalMetrics.class, 70, new GryoSerializersV3.TraversalMetricsSerializer()));
             add(GryoTypeReg.of(MapMemory.class, 73));
             add(GryoTypeReg.of(MapReduce.NullObject.class, 74));
             add(GryoTypeReg.of(AtomicLong.class, 79));
@@ -423,17 +423,17 @@ public enum GryoVersion {
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
             // placeholders so that the format stays stable
-            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.RequestMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.RequestMessageGryoSerializer", 167);
-            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.driver.message.ResponseMessage",
-                    "org.apache.tinkerpop.gremlin.driver.ser.ResponseMessageGryoSerializer", 169);
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.util.message.RequestMessage",
+                    "org.apache.tinkerpop.gremlin.util.ser.RequestMessageGryoSerializer", 167);
+            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.util.message.ResponseMessage",
+                    "org.apache.tinkerpop.gremlin.util.ser.ResponseMessageGryoSerializer", 169);
 
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
                     null, 184);
         }};
     }
 
-    public static List<TypeRegistration<?>> initV1d0Registrations() {
+    public static List<TypeRegistration<?>> initV1Registrations() {
         return new ArrayList<TypeRegistration<?>>() {{
             add(GryoTypeReg.of(byte[].class, 25));
             add(GryoTypeReg.of(char[].class, 26));
@@ -505,11 +505,11 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
 
-            add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV1d0.EdgeSerializer()));
-            add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV1d0.VertexSerializer()));
-            add(GryoTypeReg.of(Property.class, 67, new GryoSerializersV1d0.PropertySerializer()));
-            add(GryoTypeReg.of(VertexProperty.class, 68, new GryoSerializersV1d0.VertexPropertySerializer()));
-            add(GryoTypeReg.of(Path.class, 59, new GryoSerializersV1d0.PathSerializer()));
+            add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV1.EdgeSerializer()));
+            add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV1.VertexSerializer()));
+            add(GryoTypeReg.of(Property.class, 67, new GryoSerializersV1.PropertySerializer()));
+            add(GryoTypeReg.of(VertexProperty.class, 68, new GryoSerializersV1.VertexPropertySerializer()));
+            add(GryoTypeReg.of(Path.class, 59, new GryoSerializersV1.PathSerializer()));
             // skip 55
             add(GryoTypeReg.of(B_O_Traverser.class, 75));
             add(GryoTypeReg.of(O_Traverser.class, 76));
@@ -520,14 +520,14 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
             add(GryoTypeReg.of(ProjectedTraverser.class, 164));
-            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV1d0.DefaultRemoteTraverserSerializer()));
+            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV1.DefaultRemoteTraverserSerializer()));
 
-            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1d0.BytecodeSerializer()));
-            add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1d0.PSerializer()));
-            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1d0.TextPSerializer()));
+            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1.BytecodeSerializer()));
+            add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1.PSerializer()));
+            add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1.TextPSerializer()));
             add(GryoTypeReg.of(Text.RegexPredicate.class, 197));             // ***LAST ID***
-            add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1d0.LambdaSerializer()));
-            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1d0.BindingSerializer()));
+            add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1.LambdaSerializer()));
+            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
             add(GryoTypeReg.of(Scope.class, 128));
             add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));

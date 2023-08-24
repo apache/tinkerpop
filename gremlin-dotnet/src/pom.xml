@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>gremlin-dotnet</artifactId>
-        <version>3.7.0-SNAPSHOT</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
@@ -38,7 +38,7 @@ limitations under the License.
                 <artifactId>gmavenplus-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
+                        <groupId>org.apache.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
                         <type>pom</type>
@@ -65,14 +65,14 @@ limitations under the License.
                             </properties>
                             <scripts>
                                 <script>
-                                    def platformAgnosticBaseDirPath = new File(".this-definitely-does-not-exist").absolutePath.replace("\\.this-definitely-does-not-exist", "").replace("/.this-definitely-does-not-exist", "").replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net/Gremlin.Net.csproj")
+                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/Gremlin.Net/Gremlin.Net.csproj")
                                     file.write(file.getText("UTF-8").replaceFirst(/&lt;Version&gt;(.*)&lt;\/Version&gt;/, "&lt;Version&gt;" + mavenVersion + "&lt;/Version&gt;"))
 
-                                    file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
-                                    file.write(file.getText("UTF-8").replaceFirst(/Version="(.*)"/, "Version=\"" + mavenVersion + "\""))
+                                    file = new File(platformAgnosticBaseDirPath + "/Gremlin.Net.Template/Gremlin.Net.Template.csproj")
+                                    file.write(file.getText("UTF-8").replaceFirst(/Gremlin\.Net\" Version="(.*)"/, "Gremlin.Net\" Version=\"" + mavenVersion + "\""))
 
-                                    file = new File(platformAgnosticBaseDirPath + "/gremlin-dotnet/src/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
+                                    file = new File(platformAgnosticBaseDirPath + "/Gremlin.Net.Template/Gremlin.Net.Template.nuspec")
                                     file.write(file.getText("UTF-8").replaceFirst(/&lt;version&gt;(.*)&lt;\/version&gt;/, "&lt;version&gt;" + mavenVersion + "&lt;/version&gt;"))
                                 </script>
                             </scripts>
@@ -88,6 +88,19 @@ limitations under the License.
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>Gremlin.Net/Driver/Tokens.cs</file>
+                    <replacements>
+                        <replacement>
+                            <token>GremlinVersion = ".*"</token>
+                            <value>GremlinVersion = "${project.version}"</value>
+                        </replacement>
+                    </replacements>
                 </configuration>
             </plugin>
         </plugins>
@@ -195,6 +208,43 @@ limitations under the License.
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>gremlin-dotnet-src-skipped-warning</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <missing>.glv</missing>
+                </file>
+            </activation>
+            <properties>
+                <packaging.type>pom</packaging.type>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.ekryd.echo-maven-plugin</groupId>
+                        <artifactId>echo-maven-plugin</artifactId>
+                        <version>1.3.2</version>
+                        <executions>
+                            <execution>
+                                <id>skipped-gremlin-dotnet-src-warning</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>echo</goal>
+                                </goals>
+                                <configuration>
+                                    <message>
+                                        Skipping gremlin-dotnet build. Activate by creating files tinkerpop/gremlin-dotnet/src/.glv and tinkerpop/gremlin-dotnet/test/.glv
+                                    </message>
+                                    <level>WARNING</level>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!--
         Provides a way to deploy the Gremlin.Net GLV to nuget. This cannot be part of the standard maven execution
         because nuget does not have a staging environment like sonatype for releases. As soon as the release is
@@ -313,7 +363,7 @@ limitations under the License.
                                 <scope>runtime</scope>
                             </dependency>
                             <dependency>
-                                <groupId>org.codehaus.groovy</groupId>
+                                <groupId>org.apache.groovy</groupId>
                                 <artifactId>groovy-all</artifactId>
                                 <version>${groovy.version}</version>
                                 <type>pom</type>
