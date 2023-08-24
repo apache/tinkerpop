@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -387,7 +386,7 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: fmt.Sprintf("g.V().has('date',gt(%s))", time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',gt(new Date(121,1,1,9,30,0)))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -483,43 +482,43 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC))
 			},
-			equals: fmt.Sprintf("g.V().has('date',%s)", time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',new Date(121,2,22,0,0,0))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Within(time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC), time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: fmt.Sprintf("g.V().has('date',within([%s,%s]))", time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC).String(), time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',within([new Date(121,2,22,0,0,0),new Date(121,1,1,0,0,0)]))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Between(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: fmt.Sprintf("g.V().has('date',between([%s,%s]))", time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).String(), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',between(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Inside(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: fmt.Sprintf("g.V().has('date',inside([%s,%s]))", time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).String(), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',inside(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: fmt.Sprintf("g.V().has('date',gt(%s))", time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC).String()),
+			equals: "g.V().has('date',gt(new Date(121,1,1,9,30,0)))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("runways", P.Between(3, 5))
 			},
-			equals: "g.V().has('runways',between([3,5]))",
+			equals: "g.V().has('runways',between(3,5))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("runways", P.Inside(3, 5))
 			},
-			equals: "g.V().has('runways',inside([3,5]))",
+			equals: "g.V().has('runways',inside(3,5))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -537,13 +536,25 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V("44").ValueMap().With(WithOptions.Tokens, WithOptions.Labels)
 			},
-			equals: "g.V('44').valueMap().with('~tinkerpop.valueMap.tokens',2)",
+			equals: "g.V('44').valueMap().with(WithOptions.tokens,WithOptions.labels)",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V("44").ValueMap().With(WithOptions.All)
+			},
+			equals: "g.V('44').valueMap().with(WithOptions.all)",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V("44").ValueMap().With(WithOptions.Indexer)
+			},
+			equals: "g.V('44').valueMap().with(WithOptions.indexer)",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V("44").ValueMap().With(WithOptions.Tokens)
 			},
-			equals: "g.V('44').valueMap().with('~tinkerpop.valueMap.tokens')",
+			equals: "g.V('44').valueMap().with(WithOptions.tokens)",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Translator interface {
@@ -87,6 +88,18 @@ func (t *translator) translateInstruction(instruction instruction) (string, erro
 			instructionString += ","
 		}
 
+		if instruction.operator == "with" {
+			switch v := arg.(type) {
+			case int32, string:
+				translatedArg, err := t.translateWithOptions(v)
+				if err != nil {
+					return "", err
+				}
+				instructionString += translatedArg
+				continue
+			}
+		}
+
 		argString, err := t.toString(arg)
 		if err != nil {
 			return "", err
@@ -98,6 +111,14 @@ func (t *translator) translateInstruction(instruction instruction) (string, erro
 	instructionString += ")"
 
 	return instructionString, nil
+}
+
+func (t *translator) translateWithOptions(arg interface{}) (string, error) {
+	if groovyWithOptions[arg] != "" {
+		return groovyWithOptions[arg], nil
+	}
+
+	return t.toString(arg)
 }
 
 func (t *translator) translateMap(arg interface{}, isClassParamsMap bool) (string, error) {
@@ -176,7 +197,6 @@ func (t *translator) translateTextPredicate(v *textP) (string, error) {
 		}
 		instructionString += argString
 	} else if len(v.values) > 1 {
-		instructionString += "["
 		for index, arg := range v.values {
 			argString, err := t.toString(arg)
 			if err != nil {
@@ -188,7 +208,6 @@ func (t *translator) translateTextPredicate(v *textP) (string, error) {
 				instructionString += ","
 			}
 		}
-		instructionString += "]"
 	}
 
 	instructionString += ")"
@@ -212,7 +231,9 @@ func (t *translator) translatePredicate(v *p) (string, error) {
 		}
 		instructionString += argString
 	} else if len(v.values) > 1 {
-		instructionString += "["
+		if v.operator != "between" && v.operator != "inside" {
+			instructionString += "["
+		}
 		for index, arg := range v.values {
 			argString, err := t.toString(arg)
 			if err != nil {
@@ -224,7 +245,9 @@ func (t *translator) translatePredicate(v *p) (string, error) {
 				instructionString += ","
 			}
 		}
-		instructionString += "]"
+		if v.operator != "between" && v.operator != "inside" {
+			instructionString += "]"
+		}
 	}
 
 	instructionString += ")"
@@ -261,6 +284,10 @@ func (t *translator) toString(arg interface{}) (string, error) {
 		return t.translateSlice(arg)
 	default:
 		switch v := arg.(type) {
+		case withOptions:
+			{
+				return groovyWithOptions[v], nil
+			}
 		case AnonymousTraversal:
 		case *AnonymousTraversal:
 			return t.toString(arg)
@@ -282,14 +309,18 @@ func (t *translator) toString(arg interface{}) (string, error) {
 			return t.translatePredicate(v)
 		default:
 			{
-				switch arg.(type) {
+				switch v := arg.(type) {
+				case time.Time:
+					{
+						return timeToGroovyTime(v), nil
+					}
 				case string:
 					{
-						return fmt.Sprintf("'%v'", arg), nil
+						return fmt.Sprintf("'%v'", v), nil
 					}
 				default:
 					{
-						return fmt.Sprintf("%v", arg), nil
+						return fmt.Sprintf("%v", v), nil
 					}
 				}
 			}
@@ -313,4 +344,22 @@ func appendDot(s *string) {
 func getGroovyClassName(classPath string) string {
 	classPathArray := strings.Split(classPath, ".")
 	return classPathArray[len(classPathArray)-1]
+}
+
+func timeToGroovyTime(t time.Time) string {
+	return fmt.Sprintf("new Date(%v,%v,%v,%v,%v,%v)", t.Year()-1900, int(t.Month()), t.Day(), t.Hour(), t.Minute(), t.Second())
+
+}
+
+var groovyWithOptions map[any]string = map[any]string{
+	WithOptions.Tokens:  "WithOptions.tokens",
+	WithOptions.None:    "WithOptions.none",
+	WithOptions.Ids:     "WithOptions.ids",
+	WithOptions.Labels:  "WithOptions.labels",
+	WithOptions.Keys:    "WithOptions.keys",
+	WithOptions.Values:  "WithOptions.values",
+	WithOptions.All:     "WithOptions.all",
+	WithOptions.Indexer: "WithOptions.indexer",
+	WithOptions.List:    "WithOptions.list",
+	WithOptions.Map:     "WithOptions.map",
 }
