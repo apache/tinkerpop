@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.7.0</version>
+        <version>3.7.1-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-console</artifactId>
     <name>Apache TinkerPop :: Gremlin Console</name>
@@ -94,7 +94,7 @@ limitations under the License.
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
-            <version>1.56</version>
+            <version>1.58</version>
             <scope>test</scope>
             <classifier>standalone</classifier>
             <exclusions>

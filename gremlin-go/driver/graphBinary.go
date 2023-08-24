@@ -38,6 +38,7 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
+	customType            dataType = 0x00
 	intType               dataType = 0x01
 	longType              dataType = 0x02
 	stringType            dataType = 0x03
@@ -1343,6 +1344,26 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 	deserializer, ok := deserializers[dataTyp]
 	if !ok {
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dataTyp)
+	}
+
+	return deserializer(data, i)
+}
+
+// {name}{type specific payload}
+func customTypeReader(data *[]byte, i *int) (interface{}, error) {
+	// we need to decrement the index by 1 to be read the 32-bit int with the size of the string
+	*i = *i - 1
+	customTypeName, err := readString(data, i)
+	if err != nil {
+		return nil, err
+	}
+
+	// grab a read lock for the map of deserializers, since these can be updated out-of-band
+	customTypeReaderLock.RLock()
+	defer customTypeReaderLock.RUnlock()
+	deserializer, ok := customDeserializers[customTypeName.(string)]
+	if !ok {
+		return nil, newError(err0409GetSerializerToReadUnknownCustomTypeError, customTypeName)
 	}
 	return deserializer(data, i)
 }

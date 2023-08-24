@@ -25,6 +25,7 @@ import (
 	"math/big"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/google/uuid"
 )
@@ -42,11 +43,18 @@ type graphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
 
+// CustomTypeReader user provided function to deserialize custom types
+type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
+
 type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
 type reader func(data *[]byte, i *int) (interface{}, error)
 
 var deserializers map[dataType]reader
 var serializers map[dataType]writer
+
+// customTypeReaderLock used to synchronize access to the customDeserializers map
+var customTypeReaderLock = sync.RWMutex{}
+var customDeserializers map[string]CustomTypeReader
 
 func init() {
 	initSerializers()
@@ -322,5 +330,23 @@ func initDeserializers() {
 		// Metrics
 		metricsType:          metricsReader,
 		traversalMetricsType: traversalMetricsReader,
+
+		// Customer
+		customType: customTypeReader,
 	}
+	customDeserializers = map[string]CustomTypeReader{}
+}
+
+// RegisterCustomTypeReader register a reader (deserializer) for a custom type
+func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
+	customTypeReaderLock.Lock()
+	defer customTypeReaderLock.Unlock()
+	customDeserializers[customTypeName] = reader
+}
+
+// UnregisterCustomTypeReader unregister a reader (deserializer) for a custom type
+func UnregisterCustomTypeReader(customTypeName string) {
+	customTypeReaderLock.Lock()
+	defer customTypeReaderLock.Unlock()
+	delete(customDeserializers, customTypeName)
 }

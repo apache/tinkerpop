@@ -52,14 +52,15 @@ const (
 	err0303GetPathNoLabelFoundError                    errorCode = "E0303_GRAPH_GETPATHOBJECT_NO_LABEL_ERROR"
 
 	// graphBinary.go errors
-	err0401WriteTypeValueUnexpectedNullError    errorCode = "E0401_GRAPH_BINARY_WRITETYPEVALUE_UNEXPECTED_NULL_ERROR"
-	err0402BytecodeWriterError                  errorCode = "E0402_GRAPH_BINARY_WRITER_BYTECODE_ERROR"
-	err0403WriteValueUnexpectedNullError        errorCode = "E0403_GRAPH_BINARY_WRITEVALUE_UNEXPECTED_NULL_ERROR"
-	err0404ReadNullTypeError                    errorCode = "E0404_GRAPH_BINARY_READ_NULLTYPE_ERROR"
-	err0405ReadValueInvalidNullInputError       errorCode = "E0405_GRAPH_BINARY_READVALUE_NULL_INPUT_ERROR"
-	err0406EnumReaderInvalidTypeError           errorCode = "E0406_GRAPH_BINARY_ENUMREADER_INVALID_TYPE_ERROR"
-	err0407GetSerializerToWriteUnknownTypeError errorCode = "E0407_GRAPH_BINARY_GETSERIALIZERTOWRITE_UNKNOWN_TYPE_ERROR"
-	err0408GetSerializerToReadUnknownTypeError  errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
+	err0401WriteTypeValueUnexpectedNullError         errorCode = "E0401_GRAPH_BINARY_WRITETYPEVALUE_UNEXPECTED_NULL_ERROR"
+	err0402BytecodeWriterError                       errorCode = "E0402_GRAPH_BINARY_WRITER_BYTECODE_ERROR"
+	err0403WriteValueUnexpectedNullError             errorCode = "E0403_GRAPH_BINARY_WRITEVALUE_UNEXPECTED_NULL_ERROR"
+	err0404ReadNullTypeError                         errorCode = "E0404_GRAPH_BINARY_READ_NULLTYPE_ERROR"
+	err0405ReadValueInvalidNullInputError            errorCode = "E0405_GRAPH_BINARY_READVALUE_NULL_INPUT_ERROR"
+	err0406EnumReaderInvalidTypeError                errorCode = "E0406_GRAPH_BINARY_ENUMREADER_INVALID_TYPE_ERROR"
+	err0407GetSerializerToWriteUnknownTypeError      errorCode = "E0407_GRAPH_BINARY_GETSERIALIZERTOWRITE_UNKNOWN_TYPE_ERROR"
+	err0408GetSerializerToReadUnknownTypeError       errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
+	err0409GetSerializerToReadUnknownCustomTypeError errorCode = "E0409_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_CUSTOM_TYPE_ERROR"
 
 	// protocol.go errors
 	err0501ResponseHandlerResultSetNotCreatedError errorCode = "E0501_PROTOCOL_RESPONSEHANDLER_NO_RESULTSET_ON_DATA_RECEIVE"

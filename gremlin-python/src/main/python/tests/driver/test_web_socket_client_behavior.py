@@ -78,11 +78,12 @@ def test_should_send_per_request_settings_to_server(socket_server_client, socket
             'requestId': socket_server_settings["PER_REQUEST_SETTINGS_REQUEST_ID"],
             'evaluationTimeout': 1234,
             'batchSize': 12,
-            'userAgent': "helloWorld"
+            'userAgent': "helloWorld",
+            'materializeProperties': "tokens"
         }).all().result()
 
-    expected_result = "requestId={} evaluationTimeout={}, batchSize={}, userAgent={}".format(
-        socket_server_settings["PER_REQUEST_SETTINGS_REQUEST_ID"], 1234, 12, "helloWorld"
+    expected_result = "requestId={} evaluationTimeout={}, batchSize={}, userAgent={}, materializeProperties={}".format(
+        socket_server_settings["PER_REQUEST_SETTINGS_REQUEST_ID"], 1234, 12, "helloWorld", "tokens"
     )
 
     # Socket Server is sending a simple string response which after being serialized in and out of graphBinary,

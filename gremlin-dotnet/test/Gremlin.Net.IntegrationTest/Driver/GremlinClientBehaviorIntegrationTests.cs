@@ -123,9 +123,10 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 .AddArgument(Tokens.ArgsEvalTimeout, 1234)
                 .AddArgument(Tokens.ArgsBatchSize, 12)
                 .AddArgument(Tokens.ArgsUserAgent, "helloWorld")
+                .AddArgument(Tokens.ArgMaterializeProperties, "tokens")
                 .Create());
 
-            var expectedResponse = $"requestId={Settings.PerRequestSettingsRequestId} evaluationTimeout=1234, batchSize=12, userAgent=helloWorld";
+            var expectedResponse = $"requestId={Settings.PerRequestSettingsRequestId} evaluationTimeout=1234, batchSize=12, userAgent=helloWorld, materializeProperties=tokens";
             Assert.Equal(expectedResponse, response);
         }
     }

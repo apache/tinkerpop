@@ -1153,12 +1153,12 @@ available GraphSON serializers that can be configured:
 [width="100%",cols="2,2,4,4",options="header"]
 |=========================================================
 |Version |Embedded Types |Mime Type |Class
-|1.0 |yes |`application/vnd.gremlin-v1.0+json` |`GraphSONMessageSerializerGremlinV1d0`
-|1.0 |no |`application/vnd.gremlin-v1.0+json;types=false` |`GraphSONUntypedMessageSerializerV1d0`
-|2.0 |yes |`application/vnd.gremlin-v2.0+json` |`GraphSONMessageSerializerV2d0`
-|2.0 |no |`application/vnd.gremlin-v2.0+json;types=false` |`GraphSONUntypedMessageSerializerV2d0`
-|3.0 |yes |`application/vnd.gremlin-v3.0+json` |`GraphSONMessageSerializerV3d0`
-|3.0 |no |`application/vnd.gremlin-v3.0+json;types=false` |`GraphSONMessageSerializerV3d0`
+|1.0 |yes |`application/vnd.gremlin-v1.0+json` |`GraphSONMessageSerializerGremlinV1`
+|1.0 |no |`application/vnd.gremlin-v1.0+json;types=false` |`GraphSONUntypedMessageSerializerV1`
+|2.0 |yes |`application/vnd.gremlin-v2.0+json` |`GraphSONMessageSerializerV2`
+|2.0 |no |`application/vnd.gremlin-v2.0+json;types=false` |`GraphSONUntypedMessageSerializerV2`
+|3.0 |yes |`application/vnd.gremlin-v3.0+json` |`GraphSONMessageSerializerV3`
+|3.0 |no |`application/vnd.gremlin-v3.0+json;types=false` |`GraphSONMessageSerializerV3`
 |=========================================================
 
 The above serializer classes can be found in the `org.apache.tinkerpop.gremlin.util.ser` package of `gremlin-util`.

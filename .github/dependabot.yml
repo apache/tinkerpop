@@ -24,6 +24,9 @@ updates:
     labels:
       - "javascript"
       - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: "npm"
     directory: "/gremlint"
     schedule:
@@ -32,6 +35,11 @@ updates:
     labels:
       - "gremlint"
       - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@types/node"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "npm"
     directory: "/docs/gremlint"
     schedule:
@@ -40,6 +48,15 @@ updates:
     labels:
       - "gremlint"
       - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@types/*"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "styled-components"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@testing-library/jest-dom"
+        update-types: [ "version-update:semver-patch" ]
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"
     schedule:
@@ -49,7 +66,6 @@ updates:
       - "go"
       - "dependencies"
   - package-ecosystem: "maven"
-    open-pull-requests-limit: 10
     directory: "/"
     schedule:
       interval: "daily"
