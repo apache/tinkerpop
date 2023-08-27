@@ -20,18 +20,20 @@ under the License.
 package gremlingo
 
 import (
+	"regexp"
 	"testing"
 	"time"
 )
 
 func Test_translator_Translate(t *testing.T) {
 	type test struct {
-		name    string
-		assert  func(g *GraphTraversalSource) *GraphTraversal
-		equals  string
-		only    bool
-		skip    bool
-		wantErr bool
+		name                      string
+		assert                    func(g *GraphTraversalSource) *GraphTraversal
+		equals                    string
+		only                      bool
+		skip                      bool
+		wantErr                   bool
+		containsRandomClassParams bool
 	}
 	tests := []test{
 		{
@@ -602,7 +604,8 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(PartitionStrategy(PartitionStrategyConfig{PartitionKey: "partition", WritePartition: "a", ReadPartitions: []string{"a"}})).AddV("test")
 			},
-			equals: "g.withStrategies(new PartitionStrategy(includeMetaProperties:false,partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')",
+			containsRandomClassParams: true,
+			equals:                    "g.withStrategies(new PartitionStrategy(includeMetaProperties:false,partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -672,9 +675,46 @@ func Test_translator_Translate(t *testing.T) {
 				t.Errorf("translator.Translate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.equals {
+			if !tt.containsRandomClassParams && got != tt.equals {
 				t.Errorf("translator.Translate() = %v, equals %v", got, tt.equals)
+			}
+
+			if tt.containsRandomClassParams {
+				equalsParams := getParams(tt.equals)
+				gotParams := getParams(got)
+
+				if len(equalsParams) != len(gotParams) {
+					t.Errorf("translator.Translate() = %v, equals %v", got, tt.equals)
+				}
+
+				for _, equalsParam := range equalsParams {
+					found := false
+					for _, gotParam := range gotParams {
+						if equalsParam == gotParam {
+							found = true
+							break
+						}
+					}
+					if !found {
+						t.Errorf("translator.Translate() = %v, equals %v", got, tt.equals)
+					}
+				}
 			}
 		})
 	}
+}
+
+func getParams(result string) []string {
+	pattern := `(\w+:.*?)`
+	re := regexp.MustCompile(pattern)
+	matches := re.FindAllStringSubmatch(result, -1)
+
+	params := make([]string, 0)
+	for _, match := range matches {
+		if len(match) > 0 {
+			params = append(params, match[0])
+		}
+	}
+
+	return params
 }
