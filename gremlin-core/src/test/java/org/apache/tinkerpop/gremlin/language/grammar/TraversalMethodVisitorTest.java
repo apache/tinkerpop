@@ -117,10 +117,19 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_all_P() throws Exception {
+        compare(g.V().id().fold().all(gt(1)), eval("g.V().id().fold().all(gt(1))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_and() throws Exception {
         compare(g.V().and(outE("knows")), eval("g.V().and(outE('knows'))"));
     }
 
+    @Test
+    public void shouldParseTraversalMethod_any_P() throws Exception {
+        compare(g.V().id().fold().any(gt(1)), eval("g.V().id().fold().any(gt(1))"));
+    }
     @Test
     public void shouldParseTraversalMethod_as() throws Exception {
         compare(g.V().as("test"), eval("g.V().as('test')"));

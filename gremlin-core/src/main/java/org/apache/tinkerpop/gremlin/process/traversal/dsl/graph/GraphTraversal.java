@@ -57,7 +57,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AllStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
@@ -2502,6 +2504,32 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
     }
 
+    /**
+     * Filters <code>E</code> lists given the provided {@code predicate}.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link AllStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#all-step" target="_blank">Reference Documentation - All Step</a>
+     * @since 3.7.1
+     */
+    public default <S2> GraphTraversal<S, E> all(final P<S2> predicate) {
+        this.asAdmin().getBytecode().addStep(Symbols.all, predicate);
+        return this.asAdmin().addStep(new AllStep<>(this.asAdmin(), predicate));
+    }
+
+    /**
+     * Filters <code>E</code> lists given the provided {@code predicate}.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link AnyStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#any-step" target="_blank">Reference Documentation - Any Step</a>
+     * @since 3.7.1
+     */
+    public default <S2> GraphTraversal<S, E> any(final P<S2> predicate) {
+        this.asAdmin().getBytecode().addStep(Symbols.any, predicate);
+        return this.asAdmin().addStep(new AnyStep<>(this.asAdmin(), predicate));
+    }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     /**
@@ -3747,6 +3775,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String asDate = "asDate";
         public static final String dateAdd = "dateAdd";
         public static final String dateDiff = "dateDiff";
+        public static final String all = "all";
+        public static final String any = "any";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

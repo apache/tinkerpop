@@ -415,12 +415,32 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal all method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  all(...args) {
+    this.bytecode.addStep('all', args);
+    return this;
+  }
+
+  /**
    * Graph traversal and method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   and(...args) {
     this.bytecode.addStep('and', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal any method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  any(...args) {
+    this.bytecode.addStep('any', args);
     return this;
   }
 
@@ -1657,7 +1677,9 @@ const statics = {
   addE: (...args) => callOnEmptyTraversal('addE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
+  all: (...args) => callOnEmptyTraversal('all', args),
   and: (...args) => callOnEmptyTraversal('and', args),
+  any: (...args) => callOnEmptyTraversal('any', args),
   as: (...args) => callOnEmptyTraversal('as', args),
   asDate: (...args) => callOnEmptyTraversal('asDate', args),
   asString: (...args) => callOnEmptyTraversal('asString', args),

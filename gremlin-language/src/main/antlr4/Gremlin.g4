@@ -183,7 +183,9 @@ traversalMethod
     | traversalMethod_mergeE
     | traversalMethod_mergeV
     | traversalMethod_aggregate
+    | traversalMethod_all
     | traversalMethod_and
+    | traversalMethod_any
     | traversalMethod_as
     | traversalMethod_barrier
     | traversalMethod_both
@@ -336,9 +338,17 @@ traversalMethod_aggregate
     | 'aggregate' LPAREN stringArgument RPAREN #traversalMethod_aggregate_String
     ;
 
+traversalMethod_all
+	: 'all' LPAREN traversalPredicate RPAREN #traversalMethod_all_P
+	;
+
 traversalMethod_and
     : 'and' LPAREN nestedTraversalList RPAREN
     ;
+
+traversalMethod_any
+	: 'any' LPAREN traversalPredicate RPAREN #traversalMethod_any_P
+	;
 
 traversalMethod_as
     : 'as' LPAREN stringArgument (COMMA stringLiteralVarargs)? RPAREN

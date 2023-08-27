@@ -42,7 +42,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.OptionalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AllStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
@@ -226,6 +228,8 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.asDate, Collections.singletonList(AsDateStep.class));
             put(GraphTraversal.Symbols.dateAdd, Collections.singletonList(DateAddStep.class));
             put(GraphTraversal.Symbols.dateDiff, Collections.singletonList(DateDiffStep.class));
+            put(GraphTraversal.Symbols.all, Collections.singletonList(AllStep.class));
+            put(GraphTraversal.Symbols.any, Collections.singletonList(AnyStep.class));
             put(GraphTraversal.Symbols.group, Arrays.asList(GroupStep.class, GroupSideEffectStep.class));
             put(GraphTraversal.Symbols.groupCount, Arrays.asList(GroupCountStep.class, GroupCountSideEffectStep.class));
             put(GraphTraversal.Symbols.tree, Arrays.asList(TreeStep.class, TreeSideEffectStep.class));

@@ -657,6 +657,30 @@ g.E().aggregate(local,'x').by('weight').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-java.lang.String-++[`aggregate(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String-++[`aggregate(Scope,String)`]
 
+[[all-step]]
+=== All Step
+
+It is possible to filter list traversers using `all()`-step (*filter*). Every item in the list will be tested against
+the supplied predicate and if all of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
+
+[NOTE, caption=Python]
+====
+The term `all` is a reserved word in Python, and therefore must be referred to in Gremlin with `all_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().all(gt(25)) <1>
+----
+
+<1> Return the list of ages only if everyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#all-org.apache.tinkerpop.gremlin.process.traversal.P-++[`all(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
+
 [[and-step]]
 === And Step
 
@@ -688,6 +712,30 @@ g.V().where(outE('created').and().outE('knows')).values('name')
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#and-org.apache.tinkerpop.gremlin.process.traversal.Traversal...-++[`and(Traversal...)`]
+
+[[any-step]]
+=== Any Step
+
+It is possible to filter list traversers using `any()`-step (*filter*). All items in the list will be tested against
+the supplied predicate and if any of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists, null traversers, and non-iterable traversers are filtered out as well.
+
+[NOTE, caption=Python]
+====
+The term `any` is a reserved word in Python, and therefore must be referred to in Gremlin with `any_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().any(gt(25)) <1>
+----
+
+<1> Return the list of ages if anyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#any-org.apache.tinkerpop.gremlin.process.traversal.P-++[`any(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
 [[as-step]]
 === As Step

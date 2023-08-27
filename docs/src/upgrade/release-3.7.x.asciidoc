@@ -232,6 +232,23 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
+==== List Traverser based Steps
+Additional List manipulation/filter steps have been added to replace the use of closures: `any()` and `all()`.
+
+The following example demonstrates usage of the newly introduced steps:
+
+[source,text]
+----
+gremlin> g.V().values("age").fold().all(P.gt(10))
+==>[29,27,32,35]
+gremlin> g.V().values("age").fold().any(P.eq(32))
+==>[29,27,32,35]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2978[TINKERPOP-2978],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[all()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[any()-step]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

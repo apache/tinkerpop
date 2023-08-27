@@ -1047,6 +1047,16 @@ public class __ {
         return __.<A>start().drop();
     }
 
+    /**
+     * @see GraphTraversal#all(P)
+     */
+    public static <A> GraphTraversal<A, A> all(final P<A> predicate) { return __.<A>start().all(predicate); }
+
+    /**
+     * @see GraphTraversal#any(P)
+     */
+    public static <A> GraphTraversal<A, A> any(final P<A> predicate) { return __.<A>start().any(predicate); }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     /**

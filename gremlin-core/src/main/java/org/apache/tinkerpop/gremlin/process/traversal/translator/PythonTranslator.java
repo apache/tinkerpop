@@ -203,6 +203,11 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Pick o) {
+            if (o.equals(Pick.any)) {
+                // We don't want this getting resolved to Pick.any_ due to any() being a built-in function in Python.
+                return "Pick.any";
+            }
+
             return "Pick." + resolveSymbol(o.toString());
         }
 
@@ -433,6 +438,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("global", "global_");
             TO_PYTHON_MAP.put("all", "all_");
             TO_PYTHON_MAP.put("and", "and_");
+            TO_PYTHON_MAP.put("any", "any_");
             TO_PYTHON_MAP.put("as", "as_");
             TO_PYTHON_MAP.put("asString", "as_string");
             TO_PYTHON_MAP.put("asDate", "as_date");

@@ -33,6 +33,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
+* Added list filtering functions `all` and `any`.
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
