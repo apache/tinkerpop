@@ -21,7 +21,7 @@ go 1.20
 
 require (
 	github.com/cucumber/godog v0.12.6
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/stretchr/testify v1.8.4
