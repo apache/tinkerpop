@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -68,6 +69,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -471,7 +473,7 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    HandshakeInterceptor getHandshakeInterceptor() {
+    UnaryOperator<FullHttpRequest> getRequestInterceptor() {
         return manager.interceptor;
     }
 
@@ -609,7 +611,7 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private HandshakeInterceptor interceptor = HandshakeInterceptor.NO_OP;
+        private UnaryOperator<FullHttpRequest> interceptor = HandshakeInterceptor.NO_OP;
         private AuthProperties authProps = new AuthProperties();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
@@ -892,7 +894,7 @@ public final class Cluster {
          * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
          */
         public Builder channelizer(final Class channelizerClass) {
-            return channelizer(channelizerClass.getCanonicalName());
+            return channelizer(channelizerClass.getName());
         }
 
         /**
@@ -923,10 +925,23 @@ public final class Cluster {
         }
 
         /**
-         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the
-         * {@code FullHttpRequest} prior to its being sent over the websocket.
+         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
+         * to its being sent to the server.
+         * @deprecated As of release 3.6.6, replaced with {@link #requestInterceptor(RequestInterceptor)}.
          */
+        @Deprecated
         public Builder handshakeInterceptor(final HandshakeInterceptor interceptor) {
+            // when this deprecated method is removed, the interceptor can have its type promoted from
+            // UnaryOperator<FullHttpRequest> to RequestInterceptor
+            this.interceptor = interceptor;
+            return this;
+        }
+
+        /**
+         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
+         * to its being sent to the server. For websockets the interceptor is only called on the handshake.
+         */
+        public Builder requestInterceptor(final RequestInterceptor interceptor) {
             this.interceptor = interceptor;
             return this;
         }
@@ -1063,7 +1078,7 @@ public final class Cluster {
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessage.Builder> validationRequest;
-        private final HandshakeInterceptor interceptor;
+        private final UnaryOperator<FullHttpRequest> interceptor;
 
         /**
          * Thread pool for requests.

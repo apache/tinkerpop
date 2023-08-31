@@ -215,7 +215,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
 * Fix a javadoc comment in GraphTraversal.not method.
-
+* Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
+* Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)

@@ -198,7 +198,15 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
 
     @Override
     public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        final ByteBuf bb = serializeRequestAsBinary(requestMessage, allocator);
+        final ByteBuf bb = allocator.buffer();
+
+        try {
+            requestSerializer.writeValue(requestMessage, bb, writer);
+        } catch (Exception ex) {
+            bb.release();
+            throw ex;
+        }
+
         return base64Encoder.encodeToString(convertToBytes(bb));
     }
 
