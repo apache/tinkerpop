@@ -5479,14 +5479,15 @@ therefore allows Gremlin to be converted from the host programming language of t
 The following translators are available, where the first column identifies the host programming language and the
 columns represent the language that Gremlin can be generated in:
 
-[width="100%",cols="<,^,^,^,^,^",options="header"]
+[width="100%",cols="<,^,^,^,^,^,^",options="header"]
 |=========================================================
-| |Java |Groovy |Javascript |.NET |Python
-|*Java* |- |X |X |X |X
-|*Groovy* | |X |X | |X
-|*Javascript* | |X |- | |
-|*.NET* | |X | |- |
-|*Python*  | |X | | |-
+| |Java |Groovy |Javascript |.NET |Python |Go
+|*Java* |- |X |X |X |X |X
+|*Groovy* | |X |X | |X |
+|*Javascript* | |X |- | | |
+|*.NET* | |X | |- | |
+|*Python*  | |X | | |- |
+|*Go* | |X | | | |-
 |=========================================================
 
 Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
@@ -5520,6 +5521,10 @@ System.out.println(pythonTranslator.translate(t).getScript());
 Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
 System.out.println(javascriptTranslator.translate(t).getScript());
 // OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
+
+Translator.ScriptTranslator golangTranslator = GolangTranslator.of("g");
+System.out.println(golangTranslator.translate(t).getScript());
+// OUTPUT: g.V().Has("person", "name", "marko").Where(gremlingo.T__.In("knows")).Values("age").Map(&gremlingo.Lambda{Script:"it.get() + 1", Language:""})
 ----
 [source,javascript]
 ----
@@ -5556,6 +5561,18 @@ var t = g.V().Has("person", "name", "marko").Where(In("knows")).Values<int>("age
 var translator = GroovyTranslator.Of("g");
 Console.WriteLine(translator.Translate(t));
 // OUTPUT: g.V().has('person', 'name', 'marko').where(__.in('knows')).values('age')
+----
+[source,go]
+----
+g := ...
+t := g.V().Has("person", "name", "marko").
+	Where(T__.In("knows")).
+	Values("age")
+
+// Groovy
+translator := NewTranslator("g")
+print(translator.Translate(t.Bytecode))
+// OUTPUT: g.V().has('person','name','marko').where(in('knows')).values('age')
 ----
 
 The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
