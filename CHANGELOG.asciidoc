@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
 * Fix a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties
+* Added translator to the Go GLV
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)
