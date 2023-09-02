@@ -175,10 +175,10 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.returnClass.hashCode();
-        if (null != this.ids) {
-            for (final Object id : this.ids) {
-                result ^= Objects.hashCode(id);
+        int result = Objects.hash(super.hashCode(), returnClass);
+        if (ids != null) {
+            for (Object id : ids) {
+                result = 31 * result + Objects.hashCode(id);
             }
         }
         return result;

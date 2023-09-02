@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
+* Do not use `XOR` for hashCode computation of Step when only simple keys are used and duplicate keys are allowed.
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)

@@ -29,9 +29,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -80,9 +83,15 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> implements AutoCl
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.returnType.hashCode();
-        for (final String propertyKey : this.propertyKeys) {
-            result ^= Objects.hashCode(propertyKey);
+        int result = Objects.hash(super.hashCode(), returnType);
+        // property keys' order does not matter because properties("x", "y"), and properties("y", "x") should be
+        // considered identical.
+        if (propertyKeys != null) {
+            final List<String> sortedPropertyKeys = Arrays.stream(propertyKeys)
+                    .sorted(Comparator.nullsLast(Comparator.naturalOrder())).collect(Collectors.toList());
+            for (final String propertyKey : sortedPropertyKeys) {
+                result = 31 * result + Objects.hashCode(propertyKey);
+            }
         }
         return result;
     }
