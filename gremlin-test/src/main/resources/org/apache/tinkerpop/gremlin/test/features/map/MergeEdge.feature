@@ -619,7 +619,7 @@ Feature: Step - mergeE()
       """
       g.addV("person").property("name", "marko").as("a").
         addV("person").property("name", "vadas").as("b").
-        addE("knows").property("weight", 0.5).from("a").to("b")
+        addE("knows").property("weight", 1).from("a").to("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
