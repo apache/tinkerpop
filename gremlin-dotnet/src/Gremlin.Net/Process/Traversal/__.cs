@@ -134,6 +134,14 @@ namespace Gremlin.Net.Process.Traversal
                 ? new GraphTraversal<object, object>().As(label)
                 : new GraphTraversal<object, object>().As(label, labels);            
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asString step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string> AsString()
+        {
+            return new GraphTraversal<object, string>().AsString();            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
@@ -772,6 +780,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, string>().Label();            
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the length step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, long?> Length()
+        {
+            return new GraphTraversal<object, long?>().Length();            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
@@ -1347,6 +1363,22 @@ namespace Gremlin.Net.Process.Traversal
             return edgeLabels is { Length: 0 }
                 ? new GraphTraversal<object, Edge>().ToE(direction)
                 : new GraphTraversal<object, Edge>().ToE(direction, edgeLabels);            
+        }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toLower step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> ToLower()
+        {
+            return new GraphTraversal<object, string?>().ToLower();            
+        }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the ToUpper step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> ToUpper()
+        {
+            return new GraphTraversal<object, string?>().ToUpper();            
         }
 
         /// <summary>

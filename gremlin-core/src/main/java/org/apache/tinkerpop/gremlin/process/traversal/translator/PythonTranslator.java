@@ -430,6 +430,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("all", "all_");
             TO_PYTHON_MAP.put("and", "and_");
             TO_PYTHON_MAP.put("as", "as_");
+            TO_PYTHON_MAP.put("asString", "as_string");
             TO_PYTHON_MAP.put("filter", "filter_");
             TO_PYTHON_MAP.put("from", "from_");
             TO_PYTHON_MAP.put("id", "id_");
@@ -449,6 +450,8 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("range", "range_");
             TO_PYTHON_MAP.put("set", "set_");
             TO_PYTHON_MAP.put("sum", "sum_");
+            TO_PYTHON_MAP.put("toLower", "to_lower");
+            TO_PYTHON_MAP.put("toUpper", "to_upper");
             TO_PYTHON_MAP.put("with", "with_");
             //
             TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));

@@ -1143,4 +1143,24 @@ public class TraversalMethodVisitorTest {
         compare(g.V().coalesce(E(1,2),addE("person")),
                 eval("g.V().coalesce(__.E(1,2),__.addE('person'))"));
     }
+
+    @Test
+    public void shouldParseTraversalMethod_asString_Empty() throws Exception {
+        compare(g.V().asString(), eval("g.V().asString()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_toLower_Empty() throws Exception {
+        compare(g.V().toLower(), eval("g.V().toLower()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_toUpper_Empty() throws Exception {
+        compare(g.V().toUpper(), eval("g.V().toUpper()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_length_Empty() throws Exception {
+        compare(g.V().length(), eval("g.V().length()"));
+    }
 }

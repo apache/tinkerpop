@@ -180,7 +180,7 @@ class GraphTraversalSource(object):
         return self.with_computer(graph_computer, workers, result, persist, vertices, edges, configuration)
 
     def with_computer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
-                  edges=None, configuration=None):
+                      edges=None, configuration=None):
         return self.with_strategies(
             VertexProgramStrategy(graph_computer, workers, result, persist, vertices, edges, configuration))
 
@@ -315,6 +315,10 @@ class GraphTraversal(Traversal):
 
     def as_(self, *args):
         self.bytecode.add_step("as", *args)
+        return self
+
+    def as_string(self, *args):
+        self.bytecode.add_step("asString", *args)
         return self
 
     def barrier(self, *args):
@@ -591,6 +595,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("label", *args)
         return self
 
+    def length(self, *args):
+        self.bytecode.add_step("length", *args)
+        return self
+
     def limit(self, *args):
         self.bytecode.add_step("limit", *args)
         return self
@@ -860,6 +868,14 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("toE", *args)
         return self
 
+    def to_lower(self, *args):
+        self.bytecode.add_step("toLower", *args)
+        return self
+
+    def to_upper(self, *args):
+        self.bytecode.add_step("toUpper", *args)
+        return self
+
     def toV(self, *args):
         warnings.warn(
             "gremlin_python.process.GraphTraversalSource.toV will be replaced by "
@@ -982,6 +998,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def as_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).as_(*args)
+
+    @classmethod
+    def as_string(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_string(*args)
 
     @classmethod
     def barrier(cls, *args):
@@ -1252,6 +1272,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).label(*args)
 
     @classmethod
+    def length(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).length(*args)
+
+    @classmethod
     def limit(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).limit(*args)
 
@@ -1476,6 +1500,14 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).to_e(*args)
 
     @classmethod
+    def to_lower(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).to_lower(*args)
+
+    @classmethod
+    def to_upper(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).to_upper(*args)
+
+    @classmethod
     def toV(cls, *args):
         warnings.warn(
             "gremlin_python.process.__.toV will be replaced by "
@@ -1637,6 +1669,10 @@ def and_(*args):
 
 def as_(*args):
     return __.as_(*args)
+
+
+def as_string(*args):
+    return __.as_string(*args)
 
 
 def barrier(*args):
@@ -1855,6 +1891,10 @@ def label(*args):
     return __.label(*args)
 
 
+def length(*args):
+    return __.length(*args)
+
+
 def limit(*args):
     return __.limit(*args)
 
@@ -2047,6 +2087,14 @@ def to_e(*args):
     return __.to_e(*args)
 
 
+def to_lower(*args):
+    return __.to_lower(*args)
+
+
+def to_upper(*args):
+    return __.to_upper(*args)
+
+
 def toV(*args):
     return __.to_v(*args)
 
@@ -2106,6 +2154,8 @@ statics.add_static('aggregate', aggregate)
 statics.add_static('and_', and_)
 
 statics.add_static('as_', as_)
+
+statics.add_static('as_string', as_string)
 
 statics.add_static('barrier', barrier)
 
@@ -2213,6 +2263,8 @@ statics.add_static('key', key)
 
 statics.add_static('label', label)
 
+statics.add_static('length', length)
+
 statics.add_static('limit', limit)
 
 statics.add_static('local', local)
@@ -2310,6 +2362,10 @@ statics.add_static('toE', toE)
 statics.add_static('to_e', to_e)
 
 statics.add_static('toV', toV)
+
+statics.add_static('to_lower', to_lower)
+
+statics.add_static('to_upper', to_upper)
 
 statics.add_static('to_v', to_v)
 

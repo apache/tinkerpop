@@ -94,6 +94,12 @@ func (g *GraphTraversal) As(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// AsString adds the asString step to the GraphTraversal.
+func (g *GraphTraversal) AsString(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("asString", args...)
+	return g
+}
+
 // Barrier adds the barrier step to the GraphTraversal.
 func (g *GraphTraversal) Barrier(args ...interface{}) *GraphTraversal {
 	// Force int32 serialization for valid number values for server compatibility
@@ -358,6 +364,12 @@ func (g *GraphTraversal) Key(args ...interface{}) *GraphTraversal {
 // Label adds the label step to the GraphTraversal.
 func (g *GraphTraversal) Label(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("label", args...)
+	return g
+}
+
+// Length adds the length step to the GraphTraversal.
+func (g *GraphTraversal) Length(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("length", args...)
 	return g
 }
 
@@ -648,6 +660,18 @@ func (g *GraphTraversal) To(args ...interface{}) *GraphTraversal {
 // ToE adds the toE step to the GraphTraversal.
 func (g *GraphTraversal) ToE(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("toE", args...)
+	return g
+}
+
+// ToLower adds the toLower step to the GraphTraversal.
+func (g *GraphTraversal) ToLower(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("toLower", args...)
+	return g
+}
+
+// ToUpper adds the toUpper step to the GraphTraversal.
+func (g *GraphTraversal) ToUpper(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("toUpper", args...)
 	return g
 }
 

@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
 
+* Added the `asString()`, `length()`, `toLower()`, and `toUpper()` steps to perform `String` manipulations.
+* Added Gherkin parsing support for specific string results using `str[]`.
 
 
 [[release-3-7.0]]

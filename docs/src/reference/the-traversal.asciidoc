@@ -731,6 +731,24 @@ g.V().hasLabel('software').as('a','b','c').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as-java.lang.String-java.lang.String...-++[`as(String,String...)`]
 
+[[asString-step]]
+=== AsString Step
+
+The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned as a string value "null".
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').values('age').asString() <1>
+g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
+----
+
+<1> Return ages as string.
+<2> Return ages as string and use concat to generate phrases.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString--++[`asString()`]
+
 [[barrier-step]]
 === Barrier Step
 
@@ -1990,6 +2008,23 @@ g.V(1).properties().label()
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label--++[`label()`]
+
+[[length-step]]
+=== Length Step
+
+The `length()`-step (*map*) returns the length incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.V().values('name').length() <1>
+----
+
+<1> Return the string length of all vertex names.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length--++[`length()`]
 
 [[limit-step]]
 === Limit Step
@@ -4242,6 +4277,39 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toE-org.apache.tinkerpop.gremlin.structure.Direction-java.lang.String...-++[`toE(Direction,String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toV-org.apache.tinkerpop.gremlin.structure.Direction-++[`toV(Direction)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Direction.html++[`Direction`]
+
+[[toLower-step]]
+=== ToLower Step
+
+The `toLower()`-step (*map*) returns the lower representation of incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("HELLO", "wORlD", null).toLower()
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower--++[`toLower()`]
+
+[[toUpper-step]]
+=== ToUpper Step
+
+The `toUpper()`-step (*map*) returns the upper representation of incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("hello", "wORlD", null).toUpper()
+g.V().values("name").toUpper() <1>
+----
+
+<1> Returns the upper case representation of all vertex names.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper--++[`toUpper()`]
 
 [[tree-step]]
 === Tree Step
