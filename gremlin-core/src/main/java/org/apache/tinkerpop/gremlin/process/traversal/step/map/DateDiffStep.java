@@ -75,6 +75,12 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
         super.setTraversal(parentTraversal);
     }
 
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (value != null ? value.hashCode() : dateTraversal.hashCode());
+        return result;
+    }
 
     @Override
     public String toString() {

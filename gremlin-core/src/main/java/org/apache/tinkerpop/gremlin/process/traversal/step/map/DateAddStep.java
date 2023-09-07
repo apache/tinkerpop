@@ -79,6 +79,13 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
         super.setTraversal(parentTraversal);
     }
 
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + dateToken.hashCode();
+        result = 31 * result + value;
+        return result;
+    }
 
     @Override
     public String toString() {
