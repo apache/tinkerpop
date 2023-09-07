@@ -200,7 +200,7 @@ func (g *GraphTraversal) CyclicPath(args ...interface{}) *GraphTraversal {
 
 // DateAdd adds the dateAdd step to the GraphTraversal.
 func (g *GraphTraversal) DateAdd(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("dateAdd", args...)
+	g.Bytecode.AddStep("dateAdd", int32Args(args)...)
 	return g
 }
 
