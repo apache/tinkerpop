@@ -368,7 +368,7 @@ function toDirection(value) {
 }
 
 function toDateTime(value) {
-  return new Date(parseInt(value) * 1000);
+  return new Date(value);
 }
 
 function toMerge(value) {

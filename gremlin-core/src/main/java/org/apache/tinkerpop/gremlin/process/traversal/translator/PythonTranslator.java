@@ -183,7 +183,11 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             if (o instanceof Byte)
                 return "SingleByte(" + o + ")";
 
-            // all int/short/BigInteger/long are just python int/bignum
+            // for large numbers need to specify the type
+            if (o.longValue() > Integer.MAX_VALUE) {
+                return "long(" + o + ")";
+            }
+            // otherwise just use python int/bignum
             return o.toString();
         }
 

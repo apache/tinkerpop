@@ -28,7 +28,7 @@ Feature: Step - dateAdd()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1690941600] |
+      | dt[2023-08-02T02:00:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXdatetimeXstrXX_dateAddXhour_2X
@@ -40,7 +40,7 @@ Feature: Step - dateAdd()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1690941600] |
+      | dt[2023-08-02T02:00:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXdatetimeXstrXX_dateAddXhour_1X
@@ -52,7 +52,7 @@ Feature: Step - dateAdd()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1690930800] |
+      | dt[2023-08-01T23:00:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXdatetimeXstrXX_dateAddXminute_10X
@@ -64,7 +64,7 @@ Feature: Step - dateAdd()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1690935000] |
+      | dt[2023-08-02T00:10:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXdatetimeXstrXX_dateAddXsecond_20X
@@ -76,4 +76,4 @@ Feature: Step - dateAdd()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1690934420] |
+      | dt[2023-08-02T00:00:20Z] |

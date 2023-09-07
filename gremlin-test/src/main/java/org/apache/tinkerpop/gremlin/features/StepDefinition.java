@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -127,7 +128,7 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> s + "m"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), s -> s + "n"));
 
-        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> String.format("new Date(%s000)", s)));
+        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> String.format("datetime('%s')", s)));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
@@ -208,7 +209,7 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), BigDecimal::new));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), BigInteger::new));
 
-        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> new java.util.Date(Long.parseLong(s) * 1000)));
+        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> DatetimeHelper.parse(s)));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));

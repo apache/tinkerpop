@@ -23,42 +23,29 @@ Feature: Step - asDate()
     Given the empty graph
     And the traversal of
       """
-      g.inject("2022-08-02T00:00:00Z").asDate()
+      g.inject("2023-08-02T00:00:00Z").asDate()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1659398400] |
+      | dt[2023-08-02T00:00:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1000X_asDate
+  Scenario: g_injectX1694017707000X_asDate
     Given the empty graph
     And the traversal of
       """
-      g.inject(1000).asDate()
+      g.inject(1694017707000).asDate()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[1] |
+      | dt[2023-09-06T16:28:27Z] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX2000LX_asDate
+  Scenario: g_injectX1694017708000LX_asDate
     Given the empty graph
-    And using the parameter xx1 defined as "d[2000].l"
-    And the traversal of
-      """
-      g.inject(xx1).asDate()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | dt[2] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX3000dX_asDate
-    Given the empty graph
-    And using the parameter xx1 defined as "d[3000.1].d"
+    And using the parameter xx1 defined as "d[1694017708000].l"
     And the traversal of
       """
       g.inject(xx1).asDate()
@@ -66,7 +53,20 @@ Feature: Step - asDate()
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[3] |
+      | dt[2023-09-06T16:28:28Z] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1694017709000dX_asDate
+    Given the empty graph
+    And using the parameter xx1 defined as "d[1694017709000.1].d"
+    And the traversal of
+      """
+      g.inject(xx1).asDate()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | dt[2023-09-06T16:28:29Z] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asDate

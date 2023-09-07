@@ -106,11 +106,11 @@ func parseValue(value string, graphName string) interface{} {
 
 // Parse dateTime.
 func toDateTime(stringVal, graphName string) interface{} {
-	val, err := strconv.ParseInt(stringVal, 10, 64)
+	val, err := time.Parse(time.RFC3339, stringVal)
 	if err != nil {
 		return nil
 	}
-	return time.Unix(val, 0)
+	return val
 }
 
 // Parse numeric.

@@ -438,7 +438,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         private static object ToDateTime(string date, string graphName)
         {
-            return DateTimeOffset.FromUnixTimeMilliseconds(long.Parse(date) * 1000);
+            return DateTimeOffset.Parse(date);
         }
 
         private static Vertex ToVertex(string name, string graphName)
