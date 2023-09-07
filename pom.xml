@@ -1062,6 +1062,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1087,6 +1089,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1112,6 +1116,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1137,6 +1143,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1162,6 +1170,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1187,6 +1197,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1212,6 +1224,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1237,6 +1251,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1260,6 +1276,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1284,6 +1302,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1308,6 +1328,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1331,6 +1353,8 @@ limitations under the License.
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
                                     </attributes>
                                 </configuration>
                             </execution>

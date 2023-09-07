@@ -58,6 +58,19 @@ public class GraphBinaryMessageSerializerV1Test {
     }
 
     @Test
+    public void shouldSerializeAndDeserializeRequestOverText() throws SerializationException {
+        final RequestMessage request = RequestMessage.build("op1")
+                .processor("proc1")
+                .overrideRequestId(UUID.randomUUID())
+                .addArg("arg1", "value1")
+                .create();
+
+        final String base64 = serializer.serializeRequestAsString(request, allocator);
+        final RequestMessage deserialized = serializer.deserializeRequest(base64);
+        assertThat(request, reflectionEquals(deserialized));
+    }
+
+    @Test
     public void shouldSerializeAndDeserializeRequestWithoutArgs() throws SerializationException {
         final RequestMessage request = RequestMessage.build("op1")
                 .processor("proc1")
@@ -96,6 +109,20 @@ public class GraphBinaryMessageSerializerV1Test {
 
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
         final ResponseMessage deserialized = serializer.deserializeResponse(buffer);
+        assertResponseEquals(response, deserialized);
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeResponseOverText() throws SerializationException {
+        final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
+                .code(ResponseStatusCode.SUCCESS)
+                .statusMessage("Found")
+                .statusAttribute("k1", 1)
+                .result("This is a fine message with a string")
+                .create();
+
+        final String base64 = serializer.serializeResponseAsString(response, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(base64);
         assertResponseEquals(response, deserialized);
     }
 

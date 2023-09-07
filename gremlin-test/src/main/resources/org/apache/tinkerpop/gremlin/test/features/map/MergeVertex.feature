@@ -664,9 +664,9 @@ Feature: Step - mergeV()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property("name", "mike").property(T.id, 1)
+      g.addV("person").property("name", "mike").property(T.id, "1")
       """
-    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"1\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
     And the traversal of
       """
@@ -675,13 +675,13 @@ Feature: Step - mergeV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
-    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+    And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
   @UserSuppliedVertexIds
   Scenario: g_mergeV_onCreate_inheritance_new_1
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"1\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
     And the traversal of
       """
@@ -690,14 +690,14 @@ Feature: Step - mergeV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
-    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+    And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # onCreate inheritance from merge
   @UserSuppliedVertexIds
   Scenario: g_mergeV_onCreate_inheritance_new_2
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"mike\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 1}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"1\"}]"
     And the traversal of
       """
       g.mergeV(xx1).option(Merge.onCreate, xx2)
@@ -705,7 +705,7 @@ Feature: Step - mergeV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
-    And the graph should return 1 for count of "g.V(1).has(\"person\",\"name\",\"mike\")"
+    And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
   # cannot override T.label in onCreate
   Scenario: g_mergeV_label_override_prohibited
@@ -723,8 +723,8 @@ Feature: Step - mergeV()
   @UserSuppliedVertexIds
   Scenario: g_mergeV_id_override_prohibited
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[id]\": 1}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 2}]"
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"1\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"2\"}]"
     And the traversal of
       """
       g.mergeV(xx1).option(onCreate, xx2)
@@ -735,7 +735,7 @@ Feature: Step - mergeV()
   # cannot use hidden namespace for id key
   Scenario: g_mergeV_hidden_id_key_prohibited
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"~id\": 1}]"
+    And using the parameter xx1 defined as "m[{\"~id\": \"1\"}]"
     And the traversal of
       """
       g.mergeV(xx1)

@@ -23,16 +23,14 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import java.util.function.UnaryOperator;
 
 /**
- * This function is called when the websocket handshake is attempted and the first {@code FullHttpRequest} is sent to
- * the server. The interceptor allows this message to be modified as needed before it is sent to the server.
- * Implementations are supplied to {@link Cluster.Builder#handshakeInterceptor(HandshakeInterceptor)}.
- * @deprecated As of release 3.6.6, replaced by {@link RequestInterceptor}.
+ * This function is called a {@code FullHttpRequest} constructed and allow it to be modified as needed before it is
+ * sent to the server. Implementations are supplied to {@link Cluster.Builder#requestInterceptor(RequestInterceptor)}.
+ * When this method is called is dependent on the {@link Channelizer} implementation.
  */
-@Deprecated
-public interface HandshakeInterceptor extends UnaryOperator<FullHttpRequest> {
+public interface RequestInterceptor extends UnaryOperator<FullHttpRequest> {
 
     /**
-     * The default implementation of a {@link HandshakeInterceptor} and behaves as a no-op.
+     * The default implementation of a {@link RequestInterceptor} and behaves as a no-op.
      */
-    public static final HandshakeInterceptor NO_OP = o -> o;
+    public static final RequestInterceptor NO_OP = o -> o;
 }

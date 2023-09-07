@@ -37,6 +37,7 @@ import io.netty.util.concurrent.Promise;
 
 import java.net.URI;
 import java.util.concurrent.TimeoutException;
+import java.util.function.UnaryOperator;
 
 import javax.net.ssl.SSLHandshakeException;
 
@@ -140,13 +141,13 @@ public final class WebSocketClientHandler extends WebSocketClientProtocolHandler
      */
     public static class InterceptedWebSocketClientHandshaker13 extends WebSocketClientHandshaker13 {
 
-        private final HandshakeInterceptor interceptor;
+        private final UnaryOperator<FullHttpRequest> interceptor;
 
         public InterceptedWebSocketClientHandshaker13(final URI webSocketURL, final WebSocketVersion version,
                                                       final String subprotocol, final boolean allowExtensions,
                                                       final HttpHeaders customHeaders, final int maxFramePayloadLength,
                                                       final boolean performMasking, final boolean allowMaskMismatch,
-                                                      final long forceCloseTimeoutMillis, final HandshakeInterceptor interceptor) {
+                                                      final long forceCloseTimeoutMillis, final UnaryOperator<FullHttpRequest> interceptor) {
             super(webSocketURL, version, subprotocol, allowExtensions, customHeaders, maxFramePayloadLength,
                     performMasking, allowMaskMismatch, forceCloseTimeoutMillis);
             this.interceptor = interceptor;

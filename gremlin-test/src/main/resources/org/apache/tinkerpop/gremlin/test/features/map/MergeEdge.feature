@@ -253,15 +253,14 @@ Feature: Step - mergeE()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -270,15 +269,14 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_withSideEffectXa_label_knows_out_marko_in_vadasX_mergeEXselectXaXX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
     And the traversal of
       """
       g.withSideEffect("a",xx1).mergeE(__.select("a"))
@@ -287,15 +285,14 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko1_in_vadas1X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"d[100].i\", \"D[IN]\":\"d[101].i\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -304,16 +301,15 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadas_weight_05X_exists
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\", \"weight\":\"d[0.5].d\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\", \"weight\":\"d[0.5].d\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -326,7 +322,7 @@ Feature: Step - mergeE()
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadas_weight_05X
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\", \"weight\":\"d[0.5].d\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"100\", \"D[IN]\":\"101\", \"weight\":\"d[0.5].d\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -337,8 +333,8 @@ Feature: Step - mergeE()
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\", \"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"100\", \"D[IN]\":\"101\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"100\", \"D[IN]\":\"101\", \"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -347,17 +343,16 @@ Feature: Step - mergeE()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Vertex id could not be resolved from mergeE"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -369,17 +364,16 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -391,18 +385,17 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_V_hasXperson_name_marko_X_mergeEXlabel_knowsX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("a").to("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -415,15 +408,14 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 2 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_injectXlabel_knows_out_marko_in_vadasX_mergeE
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
     And the traversal of
       """
       g.inject(xx1).mergeE()
@@ -432,18 +424,17 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -456,18 +447,17 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").inV().has(\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -480,18 +470,17 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -504,15 +493,14 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_V_hasXperson_name_marko_X_mergeEXlabel_self_out_vadas1_in_vadas1X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"d[101].i\", \"D[IN]\":\"d[101].i\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.V().has("person","name","marko").mergeE(xx1)
@@ -523,17 +511,16 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 2 for count of "g.E().hasLabel(\"self\").bothV().has(\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX_exists
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -546,16 +533,15 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b")
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -569,16 +555,15 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko1_in_vadas1X_optionXonCreate_selectXcXX_optionXonMatch_selectXmXX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b")
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"d[100].i\", \"D[IN]\":\"d[101].i\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"d[100].i\", \"D[IN]\":\"d[101].i\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -592,15 +577,14 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_aliased_direction
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[from]\":\"v[100]\", \"D[to]\":\"v[101]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[from]\":\"v[marko]\", \"D[to]\":\"v[vadas]\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -609,16 +593,15 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_self_out_vadas_in_vadasX
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").
-        addV("person").property(T.id, 101).property("name", "vadas")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[101]\", \"D[IN]\":\"v[101]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas]\", \"D[IN]\":\"v[vadas]\"}]"
     And the traversal of
       """
       g.inject(xx1, xx2).mergeE()
@@ -630,17 +613,16 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").out(\"self\").has(\"person\",\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_withSideEffectXc_created_YX_withSideEffectXm_matchedX_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_selectXcXX_optionXonMatch_sideEffectXpropertiesXweightX_dropX_selectXmXX_exists
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 100).property("name", "marko").as("a").
-        addV("person").property(T.id, 101).property("name", "vadas").as("b").
-        addE("knows").property("weight", 0.5).from("a").to("b")
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").property("weight", 1).from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[100]\", \"D[IN]\":\"v[101]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -656,18 +638,16 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\")"
 
-
-  @UserSuppliedVertexIds
   Scenario: g_mergeE_with_outVinV_options_map
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
     And using the parameter xx1 defined as "m[{ \"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 1}]"
-    And using the parameter xx3 defined as "m[{\"t[id]\": 2}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
+    And using the parameter xx3 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(outV, xx2).option(inV, xx3)
@@ -675,38 +655,38 @@ Feature: Step - mergeE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
-  @UserSuppliedVertexIds
   Scenario: g_mergeE_with_outVinV_options_select
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+       addV("person").property("name", "vadas")
       """
     And using the parameter xx1 defined as "m[{ \"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(1).as("x").V(2).as("y").mergeE(xx1).option(outV, select("x")).option(inV, select("y"))
+      g.V(vid1).as("x").V(vid2).as("y").mergeE(xx1).option(outV, select("x")).option(inV, select("y"))
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # onCreate inherits from merge and can specify an eid
-  @UserSuppliedVertexIds
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_with_eid_specified_and_inheritance_1
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\": \"v[1]\", \"D[IN]\": \"v[2]\", \"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 201}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\": \"v[marko].id\", \"D[IN]\": \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"201\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(onCreate, xx2)
@@ -715,21 +695,20 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E()"
-    And the graph should return 1 for count of "g.E(201)"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.E(\"201\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # onCreate inherits from merge and can specify an eid
-  @UserSuppliedVertexIds
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_with_eid_specified_and_inheritance_2
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[id]\": 201}]"
-    And using the parameter xx2 defined as "m[{\"D[OUT]\": \"v[1]\", \"D[IN]\": \"v[2]\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"201\"}]"
+    And using the parameter xx2 defined as "m[{\"D[OUT]\": \"v[marko].id\", \"D[IN]\": \"v[vadas].id\", \"t[label]\": \"knows\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(onCreate, xx2)
@@ -738,20 +717,19 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E()"
-    And the graph should return 1 for count of "g.E(201)"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.E(\"201\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # cannot override Direction.OUT in onCreate
-  @UserSuppliedVertexIds
   Scenario: g_mergeE_outV_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[1]\", \"D[IN]\" : \"v[2]\", \"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"D[OUT]\" : \"v[2]\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"D[OUT]\" : \"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(onCreate, xx2)
@@ -760,16 +738,15 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.IN in onCreate
-  @UserSuppliedVertexIds
   Scenario: g_mergeE_inV_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[1]\", \"D[IN]\" : \"v[2]\", \"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"D[IN]\" : \"v[1]\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"D[IN]\" : \"v[marko].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(onCreate, xx2)
@@ -778,15 +755,14 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
-  @UserSuppliedVertexIds
   Scenario: g_mergeE_label_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[1]\", \"D[IN]\" : \"v[2]\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"likes\"}]"
     And the traversal of
       """
@@ -796,16 +772,15 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
-  @UserSuppliedVertexIds
   @UserSuppliedEdgeIds
   Scenario: g_mergeE_id_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1).property("name", "a")
-       .addV("person").property(T.id, 2).property("name", "b")
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[1]\", \"D[IN]\" : \"v[2]\", \"t[label]\": \"knows\", \"t[id]\": \"101\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\", \"t[id]\": \"101\"}]"
     And using the parameter xx2 defined as "m[{\"t[id]\": \"201\"}]"
     And the traversal of
       """
@@ -815,11 +790,10 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # combining mergeV and mergeE when vertices do not exist
-  @UserSuppliedVertexIds
   Scenario: g_mergeV_mergeE_combination_new_vertices
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[id]\": 1, \"t[label]\": \"person\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 2, \"t[label]\": \"person\"}]"
+    And using the parameter xx1 defined as "m[{\"name\": \"marko\", \"t[label]\": \"person\"}]"
+    And using the parameter xx2 defined as "m[{\"name\": \"vadas\", \"t[label]\": \"person\"}]"
     And using the parameter xx3 defined as "m[{\"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
     And the traversal of
       """
@@ -829,19 +803,18 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E()"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # combining mergeV and mergeE when vertices exist
-  @UserSuppliedVertexIds
   Scenario: g_mergeV_mergeE_combination_existing_vertices
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property(T.id, 1)
-       .addV("person").property(T.id, 2)
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[id]\": 1, \"t[label]\": \"person\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": 2, \"t[label]\": \"person\"}]"
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\", \"t[label]\": \"person\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\", \"t[label]\": \"person\"}]"
     And using the parameter xx3 defined as "m[{\"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
     And the traversal of
       """
@@ -851,7 +824,7 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E()"
-    And the graph should return 1 for count of "g.V(1).out(\"knows\").hasId(2)"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # cannot use hidden namespace for label key for onMatch
   Scenario: g_V_asXvX_mergeEXxx1X_optionXMerge_onMatch_xx2X_optionXMerge_outV_selectXvXX_optionXMerge_inV_selectXvXX
