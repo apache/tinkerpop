@@ -57,6 +57,11 @@ public class AsDateStepTest extends StepTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenInvalidStringInput() {
+        __.__("This String is not an ISO 8601 Date").asDate().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenArrayInput() {
         __.__(Arrays.asList(1, 2)).asDate().next();
     }

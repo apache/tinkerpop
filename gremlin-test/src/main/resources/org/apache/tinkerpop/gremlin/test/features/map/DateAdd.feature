@@ -77,3 +77,15 @@ Feature: Step - dateAdd()
     Then the result should be unordered
       | result |
       | dt[2023-08-02T00:00:20Z] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXdatetimeXstrXX_dateAddXday_11X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(datetime('2023-09-06T00:00:00Z')).dateAdd(day, 11)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | dt[2023-09-17T00:00:00Z] |

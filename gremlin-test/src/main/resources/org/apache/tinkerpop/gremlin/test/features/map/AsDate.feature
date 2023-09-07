@@ -88,3 +88,13 @@ Feature: Step - asDate()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXinvalidstrX_asDate
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject('This String is not an ISO 8601 Date').asDate()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Can't parse"
