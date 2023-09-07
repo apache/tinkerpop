@@ -130,11 +130,15 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
             resetBarrierForProfiling = false;
         }
 
-        if (null == this.barrierStep) {
-            if (this.valueTraversal.hasNext())
-                map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.valueTraversal.next());
-        } else if (this.barrierStep.hasNextBarrier())
-            map.put(TraversalUtil.applyNullable(traverser, this.keyTraversal), (V) this.barrierStep.nextBarrier());
+        TraversalUtil.produce(traverser, this.keyTraversal).ifProductive(p -> {
+            if (null == this.barrierStep) {
+                if (this.valueTraversal.hasNext()) {
+                    map.put((K) p, (V) this.valueTraversal.next());
+                }
+            } else if (this.barrierStep.hasNextBarrier())
+                map.put((K) p, (V) this.barrierStep.nextBarrier());
+        });
+
         if (!map.isEmpty())
             this.getTraversal().getSideEffects().add(this.sideEffectKey, map);
     }
