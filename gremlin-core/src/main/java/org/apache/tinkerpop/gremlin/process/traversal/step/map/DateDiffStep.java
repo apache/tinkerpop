@@ -83,6 +83,14 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     }
 
     @Override
+    public DateDiffStep<S> clone() {
+        final DateDiffStep<S> clone = (DateDiffStep<S>) super.clone();
+        clone.value = this.value;
+        clone.dateTraversal = this.dateTraversal;
+        return clone;
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this);
     }

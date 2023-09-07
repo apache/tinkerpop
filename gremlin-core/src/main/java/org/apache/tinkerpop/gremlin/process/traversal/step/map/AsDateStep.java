@@ -76,7 +76,6 @@ public final class AsDateStep<S> extends ScalarMapStep<S, Date> {
         super.setTraversal(parentTraversal);
     }
 
-
     @Override
     public String toString() {
         return StringFactory.stepString(this);

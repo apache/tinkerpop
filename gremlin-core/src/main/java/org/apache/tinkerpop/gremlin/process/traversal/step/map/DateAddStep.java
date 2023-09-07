@@ -47,8 +47,8 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
         DTtoCalendar.put(DT.day, Calendar.DAY_OF_MONTH);
     }
 
-    final DT dateToken;
-    final int value;
+    private DT dateToken;
+    private int value;
 
     public DateAddStep(final Traversal.Admin traversal, final DT dateToken, final int value) {
         super(traversal);
@@ -85,6 +85,14 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
         result = 31 * result + dateToken.hashCode();
         result = 31 * result + value;
         return result;
+    }
+
+    @Override
+    public DateAddStep<S> clone() {
+        final DateAddStep<S> clone = (DateAddStep<S>) super.clone();
+        clone.value = this.value;
+        clone.dateToken = this.dateToken;
+        return clone;
     }
 
     @Override
