@@ -611,7 +611,7 @@ public class __ {
     /**
      * @see GraphTraversal#length()
      */
-    public static <A> GraphTraversal<A, Long> length() {
+    public static <A> GraphTraversal<A, Integer> length() {
         return __.<A>start().length();
     }
 

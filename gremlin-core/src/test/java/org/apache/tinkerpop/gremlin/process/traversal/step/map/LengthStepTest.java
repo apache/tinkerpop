@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Yang Xia (http://github.com/xiazcy)
@@ -43,8 +44,8 @@ public class LengthStepTest extends StepTest {
 
     @Test
     public void testReturnTypes() {
-        assertEquals(Long.valueOf(4), __.__("test").length().next());
-        assertArrayEquals(new Long[]{5L, 4L, null}, __.inject("hello", "test", null).length().toList().toArray());
+        assertEquals(Integer.valueOf(4), __.__("test").length().next());
+        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.inject("hello", "test", null, "").length().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -758,7 +758,7 @@ None
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`long`
+|N |Y |N |`String` |`Integer`
 |=========================================================
 
 *Arguments:*

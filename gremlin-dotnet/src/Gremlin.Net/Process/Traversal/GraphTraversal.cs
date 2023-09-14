@@ -1128,10 +1128,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the length step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, long?> Length ()
+        public GraphTraversal<TStart, int?> Length ()
         {
             Bytecode.AddStep("length");
-            return Wrap<TStart, long?>(this);
+            return Wrap<TStart, int?>(this);
         }
 
         /// <summary>

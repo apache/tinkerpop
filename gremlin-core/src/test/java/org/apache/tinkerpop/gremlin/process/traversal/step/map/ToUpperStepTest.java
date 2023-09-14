@@ -43,8 +43,8 @@ public class ToUpperStepTest extends StepTest {
     @Test
     public void testReturnTypes() {
         assertEquals("TEST", __.__("test").toUpper().next());
-        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null},
-                __.inject("hElLo", "test", "no.123", null).toUpper().toList().toArray());
+        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
+                __.inject("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

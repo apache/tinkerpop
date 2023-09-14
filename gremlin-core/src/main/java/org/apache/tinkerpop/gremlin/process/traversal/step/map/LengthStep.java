@@ -33,14 +33,14 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class LengthStep<S> extends ScalarMapStep<S, Long> {
+public final class LengthStep<S> extends ScalarMapStep<S, Integer> {
 
     public LengthStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Long map(final Traverser.Admin<S> traverser) {
+    protected Integer map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
@@ -49,7 +49,7 @@ public final class LengthStep<S> extends ScalarMapStep<S, Long> {
         }
 
         // we will pass null values to next step
-        return null == item? null : (long) ((String) item).length();
+        return null == item? null : ((String) item).length();
     }
 
     @Override

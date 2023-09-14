@@ -28,8 +28,8 @@ Feature: Step - length()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[7].l |
-      | d[4].l |
+      | d[7].i |
+      | d[4].i |
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
@@ -52,9 +52,9 @@ Feature: Step - length()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[5].l |
-      | d[5].l |
-      | d[3].l |
-      | d[4].l |
-      | d[6].l |
-      | d[5].l |
+      | d[5].i |
+      | d[5].i |
+      | d[3].i |
+      | d[4].i |
+      | d[6].i |
+      | d[5].i |

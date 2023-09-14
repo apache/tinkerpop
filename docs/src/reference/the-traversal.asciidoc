@@ -4281,7 +4281,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[toLower-step]]
 === ToLower Step
 
-The `toLower()`-step (*map*) returns the lower representation of incoming string traverser. Null values are not processed and remain as null when returned.
+The `toLower()`-step (*map*) returns the lowercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
 If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
@@ -4296,7 +4296,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[toUpper-step]]
 === ToUpper Step
 
-The `toUpper()`-step (*map*) returns the upper representation of incoming string traverser. Null values are not processed and remain as null when returned.
+The `toUpper()`-step (*map*) returns the uppercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
 If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]

@@ -784,9 +784,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the length step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, long?> Length()
+        public static GraphTraversal<object, int?> Length()
         {
-            return new GraphTraversal<object, long?>().Length();            
+            return new GraphTraversal<object, int?>().Length();            
         }
 
         /// <summary>

@@ -1461,7 +1461,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Long> length() {
+    public default GraphTraversal<S, Integer> length() {
         this.asAdmin().getBytecode().addStep(Symbols.length);
         return this.asAdmin().addStep(new LengthStep<>(this.asAdmin()));
     }

@@ -44,6 +44,7 @@ public class AsStringStepTest extends StepTest {
     @Test
     public void testReturnTypes() {
         assertEquals("1", __.__(1).asString().next());
+        assertEquals("[]", __.__(Collections.emptyList()).asString().next());
         assertEquals("[1, 2]", __.__(Arrays.asList(1, 2)).asString().next());
         assertEquals("1", __.__(Arrays.asList(1, 2)).unfold().asString().next());
         assertArrayEquals(new String[]{"1", "2"}, __.inject(Arrays.asList(1, 2)).unfold().asString().toList().toArray());
