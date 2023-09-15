@@ -141,6 +141,78 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
+===== String Steps replace(), split(), substring()
+
+The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
+[source,text]
+----
+gremlin> g.V().hasLabel("software").values("name").map{it.get().replace("p", "g")}
+==>log
+==>riggle
+gremlin> g.V().hasLabel("person").values("name").map{it.get().split("a")}
+==>[m, rko]
+==>[v, d, s]
+==>[josh]
+==>[peter]
+----
+With these additional steps this operation can be performed with standard Gremlin syntax:
+[source,text]
+----
+gremlin> g.V().hasLabel("software").values("name").replace("p", "g")
+==>log
+==>riggle
+gremlin> g.V().hasLabel("person").values("name").split("a")
+==>[m,rko]
+==>[v,d,s]
+==>[josh]
+==>[peter]
+----
+
+For `substring()`, the new Gremlin step follows the SQL standard, taking parameters start index and desired length of substring,
+instead of start and end indices like Java/Groovy, enabling certain operations that would be complex to achieve with closure:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1,3)}
+==>ar
+==>ad
+==>os
+==>et
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1)}
+==>arko
+==>adas
+==>osh
+==>eter
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(-2)}
+String index out of range: -2
+Type ':help' or ':h' for help.
+----
+
+The `substring()`-step will begin at the start index and return a substring with the length specified. Negative start
+indices are allowed and will begin at the specified index counted from the end of the string:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("name").substring(1,3)
+==>ark
+==>ada
+==>osh
+==>ete
+gremlin> g.V().hasLabel("person").values("name").substring(1)
+==>arko
+==>adas
+==>osh
+==>eter
+gremlin> g.V().hasLabel("person").values("name").substring(-2)
+==>ko
+==>as
+==>sh
+==>er
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[replace()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

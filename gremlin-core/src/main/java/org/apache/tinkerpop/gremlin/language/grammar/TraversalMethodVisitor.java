@@ -1805,6 +1805,40 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         return graphTraversal.reverse();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_replace_String_String(final GremlinParser.TraversalMethod_replace_String_StringContext ctx) {
+        return graphTraversal.replace(antlr.argumentVisitor.parseString(ctx.stringNullableArgument(0)),
+                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_split_String(final GremlinParser.TraversalMethod_split_StringContext ctx) {
+        return graphTraversal.split(antlr.argumentVisitor.parseString(ctx.stringNullableArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_substring_int(final GremlinParser.TraversalMethod_substring_intContext ctx) {
+        return graphTraversal.substring(antlr.argumentVisitor.parseNumber(ctx.integerArgument()).intValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_substring_int_int(final GremlinParser.TraversalMethod_substring_int_intContext ctx) {
+        return graphTraversal.substring(antlr.argumentVisitor.parseNumber(ctx.integerArgument(0)).intValue(),
+                antlr.argumentVisitor.parseNumber(ctx.integerArgument(1)).intValue());
+    }
+
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {
         return ctx.nestedTraversalExpr().nestedTraversal()
                 .stream()

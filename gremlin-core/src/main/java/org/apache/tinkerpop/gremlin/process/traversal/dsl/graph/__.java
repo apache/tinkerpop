@@ -660,6 +660,34 @@ public class __ {
         return __.<A>start().reverse();
     }
 
+    /**
+     * @see GraphTraversal#replace(String, String)
+     */
+    public static <A> GraphTraversal<A, String> replace(final String oldChar, final String newChar) {
+        return __.<A>start().replace(oldChar, newChar);
+    }
+
+    /**
+     * @see GraphTraversal#split(String)
+     */
+    public static <A> GraphTraversal<A, List<String>> split(final String separator) {
+        return __.<A>start().split(separator);
+    }
+
+    /**
+     * @see GraphTraversal#substring(int)
+     */
+    public static <A> GraphTraversal<A, String> substring(final int startIndex) {
+        return __.<A>start().substring(startIndex);
+    }
+
+    /**
+     * @see GraphTraversal#substring(int, int)
+     */
+    public static <A> GraphTraversal<A, String> substring(final int startIndex, final int length) {
+        return __.<A>start().substring(startIndex, length);
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**

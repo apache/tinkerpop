@@ -1178,7 +1178,7 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("loops", loopName);
             return Wrap<TStart, int>(this);
         }
-        
+
         /// <summary>
         ///     Adds the lTrim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
@@ -1653,7 +1653,16 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("repeat", repeatTraversal);
             return Wrap<TStart, TEnd>(this);
         }
-        
+
+        /// <summary>
+        ///     Adds the replace step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> Replace (string? oldChar, string? newChar)
+        {
+            Bytecode.AddStep("replace", oldChar, newChar);
+            return Wrap<TStart, string?>(this);
+        }
+
         /// <summary>
         ///     Adds the reverse step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
@@ -1662,7 +1671,7 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("reverse");
             return Wrap<TStart, string?>(this);
         }
-        
+
         /// <summary>
         ///     Adds the rTrim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
@@ -1836,6 +1845,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the split step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, List<string>?> Split (string? splitChar)
+        {
+            Bytecode.AddStep("split", splitChar);
+            return Wrap<TStart, List<string>?>(this);
+        }
+
+        /// <summary>
         ///     Adds the store step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> Store (string sideEffectKey)
@@ -1851,6 +1869,24 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("subgraph", sideEffectKey);
             return Wrap<TStart, Edge>(this);
+        }
+
+        /// <summary>
+        ///     Adds the subgraph step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> Substring (int startIndex)
+        {
+            Bytecode.AddStep("substring", startIndex);
+            return Wrap<TStart, string?>(this);
+        }
+
+        /// <summary>
+        ///     Adds the subgraph step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> Substring (int startIndex, int length)
+        {
+            Bytecode.AddStep("substring", startIndex, length);
+            return Wrap<TStart, string?>(this);
         }
 
         /// <summary>
@@ -2022,8 +2058,7 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("tree", sideEffectKey);
             return Wrap<TStart, TEnd>(this);
         }
-        
-        
+
         /// <summary>
         ///     Adds the trim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>

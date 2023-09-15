@@ -828,13 +828,13 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, int>().Loops(loopName);            
         }
-        
+
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the lTrim step to that traversal.
         /// </summary>
         public static GraphTraversal<object, string?> LTrim()
         {
-            return new GraphTraversal<object, string?>().LTrim();            
+            return new GraphTraversal<object, string?>().LTrim();
         }
 
         /// <summary>
@@ -1136,13 +1136,21 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, object>().Repeat(traversal);            
         }
-                
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the replace step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> Replace(string? oldChar, string? newChar)
+        {
+            return new GraphTraversal<object, string?>().Replace(oldChar, newChar);
+        }
+
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the reverse step to that traversal.
         /// </summary>
         public static GraphTraversal<object, string?> Reverse()
         {
-            return new GraphTraversal<object, string?>().Reverse();            
+            return new GraphTraversal<object, string?>().Reverse();
         }
 
         /// <summary>
@@ -1150,7 +1158,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public static GraphTraversal<object, string?> RTrim()
         {
-            return new GraphTraversal<object, string?>().RTrim();            
+            return new GraphTraversal<object, string?>().RTrim();
         }
 
         /// <summary>
@@ -1290,6 +1298,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the split step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, List<string>?> Split(string? splitChar)
+        {
+            return new GraphTraversal<object, List<string>?>().Split(splitChar);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the store step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Store(string sideEffectKey)
@@ -1303,6 +1319,22 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, Edge> Subgraph(string sideEffectKey)
         {
             return new GraphTraversal<object, Edge>().Subgraph(sideEffectKey);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the substring step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> Substring(int startIndex)
+        {
+            return new GraphTraversal<object, string?>().Substring(startIndex);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the substring step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> Substring(int startIndex, int length)
+        {
+            return new GraphTraversal<object, string?>().Substring(startIndex, length);
         }
 
         /// <summary>
@@ -1434,7 +1466,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public static GraphTraversal<object, string?> Trim()
         {
-            return new GraphTraversal<object, string?>().Trim();            
+            return new GraphTraversal<object, string?>().Trim();
         }
 
         /// <summary>

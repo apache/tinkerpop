@@ -941,6 +941,35 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[[replace-step]]
+=== replace()
+
+*Description:* Returns a string with the specified characters in the original string replaced with the new characters.
+
+*Syntax:* `replace(String, String)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+* `String` - The string character(s) in the original string to be replaced. Nullable, a null input will be a no-op and
+the original string will be returned
+* `String` - The string character(s) to replace with. Nullable, a null input will be a no-op and the original string
+will be returned
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
+
+
 === reverse()
 
 *Description:* Returns a reversed string of the incoming string traverser
@@ -991,6 +1020,60 @@ Null values from the incoming traverser are not processed and remain as null whe
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
+
+[[split-step]]
+=== split()
+
+*Description:* Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
+
+*Syntax:* `split(String)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`List`
+|=========================================================
+
+*Arguments:*
+
+* `String` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
+whitespaces.
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
+
+[[substring-step]]
+=== substring()
+
+*Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and length specified.
+
+*Syntax:* `substring(long, long)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+* `int` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
+from the end of the string, or 0 if it exceeds the string length.
+* `int` - The number of characters to return. Optional, if it is not specific or if it exceeds the length of the string
+then all remaining characters will be returned. Length &leq; 0 will return the empty string.
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
 
 [[toLower-step]]
 === toLower()
