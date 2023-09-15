@@ -41,7 +41,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -65,6 +67,10 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     protected CallbackRegistry<Event> callbackRegistry;
 
+    private Parameters parameters = new Parameters();
+
+    private boolean usesPartitionStrategy;
+
     public MergeStep(final Traversal.Admin traversal, final boolean isStart) {
         this(traversal, isStart, new IdentityTraversal<>());
     }
@@ -79,6 +85,13 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         super(traversal);
         this.isStart = isStart;
         this.mergeTraversal = integrateChild(mergeTraversal);
+
+        // determines if this step uses PartitionStrategy. it's not great that merge needs to know about a particular
+        // strategy but if it doesn't then it can't determine if Parameters are being used properly or not. to not have
+        // this check seems to invite problems. in some sense, this is not the first time steps have had to know more
+        // about strategies than is probably preferred - EventStrategy comes to mind
+        this.usesPartitionStrategy = TraversalHelper.getRootTraversal(traversal).
+                getStrategies().getStrategy(PartitionStrategy.class).isPresent();
     }
 
     /**
@@ -144,20 +157,20 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         return children;
     }
 
+    /**
+     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}. Using this
+     * with {@link GraphTraversal#with(String,Object)} will have an ill effect of simply acting like a call to
+     * {@link GraphTraversal#property(Object, Object, Object...)}. No mutating steps currently support use of
+     * {@link GraphTraversal#with(String,Object)} so perhaps it's best to not start with that now.
+     */
     @Override
     public void configure(final Object... keyValues) {
-        // this is a Mutating step but property() should not be folded into this step.  The main issue here is that
-        // this method won't know what step called it - property() or with() or something else so it can't make the
-        // choice easily to throw an exception, write the keys/values to parameters, etc. It really is up to the
-        // caller to make sure it is handled properly at this point. this may best be left as a do-nothing method for
-        // now.
+        this.parameters.set(this, keyValues);
     }
 
     @Override
     public Parameters getParameters() {
-        // merge doesn't take fold ups of property() calls. those need to get treated as regular old PropertyStep
-        // instances. not sure if this should support with() though.....none of the other Mutating steps do.
-        return null;
+        return this.parameters;
     }
 
     @Override
@@ -301,7 +314,19 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * null Map == empty Map
      */
     protected Map materializeMap(final Traverser.Admin<S> traverser, Traversal.Admin<S, ?> mapTraversal) {
-        final Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
+        Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
+
+        // PartitionStrategy uses parameters as a mechanism for setting the partition key. trying to be as specific
+        // as possible here wrt parameters usage to avoid misuse
+        if (usesPartitionStrategy) {
+            map = null == map ? new LinkedHashMap() : map;
+            for (Map.Entry<Object, List<Object>> entry : parameters.getRaw().entrySet()) {
+                final Object k = entry.getKey();
+                final List<Object> v = entry.getValue();
+                map.put(k, v.get(0));
+            }
+        }
+
         return map == null ? new LinkedHashMap() : map;
     }
 
