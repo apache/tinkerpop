@@ -1178,6 +1178,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("loops", loopName);
             return Wrap<TStart, int>(this);
         }
+        
+        /// <summary>
+        ///     Adds the lTrim step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> LTrim ()
+        {
+            Bytecode.AddStep("lTrim");
+            return Wrap<TStart, string?>(this);
+        }
 
         /// <summary>
         ///     Adds the map step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -1644,6 +1653,24 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("repeat", repeatTraversal);
             return Wrap<TStart, TEnd>(this);
         }
+        
+        /// <summary>
+        ///     Adds the reverse step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> Reverse ()
+        {
+            Bytecode.AddStep("reverse");
+            return Wrap<TStart, string?>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the rTrim step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> RTrim ()
+        {
+            Bytecode.AddStep("rTrim");
+            return Wrap<TStart, string?>(this);
+        }
 
         /// <summary>
         ///     Adds the sack step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -1994,6 +2021,16 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("tree", sideEffectKey);
             return Wrap<TStart, TEnd>(this);
+        }
+        
+        
+        /// <summary>
+        ///     Adds the trim step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> Trim ()
+        {
+            Bytecode.AddStep("trim");
+            return Wrap<TStart, string?>(this);
         }
 
         /// <summary>

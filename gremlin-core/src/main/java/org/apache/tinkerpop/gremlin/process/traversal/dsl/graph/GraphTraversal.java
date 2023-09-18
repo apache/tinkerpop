@@ -97,6 +97,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
@@ -122,7 +123,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReverseStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
@@ -136,6 +139,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapS
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
@@ -1490,6 +1494,62 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> toUpper() {
         this.asAdmin().getBytecode().addStep(Symbols.toUpper);
         return this.asAdmin().addStep(new ToUpperStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with leading and trailing whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link TrimStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#trim-step" target="_blank">Reference Documentation - Trim Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> trim() {
+        this.asAdmin().getBytecode().addStep(Symbols.trim);
+        return this.asAdmin().addStep(new TrimStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with leading whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link LTrimStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#lTrim-step" target="_blank">Reference Documentation - LTrim Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> lTrim() {
+        this.asAdmin().getBytecode().addStep(Symbols.lTrim);
+        return this.asAdmin().addStep(new LTrimStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with trailing whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link RTrimStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#rTrim-step" target="_blank">Reference Documentation - RTrim Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> rTrim() {
+        this.asAdmin().getBytecode().addStep(Symbols.rTrim);
+        return this.asAdmin().addStep(new RTrimStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a reversed string of the incoming string traverser. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link ReverseStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#reverse-step" target="_blank">Reference Documentation - Reverse Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> reverse() {
+        this.asAdmin().getBytecode().addStep(Symbols.reverse);
+        return this.asAdmin().addStep(new ReverseStep<>(this.asAdmin()));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -3559,6 +3619,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String toUpper = "toUpper";
         public static final String toLower = "toLower";
         public static final String length = "length";
+        public static final String trim = "trim";
+        public static final String lTrim = "lTrim";
+        public static final String rTrim = "rTrim";
+        public static final String reverse = "reverse";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

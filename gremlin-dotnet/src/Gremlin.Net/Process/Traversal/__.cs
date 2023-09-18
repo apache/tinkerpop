@@ -828,6 +828,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, int>().Loops(loopName);            
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the lTrim step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> LTrim()
+        {
+            return new GraphTraversal<object, string?>().LTrim();            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the map step to that traversal.
@@ -1128,6 +1136,22 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, object>().Repeat(traversal);            
         }
+                
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the reverse step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> Reverse()
+        {
+            return new GraphTraversal<object, string?>().Reverse();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the rTrim step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> RTrim()
+        {
+            return new GraphTraversal<object, string?>().RTrim();            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the sack step to that traversal.
@@ -1403,6 +1427,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> Tree(string sideEffectKey)
         {
             return new GraphTraversal<object, object>().Tree(sideEffectKey);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the Trim step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string?> Trim()
+        {
+            return new GraphTraversal<object, string?>().Trim();            
         }
 
         /// <summary>

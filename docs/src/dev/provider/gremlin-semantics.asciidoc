@@ -773,6 +773,32 @@ Null values from the incoming traverser are not processed and remain as null whe
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[[lTrim-step]]
+=== lTrim()
+
+*Description:* Returns a string with leading whitespace removed.
+
+*Syntax:* `lTrim()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
+
 [[merge-e-step]]
 === mergeE()
 
@@ -915,6 +941,57 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+=== reverse()
+
+*Description:* Returns a reversed string of the incoming string traverser
+
+*Syntax:* `reverse()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReverseStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
+
+[[rTrim-step]]
+=== rTrim()
+
+*Description:* Returns a string with trailing whitespace removed.
+
+*Syntax:* `rTrim()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
+
 [[toLower-step]]
 === toLower()
 
@@ -964,3 +1041,29 @@ Null values from the incoming traverser are not processed and remain as null whe
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
+
+[[trim-step]]
+=== trim()
+
+*Description:* Returns a string with leading and trailing whitespace removed.
+
+*Syntax:* `trim()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]

@@ -923,6 +923,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal lTrim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  lTrim(...args) {
+    this.bytecode.addStep('lTrim', args);
+    return this;
+  }
+
+  /**
    * Graph traversal map method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1223,6 +1233,26 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal reverse method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  reverse(...args) {
+    this.bytecode.addStep('reverse', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal rTrim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  rTrim(...args) {
+    this.bytecode.addStep('rTrim', args);
+    return this;
+  }
+
+  /**
    * Graph traversal sack method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1409,6 +1439,16 @@ class GraphTraversal extends Traversal {
    */
   tree(...args) {
     this.bytecode.addStep('tree', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal trim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  trim(...args) {
+    this.bytecode.addStep('trim', args);
     return this;
   }
 
@@ -1605,6 +1645,7 @@ const statics = {
   limit: (...args) => callOnEmptyTraversal('limit', args),
   local: (...args) => callOnEmptyTraversal('local', args),
   loops: (...args) => callOnEmptyTraversal('loops', args),
+  lTrim: (...args) => callOnEmptyTraversal('lTrim', args),
   map: (...args) => callOnEmptyTraversal('map', args),
   match: (...args) => callOnEmptyTraversal('match', args),
   math: (...args) => callOnEmptyTraversal('math', args),
@@ -1628,6 +1669,8 @@ const statics = {
   propertyMap: (...args) => callOnEmptyTraversal('propertyMap', args),
   range: (...args) => callOnEmptyTraversal('range', args),
   repeat: (...args) => callOnEmptyTraversal('repeat', args),
+  reverse: (...args) => callOnEmptyTraversal('reverse', args),
+  rTrim: (...args) => callOnEmptyTraversal('rTrim', args),
   sack: (...args) => callOnEmptyTraversal('sack', args),
   sample: (...args) => callOnEmptyTraversal('sample', args),
   select: (...args) => callOnEmptyTraversal('select', args),
@@ -1646,6 +1689,7 @@ const statics = {
   toUpper: (...args) => callOnEmptyTraversal('toUpper', args),
   toV: (...args) => callOnEmptyTraversal('toV', args),
   tree: (...args) => callOnEmptyTraversal('tree', args),
+  trim: (...args) => callOnEmptyTraversal('trim', args),
   unfold: (...args) => callOnEmptyTraversal('unfold', args),
   union: (...args) => callOnEmptyTraversal('union', args),
   until: (...args) => callOnEmptyTraversal('until', args),
