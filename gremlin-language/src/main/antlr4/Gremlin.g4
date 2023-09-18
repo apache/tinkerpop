@@ -292,6 +292,9 @@ traversalMethod
     | traversalMethod_lTrim
     | traversalMethod_rTrim
     | traversalMethod_reverse
+    | traversalMethod_replace
+    | traversalMethod_split
+    | traversalMethod_substring
     ;
 
 traversalMethod_V
@@ -848,6 +851,19 @@ traversalMethod_rTrim
 
 traversalMethod_reverse
     : 'reverse' LPAREN RPAREN #traversalMethod_reverse_Empty
+    ;
+
+traversalMethod_replace
+    : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
+    ;
+
+traversalMethod_split
+    : 'split' LPAREN stringNullableArgument RPAREN #traversalMethod_split_String
+    ;
+
+traversalMethod_substring
+    : 'substring' LPAREN integerArgument RPAREN #traversalMethod_substring_int
+    | 'substring' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_int_int
     ;
 
 /*********************************************

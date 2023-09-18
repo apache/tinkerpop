@@ -777,6 +777,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("repeat", *args)
         return self
 
+    def replace(self, *args):
+        self.bytecode.add_step("replace", *args)
+        return self
+
     def reverse(self, *args):
         self.bytecode.add_step("reverse", *args)
         return self
@@ -834,12 +838,20 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("skip", *args)
         return self
 
+    def split(self, *args):
+        self.bytecode.add_step("split", *args)
+        return self
+
     def store(self, *args):
         self.bytecode.add_step("store", *args)
         return self
 
     def subgraph(self, *args):
         self.bytecode.add_step("subgraph", *args)
+        return self
+
+    def substring(self, *args):
+        self.bytecode.add_step("substring", *args)
         return self
 
     def sum_(self, *args):
@@ -1432,6 +1444,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).repeat(*args)
 
     @classmethod
+    def replace(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).replace(*args)
+
+    @classmethod
     def reverse(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).reverse(*args)
 
@@ -1480,12 +1496,20 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).skip(*args)
 
     @classmethod
+    def split(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).split(*args)
+
+    @classmethod
     def store(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).store(*args)
 
     @classmethod
     def subgraph(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
+
+    @classmethod
+    def substring(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).substring(*args)
 
     @classmethod
     def sum_(cls, *args):
@@ -2051,6 +2075,10 @@ def repeat(*args):
     return __.repeat(*args)
 
 
+def replace(*args):
+    return __.replace(*args)
+
+
 def reverse(*args):
     return __.reverse(*args)
 
@@ -2091,12 +2119,20 @@ def skip(*args):
     return __.skip(*args)
 
 
+def split(*args):
+    return __.split(*args)
+
+
 def store(*args):
     return __.store(*args)
 
 
 def subgraph(*args):
     return __.subgraph(*args)
+
+
+def substring(*args):
+    return __.substring(*args)
 
 
 def sum_(*args):
@@ -2375,6 +2411,8 @@ statics.add_static('range_', range_)
 
 statics.add_static('repeat', repeat)
 
+statics.add_static('replace', replace)
+
 statics.add_static('reverse', reverse)
 
 statics.add_static('rTrim', rTrim)
@@ -2395,9 +2433,13 @@ statics.add_static('simple_path', simple_path)
 
 statics.add_static('skip', skip)
 
+statics.add_static('split', split)
+
 statics.add_static('store', store)
 
 statics.add_static('subgraph', subgraph)
+
+statics.add_static('substring', substring)
 
 statics.add_static('sum_', sum_)
 

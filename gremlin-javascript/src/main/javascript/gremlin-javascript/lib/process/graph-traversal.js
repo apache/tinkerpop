@@ -1233,6 +1233,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal replace method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  replace(...args) {
+    this.bytecode.addStep('replace', args);
+    return this;
+  }
+
+  /**
    * Graph traversal reverse method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1323,6 +1333,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal split method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  split(...args) {
+    this.bytecode.addStep('split', args);
+    return this;
+  }
+
+  /**
    * Graph traversal store method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1339,6 +1359,16 @@ class GraphTraversal extends Traversal {
    */
   subgraph(...args) {
     this.bytecode.addStep('subgraph', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal subgraph method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  substring(...args) {
+    this.bytecode.addStep('substring', args);
     return this;
   }
 
@@ -1669,6 +1699,7 @@ const statics = {
   propertyMap: (...args) => callOnEmptyTraversal('propertyMap', args),
   range: (...args) => callOnEmptyTraversal('range', args),
   repeat: (...args) => callOnEmptyTraversal('repeat', args),
+  replace: (...args) => callOnEmptyTraversal('replace', args),
   reverse: (...args) => callOnEmptyTraversal('reverse', args),
   rTrim: (...args) => callOnEmptyTraversal('rTrim', args),
   sack: (...args) => callOnEmptyTraversal('sack', args),
@@ -1677,8 +1708,10 @@ const statics = {
   sideEffect: (...args) => callOnEmptyTraversal('sideEffect', args),
   simplePath: (...args) => callOnEmptyTraversal('simplePath', args),
   skip: (...args) => callOnEmptyTraversal('skip', args),
+  split: (...args) => callOnEmptyTraversal('split', args),
   store: (...args) => callOnEmptyTraversal('store', args),
   subgraph: (...args) => callOnEmptyTraversal('subgraph', args),
+  substring: (...args) => callOnEmptyTraversal('substring', args),
   sum: (...args) => callOnEmptyTraversal('sum', args),
   tail: (...args) => callOnEmptyTraversal('tail', args),
   timeLimit: (...args) => callOnEmptyTraversal('timeLimit', args),

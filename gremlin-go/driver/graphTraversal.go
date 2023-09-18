@@ -577,6 +577,12 @@ func (g *GraphTraversal) Repeat(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Replace adds the replace step to the GraphTraversal.
+func (g *GraphTraversal) Replace(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("replace", args...)
+	return g
+}
+
 // Reverse adds the reverse step to the GraphTraversal.
 func (g *GraphTraversal) Reverse(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("reverse", args...)
@@ -632,6 +638,12 @@ func (g *GraphTraversal) Skip(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Split adds the split step to the GraphTraversal.
+func (g *GraphTraversal) Split(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("split", args...)
+	return g
+}
+
 // Store adds the store step to the GraphTraversal.
 func (g *GraphTraversal) Store(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("store", args...)
@@ -641,6 +653,12 @@ func (g *GraphTraversal) Store(args ...interface{}) *GraphTraversal {
 // Subgraph adds the subgraph step to the GraphTraversal.
 func (g *GraphTraversal) Subgraph(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("subgraph", args...)
+	return g
+}
+
+// Substring adds the substring step to the GraphTraversal.
+func (g *GraphTraversal) Substring(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("substring", int32Args(args)...)
 	return g
 }
 

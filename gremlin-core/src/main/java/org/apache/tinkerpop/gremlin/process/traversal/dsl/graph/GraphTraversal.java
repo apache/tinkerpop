@@ -123,13 +123,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReverseStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SplitStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SubstringStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
@@ -1550,6 +1553,68 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> reverse() {
         this.asAdmin().getBytecode().addStep(Symbols.reverse);
         return this.asAdmin().addStep(new ReverseStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
+     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
+     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link ReplaceStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> replace(final String oldChar, final String newChar) {
+        this.asAdmin().getBytecode().addStep(Symbols.replace, oldChar, newChar);
+        return this.asAdmin().addStep(new ReplaceStep<>(this.asAdmin(), oldChar, newChar));
+    }
+
+    /**
+     * Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
+     * A null separator will split the string by whitespaces. Null values from incoming traversers are not processed
+     * and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link SplitStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#split-step" target="_blank">Reference Documentation - Split Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, List<String>> split(final String separator) {
+        this.asAdmin().getBytecode().addStep(Symbols.split, separator);
+        return this.asAdmin().addStep(new SplitStep<>(this.asAdmin(), separator));
+    }
+
+    /**
+     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) specified,
+     * to the end of the string. If the start index is negative then it will begin at the specified index counted from the
+     * end of the string, or 0 if exceeding the string length. Null values are not processed and remain as null when returned.
+     * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link SubstringStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> substring(final int startIndex) {
+        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex);
+        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex));
+    }
+
+    /**
+     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) index and length
+     * specified. If the start index is negative then it will begin at the specified index counted from the end
+     * of the string, or 0 if exceeding the string length. Length is optional, if it is not specific or if it exceeds
+     * the length of the string then all remaining characters will be returned. Length <= 0 will return the empty string.
+     * Null values are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link SubstringStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> substring(final int startIndex, final int length) {
+        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, length);
+        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, length));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -3623,6 +3688,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String lTrim = "lTrim";
         public static final String rTrim = "rTrim";
         public static final String reverse = "reverse";
+        public static final String replace = "replace";
+        public static final String substring = "substring";
+        public static final String split = "split";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";
