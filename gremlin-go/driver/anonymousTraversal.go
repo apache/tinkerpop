@@ -59,6 +59,8 @@ type AnonymousTraversal interface {
 	And(args ...interface{}) *GraphTraversal
 	// As adds the as step to the GraphTraversal.
 	As(args ...interface{}) *GraphTraversal
+	// AsString adds the asString step to the GraphTraversal.
+	AsString(args ...interface{}) *GraphTraversal
 	// Barrier adds the barrier step to the GraphTraversal.
 	Barrier(args ...interface{}) *GraphTraversal
 	// Both adds the both step to the GraphTraversal.
@@ -147,6 +149,8 @@ type AnonymousTraversal interface {
 	Key(args ...interface{}) *GraphTraversal
 	// Label adds the label step to the GraphTraversal.
 	Label(args ...interface{}) *GraphTraversal
+	// Length adds the length step to the GraphTraversal.
+	Length(args ...interface{}) *GraphTraversal
 	// Limit adds the limit step to the GraphTraversal.
 	Limit(args ...interface{}) *GraphTraversal
 	// Local adds the local step to the GraphTraversal.
@@ -243,6 +247,10 @@ type AnonymousTraversal interface {
 	To(args ...interface{}) *GraphTraversal
 	// ToE adds the toE step to the GraphTraversal.
 	ToE(args ...interface{}) *GraphTraversal
+	// ToLower adds the toLower step to the GraphTraversal.
+	ToLower(args ...interface{}) *GraphTraversal
+	// ToUpper adds the toUpper step to the GraphTraversal.
+	ToUpper(args ...interface{}) *GraphTraversal
 	// ToV adds the toV step to the GraphTraversal.
 	ToV(args ...interface{}) *GraphTraversal
 	// Tree adds the tree step to the GraphTraversal.
@@ -315,6 +323,11 @@ func (anonymousTraversal *anonymousTraversal) And(args ...interface{}) *GraphTra
 // As adds the as step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) As(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().As(args...)
+}
+
+// AsString adds the asString step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) AsString(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().AsString(args...)
 }
 
 // Barrier adds the barrier step to the GraphTraversal.
@@ -535,6 +548,11 @@ func (anonymousTraversal *anonymousTraversal) Key(args ...interface{}) *GraphTra
 // Label adds the label step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Label(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Label(args...)
+}
+
+// Length adds the length step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Length(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Length(args...)
 }
 
 // Limit adds the limit step to the GraphTraversal.
@@ -775,6 +793,16 @@ func (anonymousTraversal *anonymousTraversal) To(args ...interface{}) *GraphTrav
 // ToE adds the toE step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) ToE(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().ToE(args...)
+}
+
+// ToLower adds the toLower step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) ToLower(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().ToLower(args...)
+}
+
+// ToUpper adds the toUpper step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) ToUpper(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().ToUpper(args...)
 }
 
 // ToV adds the toV step to the GraphTraversal.

@@ -524,6 +524,31 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[asString-step]]
+=== asString()
+
+*Description:* Returns the value of incoming traverser as strings
+
+*Syntax:* `asString()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
+
 [[call-step]]
 === call()
 
@@ -723,6 +748,31 @@ None
 
 None
 
+[[length-step]]
+=== length()
+
+*Description:* Returns the length incoming string traverser.
+
+*Syntax:* `length()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`Integer`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
+
 [[merge-e-step]]
 === mergeE()
 
@@ -864,3 +914,53 @@ resolve to a `Map`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
+
+[[toLower-step]]
+=== toLower()
+
+*Description:* Returns the lowercase representation of incoming string traverser.
+
+*Syntax:* `toLower()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
+
+[[toUpper-step]]
+=== toUpper()
+
+*Description:* Returns the uppercase representation of incoming string traverser.
+
+*Syntax:* `toUpper()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`String` |`String`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]

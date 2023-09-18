@@ -284,7 +284,12 @@ traversalMethod
     | traversalMethod_element
     | traversalMethod_call
     | traversalMethod_concat
+    | traversalMethod_asString
+    | traversalMethod_toUpper
+    | traversalMethod_toLower
+    | traversalMethod_length
     ;
+
 traversalMethod_V
     : 'V' LPAREN genericLiteralVarargs RPAREN
     ;
@@ -807,6 +812,22 @@ traversalMethod_call
 traversalMethod_concat
     : 'concat' LPAREN nestedTraversal RPAREN #traversalMethod_concat_Traversal
     | 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
+    ;
+
+traversalMethod_asString
+    : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
+    ;
+
+traversalMethod_toUpper
+    : 'toUpper' LPAREN RPAREN #traversalMethod_toUpper_Empty
+    ;
+
+traversalMethod_toLower
+    : 'toLower' LPAREN RPAREN #traversalMethod_toLower_Empty
+    ;
+
+traversalMethod_length
+    : 'length' LPAREN RPAREN #traversalMethod_length_Empty
     ;
 
 /*********************************************

@@ -203,6 +203,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("as", args.ToArray());
             return Wrap<TStart, TEnd>(this);
         }
+        
+        /// <summary>
+        ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string> AsString ()
+        {
+            Bytecode.AddStep("asString");
+            return Wrap<TStart, string>(this);
+        }
 
         /// <summary>
         ///     Adds the barrier step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -1115,6 +1124,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("label");
             return Wrap<TStart, string>(this);
         }
+        
+        /// <summary>
+        ///     Adds the length step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, int?> Length ()
+        {
+            Bytecode.AddStep("length");
+            return Wrap<TStart, int?>(this);
+        }
 
         /// <summary>
         ///     Adds the limit step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -1931,6 +1949,24 @@ namespace Gremlin.Net.Process.Traversal
             args.AddRange(edgeLabels);
             Bytecode.AddStep("toE", args.ToArray());
             return Wrap<TStart, Edge>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the toLower step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> ToLower ()
+        {
+            Bytecode.AddStep("toLower");
+            return Wrap<TStart, string?>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the toUpper step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string?> ToUpper ()
+        {
+            Bytecode.AddStep("toUpper");
+            return Wrap<TStart, string?>(this);
         }
 
         /// <summary>

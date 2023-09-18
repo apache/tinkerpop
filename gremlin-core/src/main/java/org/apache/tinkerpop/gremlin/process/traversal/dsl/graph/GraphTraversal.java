@@ -79,6 +79,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
@@ -100,6 +101,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LengthStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathStep;
@@ -128,6 +130,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToLowerStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
@@ -1435,6 +1439,57 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> concat(final String... concatStrings) {
         this.asAdmin().getBytecode().addStep(Symbols.concat, concatStrings);
         return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatStrings));
+    }
+
+    /**
+     * Returns the value of incoming traverser as strings. Null values are returned as a string value "null".
+     *
+     * @return the traversal with an appended {@link AsStringStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asString-step" target="_blank">Reference Documentation - AsString Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> asString() {
+        this.asAdmin().getBytecode().addStep(Symbols.asString);
+        return this.asAdmin().addStep(new AsStringStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the length incoming string traverser. Null values are not processed and remain as null when returned.
+     * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link LengthStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Integer> length() {
+        this.asAdmin().getBytecode().addStep(Symbols.length);
+        return this.asAdmin().addStep(new LengthStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the lowercase representation of incoming string traverser. Null values are not processed and remain
+     * as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link ToLowerStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toLower-step" target="_blank">Reference Documentation - ToLower Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> toLower() {
+        this.asAdmin().getBytecode().addStep(Symbols.toLower);
+        return this.asAdmin().addStep(new ToLowerStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the uppercase representation of incoming string traverser. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @return the traversal with an appended {@link ToUpperStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toUpper-step" target="_blank">Reference Documentation - ToUpper Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> toUpper() {
+        this.asAdmin().getBytecode().addStep(Symbols.toUpper);
+        return this.asAdmin().addStep(new ToUpperStep<>(this.asAdmin()));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -3500,6 +3555,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String call = "call";
         public static final String element = "element";
         public static final String concat = "concat";
+        public static final String asString = "asString";
+        public static final String toUpper = "toUpper";
+        public static final String toLower = "toLower";
+        public static final String length = "length";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

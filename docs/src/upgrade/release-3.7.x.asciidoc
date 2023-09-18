@@ -29,7 +29,69 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== String Manipulation Steps
+Additional String manipulation steps have been added to this version: `asString()`, `length()`, `toLower()`, `toUpper()`.
 
+The following example demonstrates the use of a closure to perform the above functions:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("age").map{it.get().toString()}
+==>29
+==>27
+==>32
+==>35
+gremlin> g.V().values("name").map{it.get().length()}
+==>5
+==>5
+==>3
+==>4
+==>6
+==>5
+gremlin> g.inject("TO", "LoWeR", "cAsE").map{it.get().toLowerCase()}
+==>to
+==>lower
+==>case
+gremlin> g.V().values("name").map{it.get().toUpperCase()}
+==>MARKO
+==>VADAS
+==>LOP
+==>JOSH
+==>RIPPLE
+==>PETER
+----
+With these additional steps this operation can be performed with standard Gremlin syntax:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("age").asString()
+==>29
+==>27
+==>32
+==>35
+gremlin> g.V().values("name").length()
+==>5
+==>5
+==>3
+==>4
+==>6
+==>5
+gremlin> g.inject("TO", "LoWeR", "cAsE").toLower()
+==>to
+==>lower
+==>case
+gremlin> g.V().values("name").toUpper()
+==>MARKO
+==>VADAS
+==>LOP
+==>JOSH
+==>RIPPLE
+==>PETER
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[asString()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[length()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[toLower()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[toUpper()-step]
 
 === Upgrading for Providers
 

@@ -43,6 +43,7 @@ const direction = traversalModule.direction;
 const merge = traversalModule.merge;
 
 const parsers = [
+  [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],

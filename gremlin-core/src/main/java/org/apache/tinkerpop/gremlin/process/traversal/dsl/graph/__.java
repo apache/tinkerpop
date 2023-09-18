@@ -601,6 +601,34 @@ public class __ {
         return __.<A>start().concat(concatString);
     }
 
+    /**
+     * @see GraphTraversal#asString()
+     */
+    public static <A> GraphTraversal<A, String> asString() {
+        return __.<A>start().asString();
+    }
+
+    /**
+     * @see GraphTraversal#length()
+     */
+    public static <A> GraphTraversal<A, Integer> length() {
+        return __.<A>start().length();
+    }
+
+    /**
+     * @see GraphTraversal#toLower()
+     */
+    public static <A> GraphTraversal<A, String> toLower() {
+        return __.<A>start().toLower();
+    }
+
+    /**
+     * @see GraphTraversal#toUpper()
+     */
+    public static <A> GraphTraversal<A, String> toUpper() {
+        return __.<A>start().toUpper();
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**

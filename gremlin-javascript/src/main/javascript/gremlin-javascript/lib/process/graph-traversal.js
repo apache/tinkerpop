@@ -435,6 +435,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal asString method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asString(...args) {
+    this.bytecode.addStep('asString', args);
+    return this;
+  }
+
+  /**
    * Graph traversal barrier method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -869,6 +879,16 @@ class GraphTraversal extends Traversal {
    */
   label(...args) {
     this.bytecode.addStep('label', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal length method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  length(...args) {
+    this.bytecode.addStep('length', args);
     return this;
   }
 
@@ -1353,6 +1373,26 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal toLower method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  toLower(...args) {
+    this.bytecode.addStep('toLower', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal toUpper method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  toUpper(...args) {
+    this.bytecode.addStep('toUpper', args);
+    return this;
+  }
+
+  /**
    * Graph traversal toV method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1519,6 +1559,7 @@ const statics = {
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
   and: (...args) => callOnEmptyTraversal('and', args),
   as: (...args) => callOnEmptyTraversal('as', args),
+  asString: (...args) => callOnEmptyTraversal('asString', args),
   barrier: (...args) => callOnEmptyTraversal('barrier', args),
   both: (...args) => callOnEmptyTraversal('both', args),
   bothE: (...args) => callOnEmptyTraversal('bothE', args),
@@ -1560,6 +1601,7 @@ const statics = {
   is: (...args) => callOnEmptyTraversal('is', args),
   key: (...args) => callOnEmptyTraversal('key', args),
   label: (...args) => callOnEmptyTraversal('label', args),
+  length: (...args) => callOnEmptyTraversal('length', args),
   limit: (...args) => callOnEmptyTraversal('limit', args),
   local: (...args) => callOnEmptyTraversal('local', args),
   loops: (...args) => callOnEmptyTraversal('loops', args),
@@ -1600,6 +1642,8 @@ const statics = {
   times: (...args) => callOnEmptyTraversal('times', args),
   to: (...args) => callOnEmptyTraversal('to', args),
   toE: (...args) => callOnEmptyTraversal('toE', args),
+  toLower: (...args) => callOnEmptyTraversal('toLower', args),
+  toUpper: (...args) => callOnEmptyTraversal('toUpper', args),
   toV: (...args) => callOnEmptyTraversal('toV', args),
   tree: (...args) => callOnEmptyTraversal('tree', args),
   unfold: (...args) => callOnEmptyTraversal('unfold', args),
