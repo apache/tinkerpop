@@ -288,6 +288,10 @@ traversalMethod
     | traversalMethod_toUpper
     | traversalMethod_toLower
     | traversalMethod_length
+    | traversalMethod_trim
+    | traversalMethod_lTrim
+    | traversalMethod_rTrim
+    | traversalMethod_reverse
     ;
 
 traversalMethod_V
@@ -828,6 +832,22 @@ traversalMethod_toLower
 
 traversalMethod_length
     : 'length' LPAREN RPAREN #traversalMethod_length_Empty
+    ;
+
+traversalMethod_trim
+    : 'trim' LPAREN RPAREN #traversalMethod_trim_Empty
+    ;
+
+traversalMethod_lTrim
+    : 'lTrim' LPAREN RPAREN #traversalMethod_lTrim_Empty
+    ;
+
+traversalMethod_rTrim
+    : 'rTrim' LPAREN RPAREN #traversalMethod_rTrim_Empty
+    ;
+
+traversalMethod_reverse
+    : 'reverse' LPAREN RPAREN #traversalMethod_reverse_Empty
     ;
 
 /*********************************************

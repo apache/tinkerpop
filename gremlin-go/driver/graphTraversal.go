@@ -391,6 +391,12 @@ func (g *GraphTraversal) Loops(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// LTrim adds the lTrim step to the GraphTraversal.
+func (g *GraphTraversal) LTrim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("lTrim", args...)
+	return g
+}
+
 // Map adds the map step to the GraphTraversal.
 func (g *GraphTraversal) Map(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("map", args...)
@@ -571,6 +577,18 @@ func (g *GraphTraversal) Repeat(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Reverse adds the reverse step to the GraphTraversal.
+func (g *GraphTraversal) Reverse(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("reverse", args...)
+	return g
+}
+
+// RTrim adds the repeat step to the GraphTraversal.
+func (g *GraphTraversal) RTrim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("rTrim", args...)
+	return g
+}
+
 // Sack adds the sack step to the GraphTraversal.
 func (g *GraphTraversal) Sack(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("sack", args...)
@@ -684,6 +702,12 @@ func (g *GraphTraversal) ToV(args ...interface{}) *GraphTraversal {
 // Tree adds the tree step to the GraphTraversal.
 func (g *GraphTraversal) Tree(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("tree", args...)
+	return g
+}
+
+// Trim adds the tree step to the GraphTraversal.
+func (g *GraphTraversal) Trim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("trim", args...)
 	return g
 }
 

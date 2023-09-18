@@ -30,7 +30,9 @@ complete list of all the modifications that are part of this release.
 === Upgrading for Users
 
 ==== String Manipulation Steps
-Additional String manipulation steps have been added to this version: `asString()`, `length()`, `toLower()`, `toUpper()`.
+Additional String manipulation steps have been added to this version.
+
+===== String Steps asString(), length(), toLower(), toUpper():
 
 The following example demonstrates the use of a closure to perform the above functions:
 [source,text]
@@ -92,6 +94,52 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[asString()
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[length()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[toLower()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[toUpper()-step]
+
+===== String Steps trim(), lTrim(), rTrim(), reverse():
+
+The following example demonstrates the use of a closure to reverse and trim strings (concatenated with a string for demonstration):
+
+[source,text]
+----
+gremlin> g.V().values("name").map{it.get().reverse()}
+==>okram
+==>sadav
+==>pol
+==>hsoj
+==>elppir
+==>retep
+gremlin>  g.inject("  hi  ").map{it.get().trim() + "trim"}
+==>hitrim
+gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/^\s+/, '') + "left_trim"}
+==>hi  left_trim
+gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/\s+$/, '') + "right_trim"}
+==>  hiright_trim
+----
+
+With these additional steps this operation can be performed with standard Gremlin syntax:
+
+[source,text]
+----
+gremlin> g.V().values("name").reverse()
+==>okram
+==>sadav
+==>pol
+==>hsoj
+==>elppir
+==>retep
+gremlin>  g.inject("  hi  ").trim().concat()
+==>hitrim
+gremlin>  g.inject("  hi  ").lTrim().concat("left_trim")
+==>hi  left_trim
+gremlin>  g.inject("  hi  ").rTrim().concat("right_trim")
+==>  hiright_trim
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[trim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[lTrim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
 === Upgrading for Providers
 

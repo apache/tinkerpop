@@ -611,6 +611,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("loops", *args)
         return self
 
+    def lTrim(self, *args):
+        self.bytecode.add_step("lTrim", *args)
+        return self
+
     def map(self, *args):
         self.bytecode.add_step("map", *args)
         return self
@@ -773,6 +777,14 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("repeat", *args)
         return self
 
+    def reverse(self, *args):
+        self.bytecode.add_step("reverse", *args)
+        return self
+
+    def rTrim(self, *args):
+        self.bytecode.add_step("rTrim", *args)
+        return self
+
     def sack(self, *args):
         self.bytecode.add_step("sack", *args)
         return self
@@ -889,6 +901,10 @@ class GraphTraversal(Traversal):
 
     def tree(self, *args):
         self.bytecode.add_step("tree", *args)
+        return self
+
+    def trim(self, *args):
+        self.bytecode.add_step("trim", *args)
         return self
 
     def unfold(self, *args):
@@ -1288,6 +1304,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).loops(*args)
 
     @classmethod
+    def ltrim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).ltrim(*args)
+
+    @classmethod
     def map(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).map(*args)
 
@@ -1412,6 +1432,14 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).repeat(*args)
 
     @classmethod
+    def reverse(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).reverse(*args)
+
+    @classmethod
+    def rTrim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).rTrim(*args)
+
+    @classmethod
     def sack(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).sack(*args)
 
@@ -1522,6 +1550,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def tree(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).tree(*args)
+
+    @classmethod
+    def trim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).trim(*args)
 
     @classmethod
     def unfold(cls, *args):
@@ -1907,6 +1939,10 @@ def loops(*args):
     return __.loops(*args)
 
 
+def ltrim(*args):
+    return __.ltrim(*args)
+
+
 def map(*args):
     return __.map(*args)
 
@@ -2015,6 +2051,14 @@ def repeat(*args):
     return __.repeat(*args)
 
 
+def reverse(*args):
+    return __.reverse(*args)
+
+
+def rTrim(*args):
+    return __.rTrim(*args)
+
+
 def sack(*args):
     return __.sack(*args)
 
@@ -2105,6 +2149,10 @@ def to_v(*args):
 
 def tree(*args):
     return __.tree(*args)
+
+
+def trim(*args):
+    return __.trim(*args)
 
 
 def unfold(*args):
@@ -2271,6 +2319,8 @@ statics.add_static('local', local)
 
 statics.add_static('loops', loops)
 
+statics.add_static('ltrim', ltrim)
+
 statics.add_static('map', map)
 
 statics.add_static('match', match)
@@ -2325,6 +2375,10 @@ statics.add_static('range_', range_)
 
 statics.add_static('repeat', repeat)
 
+statics.add_static('reverse', reverse)
+
+statics.add_static('rTrim', rTrim)
+
 statics.add_static('sack', sack)
 
 statics.add_static('sample', sample)
@@ -2370,6 +2424,8 @@ statics.add_static('to_upper', to_upper)
 statics.add_static('to_v', to_v)
 
 statics.add_static('tree', tree)
+
+statics.add_static('trim', trim)
 
 statics.add_static('unfold', unfold)
 

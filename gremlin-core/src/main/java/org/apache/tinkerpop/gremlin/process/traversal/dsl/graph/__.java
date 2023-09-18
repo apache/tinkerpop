@@ -629,6 +629,37 @@ public class __ {
         return __.<A>start().toUpper();
     }
 
+    /**
+     * @see GraphTraversal#trim()
+     */
+    public static <A> GraphTraversal<A, String> trim() {
+        return __.<A>start().trim();
+    }
+
+
+    /**
+     * @see GraphTraversal#lTrim()
+     */
+    public static <A> GraphTraversal<A, String> lTrim() {
+        return __.<A>start().lTrim();
+    }
+
+
+    /**
+     * @see GraphTraversal#rTrim()
+     */
+    public static <A> GraphTraversal<A, String> rTrim() {
+        return __.<A>start().rTrim();
+    }
+
+
+    /**
+     * @see GraphTraversal#reverse()
+     */
+    public static <A> GraphTraversal<A, String> reverse() {
+        return __.<A>start().reverse();
+    }
+
     ///////////////////// FILTER STEPS /////////////////////
 
     /**
