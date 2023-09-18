@@ -470,6 +470,10 @@ public final class IteratorUtils {
         return list(asIterator(o));
     }
 
+    public static Set asSet(final Object o) {
+        return set(asIterator(o));
+    }
+
     /**
      * Construct a {@link Stream} from an {@link Iterator}.
      */

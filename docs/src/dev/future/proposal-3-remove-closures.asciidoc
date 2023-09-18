@@ -905,6 +905,7 @@ below:
 * <<union_list, union()>>
 * <<difference_list, difference()>>
 * <<disjunct_list, disjunct()>>
+* <<conjoin_list, conjoin()>>
 
 === Gremlin Language Variant Function Names
 
@@ -939,6 +940,8 @@ below:
 
 |disjunct() |disjunct() |disjunct() |disjunct() |Disjunct()
 |Disjunct()
+
+|conjoin() |conjoin() |conjoin() |conjoin() |Conjoin() |Conjoin()
 |===
 
 '''''
@@ -1305,8 +1308,6 @@ g.V().has('age', 29).values('age').dedup().fold().difference(V().has('age', 30).
 ==>[29, 30]
 ....
 
-....
-
 === `disjunct()` [[disjunct_list]]
 
 Returns the disjunct set of the incoming array and the traversal or array
@@ -1337,8 +1338,37 @@ g.inject([1,2]).disjunct([1])
 ==>[2]
 g.inject([1,2,4]).disjunct([1, 2, 3])
 ==>[3, 4]
+....
 
+=== `conjoin()` [[conjoin_list]]
 
+Returns the join of the incoming array and delimiter passed as a
+parameter. This will return a String of the values joined together with
+the delimiter.
+
+==== Signature(s)
+
+`conjoin(delimiter)`
+
+==== Parameters
+
+* delimiter - A string delimiter used to join the values
+
+==== Allowed incoming traverser types
+
+String data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string of the values joined together with the delimiter
+
+....
+g.inject([1,2]).conjoin("5")
+==>152
+g.inject([1,2,3]).conjoin(";")
+==>1;2;3
+....
 
 == Date Manipulation functions in TinkerPop [[date-function-syntax]]
 

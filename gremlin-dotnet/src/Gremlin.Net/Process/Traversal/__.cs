@@ -345,6 +345,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the combine step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Combine(object combineObject)
+        {
+            return new GraphTraversal<object, object>().Combine(combineObject);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the concat step to that traversal.
         /// </summary>
         public static GraphTraversal<object, string> Concat (ITraversal concatTraversal, ITraversal[]? otherConcatTraversals)
@@ -360,6 +368,14 @@ namespace Gremlin.Net.Process.Traversal
             return concatStrings is { Length: 0 }
                 ? new GraphTraversal<object, string>().Concat()
                 : new GraphTraversal<object, string>().Concat(concatStrings);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the conjoin step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Conjoin(string delimiter)
+        {
+            return new GraphTraversal<object, object>().Conjoin(delimiter);
         }
 
         /// <summary>
@@ -436,6 +452,22 @@ namespace Gremlin.Net.Process.Traversal
             return dedupLabels is { Length: 0 }
                 ? new GraphTraversal<object, object>().Dedup()
                 : new GraphTraversal<object, object>().Dedup(dedupLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the difference step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Difference(object differenceObject)
+        {
+            return new GraphTraversal<object, object>().Difference(differenceObject);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the disjunct step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Disjunct(object disjunctObject)
+        {
+            return new GraphTraversal<object, object>().Disjunct(disjunctObject);
         }
 
         /// <summary>
@@ -799,6 +831,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the intersect step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Intersect(object intersectObject)
+        {
+            return new GraphTraversal<object, object>().Intersect(intersectObject);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the is step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Is(object? value)
@@ -953,6 +993,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the merge step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Merge(object mergeObject)
+        {
+            return new GraphTraversal<object, object>().Merge(mergeObject);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> MergeE ()
@@ -1103,6 +1151,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the product step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Product(object productObject)
+        {
+            return new GraphTraversal<object, object>().Product(productObject);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the project step to that traversal.
         /// </summary>
         public static GraphTraversal<object, IDictionary<string, E2>> Project<E2>(string? projectKey,
@@ -1197,9 +1253,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the reverse step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, string?> Reverse()
+        public static GraphTraversal<object, object> Reverse()
         {
-            return new GraphTraversal<object, string?>().Reverse();
+            return new GraphTraversal<object, object>().Reverse();
         }
 
         /// <summary>
