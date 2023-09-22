@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.Set;
 
 /**
- * Reference implementation for date parsing concatenation step.
+ * Reference implementation for date difference step.
  *
  * @author Valentyn Kahamlyk
  */

@@ -1626,7 +1626,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Parse value of the incoming traverser as an ISO-8601 {@link Date}.
      *
      * @return the traversal with an appended {@link AsDateStep}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asDate-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asDate-step" target="_blank">Reference Documentation - asDate Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, Date> asDate() {
@@ -1638,7 +1638,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Increase value of input {@link Date}.
      *
      * @return the traversal with an appended {@link DateAddStep}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateAdd-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateAdd-step" target="_blank">Reference Documentation - dateAdd Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, Date> dateAdd(final DT dateToken, final int value) {
@@ -1650,7 +1650,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Returns the difference between two {@link Date} in epoch time.
      *
      * @return the traversal with an appended {@link DateDiffStep}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Date value) {

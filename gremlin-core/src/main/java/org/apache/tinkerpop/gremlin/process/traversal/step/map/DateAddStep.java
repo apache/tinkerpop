@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Reference implementation for date parsing concatenation step.
+ * Reference implementation for date concatenation step.
  *
  * @author Valentyn Kahamlyk
  */

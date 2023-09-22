@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for date parsing concatenation step.
+ * Reference implementation for date parsing step.
  *
  * @author Valentyn Kahamlyk
  */
