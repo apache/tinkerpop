@@ -46,6 +46,7 @@ var parsers map[*regexp.Regexp]func(string, string) interface{}
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
+		regexp.MustCompile(`^str\[(.*)]$`): func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
 		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfdmn]$`): toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,

@@ -25,10 +25,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
 
+* Added the `asString()`, `length()`, `toLower()`, and `toUpper()` steps to perform `String` manipulations.
+* Added Gherkin parsing support for specific string results using `str[]`.
+* Added the `trim()`, `lTrim()`, `rTrim()`, and `reverse()` steps to perform `String` manipulations.
+* Added `replace()`, `split()` and `substring()` steps to perform `String` manipulations.
+* Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
-
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
@@ -217,11 +221,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
-* Fix a javadoc comment in GraphTraversal.not method.
+* Fixed a javadoc comment in `GraphTraversal.not()` method.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
-* Fix a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties
-* Added translator to the Go GLV
+* Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
+* Added translator to the Go GLV.
+* Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)

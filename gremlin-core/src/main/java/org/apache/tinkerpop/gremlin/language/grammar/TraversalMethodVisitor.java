@@ -1745,6 +1745,104 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_asString_Empty(final GremlinParser.TraversalMethod_asString_EmptyContext ctx) {
+        return graphTraversal.asString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_toUpper_Empty(final GremlinParser.TraversalMethod_toUpper_EmptyContext ctx) {
+        return graphTraversal.toUpper();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_toLower_Empty(final GremlinParser.TraversalMethod_toLower_EmptyContext ctx) {
+        return graphTraversal.toLower();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_length_Empty(final GremlinParser.TraversalMethod_length_EmptyContext ctx) {
+        return graphTraversal.length();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_trim_Empty(final GremlinParser.TraversalMethod_trim_EmptyContext ctx) {
+        return graphTraversal.trim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_lTrim_Empty(final GremlinParser.TraversalMethod_lTrim_EmptyContext ctx) {
+        return graphTraversal.lTrim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_rTrim_Empty(final GremlinParser.TraversalMethod_rTrim_EmptyContext ctx) {
+        return graphTraversal.rTrim();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_reverse_Empty(final GremlinParser.TraversalMethod_reverse_EmptyContext ctx) {
+        return graphTraversal.reverse();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_replace_String_String(final GremlinParser.TraversalMethod_replace_String_StringContext ctx) {
+        return graphTraversal.replace(antlr.argumentVisitor.parseString(ctx.stringNullableArgument(0)),
+                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_split_String(final GremlinParser.TraversalMethod_split_StringContext ctx) {
+        return graphTraversal.split(antlr.argumentVisitor.parseString(ctx.stringNullableArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_substring_int(final GremlinParser.TraversalMethod_substring_intContext ctx) {
+        return graphTraversal.substring(antlr.argumentVisitor.parseNumber(ctx.integerArgument()).intValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_substring_int_int(final GremlinParser.TraversalMethod_substring_int_intContext ctx) {
+        return graphTraversal.substring(antlr.argumentVisitor.parseNumber(ctx.integerArgument(0)).intValue(),
+                antlr.argumentVisitor.parseNumber(ctx.integerArgument(1)).intValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) {
         return graphTraversal.asDate();
     }

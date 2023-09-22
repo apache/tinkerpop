@@ -602,6 +602,93 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#asString()
+     */
+    public static <A> GraphTraversal<A, String> asString() {
+        return __.<A>start().asString();
+    }
+
+    /**
+     * @see GraphTraversal#length()
+     */
+    public static <A> GraphTraversal<A, Integer> length() {
+        return __.<A>start().length();
+    }
+
+    /**
+     * @see GraphTraversal#toLower()
+     */
+    public static <A> GraphTraversal<A, String> toLower() {
+        return __.<A>start().toLower();
+    }
+
+    /**
+     * @see GraphTraversal#toUpper()
+     */
+    public static <A> GraphTraversal<A, String> toUpper() {
+        return __.<A>start().toUpper();
+    }
+
+    /**
+     * @see GraphTraversal#trim()
+     */
+    public static <A> GraphTraversal<A, String> trim() {
+        return __.<A>start().trim();
+    }
+
+
+    /**
+     * @see GraphTraversal#lTrim()
+     */
+    public static <A> GraphTraversal<A, String> lTrim() {
+        return __.<A>start().lTrim();
+    }
+
+
+    /**
+     * @see GraphTraversal#rTrim()
+     */
+    public static <A> GraphTraversal<A, String> rTrim() {
+        return __.<A>start().rTrim();
+    }
+
+
+    /**
+     * @see GraphTraversal#reverse()
+     */
+    public static <A> GraphTraversal<A, String> reverse() {
+        return __.<A>start().reverse();
+    }
+
+    /**
+     * @see GraphTraversal#replace(String, String)
+     */
+    public static <A> GraphTraversal<A, String> replace(final String oldChar, final String newChar) {
+        return __.<A>start().replace(oldChar, newChar);
+    }
+
+    /**
+     * @see GraphTraversal#split(String)
+     */
+    public static <A> GraphTraversal<A, List<String>> split(final String separator) {
+        return __.<A>start().split(separator);
+    }
+
+    /**
+     * @see GraphTraversal#substring(int)
+     */
+    public static <A> GraphTraversal<A, String> substring(final int startIndex) {
+        return __.<A>start().substring(startIndex);
+    }
+
+    /**
+     * @see GraphTraversal#substring(int, int)
+     */
+    public static <A> GraphTraversal<A, String> substring(final int startIndex, final int length) {
+        return __.<A>start().substring(startIndex, length);
+    }
+
+    /**
      * @see GraphTraversal#asDate()
      */
     public static <A> GraphTraversal<A, Date> asDate() {

@@ -57,6 +57,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<Regex, Func<string, string, object?>> Parsers =
             new Dictionary<string, Func<string, string, object?>>
             {
+                {@"str\[(.*)\]", (x, graphName) => x }, //returns the string value as is
                 {@"vp\[(.+)\]", ToVertexProperty},
                 {@"dt\[(.+)\]", ToDateTime},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},

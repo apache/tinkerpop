@@ -195,6 +195,8 @@ def _convert(val, ctx):
             # convert to tuple key if list/set as neither are hashable
             n[tuple(k) if isinstance(k, (set, list)) else k] = _convert(value, ctx)
         return n
+    elif isinstance(val, str) and re.match(r"^str\[.*\]$", val):  # return string as is
+        return val[4:-1]
     elif isinstance(val, str) and re.match(r"^l\[.*\]$", val):  # parse list
         return [] if val == "l[]" else list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
     elif isinstance(val, str) and re.match(r"^s\[.*\]$", val):  # parse set

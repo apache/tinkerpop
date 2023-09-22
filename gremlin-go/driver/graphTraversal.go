@@ -100,6 +100,12 @@ func (g *GraphTraversal) AsDate(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// AsString adds the asString step to the GraphTraversal.
+func (g *GraphTraversal) AsString(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("asString", args...)
+	return g
+}
+
 // Barrier adds the barrier step to the GraphTraversal.
 func (g *GraphTraversal) Barrier(args ...interface{}) *GraphTraversal {
 	// Force int32 serialization for valid number values for server compatibility
@@ -379,6 +385,12 @@ func (g *GraphTraversal) Label(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Length adds the length step to the GraphTraversal.
+func (g *GraphTraversal) Length(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("length", args...)
+	return g
+}
+
 // Limit adds the limit step to the GraphTraversal.
 func (g *GraphTraversal) Limit(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("limit", args...)
@@ -394,6 +406,12 @@ func (g *GraphTraversal) Local(args ...interface{}) *GraphTraversal {
 // Loops adds the loops step to the GraphTraversal.
 func (g *GraphTraversal) Loops(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("loops", args...)
+	return g
+}
+
+// LTrim adds the lTrim step to the GraphTraversal.
+func (g *GraphTraversal) LTrim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("lTrim", args...)
 	return g
 }
 
@@ -577,6 +595,24 @@ func (g *GraphTraversal) Repeat(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Replace adds the replace step to the GraphTraversal.
+func (g *GraphTraversal) Replace(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("replace", args...)
+	return g
+}
+
+// Reverse adds the reverse step to the GraphTraversal.
+func (g *GraphTraversal) Reverse(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("reverse", args...)
+	return g
+}
+
+// RTrim adds the repeat step to the GraphTraversal.
+func (g *GraphTraversal) RTrim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("rTrim", args...)
+	return g
+}
+
 // Sack adds the sack step to the GraphTraversal.
 func (g *GraphTraversal) Sack(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("sack", args...)
@@ -620,6 +656,12 @@ func (g *GraphTraversal) Skip(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Split adds the split step to the GraphTraversal.
+func (g *GraphTraversal) Split(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("split", args...)
+	return g
+}
+
 // Store adds the store step to the GraphTraversal.
 func (g *GraphTraversal) Store(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("store", args...)
@@ -629,6 +671,12 @@ func (g *GraphTraversal) Store(args ...interface{}) *GraphTraversal {
 // Subgraph adds the subgraph step to the GraphTraversal.
 func (g *GraphTraversal) Subgraph(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("subgraph", args...)
+	return g
+}
+
+// Substring adds the substring step to the GraphTraversal.
+func (g *GraphTraversal) Substring(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("substring", int32Args(args)...)
 	return g
 }
 
@@ -669,6 +717,18 @@ func (g *GraphTraversal) ToE(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// ToLower adds the toLower step to the GraphTraversal.
+func (g *GraphTraversal) ToLower(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("toLower", args...)
+	return g
+}
+
+// ToUpper adds the toUpper step to the GraphTraversal.
+func (g *GraphTraversal) ToUpper(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("toUpper", args...)
+	return g
+}
+
 // ToV adds the toV step to the GraphTraversal.
 func (g *GraphTraversal) ToV(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("toV", args...)
@@ -678,6 +738,12 @@ func (g *GraphTraversal) ToV(args ...interface{}) *GraphTraversal {
 // Tree adds the tree step to the GraphTraversal.
 func (g *GraphTraversal) Tree(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("tree", args...)
+	return g
+}
+
+// Trim adds the tree step to the GraphTraversal.
+func (g *GraphTraversal) Trim(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("trim", args...)
 	return g
 }
 

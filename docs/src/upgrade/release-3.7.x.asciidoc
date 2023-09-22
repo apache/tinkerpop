@@ -29,6 +29,118 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== String Manipulation Steps
+Additional String manipulation steps have been added to this version.
+
+===== String Steps asString(), length(), toLower(), toUpper():
+
+The following example demonstrates the use of a closure to perform the above functions:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("age").map{it.get().toString()}
+==>29
+==>27
+==>32
+==>35
+gremlin> g.V().values("name").map{it.get().length()}
+==>5
+==>5
+==>3
+==>4
+==>6
+==>5
+gremlin> g.inject("TO", "LoWeR", "cAsE").map{it.get().toLowerCase()}
+==>to
+==>lower
+==>case
+gremlin> g.V().values("name").map{it.get().toUpperCase()}
+==>MARKO
+==>VADAS
+==>LOP
+==>JOSH
+==>RIPPLE
+==>PETER
+----
+With these additional steps this operation can be performed with standard Gremlin syntax:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("age").asString()
+==>29
+==>27
+==>32
+==>35
+gremlin> g.V().values("name").length()
+==>5
+==>5
+==>3
+==>4
+==>6
+==>5
+gremlin> g.inject("TO", "LoWeR", "cAsE").toLower()
+==>to
+==>lower
+==>case
+gremlin> g.V().values("name").toUpper()
+==>MARKO
+==>VADAS
+==>LOP
+==>JOSH
+==>RIPPLE
+==>PETER
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[asString()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[length()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[toLower()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[toUpper()-step]
+
+===== String Steps trim(), lTrim(), rTrim(), reverse():
+
+The following example demonstrates the use of a closure to reverse and trim strings (concatenated with a string for demonstration):
+
+[source,text]
+----
+gremlin> g.V().values("name").map{it.get().reverse()}
+==>okram
+==>sadav
+==>pol
+==>hsoj
+==>elppir
+==>retep
+gremlin>  g.inject("  hi  ").map{it.get().trim() + "trim"}
+==>hitrim
+gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/^\s+/, '') + "left_trim"}
+==>hi  left_trim
+gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/\s+$/, '') + "right_trim"}
+==>  hiright_trim
+----
+
+With these additional steps this operation can be performed with standard Gremlin syntax:
+
+[source,text]
+----
+gremlin> g.V().values("name").reverse()
+==>okram
+==>sadav
+==>pol
+==>hsoj
+==>elppir
+==>retep
+gremlin>  g.inject("  hi  ").trim().concat()
+==>hitrim
+gremlin>  g.inject("  hi  ").lTrim().concat("left_trim")
+==>hi  left_trim
+gremlin>  g.inject("  hi  ").rTrim().concat("right_trim")
+==>  hiright_trim
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[trim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[lTrim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+
 ==== Date manipulation functions
 
 Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
@@ -42,6 +154,78 @@ gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7).dateDiff(d
 ==>604800
 ----
 
+
+===== String Steps replace(), split(), substring()
+
+The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
+[source,text]
+----
+gremlin> g.V().hasLabel("software").values("name").map{it.get().replace("p", "g")}
+==>log
+==>riggle
+gremlin> g.V().hasLabel("person").values("name").map{it.get().split("a")}
+==>[m, rko]
+==>[v, d, s]
+==>[josh]
+==>[peter]
+----
+With these additional steps this operation can be performed with standard Gremlin syntax:
+[source,text]
+----
+gremlin> g.V().hasLabel("software").values("name").replace("p", "g")
+==>log
+==>riggle
+gremlin> g.V().hasLabel("person").values("name").split("a")
+==>[m,rko]
+==>[v,d,s]
+==>[josh]
+==>[peter]
+----
+
+For `substring()`, the new Gremlin step follows the SQL standard, taking parameters start index and desired length of substring,
+instead of start and end indices like Java/Groovy, enabling certain operations that would be complex to achieve with closure:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1,3)}
+==>ar
+==>ad
+==>os
+==>et
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1)}
+==>arko
+==>adas
+==>osh
+==>eter
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(-2)}
+String index out of range: -2
+Type ':help' or ':h' for help.
+----
+
+The `substring()`-step will begin at the start index and return a substring with the length specified. Negative start
+indices are allowed and will begin at the specified index counted from the end of the string:
+[source,text]
+----
+gremlin> g.V().hasLabel("person").values("name").substring(1,3)
+==>ark
+==>ada
+==>osh
+==>ete
+gremlin> g.V().hasLabel("person").values("name").substring(1)
+==>arko
+==>adas
+==>osh
+==>eter
+gremlin> g.V().hasLabel("person").values("name").substring(-2)
+==>ko
+==>as
+==>sh
+==>er
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[replace()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
 === Upgrading for Providers
 

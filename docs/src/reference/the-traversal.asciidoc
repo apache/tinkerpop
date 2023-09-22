@@ -731,6 +731,24 @@ g.V().hasLabel('software').as('a','b','c').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as-java.lang.String-java.lang.String...-++[`as(String,String...)`]
 
+[[asString-step]]
+=== AsString Step
+
+The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned as a string value "null".
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').values('age').asString() <1>
+g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
+----
+
+<1> Return ages as string.
+<2> Return ages as string and use concat to generate phrases.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString--++[`asString()`]
+
 [[asDate-step]]
 === AsDate Step
 
@@ -2054,6 +2072,23 @@ g.V(1).properties().label()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label--++[`label()`]
 
+[[length-step]]
+=== Length Step
+
+The `length()`-step (*map*) returns the length incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.V().values('name').length() <1>
+----
+
+<1> Return the string length of all vertex names.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length--++[`length()`]
+
 [[limit-step]]
 === Limit Step
 
@@ -2156,6 +2191,19 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops--++[`loops()`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping[`Looping Recipes`]
+
+[[lTrip-step]]
+=== LTrim Step
+
+The `lTrim()`-step (*map*) returns a string with leading whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).lTrim()
+----
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim--++[`lTrim()`]
 
 [[map-step]]
 === Map Step
@@ -3640,6 +3688,52 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping[`Looping Recipes`]
 
+[[replace-step]]
+=== Replace Step
+The `replace()`-step (*map*) returns a string with the specified characters in the original string replaced with the new
+characters. Any null arguments will be a no-op and the original string is returned. Null values from the incoming
+traversers are not processed and remain as null when returned. If the incoming traverser is a non-String  value then
+an IllegalArgumentException will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject('that', 'this', 'test', null).replace('h', 'j') <1>
+g.V().hasLabel("software").values("name").replace("p", "g") <2>
+g.inject('hello world').replace(null, 'j') <3>
+----
+<1> Replace "h" in the strings with "j".
+<2> Return software names with "p" replaced by "g".
+<3> Null inputs are ignored and the original string is returned.
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#replace-java.lang.String-java.lang.String-++[`replace(String,String)`]
+
+[[reverse-step]]
+=== Reverse Step
+
+The `reverse()`-step (*map*) returns a reversed string of the incoming string traverser. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").reverse()
+----
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#reverse--++[`reverse()`]
+
+[[rTrip-step]]
+=== RTrim Step
+
+The `rTrim()`-step (*map*) returns a string with trailing whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).rTrim()
+----
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#rTrim--++[`rTrim()`]
+
 [[sack-step]]
 === Sack Step
 
@@ -4091,6 +4185,26 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip-org.apache.tinkerpop.gremlin.process.traversal.Scope-long-++[`skip(Scope,long)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[split-step]]
+=== Split Step
+The `split()`-step (*map*) returns a list of strings created by splitting the incoming string traverser around the
+matches of the given separator. A null separator will split the string by whitespaces. Null values from the incoming
+traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
+IllegalArgumentException will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("that", "this", "test", null).split("h") <1>
+g.V().hasLabel("person").values("name").split("a") <2>
+g.inject("helloworld", "hello world", "hello   world").split(null) <3>
+----
+<1> Split the strings by "h".
+<2> Split person names by "a".
+<3> Splitting by null will split by whitespaces.
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split-java.lang.String-++[`split(String)`]
+
 [[subgraph-step]]
 === Subgraph Step
 
@@ -4175,6 +4289,30 @@ List<Vertex> vertices = g.V(v).out().toList();
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#subgraph-java.lang.String-++[`subgraph(String)`]
+
+[[substring-step]]
+=== Substring Step
+The `substring()`-step (*map*) returns a substring with a 0-based start index (inclusive) index and length specified.
+If the start index is negative then it will begin at the specified index counted from the end of the string, or 0 if
+exceeding the string length.
+
+Length is optional, if it is not specific or if it exceeds the length of the string then all remaining characters will
+be returned. Length &leq; 0 will return the empty string. Null values are not processed and remain as null
+when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("test", "hello world", null).substring(1, 8)
+g.inject("hello world").substring(-4) <1>
+g.inject("hello world").substring(2, 0) <2>
+g.V().hasLabel("software").values("name").substring(2)
+----
+<1> Negative start index, the first character is read by counting from the end of the string
+<2> Length of 0 specified will return the empty string
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring-int-++[`substring(int)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring-int-int-++[`substring(int,int)`]
 
 [[sum-step]]
 === Sum Step
@@ -4306,6 +4444,39 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toV-org.apache.tinkerpop.gremlin.structure.Direction-++[`toV(Direction)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Direction.html++[`Direction`]
 
+[[toLower-step]]
+=== ToLower Step
+
+The `toLower()`-step (*map*) returns the lowercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("HELLO", "wORlD", null).toLower()
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower--++[`toLower()`]
+
+[[toUpper-step]]
+=== ToUpper Step
+
+The `toUpper()`-step (*map*) returns the uppercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("hello", "wORlD", null).toUpper()
+g.V().values("name").toUpper() <1>
+----
+
+<1> Returns the upper case representation of all vertex names.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper--++[`toUpper()`]
+
 [[tree-step]]
 === Tree Step
 
@@ -4351,6 +4522,19 @@ g.V().has('name','josh').out('created').values('name').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree--++[`tree()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree-java.lang.String-++[`tree(String)`]
+
+[[trim-step]]
+=== Trim Step
+
+The `trim()`-step (*map*) returns a string with leading and leading whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).trim()
+----
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#trim--++[`trim()`]
 
 [[unfold-step]]
 === Unfold Step

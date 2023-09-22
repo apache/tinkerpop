@@ -167,6 +167,9 @@ public final class StepDefinition {
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
+        // return the string values as is, used to wrap results that may contain other regex patterns
+        add(Pair.with(Pattern.compile("str\\[(.*)\\]"), String::valueOf));
+
         // expects json so that should port to the Gremlin script form - replace curly json braces with square ones
         // for Gremlin sake.
         add(Pair.with(Pattern.compile("m\\[(.*)\\]"), s -> {

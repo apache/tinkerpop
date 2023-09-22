@@ -180,7 +180,7 @@ class GraphTraversalSource(object):
         return self.with_computer(graph_computer, workers, result, persist, vertices, edges, configuration)
 
     def with_computer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
-                  edges=None, configuration=None):
+                      edges=None, configuration=None):
         return self.with_strategies(
             VertexProgramStrategy(graph_computer, workers, result, persist, vertices, edges, configuration))
 
@@ -319,6 +319,10 @@ class GraphTraversal(Traversal):
 
     def as_date(self, *args):
         self.bytecode.add_step("asDate", *args)
+        return self
+
+    def as_string(self, *args):
+        self.bytecode.add_step("asString", *args)
         return self
 
     def barrier(self, *args):
@@ -603,6 +607,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("label", *args)
         return self
 
+    def length(self, *args):
+        self.bytecode.add_step("length", *args)
+        return self
+
     def limit(self, *args):
         self.bytecode.add_step("limit", *args)
         return self
@@ -613,6 +621,10 @@ class GraphTraversal(Traversal):
 
     def loops(self, *args):
         self.bytecode.add_step("loops", *args)
+        return self
+
+    def lTrim(self, *args):
+        self.bytecode.add_step("lTrim", *args)
         return self
 
     def map(self, *args):
@@ -777,6 +789,18 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("repeat", *args)
         return self
 
+    def replace(self, *args):
+        self.bytecode.add_step("replace", *args)
+        return self
+
+    def reverse(self, *args):
+        self.bytecode.add_step("reverse", *args)
+        return self
+
+    def rTrim(self, *args):
+        self.bytecode.add_step("rTrim", *args)
+        return self
+
     def sack(self, *args):
         self.bytecode.add_step("sack", *args)
         return self
@@ -826,12 +850,20 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("skip", *args)
         return self
 
+    def split(self, *args):
+        self.bytecode.add_step("split", *args)
+        return self
+
     def store(self, *args):
         self.bytecode.add_step("store", *args)
         return self
 
     def subgraph(self, *args):
         self.bytecode.add_step("subgraph", *args)
+        return self
+
+    def substring(self, *args):
+        self.bytecode.add_step("substring", *args)
         return self
 
     def sum_(self, *args):
@@ -872,6 +904,14 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("toE", *args)
         return self
 
+    def to_lower(self, *args):
+        self.bytecode.add_step("toLower", *args)
+        return self
+
+    def to_upper(self, *args):
+        self.bytecode.add_step("toUpper", *args)
+        return self
+
     def toV(self, *args):
         warnings.warn(
             "gremlin_python.process.GraphTraversalSource.toV will be replaced by "
@@ -885,6 +925,10 @@ class GraphTraversal(Traversal):
 
     def tree(self, *args):
         self.bytecode.add_step("tree", *args)
+        return self
+
+    def trim(self, *args):
+        self.bytecode.add_step("trim", *args)
         return self
 
     def unfold(self, *args):
@@ -998,6 +1042,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def as_date(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
+
+    @classmethod
+    def as_string(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_string(*args)
 
     @classmethod
     def barrier(cls, *args):
@@ -1276,6 +1324,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).label(*args)
 
     @classmethod
+    def length(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).length(*args)
+
+    @classmethod
     def limit(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).limit(*args)
 
@@ -1286,6 +1338,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def loops(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).loops(*args)
+
+    @classmethod
+    def ltrim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).ltrim(*args)
 
     @classmethod
     def map(cls, *args):
@@ -1412,6 +1468,18 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).repeat(*args)
 
     @classmethod
+    def replace(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).replace(*args)
+
+    @classmethod
+    def reverse(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).reverse(*args)
+
+    @classmethod
+    def rTrim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).rTrim(*args)
+
+    @classmethod
     def sack(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).sack(*args)
 
@@ -1452,12 +1520,20 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).skip(*args)
 
     @classmethod
+    def split(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).split(*args)
+
+    @classmethod
     def store(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).store(*args)
 
     @classmethod
     def subgraph(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
+
+    @classmethod
+    def substring(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).substring(*args)
 
     @classmethod
     def sum_(cls, *args):
@@ -1500,6 +1576,14 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).to_e(*args)
 
     @classmethod
+    def to_lower(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).to_lower(*args)
+
+    @classmethod
+    def to_upper(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).to_upper(*args)
+
+    @classmethod
     def toV(cls, *args):
         warnings.warn(
             "gremlin_python.process.__.toV will be replaced by "
@@ -1514,6 +1598,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def tree(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).tree(*args)
+
+    @classmethod
+    def trim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).trim(*args)
 
     @classmethod
     def unfold(cls, *args):
@@ -1665,6 +1753,10 @@ def as_(*args):
 
 def as_date(*args):
     return __.as_date(*args)
+
+
+def as_string(*args):
+    return __.as_string(*args)
 
 
 def barrier(*args):
@@ -1891,6 +1983,10 @@ def label(*args):
     return __.label(*args)
 
 
+def length(*args):
+    return __.length(*args)
+
+
 def limit(*args):
     return __.limit(*args)
 
@@ -1901,6 +1997,10 @@ def local(*args):
 
 def loops(*args):
     return __.loops(*args)
+
+
+def ltrim(*args):
+    return __.ltrim(*args)
 
 
 def map(*args):
@@ -2011,6 +2111,18 @@ def repeat(*args):
     return __.repeat(*args)
 
 
+def replace(*args):
+    return __.replace(*args)
+
+
+def reverse(*args):
+    return __.reverse(*args)
+
+
+def rTrim(*args):
+    return __.rTrim(*args)
+
+
 def sack(*args):
     return __.sack(*args)
 
@@ -2043,12 +2155,20 @@ def skip(*args):
     return __.skip(*args)
 
 
+def split(*args):
+    return __.split(*args)
+
+
 def store(*args):
     return __.store(*args)
 
 
 def subgraph(*args):
     return __.subgraph(*args)
+
+
+def substring(*args):
+    return __.substring(*args)
 
 
 def sum_(*args):
@@ -2083,6 +2203,14 @@ def to_e(*args):
     return __.to_e(*args)
 
 
+def to_lower(*args):
+    return __.to_lower(*args)
+
+
+def to_upper(*args):
+    return __.to_upper(*args)
+
+
 def toV(*args):
     return __.to_v(*args)
 
@@ -2093,6 +2221,10 @@ def to_v(*args):
 
 def tree(*args):
     return __.tree(*args)
+
+
+def trim(*args):
+    return __.trim(*args)
 
 
 def unfold(*args):
@@ -2144,6 +2276,8 @@ statics.add_static('and_', and_)
 statics.add_static('as_', as_)
 
 statics.add_static('as_date', as_date)
+
+statics.add_static('as_string', as_string)
 
 statics.add_static('barrier', barrier)
 
@@ -2255,11 +2389,15 @@ statics.add_static('key', key)
 
 statics.add_static('label', label)
 
+statics.add_static('length', length)
+
 statics.add_static('limit', limit)
 
 statics.add_static('local', local)
 
 statics.add_static('loops', loops)
+
+statics.add_static('ltrim', ltrim)
 
 statics.add_static('map', map)
 
@@ -2315,6 +2453,12 @@ statics.add_static('range_', range_)
 
 statics.add_static('repeat', repeat)
 
+statics.add_static('replace', replace)
+
+statics.add_static('reverse', reverse)
+
+statics.add_static('rTrim', rTrim)
+
 statics.add_static('sack', sack)
 
 statics.add_static('sample', sample)
@@ -2331,9 +2475,13 @@ statics.add_static('simple_path', simple_path)
 
 statics.add_static('skip', skip)
 
+statics.add_static('split', split)
+
 statics.add_static('store', store)
 
 statics.add_static('subgraph', subgraph)
+
+statics.add_static('substring', substring)
 
 statics.add_static('sum_', sum_)
 
@@ -2353,9 +2501,15 @@ statics.add_static('to_e', to_e)
 
 statics.add_static('toV', toV)
 
+statics.add_static('to_lower', to_lower)
+
+statics.add_static('to_upper', to_upper)
+
 statics.add_static('to_v', to_v)
 
 statics.add_static('tree', tree)
+
+statics.add_static('trim', trim)
 
 statics.add_static('unfold', unfold)
 

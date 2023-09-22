@@ -284,10 +284,22 @@ traversalMethod
     | traversalMethod_element
     | traversalMethod_call
     | traversalMethod_concat
+    | traversalMethod_asString
+    | traversalMethod_toUpper
+    | traversalMethod_toLower
+    | traversalMethod_length
+    | traversalMethod_trim
+    | traversalMethod_lTrim
+    | traversalMethod_rTrim
+    | traversalMethod_reverse
+    | traversalMethod_replace
+    | traversalMethod_split
+    | traversalMethod_substring
     | traversalMethod_asDate
     | traversalMethod_dateAdd
     | traversalMethod_dateDiff
     ;
+
 traversalMethod_V
     : 'V' LPAREN genericLiteralVarargs RPAREN
     ;
@@ -810,6 +822,51 @@ traversalMethod_call
 traversalMethod_concat
     : 'concat' LPAREN nestedTraversal RPAREN #traversalMethod_concat_Traversal
     | 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
+    ;
+
+traversalMethod_asString
+    : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
+    ;
+
+traversalMethod_toUpper
+    : 'toUpper' LPAREN RPAREN #traversalMethod_toUpper_Empty
+    ;
+
+traversalMethod_toLower
+    : 'toLower' LPAREN RPAREN #traversalMethod_toLower_Empty
+    ;
+
+traversalMethod_length
+    : 'length' LPAREN RPAREN #traversalMethod_length_Empty
+    ;
+
+traversalMethod_trim
+    : 'trim' LPAREN RPAREN #traversalMethod_trim_Empty
+    ;
+
+traversalMethod_lTrim
+    : 'lTrim' LPAREN RPAREN #traversalMethod_lTrim_Empty
+    ;
+
+traversalMethod_rTrim
+    : 'rTrim' LPAREN RPAREN #traversalMethod_rTrim_Empty
+    ;
+
+traversalMethod_reverse
+    : 'reverse' LPAREN RPAREN #traversalMethod_reverse_Empty
+    ;
+
+traversalMethod_replace
+    : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
+    ;
+
+traversalMethod_split
+    : 'split' LPAREN stringNullableArgument RPAREN #traversalMethod_split_String
+    ;
+
+traversalMethod_substring
+    : 'substring' LPAREN integerArgument RPAREN #traversalMethod_substring_int
+    | 'substring' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_int_int
     ;
 
 traversalMethod_asDate

@@ -1143,4 +1143,44 @@ public class TraversalMethodVisitorTest {
         compare(g.V().coalesce(E(1,2),addE("person")),
                 eval("g.V().coalesce(__.E(1,2),__.addE('person'))"));
     }
+
+    @Test
+    public void shouldParseTraversalMethod_asString_Empty() throws Exception {
+        compare(g.V().asString(), eval("g.V().asString()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_toLower_Empty() throws Exception {
+        compare(g.V().toLower(), eval("g.V().toLower()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_toUpper_Empty() throws Exception {
+        compare(g.V().toUpper(), eval("g.V().toUpper()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_length_Empty() throws Exception {
+        compare(g.V().length(), eval("g.V().length()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_replace_string_string() throws Exception {
+        compare(g.V().replace("a", "b"), eval("g.V().replace('a', 'b')"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_split_string() throws Exception {
+        compare(g.V().split("a"), eval("g.V().split('a')"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_substring_long() throws Exception {
+        compare(g.V().substring(1), eval("g.V().substring(1)"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_substring_long_long() throws Exception {
+        compare(g.V().substring(1, 3), eval("g.V().substring(1, 3)"));
+    }
 }
