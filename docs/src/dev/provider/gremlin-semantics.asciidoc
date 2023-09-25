@@ -739,8 +739,8 @@ If argument resolves as `null` then incoming date will not be changed.
 
 * If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateDiffStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 
 [[dedup-step]]
 === dedup()
