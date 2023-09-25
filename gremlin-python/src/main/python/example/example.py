@@ -14,8 +14,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 import ssl
 from ssl import Purpose
+
+import sys
+sys.path.append("..")
 
 # Common imports
 from gremlin_python import statics
