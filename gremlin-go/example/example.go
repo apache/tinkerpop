@@ -21,8 +21,8 @@ package main
 
 import (
 	"fmt"
+
 	gremlingo "github.com/apache/tinkerpop/gremlin-go/driver"
-	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
 // syntactic sugar
@@ -31,11 +31,20 @@ var gt = gremlingo.P.Gt
 var order = gremlingo.Order
 
 func main() {
-	// Creating the connection to the server.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+	// Creating the connection to the server
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+
+	// Connecting to the server with customized configurations
+	driverRemoteConnection, err = gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
-			settings.TraversalSource = "gmodern"
+			settings.TraversalSource = "g"
+			settings.NewConnectionThreshold = 4
+			settings.EnableCompression = false
+			settings.ReadBufferSize = 0
+			settings.WriteBufferSize = 0
 		})
+
+	// Error handling
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -43,8 +52,9 @@ func main() {
 	// Cleanup
 	defer driverRemoteConnection.Close()
 
-	// Creating graph traversal
+	// Creating the graph traversal
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	fmt.Println(g)
 
 	// Perform traversal
 	result, err := g.V().HasLabel("person").Has("age", __.Is(gt(28))).Order().By("age", order.Desc).Values("name").ToList()
