@@ -19,11 +19,11 @@ module example
 
 go 1.20
 
-require github.com/apache/tinkerpop/gremlin-go/v3 v3.6.1-rc2
+require github.com/apache/tinkerpop/gremlin-go/v3 v3.6.5
 
 require (
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/nicksnyder/go-i18n/v2 v2.1.2 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.2.1 // indirect
+	golang.org/x/text v0.11.0 // indirect
 )
