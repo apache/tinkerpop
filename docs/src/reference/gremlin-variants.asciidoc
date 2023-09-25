@@ -1294,7 +1294,6 @@ const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.column
 const direction = gremlin.process.direction
-
 const Direction = {
   BOTH: direction.both,
   IN: direction.in,
