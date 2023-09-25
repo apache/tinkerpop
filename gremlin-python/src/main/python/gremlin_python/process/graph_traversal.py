@@ -309,8 +309,16 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("aggregate", *args)
         return self
 
+    def all_(self, *args):
+        self.bytecode.add_step("all", *args)
+        return self
+
     def and_(self, *args):
         self.bytecode.add_step("and", *args)
+        return self
+
+    def any_(self, *args):
+        self.bytecode.add_step("any", *args)
         return self
 
     def as_(self, *args):
@@ -1032,8 +1040,16 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).aggregate(*args)
 
     @classmethod
+    def all_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).all_(*args)
+
+    @classmethod
     def and_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).and_(*args)
+
+    @classmethod
+    def any_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).any_(*args)
 
     @classmethod
     def as_(cls, *args):

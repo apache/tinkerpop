@@ -524,6 +524,72 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[all-step]]
+=== all()
+
+*Description:* Filters array data from the Traversal Stream if all of the array's items match the supplied predicate.
+
+*Syntax:* `all(Predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `Predicate` - The predicate to use to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
+will be filtered out of the Traversal Stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to false.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
+
+[[any-step]]
+=== any()
+
+*Description:* Filters array data from the Traversal Stream if any of the array's items match the supplied predicate.
+
+*Syntax:* `any(Predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `Predicate` - The predicate to use to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists, null traversers, and non-list traversers will be
+filtered out of the Traversal Stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
+
 [[asDate-step]]
 === asDate()
 

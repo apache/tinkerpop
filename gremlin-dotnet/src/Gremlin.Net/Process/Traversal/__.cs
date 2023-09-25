@@ -117,6 +117,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> all adds the all step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> All(P? predicate)
+        {
+            return new GraphTraversal<object, object>().All(predicate);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the and step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> And(params ITraversal[] andTraversals)
@@ -124,6 +132,14 @@ namespace Gremlin.Net.Process.Traversal
             return andTraversals is { Length: 0 }
                 ? new GraphTraversal<object, object>().And()
                 : new GraphTraversal<object, object>().And(andTraversals);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> any adds the any step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Any(P? predicate)
+        {
+            return new GraphTraversal<object, object>().Any(predicate);
         }
 
         /// <summary>

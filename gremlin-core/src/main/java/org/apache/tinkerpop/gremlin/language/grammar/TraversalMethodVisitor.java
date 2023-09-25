@@ -181,9 +181,25 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_all_P(final GremlinParser.TraversalMethod_all_PContext ctx) {
+        return graphTraversal.all(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_and(final GremlinParser.TraversalMethod_andContext ctx) {
         return this.graphTraversal.and(
                 antlr.tListVisitor.visitNestedTraversalList(ctx.nestedTraversalList()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_any_P(final GremlinParser.TraversalMethod_any_PContext ctx) {
+        return graphTraversal.any(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
     }
 
     /**

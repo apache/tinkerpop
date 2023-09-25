@@ -1087,64 +1087,54 @@ g.inject([1,2]).product([3,4])
 
 === `any()` [[any_list]]
 
-Returns true if any items in the array `value` exist in the input
+Allows the traverser to continue if any items in the array pass the
+supplied predicate.
 
 ==== Signature(s)
 
-`any(value)`
-
-`any(Traversal)`
+`any(Predicate)`
 
 ==== Parameters
 
-* value - An array of the items to check in the incoming list
+* Predicate - The predicate to use to test the values in the array
 
 ==== Allowed incoming traverser types
 
-Array data types. If non-array data types are passed in then an
-`IllegalArgumentException` will be thrown
+Array data types. All other types will be filtered out.
 
 ==== Expected Output
 
-True if any values from one list are in the other, False otherwise
+The arrays which have any item pass the predicate.
 
 ....
-g.inject([1,2]).any([1])
-==>true
-g.inject([1,2]).any([3])
-==>false
+g.inject([1,2]).any(P.eq(1))
+==>[1,2]
 ....
 
 === `all()` [[all_list]]
 
-Returns true if all items in the array `value` exist in the input
+Allows the traverser to continue if all items in the array pass the
+supplied predicate.
 
 ==== Signature(s)
 
-`all(value)`
-
-`all(Traversal)`
+`all(Predicate)`
 
 ==== Parameters
 
-* value - An array of the items to check in the incoming list
+* Predicate - The predicate to use to test the values in the array
 
 ==== Allowed incoming traverser types
 
-Array data types. If non-array data types are passed in then an
-`IllegalArgumentException` will be thrown
+Array data types. All other types will be filtered out.
 
 ==== Expected Output
 
-True if all values from one list are in the other, False otherwise
+The arrays which have all items pass the predicate.
 
 ....
-g.inject([1,2]).all([1])
-==>true
-g.inject([1,2]).all([1, 3])
-==>false
-g.inject([1,2]).all([3])
-==>false
+g.inject([1,2]).all(P.gt(0))
+==>[1,2]
 ....
 
 === `none()` [[none_list]]

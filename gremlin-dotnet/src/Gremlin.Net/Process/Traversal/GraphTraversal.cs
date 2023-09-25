@@ -179,6 +179,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the all step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> All (P? predicate)
+        {
+            Bytecode.AddStep("all", predicate);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
         ///     Adds the and step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> And (params ITraversal[] andTraversals)
@@ -188,6 +197,15 @@ namespace Gremlin.Net.Process.Traversal
             var args = new List<object>(andTraversals.Length);
             args.AddRange(andTraversals);
             Bytecode.AddStep("and", args.ToArray());
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the any step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Any (P? predicate)
+        {
+            Bytecode.AddStep("any", predicate);
             return Wrap<TStart, TEnd>(this);
         }
 
