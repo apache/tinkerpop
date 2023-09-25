@@ -1300,12 +1300,13 @@ const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.column
 const direction = gremlin.process.direction
-Direction: {
-  BOTH: traversalModule.direction.both,
-  IN: traversalModule.direction.in,
-  OUT: traversalModule.direction.out,
-  from_: traversalModule.direction.in,
-  to: traversalModule.direction.out,
+
+const Direction = {
+  BOTH: direction.both,
+  IN: direction.in,
+  OUT: direction.out,
+  from_: direction.in,
+  to: direction.out,
 }
 const p = gremlin.process.P
 const textp = gremlin.process.TextP
