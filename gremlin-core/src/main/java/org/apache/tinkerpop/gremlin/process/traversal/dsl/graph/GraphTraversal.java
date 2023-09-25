@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -79,6 +80,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -86,6 +88,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateAddStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateDiffStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
@@ -185,6 +189,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1615,6 +1620,54 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> substring(final int startIndex, final int length) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, length);
         return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, length));
+    }
+
+    /**
+     * Parse value of the incoming traverser as an ISO-8601 {@link Date}.
+     *
+     * @return the traversal with an appended {@link AsDateStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asDate-step" target="_blank">Reference Documentation - asDate Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Date> asDate() {
+        this.asAdmin().getBytecode().addStep(Symbols.asDate);
+        return this.asAdmin().addStep(new AsDateStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Increase value of input {@link Date}.
+     *
+     * @return the traversal with an appended {@link DateAddStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateAdd-step" target="_blank">Reference Documentation - dateAdd Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Date> dateAdd(final DT dateToken, final int value) {
+        this.asAdmin().getBytecode().addStep(Symbols.dateAdd, dateToken, value);
+        return this.asAdmin().addStep(new DateAddStep<>(this.asAdmin(), dateToken, value));
+    }
+
+    /**
+     * Returns the difference between two {@link Date} in epoch time.
+     *
+     * @return the traversal with an appended {@link DateDiffStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Long> dateDiff(final Date value) {
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
+        return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
+    }
+
+    /**
+     * Returns the difference between two {@link Date} in epoch time.
+     *
+     * @return the traversal with an appended {@link DateDiffStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, dateTraversal);
+        return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -3691,6 +3744,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String replace = "replace";
         public static final String substring = "substring";
         public static final String split = "split";
+        public static final String asDate = "asDate";
+        public static final String dateAdd = "dateAdd";
+        public static final String dateDiff = "dateDiff";
 
         public static final String timeLimit = "timeLimit";
         public static final String simplePath = "simplePath";

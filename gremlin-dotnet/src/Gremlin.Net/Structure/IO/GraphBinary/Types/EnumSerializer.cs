@@ -60,6 +60,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             new EnumSerializer<Direction>(DataType.Direction, Direction.GetByValue);
 
         /// <summary>
+        /// A serializer for <see cref="DT"/> values.
+        /// </summary>
+        public static readonly EnumSerializer<DT> DTSerializer =
+            new EnumSerializer<DT>(DataType.DT, DT.GetByValue);
+
+        /// <summary>
         /// A serializer for <see cref="Merge"/> values.
         /// </summary>
         public static readonly EnumSerializer<Merge> MergeSerializer =

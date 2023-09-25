@@ -300,7 +300,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         
             Assert.Equal(T.Label, readT);
         }
-        
+
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDirection(int version)
         {
@@ -311,6 +311,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jsonElement);
         
             Assert.Equal(Direction.Out, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeDT(int version)
+        {
+            const string serializedValue = "{\"@type\":\"g:DT\",\"@value\":\"minute\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
+            var deserializedValue = reader.ToObject(jsonElement);
+
+            Assert.Equal(DT.Minute, deserializedValue);
         }
 
         [Theory, MemberData(nameof(Versions))]

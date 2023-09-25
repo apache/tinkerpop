@@ -269,6 +269,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDT(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var serializedEnum = writer.WriteObject(DT.Minute);
+
+            var expectedGraphSON = "{\"@type\":\"g:DT\",\"@value\":\"minute\"}";
+            Assert.Equal(expectedGraphSON, serializedEnum);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldSerializeMerge(int version)
         {
             var writer = CreateGraphSONWriter(version);

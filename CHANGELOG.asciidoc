@@ -30,6 +30,9 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added the `trim()`, `lTrim()`, `rTrim()`, and `reverse()` steps to perform `String` manipulations.
 * Added `replace()`, `split()` and `substring()` steps to perform `String` manipulations.
 * Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
+* Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
+* Added new data type `DT` to represent periods of time.
+* Added Gherkin support for Date.
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)

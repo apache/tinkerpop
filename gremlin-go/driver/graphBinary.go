@@ -81,6 +81,7 @@ const (
 	traversalStrategyType dataType = 0x29
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
+	dtType                dataType = 0x2f
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
@@ -711,6 +712,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return scopeType, nil
 	case merge:
 		return mergeType, nil
+	case dt:
+		return dtType, nil
 	case p, Predicate:
 		return pType, nil
 	case textP, TextPredicate:
@@ -990,13 +993,10 @@ func readMap(data *[]byte, i *int) (interface{}, error) {
 			switch reflect.TypeOf(k).Kind() {
 			case reflect.Map:
 				mapData[&k] = v
-				break
 			case reflect.Slice:
 				mapData[fmt.Sprint(k)] = v
-				break
 			default:
 				mapData[k] = v
-				break
 			}
 		}
 	}

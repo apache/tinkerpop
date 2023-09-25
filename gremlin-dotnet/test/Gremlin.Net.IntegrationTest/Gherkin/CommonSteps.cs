@@ -59,6 +59,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 {@"str\[(.*)\]", (x, graphName) => x }, //returns the string value as is
                 {@"vp\[(.+)\]", ToVertexProperty},
+                {@"dt\[(.+)\]", ToDateTime},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"M\[(.+)\]", ToMerge},
@@ -434,6 +435,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 return new List<object?>(0);
             }
             return stringList.Split(',').Select(x => ParseValue(x, graphName)).ToList();
+        }
+
+        private static object ToDateTime(string date, string graphName)
+        {
+            return DateTimeOffset.Parse(date);
         }
 
         private static Vertex ToVertex(string name, string graphName)

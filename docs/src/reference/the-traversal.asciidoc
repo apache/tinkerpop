@@ -749,6 +749,31 @@ g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString--++[`asString()`]
 
+[[asDate-step]]
+=== AsDate Step
+
+The `asDate()`-step (*map*) converts string or numeric input to Date. 
+For string input only ISO-8601 format is supported.
+For numbers, the value is considered as the number of the milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT).
+Date input passed without changes.
+If the incoming traverser is not a string, number or Date then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject(1690934400000).asDate() <1>
+g.inject("2023-08-02T00:00:00Z").asDate() <2>
+g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
+----
+
+<1> Convert number to Date
+<2> Convert ISO-8601 string to Date
+<3> Pass Date without modification
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate--
+++[`asDate()`]
+
 [[barrier-step]]
 === Barrier Step
 
@@ -1221,6 +1246,44 @@ g.V(1).as('a').out('created').as('b').
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#cyclicPath--++[`cyclicPath()`]
+
+[[dateAdd-step]]
+=== DateAdd Step
+
+The `dateAdd()`-step (*map*) returns the value with the addition of the value number of units as specified by the DateToken. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7) <1>
+g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dateAdd(DT.minute, 1) <2>
+----
+
+<1> Add 7 days to Date
+<2> Add 1 minute to incoming dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd--
+++[`dateAdd()`]
+
+[[dateDiff-step]]
+=== DateDiff Step
+
+The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(inject("2023-08-03T00:00:00Z").asDate()) <1>
+----
+
+<1> Find difference between two dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff--
+++[`dateDiff()`]
 
 [[dedup-step]]
 === Dedup Step

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -32,8 +33,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -74,6 +75,13 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     public String parseString(final GremlinParser.StringArgumentContext ctx) {
         return (String) visitStringArgument(ctx);
+    }
+
+    /**
+     * Wrapper to visit function for Date type.
+     */
+    public Date parseDate(final GremlinParser.DateArgumentContext ctx) {
+        return (Date) visitDateArgument(ctx);
     }
 
     /**
@@ -137,6 +145,13 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     public Pop parsePop(final GremlinParser.TraversalPopArgumentContext ctx) {
         return (Pop) visitTraversalPopArgument(ctx);
+    }
+
+    /**
+     * Wrapper for visit function for {@link DT} types.
+     */
+    public DT parseDT(final GremlinParser.TraversalDTArgumentContext ctx) {
+        return (DT) visitTraversalDTArgument(ctx);
     }
 
     /**
@@ -252,6 +267,15 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitDateArgument(final GremlinParser.DateArgumentContext ctx) {
+        if (ctx.dateLiteral() != null) {
+            return antlr.genericVisitor.parseDate(ctx.dateLiteral());
+        } else {
+            return visitVariable(ctx.variable());
+        }
+    }
+
+    @Override
     public Object visitGenericLiteralArgument(final GremlinParser.GenericLiteralArgumentContext ctx) {
         if (ctx.genericLiteral() != null) {
             return antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral());
@@ -336,6 +360,15 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitTraversalPopArgument(final GremlinParser.TraversalPopArgumentContext ctx) {
         if (ctx.traversalPop() != null) {
             return TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop());
+        } else {
+            return visitVariable(ctx.variable());
+        }
+    }
+
+    @Override
+    public Object visitTraversalDTArgument(final GremlinParser.TraversalDTArgumentContext ctx) {
+        if (ctx.traversalDT() != null) {
+            return TraversalEnumParser.parseTraversalEnumFromContext(DT.class, ctx.traversalDT());
         } else {
             return visitVariable(ctx.variable());
         }

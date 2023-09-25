@@ -2430,6 +2430,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== DT
+
+[source,json]
+----
+{
+  "@type" : "g:DT",
+  "@value" : "minute"
+}
+----
+
 ==== Lambda
 
 [source,json]
@@ -4821,6 +4831,16 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 {
   "@type" : "g:Direction",
   "@value" : "OUT"
+}
+----
+
+==== DT
+
+[source,json]
+----
+{
+  "@type" : "g:DT",
+  "@value" : "minute"
 }
 ----
 

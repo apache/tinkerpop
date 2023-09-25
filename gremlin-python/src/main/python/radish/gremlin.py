@@ -25,11 +25,13 @@
 
 
 from radish import world
+import datetime
+from gremlin_python.statics import long
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, Merge, T, Pick, Operator, IO, WithOptions
+from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, T, Pick, Operator, IO, WithOptions
 
 world.gremlins = {
     'g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX': [(lambda g, l1=None:g.V().branch(l1).option('a',__.age).option('b',__.lang).option('b',__.name))], 
@@ -441,6 +443,13 @@ world.gremlins = {
     'g_addVXpersonX_propertyXname_joshX_propertyXage_nullX': [(lambda g:g.addV('person').property('name','josh').property('age',None)), (lambda g:g.V().has('person','age',None))], 
     'g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX': [(lambda g:g.addV('person').property('name','marko').property('friendWeight',None,'acl',None)), (lambda g:g.V().has('person','name','marko').has('friendWeight',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').has('acl',None)), (lambda g:g.V().has('person','name','marko').properties('friendWeight').count())], 
     'g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX': [(lambda g:g.addV('person').property('name','alice').property(Cardinality.single,'age',50)), (lambda g:g.V().has('person','name','alice').property('age',__.union(__.age,__.constant(1)).sum_())), (lambda g:g.V().has('person','age',50)), (lambda g:g.V().has('person','age',51))], 
+    'g_injectXstrX_asDate': [(lambda g:g.inject('2023-08-02T00:00:00Z').as_date())], 
+    'g_injectX1694017707000X_asDate': [(lambda g:g.inject(long(1694017707000)).as_date())], 
+    'g_injectX1694017708000LX_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectX1694017709000dX_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectX1_2X_asDate': [(lambda g, xx1=None:g.inject(xx1).as_date())], 
+    'g_injectXnullX_asDate': [(lambda g:g.inject(None).as_date())], 
+    'g_injectXinvalidstrX_asDate': [(lambda g:g.inject('This String is not an ISO 8601 Date').as_date())], 
     'g_injectX1_2X_asString': [(lambda g:g.inject(1,2).as_string())], 
     'g_injectX1_nullX_asString': [(lambda g:g.inject(1,None).as_string())], 
     'g_V_valueMapXnameX_asString': [(lambda g:g.V().valueMap('name').as_string())], 
@@ -509,6 +518,14 @@ world.gremlins = {
     'g_E_sampleX1X_count': [(lambda g:g.E().sample(1).count())], 
     'g_V_sampleX1X_byXageX_count': [(lambda g:g.V().sample(1).by('age').count())], 
     'g_V_order_byXnoX_count': [(lambda g:g.V().order().by('no').count())], 
+    'g_injectXdatetimeXstrXX_dateAddXDT_hour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,2))], 
+    'g_injectXdatetimeXstrXX_dateAddXhour_2X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,2))], 
+    'g_injectXdatetimeXstrXX_dateAddXhour_1X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour,-1))], 
+    'g_injectXdatetimeXstrXX_dateAddXminute_10X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.minute,10))], 
+    'g_injectXdatetimeXstrXX_dateAddXsecond_20X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.second,20))], 
+    'g_injectXdatetimeXstrXX_dateAddXday_11X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1693958400000 / 1000.0)).date_add(DT.day,11))], 
+    'g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_diff(datetime.datetime.utcfromtimestamp(1691539200000 / 1000.0)))], 
+    'g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1691452800000 / 1000.0)).date_diff(__.inject(datetime.datetime.utcfromtimestamp(1690848000000 / 1000.0))))], 
     'g_V_EX11X': [(lambda g, eid11=None:g.V().E(eid11))], 
     'g_EX11X_E': [(lambda g, eid11=None:g.E(eid11).E())], 
     'g_V_EXnullX': [(lambda g:g.V().E(None))], 
@@ -541,10 +558,6 @@ world.gremlins = {
     'g_V_hasLabelXsoftwareX_name_fold_orderXlocalX_index_unfold_order_byXtailXlocal_1XX': [(lambda g:g.V().hasLabel('software').name.fold().order(Scope.local).index().unfold().order().by(__.tail(Scope.local,1)))], 
     'g_V_hasLabelXpersonX_name_fold_orderXlocalX_index_withXmapX': [(lambda g:g.V().hasLabel('person').name.fold().order(Scope.local).index().with_('~tinkerpop.index.indexer',1))], 
     'g_VX1X_valuesXageX_index_unfold_unfold': [(lambda g, vid1=None:g.V(vid1).age.index().unfold().unfold())], 
-    'g_injectX__feature___test__nullX_lTrim': [(lambda g:g.inject('  feature',' one test',None,'',' ').lTrim())], 
-    'g_injectX__feature__X_lTrim': [(lambda g:g.inject('  feature  ').lTrim())], 
-    'g_injectXListXa_bXX_lTrim': [(lambda g, xx1=None:g.inject(xx1).lTrim())], 
-    'g_V_valuesXnameX_lTrim': [(lambda g:g.addV('person').property('name',' marko ').property('age',29).as_('marko').addV('person').property('name','  vadas  ').property('age',27).as_('vadas').addV('software').property('name','  lop').property('lang','java').as_('lop').addV('person').property('name','josh  ').property('age',32).as_('josh').addV('software').property('name','   ripple   ').property('lang','java').as_('ripple').addV('person').property('name','peter').property('age',35).as_('peter').addE('knows').from_('marko').to('vadas').property('weight',float(0.5)).addE('knows').from_('marko').to('josh').property('weight',float(1.0)).addE('created').from_('marko').to('lop').property('weight',float(0.4)).addE('created').from_('josh').to('ripple').property('weight',float(1.0)).addE('created').from_('josh').to('lop').property('weight',float(0.4)).addE('created').from_('peter').to('lop').property('weight',float(0.2))), (lambda g:g.V().name.lTrim())], 
     'g_injectXfeature_test_nullX_length': [(lambda g:g.inject('feature','test',None).length())], 
     'g_injectXListXa_bXX_length': [(lambda g, xx1=None:g.inject(xx1).length())], 
     'g_V_valuesXnameX_length': [(lambda g:g.V().name.length())], 
@@ -552,6 +565,10 @@ world.gremlins = {
     'g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX': [(lambda g, vid1=None:g.V(vid1).repeat(__.both().simplePath()).until(__.has('name','peter').or_().loops().is_(2)).has('name','peter').path().by('name'))], 
     'g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX': [(lambda g, vid1=None:g.V(vid1).repeat(__.both().simplePath()).until(__.has('name','peter').and_().loops().is_(3)).has('name','peter').path().by('name'))], 
     'g_V_emitXhasXname_markoX_or_loops_isX2XX_repeatXoutX_valuesXnameX': [(lambda g:g.V().emit(__.has('name','marko').or_().loops().is_(2)).repeat(__.out()).name)], 
+    'g_injectX__feature___test__nullX_lTrim': [(lambda g:g.inject('  feature',' one test',None,'',' ').lTrim())], 
+    'g_injectX__feature__X_lTrim': [(lambda g:g.inject('  feature  ').lTrim())], 
+    'g_injectXListXa_bXX_lTrim': [(lambda g, xx1=None:g.inject(xx1).lTrim())], 
+    'g_V_valuesXnameX_lTrim': [(lambda g:g.addV('person').property('name',' marko ').property('age',29).as_('marko').addV('person').property('name','  vadas  ').property('age',27).as_('vadas').addV('software').property('name','  lop').property('lang','java').as_('lop').addV('person').property('name','josh  ').property('age',32).as_('josh').addV('software').property('name','   ripple   ').property('lang','java').as_('ripple').addV('person').property('name','peter').property('age',35).as_('peter').addE('knows').from_('marko').to('vadas').property('weight',float(0.5)).addE('knows').from_('marko').to('josh').property('weight',float(1.0)).addE('created').from_('marko').to('lop').property('weight',float(0.4)).addE('created').from_('josh').to('ripple').property('weight',float(1.0)).addE('created').from_('josh').to('lop').property('weight',float(0.4)).addE('created').from_('peter').to('lop').property('weight',float(0.2))), (lambda g:g.V().name.lTrim())], 
     'g_VX1X_mapXnameX': [(lambda g, l1=None,vid1=None:g.V(vid1).map(l1))], 
     'g_VX1X_outE_label_mapXlengthX': [(lambda g, l1=None,vid1=None:g.V(vid1).outE().label().map(l1))], 
     'g_VX1X_out_mapXnameX_mapXlengthX': [(lambda g, l1=None,l2=None,vid1=None:g.V(vid1).out().map(l1).map(l2))], 
@@ -814,10 +831,6 @@ world.gremlins = {
     'g_V_hasXageX_propertiesXage_nameX_value': [(lambda g:g.V().has('age').properties('age','name').value())], 
     'g_V_propertiesXname_age_nullX_value': [(lambda g:g.V().properties('name','age',None).value())], 
     'g_V_valuesXname_age_nullX': [(lambda g:g.V().values('name','age',None))], 
-    'g_injectX__feature___test__nullX_rTrim': [(lambda g:g.inject('feature  ','one test ',None,'',' ').rTrim())], 
-    'g_injectX__feature__X_rTrim': [(lambda g:g.inject('  feature  ').rTrim())], 
-    'g_injectXListXa_bXX_rTrim': [(lambda g, xx1=None:g.inject(xx1).rTrim())], 
-    'g_V_valuesXnameX_rTrim': [(lambda g:g.addV('person').property('name',' marko ').property('age',29).as_('marko').addV('person').property('name','  vadas  ').property('age',27).as_('vadas').addV('software').property('name','  lop').property('lang','java').as_('lop').addV('person').property('name','josh  ').property('age',32).as_('josh').addV('software').property('name','   ripple   ').property('lang','java').as_('ripple').addV('person').property('name','peter').property('age',35).as_('peter').addE('knows').from_('marko').to('vadas').property('weight',float(0.5)).addE('knows').from_('marko').to('josh').property('weight',float(1.0)).addE('created').from_('marko').to('lop').property('weight',float(0.4)).addE('created').from_('josh').to('ripple').property('weight',float(1.0)).addE('created').from_('josh').to('lop').property('weight',float(0.4)).addE('created').from_('peter').to('lop').property('weight',float(0.2))), (lambda g:g.V().name.rTrim())], 
     'g_injectXthat_this_testX_replaceXh_jX': [(lambda g:g.inject('that','this','test',None).replace('h','j'))], 
     'g_injectXListXa_bXcX_replaceXa_bX': [(lambda g, xx1=None:g.inject(xx1).replace('a','b'))], 
     'g_V_hasLabelXsoftwareX_valueXnameX_replaceXnull_iX': [(lambda g:g.V().hasLabel('software').name.replace(None,'g'))], 
@@ -825,6 +838,10 @@ world.gremlins = {
     'g_injectXfeature_test_nullX_reverse': [(lambda g:g.inject('feature','test one',None).reverse())], 
     'g_injectXListXa_bXX_reverse': [(lambda g, xx1=None:g.inject(xx1).reverse())], 
     'g_V_valuesXnameX_reverse': [(lambda g:g.V().name.reverse())], 
+    'g_injectX__feature___test__nullX_rTrim': [(lambda g:g.inject('feature  ','one test ',None,'',' ').rTrim())], 
+    'g_injectX__feature__X_rTrim': [(lambda g:g.inject('  feature  ').rTrim())], 
+    'g_injectXListXa_bXX_rTrim': [(lambda g, xx1=None:g.inject(xx1).rTrim())], 
+    'g_V_valuesXnameX_rTrim': [(lambda g:g.addV('person').property('name',' marko ').property('age',29).as_('marko').addV('person').property('name','  vadas  ').property('age',27).as_('vadas').addV('software').property('name','  lop').property('lang','java').as_('lop').addV('person').property('name','josh  ').property('age',32).as_('josh').addV('software').property('name','   ripple   ').property('lang','java').as_('ripple').addV('person').property('name','peter').property('age',35).as_('peter').addE('knows').from_('marko').to('vadas').property('weight',float(0.5)).addE('knows').from_('marko').to('josh').property('weight',float(1.0)).addE('created').from_('marko').to('lop').property('weight',float(0.4)).addE('created').from_('josh').to('ripple').property('weight',float(1.0)).addE('created').from_('josh').to('lop').property('weight',float(0.4)).addE('created').from_('peter').to('lop').property('weight',float(0.2))), (lambda g:g.V().name.rTrim())], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a','b'))], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a','b').by('name'))], 
     'g_VX1X_asXaX_outXknowsX_asXbX_selectXaX': [(lambda g, vid1=None:g.V(vid1).as_('a').out('knows').as_('b').select('a'))], 

@@ -62,6 +62,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicate
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -69,6 +70,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateAddStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateDiffStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
@@ -220,6 +223,9 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.replace, Collections.singletonList(ReplaceStep.class));
             put(GraphTraversal.Symbols.substring, Collections.singletonList(SubstringStep.class));
             put(GraphTraversal.Symbols.split, Collections.singletonList(SplitStep.class));
+            put(GraphTraversal.Symbols.asDate, Collections.singletonList(AsDateStep.class));
+            put(GraphTraversal.Symbols.dateAdd, Collections.singletonList(DateAddStep.class));
+            put(GraphTraversal.Symbols.dateDiff, Collections.singletonList(DateDiffStep.class));
             put(GraphTraversal.Symbols.group, Arrays.asList(GroupStep.class, GroupSideEffectStep.class));
             put(GraphTraversal.Symbols.groupCount, Arrays.asList(GroupCountStep.class, GroupCountSideEffectStep.class));
             put(GraphTraversal.Symbols.tree, Arrays.asList(TreeStep.class, TreeSideEffectStep.class));

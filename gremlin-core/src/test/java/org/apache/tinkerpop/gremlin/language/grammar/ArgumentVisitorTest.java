@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -134,6 +135,10 @@ public class ArgumentVisitorTest {
                 {VertexProperty.Cardinality.class, "Cardinality.list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
                 {VertexProperty.Cardinality.class, "list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
                 {VertexProperty.Cardinality.class, "x", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", VertexProperty.Cardinality.list)))},
+                {DT.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
+                {DT.class, "DT.hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {DT.class, "hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {DT.class, "x", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", DT.hour)))},
                 {Merge.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
                 {Merge.class, "Merge.onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
                 {Merge.class, "onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
@@ -225,6 +230,11 @@ public class ArgumentVisitorTest {
             assertParsing(() -> {
                 final GremlinParser.TraversalCardinalityArgumentContext ctx = parser.traversalCardinalityArgument();
                 return antlrToLanguage.argumentVisitor.parseCardinality(ctx);
+            });
+        } else if (clazz.equals(DT.class)) {
+            assertParsing(() -> {
+                final GremlinParser.TraversalDTArgumentContext ctx = parser.traversalDTArgument();
+                return antlrToLanguage.argumentVisitor.parseDT(ctx);
             });
         } else if (clazz.equals(Merge.class)) {
             assertParsing(() -> {

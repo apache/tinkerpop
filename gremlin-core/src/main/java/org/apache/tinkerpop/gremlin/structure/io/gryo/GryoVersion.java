@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -333,6 +334,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(Pick.class, 137));
+            add(GryoTypeReg.of(DT.class, 198));
             add(GryoTypeReg.of(Merge.class, 196));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
@@ -525,7 +527,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1.TextPSerializer()));
-            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));             // ***LAST ID***
+            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -535,6 +537,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(Pick.class, 137));
+            add(GryoTypeReg.of(DT.class, 198));     // ***LAST ID***
             add(GryoTypeReg.of(Merge.class, 196));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));

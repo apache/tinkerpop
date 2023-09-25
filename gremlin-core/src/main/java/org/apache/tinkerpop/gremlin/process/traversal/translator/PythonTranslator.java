@@ -183,7 +183,11 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             if (o instanceof Byte)
                 return "SingleByte(" + o + ")";
 
-            // all int/short/BigInteger/long are just python int/bignum
+            // for large numbers need to specify the type
+            if (o.longValue() > Integer.MAX_VALUE) {
+                return "long(" + o + ")";
+            }
+            // otherwise just use python int/bignum
             return o.toString();
         }
 
@@ -431,6 +435,9 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("and", "and_");
             TO_PYTHON_MAP.put("as", "as_");
             TO_PYTHON_MAP.put("asString", "as_string");
+            TO_PYTHON_MAP.put("asDate", "as_date");
+            TO_PYTHON_MAP.put("dateAdd", "date_add");
+            TO_PYTHON_MAP.put("dateDiff", "date_diff");
             TO_PYTHON_MAP.put("filter", "filter_");
             TO_PYTHON_MAP.put("from", "from_");
             TO_PYTHON_MAP.put("id", "id_");

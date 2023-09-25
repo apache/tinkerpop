@@ -1839,6 +1839,40 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
                 antlr.argumentVisitor.parseNumber(ctx.integerArgument(1)).intValue());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) {
+        return graphTraversal.asDate();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dateAdd(final GremlinParser.TraversalMethod_dateAddContext ctx) {
+        return graphTraversal.dateAdd(antlr.argumentVisitor.parseDT(ctx.traversalDTArgument()),
+                antlr.argumentVisitor.parseNumber(ctx.integerArgument()).intValue());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dateDiff_Traversal(final GremlinParser.TraversalMethod_dateDiff_TraversalContext ctx) {
+        return graphTraversal.dateDiff(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dateDiff_Date(final GremlinParser.TraversalMethod_dateDiff_DateContext ctx) {
+        return graphTraversal.dateDiff(antlr.argumentVisitor.parseDate(ctx.dateArgument()));
+    }
+
+
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {
         return ctx.nestedTraversalExpr().nestedTraversal()
                 .stream()

@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Process.Traversal
@@ -211,6 +212,15 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("asString");
             return Wrap<TStart, string>(this);
+        }
+
+        /// <summary>
+        ///     Adds the asDate step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, DateTimeOffset> AsDate()
+        {
+            Bytecode.AddStep("asDate");
+            return Wrap<TStart, DateTimeOffset>(this);
         }
 
         /// <summary>
@@ -575,6 +585,33 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("cyclicPath");
             return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateAdd step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, DateTimeOffset> DateAdd(DT dateToken, int value)
+        {
+            Bytecode.AddStep("dateAdd", dateToken, value);
+            return Wrap<TStart, DateTimeOffset>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, long> DateDiff(DateTimeOffset value)
+        {
+            Bytecode.AddStep("dateDiff", value);
+            return Wrap<TStart, long>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dateDiff step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, long> DateDiff(ITraversal dateTraversal)
+        {
+            Bytecode.AddStep("dateDiff", dateTraversal);
+            return Wrap<TStart, long>(this);
         }
 
         /// <summary>
