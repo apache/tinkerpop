@@ -1286,13 +1286,6 @@ const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.column
 const direction = gremlin.process.direction
-const Direction = {
-  BOTH: direction.both,
-  IN: direction.in,
-  OUT: direction.out,
-  from_: direction.in,
-  to: direction.out,
-}
 const p = gremlin.process.P
 const textp = gremlin.process.TextP
 const pick = gremlin.process.pick
