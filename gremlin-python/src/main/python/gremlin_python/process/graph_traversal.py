@@ -309,12 +309,24 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("aggregate", *args)
         return self
 
+    def all_(self, *args):
+        self.bytecode.add_step("all", *args)
+        return self
+
     def and_(self, *args):
         self.bytecode.add_step("and", *args)
         return self
 
+    def any_(self, *args):
+        self.bytecode.add_step("any", *args)
+        return self
+
     def as_(self, *args):
         self.bytecode.add_step("as", *args)
+        return self
+
+    def as_date(self, *args):
+        self.bytecode.add_step("asDate", *args)
         return self
 
     def as_string(self, *args):
@@ -411,6 +423,14 @@ class GraphTraversal(Traversal):
 
     def cyclic_path(self, *args):
         self.bytecode.add_step("cyclicPath", *args)
+        return self
+
+    def date_add(self, *args):
+        self.bytecode.add_step("dateAdd", *args)
+        return self
+
+    def date_diff(self, *args):
+        self.bytecode.add_step("dateDiff", *args)
         return self
 
     def dedup(self, *args):
@@ -1020,12 +1040,24 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).aggregate(*args)
 
     @classmethod
+    def all_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).all_(*args)
+
+    @classmethod
     def and_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).and_(*args)
 
     @classmethod
+    def any_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).any_(*args)
+
+    @classmethod
     def as_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).as_(*args)
+
+    @classmethod
+    def as_date(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
 
     @classmethod
     def as_string(cls, *args):
@@ -1110,6 +1142,14 @@ class __(object, metaclass=MagicType):
     @classmethod
     def cyclic_path(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).cyclic_path(*args)
+
+    @classmethod
+    def date_add(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).date_add(*args)
+
+    @classmethod
+    def date_diff(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).date_diff(*args)
 
     @classmethod
     def dedup(cls, *args):
@@ -1727,6 +1767,10 @@ def as_(*args):
     return __.as_(*args)
 
 
+def as_date(*args):
+    return __.as_date(*args)
+
+
 def as_string(*args):
     return __.as_string(*args)
 
@@ -1797,6 +1841,14 @@ def cyclicPath(*args):
 
 def cyclic_path(*args):
     return __.cyclic_path(*args)
+
+
+def date_add(*args):
+    return __.date_add(*args)
+
+
+def date_diff(*args):
+    return __.date_diff(*args)
 
 
 def dedup(*args):
@@ -2239,6 +2291,8 @@ statics.add_static('and_', and_)
 
 statics.add_static('as_', as_)
 
+statics.add_static('as_date', as_date)
+
 statics.add_static('as_string', as_string)
 
 statics.add_static('barrier', barrier)
@@ -2274,6 +2328,10 @@ statics.add_static('count', count)
 statics.add_static('cyclicPath', cyclicPath)
 
 statics.add_static('cyclicpath', cyclic_path)
+
+statics.add_static('date_add', date_add)
+
+statics.add_static('date_diff', date_diff)
 
 statics.add_static('dedup', dedup)
 

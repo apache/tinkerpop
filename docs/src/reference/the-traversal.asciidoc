@@ -657,6 +657,30 @@ g.E().aggregate(local,'x').by('weight').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-java.lang.String-++[`aggregate(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate-org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String-++[`aggregate(Scope,String)`]
 
+[[all-step]]
+=== All Step
+
+It is possible to filter list traversers using `all()`-step (*filter*). Every item in the list will be tested against
+the supplied predicate and if all of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
+
+[NOTE, caption=Python]
+====
+The term `all` is a reserved word in Python, and therefore must be referred to in Gremlin with `all_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().all(gt(25)) <1>
+----
+
+<1> Return the list of ages only if everyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#all-org.apache.tinkerpop.gremlin.process.traversal.P-++[`all(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
+
 [[and-step]]
 === And Step
 
@@ -688,6 +712,30 @@ g.V().where(outE('created').and().outE('knows')).values('name')
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#and-org.apache.tinkerpop.gremlin.process.traversal.Traversal...-++[`and(Traversal...)`]
+
+[[any-step]]
+=== Any Step
+
+It is possible to filter list traversers using `any()`-step (*filter*). All items in the list will be tested against
+the supplied predicate and if any of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists, null traversers, and non-iterable traversers are filtered out as well.
+
+[NOTE, caption=Python]
+====
+The term `any` is a reserved word in Python, and therefore must be referred to in Gremlin with `any_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().any(gt(25)) <1>
+----
+
+<1> Return the list of ages if anyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#any-org.apache.tinkerpop.gremlin.process.traversal.P-++[`any(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
 [[as-step]]
 === As Step
@@ -748,6 +796,31 @@ g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString--++[`asString()`]
+
+[[asDate-step]]
+=== AsDate Step
+
+The `asDate()`-step (*map*) converts string or numeric input to Date. 
+For string input only ISO-8601 format is supported.
+For numbers, the value is considered as the number of the milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT).
+Date input passed without changes.
+If the incoming traverser is not a string, number or Date then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject(1690934400000).asDate() <1>
+g.inject("2023-08-02T00:00:00Z").asDate() <2>
+g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
+----
+
+<1> Convert number to Date
+<2> Convert ISO-8601 string to Date
+<3> Pass Date without modification
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate--
+++[`asDate()`]
 
 [[barrier-step]]
 === Barrier Step
@@ -1221,6 +1294,44 @@ g.V(1).as('a').out('created').as('b').
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#cyclicPath--++[`cyclicPath()`]
+
+[[dateAdd-step]]
+=== DateAdd Step
+
+The `dateAdd()`-step (*map*) returns the value with the addition of the value number of units as specified by the DateToken. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7) <1>
+g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dateAdd(DT.minute, 1) <2>
+----
+
+<1> Add 7 days to Date
+<2> Add 1 minute to incoming dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd--
+++[`dateAdd()`]
+
+[[dateDiff-step]]
+=== DateDiff Step
+
+The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(inject("2023-08-03T00:00:00Z").asDate()) <1>
+----
+
+<1> Find difference between two dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff--
+++[`dateDiff()`]
 
 [[dedup-step]]
 === Dedup Step

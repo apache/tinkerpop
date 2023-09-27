@@ -524,6 +524,97 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[all-step]]
+=== all()
+
+*Description:* Filters array data from the Traversal Stream if all of the array's items match the supplied predicate.
+
+*Syntax:* `all(Predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `Predicate` - The predicate to use to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
+will be filtered out of the Traversal Stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to false.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
+
+[[any-step]]
+=== any()
+
+*Description:* Filters array data from the Traversal Stream if any of the array's items match the supplied predicate.
+
+*Syntax:* `any(Predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `Predicate` - The predicate to use to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists, null traversers, and non-list traversers will be
+filtered out of the Traversal Stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
+
+[[asDate-step]]
+=== asDate()
+
+*Description:* Parse the value of incoming traverser as date. Supported ISO-8601 strings and Unix time numbers.
+
+*Syntax:* `asDate()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+None
+
+Incoming date remains unchanged.
+
+*Exceptions*
+* If the incoming traverser is a non-String/Number/Date value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
+
 [[asString-step]]
 === asString()
 
@@ -663,6 +754,59 @@ concatenated, the `null` value will be propagated and returned.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConcatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
+
+[[dateAdd-step]]
+=== dateAdd()
+
+*Description:* Increase value of input Date.
+
+*Syntax:* `dateAdd(DT, Integer)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Date` |`Date`
+|=========================================================
+
+*Arguments:*
+
+* `DT` - Date token enum. Supported values `second`, `minute`, `hour`, `day`.
+* `Integer` - The number of units, specified by the DT Token, to add to the incoming values. May be negative for subtraction.
+
+*Exceptions*
+
+* If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
+
+[[dateDiff-step]]
+=== dateDiff()
+
+*Description:* Returns the difference between two Dates in epoch time.
+
+*Syntax:* `dateDiff(Date)` | `dateDiff(Traversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Date` |`Date`
+|=========================================================
+
+*Arguments:*
+
+* `Date` - Date for subtraction.
+* `Traversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
+subtracted with the incoming traverser.
+
+If argument resolves as `null` then incoming date will not be changed.
+
+*Exceptions*
+
+* If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateDiffStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 
 [[dedup-step]]
 === dedup()

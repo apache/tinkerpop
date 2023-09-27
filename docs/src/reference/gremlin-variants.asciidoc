@@ -1300,12 +1300,13 @@ const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const column = gremlin.process.column
 const direction = gremlin.process.direction
-Direction: {
-  BOTH: traversalModule.direction.both,
-  IN: traversalModule.direction.in,
-  OUT: traversalModule.direction.out,
-  from_: traversalModule.direction.in,
-  to: traversalModule.direction.out,
+
+const Direction = {
+  BOTH: direction.both,
+  IN: direction.in,
+  OUT: direction.out,
+  from_: direction.in,
+  to: direction.out,
 }
 const p = gremlin.process.P
 const textp = gremlin.process.TextP
@@ -2468,7 +2469,7 @@ that makes traversals a bit more concise.
 In situations where Python reserved words and global functions overlap with standard Gremlin steps and tokens, those
 bits of conflicting Gremlin get an underscore appended as a suffix:
 
-*Steps* - <<and-step,and_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>,
+*Steps* - <<all-step,all_()>>, <<and-step,and_()>>, <<any-step,any_()>>, <<as-step,as_()>>, <<filter-step,filter_()>>, <<from-step,from_()>>,
 <<has-step,has_key_>>, <<id-step,id_()>>, <<is-step,is_()>>, <<in-step,in_()>>, <<max-step,max_()>>,
 <<min-step,min_()>>, <<not-step,not_()>>, <<or-step,or_()>>, <<range-step,range_()>>, <<sum-step,sum_()>>,
 <<with-step,with_()>>

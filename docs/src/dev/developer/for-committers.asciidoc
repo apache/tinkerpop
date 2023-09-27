@@ -399,6 +399,7 @@ appropriate types expected by the tests.
 The syntax of the type notation involves a prefix character to help denote the type, a value between two square
 brackets, optionally suffixed with some additional notation depending on the primary type.
 
+* Date - *dt[_xxx_]* - The "xxx" should be ISO 8601 string.
 * Edge - *e[_xxx_]* - The "xxx" should be replaced with a representation of an edge in the form of the
 `vertex_name-edgelabel->vertex_name`. This syntax may also include the `.id` suffix which would indicate getting the
 edge identifier or the `.sid` suffix which gets a string representation of the edge identifier.

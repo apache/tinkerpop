@@ -82,15 +82,33 @@ func (g *GraphTraversal) Aggregate(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// All adds the all step to the GraphTraversal.
+func (g *GraphTraversal) All(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("all", args...)
+	return g
+}
+
 // And adds the and step to the GraphTraversal.
 func (g *GraphTraversal) And(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("and", args...)
 	return g
 }
 
+// Any adds the any step to the GraphTraversal.
+func (g *GraphTraversal) Any(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("any", args...)
+	return g
+}
+
 // As adds the as step to the GraphTraversal.
 func (g *GraphTraversal) As(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("as", args...)
+	return g
+}
+
+// AsDate adds the asDate step to the GraphTraversal.
+func (g *GraphTraversal) AsDate(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("asDate", args...)
 	return g
 }
 
@@ -195,6 +213,18 @@ func (g *GraphTraversal) Count(args ...interface{}) *GraphTraversal {
 // CyclicPath adds the cyclicPath step to the GraphTraversal.
 func (g *GraphTraversal) CyclicPath(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("cyclicPath", args...)
+	return g
+}
+
+// DateAdd adds the dateAdd step to the GraphTraversal.
+func (g *GraphTraversal) DateAdd(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("dateAdd", int32Args(args)...)
+	return g
+}
+
+// DateDiff adds the dateDiff step to the GraphTraversal.
+func (g *GraphTraversal) DateDiff(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("dateDiff", args...)
 	return g
 }
 

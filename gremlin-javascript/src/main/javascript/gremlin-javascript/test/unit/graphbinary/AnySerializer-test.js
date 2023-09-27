@@ -167,6 +167,9 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new t.EnumValue('Direction', 'OUT'),
         b: [ DataType.DIRECTION,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('OUT') ]
       },
+      { v: new t.EnumValue('DT', 'minute'),
+        b: [ DataType.DT,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('minute') ]
+      },
       { v: new t.EnumValue('Merge', 'onMatch'),
         b: [ DataType.MERGE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x07, ...from('onMatch') ]
       },
@@ -493,6 +496,10 @@ describe('GraphBinary.AnySerializer', () => {
       // DIRECTION
       { v:null,                                   b:[0x18,0x01] },
       { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
+
+      // DT
+      { v:null,                                   b:[0x2f,0x01] },
+      { v:new t.EnumValue('DT','minute'),         b:[0x2f,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('minute')] },
 
       // MERGE
       { v:null,                                   b:[0x2e,0x01] },

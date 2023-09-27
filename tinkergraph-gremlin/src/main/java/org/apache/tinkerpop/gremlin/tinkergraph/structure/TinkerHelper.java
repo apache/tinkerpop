@@ -188,6 +188,20 @@ public final class TinkerHelper {
                 : vertices.stream().map(v -> (TinkerVertex) v).iterator();
     }
 
+    /**
+     * Allows direct access to a TinkerGraph's storage which can be helpful for advanced use cases.
+     */
+    public static Map<Object, Vertex> getVertices(final TinkerGraph graph) {
+        return graph.vertices;
+    }
+
+    /**
+     * Allows direct access to a TinkerGraph's storage which can be helpful for advanced use cases.
+     */
+    public static Map<Object, Edge> getEdges(final TinkerGraph graph) {
+        return graph.edges;
+    }
+
     // todo: move to SearchHelper?
     /**
      * Search for {@link Property}s attached to {@link Element}s of the supplied element type using the supplied

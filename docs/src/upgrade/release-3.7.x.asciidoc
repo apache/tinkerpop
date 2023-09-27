@@ -141,6 +141,25 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
+==== Date manipulation functions
+
+Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
+different providers. In 3.7.1, we introduce the `asDate()`, `dateAdd` and `dateDiff` steps aimed to replace the usage of closure.
+
+The following example demonstrates usage of newly introduced steps:
+
+[source,text]
+----
+gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7).dateDiff(datetime("2023-08-02T00:00:00Z"))
+==>604800
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[asDate()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[dateAdd()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[dateDiff()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2979[TINKERPOP-2979]
+
+
 ===== String Steps replace(), split(), substring()
 
 The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
@@ -212,6 +231,23 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[replac
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-step]
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+
+==== List Traverser based Steps
+Additional List manipulation/filter steps have been added to replace the use of closures: `any()` and `all()`.
+
+The following example demonstrates usage of the newly introduced steps:
+
+[source,text]
+----
+gremlin> g.V().values("age").fold().all(P.gt(10))
+==>[29,27,32,35]
+gremlin> g.V().values("age").fold().any(P.eq(32))
+==>[29,27,32,35]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2978[TINKERPOP-2978],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[all()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[any()-step]
 
 === Upgrading for Providers
 

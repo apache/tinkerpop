@@ -415,6 +415,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal all method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  all(...args) {
+    this.bytecode.addStep('all', args);
+    return this;
+  }
+
+  /**
    * Graph traversal and method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -425,12 +435,32 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal any method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  any(...args) {
+    this.bytecode.addStep('any', args);
+    return this;
+  }
+
+  /**
    * Graph traversal as method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   as(...args) {
     this.bytecode.addStep('as', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal asDate method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asDate(...args) {
+    this.bytecode.addStep('asDate', args);
     return this;
   }
 
@@ -600,6 +630,26 @@ class GraphTraversal extends Traversal {
    */
   cyclicPath(...args) {
     this.bytecode.addStep('cyclicPath', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dateAdd method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateAdd(...args) {
+    this.bytecode.addStep('dateAdd', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dateDiff method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateDiff(...args) {
+    this.bytecode.addStep('dateDiff', args);
     return this;
   }
 
@@ -1627,8 +1677,11 @@ const statics = {
   addE: (...args) => callOnEmptyTraversal('addE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
+  all: (...args) => callOnEmptyTraversal('all', args),
   and: (...args) => callOnEmptyTraversal('and', args),
+  any: (...args) => callOnEmptyTraversal('any', args),
   as: (...args) => callOnEmptyTraversal('as', args),
+  asDate: (...args) => callOnEmptyTraversal('asDate', args),
   asString: (...args) => callOnEmptyTraversal('asString', args),
   barrier: (...args) => callOnEmptyTraversal('barrier', args),
   both: (...args) => callOnEmptyTraversal('both', args),
@@ -1644,6 +1697,8 @@ const statics = {
   constant: (...args) => callOnEmptyTraversal('constant', args),
   count: (...args) => callOnEmptyTraversal('count', args),
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
+  dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
+  dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
   element: (...args) => callOnEmptyTraversal('element', args),
