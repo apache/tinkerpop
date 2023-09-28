@@ -31,6 +31,10 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
+* Fixed bug in `DotNetTranslator` where `PartitionStrategy` usage was not translating properly when specifying the `readPartitions`.
+* Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
+* Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
+* Fixed bug where the `partitionKey` was not being written when using `PartitionStrategy` with `mergeV()` and `mergeE()`
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)

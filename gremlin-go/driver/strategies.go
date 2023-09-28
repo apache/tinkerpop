@@ -86,7 +86,7 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 	if config.WritePartition != "" {
 		configMap["writePartition"] = config.WritePartition
 	}
-	if len(config.ReadPartitions) != 0 {
+	if len(config.ReadPartitions.ToSlice()) != 0 {
 		configMap["readPartitions"] = config.ReadPartitions
 	}
 	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: configMap}
@@ -97,7 +97,7 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 type PartitionStrategyConfig struct {
 	PartitionKey          string
 	WritePartition        string
-	ReadPartitions        []string
+	ReadPartitions        Set
 	IncludeMetaProperties bool
 }
 
