@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -204,8 +205,14 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Set<?> o) {
+            return produceScriptForHashSet(o, "object");
+        }
+
+        private Script produceScriptForHashSet(final Set<?> o, final String generic) {
             final Iterator<?> iterator = o.iterator();
-            script.append("new HashSet<object> {");
+            script.append("new HashSet<");
+            script.append(generic);
+            script.append("> {");
 
             while (iterator.hasNext()) {
                 final Object nextItem = iterator.next();
@@ -302,7 +309,13 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     final String k = keys.next();
                     script.append(k);
                     script.append(": ");
-                    convertToScript(o.getConfiguration().getProperty(k));
+
+                    // special handle PartitionStrategy since the Set it uses must be of String for readPartitions
+                    if (k.equals("readPartitions") && o.getStrategyClass().equals(PartitionStrategy.class))
+                        produceScriptForHashSet((Set) o.getConfiguration().getProperty(k), "string");
+                    else
+                        convertToScript(o.getConfiguration().getProperty(k));
+
                     if (keys.hasNext())
                         script.append(", ");
                 }

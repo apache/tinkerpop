@@ -214,13 +214,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final Set<?> o) {
             final Iterator<?> iterator = o.iterator();
-            script.append("set(");
+            script.append("set((");
             while(iterator.hasNext()) {
                 convertToScript(iterator.next());
                 if (iterator.hasNext())
                     script.append(",");
             }
-            return script.append(")");
+            return script.append("))");
         }
 
         @Override
