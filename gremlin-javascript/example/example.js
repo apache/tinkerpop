@@ -76,7 +76,7 @@ async function basicGremlinExample() {
     // Basic Gremlin: adding and retrieving data
     const v1 = await g.addV('person').property('name','marko').next();
     const v2 = await g.addV('person').property('name','stephen').next();
-    const v3 = await g.addV('person').property('name','fwefwefwe').next();
+    const v3 = await g.addV('person').property('name','vadas').next();
 
 
     // Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
