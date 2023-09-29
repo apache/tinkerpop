@@ -580,9 +580,11 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
 * `@With*` - The scenario uses some `with()` based configuration like strategies:
+** `@WithPartitionStrategy`
 ** `@WithProductiveByStrategy`
 ** `@WithReadOnlyStrategy`
 ** `@WithSeedStrategy`
+** `@WithSubgraphStrategy`
 
 Tag filters can be applied to Intellij at execution time by adding a system properties of
 `-Dcucumber.filter.tags=<step-filter>`.

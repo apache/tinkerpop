@@ -602,7 +602,7 @@ func Test_translator_Translate(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.WithStrategies(PartitionStrategy(PartitionStrategyConfig{PartitionKey: "partition", WritePartition: "a", ReadPartitions: []string{"a"}})).AddV("test")
+				return g.WithStrategies(PartitionStrategy(PartitionStrategyConfig{PartitionKey: "partition", WritePartition: "a", ReadPartitions: NewSimpleSet("a")})).AddV("test")
 			},
 			containsRandomClassParams: true,
 			equals:                    "g.withStrategies(new PartitionStrategy(includeMetaProperties:false,partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')",

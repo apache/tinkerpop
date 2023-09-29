@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
@@ -90,6 +92,8 @@ public class MergeVertexStepTest {
     public void shouldWorkWithImmutableMap() {
         final Traversal.Admin traversal = mock(Traversal.Admin.class);
         when(traversal.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
+        when(traversal.getParent()).thenReturn(EmptyStep.instance());
+        when(traversal.getStrategies()).thenReturn(new DefaultTraversalStrategies());
         final Traverser.Admin traverser = mock(Traverser.Admin.class);
         when(traverser.split()).thenReturn(mock(Traverser.Admin.class));
         final Traversal.Admin onCreateTraversal = mock(Traversal.Admin.class);
