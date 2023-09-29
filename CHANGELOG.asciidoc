@@ -31,6 +31,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
+* ProjectStep now throws exception when a duplicate key is provided in a query.
 * Fixed bug in `DotNetTranslator` where `PartitionStrategy` usage was not translating properly when specifying the `readPartitions`.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
