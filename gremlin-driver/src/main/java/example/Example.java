@@ -107,8 +107,8 @@ public class Example {
         g.V(v1).addE("knows").to(v3).property("weight",0.75).iterate();
 
         // Retrieve the data from the "marko" vertex
-        Map<Object,Object> marko = g.V().has("person","name","marko").valueMap().next();
-        System.out.println("name: " +((ArrayList) marko.get("name")).get(0));
+        Map<Object,Object> marko = g.V().has("person","name","marko").values("name").next();
+        System.out.println("name: " + ((ArrayList) marko.get("name")).get(0));
 
         // Find the "marko" vertex and then traverse to the people he "knows" and return their data
         List<Map<Object,Object>> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").valueMap().toList();

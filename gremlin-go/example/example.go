@@ -35,7 +35,7 @@ var P = gremlingo.P
 func main() {
 	//connectionExample()
 	basicGremlinExample()
-	modernTraversalExample()
+	//modernTraversalExample()
 }
 
 func connectionExample() {
@@ -76,8 +76,8 @@ func basicGremlinExample() {
 
 	// Basic Gremlin: adding and retrieving data
 	v1, err := g.AddV("person").Property("name", "marko").Next()
-	v2, err := g.AddV("person").Property("name", "fwroigheorigq").Next()
-	v3, err := g.AddV("person").Property("name", "wqrgrgegqregre").Next()
+	v2, err := g.AddV("person").Property("name", "go1").Next()
+	v3, err := g.AddV("person").Property("name", "go2").Next()
 
 	// Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
 	// Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
@@ -85,14 +85,21 @@ func basicGremlinExample() {
 	g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate()
 
 	// Retrieve the data from the "marko" vertex
-	marko, err := g.V().Has("person", "name", "marko").Next()
-	fmt.Sprintln("name: ", marko)
-
-	// Find the "marko" vertex and then traverse to the people he "knows" and return their data
-	peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
-	for _, person := range peopleMarkoKnows {
-		fmt.Sprintln("marko knows ", person)
-	}
+	marko, err := g.V().Has("person", "name", "marko").Values("name").Next()
+	//marko, err := g.V().HasLabel("person").Has("name", "marko").Values("name").Next()
+	//fmt.Println("test")
+	fmt.Sprintln(marko)
+	vert, err := g.V().Count().ToList()
+	fmt.Println(vert)
+	//// Find the "marko" vertex and then traverse to the people he "knows" and return their data
+	//peopleMarkoKnows, err := g.V().HasLabel("person").Has("name", __.Is("marko")).Out("knows").ToList()
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//for _, person := range peopleMarkoKnows {
+	//	fmt.Println("marko knows ", person.GetString())
+	//}
 
 }
 
