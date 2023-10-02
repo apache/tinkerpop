@@ -85,11 +85,11 @@ async function basicGremlinExample() {
     await g.V(v1.value).addE('knows').to(v3.value).property('weight',0.75).iterate();
 
     // Retrieve the data from the "marko" vertex
-    const marko = await g.V().has('person','name','marko').valueMap().next();
-    console.log(marko.value.get('name')[0]);
+    const marko = await g.V().has('person','name','marko').values('name').toList();
+    console.log("name: " + marko[0]);
 
     // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').values().toList();
+    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').values('name').toList();
     peopleMarkoKnows.forEach((person) => {
         console.log("marko knows " + person);
     });

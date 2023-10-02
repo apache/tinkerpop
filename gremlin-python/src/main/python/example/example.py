@@ -116,7 +116,7 @@ def basic_gremlin_example():
     people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').toList()
     for person in people_marko_knows:
         print("marko knows " + person)
-    # DriverRemoteConnection('ws://localhost:8182/gremlin', 'g').close()
+
 
 def modern_traversal_example():
     # This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
