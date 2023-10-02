@@ -24,15 +24,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
-	"github.com/cucumber/godog"
 	"math"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+	"github.com/cucumber/godog"
 )
 
 type tinkerPopGraph struct {
@@ -652,6 +654,22 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 					break
 				}
 			}
+		} else if reflect.TypeOf(a).String() == "*gremlingo.SimpleSet" {
+			// Set is a special case here because there is no TypeOf().Kind() for sets.
+			actualStringArray := makeSortedStringArrayFromSet(a)
+
+			for i := len(expectedCopy) - 1; i >= 0; i-- {
+				curExpected := expectedCopy[i]
+				if curExpected != nil && reflect.TypeOf(curExpected).String() == "*gremlingo.SimpleSet" {
+					expectedStringArray := makeSortedStringArrayFromSet(curExpected)
+
+					if reflect.DeepEqual(actualStringArray, expectedStringArray) {
+						expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
+						found = true
+						break
+					}
+				}
+			}
 		} else {
 			switch reflect.TypeOf(a).Kind() {
 			case reflect.Array, reflect.Slice:
@@ -759,6 +777,16 @@ func compareListEqualsWithOf(expected []interface{}, actual []interface{}) bool 
 		}
 	}
 	return true
+}
+
+func makeSortedStringArrayFromSet(set interface{}) []string {
+	var sortedStrings []string
+	for _, element := range set.(*gremlingo.SimpleSet).ToSlice() {
+		sortedStrings = append(sortedStrings, fmt.Sprintf("%v", element))
+	}
+	sort.Sort(sort.StringSlice(sortedStrings))
+
+	return sortedStrings
 }
 
 func (tg *tinkerPopGraph) theTraversalOf(arg1 *godog.DocString) error {
