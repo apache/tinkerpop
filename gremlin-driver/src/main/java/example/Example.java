@@ -18,6 +18,8 @@ under the License.
 */
 
 // Common imports as listed at reference/#gremlin-java-imports
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
@@ -38,8 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -107,13 +107,13 @@ public class Example {
         g.V(v1).addE("knows").to(v3).property("weight",0.75).iterate();
 
         // Retrieve the data from the "marko" vertex
-        Map<Object,Object> marko = g.V().has("person","name","marko").values("name").next();
-        System.out.println("name: " + ((ArrayList) marko.get("name")).get(0));
+        Object marko = g.V().has("person","name","marko").values("name").next();
+        System.out.println("name: " + marko);
 
         // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-        List<Map<Object,Object>> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").valueMap().toList();
-        for (Map<Object, Object> map : peopleMarkoKnows) {
-            System.out.println("marko knows " + ((ArrayList) map.get("name")).get(0));
+        List<Object> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").values("name").toList();
+        for (Object person : peopleMarkoKnows) {
+            System.out.println("marko knows " + person);
         }
     }
 

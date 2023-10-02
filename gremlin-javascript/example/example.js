@@ -89,9 +89,9 @@ async function basicGremlinExample() {
     console.log(marko.value.get('name')[0]);
 
     // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').valueMap().toList();
-    peopleMarkoKnows.forEach((kvp) => {
-        console.log("marko knows " + kvp.get('name'));
+    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').values().toList();
+    peopleMarkoKnows.forEach((person) => {
+        console.log("marko knows " + person);
     });
 
     await dc.close();

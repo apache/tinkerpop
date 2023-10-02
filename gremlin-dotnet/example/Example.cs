@@ -59,23 +59,14 @@ static void BasicGremlinExample()
     g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate();
 
     // Retrieve the data from the "marko" vertex
-    var marko = g.V().Has("person","name","marko").ValueMap<object,object>().Next();
-    foreach (var kvp in marko)
-    {
-        if (kvp.Value is IEnumerable<object> enumerable)
-        {
-            Console.WriteLine($"{kvp.Key}: {enumerable.First()}");
-        }
-    }
+    var marko = g.V().Has("person","name","marko").Values<string>("name").Next();
+    Console.WriteLine("name: " + marko);
 
     // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    var peopleMarkoKnows = g.V().Has("person","name","marko").Out("knows").ValueMap<object,object>().ToList();
+    var peopleMarkoKnows = g.V().Has("person","name","marko").Out("knows").Values<string>("name").ToList();
     foreach (var person in peopleMarkoKnows)
     {
-        if (person["name"] is IEnumerable<object> enumerable)
-        {
-            Console.WriteLine($"marko knows {enumerable.First()}");
-        }
+        Console.WriteLine("marko knows " + person);
     }
 }
 

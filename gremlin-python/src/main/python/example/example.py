@@ -31,7 +31,6 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 from gremlin_python.process.traversal import T
 from gremlin_python.process.traversal import Order
 from gremlin_python.process.traversal import Cardinality
-from gremlin_python.process.traversal import CardinalityValue
 from gremlin_python.process.traversal import Column
 from gremlin_python.process.traversal import Direction
 from gremlin_python.process.traversal import Operator
@@ -110,13 +109,13 @@ def basic_gremlin_example():
     g.V(v1).addE('knows').to(v3).property('weight', 0.75).iterate()
 
     # retrieve the data from the "marko" vertex
-    marko = g.V().has('person', 'name', 'marko').value_map().next()
-    print("name: " + marko.get('name')[0])
+    marko = g.V().has('person', 'name', 'marko').values('name').next()
+    print("name: " + marko)
 
     # find the "marko" vertex and then traverse to the people he "knows" and return their data
-    people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').value_map().toList()
+    people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').toList()
     for person in people_marko_knows:
-        print("marko knows " + person.get('name')[0])
+        print("marko knows " + person)
     # DriverRemoteConnection('ws://localhost:8182/gremlin', 'g').close()
 
 def modern_traversal_example():
