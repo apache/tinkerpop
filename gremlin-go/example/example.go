@@ -73,26 +73,25 @@ func basicGremlinExample() {
 	defer driverRemoteConnection.Close()
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
-	prom := g.V().Drop().Iterate()
-	<-prom
-
 	// Basic Gremlin: adding and retrieving data
 	v1, err := g.AddV("person").Property("name", "marko").Next()
 	v2, err := g.AddV("person").Property("name", "stephen").Next()
 	v3, err := g.AddV("person").Property("name", "vadas").Next()
+	v1Vertex, err := v1.GetVertex()
+	v2Vertex, err := v2.GetVertex()
+	v3Vertex, err := v3.GetVertex()
 
 	// Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
 	// Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-	g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
-	g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate()
+	g.V(v1Vertex).AddE("knows").To(v2Vertex).Property("weight", 0.75).Iterate()
+	g.V(v1Vertex).AddE("knows").To(v3Vertex).Property("weight", 0.75).Iterate()
 
 	// Retrieve the data from the "marko" vertex
 	marko, err := g.V().Has("person", "name", "marko").Values("name").Next()
 	fmt.Println("name:", marko.GetString())
 
 	// Find the "marko" vertex and then traverse to the people he "knows" and return their data
-	peopleMarkoKnows, err := g.V().HasLabel("person").Out("knows").ToList()
-	//peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").Values("name").ToList()
+	peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").Values("name").ToList()
 	for _, person := range peopleMarkoKnows {
 		fmt.Println("marko knows", person.GetString())
 	}
@@ -113,12 +112,17 @@ func modernTraversalExample() {
 	  For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
 	  conf/gremlin-server-modern.yaml.
 	*/
-	e1, err := g.V(1).BothE().ToList()                             // (1)
-	e2, err := g.V(1).BothE().Where(__.OtherV().HasId(2)).ToList() // (2)
+	//e1, err := g.V().Next() // (1)
+	//fmt.Println(e1)
+
+	e1, err := g.V(1).BothE().ToList()                            // (1)
+	e2, err := g.V().BothE().Where(__.OtherV().HasId(2)).ToList() // (2)
 	v1, err := g.V(1).Next()
 	v2, err := g.V(2).Next()
-	e3, err := g.V(v1).BothE().Where(__.OtherV().Is(v2)).ToList()               // (3)
-	e4, err := g.V(v1).OutE().Where(__.InV().Is(v2)).ToList()                   // (4)
+	v1Vertex, err := v1.GetVertex()
+	v2Vertex, err := v2.GetVertex()
+	e3, err := g.V(v1Vertex).BothE().Where(__.OtherV().Is(v2Vertex)).ToList()   // (3)
+	e4, err := g.V(v1Vertex).OutE().Where(__.InV().Is(v2Vertex)).ToList()       // (4)
 	e5, err := g.V(1).OutE().Where(__.InV().Has(T.Id, P.Within(2, 3))).ToList() // (5)
 	e6, err := g.V(1).Out().Where(__.In().HasId(6)).ToList()                    // (6)
 
