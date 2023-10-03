@@ -53,10 +53,6 @@ from gremlin_python.statics import SingleByte  # Java byte type
 from gremlin_python.statics import SingleChar  # Java char type
 from gremlin_python.statics import GremlinType  # Java Class
 
-import json
-
-to_string = json.dumps
-
 
 def main():
     connection_example()
@@ -99,14 +95,14 @@ def basic_gremlin_example():
     g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
 
     # basic Gremlin: adding and retrieving data
-    v1 = g.addV('person').property('name', 'marko').next()
-    v2 = g.addV('person').property('name', 'stephen').next()
-    v3 = g.addV('person').property('name', 'vadas').next()
+    v1 = g.add_v('person').property('name', 'marko').next()
+    v2 = g.add_v('person').property('name', 'stephen').next()
+    v3 = g.add_v('person').property('name', 'vadas').next()
 
     # be sure to use a terminating step like next() or iterate() so that the traversal "executes"
     # iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-    g.V(v1).addE('knows').to(v2).property('weight', 0.75).iterate()
-    g.V(v1).addE('knows').to(v3).property('weight', 0.75).iterate()
+    g.V(v1).add_e('knows').to(v2).property('weight', 0.75).iterate()
+    g.V(v1).add_e('knows').to(v3).property('weight', 0.75).iterate()
 
     # retrieve the data from the "marko" vertex
     marko = g.V().has('person', 'name', 'marko').values('name').next()
@@ -125,14 +121,14 @@ def modern_traversal_example():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
     g = traversal().with_remote(rc)
 
-    e1 = g.V(1).bothE().toList()  # (1)
-    e2 = g.V(1).bothE().where(__.otherV().hasId(2)).toList()  # (2)
+    e1 = g.V(1).both_e().to_list()  # (1)
+    e2 = g.V(1).both_e().where(__.other_v().has_id(2)).to_list()  # (2)
     v1 = g.V(1).next()
     v2 = g.V(2).next()
-    e3 = g.V(v1).bothE().where(__.otherV().is_(v2)).toList()  # (3)
-    e4 = g.V(v1).outE().where(__.inV().is_(v2)).toList()  # (4)
-    e5 = g.V(1).outE().where(__.inV().has(T.id, P.within(2, 3))).toList()  # (5)
-    e6 = g.V(1).out().where(__.in_().hasId(6)).toList()  # (6)
+    e3 = g.V(v1).both_e().where(__.other_v().is_(v2)).to_list()  # (3)
+    e4 = g.V(v1).out_e().where(__.in_v().is_(v2)).to_list()  # (4)
+    e5 = g.V(1).out_e().where(__.in_v().has(T.id, P.within(2, 3))).to_list()  # (5)
+    e6 = g.V(1).out().where(__.in_().has_id(6)).to_list()  # (6)
 
     print("1: " + str(e1))
     print("2: " + str(e2))
