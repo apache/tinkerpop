@@ -29,16 +29,16 @@ Feature: Step - substring()
     Then the result should be unordered
       | result |
       | est |
-      | ello wor |
+      | ello wo |
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXListXa_bXcX_substringX1_1X
+  Scenario: g_injectXListXa_bXcX_substringX1_2X
     Given the empty graph
     And using the parameter xx1 defined as "l[aa,bb]"
     And the traversal of
       """
-      g.inject(xx1).substring(1, 1)
+      g.inject(xx1).substring(1, 2)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The substring() step can only take string as argument"
@@ -55,11 +55,11 @@ Feature: Step - substring()
       | p |
       | pple |
 
-  Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringX1_3X
+  Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringX1_4X
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("software").values("name").substring(1, 3)
+      g.V().hasLabel("software").values("name").substring(1, 4)
       """
     When iterated to list
     Then the result should be unordered
@@ -92,3 +92,39 @@ Feature: Step - substring()
       | osh |
       | das |
       | ter |
+
+Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringX1_neg1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").substring(1, -1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | o |
+      | ippl |
+
+Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringXneg4_2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").substring(-4, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lo |
+      | str[] |
+
+Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringXneg3_neg1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").substring(-3, -1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lo |
+      | pl |

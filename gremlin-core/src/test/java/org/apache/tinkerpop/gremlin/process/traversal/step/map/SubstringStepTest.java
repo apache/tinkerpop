@@ -41,16 +41,28 @@ public class SubstringStepTest extends StepTest {
 
     @Test
     public void testReturnTypes() {
-        assertEquals("ello wor", __.__("hello world").substring(1, 8).next());
-        assertEquals("ello", __.__("hello").substring(1, 8).next());
-        assertEquals("world", __.__("hello world").substring(6).next());
+        assertEquals("hello world", __.__("hello world").substring(0).next());
+        assertEquals("ello world", __.__("hello world").substring(1).next());
+        assertEquals("d", __.__("hello world").substring(-1).next());
+        assertEquals("d", __.__("hello world").substring(10).next());
+        assertEquals("", __.__("hello world").substring(11).next());
 
-        assertEquals("world", __.__("world").substring(-10).next());
-        assertEquals("orld", __.__("world").substring(-4).next());
-        assertEquals("orl", __.__("world").substring(-4, 3).next());
-        assertEquals("", __.__("world").substring(1, -1).next());
+        assertEquals("", __.__("hello world").substring(0, 0).next());
+        assertEquals("h", __.__("hello world").substring(0, 1).next());
+        assertEquals("", __.__("hello world").substring(1, 0).next());
+        assertEquals("hello worl", __.__("hello world").substring(0, -1).next());
+        assertEquals("", __.__("hello world").substring(-1, 0).next());
+        assertEquals("ello worl", __.__("hello world").substring(1, -1).next());
+        assertEquals("", __.__("hello world").substring(-1, 1).next());
+        assertEquals("rl", __.__("hello world").substring(-3, -1).next());
+        assertEquals("", __.__("hello world").substring(-1, -3).next());
+        assertEquals("d", __.__("hello world").substring(-1, 11).next());
+        assertEquals("ello world", __.__("hello world").substring(1, 11).next());
+        assertEquals("d", __.__("hello world").substring(10, 11).next());
+        assertEquals("hello world", __.__("hello world").substring(-11, 11).next());
+        assertEquals("h", __.__("hello world").substring(-11, 1).next());
 
-        assertArrayEquals(new String[]{"st", "llo worl", null, ""},
+        assertArrayEquals(new String[]{"st", "llo wo", null, ""},
                 __.__("test", "hello world", null, "").substring(2, 8).toList().toArray());
     }
 
