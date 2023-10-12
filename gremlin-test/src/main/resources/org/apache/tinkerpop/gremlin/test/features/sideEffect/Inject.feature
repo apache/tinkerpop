@@ -194,3 +194,18 @@ Feature: Step - inject()
       | d[1].i |
       | d[3].i |
       | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_3lX_injectX100_300X
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(1, 3).inject(100, 300)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[100].i |
+      | d[300].i |
+      | d[1].i |
+      | d[3].i |
