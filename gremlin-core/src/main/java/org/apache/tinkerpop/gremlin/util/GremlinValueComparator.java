@@ -130,7 +130,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
                 return false;
 
             // numbers and collections with different hashcode can be equal
-            if (f != null && s != null && f.hashCode() != s.hashCode() && f.hashCode() != s.hashCode()
+            if (f != null && s != null && f.hashCode() != s.hashCode()
                     && !(f instanceof Number) && !(f instanceof Collection) && !(f instanceof Map))
                 return false;
 
