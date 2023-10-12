@@ -337,6 +337,7 @@ public final class CoreImports {
         uniqueMethods(Lambda.class).forEach(METHOD_IMPORTS::add);
         try {
             METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime", String.class));
+            METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime"));
         } catch (Exception ex) {
             throw new IllegalStateException("Could not load datetime() function to imports");
         }

@@ -19,6 +19,16 @@
 Feature: Step - dateDiff()
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXdatetimeXXX_dateDiffXdatetimeXstrXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(datetime()).dateDiff(datetime('2023-01-12T00:00:00Z')).is(gt(0))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX
     Given the empty graph
     And the traversal of
