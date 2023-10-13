@@ -71,6 +71,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                 gremlin = gremlinStringOrBytecode.toString();
             }
             final byte[] payload = mapper.writeValueAsBytes(new HashMap<String,Object>() {{
+                this.putAll(requestMessage.getArgs());
                 put(Tokens.ARGS_GREMLIN, gremlin);
                 put(Tokens.REQUEST_ID, requestMessage.getRequestId());
                 if (usesBytecode) put("op", Tokens.OPS_BYTECODE);

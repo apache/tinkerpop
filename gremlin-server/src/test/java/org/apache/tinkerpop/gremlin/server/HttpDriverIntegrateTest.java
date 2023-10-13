@@ -144,6 +144,23 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
+    public void shouldSubmitAliasRemoteTraversalSource() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .channelizer(Channelizer.HttpChannelizer.class)
+                .serializer(Serializers.GRAPHSON_V3D0)
+                .create();
+        try {
+            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
+            assertEquals("2", g.inject("2").toList().get(0));
+            assertEquals(Long.valueOf(6), g.V().count().toList().get(0));
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldFailToUseSession() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .channelizer(Channelizer.HttpChannelizer.class)
