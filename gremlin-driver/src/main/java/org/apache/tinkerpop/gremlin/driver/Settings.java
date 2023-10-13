@@ -116,7 +116,7 @@ final class Settings {
         final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.addPropertyParameters("hosts", String.class);
-        settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("serializer", SerializerSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final Yaml yaml = new Yaml(constructor);
