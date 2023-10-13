@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import base64
 import logging
 import struct
 import uuid
@@ -156,7 +157,8 @@ class GraphSONMessageSerializer(object):
         return message
 
     def deserialize_message(self, message):
-        msg = json.loads(message.decode('utf-8'))
+        # for parsing string message via HTTP connections
+        msg = json.loads(message if isinstance(message, str) else message.decode('utf-8'))
         return self._graphson_reader.to_object(msg)
 
 
@@ -268,7 +270,8 @@ class GraphBinarySerializersV1(object):
         return bytes(ba)
 
     def deserialize_message(self, message):
-        b = io.BytesIO(message)
+        # for parsing string message via HTTP connections
+        b = io.BytesIO(base64.b64decode(message) if isinstance(message, str) else message)
 
         b.read(1)  # version
 

@@ -21,13 +21,14 @@ Unit tests for the Translator Class.
 """
 __author__ = 'Kelvin R. Lawrence (gfxman)'
 
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import Graph, Vertex, Edge, VertexProperty
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.translator import *
 from datetime import datetime
 
 
-class TestTraversalStrategies(object):
+class TestTranslator(object):
 
     def test_translations(self):
         g = traversal().withGraph(Graph())
@@ -317,7 +318,7 @@ class TestTraversalStrategies(object):
                      "g.V('44').valueMap().with(WithOptions.tokens)"])
         # 89
         tests.append([g.withStrategies(ReadOnlyStrategy()).addV('test'),
-                      "g.withStrategies(new ReadOnlyStrategy()).addV('test')"])
+                      "g.withStrategies(ReadOnlyStrategy).addV('test')"])
         # 90
         strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.hasLabel('route'))
         tests.append([g.withStrategies(strategy).V().count(),
@@ -333,11 +334,11 @@ class TestTraversalStrategies(object):
         # 93
         strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.hasLabel('route'))
         tests.append([g.withStrategies(ReadOnlyStrategy(),strategy).V().count(),
-                      "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
+                      "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
         # 94
         strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'))
         tests.append([g.withStrategies(ReadOnlyStrategy(), strategy).V().count(),
-                      "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
+                      "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
         # 95
         tests.append([g.with_('evaluationTimeout', 500).V().count(),
                       "g.withStrategies(new OptionsStrategy(evaluationTimeout:500)).V().count()"])
@@ -349,7 +350,7 @@ class TestTraversalStrategies(object):
                      "g.withStrategies(new PartitionStrategy(partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')"])
         # 98
         tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name','peter')),
-                     "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
+                     "g.withStrategies(VertexProgramStrategy).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
         # 99
         tests.append([g.V().has("p1", starting_with("foo")),
@@ -373,6 +374,30 @@ class TestTraversalStrategies(object):
         tests.append([g.V().has("p1", None),
                      "g.V().has('p1',null)"])
 
+        # 104
+        vertex = Vertex(0, "person")
+        tests.append([g.V(vertex),
+                      "g.V(new ReferenceVertex(0,'person'))"])
+
+        # 105
+        outVertex = Vertex(0, "person")
+        inVertex = Vertex(1, "person")
+        edge = Edge(2, outVertex, "knows", inVertex)
+        tests.append([g.inject(edge),
+                      "g.inject(new ReferenceEdge(2,'knows',new ReferenceVertex(1,'person'),new ReferenceVertex(0,'person')))"])
+
+        # 106
+        vp = VertexProperty(3, "time", "18:00", None)
+        tests.append([g.inject(vp),
+                      "g.inject(new ReferenceVertexProperty(3,'time','18:00'))"])
+
+        # 107
+        tests.append([g.V().has('person', 'name', 'marko').map(lambda: ("it.get().value('name')", "gremlin-groovy")),
+                      "g.V().has('person','name','marko').map({it.get().value('name')})"])
+
+        # 108
+        tests.append([g.V().has('person', 'age', Bindings.of('x', P.lt(30))).count(),
+                      "g.V().has('person','age',Bindings.instance().of('x', lt(30))).count()"])
 
         tlr = Translator().of('g')
 
