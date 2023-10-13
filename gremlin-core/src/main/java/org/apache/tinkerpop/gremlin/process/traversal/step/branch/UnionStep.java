@@ -34,8 +34,20 @@ import java.util.Iterator;
  */
 public class UnionStep<S, E> extends BranchStep<S, E, Pick> {
 
+    /**
+     * Determines if this step is configured to be used as a start step.
+     */
     private final boolean isStart;
+
+    /**
+     * Is this the first iteration through the step.
+     */
     protected boolean first = true;
+
+    /**
+     * A placeholder object used to kick off the first traverser in the union.
+     */
+    static final Object UNION_STARTER = new Object();
 
     public UnionStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<?, E>... unionTraversals) {
         super(traversal);
@@ -50,15 +62,35 @@ public class UnionStep<S, E> extends BranchStep<S, E, Pick> {
         this(traversal, false, unionTraversals);
     }
 
+    public boolean isStart() {
+        return isStart;
+    }
+
     @Override
     protected Traverser.Admin<E> processNextStart() {
         // when it's a start step a traverser needs to be created to kick off the traversal.
         if (isStart && first) {
             first = false;
             final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-            this.addStart(generator.generate(false, (Step) this, 1L));
+            final Traverser.Admin<S> traverser = generator.generate(UNION_STARTER, (Step) this, 1L);
+
+            // immediately drop the path which would include "false" otherwise. let the path start with the
+            // traversers produced from the children to the union()
+            traverser.dropPath();
+            this.addStart(traverser);
         }
-        return super.processNextStart();
+
+        // if this isStart then loop through the next starts until we find one that doesn't hold the
+        // UNION_STARTER and return that. this deals with inject() which is always a start step even
+        // when used mid-traversal.
+        Traverser.Admin<E> t = super.processNextStart();
+        if (isStart) {
+            while (t != null && t.get() == UNION_STARTER) {
+                t = super.processNextStart();
+            }
+        }
+
+        return t;
     }
 
     @Override
