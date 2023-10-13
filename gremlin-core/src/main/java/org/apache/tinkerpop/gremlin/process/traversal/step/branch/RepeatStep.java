@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -113,12 +115,20 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return list;
     }
 
-    public final boolean doUntil(final Traverser.Admin<S> traverser, boolean utilFirst) {
-        return utilFirst == this.untilFirst && null != this.untilTraversal && TraversalUtil.test(traverser, this.untilTraversal);
+    public final boolean doUntil(final Traverser.Admin<S> traverser, boolean untilFirst) {
+        return untilFirst == this.untilFirst && null != this.untilTraversal && TraversalUtil.test(traverser, this.untilTraversal);
+    }
+
+    public final boolean doUntil(final TraverserSet<S> traverserSet, boolean untilFirst) {
+        return untilFirst == this.untilFirst && null != this.untilTraversal && TraversalUtil.test(traverserSet, this.untilTraversal);
     }
 
     public final boolean doEmit(final Traverser.Admin<S> traverser, boolean emitFirst) {
         return emitFirst == this.emitFirst && null != this.emitTraversal && TraversalUtil.test(traverser, this.emitTraversal);
+    }
+
+    public final boolean doEmit(final TraverserSet<S> traverserSet, boolean emitFirst) {
+        return emitFirst == this.emitFirst && null != this.emitTraversal && TraversalUtil.test(traverserSet, this.emitTraversal);
     }
 
     @Override
@@ -196,17 +206,26 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             if (this.repeatTraversal.getEndStep().hasNext()) {
                 return this.repeatTraversal.getEndStep();
             } else {
-                final Traverser.Admin<S> start = this.starts.next();
-                start.initialiseLoops(this.getId(), this.loopName);
-                if (doUntil(start, true)) {
-                    start.resetLoops();
-                    return IteratorUtils.of(start);
+                TraverserSet<S> traverserSet = new TraverserSet<>();
+                do {
+                    Traverser.Admin<S> start = starts.next();
+                    start.initialiseLoops(this.getId(), this.loopName);
+                    traverserSet.add(start);
+                } while ((starts.hasNext()));
+
+                if (doUntil(traverserSet, true)) {
+                    traverserSet.forEach(Traverser.Admin::resetLoops);
+                    return traverserSet.iterator();
                 }
-                this.repeatTraversal.addStart(start);
-                if (doEmit(start, true)) {
-                    final Traverser.Admin<S> emitSplit = start.split();
-                    emitSplit.resetLoops();
-                    return IteratorUtils.of(emitSplit);
+                this.repeatTraversal.addStarts(traverserSet.iterator());
+                if (doEmit(traverserSet, true)) {
+                    TraverserSet<S> emitSet = new TraverserSet<>();
+                    traverserSet.forEach(traverser -> {
+                        Traverser.Admin<S> emitSplit = traverser.split();
+                        emitSplit.resetLoops();
+                        emitSet.add(emitSplit);
+                    });
+                    return emitSet.iterator();
                 }
             }
         }
@@ -293,20 +312,29 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> standardAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
-                final Traverser.Admin<S> start = this.starts.next();
-                start.incrLoops();
-                if (repeatStep.doUntil(start, false)) {
-                    start.resetLoops();
-                    return IteratorUtils.of(start);
+                TraverserSet<S> traverserSet = new TraverserSet<>();
+                do {
+                    Traverser.Admin<S> start = starts.next();
+                    start.incrLoops();
+                    traverserSet.add(start);
+                } while ((starts.hasNext()));
+
+                if (repeatStep.doUntil(traverserSet, false)) {
+                    traverserSet.forEach(Traverser.Admin::resetLoops);
+                    return traverserSet.iterator();
                 } else {
                     if (!repeatStep.untilFirst && !repeatStep.emitFirst)
-                        repeatStep.repeatTraversal.addStart(start);
+                        repeatStep.repeatTraversal.addStarts(traverserSet.iterator());
                     else
-                        repeatStep.addStart(start);
-                    if (repeatStep.doEmit(start, false)) {
-                        final Traverser.Admin<S> emitSplit = start.split();
-                        emitSplit.resetLoops();
-                        return IteratorUtils.of(emitSplit);
+                        repeatStep.addStarts(traverserSet.iterator());
+                    if (repeatStep.doEmit(traverserSet, false)) {
+                        TraverserSet<S> emitSet = new TraverserSet<>();
+                        traverserSet.forEach(traverser -> {
+                            final Traverser.Admin<S> emitSplit = traverser.split();
+                            emitSplit.resetLoops();
+                            emitSet.add(emitSplit);
+                        });
+                        return emitSet.iterator();
                     }
                 }
             }

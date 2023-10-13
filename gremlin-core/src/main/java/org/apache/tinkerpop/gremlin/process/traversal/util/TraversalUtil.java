@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 
 import java.util.Iterator;
@@ -136,6 +137,21 @@ public final class TraversalUtil {
         }
     }
 
+    public static <S, E> boolean test(final TraverserSet<S> traverserSet, final Traversal.Admin<S, E> traversal) {
+        prepare(traverserSet, traversal);
+
+        boolean val = false;
+        while (traversal.hasNext()) {
+            val = true;
+            traversal.next();
+        }
+
+        //Close the traversal to release any underlying resources.
+        CloseableIterator.closeIterator(traversal);
+
+        return val;
+    }
+
     public static <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         prepare(traverser, traversal);
         final boolean val =  traversal.hasNext(); // filter
@@ -185,5 +201,21 @@ public final class TraversalUtil {
         traversal.reset();
         traversal.addStart(split);
         return split;
+    }
+
+    public static <S, E> TraverserSet<S> prepare(final TraverserSet<S> traverserSet, final Traversal.Admin<S, E> traversal) {
+        final TraverserSet<S> traverserSetClone = new TraverserSet<>();
+        final TraverserSet<S> traverserSetClone2 = new TraverserSet<>();
+        while (!traverserSet.isEmpty()) {
+            Traverser.Admin<S> split = traverserSet.remove().split();
+            traverserSetClone2.add(split);
+            split.setSideEffects(traversal.getSideEffects());
+            split.setBulk(1L);
+            traversal.reset();
+            traverserSetClone.add(split);
+        }
+        traversal.addStarts(traverserSetClone.iterator());
+        traverserSet.addAll(traverserSetClone2);
+        return traverserSetClone;
     }
 }
