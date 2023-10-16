@@ -221,14 +221,13 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
+        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> Collections.emptySet()));
         add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
+            final String[] items = s.split(",");
+            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
         }));
 
         add(Pair.with(Pattern.compile("(null)"), s -> null));
