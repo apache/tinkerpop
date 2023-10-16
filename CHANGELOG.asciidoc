@@ -32,6 +32,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 * ProjectStep now throws exception when a duplicate key is provided in a query.
+* Fixed bug in `ElementIdStrategy` where the order of `hasId` was impacting proper filters.
 * Fixed bug in the Java driver configuration for serialization when reading settings from an `InputStream`.
 * Fixed bug in `DotNetTranslator` where `PartitionStrategy` usage was not translating properly when specifying the `readPartitions`.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.

@@ -67,10 +67,14 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldGenerateDefaultIdOnGraphAddVWithGeneratedCustomId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idMaker(new ConstantSupplier<>("xxx")).create();
         final GraphTraversalSource sg = create(strategy);
-        final Vertex v = sg.addV().property("name", "stephen").next();
+        final Vertex v = sg.addV().property("name", "stephen").property("group", 10).next();
         assertEquals("stephen", v.value("name"));
         assertEquals("xxx", sg.V(v).id().next());
         assertEquals("xxx", sg.V("xxx").id().next());
+        assertEquals("xxx", sg.V().has(T.id, "xxx").id().next());
+        assertEquals("xxx", sg.V().hasId("xxx").id().next());
+        assertEquals("xxx", sg.V().has(T.id, "xxx").has("group", 10).id().next());
+        assertEquals("xxx", sg.V().has("group", 10).has(T.id, "xxx").id().next());
     }
 
     @Test
@@ -200,6 +204,9 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
+        assertEquals("some-id", sg.E().hasId("some-id").id().next());
+        assertEquals("some-id", sg.E().has(T.id, "some-id").has("test", "value").id().next());
+        assertEquals("some-id", sg.E().has("test", "value").has(T.id, "some-id").id().next());
     }
 
     private GraphTraversalSource create(final ElementIdStrategy strategy) {
