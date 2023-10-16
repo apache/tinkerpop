@@ -31,6 +31,23 @@ Feature: Step - dedup()
       | josh  |
       | peter |
 
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_out_in_valuesXnameX_fold_dedupXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().map(__.in().values("name").fold().dedup(Scope.local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[peter,marko,josh] |
+      | s[marko,peter,josh] |
+      | s[josh,marko,peter] |
+      | s[marko] |
+      | s[josh] |
+      | s[marko] |
+
   Scenario: g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold
     Given the modern graph
     And the traversal of

@@ -163,6 +163,7 @@ const gremlins = {
     g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path: [function({g, vid1}) { return g.V(vid1).as("a").out("created").as("b").in_("created").as("c").cyclicPath().from_("a").to("b").path() }], 
     g_injectX0X_V_both_coalesceXhasXname_markoX_both_constantX0XX_cyclicPath_path: [function({g}) { return g.inject(0).V().both().coalesce(__.has("name","marko").both(),__.constant(0)).cyclicPath().path() }], 
     g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold: [function({g}) { return g.V().out().in_().values("name").fold().dedup(Scope.local).unfold() }], 
+    g_V_out_in_valuesXnameX_fold_dedupXlocalX: [function({g}) { return g.V().out().map(__.in_().values("name").fold().dedup(Scope.local)) }], 
     g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold: [function({g}) { return g.V().out().as("x").in_().as("y").select("x","y").by("name").fold().dedup(Scope.local,"x","y").unfold() }], 
     g_V_both_dedup_name: [function({g}) { return g.V().both().dedup().values("name") }], 
     g_V_both_hasXlabel_softwareX_dedup_byXlangX_name: [function({g}) { return g.V().both().has(T.label,"software").dedup().by("lang").values("name") }], 

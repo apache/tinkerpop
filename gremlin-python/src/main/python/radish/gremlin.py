@@ -145,6 +145,7 @@ world.gremlins = {
     'g_VX1X_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_cyclicPath_fromXaX_toXbX_path': [(lambda g, vid1=None:g.V(vid1).as_('a').out('created').as_('b').in_('created').as_('c').cyclicPath().from_('a').to('b').path())], 
     'g_injectX0X_V_both_coalesceXhasXname_markoX_both_constantX0XX_cyclicPath_path': [(lambda g:g.inject(0).V().both().coalesce(__.has('name','marko').both(),__.constant(0)).cyclicPath().path())], 
     'g_V_out_in_valuesXnameX_fold_dedupXlocalX_unfold': [(lambda g:g.V().out().in_().name.fold().dedup(Scope.local).unfold())], 
+    'g_V_out_in_valuesXnameX_fold_dedupXlocalX': [(lambda g:g.V().out().map(__.in_().name.fold().dedup(Scope.local)))], 
     'g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold': [(lambda g:g.V().out().as_('x').in_().as_('y').select('x','y').by('name').fold().dedup(Scope.local,'x','y').unfold())], 
     'g_V_both_dedup_name': [(lambda g:g.V().both().dedup().name)], 
     'g_V_both_hasXlabel_softwareX_dedup_byXlangX_name': [(lambda g:g.V().both().has(T.label,'software').dedup().by('lang').name)], 
