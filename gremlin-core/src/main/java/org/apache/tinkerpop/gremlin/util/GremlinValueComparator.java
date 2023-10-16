@@ -125,13 +125,13 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
          */
         @Override
         public boolean equals(final Object f, final Object s) {
-            // shortcut a long, drawn out element by element comparison
-            if (containersOfDifferentSize(f, s))
-                return false;
-
             // numbers and collections with different hashcode can be equal
             if (f != null && s != null && f.hashCode() != s.hashCode()
                     && !(f instanceof Number) && !(f instanceof Collection) && !(f instanceof Map))
+                return false;
+
+            // shortcut a long, drawn out element by element comparison
+            if (containersOfDifferentSize(f, s))
                 return false;
 
             // For Compare, NaN always produces ERROR

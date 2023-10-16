@@ -289,7 +289,7 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void WithinTest() {
-        final int count = 2000;
+        final int count = 500;
 
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -309,8 +309,7 @@ public class TinkerGraphPlayTest {
 
         final List result = g.
                 V().has(T.id,P.lt(count/2)).aggregate("v1").
-                V(1).
-                both().where(P.without("v1")).
+                V().where(P.without("v1")).
                 toList();
 
         System.out.println(result.size());

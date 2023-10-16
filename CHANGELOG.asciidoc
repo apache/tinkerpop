@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added Gherkin support for Date.
 * Added list filtering functions `all` and `any`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
+* Improved performance for element comparison.
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
