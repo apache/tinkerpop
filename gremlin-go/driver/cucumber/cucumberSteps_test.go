@@ -654,14 +654,15 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 					break
 				}
 			}
-		} else if reflect.TypeOf(a).String() == "*gremlingo.SimpleSet" {
+		} else if actualSet, ok := a.(*gremlingo.SimpleSet); ok {
 			// Set is a special case here because there is no TypeOf().Kind() for sets.
-			actualStringArray := makeSortedStringArrayFromSet(a)
+			actualStringArray := makeSortedStringArrayFromSet(actualSet)
 
 			for i := len(expectedCopy) - 1; i >= 0; i-- {
 				curExpected := expectedCopy[i]
-				if curExpected != nil && reflect.TypeOf(curExpected).String() == "*gremlingo.SimpleSet" {
-					expectedStringArray := makeSortedStringArrayFromSet(curExpected)
+				expectedSet, ok := curExpected.(*gremlingo.SimpleSet)
+				if ok {
+					expectedStringArray := makeSortedStringArrayFromSet(expectedSet)
 
 					if reflect.DeepEqual(actualStringArray, expectedStringArray) {
 						expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
@@ -779,9 +780,9 @@ func compareListEqualsWithOf(expected []interface{}, actual []interface{}) bool 
 	return true
 }
 
-func makeSortedStringArrayFromSet(set interface{}) []string {
+func makeSortedStringArrayFromSet(set *gremlingo.SimpleSet) []string {
 	var sortedStrings []string
-	for _, element := range set.(*gremlingo.SimpleSet).ToSlice() {
+	for _, element := range set.ToSlice() {
 		sortedStrings = append(sortedStrings, fmt.Sprintf("%v", element))
 	}
 	sort.Sort(sort.StringSlice(sortedStrings))
