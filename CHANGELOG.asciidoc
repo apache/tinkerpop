@@ -34,7 +34,9 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
 * Added list filtering functions `all` and `any`.
+* Added getter for `isStart` on `UnionStep`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
+* Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
 * Improved performance for element comparison.
 
 [[release-3-7.0]]
@@ -231,6 +233,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 * ProjectStep now throws exception when a duplicate key is provided in a query.
+* Fixed bug in the Java driver configuration for serialization when reading settings from an `InputStream`.
 * Fixed bug in `DotNetTranslator` where `PartitionStrategy` usage was not translating properly when specifying the `readPartitions`.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.

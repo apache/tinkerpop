@@ -286,6 +286,18 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                                 }
                                 Assert.True(expectedArrayContainsResultDictionary);
                             }
+                            else if (resultItem is HashSet<object> resultItemSet)
+                            {
+                                var expectedArrayContainsResultAsSet = false;
+                                foreach (var expectedItem in expectedArray)
+                                {
+                                    if (expectedItem is not HashSet<object> expectedItemSet) continue;
+                                    if (!expectedItemSet.SetEquals(resultItemSet)) continue;
+                                    expectedArrayContainsResultAsSet = true;
+                                    break;
+                                }
+                                Assert.True(expectedArrayContainsResultAsSet);
+                            }
                             else if (resultItem is double resultItemDouble &&
                                      expectedArray.Select(e => e!.GetType()).Any(t => t == typeof(decimal)))
                             {

@@ -33,9 +33,11 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -45,6 +47,9 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.hamcrest.core.IsEqual;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
@@ -52,9 +57,6 @@ import org.junit.AssumptionViolatedException;
 import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIn.in;
-import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
@@ -187,17 +189,19 @@ public final class StepDefinition {
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
         }));
 
-        add(Pair.with(Pattern.compile("(null)"), s -> null));
-        add(Pair.with(Pattern.compile("(true)"), s -> true));
-        add(Pair.with(Pattern.compile("(false)"), s -> false));
-
         /*
          * TODO FIXME Add same support for other languages (js, python, .net)
          */
         add(Pair.with(Pattern.compile("vp\\[(.+)\\]"), s -> getVertexProperty(g, s)));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
+            final String[] items = s.split(",");
+            Path path = ImmutablePath.make();
+            final List<Object> pathObjects = Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
+            for (Object o : pathObjects) {
+                path = path.extend(o, Collections.emptySet());
+            }
+            return path;
         }));
 
         add(Pair.with(Pattern.compile("d\\[(NaN)\\]"), s -> Double.NaN));
@@ -225,15 +229,18 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
+        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> Collections.emptySet()));
         add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
+            final String[] items = s.split(",");
+            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
         }));
+
+        add(Pair.with(Pattern.compile("(null)"), s -> null));
+        add(Pair.with(Pattern.compile("(true)"), s -> true));
+        add(Pair.with(Pattern.compile("(false)"), s -> false));
     }};
 
     @Inject
@@ -574,4 +581,52 @@ public final class StepDefinition {
         final String absPath = world.changePathToDataFile(relPath);
         return docString.replace(relPath, escapeJava(absPath));
     }
+
+    /**
+     * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path}.
+     */
+    @SafeVarargs
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(T... items) {
+        return new IsIterableContainingInAnyOrder(getMatchers(items));
+    }
+
+    /**
+     * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path}.
+     */
+    @SafeVarargs
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(T... items) {
+        return new IsIterableContainingInOrder(getMatchers(items));
+    }
+
+    /**
+     * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
+     */
+    public static <T> org.hamcrest.Matcher<T> in(Collection<T> collection) {
+        return new IsInMatcher(collection);
+    }
+
+    /**
+     * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
+     */
+    public static <T> org.hamcrest.Matcher<T> in(T[] elements) {
+        return new IsInMatcher(elements);
+    }
+
+    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(T[] items) {
+        final List<org.hamcrest.Matcher<? super T>> matchers = new ArrayList<>();
+
+        for (int ix = 0; ix < items.length; ix++) {
+            final T item = items[ix];
+
+            // custom handle Path since we don't really want to assert the labels on the Path (i.e they aren't
+            // part of the gherkin syntax)
+            if (item instanceof Path) {
+                matchers.add((org.hamcrest.Matcher<? super T>) new IsPathEqualToMatcher((Path) item));
+            } else {
+                matchers.add(IsEqual.equalTo(item));
+            }
+        }
+        return matchers;
+    }
+
 }

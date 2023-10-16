@@ -74,6 +74,11 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     }
 
     @Override
+    public void dropPath() {
+        path = ImmutablePath.make();
+    }
+
+    @Override
     public void addLabels(final Set<String> labels) {
         this.path = this.path.extend(labels);
     }

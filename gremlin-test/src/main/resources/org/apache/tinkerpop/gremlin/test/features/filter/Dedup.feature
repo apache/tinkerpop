@@ -31,6 +31,23 @@ Feature: Step - dedup()
       | josh  |
       | peter |
 
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_out_in_valuesXnameX_fold_dedupXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().map(__.in().values("name").fold().dedup(Scope.local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[peter,marko,josh] |
+      | s[marko,peter,josh] |
+      | s[josh,marko,peter] |
+      | s[marko] |
+      | s[josh] |
+      | s[marko] |
+
   Scenario: g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold
     Given the modern graph
     And the traversal of
@@ -167,19 +184,30 @@ Feature: Step - dedup()
       | m[{"a":"v[ripple]","b":"v[josh]"}] |
       | m[{"a":"v[peter]","b":"v[lop]"}] |
 
-  Scenario: g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path
-    Given the modern graph
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_asXaX_out_asXbX_in_asXcX_dedupXa_bX_path_byXnameX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name","alice").as("a").
+        addV("person").property("name","bob").as("b").
+        addV("person").property("name","carol").as("c").
+        addE("knows").from("a").to("b").
+        addE("likes").from("a").to("b").
+        addE("likes").from("a").to("c")
+      """
     And the traversal of
       """
-      g.V().as("a").out("created").as("b").in("created").as("c").dedup("a", "b").path()
+      g.V().as("a").out().as("b").in().as("c").dedup("a", "b").path().by("name")
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
-      | p[v[marko],v[lop],v[marko]] |
-      | p[v[josh],v[ripple],v[josh]] |
-      | p[v[josh],v[lop],v[marko]] |
-      | p[v[peter],v[lop],v[marko]] |
+      | p[alice,bob,alice] |
+      | p[alice,carol,alice] |
+      | p[carol,bob,carol] |
+      | p[carol,bob,alice] |
+    And the result should have a count of 2
 
   Scenario: g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_ascX_selectXvX_valuesXnameX_dedup
     Given the modern graph
