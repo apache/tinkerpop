@@ -58,6 +58,6 @@
     "tslint-config-prettier": "^1.18.0"
   },
   "engines": {
-    "node": "16"
+    "node": "18"
   }
 }
