@@ -61,7 +61,7 @@ static void ConnectionExample()
     var g = Traversal().WithRemote(remoteConnection);
 }
 
-static void BasicGremlinExample()
+static async void BasicGremlinExample()
 {
     var server = new GremlinServer("localhost", 8182);
     using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
@@ -78,11 +78,11 @@ static void BasicGremlinExample()
     g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate();
 
     // Retrieve the data from the "marko" vertex
-    var marko = g.V().Has("person","name","marko").Values<string>("name").Next();
+    var marko = await g.V().Has("person","name","marko").Values<string>("name").Promise(t => t.Next());
     Console.WriteLine("name: " + marko);
     
     // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    var peopleMarkoKnows = g.V().Has("person","name","marko").Out("knows").Values<string>("name").ToList();
+    var peopleMarkoKnows = await g.V().Has("person","name","marko").Out("knows").Values<string>("name").Promise(t => t.ToList());
     foreach (var person in peopleMarkoKnows)
     {
         Console.WriteLine("marko knows " + person);
