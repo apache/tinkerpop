@@ -481,6 +481,18 @@ public class GeneralLiteralVisitorTest {
         }
     }
 
+    public static class ValidCurrentDateLiteralTest {
+        @Test
+        public void shouldParseCurrentDate() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("datetime()"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
+
+            final Date dt = (Date) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
+            assertTrue(new Date().getTime() - dt.getTime() < 1000);
+        }
+    }
+
     @RunWith(Parameterized.class)
     public static class ValidBooleanLiteralTest {
         @Parameterized.Parameter(value = 0)

@@ -127,4 +127,11 @@ public final class DatetimeHelper {
     public static Date datetime(final String d) {
         return parse(d);
     }
+
+    /**
+     * A proxy allows for syntax similar to Gremlin grammar of {@code datetime()}.
+     */
+    public static Date datetime() {
+        return new Date();
+    }
 }
