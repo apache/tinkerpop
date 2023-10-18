@@ -22,9 +22,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,5 +49,16 @@ public class ProjectStepTest extends StepTest {
                 __.project("x").by(__.outE().count()),
                 __.project("y").by("name")
         );
+    }
+
+    @Test
+    public void shouldThrowWhenDuplicateKeySupplied() {
+        try {
+            __.project("x", "x");
+            fail("Should throw an exception.");
+        } catch (final Exception re) {
+            assertThat(re, instanceOf(IllegalArgumentException.class));
+            assertThat(re.getMessage(), is("keys must be unique in ProjectStep"));
+        }
     }
 }

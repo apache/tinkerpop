@@ -76,7 +76,7 @@ func TestStrategy(t *testing.T) {
 		config := PartitionStrategyConfig{
 			PartitionKey:          "partition",
 			WritePartition:        "write",
-			ReadPartitions:        []string{"read"},
+			ReadPartitions:        NewSimpleSet("read"),
 			IncludeMetaProperties: true,
 		}
 		count, err := g.WithStrategies(PartitionStrategy(config)).V().Count().ToList()

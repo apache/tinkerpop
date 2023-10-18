@@ -568,7 +568,8 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(SubgraphStrategy(SubgraphStrategyConfig{Vertices: T__.Has("region", "US-TX"), Edges: T__.HasLabel("route")})).V().Count()
 			},
-			equals: "g.withStrategies(new SubgraphStrategy(vertices:has('region','US-TX'),edges:hasLabel('route'))).V().count()",
+			containsRandomClassParams: true,
+			equals:                    "g.withStrategies(new SubgraphStrategy(vertices:has('region','US-TX'),edges:hasLabel('route'))).V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -580,13 +581,15 @@ func Test_translator_Translate(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(SubgraphStrategy(SubgraphStrategyConfig{Vertices: T__.Has("region", "US-TX"), VertexProperties: T__.HasNot("runways")})).V().Count()
 			},
-			equals: "g.withStrategies(new SubgraphStrategy(vertices:has('region','US-TX'),vertexProperties:hasNot('runways'))).V().count()",
+			containsRandomClassParams: true,
+			equals:                    "g.withStrategies(new SubgraphStrategy(vertices:has('region','US-TX'),vertexProperties:hasNot('runways'))).V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(ReadOnlyStrategy(), SubgraphStrategy(SubgraphStrategyConfig{Vertices: T__.Has("region", "US-TX"), Edges: T__.HasLabel("route")})).V().Count()
 			},
-			equals: "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:has('region','US-TX'),edges:hasLabel('route'))).V().count()",
+			containsRandomClassParams: true,
+			equals:                    "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:has('region','US-TX'),edges:hasLabel('route'))).V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -602,7 +605,7 @@ func Test_translator_Translate(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.WithStrategies(PartitionStrategy(PartitionStrategyConfig{PartitionKey: "partition", WritePartition: "a", ReadPartitions: []string{"a"}})).AddV("test")
+				return g.WithStrategies(PartitionStrategy(PartitionStrategyConfig{PartitionKey: "partition", WritePartition: "a", ReadPartitions: NewSimpleSet("a")})).AddV("test")
 			},
 			containsRandomClassParams: true,
 			equals:                    "g.withStrategies(new PartitionStrategy(includeMetaProperties:false,partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')",
