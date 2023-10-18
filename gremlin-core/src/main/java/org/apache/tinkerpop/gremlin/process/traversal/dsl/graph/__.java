@@ -684,8 +684,8 @@ public class __ {
     /**
      * @see GraphTraversal#substring(int, int)
      */
-    public static <A> GraphTraversal<A, String> substring(final int startIndex, final int length) {
-        return __.<A>start().substring(startIndex, length);
+    public static <A> GraphTraversal<A, String> substring(final int startIndex, final int endIndex) {
+        return __.<A>start().substring(startIndex, endIndex);
     }
 
     /**

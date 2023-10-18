@@ -1194,9 +1194,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 [[substring-step]]
 === substring()
 
-*Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and length specified.
+*Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(long, long)`
+*Syntax:* `substring(int, int)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1208,8 +1208,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 * `int` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `int` - The number of characters to return. Optional, if it is not specific or if it exceeds the length of the string
-then all remaining characters will be returned. Length &leq; 0 will return the empty string.
+* `int` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+index &leq; start index will return the empty string.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 

@@ -1938,9 +1938,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the subgraph step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, string?> Substring (int startIndex, int length)
+        public GraphTraversal<TStart, string?> Substring (int startIndex, int endIndex)
         {
-            Bytecode.AddStep("substring", startIndex, length);
+            Bytecode.AddStep("substring", startIndex, endIndex);
             return Wrap<TStart, string?>(this);
         }
 
