@@ -31,8 +31,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -99,9 +103,14 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.direction.hashCode() ^ this.returnClass.hashCode();
-        for (final String edgeLabel : this.edgeLabels) {
-            result ^= edgeLabel.hashCode();
+        int result = Objects.hash(super.hashCode(), direction, returnClass);
+        // edgeLabel's order does not matter because in("x", "y") and in("y", "x") must be considered equal.
+        if (edgeLabels != null && edgeLabels.length > 0) {
+            final List<String> sortedEdgeLabels = Arrays.stream(edgeLabels)
+                    .sorted(Comparator.nullsLast(Comparator.naturalOrder())).collect(Collectors.toList());
+            for (final String edgeLabel : sortedEdgeLabels) {
+                result = 31 * result + Objects.hashCode(edgeLabel);
+            }
         }
         return result;
     }
