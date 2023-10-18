@@ -169,9 +169,6 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
             self._ssl_context = self._aiohttp_kwargs.pop("ssl_options")
             self._enable_ssl = True
 
-        # if "ssl_options" in self._aiohttp_kwargs:
-        #     self._aiohttp_kwargs["ssl_context"] = self._aiohttp_kwargs.pop("ssl_options")
-
     def __del__(self):
         # Close will only actually close if things are left open, so this is safe to call.
         # Clean up any connection resources and close the event loop.

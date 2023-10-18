@@ -19,7 +19,6 @@
 import os
 
 from gremlin_python import statics
-from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
@@ -28,14 +27,24 @@ from gremlin_python.process.traversal import P, Order, T
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy, SeedStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.serializer import GraphSONSerializersV2d0
+
+"""
+Due to the limitation of relying on python translator for sending groovy scripts over HTTP, certain tests are omitted.
+
+Some known limitation with current HTTP via groovy script translator:
+- Any known limitation with groovy script will be inherited, such as injection of 2 items with the second null, 
+    e.g. g.inject(null, null), will lead to NPE
+- Any server side NPE will cause hanging with no response, need to check server HTTP handlers
+- HTTPS only works with HttpChannelizer, need to check how WsAndHttpChannelizer handles SSL
+- No transaction support
+"""
 
 gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
 test_no_auth_http_url = gremlin_server_url_http.format(45940)
 
-# due to the limitation of relying on python translator for sending scripts over HTTP, certain tests are omitted
 class TestDriverRemoteConnectionHttp(object):
     def test_traversals(self, remote_connection_http):
         statics.load_statics(globals())
@@ -148,6 +157,17 @@ class TestDriverRemoteConnectionHttp(object):
             assert False
         except StopIteration:
             assert True
+
+    def test_lambda_traversals(self, remote_connection_http):
+        statics.load_statics(globals())
+        assert "remoteconnection[{},gmodern]".format(test_no_auth_http_url) == str(remote_connection_http)
+        g = traversal().withRemote(remote_connection_http)
+
+        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+
+        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
 
     def test_strategies(self, remote_connection_http):
         statics.load_statics(globals())
