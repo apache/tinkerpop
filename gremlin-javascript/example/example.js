@@ -51,18 +51,18 @@ async function main() {
 
 async function connectionExample() {
     // Connecting to the server
-    let dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    let g = traversal().withRemote(dc);
+    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const g = traversal().withRemote(dc);
 
     // Connecting and customizing configurations
-    dc = new DriverRemoteConnection('ws://localhost:8182/gremlin', {
-        mimeType: 'application/vnd.gremlin-v3.0+json',
-        reader: serializer,
-        writer: serializer,
-        rejectUnauthorized: false,
-        traversalSource: 'g',
-    })
-    g = traversal().withRemote(dc);
+//    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin', {
+//        mimeType: 'application/vnd.gremlin-v3.0+json',
+//        reader: serializer,
+//        writer: serializer,
+//        rejectUnauthorized: false,
+//        traversalSource: 'g',
+//    })
+//    const g = traversal().withRemote(dc);
     
     // Simple query to verify connection
     const v = await g.addV().iterate();
@@ -74,8 +74,8 @@ async function connectionExample() {
 }
 
 async function basicGremlinExample() {
-    let dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    let g = traversal().withRemote(dc);
+    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const g = traversal().withRemote(dc);
 
     // Basic Gremlin: adding and retrieving data
     const v1 = await g.addV('person').property('name','marko').next();
@@ -107,17 +107,17 @@ async function modernTraversalExample() {
     For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
     conf/gremlin-server-modern.yaml.
     */
-    let dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    let g = traversal().withRemote(dc);
+    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const g = traversal().withRemote(dc);
 
-    e1 = await g.V(1).bothE().toList(); // (1)
-    e2 = await g.V(1).bothE().where(__.otherV().hasId(2)).toList(); // (2)
+    const e1 = await g.V(1).bothE().toList(); // (1)
+    const e2 = await g.V(1).bothE().where(__.otherV().hasId(2)).toList(); // (2)
     const v1 = await g.V(1).next();
     const v2 = await g.V(2).next();
-    e3 = await g.V(v1.value).bothE().where(__.otherV().is(v2.value)).toList(); // (3)
-    e4 = await g.V(v1.value).outE().where(__.inV().is(v2.value)).toList(); // (4)
-    e5 = await g.V(1).outE().where(__.inV().has(t.id, p.within(2,3))).toList(); // (5)
-    e6 = await g.V(1).out().where(__.in_().hasId(6)).toList(); // (6)
+    const e3 = await g.V(v1.value).bothE().where(__.otherV().is(v2.value)).toList(); // (3)
+    const e4 = await g.V(v1.value).outE().where(__.inV().is(v2.value)).toList(); // (4)
+    const e5 = await g.V(1).outE().where(__.inV().has(t.id, p.within(2,3))).toList(); // (5)
+    const e6 = await g.V(1).out().where(__.in_().hasId(6)).toList(); // (6)
 
     console.log("1: " + e1.toString());
     console.log("2: " + e2.toString());
