@@ -48,14 +48,15 @@ static void ConnectionExample()
     var server = new GremlinServer("localhost", 8182);
 
     // Connecting to the server
-    // using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
+    using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
 
     // Connecting to the server with customized configurations
-    using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
-        new GremlinServer(hostname:"localhost", port:8182, enableSsl:false, username:"", password:"")), "g");
+//    using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
+//        new GremlinServer(hostname:"localhost", port:8182, enableSsl:false, username:"", password:"")), "g");
 
     // Specifying a serializer
-    var client = new GremlinClient(server, new GraphSON3MessageSerializer());
+//    var client = new GremlinClient(server, new GraphSON3MessageSerializer());
+//    using var remoteConnection = new DriverRemoteConnection(client, "g");
 
     // Creating the graph traversal
     var g = Traversal().WithRemote(remoteConnection);

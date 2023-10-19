@@ -69,26 +69,25 @@ def connection_example():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
-    g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
+    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    g = traversal().with_remote(rc)
 
     # connecting with plain text and Kerberos SASL authentication
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
-    g = traversal().with_remote(rc)
-    rc.close()
+    # rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
+    # g = traversal().with_remote(rc)
 
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
-    g = traversal().with_remote(rc)
-    rc.close()
+    # rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
+    # g = traversal().with_remote(rc)
 
     # connecting with customized configurations
-    rc = DriverRemoteConnection(
-        'ws://localhost:8182/gremlin', 'g',
-        username="", password="", kerberized_service='',
-        message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
-        graphson_writer=None, headers=None, session=None,
-        enable_user_agent_on_connect=True
-    )
-    g = traversal().with_remote(rc)
+    # rc = DriverRemoteConnection(
+    #     'ws://localhost:8182/gremlin', 'g',
+    #     username="", password="", kerberized_service='',
+    #     message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
+    #     graphson_writer=None, headers=None, session=None,
+    #     enable_user_agent_on_connect=True
+    # )
+    # g = traversal().with_remote(rc)
 
     # cleanup
     rc.close()

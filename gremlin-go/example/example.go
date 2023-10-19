@@ -43,14 +43,14 @@ func connectionExample() {
 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
 
 	// Connecting to the server with customized configurations
-	driverRemoteConnection, err = gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
-		func(settings *gremlingo.DriverRemoteConnectionSettings) {
-			settings.TraversalSource = "g"
-			settings.NewConnectionThreshold = 4
-			settings.EnableCompression = false
-			settings.ReadBufferSize = 0
-			settings.WriteBufferSize = 0
-		})
+// 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+// 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
+// 			settings.TraversalSource = "g"
+// 			settings.NewConnectionThreshold = 4
+// 			settings.EnableCompression = false
+// 			settings.ReadBufferSize = 0
+// 			settings.WriteBufferSize = 0
+// 		})
 
 	// Error handling
 	if err != nil {
