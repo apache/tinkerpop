@@ -35,7 +35,6 @@ using static Gremlin.Net.Process.Traversal.TextP;
 using static Gremlin.Net.Process.Traversal.Column;
 using static Gremlin.Net.Process.Traversal.Direction;
 using static Gremlin.Net.Process.Traversal.Cardinality;
-using static Gremlin.Net.Process.Traversal.CardinalityValue;
 using static Gremlin.Net.Process.Traversal.T;
 
 
