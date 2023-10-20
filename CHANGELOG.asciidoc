@@ -33,6 +33,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
+* Extended `datetime()` function for current server date.
 * Added list filtering functions `all` and `any`.
 * Added getter for `isStart` on `UnionStep`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
@@ -227,6 +228,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
 * Fixed a javadoc comment in `GraphTraversal.not()` method.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
+* Allowed `io()` to automatically detect ".graphml" as a file extension.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
@@ -237,6 +239,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
 * Fixed bug where the `partitionKey` was not being written when using `PartitionStrategy` with `mergeV()` and `mergeE()`
+* Do not use `XOR` for hashCode computation of Step when only simple keys are used and duplicate keys are allowed.
 
 [[release-3-6-5]]
 === TinkerPop 3.6.5 (Release Date: July 31, 2023)

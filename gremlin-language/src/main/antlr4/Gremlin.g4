@@ -1681,6 +1681,7 @@ booleanLiteral
 
 dateLiteral
     : 'datetime' LPAREN stringArgument RPAREN
+    | 'datetime' LPAREN RPAREN
     ;
 
 nullLiteral

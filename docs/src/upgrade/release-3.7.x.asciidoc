@@ -141,25 +141,6 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
-==== Date manipulation functions
-
-Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
-different providers. In 3.7.1, we introduce the `asDate()`, `dateAdd` and `dateDiff` steps aimed to replace the usage of closure.
-
-The following example demonstrates usage of newly introduced steps:
-
-[source,text]
-----
-gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7).dateDiff(datetime("2023-08-02T00:00:00Z"))
-==>604800
-----
-
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[asDate()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[dateAdd()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[dateDiff()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2979[TINKERPOP-2979]
-
-
 ===== String Steps replace(), split(), substring()
 
 The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
@@ -187,15 +168,15 @@ gremlin> g.V().hasLabel("person").values("name").split("a")
 ==>[peter]
 ----
 
-For `substring()`, the new Gremlin step follows the SQL standard, taking parameters start index and desired length of substring,
-instead of start and end indices like Java/Groovy, enabling certain operations that would be complex to achieve with closure:
+For `substring()`, the new Gremlin step follows the Python standard, taking parameters start index and optionally an
+end index. This will enable certain operations that would be complex to achieve with closure:
 [source,text]
 ----
-gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1,3)}
-==>ar
-==>ad
-==>os
-==>et
+gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1,4)}
+==>ark
+==>ada
+==>osh
+==>ete
 gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1)}
 ==>arko
 ==>adas
@@ -206,11 +187,12 @@ String index out of range: -2
 Type ':help' or ':h' for help.
 ----
 
-The `substring()`-step will begin at the start index and return a substring with the length specified. Negative start
-indices are allowed and will begin at the specified index counted from the end of the string:
+The `substring()`-step will return a substring with indices specified by the start and end indices, or from
+the start index to the remainder of the string if an end index is not specified. Negative indices are allowed and will
+count from the end of the string:
 [source,text]
 ----
-gremlin> g.V().hasLabel("person").values("name").substring(1,3)
+gremlin> g.V().hasLabel("person").values("name").substring(1,4)
 ==>ark
 ==>ada
 ==>osh
@@ -248,6 +230,34 @@ gremlin> g.V().values("age").fold().any(P.eq(32))
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2978[TINKERPOP-2978],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[all()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[any()-step]
+
+==== Date manipulation functions
+
+Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
+different providers. In 3.7.1, we introduce the `asDate()`, `dateAdd` and `dateDiff` steps aimed to replace the usage of closure.
+
+The following example demonstrates usage of newly introduced steps:
+
+[source,text]
+----
+gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7).dateDiff(datetime("2023-08-02T00:00:00Z"))
+==>604800
+----
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[asDate()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[dateAdd()-step]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[dateDiff()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2979[TINKERPOP-2979]
+
+===== `datetime()` for current server time
+
+Function `datetime()` extended to return current server time when used without argument.
+
+[source,text]
+----
+gremlin> datetime().toGMTString()
+==>13 Oct 2023 20:44:20 GMT
+----
 
 === Upgrading for Providers
 

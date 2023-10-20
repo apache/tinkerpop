@@ -1536,20 +1536,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) index and length
-     * specified. If the start index is negative then it will begin at the specified index counted from the end
-     * of the string, or 0 if exceeding the string length. Length is optional, if it is not specific or if it exceeds
-     * the length of the string then all remaining characters will be returned. Length <= 0 will return the empty string.
-     * Null values are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
-     * {@code IllegalArgumentException} will be thrown.
+     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index
+     * (exclusive). If the start index is negative then it will begin at the specified index counted from the end of the
+     * string, or 0 if exceeding the string length. If the end index is negative then it will end at the specified index
+     * counted from the end, or at the end of the string if exceeding the string length. End index <= start index will
+     * return the empty string. Null values are not processed and remain as null when returned. If the incoming
+     * traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
      * @return the traversal with an appended {@link SubstringStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, String> substring(final int startIndex, final int length) {
-        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, length);
-        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, length));
+    public default GraphTraversal<S, String> substring(final int startIndex, final int endIndex) {
+        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, endIndex);
+        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, endIndex));
     }
 
     /**

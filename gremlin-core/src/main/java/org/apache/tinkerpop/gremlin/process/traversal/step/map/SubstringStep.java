@@ -28,10 +28,11 @@ import java.util.Set;
 
 /**
  * Reference implementation for substring step, a mid-traversal step which returns a substring of the incoming string
- * traverser with a 0-based start index (inclusive) and length specified. If the start index is negative then it will
- * begin at the specified index counted from the end of the string, or 0 if exceeding the string length.
- * Length is optional, if it is not specific or if it exceeds the length of the string then all remaining characters will
- * be returned. Length <= 0 will return the empty string. Null values are not processed and remain as null when returned.
+ * traverser with a 0-based start index (inclusive) and optionally an end index (exclusive). If the start index is negative then it will
+ * begin at the specified index counted from the end of the string, or 0 if exceeding the string length. Likewise, if
+ * the end index is negative then it will end at the specified index counted from the end of the string, or 0 if exceeding the string length.
+ * End index is optional, if it is not specified or if it exceeds the length of the string then all remaining characters will
+ * be returned. End index <= start index will return the empty string. Null values are not processed and remain as null when returned.
  * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
@@ -40,12 +41,12 @@ import java.util.Set;
 public final class SubstringStep<S> extends ScalarMapStep<S, String> {
 
     private final Integer start;
-    private final Integer length;
+    private final Integer end;
 
-    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex, final Integer length) {
+    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
         super(traversal);
         this.start = startIndex;
-        this.length = length;
+        this.end = end;
     }
 
     public SubstringStep(final Traversal.Admin traversal, final Integer startIndex) {
@@ -67,17 +68,16 @@ public final class SubstringStep<S> extends ScalarMapStep<S, String> {
         if (null == strItem)
             return null;
 
-        final int newStart = processStartIndex(strItem.length());
-        if (null == this.length)
+        final int newStart = processStringIndex(strItem.length(), this.start);
+        if (null == this.end)
             return strItem.substring(newStart);
 
-        // length < 0 will return the empty string.
-        if (this.length <= 0)
+        final int newEnd = processStringIndex(strItem.length(), this.end);
+
+        if (newEnd <= newStart)
             return "";
 
-        // if length specified exceeds the string length it is assumed to be equal to the length, which returns all
-        // remaining characters in the string.
-        return strItem.substring(newStart, Math.min(this.length + newStart, strItem.length()));
+        return strItem.substring(newStart, newEnd);
     }
 
     @Override
@@ -89,19 +89,18 @@ public final class SubstringStep<S> extends ScalarMapStep<S, String> {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + this.start.hashCode();
-        result = 31 * result + (null != this.length ? this.length.hashCode() : 0);
+        result = 31 * result + (null != this.end ? this.end.hashCode() : 0);
         return result;
     }
 
-    // Helper function to process the start index, if it is negative (which counts from end of string) it is converted
-    // to the positive index position or 0 when negative index exceeds the string length, if it is positive and exceeds
+    // Helper function to process indices. If it is negative (which counts from end of string) it is converted
+    // to the positive index position or 0 when negative index exceeds the string length. If it is positive and exceeds
     // the length of the string, it is assumed to equal to the length, which means an empty string will be returned.
-    private int processStartIndex(int strLen) {
-        if (this.start < 0) {
-            return Math.max(0, (strLen + this.start) % strLen);
+    private int processStringIndex(int strLen, int index) {
+        if (index < 0) {
+            return Math.max(0, (strLen + index) % strLen);
         } else {
-            return Math.min(this.start, strLen);
+            return Math.min(index, strLen);
         }
     }
-
 }

@@ -1389,9 +1389,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the substring step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, string?> Substring(int startIndex, int length)
+        public static GraphTraversal<object, string?> Substring(int startIndex, int endIndex)
         {
-            return new GraphTraversal<object, string?>().Substring(startIndex, length);
+            return new GraphTraversal<object, string?>().Substring(startIndex, endIndex);
         }
 
         /// <summary>
