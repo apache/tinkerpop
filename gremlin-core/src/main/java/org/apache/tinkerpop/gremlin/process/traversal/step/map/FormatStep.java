@@ -33,7 +33,11 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,19 +54,16 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
     private Set<String> variables;
     private TraversalRing<S, String> traversalRing = new TraversalRing<>();
     private Set<String> keepLabels;
-    private final Map<String, String> values = new HashMap<>();
-    private Matcher matcher;
 
     public FormatStep(final Traversal.Admin traversal, final String format) {
         super(traversal);
         this.format = format;
-        this.matcher = VARIABLE_PATTERN.matcher(format);
         this.variables = getVariables();
     }
 
     @Override
     protected Traverser.Admin<String> processNextStart() {
-        values.clear();
+        final Map<String, Object> values = new HashMap<>();
 
         final Traverser.Admin traverser = this.starts.next();
 
@@ -73,13 +74,13 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
             if (current instanceof Element) {
                 final Property prop = ((Element) current).property(var);
                 if (prop != null && prop.isPresent()) {
-                    addValue(var, prop.value());
+                    values.put(var, prop.value());
                     continue;
                 }
             } else if (current instanceof Map) {
                 final Object value = ((Map<?, ?>) current).get(var);
                 if (value != null) {
-                    addValue(var, value);
+                    values.put(var, value);
                     continue;
                 }
             }
@@ -92,17 +93,13 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
                 break;
             }
 
-            addValue(var, product.get());
+            values.put(var, product.get());
         }
         this.traversalRing.reset();
 
         return productive ?
-                PathProcessor.processTraverserPathLabels(traverser.split(evaluate(), this), this.keepLabels) :
+                PathProcessor.processTraverserPathLabels(traverser.split(evaluate(values), this), this.keepLabels) :
                 EmptyTraverser.instance();
-    }
-
-    private void addValue(final String variableName, final Object value) {
-        values.put(variableName, value instanceof String ? (String) value : value.toString());
     }
 
     @Override
@@ -132,7 +129,6 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
         clone.format = this.format;
         clone.variables = this.variables;
         clone.traversalRing = this.traversalRing;
-        clone.matcher = this.matcher;
         return clone;
     }
 
@@ -167,6 +163,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\{(.*?)\\}");
 
     Set<String> getVariables() {
+        final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         final Set<String> variables = new LinkedHashSet<>();
         while (matcher.find()) {
             variables.add(matcher.group(1));
@@ -174,13 +171,17 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
         return variables;
     }
 
-    private String evaluate() {
+    private String evaluate(final Map<String, Object> values) {
         int lastIndex = 0;
         final StringBuilder output = new StringBuilder();
+        final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         matcher.reset();
 
         while (matcher.find()) {
-            output.append(format, lastIndex, matcher.start()).append(values.get(matcher.group(1)));
+            final Object value = values.get(matcher.group(1));
+
+            output.append(format, lastIndex, matcher.start()).
+                    append(value instanceof String ? (String) value : value.toString());
 
             lastIndex = matcher.end();
         }
