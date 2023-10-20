@@ -78,79 +78,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateAddStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateDiffStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LengthStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReverseStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SplitStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SubstringStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToLowerStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
@@ -1622,6 +1550,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> substring(final int startIndex, final int length) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, length);
         return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, length));
+    }
+
+    /**
+     * A mid-traversal step which will handle result formatting to string values.
+     *
+     * @return the traversal with an appended {@link FormatStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#format-step" target="_blank">Reference Documentation - format Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> format(final String format) {
+        this.asAdmin().getBytecode().addStep(Symbols.format, format);
+        return this.asAdmin().addStep(new FormatStep<>(this.asAdmin(), format));
     }
 
     /**
@@ -3772,6 +3712,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String replace = "replace";
         public static final String substring = "substring";
         public static final String split = "split";
+        public static final String format = "format";
         public static final String asDate = "asDate";
         public static final String dateAdd = "dateAdd";
         public static final String dateDiff = "dateDiff";

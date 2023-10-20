@@ -483,6 +483,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("fold", *args)
         return self
 
+    def format_(self, *args):
+        self.bytecode.add_step("format", *args)
+        return self
+
     def from_(self, *args):
         self.bytecode.add_step("from", *args)
         return self
@@ -1204,6 +1208,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).fold(*args)
 
     @classmethod
+    def format_(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).format_(*args)
+
+    @classmethod
     def group(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).group(*args)
 
@@ -1895,6 +1903,10 @@ def fold(*args):
     return __.fold(*args)
 
 
+def format_(*args):
+    return __.format_(*args)
+
+
 def group(*args):
     return __.group(*args)
 
@@ -2354,6 +2366,8 @@ statics.add_static('flatMap', flatMap)
 statics.add_static('flat_map', flat_map)
 
 statics.add_static('fold', fold)
+
+statics.add_static('format_', format_)
 
 statics.add_static('group', group)
 

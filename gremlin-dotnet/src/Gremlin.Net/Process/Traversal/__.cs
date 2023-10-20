@@ -553,6 +553,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the format step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string> Format<E2>(string format)
+        {
+            return new GraphTraversal<object, string>().Format(format);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the group step to that traversal.
         /// </summary>
         public static GraphTraversal<object, IDictionary<K, V>> Group<K, V>()

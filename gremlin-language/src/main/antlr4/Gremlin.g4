@@ -287,6 +287,7 @@ traversalMethod
     | traversalMethod_call
     | traversalMethod_concat
     | traversalMethod_asString
+    | traversalMethod_format
     | traversalMethod_toUpper
     | traversalMethod_toLower
     | traversalMethod_length
@@ -836,6 +837,10 @@ traversalMethod_concat
 
 traversalMethod_asString
     : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
+    ;
+
+traversalMethod_format
+    : 'format' LPAREN stringArgument RPAREN #traversalMethod_format_String
     ;
 
 traversalMethod_toUpper

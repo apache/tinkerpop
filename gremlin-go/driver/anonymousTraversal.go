@@ -115,6 +115,8 @@ type AnonymousTraversal interface {
 	FlatMap(args ...interface{}) *GraphTraversal
 	// Fold adds the fold step to the GraphTraversal.
 	Fold(args ...interface{}) *GraphTraversal
+	// Format adds the format step to the GraphTraversal.
+	Format(args ...interface{}) *GraphTraversal
 	// From adds the from step to the GraphTraversal.
 	From(args ...interface{}) *GraphTraversal
 	// Group adds the group step to the GraphTraversal.
@@ -496,6 +498,11 @@ func (anonymousTraversal *anonymousTraversal) FlatMap(args ...interface{}) *Grap
 // Fold adds the fold step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Fold(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Fold(args...)
+}
+
+// Format adds the format step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Format(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Format(args...)
 }
 
 // From adds the from step to the GraphTraversal.
