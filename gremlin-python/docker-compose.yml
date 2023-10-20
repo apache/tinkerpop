@@ -61,6 +61,8 @@ services:
       - KRB5CCNAME=./test-tkt.cc
       - GREMLIN_SERVER_URL=ws://gremlin-server-test-python:{}/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test-python:{}/gremlin
+      - GREMLIN_SERVER_URL_HTTP=http://gremlin-server-test-python:{}/
+      - GREMLIN_SERVER_BASIC_AUTH_URL_HTTP=https://gremlin-server-test-python:{}/
       - KRB_HOSTNAME=${KRB_HOSTNAME:-gremlin-server-test}
       - VERSION=${VERSION}
       - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-python:{}/gremlin
