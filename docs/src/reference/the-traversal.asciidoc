@@ -1974,6 +1974,10 @@ The version of the formats (e.g. GraphSON 2.0 or 3.0) utilized by `io()` is dete
 of TinkerPop. It is also possible for graph providers to override these defaults, so consult the documentation of the
 underlying graph database in use for any details on that.
 
+NOTE: The `io()` step will try to automatically detect the appropriate `GraphReader` or `GraphWriter` to use based on
+the file extension. If the file has a different extension than the ones expected, use `with()` as shown above to set the
+`reader` or `writer` explicitly.
+
 For more advanced configuration of `GraphReader` and `GraphWriter` operations (e.g. normalized output for GraphSON,
 disabling class registrations for Gryo, etc.) then construct the appropriate `GraphReader` and `GraphWriter` using
 the `build()` method on their implementations and use it directly. It can be passed directly to the `IO.reader` or
@@ -1996,16 +2000,18 @@ WARNING: GraphML is a "lossy" format in that it only supports primitive values f
 support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
 WARNING: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
-that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
-is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
-does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
-comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the
-GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
+that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.
+However it is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because
+TinkerPop does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>`
+element comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>`
+elements in the GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
 
 [source,java]
 ----
-g.io("graph.xml").read().iterate()
-g.io("graph.xml").write().iterate()
+// expects a file extension of .xml or .graphml to determine that
+// a GraphML reader/writer should be used.
+g.io("graph.xml").read().iterate();
+g.io("graph.xml").write().iterate();
 ----
 
 NOTE: If using GraphML generated from TinkerPop 2.x, read more about its incompatibilities in the
@@ -2025,8 +2031,10 @@ but it is generally best used in two cases:
 
 [source,java]
 ----
-g.io("graph.json").read().iterate()
-g.io("graph.json").write().iterate()
+// expects a file extension of .json to interpret that
+// a GraphSON reader/writer should be used
+g.io("graph.json").read().iterate();
+g.io("graph.json").write().iterate();
 ----
 
 NOTE: Additional documentation for GraphSON can be found in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
@@ -2050,6 +2058,8 @@ other.  Failure to do so, may result in errors.
 
 [source,java]
 ----
+// expects a file extension of .kryo to interpret that
+// a GraphSON reader/writer should be used
 g.io("graph.kryo").read().iterate()
 g.io("graph.kryo").write().iterate()
 ----
