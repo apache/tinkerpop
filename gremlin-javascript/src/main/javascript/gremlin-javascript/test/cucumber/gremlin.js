@@ -595,7 +595,7 @@ const gremlins = {
     g_injectXdatetimeXstrXX_dateAddXminute_10X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.minute,10) }], 
     g_injectXdatetimeXstrXX_dateAddXsecond_20X: [function({g}) { return g.inject(new Date(1690934400000)).dateAdd(DT.second,20) }], 
     g_injectXdatetimeXstrXX_dateAddXday_11X: [function({g}) { return g.inject(new Date(1693958400000)).dateAdd(DT.day,11) }], 
-    g_injectXdatetimeXXX_dateDiffXdatetimeXstrXX: [function({g}) { return g.inject(new Date(1697731998344)).dateDiff(new Date(1673481600000)).is(P.gt(0)) }], 
+    g_injectXdatetimeXXX_dateDiffXdatetimeXstrXX: [function({g}) { return g.inject(new Date(1697808304397)).dateDiff(new Date(1673481600000)).is(P.gt(0)) }], 
     g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX: [function({g}) { return g.inject(new Date(1690934400000)).dateDiff(new Date(1691539200000)) }], 
     g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX: [function({g}) { return g.inject(new Date(1691452800000)).dateDiff(__.inject(new Date(1690848000000))) }], 
     g_V_EX11X: [function({g, eid11}) { return g.V().E(eid11) }], 

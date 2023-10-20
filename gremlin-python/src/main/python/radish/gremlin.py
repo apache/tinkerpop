@@ -577,7 +577,7 @@ world.gremlins = {
     'g_injectXdatetimeXstrXX_dateAddXminute_10X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.minute,10))], 
     'g_injectXdatetimeXstrXX_dateAddXsecond_20X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.second,20))], 
     'g_injectXdatetimeXstrXX_dateAddXday_11X': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1693958400000 / 1000.0)).date_add(DT.day,11))], 
-    'g_injectXdatetimeXXX_dateDiffXdatetimeXstrXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1697732148807 / 1000.0)).date_diff(datetime.datetime.utcfromtimestamp(1673481600000 / 1000.0)).is_(P.gt(0)))], 
+    'g_injectXdatetimeXXX_dateDiffXdatetimeXstrXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1697808315145 / 1000.0)).date_diff(datetime.datetime.utcfromtimestamp(1673481600000 / 1000.0)).is_(P.gt(0)))], 
     'g_injectXdatetimeXstr1XX_dateDiffXdatetimeXstr2XX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_diff(datetime.datetime.utcfromtimestamp(1691539200000 / 1000.0)))], 
     'g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX': [(lambda g:g.inject(datetime.datetime.utcfromtimestamp(1691452800000 / 1000.0)).date_diff(__.inject(datetime.datetime.utcfromtimestamp(1690848000000 / 1000.0))))], 
     'g_V_EX11X': [(lambda g, eid11=None:g.V().E(eid11))], 
