@@ -29,6 +29,8 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
 * Allowed `io()` to automatically detect ".graphml" as a file extension.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
+* Allowed `gremlin-python` to be used over HTTP for experimental purposes.
+* Updated `gremlin-python` translator to enable additional traversals over HTTP.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.

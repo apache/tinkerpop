@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import json
 import logging
 import abc
 import base64
@@ -25,6 +26,8 @@ import struct
 
 from gremlin_python.driver import request
 from gremlin_python.driver.resultset import ResultSet
+from gremlin_python.process.translator import Translator
+from gremlin_python.process.traversal import Bytecode
 
 log = logging.getLogger("gremlinpython")
 
@@ -63,7 +66,6 @@ class AbstractBaseProtocol(metaclass=abc.ABCMeta):
 
 
 class GremlinServerWSProtocol(AbstractBaseProtocol):
-
     QOP_AUTH_BIT = 1
     _kerberos_context = None
     _max_content_length = 10 * 1024 * 1024
@@ -133,7 +135,7 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
             # This message is going to be huge and kind of hard to read, but in the event of an error,
             # it can provide invaluable info, so space it out appropriately.
             log.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
-                          str(message), str(results_dict))
+                      str(message), str(results_dict))
             del results_dict[request_id]
             raise GremlinServerError(message['status'])
 
@@ -185,8 +187,95 @@ class GremlinServerWSProtocol(AbstractBaseProtocol):
         name_length = len(self._username)
         fmt = '!I' + str(name_length) + 's'
         word = self.QOP_AUTH_BIT << 24 | self._max_content_length
-        out = struct.pack(fmt, word, self._username.encode("utf-8"),)
+        out = struct.pack(fmt, word, self._username.encode("utf-8"), )
         encoded = base64.b64encode(out).decode('ascii')
         kerberos.authGSSClientWrap(self._kerberos_context, encoded)
         auth = kerberos.authGSSClientResponse(self._kerberos_context)
         return request.RequestMessage('', 'authentication', {'sasl': auth})
+
+
+class GremlinServerHTTPProtocol(AbstractBaseProtocol):
+
+    def __init__(self,
+                 message_serializer,
+                 username='', password=''):
+        self._message_serializer = message_serializer
+        self._username = username
+        self._password = password
+
+    def connection_made(self, transport):
+        super(GremlinServerHTTPProtocol, self).connection_made(transport)
+
+    # Transforms request message into string
+    def write(self, request_id, request_message):
+        payload = {
+            'requestId': request_id
+        }
+
+        gremlinArgs = request_message.args['gremlin']
+        useBytecode = isinstance(gremlinArgs, Bytecode)
+
+        # translate bytecode into scripts
+        if useBytecode:
+            request_message.args['gremlin'] = Translator().of('g').translate(gremlinArgs)
+            payload['op'] = 'bytecode'
+
+        # add all args into the payload
+        for k, v in request_message.args.items():
+            payload[k] = v
+
+        json_data = json.dumps(payload)
+
+        basic_auth = {}
+        if self._username and self._password:
+            basic_auth['username'] = self._username
+            basic_auth['password'] = self._password
+
+        message = {
+            'headers': {'CONTENT-TYPE': 'application/json',
+                        'ACCEPT': str(self._message_serializer.version, encoding='utf-8')},
+            'payload': json_data,
+            'auth': basic_auth
+        }
+
+        self._transport.write(message)
+
+    def data_received(self, message, results_dict):
+        # if Gremlin Server cuts off then we get a None for the message
+        if message is None:
+            log.error("Received empty message from server.")
+            raise GremlinServerError({'code': 500,
+                                      'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
+
+        # if a request query cannot be compiled by Gremlin Server, the HTTP handler will send back the exception in
+        # json string without a requestId
+        if 'message' in message and 'requestId' not in message:
+            log.error("\r\nReceived error message from server '%s'", str(message))
+            raise GremlinServerError({'code': 400,
+                                      'message': message, 'attributes': {}})
+
+        message = self._message_serializer.deserialize_message(message)
+        request_id = message['requestId']
+        result_set = results_dict[request_id] if request_id in results_dict else ResultSet(None, None)
+        status_code = message['status']['code']
+        aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
+        data = message['result']['data']
+        result_set.aggregate_to = aggregate_to
+
+        if status_code == 204:
+            result_set.stream.put_nowait([])
+            del results_dict[request_id]
+            return status_code
+        elif status_code in [200, 206]:
+            result_set.stream.put_nowait(data)
+            if status_code == 200:
+                result_set.status_attributes = message['status']['attributes']
+                del results_dict[request_id]
+            return status_code
+        else:
+            # This message is going to be huge and kind of hard to read, but in the event of an error,
+            # it can provide invaluable info, so space it out appropriately.
+            log.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
+                      str(message), str(results_dict))
+            del results_dict[request_id]
+            raise GremlinServerError(message['status'])
