@@ -210,7 +210,7 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
             return IO.gryo;
         else if (file.endsWith(".json"))
             return IO.graphson;
-        else if (file.endsWith(".xml"))
+        else if (file.endsWith(".xml") || file.endsWith(".graphml"))
             return IO.graphml;
         else
             throw new IllegalStateException("Could not detect the file format - specify the writer explicitly or rename file with a standard extension");
