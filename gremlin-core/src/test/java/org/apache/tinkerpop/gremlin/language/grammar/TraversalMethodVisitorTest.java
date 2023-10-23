@@ -1159,6 +1159,11 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_format_String() throws Exception {
+        compare(g.V().format("Hello %{name}"), eval("g.V().format(\"Hello %{name}\")"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_toLower_Empty() throws Exception {
         compare(g.V().toLower(), eval("g.V().toLower()"));
     }

@@ -214,6 +214,26 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
+===== Format Step
+This step is designed to simplify some string operations.
+In general, it is similar to the string formatting function available in many programming languages.
+Variable values can be picked up from Element properties, maps and scope variables.
+
+[source,text]
+----
+gremlin> g.V().format("%{name} is %{age} years old")
+==>marko is 29 years old
+==>vadas is 27 years old
+==>josh is 32 years old
+==>peter is 35 years old
+gremlin> g.V().hasLabel("person").as("a").values("name").as("p1").select("a").in("knows").format("%{p1} knows %{name}")
+==>vadas knows marko
+==>josh knows marko
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[all()-step]
+
 ==== List Traverser based Steps
 Additional List manipulation/filter steps have been added to replace the use of closures: `any()` and `all()`.
 

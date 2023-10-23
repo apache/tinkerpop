@@ -45,7 +45,7 @@ public class FormatStepTest extends StepTest {
     }
 
     private List<String> getVariables(final String format) {
-        final FormatStep formatStep =  new FormatStep(__.inject("test").asAdmin(), format);
+        final FormatStep formatStep = new FormatStep(__.inject("test").asAdmin(), format);
         return new ArrayList<>(formatStep.getScopeKeys());
     }
 
@@ -53,8 +53,10 @@ public class FormatStepTest extends StepTest {
     public void shouldGetVariablesFromTemplate() {
         assertEquals(Collections.emptyList(), getVariables("Hello world"));
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
+        assertEquals(Collections.emptyList(), getVariables("Hello %{}"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello % {world}"));
+        assertEquals(Collections.singletonList(" "), getVariables("Hello %{ }"));
         assertEquals(Collections.singletonList("world"), getVariables("Hello %{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{Hello} %{world}"));
@@ -102,6 +104,7 @@ public class FormatStepTest extends StepTest {
     }
     @Test
     public void shouldWorkWithMap() {
+        assertEquals("Hello 2", __.__(asMap("name", 2)).format("Hello %{name}").next());
         assertEquals("Hello Stephen", __.__(asMap("name", "Stephen")).format("Hello %{name}").next());
     }
 

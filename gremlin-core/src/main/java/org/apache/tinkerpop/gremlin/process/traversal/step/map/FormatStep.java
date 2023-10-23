@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,12 +79,6 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
                     values.put(var, prop.value());
                     continue;
                 }
-            } else if (current instanceof Map) {
-                final Object value = ((Map<?, ?>) current).get(var);
-                if (value != null) {
-                    values.put(var, value);
-                    continue;
-                }
             }
 
             final TraversalProduct product =
@@ -109,7 +105,8 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
 
     @Override
     public int hashCode() {
-        return (super.hashCode() * 31 + this.format.hashCode()) * 31 + this.traversalRing.hashCode();
+        int result = super.hashCode();
+        return Objects.hash(result, format, traversalRing);
     }
 
     @Override
@@ -166,7 +163,10 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
         final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         final Set<String> variables = new LinkedHashSet<>();
         while (matcher.find()) {
-            variables.add(matcher.group(1));
+            final String varName = matcher.group(1);
+            if (!StringUtils.isEmpty(varName)) {
+                variables.add(matcher.group(1));
+            }
         }
         return variables;
     }
@@ -178,10 +178,11 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
         matcher.reset();
 
         while (matcher.find()) {
-            final Object value = values.get(matcher.group(1));
+            final String varName = matcher.group(1);
+            if (StringUtils.isEmpty(varName)) continue;
 
-            output.append(format, lastIndex, matcher.start()).
-                    append(value instanceof String ? (String) value : value.toString());
+            final Object value = values.get(varName);
+            output.append(format, lastIndex, matcher.start()).append(value);
 
             lastIndex = matcher.end();
         }

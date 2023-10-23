@@ -1559,6 +1559,26 @@ process. Please see the <<general-steps, General Steps>> section for more inform
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap-org.apache.tinkerpop.gremlin.process.traversal.Traversal-++[`map(Traversal)`]
 
+[[format-step]]
+=== Format Step
+
+This step is designed to simplify some string operations.
+In general, it is similar to the string formatting function available in many programming languages.
+Variable values can be picked up from Element properties, maps and scope variables.
+
+[gremlin-groovy,modern]
+----
+g.V().format("%{name} is %{age} years old") <1>
+g.V().hasLabel("person").as("a").values("name").as("p1").select("a").in("knows").format("%{p1} knows %{name}") <2>
+----
+
+<1> A `format()` will use property values from incoming Element to produce String result.
+<2> A `format()` will use scope variable `p1` and property `name` to resolve variable values.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#format-java.lang.String-++[`format(String)`],
+
 [[fold-step]]
 === Fold Step
 
