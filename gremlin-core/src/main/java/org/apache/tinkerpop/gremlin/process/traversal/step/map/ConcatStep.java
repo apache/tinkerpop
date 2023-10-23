@@ -21,14 +21,17 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Reference implementation for String concatenation step, a mid-traversal step which concatenates one or more
@@ -39,9 +42,9 @@ import java.util.Set;
  */
 public final class ConcatStep<S> extends ScalarMapStep<S, String> implements TraversalParent {
 
+    private List<Traversal.Admin<S, String>> concatTraversals;
+    private List<String> concatStrings;
     private String stringArgsResult;
-
-    private Traversal.Admin<S, String> concatTraversal;
 
     // flag used to propagate the null value through if all strings to be concatenated are null
     private boolean isNullTraverser = true;
@@ -50,12 +53,15 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
 
     public ConcatStep(final Traversal.Admin traversal, final String... concatStrings) {
         super(traversal);
+        this.concatStrings = Collections.unmodifiableList(Arrays.asList(concatStrings));
         this.stringArgsResult = processStrings(concatStrings);
     }
 
-    public ConcatStep(final Traversal.Admin traversal, final Traversal<S, String> concatTraversal) {
+    public ConcatStep(final Traversal.Admin traversal, final Traversal<?, String> concatTraversal, final Traversal<?, String>... otherConcatTraversals) {
         super(traversal);
-        this.concatTraversal = this.integrateChild(concatTraversal.asAdmin());
+        this.concatTraversals = new ArrayList<>(Collections.singletonList((Traversal.Admin<S, String>) concatTraversal.asAdmin()));
+        this.concatTraversals.addAll(Stream.of(otherConcatTraversals).map(ct -> (Traversal.Admin<S, String>) ct.asAdmin()).collect(Collectors.toList()));
+        this.concatTraversals.forEach(this::integrateChild);
     }
 
     @Override
@@ -74,18 +80,14 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
             sb.append(traverser.get());
         }
 
-        if (null != this.concatTraversal) {
-            if (this.concatTraversal.getStartStep() instanceof InjectStep) { // inject as start step is processed separately
-                if (this.concatTraversal.hasNext()) {
-                    final String result = this.concatTraversal.next();
-                    if (null != result) {
-                        this.isNullTraversal = false;
-                        sb.append(result);
-                    }
+        if (null != this.concatTraversals) {
+            this.concatTraversals.forEach(ct -> {
+                final String result = TraversalUtil.apply(traverser, ct);
+                if (null != result) {
+                    this.isNullTraversal = false;
+                    sb.append(result);
                 }
-            } else {
-                sb.append(TraversalUtil.apply(traverser, this.concatTraversal));
-            }
+            });
         }
 
         if (!this.isNullString) {
@@ -117,40 +119,59 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        this.integrateChild(this.concatTraversal);
+        if (null != this.concatTraversals)
+            for (final Traversal.Admin<S, String> traversal : this.concatTraversals) {
+                this.integrateChild(traversal);
+            }
     }
 
     @Override
     public ConcatStep<S> clone() {
         final ConcatStep<S> clone = (ConcatStep<S>) super.clone();
-        if (null != this.concatTraversal)
-            clone.concatTraversal = this.concatTraversal.clone();
+        if (null != this.concatTraversals) {
+            clone.concatTraversals = new ArrayList<>();
+            for (final Traversal.Admin<S, String> concatTraversals : this.concatTraversals) {
+                clone.concatTraversals.add(concatTraversals.clone());
+            }
+        }
+        if (null != this.concatStrings) {
+            clone.concatStrings = new ArrayList<>();
+            clone.concatStrings.addAll(this.concatStrings);
+        }
         return clone;
     }
 
     @Override
     public List<Traversal.Admin<S, String>> getLocalChildren() {
-        return null == this.concatTraversal ? Collections.emptyList() : Collections.singletonList(this.concatTraversal);
+        return null == this.concatTraversals ? Collections.emptyList() : this.concatTraversals;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.concatTraversal);
+        if (null != this.concatTraversals)
+            return StringFactory.stepString(this, this.concatTraversals);
+        return StringFactory.stepString(this, this.concatStrings);
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        if (null != this.concatTraversal)
-            result = super.hashCode() ^ this.concatTraversal.hashCode();
-        if (null != this.stringArgsResult)
-            result = super.hashCode() ^ this.stringArgsResult.hashCode();
+        if (null != this.concatTraversals) {
+            for (final Traversal t : this.concatTraversals) {
+                result = 31 * result + (null != t ? t.hashCode() : 0);
+            }
+        }
+        if (null != this.concatStrings) {
+            for (final String s : this.concatStrings) {
+                result = 31 * result + (null != s ? s.hashCode() : 0);
+            }
+        }
         return result;
     }
 }

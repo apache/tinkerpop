@@ -29,6 +29,9 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added Gherkin parsing support for specific string results using `str[]`.
 * Added the `trim()`, `lTrim()`, `rTrim()`, and `reverse()` steps to perform `String` manipulations.
 * Added `replace()`, `split()` and `substring()` steps to perform `String` manipulations.
+* Update `concat()` to accept `Traversal` varargs.
+* Corrected `concat()` signatures in `gremlin-dotnet`, `Concat()` is now used instead of `Concat<object>()`. *(breaking)*
+* Update `concat()` to not special treat `inject` in arguments and use `TraversalUtil.apply` on it as with any other child traversals. *(breaking)*
 * Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.

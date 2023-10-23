@@ -1432,21 +1432,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Concatenate strings.
+     * Concatenate values of an arbitrary number of string traversals to the incoming traverser.
      *
      * @return the traversal with an appended {@link ConcatStep}.
+     * @param concatTraversal the traversal to concatenate.
+     * @param otherConcatTraversals additional traversals to concatenate.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#concat-step" target="_blank">Reference Documentation - Concat Step</a>
-     * @since 3.7.0
+     * @since 3.7.1
      */
-    public default GraphTraversal<S, String> concat(final Traversal<?, String> concatTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.concat, concatTraversal);
-        return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatTraversal));
+    public default GraphTraversal<S, String> concat(final Traversal<?, String> concatTraversal, final Traversal<?, String>... otherConcatTraversals) {
+        this.asAdmin().getBytecode().addStep(Symbols.concat, concatTraversal, otherConcatTraversals);
+        return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatTraversal, otherConcatTraversals));
     }
 
     /**
-     * Concatenate strings.
+     * Concatenate an arbitrary number of strings to the incoming traverser.
      *
      * @return the traversal with an appended {@link ConcatStep}.
+     * @param concatStrings the String values to concatenate.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#concat-step" target="_blank">Reference Documentation - Concat Step</a>
      * @since 3.7.0
      */

@@ -588,10 +588,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#concat(Traversal)
+     * @see GraphTraversal#concat(Traversal, Traversal...)
      */
-    public static <A> GraphTraversal<A, String> concat(final Traversal<?, String> concatTraversal) {
-        return __.<A>start().concat(concatTraversal);
+    public static <A> GraphTraversal<A, String> concat(final Traversal<A, String> concatTraversal, final Traversal<A, String>... otherConcatTraversals) {
+        return __.<A>start().concat(concatTraversal, otherConcatTraversals);
     }
 
     /**

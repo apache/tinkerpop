@@ -1154,6 +1154,34 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_concat_Empty() throws Exception {
+        compare(g.V().concat(), eval("g.V().concat()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_multipleStringArgs() throws Exception {
+        compare(g.V().concat("hello", "world"), eval("g.V().concat('hello', 'world')"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_traversal() throws Exception {
+        compare(g.V().concat(constant("hello")),
+                eval("g.V().concat(__.constant('hello'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_multipleTraversalArgs() throws Exception {
+        compare(g.V().concat(constant("hello"), constant("world")),
+                eval("g.V().concat(__.constant('hello'), __.constant('world'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_ArgsWithNulls() throws Exception {
+        compare(g.V().concat(null, "hello"),
+                eval("g.V().concat(null, 'hello')"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_asString_Empty() throws Exception {
         compare(g.V().asString(), eval("g.V().asString()"));
     }
