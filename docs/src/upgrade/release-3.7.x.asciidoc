@@ -30,7 +30,36 @@ complete list of all the modifications that are part of this release.
 === Upgrading for Users
 
 ==== String Manipulation Steps
-Additional String manipulation steps have been added to this version.
+Modifications to the concat() step as well as additional String manipulation steps have been added to this version.
+
+===== Updates to concat():
+Concat has been modified to take traversal varargs instead of a single traversal. Users no longer have to chain
+concat() steps together to concatenate multiple traversals:
+[source,text]
+----
+gremlin> g.V(1).outE().as("a").V(1).values("name").concat(select("a").label(), select("a").inV().values("name"))
+==>markocreatedlop
+==>markoknowsvadas
+==>markoknowsjosh
+----
+
+A notable breaking change from 3.7.0 is that we have output order of `inject()` as a child of `concat()` to be consistent with other parent steps. Any 3.7.0 uses of `concat(inject(X))` should change to `concat(constant(X))` to retain the old semantics.
+[source,text]
+----
+// 3.7.0
+gremlin> g.inject("a").concat(inject("b"))
+==>ab
+
+// 3.7.1
+gremlin> g.inject("a").concat(inject())
+==>aa
+gremlin> g.inject("a").concat(inject("b"))
+==>aa
+gremlin> g.inject("a").concat(constant("b"))
+==>ab
+----
+
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[concat()-step],
 
 ===== String Steps asString(), length(), toLower(), toUpper():
 

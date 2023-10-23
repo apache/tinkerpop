@@ -62,13 +62,26 @@ Feature: Step - concat()
     Given the empty graph
     And the traversal of
       """
-      g.inject("a", "b").concat(__.inject("c", "d"))
+      g.inject("a", "b").concat(__.inject("c"))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | ac |
-      | bd |
+      | aa |
+      | bb |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXaX_concat_Xinject_List_b_cX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[b,c]"
+    And the traversal of
+      """
+      g.inject("a").concat(__.inject(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | aa |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_concat_XdX
@@ -80,17 +93,6 @@ Feature: Step - concat()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "String concat() can only take string as argument"
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXaX_concat_Xinject_List_b_cX
-    Given the empty graph
-    And using the parameter xx1 defined as "l[b,c]"
-    And the traversal of
-      """
-      g.inject("a").concat(__.inject(xx1))
-      """
-    When iterated to list
-    Then the traversal will raise an error
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnullX_concat_XinjectX
@@ -172,12 +174,27 @@ Feature: Step - concat()
       | ripple uses java |
 
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VX1X_outE_asXaX_constantXX_concatXVX1X_valuesXnameX_concatXselectXaX_label_concatXselectXaX_inV_valuesXnameX
+  Scenario: g_VX1X_outE_asXaX_VX1X_valuesXnamesX_concatXselectXaX_labelX_concatXselectXaX_inV_valuesXnameXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V(vid1).outE().as("a").V(vid1).values("name").concat(select("a").label()).concat(select("a").inV().values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | markocreatedlop |
+      | markoknowsvadas |
+      | markoknowsjosh |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_outE_asXaX_VX1X_valuesXnamesX_concatXselectXaX_label_selectXaX_inV_valuesXnameXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE().as("a").V(vid1).values("name").concat(select("a").label(), select("a").inV().values("name"))
       """
     When iterated to list
     Then the result should be unordered

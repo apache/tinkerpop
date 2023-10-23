@@ -830,7 +830,7 @@ traversalMethod_call
     ;
 
 traversalMethod_concat
-    : 'concat' LPAREN nestedTraversal RPAREN #traversalMethod_concat_Traversal
+    : 'concat' LPAREN nestedTraversal (COMMA nestedTraversalList)? RPAREN #traversalMethod_concat_Traversal_Traversal
     | 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
     ;
 

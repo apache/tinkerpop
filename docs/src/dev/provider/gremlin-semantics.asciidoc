@@ -730,7 +730,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 *Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
 
-*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal)`
+*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal, Traversal...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -740,10 +740,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 *Arguments:*
 
-* `String...` - If one or more String values are provided, they will be concatenated together with the
-incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
-* `Traversal` - The `Traversal` value must resolve to a `String`. The first result returned from the traversal will be
-concatenated with the incoming traverser.
+* `concatStrings` - Varargs of `String`. If one or more String values are provided, they will be concatenated together
+with the incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
+* `concatTraveral` - A `Traversal` whose must value resolve to a `String`. The first result returned from the traversal will
+be concatenated with the incoming traverser.
+* `otherConcatTraverals` - Varargs of `Traversal`. Each `Traversal` value must resolve to a `String`. The first result
+returned from each traversal will be concatenated with the incoming traverser and the previous traversal arguments.
 
 Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
 concatenated, the `null` value will be propagated and returned.

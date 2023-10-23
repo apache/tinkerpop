@@ -541,23 +541,33 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the concat step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Concat<TNewEnd> (ITraversal concatTraversal)
+        public GraphTraversal<TStart, string> Concat (ITraversal concatTraversal, params ITraversal[]? otherConcatTraversals)
         {
-            Bytecode.AddStep("concat", concatTraversal);
-            return Wrap<TStart, TEnd>(this);
+            List<object?> args;
+            if (otherConcatTraversals == null)
+            {
+                args = new List<object?> { concatTraversal };
+            }
+            else
+            {
+                args = new List<object?>(1 + otherConcatTraversals.Length) { concatTraversal };
+                args.AddRange(otherConcatTraversals);
+            }
+            Bytecode.AddStep("concat", args.ToArray());
+            return Wrap<TStart, string>(this);
         }
 
         /// <summary>
         ///     Adds the concat step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Concat<TNewEnd> (params string?[] concatStrings)
+        public GraphTraversal<TStart, string> Concat (params string?[] concatStrings)
         {
             // need null check?
 
             var args = new List<object?>(concatStrings.Length);
             args.AddRange(concatStrings);
             Bytecode.AddStep("concat", args.ToArray());
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, string>(this);
         }
 
         /// <summary>
