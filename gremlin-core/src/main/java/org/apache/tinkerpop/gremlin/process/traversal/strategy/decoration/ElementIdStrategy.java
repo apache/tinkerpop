@@ -81,9 +81,10 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        TraversalHelper.getStepsOfAssignableClass(HasStep.class, traversal).stream()
-                .filter(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).getKey().equals(T.id.getAccessor()))
-                .forEach(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).setKey(this.idPropertyKey));
+        TraversalHelper.getStepsOfAssignableClass(HasStep.class, traversal).stream().
+                forEach(hasStep -> ((HasStep<?>) hasStep).getHasContainers().stream().
+                            filter(container -> container.getKey().equals(T.id.getAccessor())).
+                                     forEach(container -> container.setKey(this.idPropertyKey)));
 
         if (traversal.getStartStep() instanceof GraphStep) {
             final GraphStep graphStep = (GraphStep) traversal.getStartStep();
