@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +54,18 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
 
         final List<Property> properties = context.read(buffer);
 
-        return new DetachedEdge(id, label, properties, outVId, outVLabel, inVId, inVLabel);
+        final DetachedVertex inV = DetachedVertex.build().setId(inVId).setLabel(inVLabel).create();
+        final DetachedVertex outV = DetachedVertex.build().setId(outVId).setLabel(outVLabel).create();
+
+        final DetachedEdge.Builder builder = DetachedEdge.build().setId(id).setLabel(label).setInV(inV).setOutV(outV);
+
+        if (properties != null) {
+            for (final Property p : properties) {
+                builder.addProperty(p);
+            }
+        }
+
+        return builder.create();
     }
 
     @Override
