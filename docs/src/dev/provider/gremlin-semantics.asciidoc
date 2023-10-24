@@ -908,8 +908,8 @@ None
 *Arguments:*
 
 Format string. Variables can be represented using `%{variable_name}` notation.
-The variable values are used in the order that the first one will be found: Element properties, than Scope values.
-If value for some variable was not found than result for input is skipped.
+The variable values are used in the order that the first one will be found: Element properties, then Scope values.
+If value for some variable was not found, then the result is filtered out.
 
 *Exceptions*
 
