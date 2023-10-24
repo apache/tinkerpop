@@ -53,9 +53,9 @@ public class FormatStepTest extends StepTest {
     public void shouldGetVariablesFromTemplate() {
         assertEquals(Collections.emptyList(), getVariables("Hello world"));
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
-        assertEquals(Collections.emptyList(), getVariables("Hello %{}"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello % {world}"));
+        assertEquals(Collections.singletonList(""), getVariables("Hello %{}"));
         assertEquals(Collections.singletonList(" "), getVariables("Hello %{ }"));
         assertEquals(Collections.singletonList("world"), getVariables("Hello %{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
@@ -139,5 +139,20 @@ public class FormatStepTest extends StepTest {
                 __.inject("valA").as("varA").
                         constant("valB").as("varB").
                         constant(mockVertex).format("%{p1} %{p2} %{varA} %{varB}").next());
+    }
+
+    @Test
+    public void shouldPrioritizeVertexPropertiesOverScopeVariables() {
+        final VertexProperty mockProperty1 = mock(VertexProperty.class);
+        when(mockProperty1.key()).thenReturn("name");
+        when(mockProperty1.value()).thenReturn("Stephen");
+        when(mockProperty1.isPresent()).thenReturn(true);
+
+        final Vertex mockVertex = mock(Vertex.class);
+        when(mockVertex.property("name")).thenReturn(mockProperty1);
+
+        assertEquals("Hello Stephen",
+                __.__("Marko").as("name").
+                        constant(mockVertex).format("Hello %{name}").next());
     }
 }

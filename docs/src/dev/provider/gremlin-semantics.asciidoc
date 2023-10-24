@@ -919,7 +919,7 @@ None
 
 None
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FromatStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 
 [[length-step]]

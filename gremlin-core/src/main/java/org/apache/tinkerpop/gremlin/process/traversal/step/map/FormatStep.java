@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -51,6 +50,8 @@ import java.util.regex.Pattern;
  * @author Valentyn Kahamlyk
  */
 public final class FormatStep<S> extends MapStep<S, String> implements TraversalParent, Scoping, PathProcessor {
+
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\{(.*?)\\}");
 
     private String format;
     private Set<String> variables;
@@ -157,14 +158,12 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
 
     // private methods
 
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\{(.*?)\\}");
-
-    Set<String> getVariables() {
+    private Set<String> getVariables() {
         final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         final Set<String> variables = new LinkedHashSet<>();
         while (matcher.find()) {
             final String varName = matcher.group(1);
-            if (!StringUtils.isEmpty(varName)) {
+            if (varName != null) {
                 variables.add(matcher.group(1));
             }
         }
@@ -179,7 +178,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
 
         while (matcher.find()) {
             final String varName = matcher.group(1);
-            if (StringUtils.isEmpty(varName)) continue;
+            if (varName == null) continue;
 
             final Object value = values.get(varName);
             output.append(format, lastIndex, matcher.start()).append(value);

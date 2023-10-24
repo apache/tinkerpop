@@ -937,7 +937,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx)  { notImplemented(ctx); return null; }
+	public T visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
