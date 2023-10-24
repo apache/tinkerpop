@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added the `trim()`, `lTrim()`, `rTrim()`, and `reverse()` steps to perform `String` manipulations.
 * Added `replace()`, `split()` and `substring()` steps to perform `String` manipulations.
 * Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
+* Fixed multiline query bug in console caused by upgrade to Groovy 4.
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
