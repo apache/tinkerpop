@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -33,10 +34,8 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -49,9 +48,12 @@ import java.util.regex.Pattern;
  *
  * @author Valentyn Kahamlyk
  */
-public final class FormatStep<S> extends MapStep<S, String> implements TraversalParent, Scoping, PathProcessor {
+public final class FormatStep<S> extends MapStep<S, String> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("%\\{(.*?)\\}");
+    private static final String FROM_BY = "_";
+    // first matching group is start of string OR NOT %
+    // second group is variable name
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("(^|[^%])%\\{(.*?)\\}");
 
     private String format;
     private Set<String> variables;
@@ -66,36 +68,47 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
 
     @Override
     protected Traverser.Admin<String> processNextStart() {
-        final Map<String, Object> values = new HashMap<>();
-
         final Traverser.Admin traverser = this.starts.next();
 
         boolean productive = true;
-        for (final String var : variables) {
-            final Object current = traverser.get();
-            // try to get property value
-            if (current instanceof Element) {
-                final Property prop = ((Element) current).property(var);
+        int lastIndex = 0;
+        final StringBuilder output = new StringBuilder();
+        final Matcher matcher = VARIABLE_PATTERN.matcher(format);
+        final Object current = traverser.get();
+
+        while (matcher.find()) {
+            final String varName = matcher.group(2);
+            final int start = matcher.start() + matcher.group(1).length();
+            if (varName == null) continue;
+
+            if (!varName.equals(FROM_BY) && current instanceof Element) {
+                final Property prop = ((Element) current).property(varName);
                 if (prop != null && prop.isPresent()) {
-                    values.put(var, prop.value());
+                    output.append(format, lastIndex, start).append(prop.value());
+                    lastIndex = matcher.end();
                     continue;
                 }
             }
 
-            final TraversalProduct product =
-                    TraversalUtil.produce((S) this.getNullableScopeValue(Pop.last, var, traverser), this.traversalRing.next());
+            final TraversalProduct product = varName.equals(FROM_BY) ?
+                    TraversalUtil.produce(traverser, this.traversalRing.next()) :
+                    TraversalUtil.produce((S) this.getNullableScopeValue(Pop.last, varName, traverser), this.traversalRing.next());
 
             if (!product.isProductive() || product.get() == null) {
                 productive = false;
                 break;
             }
 
-            values.put(var, product.get());
+            output.append(format, lastIndex, start).append(product.get());
+            lastIndex = matcher.end();
         }
-        this.traversalRing.reset();
+
+        if (lastIndex < format.length()) {
+            output.append(format, lastIndex, format.length());
+        }
 
         return productive ?
-                PathProcessor.processTraverserPathLabels(traverser.split(evaluate(values), this), this.keepLabels) :
+                PathProcessor.processTraverserPathLabels(traverser.split(output.toString(), this), this.keepLabels) :
                 EmptyTraverser.instance();
     }
 
@@ -156,39 +169,29 @@ public final class FormatStep<S> extends MapStep<S, String> implements Traversal
         return this.keepLabels;
     }
 
+    @Override
+    public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
+        this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
+    }
+
+    @Override
+    public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
+        this.traversalRing.replaceTraversal(
+                (Traversal.Admin<S, String>) oldTraversal,
+                (Traversal.Admin<S, String>) newTraversal);
+    }
+
     // private methods
 
     private Set<String> getVariables() {
         final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         final Set<String> variables = new LinkedHashSet<>();
         while (matcher.find()) {
-            final String varName = matcher.group(1);
-            if (varName != null) {
-                variables.add(matcher.group(1));
+            final String varName = matcher.group(2);
+            if (varName != null && !varName.equals(FROM_BY)) {
+                variables.add(varName);
             }
         }
         return variables;
-    }
-
-    private String evaluate(final Map<String, Object> values) {
-        int lastIndex = 0;
-        final StringBuilder output = new StringBuilder();
-        final Matcher matcher = VARIABLE_PATTERN.matcher(format);
-        matcher.reset();
-
-        while (matcher.find()) {
-            final String varName = matcher.group(1);
-            if (varName == null) continue;
-
-            final Object value = values.get(varName);
-            output.append(format, lastIndex, matcher.start()).append(value);
-
-            lastIndex = matcher.end();
-        }
-
-        if (lastIndex < format.length()) {
-            output.append(format, lastIndex, format.length());
-        }
-        return output.toString();
     }
 }

@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,8 +33,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class FormatStepTest extends StepTest {
 
@@ -55,9 +54,12 @@ public class FormatStepTest extends StepTest {
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello % {world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello %%{world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello %{_}"));
         assertEquals(Collections.singletonList(""), getVariables("Hello %{}"));
         assertEquals(Collections.singletonList(" "), getVariables("Hello %{ }"));
         assertEquals(Collections.singletonList("world"), getVariables("Hello %{world}"));
+        assertEquals(Collections.singletonList("world"), getVariables("%%{Hello} %{world} %{_}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello} %{hello} %{world}"));
@@ -70,38 +72,36 @@ public class FormatStepTest extends StepTest {
 
     @Test
     public void shouldWorkWithVertexInput() {
-        final VertexProperty mockProperty = mock(VertexProperty.class);
-        when(mockProperty.key()).thenReturn("name");
-        when(mockProperty.value()).thenReturn("Stephen");
-        when(mockProperty.isPresent()).thenReturn(true);
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
 
-        final Vertex mockVertex = mock(Vertex.class);
-        when(mockVertex.property("name")).thenReturn(mockProperty);
-
-        assertEquals("Hello Stephen", __.__(mockVertex).format("Hello %{name}").next());
+        assertEquals("Hello Stephen", __.__(vertex1).format("Hello %{name}").next());
     }
 
     @Test
     public void shouldWorkWithMultipleVertexInput() {
-        final VertexProperty mockProperty1 = mock(VertexProperty.class);
-        when(mockProperty1.key()).thenReturn("name");
-        when(mockProperty1.value()).thenReturn("Stephen");
-        when(mockProperty1.isPresent()).thenReturn(true);
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
 
-        final Vertex mockVertex1 = mock(Vertex.class);
-        when(mockVertex1.property("name")).thenReturn(mockProperty1);
-
-        final VertexProperty mockProperty2 = mock(VertexProperty.class);
-        when(mockProperty2.key()).thenReturn("name");
-        when(mockProperty2.value()).thenReturn("Marko");
-        when(mockProperty2.isPresent()).thenReturn(true);
-
-        final Vertex mockVertex2 = mock(Vertex.class);
-        when(mockVertex2.property("name")).thenReturn(mockProperty2);
+        final Vertex vertex2 = new DetachedVertex(11L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Marko").create()));
 
         assertEquals(Arrays.asList("Hello Stephen", "Hello Marko"),
-                __.__(mockVertex1, mockVertex2).format("Hello %{name}").toList());
+                __.__(vertex1, vertex2).format("Hello %{name}").toList());
     }
+
+    @Test
+    public void shouldWorkWithModulator() {
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
+
+        final Vertex vertex2 = new DetachedVertex(11L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Marko").create()));
+
+        assertEquals(Arrays.asList("Hello Stephen", "Hello Marko"),
+                __.__(vertex1, vertex2).format("%{_} %{_}").by(__.constant("Hello")).by(__.values("name")).toList());
+    }
+
     @Test
     public void shouldWorkWithMap() {
         assertEquals("Hello 2", __.__(asMap("name", 2)).format("Hello %{name}").next());
@@ -121,38 +121,23 @@ public class FormatStepTest extends StepTest {
 
     @Test
     public void shouldWorkWithMixedInput() {
-        final VertexProperty mockProperty1 = mock(VertexProperty.class);
-        when(mockProperty1.key()).thenReturn("p1");
-        when(mockProperty1.value()).thenReturn("val1");
-        when(mockProperty1.isPresent()).thenReturn(true);
-
-        final VertexProperty mockProperty2 = mock(VertexProperty.class);
-        when(mockProperty2.key()).thenReturn("p2");
-        when(mockProperty2.value()).thenReturn("val2");
-        when(mockProperty2.isPresent()).thenReturn(true);
-
-        final Vertex mockVertex = mock(Vertex.class);
-        when(mockVertex.property("p1")).thenReturn(mockProperty1);
-        when(mockVertex.property("p2")).thenReturn(mockProperty2);
+        final Vertex vertex = new DetachedVertex(10L, "test", Arrays.asList(
+                DetachedVertexProperty.build().setId(1).setLabel("p1").setValue("val1").create(),
+                DetachedVertexProperty.build().setId(2).setLabel("p2").setValue("val2").create()));
 
         assertEquals("val1 val2 valA valB",
                 __.inject("valA").as("varA").
                         constant("valB").as("varB").
-                        constant(mockVertex).format("%{p1} %{p2} %{varA} %{varB}").next());
+                        constant(vertex).format("%{p1} %{p2} %{varA} %{varB}").next());
     }
 
     @Test
     public void shouldPrioritizeVertexPropertiesOverScopeVariables() {
-        final VertexProperty mockProperty1 = mock(VertexProperty.class);
-        when(mockProperty1.key()).thenReturn("name");
-        when(mockProperty1.value()).thenReturn("Stephen");
-        when(mockProperty1.isPresent()).thenReturn(true);
-
-        final Vertex mockVertex = mock(Vertex.class);
-        when(mockVertex.property("name")).thenReturn(mockProperty1);
+        final Vertex vertex = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
 
         assertEquals("Hello Stephen",
                 __.__("Marko").as("name").
-                        constant(mockVertex).format("Hello %{name}").next());
+                        constant(vertex).format("Hello %{name}").next());
     }
 }

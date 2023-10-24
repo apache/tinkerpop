@@ -44,6 +44,21 @@ Feature: Step - format()
       | josh is 32 years old |
       | peter is 35 years old |
 
+  Scenario: g_V_formatXstrX_byXnameX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().format("%{_} is %{_} years old").by(__.values("name")).by(__.values("age"))
+      """
+    When iterated to list
+    # software don't have age, so filtered out
+    Then the result should be unordered
+      | result |
+      | marko is 29 years old |
+      | vadas is 27 years old |
+      | josh is 32 years old |
+      | peter is 35 years old |
+
   Scenario: g_V_elementMap_formatXstrX
     Given the modern graph
     And the traversal of
