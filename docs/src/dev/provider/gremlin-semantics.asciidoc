@@ -757,7 +757,7 @@ will cause exceptions to be thrown.
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/CombineStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CombineStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference],
 
@@ -941,7 +941,7 @@ applies to list types which means that non-iterable types (including null) will 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DifferenceStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
 
 [[disjunct-step]]
@@ -976,7 +976,7 @@ types which means that non-iterable types (including null) will cause exceptions
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DisjunctStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DisjunctStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[reference]
 
 [[element-step]]
@@ -1057,7 +1057,7 @@ types which means that non-iterable types (including null) will cause exceptions
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/IntersectStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/IntersectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
 
 [[conjoin-step]]
@@ -1092,7 +1092,7 @@ null) will cause exceptions to be thrown.
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/ConjoinStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConjoinStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 
 [[lTrim-step]]
@@ -1124,14 +1124,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 [[merge-step]]
 === merge()
 
-*Description:* Adds the union of two sets to the Traversal Stream.
+*Description:* Adds the union of two sets (or two maps) to the Traversal Stream.
 
 *Syntax:* `merge(Object)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`array`/`Iterable`/`Map` |`Set`/`Map`
 |=========================================================
 
 *Arguments:*
@@ -1144,15 +1144,17 @@ None
 
 *Considerations:*
 
-A set is returned after the merge operation is applied so there won't be duplicates. This step only applies to list
-types which means that non-iterable types (including null) will cause exceptions to be thrown.
+For iterable types, a set is returned after the merge operation is applied so there won't be duplicates. For maps, if
+both maps contain the same key then the value yielded from the argument will be the value put into the merged map. This
+step only applies to list types or maps which means that other non-iterable types (including null) will cause exceptions
+to be thrown.
 
 *Exceptions*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
-* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser isn't a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/MergeStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 
 [[merge-e-step]]
@@ -1328,7 +1330,7 @@ applies to list types which means that non-iterable types (including null) will 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/ProductStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 [[replace-step]]

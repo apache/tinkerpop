@@ -280,7 +280,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[product()-s
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[intersect()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[combine()-step],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#join-step[conjoin()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[conjoin()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[difference()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[disjunct()-step]
 

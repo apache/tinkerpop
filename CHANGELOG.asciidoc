@@ -39,6 +39,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added Gherkin support for Date.
 * Extended `datetime()` function for current server date.
 * Added list filtering functions `all` and `any`.
+* Added list/set functions `conjoin`, `combine`, `difference`, `disjunct`, `intersect`, `merge`, and `product`.
 * Added getter for `isStart` on `UnionStep`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
 * Fixed deserialization of element properties for GraphBinary.
