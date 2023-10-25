@@ -44,6 +44,7 @@ Feature: Step - format()
       | josh is 32 years old |
       | peter is 35 years old |
 
+  @GraphComputerVerificationReferenceOnly
   Scenario: g_V_formatXstrX_byXnameX_byXageX
     Given the modern graph
     And the traversal of
