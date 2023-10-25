@@ -32,17 +32,6 @@ Feature: Step - reverse()
       | eno tset |
       | null |
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXListXa_bXX_reverse
-    Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
-    And the traversal of
-    """
-    g.inject(xx1).reverse()
-    """
-    When iterated to list
-    Then the traversal will raise an error with message containing text of "The reverse() step can only take string as argument"
-
   Scenario: g_V_valuesXnameX_reverse
     Given the modern graph
     And the traversal of
@@ -58,3 +47,106 @@ Feature: Step - reverse()
       | hsoj |
       | elppir |
       | retep |
+
+  Scenario: g_V_valuesXageX_reverse
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_out_path_byXnameX_reverse
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().path().by("name").reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[lop,marko] |
+      | l[vadas,marko] |
+      | l[josh,marko] |
+      | l[ripple,josh] |
+      | l[lop,josh] |
+      | l[lop,peter] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_out_out_path_byXnameX_reverse
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().out().path().by("name").reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[ripple,josh,marko] |
+      | l[lop,josh,marko] |
+
+  Scenario: g_V_valuesXageX_fold_orderXlocalX_byXdescX_reverse
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").fold().order(local).by(desc).reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[27].i,d[29].i,d[32].i,d[35].i] |
+
+  Scenario: g_V_valuesXnameX_fold_orderXlocalX_by_reverse
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").fold().order(local).by().reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[vadas,ripple,peter,marko,lop,josh] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXnullX_reverse
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXbX_reverse
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("b").reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | b |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX3_threeX_reverse
+    Given the empty graph
+    And using the parameter xx1 defined as "l[d[3].i,three]"
+    And the traversal of
+      """
+      g.inject(xx1).reverse()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[three,d[3].i] |

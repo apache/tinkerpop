@@ -40,20 +40,24 @@ public class ConcatStepTest extends StepTest {
 
     @Test
     public void testReturnTypes() {
+        assertEquals("a", __.__("a").concat().next());
         assertEquals("abc", __.__("a").concat("b", "c").next());
-        assertEquals("ab", __.__("a").concat(__.inject("b", "c")).next());
-        assertEquals("ab", __.__("a").concat(__.inject(Arrays.asList("b", "c")).unfold()).next());
+        assertEquals("aa", __.__("a").concat(__.inject("b", "c")).next());
+        assertEquals("aa", __.__("a").concat(__.inject(Arrays.asList("b", "c")).unfold()).next());
         assertEquals("", __.__("").concat("").next());
 
         assertArrayEquals(new String[]{"a", "b", "c"},
                 __.__("a", "b", "c").concat().toList().toArray());
         assertArrayEquals(new String[]{"ade", "bde", "cde"},
                 __.__("a", "b", "c").concat("d", "e").toList().toArray());
-        assertArrayEquals(new String[]{"ad", "be", "c"},
+        assertArrayEquals(new String[]{"aa", "bb", "cc"},
                 __.__("a", "b", "c").concat(__.inject("d", "e")).toList().toArray());
 
         assertArrayEquals(new String[]{"Mr.a", "Mr.b", "Mr.c", "Mr.d"},
                 __.__("a", "b", "c", "d").as("letters").constant("Mr.").concat(__.select("letters")).toList().toArray());
+        assertArrayEquals(new String[]{"Hello Mr.a", "Hello Mr.b", "Hello Mr.c", "Hello Mr.d"},
+                __.__("a", "b", "c", "d").as("letters").
+                        constant("Hello ").concat(__.constant("Mr."), __.select("letters")).toList().toArray());
 
         String nullStr = null;
         assertNull(__.inject(null).concat(nullStr).next());

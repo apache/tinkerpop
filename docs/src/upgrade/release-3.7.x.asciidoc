@@ -30,7 +30,36 @@ complete list of all the modifications that are part of this release.
 === Upgrading for Users
 
 ==== String Manipulation Steps
-Additional String manipulation steps have been added to this version.
+Modifications to the concat() step as well as additional String manipulation steps have been added to this version.
+
+===== Updates to concat():
+Concat has been modified to take traversal varargs instead of a single traversal. Users no longer have to chain
+concat() steps together to concatenate multiple traversals:
+[source,text]
+----
+gremlin> g.V(1).outE().as("a").V(1).values("name").concat(select("a").label(), select("a").inV().values("name"))
+==>markocreatedlop
+==>markoknowsvadas
+==>markoknowsjosh
+----
+
+A notable breaking change from 3.7.0 is that we have output order of `inject()` as a child of `concat()` to be consistent with other parent steps. Any 3.7.0 uses of `concat(inject(X))` should change to `concat(constant(X))` to retain the old semantics.
+[source,text]
+----
+// 3.7.0
+gremlin> g.inject("a").concat(inject("b"))
+==>ab
+
+// 3.7.1
+gremlin> g.inject("a").concat(inject())
+==>aa
+gremlin> g.inject("a").concat(inject("b"))
+==>aa
+gremlin> g.inject("a").concat(constant("b"))
+==>ab
+----
+
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[concat()-step],
 
 ===== String Steps asString(), length(), toLower(), toUpper():
 
@@ -235,7 +264,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[all()-step]
 
 ==== List Traverser based Steps
-Additional List manipulation/filter steps have been added to replace the use of closures: `any()` and `all()`.
+Additional List manipulation/filter steps have been added to replace the use of closures: `any()`, `all()`, `product()`,
+`merge()`, `intersect()`, `combine()`, `conjoin()`, `difference()`,`disjunct()` and `reverse()`.
 
 The following example demonstrates usage of the newly introduced steps:
 
@@ -245,11 +275,34 @@ gremlin> g.V().values("age").fold().all(P.gt(10))
 ==>[29,27,32,35]
 gremlin> g.V().values("age").fold().any(P.eq(32))
 ==>[29,27,32,35]
+gremlin> g.V().values("age").fold().product(__.V().values("age").limit(2).fold())
+==>[[29,29],[29,27],[27,29],[27,27],[32,29],[32,27],[35,29],[35,27]]
+gremlin> g.V().values("age").fold().merge([32,30,50])
+==>[32,50,35,27,29,30]
+gremlin> g.V().values("age").fold().combine([32,30,50])
+==>[29,27,32,35,32,30,50]
+gremlin> g.V().values("age").fold().intersect([32,30,50])
+==>[32]
+gremlin> g.V().values("age").fold().disjunct([32,30,50])
+==>[50,35,27,29,30]
+gremlin> g.V().values("age").fold().difference([32,30,50])
+==>[35,27,29]
+gremlin> g.V().values("age").order().by(desc).fold().reverse()
+==>[27,29,32,35]
+gremlin> g.V().values("age").fold().conjoin("-")
+==>29-27-32-35
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2978[TINKERPOP-2978],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[all()-step],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[any()-step]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[any()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[product()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[intersect()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[combine()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#join-step[conjoin()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[difference()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[disjunct()-step]
 
 ==== Date manipulation functions
 

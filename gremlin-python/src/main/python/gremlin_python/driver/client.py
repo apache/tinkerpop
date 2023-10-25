@@ -19,6 +19,7 @@
 import logging
 import warnings
 import queue
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from gremlin_python.driver import connection, protocol, request, serializer
@@ -45,12 +46,16 @@ class Client:
                  kerberized_service="", headers=None, session=None,
                  enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
+
+        # check via url that we are using http protocol
+        self._use_http = re.search('^http', url)
+
         self._closed = False
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
-        if "max_content_length" not in transport_kwargs:
+        if not self._use_http and "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphBinarySerializersV1()
@@ -63,21 +68,31 @@ class Client:
         if transport_factory is None:
             try:
                 from gremlin_python.driver.aiohttp.transport import (
-                    AiohttpTransport)
+                    AiohttpTransport, AiohttpHTTPTransport)
             except ImportError:
                 raise Exception("Please install AIOHTTP or pass "
                                 "custom transport factory")
             else:
                 def transport_factory():
-                    return AiohttpTransport(**transport_kwargs)
+                    if self._use_http:
+                        return AiohttpHTTPTransport(**transport_kwargs)
+                    else:
+                        return AiohttpTransport(**transport_kwargs)
         self._transport_factory = transport_factory
         if protocol_factory is None:
-            def protocol_factory(): return protocol.GremlinServerWSProtocol(
-                self._message_serializer,
-                username=self._username,
-                password=self._password,
-                kerberized_service=kerberized_service,
-                max_content_length=transport_kwargs["max_content_length"])
+            def protocol_factory():
+                if self._use_http:
+                    return protocol.GremlinServerHTTPProtocol(
+                        self._message_serializer,
+                        username=self._username,
+                        password=self._password)
+                else:
+                    return protocol.GremlinServerWSProtocol(
+                        self._message_serializer,
+                        username=self._username,
+                        password=self._password,
+                        kerberized_service=kerberized_service,
+                        max_content_length=transport_kwargs["max_content_length"])
         self._protocol_factory = protocol_factory
         if self._session_enabled:
             if pool_size is None:

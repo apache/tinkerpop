@@ -197,11 +197,14 @@ traversalMethod
     | traversalMethod_choose
     | traversalMethod_coalesce
     | traversalMethod_coin
+    | traversalMethod_conjoin
     | traversalMethod_connectedComponent
     | traversalMethod_constant
     | traversalMethod_count
     | traversalMethod_cyclicPath
     | traversalMethod_dedup
+    | traversalMethod_difference
+    | traversalMethod_disjunct
     | traversalMethod_drop
     | traversalMethod_elementMap
     | traversalMethod_emit
@@ -221,6 +224,7 @@ traversalMethod
     | traversalMethod_identity
     | traversalMethod_in
     | traversalMethod_inE
+    | traversalMethod_intersect
     | traversalMethod_inV
     | traversalMethod_index
     | traversalMethod_inject
@@ -259,6 +263,9 @@ traversalMethod
     | traversalMethod_sack
     | traversalMethod_sample
     | traversalMethod_select
+    | traversalMethod_combine
+    | traversalMethod_product
+    | traversalMethod_merge
     | traversalMethod_shortestPath
     | traversalMethod_sideEffect
     | traversalMethod_simplePath
@@ -340,16 +347,16 @@ traversalMethod_aggregate
     ;
 
 traversalMethod_all
-	: 'all' LPAREN traversalPredicate RPAREN #traversalMethod_all_P
-	;
+    : 'all' LPAREN traversalPredicate RPAREN #traversalMethod_all_P
+    ;
 
 traversalMethod_and
     : 'and' LPAREN nestedTraversalList RPAREN
     ;
 
 traversalMethod_any
-	: 'any' LPAREN traversalPredicate RPAREN #traversalMethod_any_P
-	;
+    : 'any' LPAREN traversalPredicate RPAREN #traversalMethod_any_P
+    ;
 
 traversalMethod_as
     : 'as' LPAREN stringArgument (COMMA stringLiteralVarargs)? RPAREN
@@ -411,6 +418,10 @@ traversalMethod_coin
     : 'coin' LPAREN floatArgument RPAREN
     ;
 
+traversalMethod_combine
+    : 'combine' LPAREN genericLiteralArgument RPAREN #traversalMethod_combine_Object
+    ;
+
 traversalMethod_connectedComponent
     : 'connectedComponent' LPAREN RPAREN
     ;
@@ -431,6 +442,14 @@ traversalMethod_cyclicPath
 traversalMethod_dedup
     : 'dedup' LPAREN traversalScopeArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_dedup_Scope_String
     | 'dedup' LPAREN stringLiteralVarargs RPAREN #traversalMethod_dedup_String
+    ;
+
+traversalMethod_difference
+    : 'difference' LPAREN genericLiteralArgument RPAREN #traversalMethod_difference_Object
+    ;
+
+traversalMethod_disjunct
+    : 'disjunct' LPAREN genericLiteralArgument RPAREN #traversalMethod_disjunct_Object
     ;
 
 traversalMethod_drop
@@ -529,6 +548,10 @@ traversalMethod_inE
     : 'inE' LPAREN stringLiteralVarargs RPAREN
     ;
 
+traversalMethod_intersect
+    : 'intersect' LPAREN genericLiteralArgument RPAREN #traversalMethod_intersect_Object
+    ;
+
 traversalMethod_inV
     : 'inV' LPAREN RPAREN
     ;
@@ -544,6 +567,10 @@ traversalMethod_inject
 traversalMethod_is
     : 'is' LPAREN genericLiteralArgument RPAREN #traversalMethod_is_Object
     | 'is' LPAREN traversalPredicate RPAREN #traversalMethod_is_P
+    ;
+
+traversalMethod_conjoin
+    : 'conjoin' LPAREN stringArgument RPAREN #traversalMethod_conjoin_String
     ;
 
 traversalMethod_key
@@ -588,6 +615,10 @@ traversalMethod_max
 traversalMethod_mean
     : 'mean' LPAREN RPAREN #traversalMethod_mean_Empty
     | 'mean' LPAREN traversalScopeArgument RPAREN #traversalMethod_mean_Scope
+    ;
+
+traversalMethod_merge
+    : 'merge' LPAREN genericLiteralArgument RPAREN #traversalMethod_merge_Object
     ;
 
 traversalMethod_min
@@ -650,6 +681,10 @@ traversalMethod_peerPressure
     : 'peerPressure' LPAREN RPAREN
     ;
 
+traversalMethod_product
+    : 'product' LPAREN genericLiteralArgument RPAREN #traversalMethod_product_Object
+    ;
+
 traversalMethod_profile
     : 'profile' LPAREN RPAREN #traversalMethod_profile_Empty
     | 'profile' LPAREN stringArgument RPAREN #traversalMethod_profile_String
@@ -686,6 +721,10 @@ traversalMethod_read
 traversalMethod_repeat
     : 'repeat' LPAREN stringArgument COMMA nestedTraversal RPAREN #traversalMethod_repeat_String_Traversal
     | 'repeat' LPAREN nestedTraversal RPAREN #traversalMethod_repeat_Traversal
+    ;
+
+traversalMethod_reverse
+    : 'reverse' LPAREN RPAREN #traversalMethod_reverse_Empty
     ;
 
 traversalMethod_sack
@@ -831,7 +870,7 @@ traversalMethod_call
     ;
 
 traversalMethod_concat
-    : 'concat' LPAREN nestedTraversal RPAREN #traversalMethod_concat_Traversal
+    : 'concat' LPAREN nestedTraversal (COMMA nestedTraversalList)? RPAREN #traversalMethod_concat_Traversal_Traversal
     | 'concat' LPAREN stringLiteralVarargs RPAREN #traversalMethod_concat_String
     ;
 
@@ -867,10 +906,6 @@ traversalMethod_rTrim
     : 'rTrim' LPAREN RPAREN #traversalMethod_rTrim_Empty
     ;
 
-traversalMethod_reverse
-    : 'reverse' LPAREN RPAREN #traversalMethod_reverse_Empty
-    ;
-
 traversalMethod_replace
     : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
     ;
@@ -893,8 +928,8 @@ traversalMethod_dateAdd
     ;
 
 traversalMethod_dateDiff
-	: 'dateDiff' LPAREN nestedTraversal RPAREN #traversalMethod_dateDiff_Traversal
-	| 'dateDiff' LPAREN dateArgument RPAREN #traversalMethod_dateDiff_Date
+    : 'dateDiff' LPAREN nestedTraversal RPAREN #traversalMethod_dateDiff_Traversal
+    | 'dateDiff' LPAREN dateArgument RPAREN #traversalMethod_dateDiff_Date
     ;
 
 /*********************************************

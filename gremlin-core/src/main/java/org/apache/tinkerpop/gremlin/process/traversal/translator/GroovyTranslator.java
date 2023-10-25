@@ -186,7 +186,7 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                 if (NumberHelper.isPositiveInfinity(o))
                     return (o instanceof Double ? "Double" : "Float") + ".POSITIVE_INFINITY";
                 if (NumberHelper.isNegativeInfinity(o))
-                    return (o instanceof Double ? "Double" : "Float") + ".POSITIVE_INFINITY";
+                    return (o instanceof Double ? "Double" : "Float") + ".NEGATIVE_INFINITY";
 
                 return o + (o instanceof Double ? "d" : "f");
             }

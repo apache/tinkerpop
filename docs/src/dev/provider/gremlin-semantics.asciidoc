@@ -725,12 +725,48 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[[combine-step]]
+=== combine()
+
+*Description:* Appends one list to the other and returns the result to the Traversal Stream.
+
+*Syntax:* `combine(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`List`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+A list is returned after the combine operation is applied so duplicates are allowed. `Merge` can be used instead if
+duplicates aren't wanted. This step only applies to list types which means that non-iterable types (including null)
+will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/CombineStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference],
+
 [[concat-step]]
 === concat()
 
 *Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
 
-*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal)`
+*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal, Traversal...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -740,10 +776,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 *Arguments:*
 
-* `String...` - If one or more String values are provided, they will be concatenated together with the
-incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
-* `Traversal` - The `Traversal` value must resolve to a `String`. The first result returned from the traversal will be
-concatenated with the incoming traverser.
+* `concatStrings` - Varargs of `String`. If one or more String values are provided, they will be concatenated together
+with the incoming traverser. If no argument is provided, the String value from the incoming traverser is returned.
+* `concatTraveral` - A `Traversal` whose must value resolve to a `String`. The first result returned from the traversal will
+be concatenated with the incoming traverser.
+* `otherConcatTraverals` - Varargs of `Traversal`. Each `Traversal` value must resolve to a `String`. The first result
+returned from each traversal will be concatenated with the incoming traverser and the previous traversal arguments.
 
 Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
 concatenated, the `null` value will be propagated and returned.
@@ -871,6 +909,76 @@ can return any of:
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DedupGlobalStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
+[[difference-step]]
+=== difference()
+
+*Description:* Adds the difference of two lists to the Traversal Stream. 
+
+*Syntax:* `difference(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`Set`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Set difference (`A-B`) is an ordered operation. The incoming traverser is treated as `A` and the provided argument is
+treated as `B`. A set is returned after the difference operation is applied so there won't be duplicates. This step only
+applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DifferenceStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
+
+[[disjunct-step]]
+=== disjunct()
+
+*Description:* Adds the disjunct set to the Traversal Stream.
+
+*Syntax:* `disjunct(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`Set`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array).
+* `Traversal` - A traversal that will produce a list of items.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+A set is returned after the disjunct operation is applied so there won't be duplicates. This step only applies to list
+types which means that non-iterable types (including null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DisjunctStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[reference]
+
 [[element-step]]
 === element()
 
@@ -947,6 +1055,76 @@ Null values from the incoming traverser are not processed and remain as null whe
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[[intersect-step]]
+=== intersect()
+
+*Description:* Adds the intersection to the Traversal Stream.
+
+*Syntax:* `intersect(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`Set`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+A set is returned after the intersect operation is applied so there won't be duplicates. This step only applies to list
+types which means that non-iterable types (including null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/IntersectStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
+
+[[conjoin-step]]
+=== conjoin()
+
+*Description:* Joins every element in a list together into a String. 
+
+*Syntax:* `conjoin(String)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`String`
+|=========================================================
+
+*Arguments:*
+
+* `String` - A delimiter to use to join the elements together. Can't be null.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Every element in the list (including nulls) is converted to a String. The delimiter is inserted between neighboring
+elements to form the final result. This step only applies to list types which means that non-iterable types (including
+null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/ConjoinStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
+
 [[lTrim-step]]
 === lTrim()
 
@@ -972,6 +1150,40 @@ Null values from the incoming traverser are not processed and remain as null whe
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
+
+[[merge-step]]
+=== merge()
+
+*Description:* Adds the union of two sets to the Traversal Stream.
+
+*Syntax:* `merge(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`Set`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array), a map, or a traversal that will produce a list of items.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+A set is returned after the merge operation is applied so there won't be duplicates. This step only applies to list
+types which means that non-iterable types (including null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/MergeStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 
 [[merge-e-step]]
 === mergeE()
@@ -1115,6 +1327,40 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[[product-step]]
+=== product()
+
+*Description:* Adds the cartesian product to the Traversal Stream.
+
+*Syntax:* `product(Object)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`array`/`Iterable` |`List(List)`
+|=========================================================
+
+*Arguments:*
+
+* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+A list of lists is returned after the product operation is applied with the inner list being a result pair. This step only
+applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+
+*Exceptions*
+
+* If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+* If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/ProductStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
+
 [[replace-step]]
 === replace()
 
@@ -1143,7 +1389,7 @@ Null values from the incoming traverser are not processed and remain as null whe
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
-
+[[reverse-step]]
 === reverse()
 
 *Description:* Returns a reversed string of the incoming string traverser

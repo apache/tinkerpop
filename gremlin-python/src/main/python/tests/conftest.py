@@ -36,7 +36,7 @@ from gremlin_python.driver.protocol import GremlinServerWSProtocol
 from gremlin_python.driver.serializer import (
     GraphSONMessageSerializer, GraphSONSerializersV2d0, GraphSONSerializersV3d0,
     GraphBinarySerializersV1)
-from gremlin_python.driver.aiohttp.transport import AiohttpTransport
+from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTTPTransport
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'wss://localhost:{}/gremlin')
@@ -50,6 +50,10 @@ basic_url = gremlin_basic_auth_url.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
 
 kerberized_service = 'test-service@{}'.format(kerberos_hostname)
+gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
+gremlin_basic_auth_url_http = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/')
+anonymous_url_http = gremlin_server_url_http.format(45940)
+basic_url_http = gremlin_basic_auth_url_http.format(45941)
 verbose_logging = False
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
@@ -290,3 +294,55 @@ def graphson_serializer_v3(request):
 @pytest.fixture
 def graphbinary_serializer_v1(request):
     return GraphBinarySerializersV1()
+
+
+@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+def remote_connection_http(request):
+    try:
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv2':
+            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        else:
+            raise ValueError("Invalid serializer option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+"""
+# The WsAndHttpChannelizer somehow does not distinguish the ssl handlers so authenticated https remote connection will
+# only work with HttpChannelizer that is currently not in the testing set up, thus this is commented out for now
+
+@pytest.fixture(params=['basic'])
+def remote_connection_http_authenticated(request):
+    try:
+        if request.param == 'basic':
+            # turn off certificate verification for testing purposes only
+            ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_opts.verify_mode = ssl.CERT_NONE
+            remote_conn = DriverRemoteConnection(basic_url_http, 'gmodern',
+                                                 username='stephen', password='password',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0(),
+                                                 transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
+        else:
+            raise ValueError("Invalid authentication option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+"""

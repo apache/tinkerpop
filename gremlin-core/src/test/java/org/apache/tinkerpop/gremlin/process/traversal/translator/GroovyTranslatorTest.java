@@ -219,6 +219,21 @@ public class GroovyTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateNaN() {
+        assertTranslation("Double.NaN", Double.NaN);
+    }
+
+    @Test
+    public void shouldTranslatePosInf() {
+        assertTranslation("Double.POSITIVE_INFINITY", Double.POSITIVE_INFINITY);
+    }
+
+    @Test
+    public void shouldTranslateNegInf() {
+        assertTranslation("Double.NEGATIVE_INFINITY", Double.NEGATIVE_INFINITY);
+    }
+
+    @Test
     public void shouldIncludeCustomTypeTranslationForSomethingSilly() throws Exception {
         final SillyClass notSillyEnough = SillyClass.from("not silly enough", 100);
 

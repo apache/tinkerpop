@@ -584,12 +584,32 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal combine method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  combine(...args) {
+    this.bytecode.addStep('combine', args);
+    return this;
+  }
+
+  /**
    * Graph traversal concat method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   concat(...args) {
     this.bytecode.addStep('concat', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal conjoin method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  conjoin(...args) {
+    this.bytecode.addStep('conjoin', args);
     return this;
   }
 
@@ -660,6 +680,26 @@ class GraphTraversal extends Traversal {
    */
   dedup(...args) {
     this.bytecode.addStep('dedup', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal difference method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  difference(...args) {
+    this.bytecode.addStep('difference', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal disjunct method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  disjunct(...args) {
+    this.bytecode.addStep('disjunct', args);
     return this;
   }
 
@@ -913,6 +953,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal intersect method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  intersect(...args) {
+    this.bytecode.addStep('intersect', args);
+    return this;
+  }
+
+  /**
    * Graph traversal is method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1039,6 +1089,16 @@ class GraphTraversal extends Traversal {
    */
   mean(...args) {
     this.bytecode.addStep('mean', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal merge method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  merge(...args) {
+    this.bytecode.addStep('merge', args);
     return this;
   }
 
@@ -1199,6 +1259,16 @@ class GraphTraversal extends Traversal {
    */
   peerPressure(...args) {
     this.bytecode.addStep('peerPressure', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal product method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  product(...args) {
+    this.bytecode.addStep('product', args);
     return this;
   }
 

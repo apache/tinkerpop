@@ -29,7 +29,11 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added Gherkin parsing support for specific string results using `str[]`.
 * Added the `trim()`, `lTrim()`, `rTrim()`, and `reverse()` steps to perform `String` manipulations.
 * Added `replace()`, `split()` and `substring()` steps to perform `String` manipulations.
+* Update `concat()` to accept `Traversal` varargs.
+* Corrected `concat()` signatures in `gremlin-dotnet`, `Concat()` is now used instead of `Concat<object>()`. *(breaking)*
+* Update `concat()` to not special treat `inject` in arguments and use `TraversalUtil.apply` on it as with any other child traversals. *(breaking)*
 * Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
+* Fixed multiline query bug in console caused by upgrade to Groovy 4.
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.
 * Added new data type `DT` to represent periods of time.
 * Added Gherkin support for Date.
@@ -37,7 +41,9 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added list filtering functions `all` and `any`.
 * Added getter for `isStart` on `UnionStep`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
+* Fixed deserialization of element properties for GraphBinary.
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
+* Improved performance for element comparison.
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
@@ -230,10 +236,13 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
 * Allowed `io()` to automatically detect ".graphml" as a file extension.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
+* Allowed `gremlin-python` to be used over HTTP for experimental purposes.
+* Fixed translation of `P`, `TraversalStrategy` and Enums, and added translation for `Vertex`, `Edge`, `VertexProperty`, list, set, dict, number, binding and lambda in Groovy Translator for Python.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 * ProjectStep now throws exception when a duplicate key is provided in a query.
+* Fixed bug in `ElementIdStrategy` where the order of `hasId` was impacting proper filters.
 * Fixed bug in the Java driver configuration for serialization when reading settings from an `InputStream`.
 * Fixed bug in `DotNetTranslator` where `PartitionStrategy` usage was not translating properly when specifying the `readPartitions`.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.

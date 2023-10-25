@@ -318,6 +318,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_combine_Object(final GremlinParser.TraversalMethod_combine_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_conjoin_String(final GremlinParser.TraversalMethod_conjoin_StringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_connectedComponent(final GremlinParser.TraversalMethod_connectedComponentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -343,6 +351,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_dedup_String(final GremlinParser.TraversalMethod_dedup_StringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_difference_Object(final GremlinParser.TraversalMethod_difference_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_disjunct_Object(final GremlinParser.TraversalMethod_disjunct_ObjectContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -510,6 +526,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_intersect_Object(final GremlinParser.TraversalMethod_intersect_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_inV(final GremlinParser.TraversalMethod_inVContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -586,6 +606,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_merge_Object(final GremlinParser.TraversalMethod_merge_ObjectContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_min_Empty(final GremlinParser.TraversalMethod_min_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -651,6 +675,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_peerPressure(final GremlinParser.TraversalMethod_peerPressureContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_product_Object(final GremlinParser.TraversalMethod_product_ObjectContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -923,7 +951,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override
-	public T visitTraversalMethod_concat_Traversal(final GremlinParser.TraversalMethod_concat_TraversalContext ctx) { notImplemented(ctx); return null; }
+	public T visitTraversalMethod_concat_Traversal_Traversal(final GremlinParser.TraversalMethod_concat_Traversal_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

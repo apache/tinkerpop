@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
 
@@ -277,6 +278,17 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_combine_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().combine(list),
+                eval("g.V().values(\"name\").fold().combine([1,2])"));
+        compare(g.V().values("name").fold().combine(V().fold()),
+                eval("g.V().values(\"name\").fold().combine(__.V().fold())"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_constant() throws Exception {
         compare(g.V().constant("yigit"), eval("g.V().constant('yigit')"));
     }
@@ -304,6 +316,28 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_dedup_String() throws Exception {
         compare(g.V().dedup(), eval("g.V().dedup()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_difference_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().difference(list),
+                eval("g.V().values(\"name\").fold().difference([1,2])"));
+        compare(g.V().values("name").fold().difference(V().fold()),
+                eval("g.V().values(\"name\").fold().difference(__.V().fold())"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_disjunct_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().disjunct(list),
+                eval("g.V().values(\"name\").fold().disjunct([1,2])"));
+        compare(g.V().values("name").fold().disjunct(V().fold()),
+                eval("g.V().values(\"name\").fold().disjunct(__.V().fold())"));
     }
 
     @Test
@@ -510,6 +544,17 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_intersect_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().intersect(list),
+                eval("g.V().values(\"name\").fold().intersect([1,2])"));
+        compare(g.V().values("name").fold().intersect(V().fold()),
+                eval("g.V().values(\"name\").fold().intersect(__.V().fold())"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_is_Object() throws Exception {
         compare(g.V().is(4), eval("g.V().is(4)"));
     }
@@ -522,6 +567,12 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_iterate() throws Exception {
         compare(g.V().iterate(), eval("g.V().iterate()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_conjoin_Object() throws Exception {
+        compare(g.V().values("name").fold().conjoin(";"),
+                eval("g.V().values(\"name\").fold().conjoin(\";\")"));
     }
 
     @Test
@@ -587,6 +638,17 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_mean_Scope() throws Exception {
         compare(g.V().mean(global), eval("g.V().mean(global)"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_merge_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().merge(list),
+                eval("g.V().values(\"name\").fold().merge([1,2])"));
+        compare(g.V().values("name").fold().merge(V().fold()),
+                eval("g.V().values(\"name\").fold().merge(__.V().fold())"));
     }
 
     @Test
@@ -673,6 +735,17 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_peerPressure() throws Exception {
         compare(g.V().peerPressure(), eval("g.V().peerPressure()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_product_Object() throws Exception {
+        final ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        compare(g.V().values("name").fold().product(list),
+                eval("g.V().values(\"name\").fold().product([1,2])"));
+        compare(g.V().values("name").fold().product(V().fold()),
+                eval("g.V().values(\"name\").fold().product(__.V().fold())"));
     }
 
     @Test
@@ -1151,6 +1224,34 @@ public class TraversalMethodVisitorTest {
     public void shouldParseTraversalMethod_midTraversal_E_multipleArgs_spawning() throws Exception {
         compare(g.V().coalesce(E(1,2),addE("person")),
                 eval("g.V().coalesce(__.E(1,2),__.addE('person'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_Empty() throws Exception {
+        compare(g.V().concat(), eval("g.V().concat()"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_multipleStringArgs() throws Exception {
+        compare(g.V().concat("hello", "world"), eval("g.V().concat('hello', 'world')"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_traversal() throws Exception {
+        compare(g.V().concat(constant("hello")),
+                eval("g.V().concat(__.constant('hello'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_multipleTraversalArgs() throws Exception {
+        compare(g.V().concat(constant("hello"), constant("world")),
+                eval("g.V().concat(__.constant('hello'), __.constant('world'))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_concat_ArgsWithNulls() throws Exception {
+        compare(g.V().concat(null, "hello"),
+                eval("g.V().concat(null, 'hello')"));
     }
 
     @Test
