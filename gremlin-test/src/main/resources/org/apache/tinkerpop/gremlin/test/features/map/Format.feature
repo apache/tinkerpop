@@ -49,7 +49,7 @@ Feature: Step - format()
     Given the modern graph
     And the traversal of
       """
-      g.V().format("%{_} is %{_} years old").by(__.values("name")).by(__.values("age"))
+      g.V().format("%{_} is %{_} years old").by(values("name")).by(values("age"))
       """
     When iterated to list
     # software don't have age, so filtered out
@@ -59,6 +59,42 @@ Feature: Step - format()
       | vadas is 27 years old |
       | josh is 32 years old |
       | peter is 35 years old |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_formatXstrX_byXbothE_countX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().format("%{name} has %{_} connections").by(bothE().count())
+      """
+    When iterated to list
+    # software don't have age, so filtered out
+    Then the result should be unordered
+      | result |
+      | marko has 3 connections |
+      | vadas has 1 connections |
+      | lop has 3 connections |
+      | josh has 3 connections |
+      | ripple has 1 connections |
+      | peter has 1 connections |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_projectXname_countX_byXvaluesXnameXX_byXbothE_countX_formatXstrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().project("name","count").by(values("name")).by(bothE().count()).format("%{name} has %{count} connections")
+      """
+    When iterated to list
+    # software don't have age, so filtered out
+    Then the result should be unordered
+      | result |
+      | marko has 3 connections |
+      | vadas has 1 connections |
+      | lop has 3 connections |
+      | josh has 3 connections |
+      | ripple has 1 connections |
+      | peter has 1 connections |
 
   Scenario: g_V_elementMap_formatXstrX
     Given the modern graph

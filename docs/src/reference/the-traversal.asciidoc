@@ -1655,10 +1655,14 @@ Variable values can be picked up from Element properties, maps and scope variabl
 ----
 g.V().format("%{name} is %{age} years old") <1>
 g.V().hasLabel("person").as("a").values("name").as("p1").select("a").in("knows").format("%{p1} knows %{name}") <2>
+g.V().format("%{name} has %{_} connections").by(bothE().count()) <3>
+g.V().project("name","count").by(values("name")).by(bothE().count()).format("%{name} has %{count} connections") <4>
 ----
 
 <1> A `format()` will use property values from incoming Element to produce String result.
 <2> A `format()` will use scope variable `p1` and property `name` to resolve variable values.
+<3> A `format()` will use property `name` and traversal product for positional argument to resolve variable values.
+<4> A `format()` will use map produced by `project` step to resolve variable values.
 
 *Additional References*
 

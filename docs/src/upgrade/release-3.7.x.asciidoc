@@ -258,6 +258,8 @@ gremlin> g.V().format("%{name} is %{age} years old")
 gremlin> g.V().hasLabel("person").as("a").values("name").as("p1").select("a").in("knows").format("%{p1} knows %{name}")
 ==>vadas knows marko
 ==>josh knows marko
+gremlin> g.V(1).format("%{name} has %{_} connections").by(bothE().count())
+==>marko has 3 connections
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
