@@ -122,6 +122,14 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Constructs a new instance that is bound to the specified {@link Graph} instance. Assumes that "g" is the name
+     * of the {@link GraphTraversalSource}.
+     */
+    public GremlinAntlrToJava(final Graph graph, final VariableResolver variableResolver) {
+        this(GraphTraversalSourceVisitor.TRAVERSAL_ROOT, graph, __::start, null, variableResolver);
+    }
+
+    /**
      * Constructs a new instance that is bound to the specified {@link GraphTraversalSource} and thus spawns the
      * {@link Traversal} from this "g" rather than from a fresh one constructed from the {@link Graph} instance.
      */

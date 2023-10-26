@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (NOT OFFICIALLY RELEASED YET)
 
-This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
+This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
 
 * Added the `asString()`, `length()`, `toLower()`, and `toUpper()` steps to perform `String` manipulations.
 * Added Gherkin parsing support for specific string results using `str[]`.
@@ -41,6 +41,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added list filtering functions `all` and `any`.
 * Added list/set functions `conjoin`, `combine`, `difference`, `disjunct`, `intersect`, `merge`, and `product`.
 * Added getter for `isStart` on `UnionStep`.
+* Added `NullVariableResolver` that will quietly produce a `null` for each variable found when parsing with the grammar.
 * Changed the `@MultiMetaProperties` testing tag for Gherkin feature tests to instead be separate `@MetaProperties` and `@MultiProperties`.
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
 * Fixed deserialization of element properties for GraphBinary.

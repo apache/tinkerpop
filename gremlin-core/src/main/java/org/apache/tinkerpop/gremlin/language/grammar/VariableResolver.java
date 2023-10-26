@@ -49,6 +49,24 @@ public interface VariableResolver extends BiFunction<String, GremlinParser.Varia
     }
 
     /**
+     * This {@link VariableResolver} simply provides a {@code null} value for all variable names. It's typical use
+     * is for when you really don't intend to execute the traversal and just want to get an instance of one when
+     * bindings are being used as with {@link NoOpTerminalVisitor}.
+     */
+    class NullVariableResolver implements VariableResolver {
+        private static NullVariableResolver instance = new NullVariableResolver();
+
+        public static VariableResolver instance() {
+            return instance;
+        }
+
+        @Override
+        public Object apply(final String s, final GremlinParser.VariableContext variableContext) {
+            return null;
+        }
+    }
+
+    /**
      * Allows for a provided variable set in the form of a {@code Map}, where the keys are variable names and the
      * values are the parameter values to be injected into the traversal in their place.
      */

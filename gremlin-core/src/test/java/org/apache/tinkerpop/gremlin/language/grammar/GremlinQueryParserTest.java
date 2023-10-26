@@ -24,10 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -90,5 +87,27 @@ public class GremlinQueryParserTest {
                         "y", 200,
                         "z", __.out())));
         GremlinQueryParser.parse("g.V([x, y, 300]).where(z)", gremlinAntlrToJava);
+    }
+
+    @Test
+    public void shouldParseVariableWithNoOp() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                VariableResolver.NullVariableResolver.instance());
+        final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V().has('name',gt(z))", gremlinAntlrToJava);
+
+        assertEquals(g.V().has("name", P.gt(null)).asAdmin().getBytecode(),
+                t.asAdmin().getBytecode());
+    }
+
+    @Test
+    public void shouldParseMultiVariablesWithNoOp() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g,
+                VariableResolver.NullVariableResolver.instance());
+        final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V(a,b,c).has('name',gt(z))", gremlinAntlrToJava);
+
+        assertEquals(g.V(null, null, null).has("name", P.gt(null)).asAdmin().getBytecode(),
+                t.asAdmin().getBytecode());
     }
 }
