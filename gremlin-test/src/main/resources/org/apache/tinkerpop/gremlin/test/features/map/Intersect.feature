@@ -142,7 +142,7 @@ Feature: Step - intersect()
       | result |
       | s[marko] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_intersectXseattle_vancouverX
     Given the crew graph
     And using the parameter xx1 defined as "l[seattle,vancouver]"

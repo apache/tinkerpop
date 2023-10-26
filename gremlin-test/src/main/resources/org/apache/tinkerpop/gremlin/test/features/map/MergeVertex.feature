@@ -397,7 +397,7 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: g_mergeVXlabel_person_name_markoX_propertyXname_vadas_acl_publicX
     Given the empty graph
     And the graph initializer of
@@ -511,7 +511,7 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: g_injectX0X_mergeVXlabel_person_name_markoX_propertyXname_vadas_acl_publicX
     Given the empty graph
     And the graph initializer of
@@ -563,7 +563,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\")"
     And the graph should return 2 for count of "g.V()"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXlabel_person_name_stephenX_propertyXlist_name_steveX
     Given the empty graph
     And the graph initializer of
@@ -617,7 +617,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"josh\")"
     And the graph should return 3 for count of "g.V()"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
     Given the empty graph
     And the graph initializer of
@@ -638,7 +638,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\", 19)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_withSideEffectXm_age_19X_V_hasXperson_name_markoX_mergeVXselectXcXX_optionXonMatch_sideEffectXpropertiesXageX_dropX_selectXmXX_option
     Given the empty graph
     And the graph initializer of
@@ -828,7 +828,7 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_age_listX33XX
     Given the empty graph
     And the graph initializer of
@@ -846,7 +846,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
     And the graph should return 4 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_age_setX33XX
     Given the empty graph
     And the graph initializer of
@@ -864,7 +864,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
     And the graph should return 4 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_age_setX31XX
     Given the empty graph
     And the graph initializer of
@@ -882,7 +882,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
     And the graph should return 3 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_age_singleX33XX
     Given the empty graph
     And the graph initializer of
@@ -900,7 +900,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_age_33_singleX
     Given the empty graph
     And the graph initializer of
@@ -918,7 +918,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_age_setX31X_singleX
     Given the empty graph
     And the graph initializer of
@@ -937,7 +937,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\")"
     And the graph should return 3 for count of "g.V().has(\"person\",\"name\",\"allen\").properties(\"age\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_age_singleX31X_singleX
     Given the empty graph
     And the graph initializer of

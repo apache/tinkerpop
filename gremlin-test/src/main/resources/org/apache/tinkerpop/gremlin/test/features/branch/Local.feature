@@ -18,7 +18,7 @@
 @StepClassBranch @StepLocal
 Feature: Step - local()
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value
     Given the crew graph
     And the traversal of

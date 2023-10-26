@@ -142,7 +142,7 @@ Feature: Step - difference()
       | result |
       | s[] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_differenceXseattle_vancouverX
     Given the crew graph
     And using the parameter xx1 defined as "l[seattle,vancouver]"

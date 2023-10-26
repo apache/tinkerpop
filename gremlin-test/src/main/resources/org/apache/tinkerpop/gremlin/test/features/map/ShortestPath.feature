@@ -300,7 +300,7 @@ Feature: Step - shortestPath()
       | result                     |
       | p[v[marko],v[lop],v[josh]] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_hasXname_danielX_shortestPath_targetXhasXname_stephenXX_edgesXbothEXusesXX
     Given the crew graph
     And the traversal of

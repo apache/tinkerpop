@@ -158,7 +158,7 @@ Feature: Step - product()
       | l[marko,ripple] |
       | l[marko,vadas] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_productXdulles_seattle_vancouverX_unfold
     Given the crew graph
     And using the parameter xx1 defined as "l[dulles,seattle,vancouver]"

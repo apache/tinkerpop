@@ -142,7 +142,7 @@ Feature: Step - combine()
       | result |
       | l[marko,marko,vadas,lop,josh,ripple,peter] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_combineXseattle_vancouverX
     Given the crew graph
     And using the parameter xx1 defined as "l[seattle,vancouver]"

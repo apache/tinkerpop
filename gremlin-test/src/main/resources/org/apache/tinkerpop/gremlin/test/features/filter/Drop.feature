@@ -88,7 +88,7 @@ Feature: Step - drop()
     Then the result should be empty
     And the graph should return 0 for count of "g.E().properties()"
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_properties_propertiesXstartTimeX_drop
     Given the empty graph
     And the graph initializer of

@@ -611,7 +611,7 @@ Feature: Step - SubgraphStrategy
       | marko |
       | josh |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_propertiesXlocationX_value
     Given the crew graph
     And the traversal of
@@ -627,7 +627,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_valuesXlocationX
     Given the crew graph
     And the traversal of
@@ -643,7 +643,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_asXaX_propertiesXlocationX_asXbX_selectXaX_outE_properties_selectXbX_value_dedup
     Given the crew graph
     And the traversal of
@@ -660,7 +660,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_asXaX_valuesXlocationX_asXbX_selectXaX_outE_properties_selectXbX_dedup
     Given the crew graph
     And the traversal of
@@ -677,7 +677,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertices_hasXname_neqXstephenXX_vertexProperties_hasXstartTime_gtX2005XXXX_V_propertiesXlocationX_value
     Given the crew graph
     And the traversal of
@@ -693,7 +693,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertices_hasXname_neqXstephenXX_vertexProperties_hasXstartTime_gtX2005XXXX_V_valuesXlocationX
     Given the crew graph
     And the traversal of
@@ -709,7 +709,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXedges_hasLabelXusesX_hasXskill_5XXX_V_outE_valueMap_selectXvaluesX_unfold
     Given the crew graph
     And the traversal of

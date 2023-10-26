@@ -576,8 +576,8 @@ tries to reference inaccessible properties that are on elements only available b
 `GraphComputer`.
 * `@GraphComputerVerificationStarGraphExceeded` - The scenario itself is not written to support `GraphComputer` because
 the traversal does not mind the star graph limitation.
-* `@MultiMetaProperties` - The scenario uses "The Crew" graph as a dataset or otherwise utilizes multi-properties
-or meta-properties for creating or querying data.
+* `@MetaProperties` - The scenario makes use of meta-properties.
+* `@MultiProperties` - The scenario makes use of multi-properties.
 * `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
 best example of this sort of test would be one that uses the remote `Lambda` syntax.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.

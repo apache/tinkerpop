@@ -334,7 +334,7 @@ Feature: Step - repeat()
           | lop |
           | ripple |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_VX1X_repeatXrepeatXunionXout_uses_out_traversesXX_whereXloops_isX0X_timesX1X_timeX2X_name
       Given the crew graph
       And using the parameter vid1 defined as "v[marko].id"

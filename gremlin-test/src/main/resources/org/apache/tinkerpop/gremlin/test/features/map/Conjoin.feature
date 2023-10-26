@@ -100,7 +100,7 @@ Feature: Step - conjoin()
       | result |
       | marko |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_conjoinX1X
     Given the crew graph
     And the traversal of

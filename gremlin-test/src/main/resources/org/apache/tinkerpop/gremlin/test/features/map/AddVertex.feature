@@ -119,7 +119,6 @@ Feature: Step - addV()
     Then the result should have a count of 4
     And the graph should return 2 for count of "g.V().properties(\"name\")"
 
-  @MultiMetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX
     Given the empty graph
     And the graph initializer of
@@ -146,7 +145,7 @@ Feature: Step - addV()
     And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
@@ -174,7 +173,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX
     Given the empty graph
     And the graph initializer of
@@ -202,7 +201,6 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",\"private\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
 
-  @MultiMetaProperties
   Scenario: g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X
     Given the empty graph
     And the graph initializer of
@@ -255,7 +253,7 @@ Feature: Step - addV()
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
@@ -283,7 +281,6 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
-  @MultiMetaProperties
   Scenario: g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX
     Given the empty graph
     And the graph initializer of
@@ -449,7 +446,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_V_hasXname_fooX_propertyXname_setXbarX_age_43X
     Given the empty graph
     And the graph initializer of
@@ -467,7 +464,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"age\",43)"
     And the graph should return 0 for count of "g.V().has(\"age\",42)"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_V_hasXname_fooX_propertyXset_name_bar_age_singleX43XX
     Given the empty graph
     And the graph initializer of
@@ -540,7 +537,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"age\",null)"
 
-  @AllowNullPropertyValues @MultiMetaProperties
+  @AllowNullPropertyValues @MetaProperties
   Scenario: g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX
     Given the empty graph
     And the traversal of

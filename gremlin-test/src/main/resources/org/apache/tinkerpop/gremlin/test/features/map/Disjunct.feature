@@ -129,7 +129,7 @@ Feature: Step - disjunct()
       | s[LOP,JOSH,MARKO] |
       | s[LOP,PETER,MARKO] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_disjunctXseattle_vancouverX
     Given the crew graph
     And using the parameter xx1 defined as "l[seattle,vancouver]"

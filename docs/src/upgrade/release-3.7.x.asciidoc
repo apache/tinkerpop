@@ -316,7 +316,14 @@ gremlin> datetime().toGMTString()
 
 ==== Graph System Providers
 
+===== MultiProperty and MetaProperty Test Tags
 
+The `@MultiMetaProperties` tag signified Gherkin feature tests that were using multi-properties and/or meta-properties.
+The features were originally combined as a single tag because tests that had the tag used the crew graph for testing.
+As time has gone on, some tests have used the empty graph and inserted their own test data that uses one or the other
+feature. In an effort to better allow graphs to support one feature or the other and to test them the single tag has
+been split into two tags: `@MultiProperties` and `@MetaProperties`. The original `@MultiMetaProperties` tag has been
+removed.
 
 ==== Graph Driver Providers
 

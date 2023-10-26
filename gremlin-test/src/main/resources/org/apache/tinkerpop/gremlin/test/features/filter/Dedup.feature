@@ -319,7 +319,7 @@ Feature: Step - dedup()
       | result |
       | d[12].l |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_both_properties_properties_dedup_count
     Given the crew graph
     And the traversal of
