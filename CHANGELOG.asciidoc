@@ -14,7 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-= TinkerPop3 CHANGELOG
+= TinkerPop CHANGELOG
+
+== TinkerPop 4.0.0
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+
+[[release-4-0-0]]
+=== TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
+
+*
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
