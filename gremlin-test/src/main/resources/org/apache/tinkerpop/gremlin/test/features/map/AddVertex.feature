@@ -201,6 +201,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",\"private\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
 
+  @MultiProperties
   Scenario: g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X
     Given the empty graph
     And the graph initializer of
@@ -281,6 +282,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
+  @MultiProperties
   Scenario: g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX
     Given the empty graph
     And the graph initializer of
