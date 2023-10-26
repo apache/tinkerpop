@@ -2855,7 +2855,7 @@ g.mergeV([(T.id):1,(T.label):'Dog',name:'Toby']).as('Toby').
 g.E().elementMap()
 ----
 
-The `Merge.outV` and `Merge.inV` tokens can be used as placeholders for values for `Direction.OUT` and Direction.IN`
+The `Merge.outV` and `Merge.inV` tokens can be used as placeholders for values for `Direction.OUT` and `Direction.IN`
 respectively in the `mergeE` arguments. These options can produce `Vertices`, as in the example above, or they can
 specify `Maps`, which will be used to search for `Vertices` in the graph. This is useful when the exact `T.id` of
 the from/to vertices is not known in advance:
