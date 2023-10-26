@@ -44,7 +44,7 @@ This release also includes changes from <<release-3-6-5, 3.6.6>> and <<release-3
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
 * Fixed deserialization of element properties for GraphBinary.
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
-* Improved performance for element comparison.
+* Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
