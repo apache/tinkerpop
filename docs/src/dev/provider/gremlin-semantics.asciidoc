@@ -1010,7 +1010,7 @@ None
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`String`
+|N |Y |Y |`any` |`String`
 |=========================================================
 
 *Arguments:*

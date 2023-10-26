@@ -44,8 +44,25 @@ Feature: Step - format()
       | josh is 32 years old |
       | peter is 35 years old |
 
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1X_asXageX_V_formatXstrX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(1).as("age").V().format("%{name} is %{age} years old")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko is 29 years old |
+      | vadas is 27 years old |
+      | lop is 1 years old |
+      | josh is 32 years old |
+      | ripple is 1 years old |
+      | peter is 35 years old |
+
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_formatXstrX_byXnameX_byXageX
+  Scenario: g_V_formatXstrX_byXvaluesXnameXX_byXvaluesXageXX
     Given the modern graph
     And the traversal of
       """
@@ -59,6 +76,33 @@ Feature: Step - format()
       | vadas is 27 years old |
       | josh is 32 years old |
       | peter is 35 years old |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_hasLabelXpersonX_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").format("%{_} %{_} %{_}").by(constant("hello")).by(values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | hello marko hello |
+      | hello vadas hello |
+      | hello josh hello |
+      | hello peter hello |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_VX1X_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V(1).format("%{_}").by(constant("hello")).by(values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | hello |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_formatXstrX_byXbothE_countX

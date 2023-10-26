@@ -62,6 +62,8 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
 
     public FormatStep(final Traversal.Admin traversal, final String format) {
         super(traversal);
+
+        if (null == format) { throw new IllegalArgumentException("Format string for Format step can't be null."); }
         this.format = format;
         this.variables = getVariables();
     }
@@ -106,6 +108,8 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
         if (lastIndex < format.length()) {
             output.append(format, lastIndex, format.length());
         }
+
+        this.traversalRing.reset();
 
         return productive ?
                 PathProcessor.processTraverserPathLabels(traverser.split(output.toString(), this), this.keepLabels) :
@@ -178,7 +182,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
         this.traversalRing.replaceTraversal(
                 (Traversal.Admin<S, String>) oldTraversal,
-                (Traversal.Admin<S, String>) newTraversal);
+                this.integrateChild(newTraversal));
     }
 
     // private methods

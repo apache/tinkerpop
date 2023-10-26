@@ -50,6 +50,7 @@ public class FormatStepTest extends StepTest {
 
     @Test
     public void shouldGetVariablesFromTemplate() {
+        assertEquals(Collections.emptyList(), getVariables(""));
         assertEquals(Collections.emptyList(), getVariables("Hello world"));
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
@@ -63,6 +64,11 @@ public class FormatStepTest extends StepTest {
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello} %{hello} %{world}"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenFormatStringIsNull() {
+        new FormatStep(__.inject("test").asAdmin(), null);
     }
 
     @Test
@@ -79,12 +85,20 @@ public class FormatStepTest extends StepTest {
     }
 
     @Test
+    public void shouldWorkWithEmptyTemplate() {
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
+
+        assertEquals("", __.__(vertex1).format("").next());
+    }
+
+    @Test
     public void shouldWorkWithMultipleVertexInput() {
         final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
                 DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
 
         final Vertex vertex2 = new DetachedVertex(11L, "person", Collections.singletonList(
-                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Marko").create()));
+                DetachedVertexProperty.build().setId(2).setLabel("name").setValue("Marko").create()));
 
         assertEquals(Arrays.asList("Hello Stephen", "Hello Marko"),
                 __.__(vertex1, vertex2).format("Hello %{name}").toList());
@@ -96,10 +110,23 @@ public class FormatStepTest extends StepTest {
                 DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
 
         final Vertex vertex2 = new DetachedVertex(11L, "person", Collections.singletonList(
-                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Marko").create()));
+                DetachedVertexProperty.build().setId(2).setLabel("name").setValue("Marko").create()));
 
         assertEquals(Arrays.asList("Hello Stephen", "Hello Marko"),
                 __.__(vertex1, vertex2).format("%{_} %{_}").by(__.constant("Hello")).by(__.values("name")).toList());
+    }
+
+    @Test
+    public void shouldHandleMissingModulatorValue() {
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
+
+        final Vertex vertex2 = new DetachedVertex(11L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(2).setLabel("name").setValue("Marko").create()));
+
+        assertEquals(Arrays.asList("Hello Stephen Hello", "Hello Marko Hello"),
+                __.__(vertex1, vertex2).format("%{_} %{_} %{_}").
+                        by(__.constant("Hello")).by(__.values("name")).toList());
     }
 
     @Test
