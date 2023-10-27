@@ -263,7 +263,7 @@ gremlin> g.V(1).format("%{name} has %{_} connections").by(bothE().count())
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[all()-step]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[format()-step]
 
 ==== List Traverser based Steps
 Additional List manipulation/filter steps have been added to replace the use of closures: `any()`, `all()`, `product()`,
