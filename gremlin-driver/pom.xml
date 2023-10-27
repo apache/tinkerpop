@@ -270,7 +270,7 @@ limitations under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <exclude>example/**</exclude>
+                        <exclude>examples/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

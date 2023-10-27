@@ -25,91 +25,11 @@ import (
 	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
-// syntactic sugar
 var __ = gremlingo.T__
-var gt = gremlingo.P.Gt
-var order = gremlingo.Order
 var T = gremlingo.T
 var P = gremlingo.P
 
 func main() {
-	connectionExample()
-	basicGremlinExample()
-	modernTraversalExample()
-}
-
-func connectionExample() {
-	// Creating the connection to the server
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-
-	// Connecting to the server with customized configurations
-// 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
-// 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
-// 			settings.TraversalSource = "g"
-// 			settings.NewConnectionThreshold = 4
-// 			settings.EnableCompression = false
-// 			settings.ReadBufferSize = 0
-// 			settings.WriteBufferSize = 0
-// 		})
-
-	// Error handling
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Cleanup
-	defer driverRemoteConnection.Close()
-
-	// Creating the graph traversal
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-	fmt.Println(g)
-}
-
-func basicGremlinExample() {
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer driverRemoteConnection.Close()
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-
-	// Basic Gremlin: adding and retrieving data
-	v1, err := g.AddV("person").Property("name", "marko").Next()
-	v2, err := g.AddV("person").Property("name", "stephen").Next()
-	v3, err := g.AddV("person").Property("name", "vadas").Next()
-	v1Vertex, err := v1.GetVertex()
-	v2Vertex, err := v2.GetVertex()
-	v3Vertex, err := v3.GetVertex()
-
-	// Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
-	// Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-	promise := g.V(v1Vertex).AddE("knows").To(v2Vertex).Property("weight", 0.75).Iterate()
-	err = <-promise
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	promise = g.V(v1Vertex).AddE("knows").To(v3Vertex).Property("weight", 0.75).Iterate()
-	err = <-promise
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Retrieve the data from the "marko" vertex
-	marko, err := g.V().Has("person", "name", "marko").Values("name").Next()
-	fmt.Println("name:", marko.GetString())
-
-	// Find the "marko" vertex and then traverse to the people he "knows" and return their data
-	peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").Values("name").ToList()
-	for _, person := range peopleMarkoKnows {
-		fmt.Println("marko knows", person.GetString())
-	}
-}
-
-func modernTraversalExample() {
 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
 	if err != nil {
 		fmt.Println(err)
