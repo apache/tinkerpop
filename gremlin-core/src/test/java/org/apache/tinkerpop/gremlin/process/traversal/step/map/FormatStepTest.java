@@ -55,13 +55,17 @@ public class FormatStepTest extends StepTest {
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello % {world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello %% {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello %%{world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello%%{world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello %{_}"));
+        assertEquals(Collections.emptyList(), getVariables("%%{world}"));
         assertEquals(Collections.singletonList(""), getVariables("Hello %{}"));
         assertEquals(Collections.singletonList(" "), getVariables("Hello %{ }"));
         assertEquals(Collections.singletonList("world"), getVariables("Hello %{world}"));
         assertEquals(Collections.singletonList("world"), getVariables("%%{Hello} %{world} %{_}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
+        assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello}%{hello}%{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello} %{hello} %{world}"));
     }

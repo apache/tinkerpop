@@ -51,9 +51,13 @@ import java.util.regex.Pattern;
 public final class FormatStep<S> extends MapStep<S, String> implements ByModulating, TraversalParent, Scoping, PathProcessor {
 
     private static final String FROM_BY = "_";
-    // first matching group is start of string OR NOT %
-    // second group is variable name
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("(^|[^%])%\\{(.*?)\\}");
+    /* Negative Lookbehind (?<!%)
+     * Assert that the Regex does not match %
+     * 1st Capturing Group (.*?).
+     * . matches any character (except for line terminators)
+     * *? matches the previous token between zero and unlimited times, as few times as possible, expanding as needed (lazy)
+     */
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("(?<!%)%\\{(.*?)\\}");
 
     private String format;
     private Set<String> variables;
@@ -63,7 +67,9 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
     public FormatStep(final Traversal.Admin traversal, final String format) {
         super(traversal);
 
-        if (null == format) { throw new IllegalArgumentException("Format string for Format step can't be null."); }
+        if (null == format) {
+            throw new IllegalArgumentException("Format string for Format step can't be null.");
+        }
         this.format = format;
         this.variables = getVariables();
     }
@@ -79,14 +85,13 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
         final Object current = traverser.get();
 
         while (matcher.find()) {
-            final String varName = matcher.group(2);
-            final int start = matcher.start() + matcher.group(1).length();
+            final String varName = matcher.group(1);
             if (varName == null) continue;
 
             if (!varName.equals(FROM_BY) && current instanceof Element) {
                 final Property prop = ((Element) current).property(varName);
                 if (prop != null && prop.isPresent()) {
-                    output.append(format, lastIndex, start).append(prop.value());
+                    output.append(format, lastIndex, matcher.start()).append(prop.value());
                     lastIndex = matcher.end();
                     continue;
                 }
@@ -101,7 +106,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
                 break;
             }
 
-            output.append(format, lastIndex, start).append(product.get());
+            output.append(format, lastIndex, matcher.start()).append(product.get());
             lastIndex = matcher.end();
         }
 
@@ -191,7 +196,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
         final Matcher matcher = VARIABLE_PATTERN.matcher(format);
         final Set<String> variables = new LinkedHashSet<>();
         while (matcher.find()) {
-            final String varName = matcher.group(2);
+            final String varName = matcher.group(1);
             if (varName != null && !varName.equals(FROM_BY)) {
                 variables.add(varName);
             }
