@@ -55,13 +55,17 @@ public class FormatStepTest extends StepTest {
         assertEquals(Collections.emptyList(), getVariables("Hello %{world"));
         assertEquals(Collections.emptyList(), getVariables("Hello {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello % {world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello %% {world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello %%{world}"));
+        assertEquals(Collections.emptyList(), getVariables("Hello%%{world}"));
         assertEquals(Collections.emptyList(), getVariables("Hello %{_}"));
+        assertEquals(Collections.emptyList(), getVariables("%%{world}"));
         assertEquals(Collections.singletonList(""), getVariables("Hello %{}"));
         assertEquals(Collections.singletonList(" "), getVariables("Hello %{ }"));
         assertEquals(Collections.singletonList("world"), getVariables("Hello %{world}"));
         assertEquals(Collections.singletonList("world"), getVariables("%%{Hello} %{world} %{_}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{world}"));
+        assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello}%{hello}%{world}"));
         assertEquals(Arrays.asList("Hello", "world"), getVariables("%{Hello} %{Hello} %{world}"));
         assertEquals(Arrays.asList("Hello", "hello", "world"), getVariables("%{Hello} %{hello} %{world}"));
     }
@@ -114,6 +118,15 @@ public class FormatStepTest extends StepTest {
 
         assertEquals(Arrays.asList("Hello Stephen", "Hello Marko"),
                 __.__(vertex1, vertex2).format("%{_} %{_}").by(__.constant("Hello")).by(__.values("name")).toList());
+    }
+
+    @Test
+    public void shouldNotTryToApplyModulatorTraversalToAllVars() {
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
+
+        assertEquals(Collections.emptyList(),
+                __.__(vertex1).format("%{name} %{missing}").by(__.label()).toList());
     }
 
     @Test
