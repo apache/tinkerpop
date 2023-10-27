@@ -117,6 +117,15 @@ public class FormatStepTest extends StepTest {
     }
 
     @Test
+    public void shouldNotTryToApplyModulatorTraversalToAllVars() {
+        final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
+                DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));
+
+        assertEquals(Collections.emptyList(),
+                __.__(vertex1).format("%{name} %{missing}").by(__.label()).toList());
+    }
+
+    @Test
     public void shouldHandleMissingModulatorValue() {
         final Vertex vertex1 = new DetachedVertex(10L, "person", Collections.singletonList(
                 DetachedVertexProperty.build().setId(1).setLabel("name").setValue("Stephen").create()));

@@ -94,7 +94,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
 
             final TraversalProduct product = varName.equals(FROM_BY) ?
                     TraversalUtil.produce(traverser, this.traversalRing.next()) :
-                    TraversalUtil.produce((S) this.getNullableScopeValue(Pop.last, varName, traverser), this.traversalRing.next());
+                    TraversalUtil.produce((S) this.getNullableScopeValue(Pop.last, varName, traverser), null);
 
             if (!product.isProductive() || product.get() == null) {
                 productive = false;
