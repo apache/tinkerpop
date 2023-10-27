@@ -64,7 +64,7 @@ TinkerPop also has a link:https://the-asf.slack.com/archives/CUBJ577EW[Slack cha
 about the project among contributors, though it must be kept in mind that project discussion and decisions must occur
 on the dev mailing list mentioned above.
 
-Occasionally, online meetings via video conference are held. These meetings are schedule via the dev mailing list
+Occasionally, online meetings via video conference are held. These meetings are scheduled via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
 On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link).
 At that point, all who are interested can attend.  Meeting minutes should be
@@ -141,8 +141,8 @@ TinkerPop has several release branches:
 * `3.4-dev` - 3.4.x (no longer maintained)
 * `3.5-dev` - 3.5.x (non-breaking bug fixes and enhancements)
 * `3.6-dev` - 3.6.x (non-breaking bug fixes and enhancements)
-* `master` - 3.7.x (current development)
-* `4.0-dev` - 4.0.x (future development)
+* `3.7-dev` - 3.7.x (non-breaking bug fixes and enhancements)
+* `master` - 4.x.x (current development)
 
 The branch description above that reads "non-breaking bug fixes and enhancements" simply means that within that release
 line (i.e. patch version) changes should not alter existing behavior, introduce new APIs, change serialization formats,
@@ -151,13 +151,12 @@ can be assured that their upgrades will not introduce potential problems. A good
 client of one version within a release line can interact properly with a server version within that same line. If so,
 it is likely an acceptable change within that branch.
 
-Changes to earlier branches should merge forward toward `master` (e.g. `3.6-dev` should merge to `master`). Please read
-more about this process in the <<pull-requests, Pull Requests>> section. Note that `4.0-dev` is rebased on `master`
-and currently behaves as a fresh repository as all 3.x content was removed.
+Changes to earlier branches should merge forward toward `master` (e.g. `3.7-dev` should merge to `master`). Please read
+more about this process in the <<pull-requests, Pull Requests>> section.
 
-As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize a four-digit
-version that starts with a "1" (e.g. `3.6.0.1`). The branching strategy for a partial release requires that a `-dev`
-branch be created with the three digit prefix.
+As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize the third "patch" digit
+version that starts with a "1" (e.g. `4.0.1`). The branching strategy for a partial release requires that a `-dev`
+branch be created with the two digit prefix (e.g. 4.0-dev).
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -172,8 +171,8 @@ Developers should remove their own branches when they are no longer needed.
 
 Tags are used for milestones, release candidates, and approved <<versioning,partial and complete releases>>. Tags for a
 complete release are simply defined by the three-digit version number. Tags for a partial release, should be prefixed
-by the individual language relevant to that release. For example, if there is an initial partial release for `3.6.0`
-on `gremlin-python` then the tag should be `3.6.0.1-python`.
+by the individual language relevant to that release. For example, if there is an initial partial release for `4.0.0`
+on `gremlin-python` then the tag should be `4.0.1-python`.
 
 Please refrain from creating arbitrary tags, as they produce permanent clutter.
 
@@ -214,7 +213,7 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed. This is a field usually only set by committers and should only be set
+which that particular issue will be completed. This is a field usually only set by committers and should only be set
 when the issue is being closed with a completed disposition (e.g. "Done", "Fixed", etc.).
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
@@ -698,7 +697,7 @@ require a review.
 
 * You are responsible for a release and need to manipulate files accordingly for the release.
 ** `Gremlin.version()`, CHANGELOG dates, `pom.xml` version bumps, etc.
-* You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
+* You are doing a minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
 ** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
 ** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
 
