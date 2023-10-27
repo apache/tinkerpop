@@ -17,91 +17,14 @@ specific language governing permissions and limitations
 under the License.
 */
 
-// Common imports as listed at reference/#gremlin-javascript-imports
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const column = gremlin.process.column;
-const direction = gremlin.process.direction;
-const Direction = {
-  BOTH: direction.both,
-  IN: direction.in,
-  OUT: direction.out,
-  from_: direction.out,
-  to: direction.in,
-}
 const p = gremlin.process.P;
-const textp = gremlin.process.TextP;
-const pick = gremlin.process.pick;
-const pop = gremlin.process.pop;
-const order = gremlin.process.order;
-const scope = gremlin.process.scope;
 const t = gremlin.process.t;
-const cardinality = gremlin.process.cardinality;
-const CardinalityValue = gremlin.process.CardinalityValue;
-const serializer = gremlin.structure.io.graphserializer;
-const testing = Direction.to;
 
 async function main() {
-    await connectionExample();
-    await basicGremlinExample();
-    await modernTraversalExample();
-}
-
-async function connectionExample() {
-    // Connecting to the server
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    const g = traversal().withRemote(dc);
-
-    // Connecting and customizing configurations
-//    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin', {
-//        mimeType: 'application/vnd.gremlin-v3.0+json',
-//        reader: serializer,
-//        writer: serializer,
-//        rejectUnauthorized: false,
-//        traversalSource: 'g',
-//    })
-//    const g = traversal().withRemote(dc);
-    
-    // Simple query to verify connection
-    const v = await g.addV().iterate();
-    const count = await g.V().count().next();
-    console.log(count.value);
-
-    // Cleanup
-    await dc.close();
-}
-
-async function basicGremlinExample() {
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    const g = traversal().withRemote(dc);
-
-    // Basic Gremlin: adding and retrieving data
-    const v1 = await g.addV('person').property('name','marko').next();
-    const v2 = await g.addV('person').property('name','stephen').next();
-    const v3 = await g.addV('person').property('name','vadas').next();
-
-
-    // Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
-    // Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-    await g.V(v1.value).addE('knows').to(v2.value).property('weight',0.75).iterate();
-    await g.V(v1.value).addE('knows').to(v3.value).property('weight',0.75).iterate();
-
-    // Retrieve the data from the "marko" vertex
-    const marko = await g.V().has('person','name','marko').values('name').toList();
-    console.log("name: " + marko[0]);
-
-    // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').values('name').toList();
-    peopleMarkoKnows.forEach((person) => {
-        console.log("marko knows " + person);
-    });
-
-    await dc.close();
-}
-
-async function modernTraversalExample() {
     /*
     This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
     For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
