@@ -44,6 +44,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
 * Fixed bug where the `partitionKey` was not being written when using `PartitionStrategy` with `mergeV()` and `mergeE()`
+* Added checking for valid UUID requestIds in `gremlin-python` and `gremlin-javascript`.
 * Do not use `XOR` for hashCode computation of Step when only simple keys are used and duplicate keys are allowed.
 
 [[release-3-6-5]]
