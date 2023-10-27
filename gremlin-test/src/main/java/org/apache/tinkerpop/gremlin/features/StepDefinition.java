@@ -69,6 +69,7 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -169,9 +170,6 @@ public final class StepDefinition {
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
-        // return the string values as is, used to wrap results that may contain other regex patterns
-        add(Pair.with(Pattern.compile("str\\[(.*)\\]"), String::valueOf));
-
         // expects json so that should port to the Gremlin script form - replace curly json braces with square ones
         // for Gremlin sake.
         add(Pair.with(Pattern.compile("m\\[(.*)\\]"), s -> {
@@ -194,6 +192,9 @@ public final class StepDefinition {
             final String[] items = s.split(",");
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
         }));
+
+        // return the string values as is, used to wrap results that may contain other regex patterns
+        add(Pair.with(Pattern.compile("str\\[(.*)\\]"), String::valueOf));
 
         /*
          * TODO FIXME Add same support for other languages (js, python, .net)

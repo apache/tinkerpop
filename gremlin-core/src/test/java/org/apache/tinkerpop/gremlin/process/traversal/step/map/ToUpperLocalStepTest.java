@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -28,28 +29,32 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class ToLowerStepTest extends StepTest {
+public class ToUpperLocalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.toLower());
+        return Collections.singletonList(__.toUpper(Scope.local));
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("test", __.__("TEST").toLower().next());
-        assertArrayEquals(new String[]{"hello", "test", "no.123", null, ""},
-                __.inject("hElLo", "TEST", "NO.123", null, "").toLower().toList().toArray());
+        assertArrayEquals(new String[]{"TEST"}, __.__(Arrays.asList("test")).toUpper(Scope.local).next().toArray());
+        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
+                __.__(Arrays.asList("hElLo", "test", "no.123", null, "")).toUpper(Scope.local).next().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).toLower().next();
+    public void shouldThrowWithIncomingNonStringList() {
+        __.__(Arrays.asList(1, 2, 3)).toUpper(Scope.local).next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingNonListItem() {
+        __.__("hello").toUpper(Scope.local).next();
     }
 
 }

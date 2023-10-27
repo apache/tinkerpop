@@ -117,6 +117,13 @@ gremlin> g.V().values("name").toUpper()
 ==>RIPPLE
 ==>PETER
 ----
+Scopes are also enabled on these string functions. The global scope functions synonymous to parameterless function call, and will only accept string traversers.
+The local scope will operate inside of list traversers, and will only accept list of strings.
+[source,text]
+----
+gremlin> g.V().values("name").fold().toUpper(local)
+==>[MARKO,VADAS,LOP,JOSH,RIPPLE,PETER]
+----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[asString()-step],

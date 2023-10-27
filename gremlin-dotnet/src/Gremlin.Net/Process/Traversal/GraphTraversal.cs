@@ -231,6 +231,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("asString");
             return Wrap<TStart, string>(this);
         }
+        
+        /// <summary>
+        ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object> AsString (Scope scope)
+        {
+            Bytecode.AddStep("asString", scope);
+            return Wrap<TStart, object>(this);
+        }
 
         /// <summary>
         ///     Adds the asDate step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -1252,6 +1261,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("length");
             return Wrap<TStart, int?>(this);
         }
+        
+        /// <summary>
+        ///     Adds the length step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object?> Length (Scope scope)
+        {
+            Bytecode.AddStep("length", scope);
+            return Wrap<TStart, object?>(this);
+        }
 
         /// <summary>
         ///     Adds the limit step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -2161,12 +2179,30 @@ namespace Gremlin.Net.Process.Traversal
         }
         
         /// <summary>
+        ///     Adds the toLower step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object?> ToLower (Scope scope)
+        {
+            Bytecode.AddStep("toLower", scope);
+            return Wrap<TStart, object?>(this);
+        }
+        
+        /// <summary>
         ///     Adds the toUpper step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, string?> ToUpper ()
         {
             Bytecode.AddStep("toUpper");
             return Wrap<TStart, string?>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the toUpper step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object?> ToUpper (Scope scope)
+        {
+            Bytecode.AddStep("toUpper", scope);
+            return Wrap<TStart, object?>(this);
         }
 
         /// <summary>

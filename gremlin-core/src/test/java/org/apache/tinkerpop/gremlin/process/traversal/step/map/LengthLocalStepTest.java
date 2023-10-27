@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -29,34 +30,31 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class AsStringStepTest extends StepTest {
+public class LengthLocalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.asString());
+        return Collections.singletonList(__.length(Scope.local));
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("1", __.__(1).asString().next());
-        assertEquals("[]", __.__(Collections.emptyList()).asString().next());
-        assertEquals("[1, 2]", __.__(Arrays.asList(1, 2)).asString().next());
-        assertEquals("1", __.__(Arrays.asList(1, 2)).unfold().asString().next());
-        assertArrayEquals(new String[]{"1", "2"}, __.inject(Arrays.asList(1, 2)).unfold().asString().toList().toArray());
+        assertEquals(Integer.valueOf(4), __.__("test").length().next());
+        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.__(Arrays.asList("hello", "test", null, "")).length(Scope.local).next().toArray());
+    }
 
-        assertEquals("null", __.__(null).asString().next());
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingNonStringList() {
+        __.__(Arrays.asList(1, 2, 3)).length(Scope.local).next();
+    }
 
-        assertEquals("[1, 2]test", __.__(Arrays.asList(1, 2)).asString().concat("test").next());
-        assertEquals("1test", __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").next());
-        assertArrayEquals(new String[]{"1test", "2test"},
-                __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").toList().toArray());
-        assertArrayEquals(new String[]{"1test", "2test"},
-                __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").fold().next().toArray());
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingArrayList() {
+        __.__("hello").length(Scope.local).next();
     }
 
 }

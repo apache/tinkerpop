@@ -1821,6 +1821,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx)  {
+        return graphTraversal.format(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_asString_Empty(final GremlinParser.TraversalMethod_asString_EmptyContext ctx) {
         return graphTraversal.asString();
     }
@@ -1829,8 +1837,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx)  {
-        return graphTraversal.format(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+    public GraphTraversal visitTraversalMethod_asString_Scope(final GremlinParser.TraversalMethod_asString_ScopeContext ctx) {
+        return graphTraversal.asString(antlr.argumentVisitor.parseScope(ctx.traversalScopeArgument()));
     }
 
     /**
@@ -1845,6 +1853,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_toUpper_Scope(final GremlinParser.TraversalMethod_toUpper_ScopeContext ctx) {
+        return graphTraversal.toUpper(antlr.argumentVisitor.parseScope(ctx.traversalScopeArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_toLower_Empty(final GremlinParser.TraversalMethod_toLower_EmptyContext ctx) {
         return graphTraversal.toLower();
     }
@@ -1853,8 +1869,24 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_toLower_Scope(final GremlinParser.TraversalMethod_toLower_ScopeContext ctx) {
+        return graphTraversal.toLower(antlr.argumentVisitor.parseScope(ctx.traversalScopeArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_length_Empty(final GremlinParser.TraversalMethod_length_EmptyContext ctx) {
         return graphTraversal.length();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_length_Scope(final GremlinParser.TraversalMethod_length_ScopeContext ctx) {
+        return graphTraversal.length(antlr.argumentVisitor.parseScope(ctx.traversalScopeArgument()));
     }
 
     /**

@@ -876,6 +876,7 @@ traversalMethod_concat
 
 traversalMethod_asString
     : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
+    | 'asString' LPAREN traversalScopeArgument RPAREN #traversalMethod_asString_Scope
     ;
 
 traversalMethod_format
@@ -884,14 +885,17 @@ traversalMethod_format
 
 traversalMethod_toUpper
     : 'toUpper' LPAREN RPAREN #traversalMethod_toUpper_Empty
+    | 'toUpper' LPAREN traversalScopeArgument RPAREN #traversalMethod_toUpper_Scope
     ;
 
 traversalMethod_toLower
     : 'toLower' LPAREN RPAREN #traversalMethod_toLower_Empty
+    | 'toLower' LPAREN traversalScopeArgument RPAREN #traversalMethod_toLower_Scope
     ;
 
 traversalMethod_length
     : 'length' LPAREN RPAREN #traversalMethod_length_Empty
+    | 'length' LPAREN traversalScopeArgument RPAREN #traversalMethod_length_Scope
     ;
 
 traversalMethod_trim

@@ -58,3 +58,14 @@ Feature: Step - length()
       | d[4].i |
       | d[6].i |
       | d[5].i |
+
+  Scenario: g_V_valuesXnameX_order_fold_lengthXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").order().fold().length(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[4].i,d[3].i,d[5].i,d[5].i,d[6].i,d[5].i] |

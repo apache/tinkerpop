@@ -26,31 +26,30 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class LengthStepTest extends StepTest {
+public class ToUpperGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.length());
+        return Collections.singletonList(__.toUpper());
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals(Integer.valueOf(4), __.__("test").length().next());
-        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.inject("hello", "test", null, "").length().toList().toArray());
+        assertEquals("TEST", __.__("test").toUpper().next());
+        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
+                __.__("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).length().next();
+        __.__(Arrays.asList("a", "b", "c")).toUpper().next();
     }
 
 }

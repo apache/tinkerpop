@@ -606,8 +606,15 @@ public class __ {
     /**
      * @see GraphTraversal#asString()
      */
-    public static <A> GraphTraversal<A, String> asString() {
+    public static <A> GraphTraversal<A, A> asString() {
         return __.<A>start().asString();
+    }
+
+    /**
+     * @see GraphTraversal#asString()
+     */
+    public static <A> GraphTraversal<A, A> asString(final Scope scope) {
+        return __.<A>start().asString(scope);
     }
 
     /**
@@ -618,17 +625,38 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#length()
+     */
+    public static <A> GraphTraversal<A, A> length(final Scope scope) {
+        return __.<A>start().length(scope);
+    }
+
+    /**
      * @see GraphTraversal#toLower()
      */
-    public static <A> GraphTraversal<A, String> toLower() {
+    public static <A> GraphTraversal<A, A> toLower() {
         return __.<A>start().toLower();
+    }
+
+    /**
+     * @see GraphTraversal#toLower()
+     */
+    public static <A> GraphTraversal<A, A> toLower(final Scope scope) {
+        return __.<A>start().toLower(scope);
     }
 
     /**
      * @see GraphTraversal#toUpper()
      */
-    public static <A> GraphTraversal<A, String> toUpper() {
+    public static <A> GraphTraversal<A, A> toUpper() {
         return __.<A>start().toUpper();
+    }
+
+    /**
+     * @see GraphTraversal#toUpper(Scope)
+     */
+    public static <A> GraphTraversal<A, A> toUpper(final Scope scope) {
+        return __.<A>start().toUpper(scope);
     }
 
     /**

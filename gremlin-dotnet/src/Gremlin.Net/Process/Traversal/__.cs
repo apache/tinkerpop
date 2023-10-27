@@ -159,6 +159,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, string>().AsString();            
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asString step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AsString(Scope scope)
+        {
+            return new GraphTraversal<object, object>().AsString(scope);            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asDate step to that traversal.
@@ -885,6 +893,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, int?>().Length();            
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the length step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object?> Length(Scope scope)
+        {
+            return new GraphTraversal<object, object?>().Length(scope);            
+        }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
@@ -1541,6 +1557,14 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, string?>().ToLower();            
         }
+                
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toLower step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object?> ToLower(Scope scope)
+        {
+            return new GraphTraversal<object, object?>().ToLower(scope);            
+        }
         
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the ToUpper step to that traversal.
@@ -1548,6 +1572,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, string?> ToUpper()
         {
             return new GraphTraversal<object, string?>().ToUpper();            
+        }
+                
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the ToUpper step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object?> ToUpper(Scope scope)
+        {
+            return new GraphTraversal<object, object?>().ToUpper(scope);            
         }
 
         /// <summary>

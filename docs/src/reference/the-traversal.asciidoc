@@ -788,14 +788,17 @@ The `asString()`-step (*map*) returns the value of incoming traverser as strings
 ----
 g.V().hasLabel('person').values('age').asString() <1>
 g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
+g.V().hasLabel('person').values('age').fold().asString() <3>
 ----
 
 <1> Return ages as string.
 <2> Return ages as string and use concat to generate phrases.
+<3> Use `Scope.local` to operate on individual string elements inside incoming list, which returns a list.
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString--++[`asString()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`asString()`]
 
 [[asDate-step]]
 === AsDate Step
@@ -2260,19 +2263,22 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[length-step]]
 === Length Step
 
-The `length()`-step (*map*) returns the length incoming string traverser. Null values are not processed and remain as null when returned.
+The `length()`-step (*map*) returns the length incoming string or list of string traverser. Null values are not processed and remain as null when returned.
 If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
 g.V().values('name').length() <1>
+g.V().values('name').fold().length(local) <2>
 ----
 
 <1> Return the string length of all vertex names.
+<2> Use `Scope.local` to operate on individual string elements inside incoming list, which returns a list.
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length--++[`length()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`length()`]
 
 [[limit-step]]
 === Limit Step
@@ -4674,35 +4680,40 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[toLower-step]]
 === ToLower Step
 
-The `toLower()`-step (*map*) returns the lowercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
+The `toLower()`-step (*map*) returns the lowercase representation of incoming string or list of string traverser. Null values are not processed and remain as null when returned.
 If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
 g.inject("HELLO", "wORlD", null).toLower()
+g.inject(["HELLO", "wORlD", null]).toLower(Scope.local)
 ----
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower--++[`toLower()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`toLower()`]
 
 [[toUpper-step]]
 === ToUpper Step
 
-The `toUpper()`-step (*map*) returns the uppercase representation of incoming string traverser. Null values are not processed and remain as null when returned.
+The `toUpper()`-step (*map*) returns the uppercase representation of incoming string or list of string traverser. Null values are not processed and remain as null when returned.
 If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
 g.inject("hello", "wORlD", null).toUpper()
 g.V().values("name").toUpper() <1>
+g.V().values("name").fold().toUpper(local) <2>
 ----
 
 <1> Returns the upper case representation of all vertex names.
+<2> Use `Scope.local` to operate on individual string elements inside incoming list, which returns a list.
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper--++[`toUpper()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper-org.apache.tinkerpop.gremlin.process.traversal.Scope-++[`toUpper(Scope)`]
 
 [[tree-step]]
 === Tree Step

@@ -21,8 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,23 +37,41 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class LengthStep<S> extends ScalarMapStep<S, Integer> {
+public final class LengthLocalStep<S, E> extends ScalarMapStep<S, E> {
 
-    public LengthStep(final Traversal.Admin traversal) {
+    public LengthLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Integer map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The length() step can only take string as argument, encountered %s", item.getClass()));
+        if (null == item) {
+            // we will pass null values to next step
+            return null;
         }
 
-        // we will pass null values to next step
-        return null == item? null : ((String) item).length();
+        if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
+            final List<Integer> resList = new ArrayList<>();
+            final Iterator<E> iterator = IteratorUtils.asIterator(item);
+            while (iterator.hasNext()) {
+                final E i = iterator.next();
+                if (null == i) {
+                    // we will pass null values to next step
+                    resList.add(null);
+                } else if (i instanceof String) {
+                    resList.add(((String) i).length());
+                } else {
+                    throw new IllegalArgumentException(
+                            String.format("The length(local) step can only take list of strings, encountered %s in list", i.getClass()));
+                }
+            }
+            return (E) resList;
+        } else {
+            // String values not wrapped in a list will not be processed in local scope
+            throw new IllegalArgumentException(
+                    String.format("The length(local) step can only take list of strings, encountered %s", item.getClass()));
+        }
     }
 
     @Override
