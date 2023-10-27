@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -34,8 +35,12 @@ public class GremlinTest {
 
     @Test
     public void shouldGetVersion() {
-        // the manifests lib should be solid at doing this job - can get by with a
-        // light testing here - this will be good for at least version 3
-        assertEquals('3', Gremlin.version().charAt(0));
+        //Remove -SNAPSHOT from version for test
+        String[] version = Gremlin.version().replace("-SNAPSHOT", "").split("\\.");
+
+        assertEquals("Gremlin.version() should be in format of x.y.z", 3, version.length);
+        assertTrue("Major version should be greater than 3", Integer.parseInt(version[0]) > 3);
+        assertTrue("Minor version should be a positive int", Integer.parseInt(version[1]) >= 0);
+        assertTrue("Patch version should be a positive int", Integer.parseInt(version[2]) >= 0);
     }
 }
