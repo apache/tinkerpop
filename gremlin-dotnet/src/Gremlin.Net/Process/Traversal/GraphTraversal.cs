@@ -844,6 +844,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the format step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string> Format(string format)
+        {
+            Bytecode.AddStep("format", format);
+            return Wrap<TStart, string>(this);
+        }
+
+        /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> From (string? fromStepLabel)

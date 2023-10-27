@@ -102,6 +102,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FormatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
@@ -135,10 +136,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReverseStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
@@ -1631,6 +1632,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> substring(final int startIndex, final int endIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, endIndex);
         return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, endIndex));
+    }
+
+    /**
+     * A mid-traversal step which will handle result formatting to string values.
+     *
+     * @return the traversal with an appended {@link FormatStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#format-step" target="_blank">Reference Documentation - format Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> format(final String format) {
+        this.asAdmin().getBytecode().addStep(Symbols.format, format);
+        return this.asAdmin().addStep(new FormatStep<>(this.asAdmin(), format));
     }
 
     /**
@@ -3866,6 +3879,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String replace = "replace";
         public static final String substring = "substring";
         public static final String split = "split";
+        public static final String format = "format";
         public static final String asDate = "asDate";
         public static final String dateAdd = "dateAdd";
         public static final String dateDiff = "dateDiff";

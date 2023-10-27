@@ -1829,6 +1829,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx)  {
+        return graphTraversal.format(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_toUpper_Empty(final GremlinParser.TraversalMethod_toUpper_EmptyContext ctx) {
         return graphTraversal.toUpper();
     }

@@ -1000,6 +1000,38 @@ None
 
 None
 
+[[format-step]]
+=== format()
+
+*Description:* a mid-traversal step which will handle result formatting to string values.
+
+*Syntax:* `format(String)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |Y |`any` |`String`
+|=========================================================
+
+*Arguments:*
+
+Format string. Variables can be represented with `%{variable_name}` notation.
+Positional arguments can be used as `%{_}` token. Can be used multiple times.
+The variable values are used in the order that the first one will be found: Element properties, then Scope values.
+If value for some variable was not found, then the result is filtered out.
+
+*Exceptions*
+
+None
+
+*Modulation:*
+
+* `by()` - Used to inject positional argument. For example:
+`g.V().format("%{name} has %{_} connections").by(bothE().count())`.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
+
 [[length-step]]
 === length()
 

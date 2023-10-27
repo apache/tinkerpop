@@ -306,6 +306,12 @@ func (g *GraphTraversal) Fold(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Format adds the format step to the GraphTraversal.
+func (g *GraphTraversal) Format(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("format", args...)
+	return g
+}
+
 // From adds the from step to the GraphTraversal.
 func (g *GraphTraversal) From(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("from", args...)
