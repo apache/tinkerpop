@@ -32,6 +32,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Update `concat()` to accept `Traversal` varargs.
 * Corrected `concat()` signatures in `gremlin-dotnet`, `Concat()` is now used instead of `Concat<object>()`. *(breaking)*
 * Update `concat()` to not special treat `inject` in arguments and use `TraversalUtil.apply` on it as with any other child traversals. *(breaking)*
+* Added `format()` step to perform `String` manipulations.
 * Checked graph features for meta-property support before trying to serialize them in `VertexPropertySerializer` for GraphBinary.
 * Fixed multiline query bug in console caused by upgrade to Groovy 4.
 * Added date manipulation steps `asDate`, `dateAdd` and `dateDiff`.

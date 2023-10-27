@@ -783,6 +783,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal format method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  format(...args) {
+    this.bytecode.addStep('format', args);
+    return this;
+  }
+
+  /**
    * Graph traversal from method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1778,6 +1788,7 @@ const statics = {
   filter: (...args) => callOnEmptyTraversal('filter', args),
   flatMap: (...args) => callOnEmptyTraversal('flatMap', args),
   fold: (...args) => callOnEmptyTraversal('fold', args),
+  format: (...args) => callOnEmptyTraversal('format', args),
   group: (...args) => callOnEmptyTraversal('group', args),
   groupCount: (...args) => callOnEmptyTraversal('groupCount', args),
   has: (...args) => callOnEmptyTraversal('has', args),

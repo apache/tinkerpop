@@ -445,6 +445,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("dateAdd", "date_add");
             TO_PYTHON_MAP.put("dateDiff", "date_diff");
             TO_PYTHON_MAP.put("filter", "filter_");
+            TO_PYTHON_MAP.put("format", "format_");
             TO_PYTHON_MAP.put("from", "from_");
             TO_PYTHON_MAP.put("id", "id_");
             TO_PYTHON_MAP.put("in", "in_");
