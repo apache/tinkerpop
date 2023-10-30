@@ -28,10 +28,22 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
+    private static byte asByte(int arg) {
+        if (arg > Byte.MAX_VALUE || arg < Byte.MIN_VALUE)
+            throw new ArithmeticException("byte overflow");
+        return (byte) arg;
+    }
+
+    private static short asShort(int arg) {
+        if (arg > Short.MAX_VALUE || arg < Short.MIN_VALUE)
+            throw new ArithmeticException("short overflow");
+        return (short) arg;
+    }
+
     static final NumberHelper BYTE_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> (byte) (a.byteValue() + b.byteValue()),
-            (a, b) -> (byte) (a.byteValue() - b.byteValue()),
-            (a, b) -> (byte) (a.byteValue() * b.byteValue()),
+            (a, b) -> asByte(a.byteValue() + b.byteValue()),
+            (a, b) -> asByte(a.byteValue() - b.byteValue()),
+            (a, b) -> asByte(a.byteValue() * b.byteValue()),
             (a, b) -> (byte) (a.byteValue() / b.byteValue()),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -56,9 +68,9 @@ public final class NumberHelper {
             (a, b) -> Byte.compare(a.byteValue(), b.byteValue()));
 
     static final NumberHelper SHORT_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> (short) (a.shortValue() + b.shortValue()),
-            (a, b) -> (short) (a.shortValue() - b.shortValue()),
-            (a, b) -> (short) (a.shortValue() * b.shortValue()),
+            (a, b) -> asShort(a.shortValue() + b.shortValue()),
+            (a, b) -> asShort(a.shortValue() - b.shortValue()),
+            (a, b) -> asShort(a.shortValue() * b.shortValue()),
             (a, b) -> (short) (a.shortValue() / b.shortValue()),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -83,9 +95,9 @@ public final class NumberHelper {
             (a, b) -> Short.compare(a.shortValue(), b.shortValue()));
 
     static final NumberHelper INTEGER_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.intValue() + b.intValue(),
-            (a, b) -> a.intValue() - b.intValue(),
-            (a, b) -> a.intValue() * b.intValue(),
+            (a, b) -> Math.addExact(a.intValue(), b.intValue()),
+            (a, b) -> Math.subtractExact(a.intValue(), b.intValue()),
+            (a, b) -> Math.multiplyExact(a.intValue(), b.intValue()),
             (a, b) -> a.intValue() / b.intValue(),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -110,9 +122,9 @@ public final class NumberHelper {
             (a, b) -> Integer.compare(a.intValue(), b.intValue()));
 
     static final NumberHelper LONG_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.longValue() + b.longValue(),
-            (a, b) -> a.longValue() - b.longValue(),
-            (a, b) -> a.longValue() * b.longValue(),
+            (a, b) -> Math.addExact(a.longValue(), b.longValue()),
+            (a, b) -> Math.subtractExact(a.longValue(), b.longValue()),
+            (a, b) -> Math.multiplyExact(a.longValue(), b.longValue()),
             (a, b) -> a.longValue() / b.longValue(),
             (a, b) -> {
                 if (isNumber(a)) {
