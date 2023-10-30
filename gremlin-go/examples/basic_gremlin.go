@@ -42,7 +42,7 @@ func main() {
 	v2Vertex, err := v2.GetVertex()
 	v3Vertex, err := v3.GetVertex()
 
-	// Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
+	// Be sure to use a terminating step like Next() or Iterate() so that the traversal "executes"
 	// Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
 	promise := g.V(v1Vertex).AddE("knows").To(v2Vertex).Property("weight", 0.75).Iterate()
 	err = <-promise

@@ -34,7 +34,7 @@ public class BasicGremlinExample
         var v2 = g.AddV("person").Property("name", "stephen").Next();
         var v3 = g.AddV("person").Property("name", "vadas").Next();
 
-        // Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
+        // Be sure to use a terminating step like Next() or Iterate() so that the traversal "executes"
         // Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
         g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate();
         g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate();
