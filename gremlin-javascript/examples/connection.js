@@ -56,7 +56,6 @@ async function withConfigs() {
     const count = await g.V().count().next();
     console.log(count.value);
 
-    // Cleanup
     await dc.close();
 }
 
