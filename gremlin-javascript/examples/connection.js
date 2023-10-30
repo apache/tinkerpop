@@ -31,7 +31,12 @@ async function withRemote() {
     // Connecting to the server
     const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
     const g = traversal().withRemote(dc);
-    
+
+    // Simple query to verify connection
+    const v = await g.addV().iterate();
+    const count = await g.V().count().next();
+    console.log(count.value);
+
     // Cleanup
     await dc.close();
 }
@@ -47,7 +52,6 @@ async function withConfigs() {
     });
     const g = traversal().withRemote(dc);
 
-    // Simple query to verify connection
     const v = await g.addV().iterate();
     const count = await g.V().count().next();
     console.log(count.value);
