@@ -118,7 +118,7 @@ gremlin> g.V().values("name").toUpper()
 ==>PETER
 ----
 Scopes are also enabled on these string functions. The global scope functions synonymous to parameterless function call, and will only accept string traversers.
-The local scope will operate inside of list traversers, and will only accept list of strings.
+The local scope will operate inside of lists of strings.
 [source,text]
 ----
 gremlin> g.V().values("name").fold().toUpper(local)

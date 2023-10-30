@@ -49,9 +49,7 @@ public final class LengthLocalStep<S, E> extends ScalarMapStep<S, E> {
         if (null == item) {
             // we will pass null values to next step
             return null;
-        }
-
-        if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
+        } else if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
             final List<Integer> resList = new ArrayList<>();
             final Iterator<E> iterator = IteratorUtils.asIterator(item);
             while (iterator.hasNext()) {
@@ -67,10 +65,12 @@ public final class LengthLocalStep<S, E> extends ScalarMapStep<S, E> {
                 }
             }
             return (E) resList;
+        } else if (item instanceof String) {
+            return (E) Integer.valueOf(((String) item).length());
         } else {
             // String values not wrapped in a list will not be processed in local scope
             throw new IllegalArgumentException(
-                    String.format("The length(local) step can only take list of strings, encountered %s", item.getClass()));
+                    String.format("The length(local) step can only take string or list of strings, encountered %s", item.getClass()));
         }
     }
 

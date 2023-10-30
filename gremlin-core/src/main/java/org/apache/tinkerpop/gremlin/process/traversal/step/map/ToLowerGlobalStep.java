@@ -33,14 +33,14 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class ToLowerGlobalStep<S> extends ScalarMapStep<S, S> {
+public final class ToLowerGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
     public ToLowerGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected S map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
@@ -49,7 +49,7 @@ public final class ToLowerGlobalStep<S> extends ScalarMapStep<S, S> {
         }
 
         // we will pass null values to next step
-        return null == item? null : (S) ((String) item).toLowerCase();
+        return null == item? null : (E) ((String) item).toLowerCase();
     }
 
     @Override

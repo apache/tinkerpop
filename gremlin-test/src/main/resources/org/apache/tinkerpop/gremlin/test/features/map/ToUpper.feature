@@ -86,7 +86,23 @@ Feature: Step - toUpper()
       | RIPPLE |
       | PETER |
 
-  Scenario: g_V_valuesXnameX_order_fold_toUpper
+  Scenario: g_V_valuesXnameX_toUpperXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").toUpper(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | MARKO |
+      | VADAS |
+      | LOP |
+      | JOSH |
+      | RIPPLE |
+      | PETER |
+
+  Scenario: g_V_valuesXnameX_order_fold_toUpperXlocalX
     Given the modern graph
     And the traversal of
       """

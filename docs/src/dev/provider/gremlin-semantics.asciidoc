@@ -1037,7 +1037,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 [[length-step]]
 === length()
 
-*Description:* Returns the length of the incoming string traverser, or if `Scope.local` is specified, returns
+*Description:* Returns the length of the incoming string or list, if `Scope.local` is specified, returns
 the length of each string elements inside incoming list traverser.
 
 *Syntax:* `length()` | `length(Scope)`
@@ -1401,14 +1401,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 [[reverse-step]]
 === reverse()
 
-*Description:* Returns a reversed string of the incoming string traverser
+*Description:* Returns a reversed value of the incoming string or list traverser
 
 *Syntax:* `reverse()`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`
 |=========================================================
 
 *Arguments:*

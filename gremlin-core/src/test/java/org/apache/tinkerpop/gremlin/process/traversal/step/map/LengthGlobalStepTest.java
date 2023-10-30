@@ -51,4 +51,9 @@ public class LengthGlobalStepTest extends StepTest {
         __.__(Arrays.asList("a", "b", "c")).length().next();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingNonStringNonListValues() {
+        __.__(1).length().next();
+    }
+
 }

@@ -235,10 +235,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, object> AsString (Scope scope)
+        public GraphTraversal<TStart, TEnd> AsString (Scope scope)
         {
             Bytecode.AddStep("asString", scope);
-            return Wrap<TStart, object>(this);
+            return Wrap<TStart, TEnd>(this);
         }
 
         /// <summary>
@@ -1265,10 +1265,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the length step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, object?> Length (Scope scope)
+        public GraphTraversal<TStart, TEnd?> Length (Scope scope)
         {
             Bytecode.AddStep("length", scope);
-            return Wrap<TStart, object?>(this);
+            return Wrap<TStart, TEnd?>(this);
         }
 
         /// <summary>
@@ -2181,10 +2181,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the toLower step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, object?> ToLower (Scope scope)
+        public GraphTraversal<TStart, TEnd?> ToLower (Scope scope)
         {
             Bytecode.AddStep("toLower", scope);
-            return Wrap<TStart, object?>(this);
+            return Wrap<TStart, TEnd?>(this);
         }
         
         /// <summary>
@@ -2199,10 +2199,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the toUpper step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, object?> ToUpper (Scope scope)
+        public GraphTraversal<TStart, TEnd?> ToUpper (Scope scope)
         {
             Bytecode.AddStep("toUpper", scope);
-            return Wrap<TStart, object?>(this);
+            return Wrap<TStart, TEnd?>(this);
         }
 
         /// <summary>

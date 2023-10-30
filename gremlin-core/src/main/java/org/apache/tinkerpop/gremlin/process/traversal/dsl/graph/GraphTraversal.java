@@ -1486,6 +1486,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Returns the value of incoming traverser as strings. Null values are returned as a string value "null".
      *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
      * @return the traversal with an appended {@link AsStringGlobalStep} or {@link AsStringLocalStep} depending on the {@link Scope}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asString-step" target="_blank">Reference Documentation - AsString Step</a>
      * @since 3.7.1
@@ -1509,9 +1510,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns the length incoming string traverser. Null values are not processed and remain as null when returned.
+     * Returns the length incoming string or list. Null values are not processed and remain as null when returned.
      * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
+     * @param scope local will operate on individual strings within lists, global will operate on current traversal as a single object.
      * @return the traversal with an appended {@link LengthGlobalStep} or {@link LengthLocalStep} depending on the {@link Scope}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
      * @since 3.7.1
@@ -1535,9 +1537,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns the lowercase representation of incoming string traverser. Null values are not processed and remain
+     * Returns the lowercase representation of incoming string or list of strings. Null values are not processed and remain
      * as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
+     * @param scope local will accept lists of string and operate on individual strings within the list, global will only accept string objects.
      * @return the traversal with an appended {@link ToLowerGlobalStep} or {@link ToLowerLocalStep} depending on the {@link Scope}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toLower-step" target="_blank">Reference Documentation - ToLower Step</a>
      * @since 3.7.1
@@ -1561,9 +1564,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns the uppercase representation of incoming string traverser. Null values are not processed and
+     * Returns the uppercase representation of incoming string or list of strings. Null values are not processed and
      * remain as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
+     * @param scope local will accept lists of string and operate on individual strings within the list, global will only accept string objects.
      * @return the traversal with an appended {@link ToUpperGlobalStep} or {@link ToUpperLocalStep} depending on the {@link Scope}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toUpper-step" target="_blank">Reference Documentation - ToUpper Step</a>
      * @since 3.7.1

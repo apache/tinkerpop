@@ -43,16 +43,13 @@ public class AsStringLocalStepTest extends StepTest {
 
     @Test
     public void testReturnTypes() {
+        assertEquals("1", __.__(1).asString(Scope.local).next());
+        assertArrayEquals(new String[]{"1", "2"}, __.inject(1, 2).asString(Scope.local).toList().toArray());
         assertArrayEquals(new String[]{}, __.__(Collections.emptyList()).asString(Scope.local).next().toArray());
         assertArrayEquals(new String[]{"1", "2", "null"}, __.__(Arrays.asList(1, 2, null)).asString(Scope.local).next().toArray());
 
         assertArrayEquals(new String[]{"1test", "2test"},
                 __.__(Arrays.asList(1, 2)).asString(Scope.local).unfold().concat("test").toList().toArray());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingNonListItem() {
-        __.__(1).asString(Scope.local).next();
     }
 
 }

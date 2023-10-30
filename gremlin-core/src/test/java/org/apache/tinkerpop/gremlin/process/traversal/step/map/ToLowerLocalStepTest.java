@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Yang Xia (http://github.com/xiazcy)
@@ -42,6 +43,7 @@ public class ToLowerLocalStepTest extends StepTest {
 
     @Test
     public void testReturnTypes() {
+        assertEquals("hello", __.__("HELLO").toLower(Scope.local).next());
         assertArrayEquals(new String[]{"test"}, __.__(Arrays.asList("TEST")).toLower(Scope.local).next().toArray());
         assertArrayEquals(new String[]{"hello", "test", "no.123", null, ""},
                 __.__(Arrays.asList("hElLo", "TEST", "NO.123", null, "")).toLower(Scope.local).next().toArray());
@@ -50,11 +52,6 @@ public class ToLowerLocalStepTest extends StepTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWithIncomingNonStringList() {
         __.__(Arrays.asList(1, 2, 3)).toLower(Scope.local).next();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingNonListItem() {
-        __.__("hello").toLower(Scope.local).next();
     }
 
 }

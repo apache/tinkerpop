@@ -32,15 +32,15 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class AsStringGlobalStep<S> extends ScalarMapStep<S, S> {
+public final class AsStringGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
     public AsStringGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected S map(final Traverser.Admin<S> traverser) {
-        return (S) String.valueOf(traverser.get());
+    protected E map(final Traverser.Admin<S> traverser) {
+        return (E) String.valueOf(traverser.get());
     }
 
     @Override

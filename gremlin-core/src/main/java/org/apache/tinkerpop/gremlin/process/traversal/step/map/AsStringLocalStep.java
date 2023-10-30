@@ -49,9 +49,7 @@ public final class AsStringLocalStep<S, E> extends ScalarMapStep<S, E> {
         if (null == item) {
             // we will pass null lists to next step
             return null;
-        }
-
-        if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
+        } else if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
             final List<String> resList = new ArrayList<>();
             final Iterator<E> iterator = IteratorUtils.asIterator(item);
             while (iterator.hasNext()) {
@@ -60,9 +58,7 @@ public final class AsStringLocalStep<S, E> extends ScalarMapStep<S, E> {
             }
             return (E) resList;
         } else {
-            // String values not wrapped in a list will not be processed in local scope
-            throw new IllegalArgumentException(
-                    String.format("The asString(local) step can only take list of strings, encountered %s", item.getClass()));
+            return (E) String.valueOf(item);
         }
     }
 

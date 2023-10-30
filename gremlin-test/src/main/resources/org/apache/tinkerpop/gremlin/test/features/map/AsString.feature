@@ -36,6 +36,21 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asStringXlocalX
     Given the empty graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
+    And the traversal of
+      """
+      g.inject(xx1, xx2).asString(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | 1 |
+      | 2 |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_2X_asStringXlocalX
+    Given the empty graph
     And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
     And the traversal of
       """
