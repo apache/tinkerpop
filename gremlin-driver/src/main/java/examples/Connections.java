@@ -47,18 +47,33 @@ public class Connections {
     private static void withEmbedded() throws Exception {
         Graph graph = TinkerGraph.open();
         GraphTraversalSource g = traversal().withEmbedded(graph);
+
+        g.addV().iterate();
+        long count = g.V().count().next();
+        System.out.println(count);
+
         g.close();
     }
 
     // Connecting to the server
     private static void withRemote() throws Exception {
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182, "g"));
+
+        g.addV().iterate();
+        long count = g.V().count().next();
+        System.out.println(count);
+
         g.close();
     }
 
     // Connecting to the server with a configurations file
     private static void withConf() throws Exception {
         GraphTraversalSource g = traversal().withRemote("gremlin-driver/src/main/java/examples/conf/remote-graph.properties");
+
+        g.addV().iterate();
+        long count = g.V().count().next();
+        System.out.println(count);
+
         g.close();
     }
 
@@ -66,14 +81,19 @@ public class Connections {
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
         Cluster cluster = Cluster.build("localhost").
-                channelizer(Channelizer.HttpChannelizer.class).
-                keepAliveInterval(180000).
-                maxConnectionPoolSize(8).
-                path("/gremlin").
-                port(8182).
-                serializer(new GraphBinaryMessageSerializerV1()).
-                create();
+            channelizer(Channelizer.WebSocketChannelizer.class).
+            keepAliveInterval(180000).
+            maxConnectionPoolSize(8).
+            path("/gremlin").
+            port(8182).
+            serializer(new GraphBinaryMessageSerializerV1()).
+            create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+
+        g.addV().iterate();
+        long count = g.V().count().next();
+        System.out.println(count);
+
         g.close();
     }
 
@@ -83,10 +103,15 @@ public class Connections {
         TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
         MessageSerializer serializer = new GraphBinaryMessageSerializerV1(typeSerializerRegistry);
         Cluster cluster = Cluster.build("localhost").
-                serializer(serializer).
-                create();
+            serializer(serializer).
+            create();
         Client client = cluster.connect();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
+
+        g.addV().iterate();
+        long count = g.V().count().next();
+        System.out.println(count);
+
         g.close();
     }
 

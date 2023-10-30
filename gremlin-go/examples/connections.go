@@ -43,9 +43,13 @@ func withRemote() {
 	// Cleanup
 	defer driverRemoteConnection.Close()
 
-	// Creating the graph traversal
+    // Creating the graph traversal
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-	fmt.Println(g)
+
+    // Simple query to verify connection
+    g.AddV().Iterate()
+    count, _ := g.V().Count().Next()
+    fmt.Println(*count)
 }
 
 func withConfigs() {
@@ -59,16 +63,15 @@ func withConfigs() {
 			settings.WriteBufferSize = 0
 		})
 
-	// Error handling
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// Cleanup
 	defer driverRemoteConnection.Close()
-
-	// Creating the graph traversal
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
-	fmt.Println(g)
+
+    g.AddV().Iterate()
+    count, _ := g.V().Count().Next()
+    fmt.Println(*count)
 }

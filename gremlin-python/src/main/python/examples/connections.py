@@ -42,6 +42,11 @@ def with_remote():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
     g = traversal().with_remote(rc)
 
+    # simple query to verify connection
+    v = g.add_v().iterate()
+    count = g.V().count().next()
+    print(count)
+
     # cleanup
     rc.close()
 
@@ -50,6 +55,11 @@ def with_remote():
 def with_auth():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
     g = traversal().with_remote(rc)
+
+    v = g.add_v().iterate()
+    count = g.V().count().next()
+    print(count)
+
     rc.close()
 
 
@@ -57,6 +67,11 @@ def with_auth():
 def with_kerberos():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
     g = traversal().with_remote(rc)
+
+    v = g.add_v().iterate()
+    count = g.V().count().next()
+    print(count)
+
     rc.close()
 
 
@@ -70,6 +85,11 @@ def with_configs():
         enable_user_agent_on_connect=True
     )
     g = traversal().with_remote(rc)
+
+    v = g.add_v().iterate()
+    count = g.V().count().next()
+    print(count)
+
     rc.close()
 
 
