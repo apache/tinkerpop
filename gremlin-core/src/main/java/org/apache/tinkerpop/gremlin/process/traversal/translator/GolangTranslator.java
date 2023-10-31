@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiPredicate;
 
 /**
  * Translates Gremlin {@link Bytecode} into a Golang string representation.
@@ -59,7 +58,7 @@ import java.util.function.BiPredicate;
 public final class GolangTranslator implements Translator.ScriptTranslator {
     private final String traversalSource;
     private final TypeTranslator typeTranslator;
-    private final static  String GO_PACKAGE_NAME = "gremlingo.";
+    private final static String GO_PACKAGE_NAME = "gremlingo.";
 
     private GolangTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -196,11 +195,13 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         @Override
         protected Script produceScript(final List<?> o) {
             final Iterator<?> iterator = o.iterator();
+            script.append("[]interface{}{");
             while(iterator.hasNext()) {
                 convertToScript(iterator.next());
                 if (iterator.hasNext())
                     script.append(", ");
             }
+            script.append("}");
             return script;
         }
 
