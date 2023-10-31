@@ -33,6 +33,8 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed translation of `P`, `TraversalStrategy` and Enums, and added translation for `Vertex`, `Edge`, `VertexProperty`, list, set, dict, number, binding and lambda in Groovy Translator for Python.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
 * Added translator to the Go GLV.
+* Fixed Go translator to handle array arguments.
+* In Go GLV `P.Within` and `P.Without` extended to accept array arguments similar to other GLV's
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 * ProjectStep now throws exception when a duplicate key is provided in a query.
 * Fixed bug in `replaceLocalChild` where child traversal was not correctly integrated.
