@@ -21,9 +21,11 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asString
     Given the empty graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
     And the traversal of
       """
-      g.inject(1, 2).asString()
+      g.inject(xx1, xx2).asString()
       """
     When iterated to list
     Then the result should be unordered
@@ -32,17 +34,59 @@ Feature: Step - asString()
       | 2 |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_nullX_asString
+  Scenario: g_injectX1_2X_asStringXlocalX
     Given the empty graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
     And the traversal of
       """
-      g.inject(1, null).asString()
+      g.inject(xx1, xx2).asString(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | 1 |
+      | 2 |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXlist_1_2X_asStringXlocalX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
+    And the traversal of
+      """
+      g.inject(xx1).asString(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[1,2] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_nullX_asString
+    Given the empty graph
+    And using the parameter xx1 defined as "d[1].i"
+    And the traversal of
+      """
+      g.inject(null, xx1).asString()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
       | str[null] |
+      | 1 |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_nullX_asStringXlocalX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[d[1].i,null]"
+    And the traversal of
+      """
+      g.inject(xx1).asString(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[1,str[null]] |
 
   Scenario: g_V_valueMapXnameX_asString
     Given the modern graph
@@ -60,6 +104,17 @@ Feature: Step - asString()
       | {name=[ripple]} |
       | {name=[peter]} |
 
+  Scenario: g_V_valueMapXnameX_order_fold_asStringXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().valueMap("name").order().fold().asString(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[{name=[josh]},{name=[lop]},{name=[marko]},{name=[peter]},{name=[ripple]},{name=[vadas]}] |
+
   @UserSuppliedVertexIds
   Scenario: g_V_asString
     Given the modern graph
@@ -76,6 +131,18 @@ Feature: Step - asString()
       | str[v[4]] |
       | str[v[5]] |
       | str[v[6]] |
+
+  @UserSuppliedVertexIds
+  Scenario: g_V_fold_asStringXlocalX_orderXlocalX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().fold().asString(Scope.local).order(local)
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[str[v[1]],str[v[2]],str[v[3]],str[v[4]],str[v[5]],str[v[6]]] |
 
   @UserSuppliedEdgeIds
   Scenario: g_E_asString
@@ -130,6 +197,17 @@ Feature: Step - asString()
       | 27 |
       | 32 |
       | 35 |
+
+  Scenario: g_V_hasLabelXpersonX_valuesXageX_order_fold_asStringXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("age").order().fold().asString(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[27,29,32,35] |
 
   Scenario: g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX
     Given the modern graph

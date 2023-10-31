@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -30,26 +31,26 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author Yang Xia (http://github.com/xiazcy)
- */
-public class TrimStepTest extends StepTest {
+public class ReplaceLocalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.trim());
+        return Collections.singletonList(__.replace(Scope.local, "a", "b"));
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("test", __.__("   test   ").trim().next());
-        assertArrayEquals(new String[]{"hello world", "test", null, "", ""},
-                __.inject(" hello world ", "  test  ", null, "", " ").trim().toList().toArray());
+        assertEquals("halo", __.__("hello").replace(Scope.local, "el", "a").next());
+
+        assertEquals("hello", __.__("hello").replace(Scope.local, null, "a").next());
+        assertEquals("hello", __.__("hello").replace(Scope.local, "el", null).next());
+        assertEquals("hello", __.__("hello").replace(Scope.local, null, null).next());
+
+        assertArrayEquals(new String[]{"hell0", "w0rld", null, ""},
+                __.__(Arrays.asList("hello", "world", null, "")).replace(Scope.local, "o", "0").next().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList(" a ", " b ", " c" )).trim().next();
-    }
+    public void shouldThrowWithIncomingArrayList() { __.__(Arrays.asList(1, 2, 3)).replace(Scope.local, "a", "b").next(); }
 
 }

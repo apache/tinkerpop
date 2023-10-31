@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class ToUpperStepTest extends StepTest {
+public class ToUpperGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
@@ -44,7 +44,7 @@ public class ToUpperStepTest extends StepTest {
     public void testReturnTypes() {
         assertEquals("TEST", __.__("test").toUpper().next());
         assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
-                __.inject("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
+                __.__("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

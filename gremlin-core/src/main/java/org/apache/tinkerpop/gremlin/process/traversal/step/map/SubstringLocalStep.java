@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -38,51 +38,32 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class SubstringStep<S> extends ScalarMapStep<S, String> {
+public final class SubstringLocalStep<S, E> extends StringLocalStep<S, E> {
 
     private final Integer start;
     private final Integer end;
 
-    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
+    public SubstringLocalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
         super(traversal);
         this.start = startIndex;
         this.end = end;
     }
 
-    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex) {
+    public SubstringLocalStep(final Traversal.Admin traversal, final Integer startIndex) {
         this(traversal, startIndex, null);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The substring() step can only take string as argument, encountered %s", item.getClass()));
-        }
-
-        // to preserve null items
-        final String strItem = (String) item;
-
-        if (null == strItem)
-            return null;
-
-        final int newStart = processStringIndex(strItem.length(), this.start);
+    protected E applyStringOperation(String item) {
+        final int newStart = processStringIndex(item.length(), this.start);
         if (null == this.end)
-            return strItem.substring(newStart);
+            return (E) item.substring(newStart);
 
-        final int newEnd = processStringIndex(strItem.length(), this.end);
-
+        final int newEnd = processStringIndex(item.length(), this.end);
         if (newEnd <= newStart)
-            return "";
+            return (E) "";
 
-        return strItem.substring(newStart, newEnd);
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+        return (E) item.substring(newStart, newEnd);
     }
 
     @Override

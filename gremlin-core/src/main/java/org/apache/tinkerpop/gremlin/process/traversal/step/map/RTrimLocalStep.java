@@ -19,33 +19,33 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-
-import java.util.Collections;
-import java.util.Set;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 
 /**
- * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned as a string value "null".
+ * Reference implementation for rTrim() step, a mid-traversal step which a string with trailing
+ * whitespace removed. Null values are not processed and remain as null when returned.
+ * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class AsStringStep<S> extends ScalarMapStep<S, String> {
+public final class RTrimLocalStep<S, E> extends StringLocalStep<S, E> {
 
-    public AsStringStep(final Traversal.Admin traversal) {
+    public RTrimLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        return String.valueOf(traverser.get());
+    protected E applyStringOperation(String item) {
+        return (E) item.substring(0,getEndIdx(item)+1);
     }
 
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+    private int getEndIdx(final String str) {
+        int idx = str.length() - 1;
+        while (idx >= 0 && Character.isWhitespace(str.charAt(idx))) {
+            idx--;
+        }
+        return idx;
     }
 
 }

@@ -26,30 +26,30 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Reference implementation for toUpper() step, a mid-traversal step which returns an upper case string representation
+ * Reference implementation for toLower() step, a mid-traversal step which returns a lower case string representation
  * of the incoming string traverser. Null values are not processed and remain as null when returned.
  * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class ToUpperStep<S> extends ScalarMapStep<S, String> {
+public final class ToLowerGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
-    public ToUpperStep(final Traversal.Admin traversal) {
+    public ToLowerGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
             throw new IllegalArgumentException(
-                    String.format("The toUpper() step can only take string as argument, encountered %s", item.getClass()));
+                    String.format("The toLower() step can only take string as argument, encountered %s", item.getClass()));
         }
 
         // we will pass null values to next step
-        return null == item? null : ((String) item).toUpperCase();
+        return null == item? null : (E) ((String) item).toLowerCase();
     }
 
     @Override

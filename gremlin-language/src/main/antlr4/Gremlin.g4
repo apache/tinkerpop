@@ -876,6 +876,7 @@ traversalMethod_concat
 
 traversalMethod_asString
     : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
+    | 'asString' LPAREN traversalScopeArgument RPAREN #traversalMethod_asString_Scope
     ;
 
 traversalMethod_format
@@ -884,39 +885,49 @@ traversalMethod_format
 
 traversalMethod_toUpper
     : 'toUpper' LPAREN RPAREN #traversalMethod_toUpper_Empty
+    | 'toUpper' LPAREN traversalScopeArgument RPAREN #traversalMethod_toUpper_Scope
     ;
 
 traversalMethod_toLower
     : 'toLower' LPAREN RPAREN #traversalMethod_toLower_Empty
+    | 'toLower' LPAREN traversalScopeArgument RPAREN #traversalMethod_toLower_Scope
     ;
 
 traversalMethod_length
     : 'length' LPAREN RPAREN #traversalMethod_length_Empty
+    | 'length' LPAREN traversalScopeArgument RPAREN #traversalMethod_length_Scope
     ;
 
 traversalMethod_trim
     : 'trim' LPAREN RPAREN #traversalMethod_trim_Empty
+    | 'trim' LPAREN traversalScopeArgument RPAREN #traversalMethod_trim_Scope
     ;
 
 traversalMethod_lTrim
     : 'lTrim' LPAREN RPAREN #traversalMethod_lTrim_Empty
+    | 'lTrim' LPAREN traversalScopeArgument RPAREN #traversalMethod_lTrim_Scope
     ;
 
 traversalMethod_rTrim
     : 'rTrim' LPAREN RPAREN #traversalMethod_rTrim_Empty
+    | 'rTrim' LPAREN traversalScopeArgument RPAREN #traversalMethod_rTrim_Scope
     ;
 
 traversalMethod_replace
     : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
+    | 'replace' LPAREN traversalScopeArgument COMMA stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_Scope_String_String
     ;
 
 traversalMethod_split
     : 'split' LPAREN stringNullableArgument RPAREN #traversalMethod_split_String
+    | 'split' LPAREN traversalScopeArgument COMMA stringNullableArgument RPAREN #traversalMethod_split_Scope_String
     ;
 
 traversalMethod_substring
     : 'substring' LPAREN integerArgument RPAREN #traversalMethod_substring_int
+    | 'substring' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int
     | 'substring' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_int_int
+    | 'substring' LPAREN traversalScopeArgument COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int_int
     ;
 
 traversalMethod_asDate

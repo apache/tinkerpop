@@ -20,41 +20,34 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for trim() step, a mid-traversal step which returns a string with leading and trailing
- * whitespace removed. Null values are not processed and remain as null when returned.
- * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+ * Reference implementation for the local scope of the toUpper() step, a mid-traversal step which returns an upper case
+ * string representation of all elements inside the incoming list traverser. Null values are not processed and remain as
+ * null when returned. If the incoming traverser is not a list or a non-String list then an {@code IllegalArgumentException}
+ * will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class TrimStep<S> extends ScalarMapStep<S, String> {
+public final class ToLowerLocalStep<S, E> extends StringLocalStep<S, E> {
 
-    public TrimStep(final Traversal.Admin traversal) {
+    public ToLowerLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The trim() step can only take string as argument, encountered %s", item.getClass()));
-        }
-
-        // we will pass null values to next step
-        return null == item? null : ((String) item).trim();
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+    protected E applyStringOperation(String item) {
+        return (E) item.toLowerCase();
     }
 
 }

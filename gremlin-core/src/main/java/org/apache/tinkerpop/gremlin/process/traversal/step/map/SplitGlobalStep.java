@@ -24,44 +24,51 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for substring step, a mid-traversal step which returns a string with the specified
- * characters in the original string replaced with the new characters. Any null arguments will be a no-op and the
- * original string is returned. Null values are not processed and remain as null when returned. If the incoming
- * traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+ * Reference implementation for substring step, a mid-traversal step which returns a list of strings created by
+ * splitting the incoming string traverser around the matches of the given separator. A null separator will split the
+ * string by whitespaces. Null values from incoming traversers are not processed and remain as null when returned.
+ * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class ReplaceStep<S> extends ScalarMapStep<S, String> implements TraversalParent {
+public final class SplitGlobalStep<S, E> extends ScalarMapStep<S, E> implements TraversalParent {
 
-    private final String oldChar;
-    private final String newChar;
+    private final String separator;
 
-    public ReplaceStep(final Traversal.Admin traversal, final String oldChar, final String newChar ) {
+    public SplitGlobalStep(final Traversal.Admin traversal, final String separator) {
         super(traversal);
-        this.oldChar=oldChar;
-        this.newChar=newChar;
+        this.separator = separator;
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
             throw new IllegalArgumentException(
-                    String.format("The replace() step can only take string as argument, encountered %s.", item.getClass()));
+                    String.format("The split() step can only take string as argument, encountered %s.", item.getClass()));
         }
 
         // we will pass null values to next step
-        return null == item? null : StringUtils.replace(((String) item), this.oldChar, this.newChar);
+        return null == item? null : (E) Arrays.asList(StringUtils.splitByWholeSeparator((String) item, this.separator));
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (null != this.separator ? this.separator.hashCode() : 0);
+        return result;
     }
 }

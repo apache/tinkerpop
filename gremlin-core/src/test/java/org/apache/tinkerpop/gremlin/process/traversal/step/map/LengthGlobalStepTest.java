@@ -33,23 +33,27 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class ToLowerStepTest extends StepTest {
+public class LengthGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.toLower());
+        return Collections.singletonList(__.length());
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("test", __.__("TEST").toLower().next());
-        assertArrayEquals(new String[]{"hello", "test", "no.123", null, ""},
-                __.inject("hElLo", "TEST", "NO.123", null, "").toLower().toList().toArray());
+        assertEquals(Integer.valueOf(4), __.__("test").length().next());
+        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.inject("hello", "test", null, "").length().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).toLower().next();
+        __.__(Arrays.asList("a", "b", "c")).length().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingNonStringNonListValues() {
+        __.__(1).length().next();
     }
 
 }
