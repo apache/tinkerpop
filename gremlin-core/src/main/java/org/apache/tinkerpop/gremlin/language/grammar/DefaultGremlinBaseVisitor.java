@@ -950,18 +950,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_concat_Traversal_Traversal(final GremlinParser.TraversalMethod_concat_Traversal_TraversalContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_concat_Traversal_Traversal(final GremlinParser.TraversalMethod_concat_Traversal_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_concat_String(final GremlinParser.TraversalMethod_concat_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_concat_String(final GremlinParser.TraversalMethod_concat_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_format_String(GremlinParser.TraversalMethod_format_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -997,99 +994,79 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_trim_Empty(final GremlinParser.TraversalMethod_trim_EmptyContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_trim_Empty(final GremlinParser.TraversalMethod_trim_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_trim_Scope(final GremlinParser.TraversalMethod_trim_ScopeContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_trim_Scope(final GremlinParser.TraversalMethod_trim_ScopeContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_lTrim_Empty(final GremlinParser.TraversalMethod_lTrim_EmptyContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_lTrim_Empty(final GremlinParser.TraversalMethod_lTrim_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_lTrim_Scope(final GremlinParser.TraversalMethod_lTrim_ScopeContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_lTrim_Scope(final GremlinParser.TraversalMethod_lTrim_ScopeContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_rTrim_Empty(final GremlinParser.TraversalMethod_rTrim_EmptyContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_rTrim_Empty(final GremlinParser.TraversalMethod_rTrim_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_rTrim_Scope(final GremlinParser.TraversalMethod_rTrim_ScopeContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_rTrim_Scope(final GremlinParser.TraversalMethod_rTrim_ScopeContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_reverse_Empty(final GremlinParser.TraversalMethod_reverse_EmptyContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_reverse_Empty(final GremlinParser.TraversalMethod_reverse_EmptyContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_replace_String_String(final GremlinParser.TraversalMethod_replace_String_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_replace_String_String(final GremlinParser.TraversalMethod_replace_String_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_replace_Scope_String_String(final GremlinParser.TraversalMethod_replace_Scope_String_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_replace_Scope_String_String(final GremlinParser.TraversalMethod_replace_Scope_String_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_split_String(final GremlinParser.TraversalMethod_split_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_split_String(final GremlinParser.TraversalMethod_split_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_split_Scope_String(final GremlinParser.TraversalMethod_split_Scope_StringContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_split_Scope_String(final GremlinParser.TraversalMethod_split_Scope_StringContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_substring_int(final GremlinParser.TraversalMethod_substring_intContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_substring_int(final GremlinParser.TraversalMethod_substring_intContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_substring_Scope_int(final GremlinParser.TraversalMethod_substring_Scope_intContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_substring_Scope_int(final GremlinParser.TraversalMethod_substring_Scope_intContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_substring_int_int(final GremlinParser.TraversalMethod_substring_int_intContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_substring_int_int(final GremlinParser.TraversalMethod_substring_int_intContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_substring_Scope_int_int(final GremlinParser.TraversalMethod_substring_Scope_int_intContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_substring_Scope_int_int(final GremlinParser.TraversalMethod_substring_Scope_int_intContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_dateAdd(final GremlinParser.TraversalMethod_dateAddContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_dateAdd(final GremlinParser.TraversalMethod_dateAddContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_dateDiff_Traversal(final GremlinParser.TraversalMethod_dateDiff_TraversalContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_dateDiff_Traversal(final GremlinParser.TraversalMethod_dateDiff_TraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_dateDiff_Date(final GremlinParser.TraversalMethod_dateDiff_DateContext ctx) { notImplemented(ctx); return null; }
-
+	@Override public T visitTraversalMethod_dateDiff_Date(final GremlinParser.TraversalMethod_dateDiff_DateContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1130,7 +1107,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalDT(GremlinParser.TraversalDTContext ctx) { notImplemented(ctx); return null; }
-
 	/**
 	 * {@inheritDoc}
 	 */

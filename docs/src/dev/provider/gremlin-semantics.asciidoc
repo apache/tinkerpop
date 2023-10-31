@@ -621,7 +621,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 *Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
 incoming list traverser as string.
 
-*Syntax:* `asString()` | `asString(local)`
+*Syntax:* `asString()` | `asString(Scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -631,8 +631,9 @@ incoming list traverser as string.
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser. The `local` scope will operate on list traverser.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual traverser, casting all to string. The `local` scope will behave like `global`
+for everything except lists, where it will cast individual elements inside the list into string and return a list of string instead.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
@@ -1050,7 +1051,7 @@ the length of each string elements inside incoming list traverser.
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1147,7 +1148,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1376,7 +1377,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Description:* Returns a string with the specified characters in the original string replaced with the new characters.
 
-*Syntax:* `replace(String, String)`
+*Syntax:* `replace(String, String)` | `replace(Scope, String, String)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1386,11 +1387,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Arguments:*
 
-* `String` - The string character(s) in the original string to be replaced. Nullable, a null input will be a no-op and
+* `oldChar` - The string character(s) in the original string to be replaced. Nullable, a null input will be a no-op and
 the original string will be returned
-* `String` - The string character(s) to replace with. Nullable, a null input will be a no-op and the original string
+* `newChar` - The string character(s) to replace with. Nullable, a null input will be a no-op and the original string
 will be returned
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1445,7 +1446,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1462,7 +1463,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
 *Description:* Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
 
-*Syntax:* `split(String)`
+*Syntax:* `split(String)` | `split(Scope, String)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1474,7 +1475,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
 * `separator` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
 whitespaces.
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1491,7 +1492,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(int, int)`
+*Syntax:* `substring(int, int)` | `substring(Scope, int, int)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1501,11 +1502,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 *Arguments:*
 
-* `int` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
+* `startIndex` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `int` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+* `endIndex` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
 index &leq; start index will return the empty string.
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1528,12 +1529,12 @@ the lowercase representation of each string elements inside incoming list traver
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1561,7 +1562,7 @@ the uppercase representation of each string elements inside incoming list traver
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -1588,7 +1589,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
 *Arguments:*
 
-* `scope` - Determines the type of travers it operates on. Both scope will operate on the level of individual traversers.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.

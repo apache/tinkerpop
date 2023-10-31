@@ -739,7 +739,7 @@ public class __ {
     /**
      * @see GraphTraversal#substring(int)
      */
-    public static <A> GraphTraversal<A, A> substring(final int startIndex) {
+    public static <A> GraphTraversal<A, String> substring(final int startIndex) {
         return __.<A>start().substring(startIndex);
     }
 
@@ -753,7 +753,7 @@ public class __ {
     /**
      * @see GraphTraversal#substring(int, int)
      */
-    public static <A> GraphTraversal<A, A> substring(final int startIndex, final int endIndex) {
+    public static <A> GraphTraversal<A, String> substring(final int startIndex, final int endIndex) {
         return __.<A>start().substring(startIndex, endIndex);
     }
 

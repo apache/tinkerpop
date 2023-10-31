@@ -43,10 +43,10 @@ public final class SubstringLocalStep<S, E> extends StringLocalStep<S, E> {
     private final Integer start;
     private final Integer end;
 
-    public SubstringLocalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
+    public SubstringLocalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer endIndex) {
         super(traversal);
         this.start = startIndex;
-        this.end = end;
+        this.end = endIndex;
     }
 
     public SubstringLocalStep(final Traversal.Admin traversal, final Integer startIndex) {

@@ -42,10 +42,10 @@ public final class SubstringGlobalStep<S, E> extends ScalarMapStep<S, E> {
     private final Integer start;
     private final Integer end;
 
-    public SubstringGlobalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
+    public SubstringGlobalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer endIndex) {
         super(traversal);
         this.start = startIndex;
-        this.end = end;
+        this.end = endIndex;
     }
 
     public SubstringGlobalStep(final Traversal.Admin traversal, final Integer startIndex) {

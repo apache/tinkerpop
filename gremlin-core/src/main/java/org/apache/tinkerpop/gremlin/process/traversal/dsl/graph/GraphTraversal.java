@@ -1764,7 +1764,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> substring(final int startIndex) {
+    public default GraphTraversal<S, String> substring(final int startIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex);
         return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex));
     }
@@ -1801,7 +1801,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> substring(final int startIndex, final int endIndex) {
+    public default GraphTraversal<S, String> substring(final int startIndex, final int endIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, endIndex);
         return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex));
     }
