@@ -49,7 +49,7 @@ Feature: Step - asString()
       | 2 |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_2X_asStringXlocalX
+  Scenario: g_injectXlist_1_2X_asStringXlocalX
     Given the empty graph
     And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
     And the traversal of
