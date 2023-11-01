@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerShuffleGraph;
 import org.junit.AssumptionViolatedException;
 
 import java.io.File;
@@ -171,6 +172,61 @@ public abstract class TinkerWorld implements World {
         @Override
         public AbstractTinkerGraph open(final Configuration configuration) {
             return TinkerTransactionGraph.open(configuration);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The {@link World} implementation for TinkerShuffleGraph that provides the {@link GraphTraversalSource}
+     * instances required by the Gherkin test suite.
+     */
+    public static class TinkerShuffleGraphWorld extends TinkerWorld {
+        private static final TinkerGraph modern;
+        private static final TinkerGraph classic;
+        private static final TinkerGraph crew;
+        private static final TinkerGraph sink;
+        private static final TinkerGraph grateful;
+
+        static {
+            modern = TinkerShuffleGraph.open();
+            TinkerFactory.generateModern(modern);
+            registerTestServices(modern);
+            classic = TinkerShuffleGraph.open();
+            TinkerFactory.generateClassic(classic);
+            registerTestServices(classic);
+            crew = TinkerShuffleGraph.open();
+            TinkerFactory.generateTheCrew(crew);
+            registerTestServices(crew);
+            sink = TinkerShuffleGraph.open();
+            TinkerFactory.generateKitchenSink(sink);
+            registerTestServices(sink);
+            grateful = TinkerShuffleGraph.open();
+            TinkerFactory.generateGratefulDead(grateful);
+            registerTestServices(grateful);
+        }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            if (null == graphData)
+                return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
+            else if (graphData == LoadGraphWith.GraphData.CLASSIC)
+                return classic.traversal();
+            else if (graphData == LoadGraphWith.GraphData.CREW)
+                return crew.traversal();
+            else if (graphData == LoadGraphWith.GraphData.MODERN)
+                return modern.traversal();
+            else if (graphData == LoadGraphWith.GraphData.SINK)
+                return sink.traversal();
+            else if (graphData == LoadGraphWith.GraphData.GRATEFUL)
+                return grateful.traversal();
+            else
+                throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public AbstractTinkerGraph open(final Configuration configuration) {
+            return TinkerShuffleGraph.open(configuration);
         }
     }
 

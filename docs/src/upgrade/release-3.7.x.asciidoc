@@ -347,6 +347,8 @@ feature. In an effort to better allow graphs to support one feature or the other
 been split into two tags: `@MultiProperties` and `@MetaProperties`. The original `@MultiMetaProperties` tag has been
 removed.
 
+Added a new `@InsertionOrderingRequired` tag which signifies Gherkin feature tests which are reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph. These tests should be skipped by any graph which does not guarantee such ordering.
+
 ==== Graph Driver Providers
 
 

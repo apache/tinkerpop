@@ -76,28 +76,38 @@ Feature: Step - combine()
     Then the traversal will raise an error with message containing text of "Argument provided for combine step can't be null"
 
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXnonexistantX_fold_combineXV_valuesXnameX_foldX
+  Scenario: g_V_valuesXnonexistantX_fold_combineXV_valuesXnameX_foldX_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().values("nonexistant").fold().combine(__.V().values("name").fold())
+      g.V().values("nonexistant").fold().combine(__.V().values("name").fold()).unfold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[marko,vadas,lop,josh,ripple,peter] |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXnameX_fold_combineXV_valuesXnonexistantX_foldX
+  Scenario: g_V_valuesXnameX_fold_combineXV_valuesXnonexistantX_foldX_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().values("name").fold().combine(__.V().values("nonexistant").fold())
+      g.V().values("name").fold().combine(__.V().values("nonexistant").fold()).unfold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[marko,vadas,lop,josh,ripple,peter] |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_valuesXageX_order_byXdescX_fold_combineXV_valuesXageX_order_byXdescX_foldX
@@ -130,33 +140,39 @@ Feature: Step - combine()
       | l[PETER,LOP,MARKO] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXxx1X_combineXV_valuesXnameX_foldX
+  Scenario: g_injectXxx1X_combineXV_valuesXnameX_foldX_unfold
     Given the modern graph
     And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).combine(__.V().values("name").fold())
+      g.inject(xx1).combine(__.V().values("name").fold()).unfold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[marko,marko,vadas,lop,josh,ripple,peter] |
+      | marko |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
   @MultiProperties @MetaProperties
-  Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_combineXseattle_vancouverX
+  Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_combineXseattle_vancouverX_orderXlocalX
     Given the crew graph
     And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().combine(xx1)
+      g.V().valueMap("location").select(values).unfold().combine(xx1).order(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[san diego,santa cruz,brussels,santa fe,seattle,vancouver] |
+      | l[brussels,san diego,santa cruz,santa fe,seattle,vancouver] |
       | l[centreville,dulles,purcellville,seattle,vancouver] |
-      | l[bremen,baltimore,oakland,seattle,seattle,vancouver] |
-      | l[spremberg,kaiserslautern,aachen,seattle,vancouver] |
+      | l[baltimore,bremen,oakland,seattle,seattle,vancouver] |
+      | l[aachen,kaiserslautern,seattle,spremberg,vancouver] |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_combineXempty_listX
