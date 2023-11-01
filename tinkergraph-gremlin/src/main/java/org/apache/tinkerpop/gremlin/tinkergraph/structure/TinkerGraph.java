@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
-public final class TinkerGraph extends AbstractTinkerGraph {
+public class TinkerGraph extends AbstractTinkerGraph {
 
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
@@ -79,7 +79,7 @@ public final class TinkerGraph extends AbstractTinkerGraph {
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
      */
-    private TinkerGraph(final Configuration configuration) {
+    TinkerGraph(final Configuration configuration) {
         this.configuration = configuration;
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
@@ -146,7 +146,7 @@ public final class TinkerGraph extends AbstractTinkerGraph {
             idValue = vertexIdManager.getNextId(this);
         }
 
-        final Vertex vertex = new TinkerVertex(idValue, label, this);
+        final Vertex vertex = createTinkerVertex(idValue, label, this);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         this.vertices.put(vertex.id(), vertex);
 

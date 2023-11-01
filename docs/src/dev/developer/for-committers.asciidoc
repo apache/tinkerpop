@@ -576,6 +576,7 @@ tries to reference inaccessible properties that are on elements only available b
 `GraphComputer`.
 * `@GraphComputerVerificationStarGraphExceeded` - The scenario itself is not written to support `GraphComputer` because
 the traversal does not mind the star graph limitation.
+* `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
 * `@MultiProperties` - The scenario makes use of multi-properties.
 * `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
