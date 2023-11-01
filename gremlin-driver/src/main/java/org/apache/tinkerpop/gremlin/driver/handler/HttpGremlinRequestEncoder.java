@@ -59,27 +59,10 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
         try {
-            final String gremlin;
-            final Object gremlinStringOrBytecode = requestMessage.getArg(Tokens.ARGS_GREMLIN);
-
-            // the gremlin key can contain a Gremlin script or bytecode. if it's bytecode we can't submit it over
-            // http as such. it has to be converted to a script and we can do that with the Groovy translator.
-            final boolean usesBytecode = gremlinStringOrBytecode instanceof Bytecode;
-            if (usesBytecode) {
-                gremlin = GroovyTranslator.of("g").translate((Bytecode) gremlinStringOrBytecode).getScript();
-            } else {
-                gremlin = gremlinStringOrBytecode.toString();
-            }
-            final byte[] payload = mapper.writeValueAsBytes(new HashMap<String,Object>() {{
-                put(Tokens.ARGS_GREMLIN, gremlin);
-                put(Tokens.REQUEST_ID, requestMessage.getRequestId());
-                if (usesBytecode) put("op", Tokens.OPS_BYTECODE);
-            }});
-            final ByteBuf bb = channelHandlerContext.alloc().buffer(payload.length);
-            bb.writeBytes(payload);
-            final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", bb);
-            request.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json");
-            request.headers().add(HttpHeaderNames.CONTENT_LENGTH, payload.length);
+            final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+            final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
+            request.headers().add(HttpHeaderNames.CONTENT_TYPE, serializer.mimeTypesSupported()[0]);
+            request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, serializer.mimeTypesSupported()[0]);
 
             objects.add(interceptor.apply(request));

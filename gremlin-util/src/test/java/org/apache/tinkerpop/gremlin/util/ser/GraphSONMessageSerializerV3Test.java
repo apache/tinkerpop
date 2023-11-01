@@ -21,7 +21,13 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
@@ -49,6 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -67,7 +75,7 @@ public class GraphSONMessageSerializerV3Test {
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public final MessageSerializer<ObjectMapper> serializer = new GraphSONMessageSerializerV3();
+    public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -344,6 +352,32 @@ public class GraphSONMessageSerializerV3Test {
         final RequestMessage m = serializer.deserializeRequest(bb);
         assertEquals("bytecode", m.getOp());
         assertNotNull(m.getArgs());
+    }
+
+    // !!!
+    @Test
+    public void should() throws Exception {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        final Traversal.Admin t = g.V().hasLabel("person").asAdmin();
+
+        final Map<String, String> aliases = new HashMap<>();
+        aliases.put("g","g");
+
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_BYTECODE)
+                .processor("traversal")
+                .overrideRequestId(UUID.randomUUID())
+                .addArg(Tokens.ARGS_GREMLIN, t.getBytecode())
+                .addArg(Tokens.ARGS_ALIASES, aliases)
+                .create();
+
+        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        // for testing in postman
+        final String str = serializer.serializeRequestAsString(request, allocator);
+
+        final int mimeLen = buffer.readByte();
+        buffer.readBytes(new byte[mimeLen]);
+        final RequestMessage deserialized = serializer.deserializeRequest(buffer);
+        assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test

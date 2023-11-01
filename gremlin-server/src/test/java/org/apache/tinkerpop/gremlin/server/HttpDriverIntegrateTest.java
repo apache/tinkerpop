@@ -81,7 +81,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-            assertEquals("2", g.inject("2").toList().get(0));
+            final String result = g.inject("2").toList().get(0);
+            assertEquals("2", result);
         } catch (Exception ex) {
             throw ex;
         } finally {
@@ -97,7 +98,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-            assertEquals("2", g.inject("2").toList().get(0));
+            final String result = g.inject("2").toList().get(0);
+            assertEquals("2", result);
         } catch (Exception ex) {
             throw ex;
         } finally {

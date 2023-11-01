@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -31,6 +32,9 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
@@ -73,6 +77,39 @@ public class HttpHandlerUtil {
      */
     public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
         final String contentType = Optional.ofNullable(request.headers().get(HttpHeaderNames.CONTENT_TYPE)).orElse("application/json");
+
+        if (contentType.equals(SerTokens.MIME_GRAPHSON_V3)) {
+            final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
+            try {
+                final ByteBuf buffer = request.content();
+
+                final int first = buffer.readByte();
+                // !!! skip header. Why we write this to json?
+                if (first != 0x7b)
+                    buffer.readBytes(new byte[first]);
+                else
+                    buffer.resetReaderIndex();
+
+                return serializer.deserializeRequest(buffer);
+            }
+            catch (Exception ex) {
+                System.out.println(ex); // !!!
+            }
+        }
+
+        if (contentType.equals(SerTokens.MIME_GRAPHBINARY_V1)) {
+            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+            try {
+                final ByteBuf buffer = request.content();
+                final int first = buffer.readByte();
+                buffer.readBytes(new byte[first]);
+
+                return serializer.deserializeRequest(buffer);
+            }
+            catch (Exception ex) {
+                System.out.println(ex); // !!!
+            }
+        }
 
         // default is just the StandardOpProcessor which maintains compatibility with older versions which only
         // processed scripts.

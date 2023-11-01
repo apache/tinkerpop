@@ -42,6 +42,7 @@ public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<Fu
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final FullHttpResponse httpResponse, final List<Object> objects) throws Exception {
+        // !!! Why we need to convert all to string?
         final String content = httpResponse.content().toString(CharsetUtil.UTF_8);
 
         if (!(serializer instanceof MessageTextSerializer))

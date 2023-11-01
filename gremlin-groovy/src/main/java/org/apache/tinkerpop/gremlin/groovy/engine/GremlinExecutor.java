@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,7 +197,7 @@ public class GremlinExecutor implements AutoCloseable {
      * @param boundVars the bindings to evaluate in the context of the script
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
      */
-    public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars,
+    public CompletableFuture<Object> eval(final Object script, final String language, final Map<String, Object> boundVars,
                                           final Function<Object, Object> transformResult) {
         return eval(script, language, new SimpleBindings(boundVars), transformResult, null);
     }
@@ -228,7 +230,7 @@ public class GremlinExecutor implements AutoCloseable {
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
      * @param withResult a {@link Consumer} that accepts the result - can be {@code null}
      */
-    public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars,
+    public CompletableFuture<Object> eval(final Object script, final String language, final Bindings boundVars,
                                           final Function<Object, Object> transformResult, final Consumer<Object> withResult) {
         final LifeCycle lifeCycle = LifeCycle.build()
                 .transformResult(transformResult)
@@ -245,7 +247,7 @@ public class GremlinExecutor implements AutoCloseable {
      * @param boundVars the bindings to evaluate in the context of the script
      * @param lifeCycle a set of functions that can be applied at various stages of the evaluation process
      */
-    public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars,  final LifeCycle lifeCycle) {
+    public CompletableFuture<Object> eval(final Object script, final String language, final Bindings boundVars,  final LifeCycle lifeCycle) {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
         if (logger.isDebugEnabled()) {
@@ -258,7 +260,9 @@ public class GremlinExecutor implements AutoCloseable {
 
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
         // options then allow that value to override what's provided on the lifecycle
-        final Optional<Long> timeoutDefinedInScript = GremlinScriptChecker.parse(script).getTimeout();
+        final Optional<Long> timeoutDefinedInScript = script instanceof String
+                ? GremlinScriptChecker.parse((String) script).getTimeout()
+                : Optional.empty();
         final long scriptEvalTimeOut = timeoutDefinedInScript.orElse(
                 lifeCycle.getEvaluationTimeoutOverride().orElse(evaluationTimeout));
 
@@ -269,7 +273,18 @@ public class GremlinExecutor implements AutoCloseable {
 
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
-                final Object o = gremlinScriptEngineManager.getEngineByName(lang).eval(script, bindings);
+                Object o = null;
+                if (script instanceof String)
+                    o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) script, bindings);
+                else if (script instanceof Bytecode) {
+                    final Bytecode bytecode = (Bytecode) script;
+                    final Traversal.Admin<?, ?> traversal = eval(
+                            bytecode, bindings, BytecodeHelper.getLambdaLanguage(bytecode).orElse("gremlin-groovy"), "g");
+
+                    o = IteratorUtils.asList(traversal);
+                }
+                // todo: else throw
+
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some

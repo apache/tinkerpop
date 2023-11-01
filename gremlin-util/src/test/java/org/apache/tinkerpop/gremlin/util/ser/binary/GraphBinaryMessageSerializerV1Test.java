@@ -20,6 +20,13 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
@@ -42,12 +49,17 @@ public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
 
+    // !!!
     @Test
     public void shouldSerializeAndDeserializeRequest() throws SerializationException {
-        final RequestMessage request = RequestMessage.build("op1")
-                .processor("proc1")
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        final Traversal.Admin t = g.V().asAdmin();
+
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_BYTECODE)
+                .processor("traversal")
                 .overrideRequestId(UUID.randomUUID())
                 .addArg("arg1", "value1")
+                .addArg(Tokens.ARGS_GREMLIN, t.getBytecode())
                 .create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
