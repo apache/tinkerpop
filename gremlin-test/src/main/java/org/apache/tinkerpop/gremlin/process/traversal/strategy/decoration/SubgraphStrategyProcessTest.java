@@ -554,18 +554,18 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
 
         traversal = sg.V().bothE().iterate().asAdmin();
-        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
         traversal = sg.V().bothE().otherV().iterate().asAdmin();
         assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
         traversal = sg.V().both().iterate().asAdmin();
-        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
 
         traversal = sg.V().flatMap(bothE()).iterate().asAdmin();
-        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
+        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
         traversal = sg.V().flatMap(bothE().otherV()).iterate().asAdmin();
         assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
         traversal = sg.V().flatMap(both()).iterate().asAdmin();
-        assertTrue(traversal.getTraverserGenerator() instanceof B_LP_O_P_S_SE_SL_TraverserGenerator);
+        assertTrue(traversal.getTraverserGenerator() instanceof B_O_TraverserGenerator);
 
         strategy = SubgraphStrategy.build().vertices(__.filter(__.simplePath())).create();
         sg = g.withStrategies(strategy);
