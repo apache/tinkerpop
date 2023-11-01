@@ -25,8 +25,7 @@ import io.netty.util.AttributeKey;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.*;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -54,11 +53,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
-import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -275,6 +271,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldStoreUserAgentInContextWebSocket":
                 settings.channelizer = WebSocketTestChannelizer.class.getName();
                 break;
+            case "shouldStoreUserAgentInContextHttp":
+                settings.channelizer = HttpTestChannelizer.class.getName();
+                break;
+            case "shouldStoreUserAgentInContextWsAndHttp":
+                settings.channelizer = WsAndHttpTestChannelizer.class.getName();
+                break;
             case "shouldStoreUserAgentInContextUnified":
                 settings.channelizer = UnifiedTestChannelizer.class.getName();
                 break;
@@ -330,12 +332,26 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldStoreUserAgentInContextHttp() throws InterruptedException {
+        shouldStoreUserAgentInHttpContext();
+    }
+
+    @Test
+    public void shouldStoreUserAgentInContextWsAndHttp() throws InterruptedException {
+        shouldStoreUserAgentInContext();
+        shouldStoreUserAgentInHttpContext();
+    }
+
+    @Test
     public void shouldStoreUserAgentInContextUnified() throws InterruptedException {
         shouldStoreUserAgentInContext();
+        shouldStoreUserAgentInHttpContext();
     }
 
     private void shouldStoreUserAgentInContext() throws InterruptedException {
         if(server.getChannelizer() instanceof TestChannelizer) {
+            TestChannelizer channelizer = (TestChannelizer) server.getChannelizer();
+            channelizer.resetChannelHandlerContext();
             assertNull(getUserAgentIfAvailable());
             final Cluster cluster = TestClientFactory.build().enableUserAgentOnConnect(true).create();
             final Client client = cluster.connect();
@@ -343,6 +359,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("test");
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.submit("test");
+            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
+            client.close();
+            cluster.close();
+        }
+    }
+
+    private void shouldStoreUserAgentInHttpContext() throws InterruptedException {
+        if(server.getChannelizer() instanceof TestChannelizer) {
+            TestChannelizer channelizer = (TestChannelizer) server.getChannelizer();
+            channelizer.resetChannelHandlerContext();
+            assertNull(getUserAgentIfAvailable());
+            final Cluster cluster = TestClientFactory.build()
+                    .channelizer(org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.class)
+                    .enableUserAgentOnConnect(true)
+                    .create();
+            final Client client = cluster.connect();
+
+            client.submit("g.V()");
+            java.lang.Thread.sleep(1000);
+            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
+            client.submit("g.V()");
+            java.lang.Thread.sleep(1000);
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.close();
             cluster.close();

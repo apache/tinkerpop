@@ -268,7 +268,7 @@ public interface Channelizer extends ChannelHandler {
             if (connection.getClient() instanceof Client.SessionedClient)
                 throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", HttpChannelizer.class.getSimpleName()));
 
-            gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor());
+            gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
             gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
         }
 
@@ -293,11 +293,6 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException("To use https scheme ensure that enableSsl is set to true in configuration");
 
             final int maxContentLength = cluster.connectionPoolSettings().maxContentLength;
-            final HttpHeaders httpHeaders = new DefaultHttpHeaders();
-            if(connection.getCluster().isUserAgentOnConnectEnabled()) {
-                httpHeaders.set(UserAgent.USER_AGENT_HEADER_NAME, UserAgent.USER_AGENT);
-            }
-
             handler = new HttpClientCodec();
 
             pipeline.addLast("http-codec", handler);

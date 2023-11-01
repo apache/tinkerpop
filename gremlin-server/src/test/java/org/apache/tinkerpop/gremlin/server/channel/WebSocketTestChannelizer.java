@@ -41,4 +41,8 @@ public class WebSocketTestChannelizer extends WebSocketChannelizer implements Te
     public ChannelHandlerContext getMostRecentChannelHandlerContext() {
         return contextHandler.getMostRecentChannelHandlerContext();
     }
+
+    public void resetChannelHandlerContext() {
+        contextHandler.resetChannelHandlerContext();
+    }
 }
