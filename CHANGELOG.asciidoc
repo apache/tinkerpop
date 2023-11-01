@@ -47,6 +47,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Added `agent` parameter to `DriverRemoteConnection` options to allow a user-provided `http.Agent` implementation.
 * Fixed deserialization of element properties for GraphBinary.
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
+* Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 [[release-3-7.0]]
