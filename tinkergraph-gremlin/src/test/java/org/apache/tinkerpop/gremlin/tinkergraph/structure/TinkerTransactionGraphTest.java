@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class TinkerTransactionGraphTest {
@@ -970,5 +971,445 @@ public class TinkerTransactionGraphTest {
 
         assertEquals(1, gtx2Read.get());
         assertEquals(2, (long) gtx.E().values("a").next());
+    }
+
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        final Edge edge = gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete edge used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    //tx1 adds a property to v1, tx2 deletes v1
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldDeleteEdgeOnCommit() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel("tests").drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // test count in other thread transaction
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        final Edge edge = gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        // change test property
+        gtx.E(edge.id()).property("test", 1).iterate();
+
+        // change property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.E(edge.id()).property("test", 2).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 edge with updated property
+        assertEquals(1L, (long) gtx.E(edge.id()).count().next());
+        assertEquals(2, gtx.E(edge.id()).values("test").next());
+    }
+
+    // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
+    @Test
+    public void shouldHandleAddingEdgeWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add Edge
+        gtx.addE("test").from(v1).to(v2).iterate();
+
+        // tx2 in same time delete one of vertices used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForVertexProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // change test property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // change property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).property("test", 2).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 vertex with updated property
+        assertEquals(1L, (long) gtx.V().count().next());
+        assertEquals(2, gtx.V(v1.id()).values("test").next());
+    }
+
+    @Test
+    public void shouldHandleConcurrentDeleteEdge() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        final Vertex v2 = gtx.addV().next();
+        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.tx().commit();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(1, (long) gtx.E().count().next());
+
+        gtx.E().hasLabel("tests").drop().iterate();
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        // other tx try to remove same edge
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            assertEquals(2L, (long) gtx2.V().count().next());
+            assertEquals(1L, (long) gtx2.E().count().next());
+
+            // try to remove edge
+            gtx2.E().hasLabel("tests").drop().iterate();
+
+            // should be ok
+            assertEquals(2, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(2, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 2, 0);
+    }
+
+    // tx1 adds a new vertex v1, tx2 adds the same vertex
+    @Test
+    public void shouldHandleAddingSameVertexInDifferentTx() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+
+        // tx2 in same time add vertex with same id
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.addV().property(T.id, v1.id()).iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenTryToAddVertexWithUsedId() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // add vertex
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // try to add vertex with same id
+        gtx.addV().property(T.id, v1.id()).iterate();
+        gtx.tx().commit();
+    }
+
+    @Test
+    public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        gtx.V(v1.id()).drop().iterate();
+
+        // other tx try to remove same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+
+            gtx2.V(v1.id()).drop().iterate();
+
+            // should be ok
+            assertEquals(0, (long) gtx2.V().count().next());
+            assertEquals(0, (long) gtx2.E().count().next());
+
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        // try do delete in initial tx
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+        assertEquals(0, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    @Test
+    public void shouldHandleConcurrentChangeForVertexMetaProperty() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().property("test", 1).next();
+        gtx.tx().commit();
+
+        // change meta property
+        gtx.V(v1.id()).properties("test").property("meta1", "tx1").iterate();
+
+        // change same property in other tx
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).properties("test").property("meta2", "tx2").iterate();
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        try {
+            gtx.tx().commit();
+            //fail("should throw TransactionException");
+        } catch (TransactionException e) {
+
+        }
+
+        // should be only 1 vertex with updated property
+        assertEquals(1L, (long) gtx.V().count().next());
+        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta1", "meta2").next());
+    }
+
+    @Test
+    public void shouldReopenClosedTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().iterate();
+        gtx.tx().commit();
+
+        gtx.addV().iterate();
+        assertTrue(gtx.tx().isOpen());
+        gtx.tx().commit();
+
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        assertEquals(2L, (long) gtx2.V().count().next());
+    }
+
+    @Test
+    public void shouldHandleAddingPropertyWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+        gtx.tx().commit();
+
+        // tx1 try to add property
+        gtx.V(v1.id()).property("test", 1).iterate();
+
+        // tx2 in same time delete vertex used by tx1
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+            gtx2.tx().rollback();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(1, gtx.V(v1.id()).values("test").next());
+
+        countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    // tx1 adds vertex v1, tx2 removes vertex v1
+    @Test
+    public void shouldHandleAddingVertexWhenOtherTxTryToDeleteSameVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v1 = gtx.addV().next();
+
+        // tx2 in same time try to delete same vertex
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v1.id()).drop().iterate();
+
+            assertEquals(0, (long) gtx.V().count().next());
+            assertEquals(0, (long) gtx.E().count().next());
+            gtx2.tx().commit();
+        });
+        thread.start();
+        thread.join();
+
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(0, (long) gtx.E().count().next());
+
+        countElementsInNewThreadTx(g, 1, 0);
     }
 }
