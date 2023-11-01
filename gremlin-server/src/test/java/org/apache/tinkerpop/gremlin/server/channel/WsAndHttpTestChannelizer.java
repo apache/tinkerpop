@@ -24,13 +24,11 @@ import io.netty.channel.ChannelPipeline;
 /**
  * A wrapper around UnifiedChannelizer which saves and exposes the ChannelHandlerContext for testing purposes
  */
-public class
-
-UnifiedTestChannelizer extends UnifiedChannelizer implements TestChannelizer {
+public class WsAndHttpTestChannelizer extends WsAndHttpChannelizer implements TestChannelizer {
 
     final ContextHandler contextHandler;
 
-    public UnifiedTestChannelizer() {
+    public WsAndHttpTestChannelizer() {
         contextHandler = new ContextHandler();
     }
 
