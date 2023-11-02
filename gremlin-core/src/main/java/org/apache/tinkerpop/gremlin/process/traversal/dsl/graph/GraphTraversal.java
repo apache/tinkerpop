@@ -1567,7 +1567,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#reverse-step" target="_blank">Reference Documentation - Reverse Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, ?> reverse() {
+    public default <E2> GraphTraversal<S, E2> reverse() {
         this.asAdmin().getBytecode().addStep(Symbols.reverse);
         return this.asAdmin().addStep(new ReverseStep<>(this.asAdmin()));
     }
@@ -1749,7 +1749,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#merge-step" target="_blank">Reference Documentation - Merge Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, ?> merge(final Object values) {
+    public default <E2> GraphTraversal<S, E2> merge(final Object values) {
         this.asAdmin().getBytecode().addStep(Symbols.merge, values);
         return this.asAdmin().addStep(new TraversalMergeStep<>(this.asAdmin(), values));
     }
