@@ -657,16 +657,9 @@ public class __ {
     /**
      * @see GraphTraversal#reverse()
      */
-    public static <A> GraphTraversal<A, ?> reverse() {
+    public static <A, B> GraphTraversal<A, B> reverse() {
         return __.<A>start().reverse();
     }
-
-    /**
-     * @see GraphTraversal#reverse()
-     */
-//    public static <A> GraphTraversal<A, List<?>> reverse() {
-//        return __.<A>start().reverse();
-//    }
 
     /**
      * @see GraphTraversal#replace(String, String)
@@ -762,7 +755,7 @@ public class __ {
     /**
      * @see GraphTraversal#merge(Object)
      */
-    public static <A> GraphTraversal<A, ?> merge(final Object values) {
+    public static <A, B> GraphTraversal<A, B> merge(final Object values) {
         return __.<A>start().merge(values);
     }
 
