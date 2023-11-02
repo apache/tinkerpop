@@ -23,11 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
 import static org.junit.Assert.assertEquals;
 
 public class DateDiffStepTest extends StepTest {
@@ -39,7 +41,7 @@ public class DateDiffStepTest extends StepTest {
 
     @Test
     public void shouldHandlePositiveValues() {
-        final Date now = new Date();
+        final Date now = new Date(Instant.now().getLong(MILLI_OF_SECOND));
 
         final Calendar cal = Calendar.getInstance();
         cal.setTime(now);
@@ -51,7 +53,7 @@ public class DateDiffStepTest extends StepTest {
 
     @Test
     public void shouldHandleNegativeValues() {
-        final Date now = new Date();
+        final Date now = new Date(Instant.now().getLong(MILLI_OF_SECOND));
 
         final Calendar cal = Calendar.getInstance();
         cal.setTime(now);
@@ -63,7 +65,7 @@ public class DateDiffStepTest extends StepTest {
 
     @Test
     public void shouldHandleTraversalParam() {
-        final Date now = new Date();
+        final Date now = new Date(Instant.now().getLong(MILLI_OF_SECOND));
 
         final Calendar cal = Calendar.getInstance();
         cal.setTime(now);
