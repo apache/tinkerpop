@@ -151,9 +151,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             final RequestMessage requestMessage;
             try {
-                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req);
-            } catch (IllegalArgumentException iae) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
+            } catch (IllegalArgumentException|SerializationException ex) {
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, ex.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }

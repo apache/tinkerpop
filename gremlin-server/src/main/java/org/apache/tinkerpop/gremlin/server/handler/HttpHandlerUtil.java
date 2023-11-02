@@ -27,14 +27,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
@@ -75,42 +74,32 @@ public class HttpHandlerUtil {
     /**
      * Convert a http request into a {@link RequestMessage}.
      */
-    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
-        final String contentType = Optional.ofNullable(request.headers().get(HttpHeaderNames.CONTENT_TYPE)).orElse("application/json");
+    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request,
+                                                                  Map<String, MessageSerializer<?>> serializers) throws SerializationException {
+        final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (contentType.equals(SerTokens.MIME_GRAPHSON_V3)) {
-            final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
-            try {
-                final ByteBuf buffer = request.content();
+        if (!contentType.equals("application/json") && serializers.containsKey(contentType)) {
+            final MessageSerializer<?> serializer = serializers.get(contentType);
 
-                final int first = buffer.readByte();
-                // !!! skip header. Why we write this to json?
-                if (first != 0x7b)
-                    buffer.readBytes(new byte[first]);
-                else
-                    buffer.resetReaderIndex();
+            final ByteBuf buffer = request.content();
 
-                return serializer.deserializeRequest(buffer);
-            }
-            catch (Exception ex) {
-                System.out.println(ex); // !!!
-            }
-        }
-
-        if (contentType.equals(SerTokens.MIME_GRAPHBINARY_V1)) {
-            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
-            try {
-                final ByteBuf buffer = request.content();
-                final int first = buffer.readByte();
+            // !!! skip header.
+            final int first = buffer.readByte();
+            if (first != 0x7b)
                 buffer.readBytes(new byte[first]);
+            else
+                buffer.resetReaderIndex();
 
-                return serializer.deserializeRequest(buffer);
-            }
-            catch (Exception ex) {
-                System.out.println(ex); // !!!
-            }
+            return serializer.deserializeRequest(buffer);
         }
 
+        return getRequestMessageFromHttpRequest(request);
+    }
+
+    /**
+     * Convert a http request into a {@link RequestMessage}.
+     */
+    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
         // default is just the StandardOpProcessor which maintains compatibility with older versions which only
         // processed scripts.
         final RequestMessage.Builder msgBuilder = RequestMessage.build(StandardOpProcessor.OP_PROCESSOR_NAME);
