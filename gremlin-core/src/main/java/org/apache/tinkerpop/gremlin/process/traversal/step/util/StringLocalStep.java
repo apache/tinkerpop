@@ -74,8 +74,6 @@ public abstract class StringLocalStep<S, E> extends ScalarMapStep<S, E> {
 
     protected abstract E applyStringOperation(final String item);
 
-    protected String getStepName() {
-        return "local scope of string manipulation";
-    }
+    protected abstract String getStepName();
 
 }
