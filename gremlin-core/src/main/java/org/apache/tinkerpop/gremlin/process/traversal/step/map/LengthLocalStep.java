@@ -49,4 +49,7 @@ public final class LengthLocalStep<S, E> extends StringLocalStep<S, E> {
         return (E) Integer.valueOf(item.length());
     }
 
+    @Override
+    public String getStepName() { return "length(local)"; }
+
 }

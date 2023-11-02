@@ -50,4 +50,7 @@ public final class ToLowerLocalStep<S, E> extends StringLocalStep<S, E> {
         return (E) item.toLowerCase();
     }
 
+    @Override
+    public String getStepName() { return "toLower(local)"; }
+
 }

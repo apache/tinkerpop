@@ -235,10 +235,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> AsString (Scope scope)
+        public GraphTraversal<TStart, TNewEnd> AsString<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("asString", scope);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, TNewEnd>(this);
         }
 
         /// <summary>
@@ -1265,10 +1265,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the length step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> Length (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> Length<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("length", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -1328,10 +1328,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the lTrim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> LTrim (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> LTrim<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("lTrim", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -1830,10 +1830,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the replace step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> Replace (Scope scope, string? oldChar, string? newChar)
+        public GraphTraversal<TStart, TNewEnd?> Replace<TNewEnd> (Scope scope, string? oldChar, string? newChar)
         {
             Bytecode.AddStep("replace", scope, oldChar, newChar);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -1857,10 +1857,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the rTrim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> RTrim (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> RTrim<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("rTrim", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -2038,10 +2038,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the split step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Split (Scope scope, string? splitChar)
+        public GraphTraversal<TStart, List<TNewEnd>?> Split<TNewEnd> (Scope scope, string? splitChar)
         {
             Bytecode.AddStep("split", scope, splitChar);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, List<TNewEnd>?>(this);
         }
 
         /// <summary>
@@ -2074,10 +2074,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the subgraph step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> Substring (Scope scope, int startIndex)
+        public GraphTraversal<TStart, TNewEnd?> Substring<TNewEnd> (Scope scope, int startIndex)
         {
             Bytecode.AddStep("substring", scope,  startIndex);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -2092,10 +2092,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the subgraph step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> Substring (Scope scope, int startIndex, int endIndex)
+        public GraphTraversal<TStart, TNewEnd?> Substring<TNewEnd> (Scope scope, int startIndex, int endIndex)
         {
             Bytecode.AddStep("substring", scope, startIndex, endIndex);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -2235,10 +2235,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the toLower step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> ToLower (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> ToLower<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("toLower", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
         
         /// <summary>
@@ -2253,10 +2253,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the toUpper step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> ToUpper (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> ToUpper<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("toUpper", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -2298,10 +2298,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the trim step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd?> Trim (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> Trim<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("trim", scope);
-            return Wrap<TStart, TEnd?>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>

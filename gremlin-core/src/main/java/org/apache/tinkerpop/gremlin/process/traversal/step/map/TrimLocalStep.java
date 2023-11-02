@@ -40,4 +40,7 @@ public final class TrimLocalStep<S, E> extends StringLocalStep<S, E> {
         return (E) item.trim();
     }
 
+    @Override
+    public String getStepName() { return "trim(local)"; }
+
 }

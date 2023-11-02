@@ -48,12 +48,17 @@ public class TrimLocalStepTest extends StepTest {
                 __.inject(" hello world ", "  test  ", null, "", " ").trim(Scope.local).toList().toArray());
 
         assertArrayEquals(new String[]{"a", "b", "c", null},
-                __.inject(Arrays.asList(" a ", "  b  ", "   c ", null)).trim(Scope.local).next().toArray());
+                ((List<?>) __.inject(Arrays.asList(" a ", "  b  ", "   c ", null)).trim(Scope.local).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWithIncomingArrayList() {
         __.__(Arrays.asList(1, 2, 3)).trim().next();
+    }
+
+    @Test
+    public void test(){
+        Object shouldntCast = __.inject("1").lTrim(Scope.local).next();
     }
 
 }

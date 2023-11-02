@@ -67,6 +67,9 @@ public final class SubstringLocalStep<S, E> extends StringLocalStep<S, E> {
     }
 
     @Override
+    public String getStepName() { return "substring(local)"; }
+
+    @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + this.start.hashCode();

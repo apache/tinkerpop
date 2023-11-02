@@ -54,10 +54,14 @@ public final class ReplaceLocalStep<S, E> extends StringLocalStep<S, E> {
     }
 
     @Override
+    public String getStepName() { return "replace(local)"; }
+
+    @Override
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (null != this.oldChar ? this.oldChar.hashCode() : 0);
         result = 31 * result + (null != this.newChar ? this.newChar.hashCode() : 0);
         return result;
     }
+
 }

@@ -51,7 +51,7 @@ public class SubstringLocalStepTest extends StepTest {
         assertEquals("hello world", __.__("hello world").substring(Scope.local, -11, 11).next());
 
         assertArrayEquals(new String[]{"st", "llo wo", null, ""},
-                __.__(Arrays.asList("test", "hello world", null, "")).substring(Scope.local, 2, 8).next().toArray());
+                ((List<?>) __.__(Arrays.asList("test", "hello world", null, "")).substring(Scope.local, 2, 8).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

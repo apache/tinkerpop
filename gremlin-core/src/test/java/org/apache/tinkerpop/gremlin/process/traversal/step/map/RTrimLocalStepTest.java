@@ -22,11 +22,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -48,7 +51,7 @@ public class RTrimLocalStepTest extends StepTest {
                 __.inject(" hello world ", "  test  ", null, "", " ").rTrim(Scope.local).toList().toArray());
 
         assertArrayEquals(new String[]{" a", "  b", "   c", null},
-                __.inject(Arrays.asList(" a ", "  b  ", "   c ", null)).rTrim(Scope.local).next().toArray());
+                ((List<?>)__.inject(Arrays.asList(" a ", "  b  ", "   c ", null)).rTrim(Scope.local).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

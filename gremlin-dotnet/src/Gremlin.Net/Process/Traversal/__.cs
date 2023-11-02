@@ -163,9 +163,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asString step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> AsString(Scope scope)
+        public static GraphTraversal<object, E2> AsString<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object>().AsString(scope);            
+            return new GraphTraversal<object, E2>().AsString<E2>(scope);            
         }
 
         /// <summary>
@@ -897,9 +897,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the length step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> Length(Scope scope)
+        public static GraphTraversal<object, E2?> Length<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().Length(scope);            
+            return new GraphTraversal<object, E2?>().Length<E2>(scope);            
         }
 
         /// <summary>
@@ -953,9 +953,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the lTrim step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> LTrim(Scope scope)
+        public static GraphTraversal<object, E2?> LTrim<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().LTrim(scope);
+            return new GraphTraversal<object, E2?>().LTrim<E2>(scope);
         }
 
         /// <summary>
@@ -1301,9 +1301,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the rTrim step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> RTrim(Scope scope)
+        public static GraphTraversal<object, E2?> RTrim<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().RTrim(scope);
+            return new GraphTraversal<object, E2?>().RTrim<E2>(scope);
         }
 
         /// <summary>
@@ -1453,9 +1453,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the split step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> Split(Scope scope, string? splitChar)
+        public static GraphTraversal<object, List<E2>?> Split<E2>(Scope scope, string? splitChar)
         {
-            return new GraphTraversal<object, object?>().Split(scope, splitChar);
+            return new GraphTraversal<object, List<E2>?>().Split<E2>(scope, splitChar);
         }
 
         /// <summary>
@@ -1585,9 +1585,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toLower step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> ToLower(Scope scope)
+        public static GraphTraversal<object, E2?> ToLower<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().ToLower(scope);            
+            return new GraphTraversal<object, E2?>().ToLower<E2>(scope);            
         }
         
         /// <summary>
@@ -1601,9 +1601,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the ToUpper step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> ToUpper(Scope scope)
+        public static GraphTraversal<object, E2?> ToUpper<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().ToUpper(scope);            
+            return new GraphTraversal<object, E2?>().ToUpper<E2>(scope);            
         }
 
         /// <summary>
@@ -1641,9 +1641,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the Trim step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object?> Trim(Scope scope)
+        public static GraphTraversal<object, E2?> Trim<E2>(Scope scope)
         {
-            return new GraphTraversal<object, object?>().Trim(scope);
+            return new GraphTraversal<object, E2?>().Trim<E2>(scope);
         }
 
         /// <summary>

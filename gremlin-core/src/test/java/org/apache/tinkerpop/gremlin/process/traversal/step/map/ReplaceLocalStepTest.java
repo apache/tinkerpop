@@ -47,7 +47,7 @@ public class ReplaceLocalStepTest extends StepTest {
         assertEquals("hello", __.__("hello").replace(Scope.local, null, null).next());
 
         assertArrayEquals(new String[]{"hell0", "w0rld", null, ""},
-                __.__(Arrays.asList("hello", "world", null, "")).replace(Scope.local, "o", "0").next().toArray());
+                ((List<?>) __.__(Arrays.asList("hello", "world", null, "")).replace(Scope.local, "o", "0").next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

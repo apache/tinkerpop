@@ -54,14 +54,16 @@ public abstract class StringLocalStep<S, E> extends ScalarMapStep<S, E> {
                 } else if (i instanceof String) {
                     resList.add(applyStringOperation((String) i));
                 } else {
-                    throw newListItemException(String.valueOf(i.getClass()));
+                    throw new IllegalArgumentException(
+                            String.format("The %s step can only take string or list of strings, encountered %s in list", getStepName(), i.getClass()));
                 }
             }
             return (E) resList;
         } else if (item instanceof String) {
             return applyStringOperation((String) item);
         } else {
-            throw newItemException(String.valueOf(item.getClass()));
+            throw new IllegalArgumentException(
+                    String.format("The %s step can only take string or list of strings, encountered %s", getStepName(), item.getClass()));
         }
     }
 
@@ -72,15 +74,8 @@ public abstract class StringLocalStep<S, E> extends ScalarMapStep<S, E> {
 
     protected abstract E applyStringOperation(final String item);
 
-    protected IllegalArgumentException newListItemException(final String className) {
-        return new IllegalArgumentException(
-                String.format("String manipulation steps with local scope can only take string or list of strings, encountered %s in list", className));
-    };
-
-    protected IllegalArgumentException newItemException(final String className) {
-        return new IllegalArgumentException(
-                String.format("String manipulation steps with local scope can only take string or list of strings, encountered %s", className));
+    protected String getStepName() {
+        return "local scope of string manipulation";
     }
-
 
 }

@@ -50,4 +50,7 @@ public final class ToUpperLocalStep<S, E> extends StringLocalStep<S, E> {
         return (E) item.toUpperCase();
     }
 
+    @Override
+    public String getStepName() { return "toUpper(local)"; }
+
 }

@@ -66,7 +66,7 @@ Feature: Step - lTrim()
     g.inject(xx1).lTrim(Scope.local)
     """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "String manipulation steps with local scope can only take string or list of strings"
+    Then the traversal will raise an error with message containing text of "The lTrim(local) step can only take string or list of strings"
 
   Scenario: g_V_valuesXnameX_lTrim
     Given the empty graph

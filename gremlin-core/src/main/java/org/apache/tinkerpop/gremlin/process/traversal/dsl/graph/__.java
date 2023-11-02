@@ -613,7 +613,7 @@ public class __ {
     /**
      * @see GraphTraversal#asString()
      */
-    public static <A> GraphTraversal<A, A> asString(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> asString(final Scope scope) {
         return __.<A>start().asString(scope);
     }
 
@@ -627,7 +627,7 @@ public class __ {
     /**
      * @see GraphTraversal#length()
      */
-    public static <A> GraphTraversal<A, A> length(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> length(final Scope scope) {
         return __.<A>start().length(scope);
     }
 
@@ -641,7 +641,7 @@ public class __ {
     /**
      * @see GraphTraversal#toLower()
      */
-    public static <A> GraphTraversal<A, A> toLower(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> toLower(final Scope scope) {
         return __.<A>start().toLower(scope);
     }
 
@@ -655,7 +655,7 @@ public class __ {
     /**
      * @see GraphTraversal#toUpper(Scope)
      */
-    public static <A> GraphTraversal<A, A> toUpper(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> toUpper(final Scope scope) {
         return __.<A>start().toUpper(scope);
     }
 
@@ -669,7 +669,7 @@ public class __ {
     /**
      * @see GraphTraversal#trim(Scope)
      */
-    public static <A> GraphTraversal<A, A> trim(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> trim(final Scope scope) {
         return __.<A>start().trim(scope);
     }
 
@@ -683,7 +683,7 @@ public class __ {
     /**
      * @see GraphTraversal#lTrim(Scope)
      */
-    public static <A> GraphTraversal<A, A> lTrim(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> lTrim(final Scope scope) {
         return __.<A>start().lTrim(scope);
     }
 
@@ -697,7 +697,7 @@ public class __ {
     /**
      * @see GraphTraversal#rTrim(Scope)
      */
-    public static <A> GraphTraversal<A, A> rTrim(final Scope scope) {
+    public static <A, B> GraphTraversal<A, B> rTrim(final Scope scope) {
         return __.<A>start().rTrim(scope);
     }
 
@@ -718,7 +718,7 @@ public class __ {
     /**
      * @see GraphTraversal#replace(Scope, String, String)
      */
-    public static <A> GraphTraversal<A, A> replace(final Scope scope, final String oldChar, final String newChar) {
+    public static <A, B> GraphTraversal<A, B> replace(final Scope scope, final String oldChar, final String newChar) {
         return __.<A>start().replace(scope, oldChar, newChar);
     }
 
@@ -732,7 +732,7 @@ public class __ {
     /**
      * @see GraphTraversal#split(Scope, String)
      */
-    public static <A> GraphTraversal<A, List<A>> split(final Scope scope, final String separator) {
+    public static <A, B> GraphTraversal<A, List<B>> split(final Scope scope, final String separator) {
         return __.<A>start().split(scope, separator);
     }
 
@@ -746,7 +746,7 @@ public class __ {
     /**
      * @see GraphTraversal#substring(Scope, int)
      */
-    public static <A> GraphTraversal<A, A> substring(final Scope scope, final int startIndex) {
+    public static <A, B> GraphTraversal<A, B> substring(final Scope scope, final int startIndex) {
         return __.<A>start().substring(scope, startIndex);
     }
 
@@ -760,7 +760,7 @@ public class __ {
     /**
      * @see GraphTraversal#substring(Scope, int, int)
      */
-    public static <A> GraphTraversal<A, A> substring(final Scope scope, final int startIndex, final int endIndex) {
+    public static <A, B> GraphTraversal<A, B> substring(final Scope scope, final int startIndex, final int endIndex) {
         return __.<A>start().substring(scope, startIndex, endIndex);
     }
 

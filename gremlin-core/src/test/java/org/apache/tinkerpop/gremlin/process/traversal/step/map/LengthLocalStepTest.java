@@ -45,8 +45,8 @@ public class LengthLocalStepTest extends StepTest {
     public void testReturnTypes() {
         assertEquals(Integer.valueOf(4), __.__("test").length(Scope.local).next());
         assertArrayEquals(new Integer[]{5, 4, null, 0}, __.inject("hello", "test", null, "").length().toList().toArray());
-        assertArrayEquals(new Integer[]{1, 2, 3}, __.__(Arrays.asList("a", "bb", "ccc")).length(Scope.local).next().toArray());
-        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.__(Arrays.asList("hello", "test", null, "")).length(Scope.local).next().toArray());
+        assertArrayEquals(new Integer[]{1, 2, 3}, ((List<?>) __.__(Arrays.asList("a", "bb", "ccc")).length(Scope.local).next()).toArray());
+        assertArrayEquals(new Integer[]{5, 4, null, 0}, ((List<?>) __.__(Arrays.asList("hello", "test", null, "")).length(Scope.local).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

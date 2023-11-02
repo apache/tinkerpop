@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -44,9 +45,10 @@ public class ToLowerLocalStepTest extends StepTest {
     @Test
     public void testReturnTypes() {
         assertEquals("hello", __.__("HELLO").toLower(Scope.local).next());
-        assertArrayEquals(new String[]{"test"}, __.__(Arrays.asList("TEST")).toLower(Scope.local).next().toArray());
+        assertArrayEquals(new String[]{"test"}, ((List<?>) __.__(Collections.singletonList("TEST")).toLower(Scope.local).next()).toArray());
+        assertArrayEquals(new String[]{"test"}, ((List<?>) __.__(new HashSet<>(Collections.singletonList("TEST"))).toLower(Scope.local).next()).toArray());
         assertArrayEquals(new String[]{"hello", "test", "no.123", null, ""},
-                __.__(Arrays.asList("hElLo", "TEST", "NO.123", null, "")).toLower(Scope.local).next().toArray());
+                ((List<?>) __.__(Arrays.asList("hElLo", "TEST", "NO.123", null, "")).toLower(Scope.local).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

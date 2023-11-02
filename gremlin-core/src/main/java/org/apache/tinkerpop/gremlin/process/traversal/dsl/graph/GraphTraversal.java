@@ -1497,7 +1497,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asString-step" target="_blank">Reference Documentation - AsString Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> asString(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> asString(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.asString, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new AsStringGlobalStep<>(this.asAdmin()) : new AsStringLocalStep<>(this.asAdmin()));
     }
@@ -1524,7 +1524,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> length(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> length(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.length, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new LengthGlobalStep<>(this.asAdmin()) : new LengthLocalStep<>(this.asAdmin()));
     }
@@ -1551,7 +1551,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toLower-step" target="_blank">Reference Documentation - ToLower Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> toLower(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> toLower(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.toLower, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToLowerGlobalStep<>(this.asAdmin()) : new ToLowerLocalStep<>(this.asAdmin()));
     }
@@ -1578,7 +1578,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toUpper-step" target="_blank">Reference Documentation - ToUpper Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> toUpper(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> toUpper(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.toUpper, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToUpperGlobalStep<>(this.asAdmin()) : new ToUpperLocalStep<>(this.asAdmin()));
     }
@@ -1607,7 +1607,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#trim-step" target="_blank">Reference Documentation - Trim Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> trim(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> trim(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.trim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new TrimGlobalStep<>(this.asAdmin()) : new TrimLocalStep<>(this.asAdmin()));
     }
@@ -1637,7 +1637,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#lTrim-step" target="_blank">Reference Documentation - LTrim Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> lTrim(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> lTrim(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.lTrim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new LTrimGlobalStep<>(this.asAdmin()) : new LTrimLocalStep<>(this.asAdmin()));
     }
@@ -1666,7 +1666,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#rTrim-step" target="_blank">Reference Documentation - RTrim Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> rTrim(final Scope scope) {
+    public default <E2> GraphTraversal<S, E2> rTrim(final Scope scope) {
         this.asAdmin().getBytecode().addStep(Symbols.rTrim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new RTrimGlobalStep<>(this.asAdmin()) : new RTrimLocalStep<>(this.asAdmin()));
     }
@@ -1713,7 +1713,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> replace(final Scope scope, final String oldChar, final String newChar) {
+    public default <E2> GraphTraversal<S, E2> replace(final Scope scope, final String oldChar, final String newChar) {
         this.asAdmin().getBytecode().addStep(Symbols.replace, scope, oldChar, newChar);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar) : new ReplaceLocalStep<>(this.asAdmin(), oldChar, newChar));
@@ -1747,7 +1747,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#split-step" target="_blank">Reference Documentation - Split Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, List<E>> split(final Scope scope, final String separator) {
+    public default <E2> GraphTraversal<S, List<E2>> split(final Scope scope, final String separator) {
         this.asAdmin().getBytecode().addStep(Symbols.split, scope, separator);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SplitGlobalStep<>(this.asAdmin(), separator) : new SplitLocalStep<>(this.asAdmin(), separator));
@@ -1781,7 +1781,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> substring(final Scope scope, final int startIndex) {
+    public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SubstringGlobalStep<>(this.asAdmin(), startIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex));
@@ -1821,7 +1821,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, E> substring(final Scope scope, final int startIndex, final int endIndex) {
+    public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex, final int endIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex, endIndex);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex, endIndex));
