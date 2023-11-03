@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
@@ -38,23 +37,23 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class SubstringStep<S> extends ScalarMapStep<S, String> {
+public final class SubstringGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
     private final Integer start;
     private final Integer end;
 
-    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex, final Integer end) {
+    public SubstringGlobalStep(final Traversal.Admin traversal, final Integer startIndex, final Integer endIndex) {
         super(traversal);
         this.start = startIndex;
-        this.end = end;
+        this.end = endIndex;
     }
 
-    public SubstringStep(final Traversal.Admin traversal, final Integer startIndex) {
+    public SubstringGlobalStep(final Traversal.Admin traversal, final Integer startIndex) {
         this(traversal, startIndex, null);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
@@ -70,14 +69,13 @@ public final class SubstringStep<S> extends ScalarMapStep<S, String> {
 
         final int newStart = processStringIndex(strItem.length(), this.start);
         if (null == this.end)
-            return strItem.substring(newStart);
+            return (E) strItem.substring(newStart);
 
         final int newEnd = processStringIndex(strItem.length(), this.end);
-
         if (newEnd <= newStart)
-            return "";
+            return (E) "";
 
-        return strItem.substring(newStart, newEnd);
+        return (E) strItem.substring(newStart, newEnd);
     }
 
     @Override

@@ -618,24 +618,27 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 [[asString-step]]
 === asString()
 
-*Description:* Returns the value of incoming traverser as strings
+*Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
+incoming list traverser as string.
 
-*Syntax:* `asString()`
+*Syntax:* `asString()` | `asString(Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`String`
+|N |Y |N |`any` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual traverser, casting all to string. The `local` scope will behave like `global`
+for everything except lists, where it will cast individual elements inside the list into string and return a list of string instead.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
@@ -1035,24 +1038,27 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 [[length-step]]
 === length()
 
-*Description:* Returns the length incoming string traverser.
+*Description:* Returns the length of the incoming string or list, if `Scope.local` is specified, returns
+the length of each string elements inside incoming list traverser.
 
-*Syntax:* `length()`
+*Syntax:* `length()` | `length(Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`Integer`
+|N |Y |N |`String`/`array`/`Iterable` |`Integer`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
@@ -1137,18 +1143,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
@@ -1370,25 +1377,28 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Description:* Returns a string with the specified characters in the original string replaced with the new characters.
 
-*Syntax:* `replace(String, String)`
+*Syntax:* `replace(String, String)` | `replace(Scope, String, String)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-* `String` - The string character(s) in the original string to be replaced. Nullable, a null input will be a no-op and
+* `oldChar` - The string character(s) in the original string to be replaced. Nullable, a null input will be a no-op and
 the original string will be returned
-* `String` - The string character(s) to replace with. Nullable, a null input will be a no-op and the original string
+* `newChar` - The string character(s) to replace with. Nullable, a null input will be a no-op and the original string
 will be returned
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
@@ -1396,21 +1406,23 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 [[reverse-step]]
 === reverse()
 
-*Description:* Returns a reversed string of the incoming string traverser
+*Description:* Returns the reverse of the incoming traverser
 
 *Syntax:* `reverse()`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`Object` |`Object`
 |=========================================================
 
 *Arguments:*
 
 None
 
-Null values from the incoming traverser are not processed and remain as null when returned.
+The behavior of reverse depends on the type of the incoming traverser. If the traverser is a string, then the string is
+reversed. If the traverser is iterable (Iterable, Iterator, or an array) then a list containing the items in reverse
+order are returned. All other types (including null) are not processed and are returned unmodified.
 
 *Exceptions*
 
@@ -1429,18 +1441,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
@@ -1450,23 +1463,26 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
 *Description:* Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
 
-*Syntax:* `split(String)`
+*Syntax:* `split(String)` | `split(Scope, String)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`List`
+|N |Y |N |`String`/`array`/`Iterable` |`List`
 |=========================================================
 
 *Arguments:*
 
-* `String` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
+* `separator` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
 whitespaces.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
@@ -1476,25 +1492,28 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(int, int)`
+*Syntax:* `substring(int, int)` | `substring(Scope, int, int)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-* `int` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
+* `startIndex` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `int` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+* `endIndex` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
 index &leq; start index will return the empty string.
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
@@ -1502,24 +1521,27 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference
 [[toLower-step]]
 === toLower()
 
-*Description:* Returns the lowercase representation of incoming string traverser.
+*Description:* Returns the lowercase representation of incoming string traverser, or if `Scope.local` is specified, returns
+the lowercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toLower()`
+*Syntax:* `toLower()` | `toLower(Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
@@ -1527,24 +1549,27 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 [[toUpper-step]]
 === toUpper()
 
-*Description:* Returns the uppercase representation of incoming string traverser.
+*Description:* Returns the uppercase representation of incoming string traverser, or if `Scope.local` is specified, returns
+the uppercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toUpper()`
+*Syntax:* `toUpper()` | `toUpper(Scope)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
@@ -1559,18 +1584,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`String` |`String`
+|N |Y |N |`String`/`array`/`Iterable` |`String`/`List`
 |=========================================================
 
 *Arguments:*
 
-None
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-
-* If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+* For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]

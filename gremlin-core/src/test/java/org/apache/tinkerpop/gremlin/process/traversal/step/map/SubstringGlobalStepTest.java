@@ -30,7 +30,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class SubstringStepTest extends StepTest {
+public class SubstringGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {

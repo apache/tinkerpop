@@ -90,6 +90,7 @@ gremlin> g.V().values("name").map{it.get().toUpperCase()}
 ==>RIPPLE
 ==>PETER
 ----
+
 With these additional steps this operation can be performed with standard Gremlin syntax:
 [source,text]
 ----
@@ -116,6 +117,14 @@ gremlin> g.V().values("name").toUpper()
 ==>JOSH
 ==>RIPPLE
 ==>PETER
+----
+
+Scopes are also enabled on these string functions. The global scope functions synonymous to parameterless function call, and will only accept string traversers.
+The local scope will also operate inside of lists of strings.
+[source,text]
+----
+gremlin> g.V().values("name").fold().toUpper(local)
+==>[MARKO,VADAS,LOP,JOSH,RIPPLE,PETER]
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672],
@@ -146,7 +155,6 @@ gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/\s+$/, '') + "right_trim"}
 ----
 
 With these additional steps this operation can be performed with standard Gremlin syntax:
-
 [source,text]
 ----
 gremlin> g.V().values("name").reverse()
@@ -162,6 +170,15 @@ gremlin>  g.inject("  hi  ").lTrim().concat("left_trim")
 ==>hi  left_trim
 gremlin>  g.inject("  hi  ").rTrim().concat("right_trim")
 ==>  hiright_trim
+----
+
+Scopes are enabled on trim(), lTrim(), and rTrim(). The global scope functions synonymous to parameterless function call, and will only accept string traversers.
+The local scope will also operate inside of lists of strings.
+Due to reverse() overloading as a list function, scope is not applied, as reversing lists inside of lists is not a practical use case.
+[source,text]
+----
+gremlin> g.inject(["  hello  ", " world "]).trim(Scope.local)
+==>[hello,world]
 ----
 
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[trim()-step]

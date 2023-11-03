@@ -20,9 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,28 +38,18 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class LengthStep<S> extends ScalarMapStep<S, Integer> {
+public final class LengthLocalStep<S, E> extends StringLocalStep<S, E> {
 
-    public LengthStep(final Traversal.Admin traversal) {
+    public LengthLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Integer map(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The length() step can only take string as argument, encountered %s", item.getClass()));
-        }
-
-        // we will pass null values to next step
-        return null == item? null : ((String) item).length();
+    protected E applyStringOperation(String item) {
+        return (E) Integer.valueOf(item.length());
     }
 
     @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
-    }
+    public String getStepName() { return "length(local)"; }
 
 }

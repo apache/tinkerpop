@@ -83,7 +83,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CombineStep;
@@ -109,12 +110,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IntersectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LengthStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LengthGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LengthLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MathStep;
@@ -136,27 +139,34 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RTrimLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReplaceLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ReverseStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SplitStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SubstringStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SplitGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SplitLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SubstringGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SubstringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToLowerStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToLowerGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToLowerLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMergeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
@@ -1470,52 +1480,107 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Returns the value of incoming traverser as strings. Null values are returned as a string value "null".
      *
-     * @return the traversal with an appended {@link AsStringStep}.
+     * @return the traversal with an appended {@link AsStringGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asString-step" target="_blank">Reference Documentation - AsString Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> asString() {
         this.asAdmin().getBytecode().addStep(Symbols.asString);
-        return this.asAdmin().addStep(new AsStringStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new AsStringGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the value of incoming traverser as strings. Null values are returned as a string value "null".
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @return the traversal with an appended {@link AsStringGlobalStep} or {@link AsStringLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asString-step" target="_blank">Reference Documentation - AsString Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> asString(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.asString, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new AsStringGlobalStep<>(this.asAdmin()) : new AsStringLocalStep<>(this.asAdmin()));
     }
 
     /**
      * Returns the length incoming string traverser. Null values are not processed and remain as null when returned.
      * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link LengthStep}.
+     * @return the traversal with an appended {@link LengthGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, Integer> length() {
         this.asAdmin().getBytecode().addStep(Symbols.length);
-        return this.asAdmin().addStep(new LengthStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new LengthGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the length incoming string or list. Null values are not processed and remain as null when returned.
+     * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within lists, global will operate on current traversal as a single object.
+     * @return the traversal with an appended {@link LengthGlobalStep} or {@link LengthLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#length-step" target="_blank">Reference Documentation - Length Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> length(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.length, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new LengthGlobalStep<>(this.asAdmin()) : new LengthLocalStep<>(this.asAdmin()));
     }
 
     /**
      * Returns the lowercase representation of incoming string traverser. Null values are not processed and remain
      * as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link ToLowerStep}.
+     * @return the traversal with an appended {@link ToLowerGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toLower-step" target="_blank">Reference Documentation - ToLower Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> toLower() {
         this.asAdmin().getBytecode().addStep(Symbols.toLower);
-        return this.asAdmin().addStep(new ToLowerStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new ToLowerGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the lowercase representation of incoming string or list of strings. Null values are not processed and remain
+     * as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will accept lists of string and operate on individual strings within the list, global will only accept string objects.
+     * @return the traversal with an appended {@link ToLowerGlobalStep} or {@link ToLowerLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toLower-step" target="_blank">Reference Documentation - ToLower Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> toLower(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.toLower, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToLowerGlobalStep<>(this.asAdmin()) : new ToLowerLocalStep<>(this.asAdmin()));
     }
 
     /**
      * Returns the uppercase representation of incoming string traverser. Null values are not processed and
      * remain as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link ToUpperStep}.
+     * @return the traversal with an appended {@link ToUpperGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toUpper-step" target="_blank">Reference Documentation - ToUpper Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> toUpper() {
         this.asAdmin().getBytecode().addStep(Symbols.toUpper);
-        return this.asAdmin().addStep(new ToUpperStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new ToUpperGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns the uppercase representation of incoming string or list of strings. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will accept lists of string and operate on individual strings within the list, global will only accept string objects.
+     * @return the traversal with an appended {@link ToUpperGlobalStep} or {@link ToUpperLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#toUpper-step" target="_blank">Reference Documentation - ToUpper Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> toUpper(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.toUpper, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToUpperGlobalStep<>(this.asAdmin()) : new ToUpperLocalStep<>(this.asAdmin()));
     }
 
     /**
@@ -1523,13 +1588,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * remain as null when returned. If the incoming traverser is a non-String value then an
      * {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link TrimStep}.
+     * @return the traversal with an appended {@link TrimGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#trim-step" target="_blank">Reference Documentation - Trim Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> trim() {
         this.asAdmin().getBytecode().addStep(Symbols.trim);
-        return this.asAdmin().addStep(new TrimStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new TrimGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with leading and trailing whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @return the traversal with an appended {@link TrimGlobalStep} or {@link TrimLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#trim-step" target="_blank">Reference Documentation - Trim Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> trim(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.trim, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new TrimGlobalStep<>(this.asAdmin()) : new TrimLocalStep<>(this.asAdmin()));
     }
 
     /**
@@ -1537,13 +1617,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * remain as null when returned. If the incoming traverser is a non-String value then an
      * {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link LTrimStep}.
+     * @return the traversal with an appended {@link LTrimGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#lTrim-step" target="_blank">Reference Documentation - LTrim Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> lTrim() {
         this.asAdmin().getBytecode().addStep(Symbols.lTrim);
-        return this.asAdmin().addStep(new LTrimStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new LTrimGlobalStep<>(this.asAdmin()));
+    }
+
+
+    /**
+     * Returns a string with leading whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @return the traversal with an appended {@link LTrimGlobalStep} or {@link LTrimLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#lTrim-step" target="_blank">Reference Documentation - LTrim Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> lTrim(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.lTrim, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new LTrimGlobalStep<>(this.asAdmin()) : new LTrimLocalStep<>(this.asAdmin()));
     }
 
     /**
@@ -1551,13 +1647,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * remain as null when returned. If the incoming traverser is a non-String value then an
      * {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link RTrimStep}.
+     * @return the traversal with an appended {@link RTrimGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#rTrim-step" target="_blank">Reference Documentation - RTrim Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> rTrim() {
         this.asAdmin().getBytecode().addStep(Symbols.rTrim);
-        return this.asAdmin().addStep(new RTrimStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new RTrimGlobalStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Returns a string with trailing whitespace removed. Null values are not processed and
+     * remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @return the traversal with an appended {@link RTrimGlobalStep} or {@link RTrimLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#rTrim-step" target="_blank">Reference Documentation - RTrim Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> rTrim(final Scope scope) {
+        this.asAdmin().getBytecode().addStep(Symbols.rTrim, scope);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new RTrimGlobalStep<>(this.asAdmin()) : new RTrimLocalStep<>(this.asAdmin()));
     }
 
     /**
@@ -1578,13 +1689,34 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * processed and remain as null when returned. If the incoming traverser is a non-String value then an
      * {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link ReplaceStep}.
+     * @param newChar the character to replace.
+     * @param oldChar the character to be replaced.
+     * @return the traversal with an appended {@link ReplaceGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> replace(final String oldChar, final String newChar) {
         this.asAdmin().getBytecode().addStep(Symbols.replace, oldChar, newChar);
-        return this.asAdmin().addStep(new ReplaceStep<>(this.asAdmin(), oldChar, newChar));
+        return this.asAdmin().addStep(new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar));
+    }
+
+    /**
+     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
+     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
+     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @param newChar the character to replace.
+     * @param oldChar the character to be replaced.
+     * @return the traversal with an appended {@link ReplaceGlobalStep} or {@link ReplaceLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> replace(final Scope scope, final String oldChar, final String newChar) {
+        this.asAdmin().getBytecode().addStep(Symbols.replace, scope, oldChar, newChar);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ?
+                new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar) : new ReplaceLocalStep<>(this.asAdmin(), oldChar, newChar));
     }
 
     /**
@@ -1593,13 +1725,32 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * and remain as null when returned. If the incoming traverser is a non-String value then an
      * {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link SplitStep}.
+     * @param separator the character to split the string on.
+     * @return the traversal with an appended {@link SplitGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#split-step" target="_blank">Reference Documentation - Split Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, List<String>> split(final String separator) {
         this.asAdmin().getBytecode().addStep(Symbols.split, separator);
-        return this.asAdmin().addStep(new SplitStep<>(this.asAdmin(), separator));
+        return this.asAdmin().addStep(new SplitGlobalStep<>(this.asAdmin(), separator));
+    }
+
+    /**
+     * Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
+     * A null separator will split the string by whitespaces. Null values from incoming traversers are not processed
+     * and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @param separator the character to split the string on.
+     * @return the traversal with an appended {@link SplitGlobalStep} or {@link SplitLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#split-step" target="_blank">Reference Documentation - Split Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, List<E2>> split(final Scope scope, final String separator) {
+        this.asAdmin().getBytecode().addStep(Symbols.split, scope, separator);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ?
+                new SplitGlobalStep<>(this.asAdmin(), separator) : new SplitLocalStep<>(this.asAdmin(), separator));
     }
 
     /**
@@ -1608,13 +1759,32 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * end of the string, or 0 if exceeding the string length. Null values are not processed and remain as null when returned.
      * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link SubstringStep}.
+     * @param startIndex the start index of the substring, inclusive.
+     * @return the traversal with an appended {@link SubstringGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> substring(final int startIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex);
-        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex));
+        return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex));
+    }
+
+    /**
+     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) specified,
+     * to the end of the string. If the start index is negative then it will begin at the specified index counted from the
+     * end of the string, or 0 if exceeding the string length. Null values are not processed and remain as null when returned.
+     * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @param startIndex the start index of the substring, inclusive.
+     * @return the traversal with an appended {@link SubstringGlobalStep} or {@link SubstringLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex) {
+        this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ?
+                new SubstringGlobalStep<>(this.asAdmin(), startIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex));
     }
 
     /**
@@ -1625,13 +1795,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * return the empty string. Null values are not processed and remain as null when returned. If the incoming
      * traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
      *
-     * @return the traversal with an appended {@link SubstringStep}.
+     * @param startIndex the start index of the substring, inclusive.
+     * @param endIndex the end index of the substring, exclusive.
+     * @return the traversal with an appended {@link SubstringGlobalStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> substring(final int startIndex, final int endIndex) {
         this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, endIndex);
-        return this.asAdmin().addStep(new SubstringStep<>(this.asAdmin(), startIndex, endIndex));
+        return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex));
+    }
+
+    /**
+     * Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index
+     * (exclusive). If the start index is negative then it will begin at the specified index counted from the end of the
+     * string, or 0 if exceeding the string length. If the end index is negative then it will end at the specified index
+     * counted from the end, or at the end of the string if exceeding the string length. End index <= start index will
+     * return the empty string. Null values are not processed and remain as null when returned. If the incoming
+     * traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @param startIndex the start index of the substring, inclusive.
+     * @param endIndex the end index of the substring, exclusive.
+     * @return the traversal with an appended {@link SubstringGlobalStep} or {@link SubstringLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Substring Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex, final int endIndex) {
+        this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex, endIndex);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ?
+                new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex, endIndex));
     }
 
     /**

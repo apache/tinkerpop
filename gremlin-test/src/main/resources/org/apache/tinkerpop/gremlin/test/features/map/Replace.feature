@@ -19,7 +19,7 @@
 Feature: Step - replace()
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXthat_this_testX_replaceXh_jX
+  Scenario: g_injectXthat_this_test_nullX_replaceXh_jX
     Given the empty graph
     And the traversal of
       """
@@ -32,6 +32,18 @@ Feature: Step - replace()
       | tjis |
       | test |
       | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXthat_this_test_nullX_fold_replaceXlocal_h_jX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("that", "this", "test", null).fold().replace(Scope.local, "h", "j")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[tjat,tjis,test,null] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_replaceXa_bX
@@ -67,3 +79,14 @@ Feature: Step - replace()
       | result |
       | log |
       | riggle |
+
+  Scenario: g_V_hasLabelXsoftwareX_valueXnameX_order_fold_replaceXloacl_a_iX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").order().fold().replace(Scope.local, "p", "g")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[log,riggle] |

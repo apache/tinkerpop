@@ -26,38 +26,30 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Reference implementation for lTrim() step, a mid-traversal step which returns a string with leading
+ * Reference implementation for trim() step, a mid-traversal step which returns a string with leading and trailing
  * whitespace removed. Null values are not processed and remain as null when returned.
  * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class LTrimStep<S> extends ScalarMapStep<S, String> {
+public final class TrimGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
-    public LTrimStep(final Traversal.Admin traversal) {
+    public TrimGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
         // throws when incoming traverser isn't a string
         if (null != item && !(item instanceof String)) {
             throw new IllegalArgumentException(
-                    String.format("The lTrim() step can only take string as argument, encountered %s", item.getClass()));
+                    String.format("The trim() step can only take string as argument, encountered %s", item.getClass()));
         }
 
         // we will pass null values to next step
-        if (null == item)
-                return null;
-
-        int i = 0;
-        while (i < ((String) item).length() && Character.isWhitespace(((String) item).charAt(i))) {
-            i++;
-        }
-
-        return ((String) item).substring(i);
+        return null == item? null : (E) ((String) item).trim();
     }
 
     @Override

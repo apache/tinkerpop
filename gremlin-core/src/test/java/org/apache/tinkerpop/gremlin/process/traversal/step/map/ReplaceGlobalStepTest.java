@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
+import org.mockito.internal.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,27 +31,29 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-/**
- * @author Yang Xia (http://github.com/xiazcy)
- */
-public class RTrimStepTest extends StepTest {
+public class ReplaceGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.rTrim());
+        return Collections.singletonList(__.replace("a", "b"));
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("   test", __.__("   test   ").rTrim().next());
-        assertArrayEquals(new String[]{" hello world", "  test", null, "", ""},
-                __.inject(" hello world ", "  test  ", null, "", " ").rTrim().toList().toArray());
+        assertEquals("halo", __.__("hello").replace("el", "a").next());
+        assertEquals("world", __.__("world").replace("el", "a").next());
+
+        assertEquals("hello", __.__("hello").replace(null, "a").next());
+        assertEquals("hello", __.__("hello").replace("el", null).next());
+        assertEquals("hello", __.__("hello").replace(null, null).next());
+
+        assertArrayEquals(new String[]{"hell0", "w0rld", null, ""},
+                __.__("hello", "world", null, "").replace("o", "0").toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList(" a ", " b ", " c" )).rTrim().next();
-    }
+    public void shouldThrowWithIncomingArrayList() { __.__(Arrays.asList("a", "b", "c")).replace("a", "b").next(); }
 
 }

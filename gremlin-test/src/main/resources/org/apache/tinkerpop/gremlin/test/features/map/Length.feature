@@ -33,6 +33,20 @@ Feature: Step - length()
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXfeature_test_nullX_lengthXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("feature", "test", null).length(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[7].i |
+      | d[4].i |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_length
     Given the empty graph
     And using the parameter xx1 defined as "l[a,b]"
@@ -58,3 +72,14 @@ Feature: Step - length()
       | d[4].i |
       | d[6].i |
       | d[5].i |
+
+  Scenario: g_V_valuesXnameX_order_fold_lengthXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").order().fold().length(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[4].i,d[3].i,d[5].i,d[5].i,d[6].i,d[5].i] |

@@ -33,6 +33,19 @@ Feature: Step - toUpper()
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXfeature_test_nullX_toUpperXlocalX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[feature,tESt,null]"
+    And the traversal of
+      """
+      g.inject(xx1).toUpper(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[FEATURE,TEST,null] |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXfeature_test_nullX_asString_toUpper
     Given the empty graph
     And the traversal of
@@ -72,3 +85,30 @@ Feature: Step - toUpper()
       | JOSH |
       | RIPPLE |
       | PETER |
+
+  Scenario: g_V_valuesXnameX_toUpperXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").toUpper(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | MARKO |
+      | VADAS |
+      | LOP |
+      | JOSH |
+      | RIPPLE |
+      | PETER |
+
+  Scenario: g_V_valuesXnameX_order_fold_toUpperXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").order().fold().toUpper(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[JOSH,LOP,MARKO,PETER,RIPPLE,VADAS] |

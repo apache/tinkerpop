@@ -57,6 +57,17 @@ Feature: Step - lTrim()
     When iterated to list
     Then the traversal will raise an error with message containing text of "The lTrim() step can only take string as argument"
 
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXListX1_2XX_lTrimXlocalX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
+    And the traversal of
+    """
+    g.inject(xx1).lTrim(Scope.local)
+    """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The lTrim(local) step can only take string or list of strings"
+
   Scenario: g_V_valuesXnameX_lTrim
     Given the empty graph
     And the graph initializer of
@@ -87,3 +98,29 @@ Feature: Step - lTrim()
       | str[josh  ] |
       | str[ripple   ] |
       | str[peter] |
+
+  Scenario: g_V_valuesXnameX_order_fold_lTrimXlocalX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", " marko ").property("age", 29).as("marko").
+        addV("person").property("name", "  vadas  ").property("age", 27).as("vadas").
+        addV("software").property("name", "  lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh  ").property("age", 32).as("josh").
+        addV("software").property("name", "   ripple   ").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().values("name").order().fold().lTrim(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[str[ripple   ],str[lop],str[vadas  ],str[marko ],str[josh  ],str[peter]] |

@@ -18,39 +18,45 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
-/**
- * @author Yang Xia (http://github.com/xiazcy)
- */
-public class LengthStepTest extends StepTest {
+public class SubstringLocalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.length());
+        return Arrays.asList(
+                __.substring(Scope.local, 1),
+                __.substring(Scope.local, 1, 2));
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals(Integer.valueOf(4), __.__("test").length().next());
-        assertArrayEquals(new Integer[]{5, 4, null, 0}, __.inject("hello", "test", null, "").length().toList().toArray());
+        assertEquals("hello world", __.__("hello world").substring(Scope.local, 0).next());
+        assertEquals("ello world", __.__("hello world").substring(Scope.local, 1).next());
+        assertEquals("d", __.__("hello world").substring(Scope.local, -1).next());
+
+        assertEquals("", __.__("hello world").substring(Scope.local, 0, 0).next());
+        assertEquals("ello worl", __.__("hello world").substring(Scope.local, 1, -1).next());
+        assertEquals("", __.__("hello world").substring(Scope.local, -1, -3).next());
+        assertEquals("hello world", __.__("hello world").substring(Scope.local, -11, 11).next());
+
+        assertArrayEquals(new String[]{"st", "llo wo", null, ""},
+                ((List<?>) __.__(Arrays.asList("test", "hello world", null, "")).substring(Scope.local, 2, 8).next()).toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).length().next();
+    public void shouldThrowWithIncomingNonStringArrayList() {
+        __.__(Arrays.asList(1, 2, 3)).substring(Scope.local, 1).next();
     }
 
 }

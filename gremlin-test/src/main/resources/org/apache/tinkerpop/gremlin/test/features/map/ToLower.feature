@@ -33,6 +33,19 @@ Feature: Step - toLower()
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXfeature_test_nullX_toLowerXlocalX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[FEATURE,tESt,null]"
+    And the traversal of
+      """
+      g.inject(xx1).toLower(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[feature,test,null] |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_toLower
     Given the empty graph
     And using the parameter xx1 defined as "l[a,b]"
@@ -73,3 +86,60 @@ Feature: Step - toLower()
       | josh |
       | ripple |
       | peter |
+
+  Scenario: g_V_valuesXnameX_toLowerXlocalX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "MARKO").property("age", 29).as("marko").
+        addV("person").property("name", "VADAS").property("age", 27).as("vadas").
+        addV("software").property("name", "LOP").property("lang", "java").as("lop").
+        addV("person").property("name","JOSH").property("age", 32).as("josh").
+        addV("software").property("name", "RIPPLE").property("lang", "java").as("ripple").
+        addV("person").property("name", "PETER").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().values("name").toLower(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_valuesXnameX_order_fold_toLowerXlocalX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "MARKO").property("age", 29).as("marko").
+        addV("person").property("name", "VADAS").property("age", 27).as("vadas").
+        addV("software").property("name", "LOP").property("lang", "java").as("lop").
+        addV("person").property("name","JOSH").property("age", 32).as("josh").
+        addV("software").property("name", "RIPPLE").property("lang", "java").as("ripple").
+        addV("person").property("name", "PETER").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().values("name").order().fold().toLower(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[josh,lop,marko,peter,ripple,vadas] |
