@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Arrays;
@@ -38,30 +39,28 @@ import java.util.Set;
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class SplitStep<S> extends ScalarMapStep<S, List<String>> implements TraversalParent {
+public final class SplitLocalStep<S, E> extends StringLocalStep<S, E> implements TraversalParent {
 
     private final String separator;
 
-    public SplitStep(final Traversal.Admin traversal, final String separator) {
+    public SplitLocalStep(final Traversal.Admin traversal, final String separator) {
         super(traversal);
         this.separator = separator;
     }
 
     @Override
-    protected List<String> map(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The split() step can only take string as argument, encountered %s.", item.getClass()));
-        }
-
-        // we will pass null values to next step
-        return null == item? null : Arrays.asList(StringUtils.splitByWholeSeparator((String) item, this.separator));
+    protected E applyStringOperation(String item) {
+        return (E) Arrays.asList((StringUtils.splitByWholeSeparator(item, this.separator)));
     }
 
     @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+    public String getStepName() { return "split(local)"; }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (null != this.separator ? this.separator.hashCode() : 0);
+        return result;
     }
+
 }

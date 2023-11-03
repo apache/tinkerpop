@@ -20,49 +20,37 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for rTrim() step, a mid-traversal step which a string with trailing
- * whitespace removed. Null values are not processed and remain as null when returned.
- * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+ * Reference implementation for the local scope of the toUpper() step, a mid-traversal step which returns an upper case
+ * string representation of all elements inside the incoming list traverser. Null values are not processed and remain as
+ * null when returned. If the incoming traverser is not a list or a non-String list then an {@code IllegalArgumentException}
+ * will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class RTrimStep<S> extends ScalarMapStep<S, String> {
+public final class ToUpperLocalStep<S, E> extends StringLocalStep<S, E> {
 
-    public RTrimStep(final Traversal.Admin traversal) {
+    public ToUpperLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
-            throw new IllegalArgumentException(
-                    String.format("The rTrim() step can only take string as argument, encountered %s", item.getClass()));
-        }
-
-        // we will pass null values to next step
-        if (null == item)
-                return null;
-
-        int i = ((String) item).length() - 1;
-        while (i >= 0 && Character.isWhitespace(((String) item).charAt(i))) {
-            i--;
-        }
-
-        return ((String) item).substring(0,i+1);
+    protected E applyStringOperation(String item) {
+        return (E) item.toUpperCase();
     }
 
     @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
-    }
+    public String getStepName() { return "toUpper(local)"; }
 
 }

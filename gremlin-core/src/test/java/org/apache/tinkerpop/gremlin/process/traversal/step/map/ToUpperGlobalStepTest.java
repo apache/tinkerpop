@@ -19,33 +19,37 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned as a string value "null".
- *
- * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class AsStringStep<S> extends ScalarMapStep<S, String> {
-
-    public AsStringStep(final Traversal.Admin traversal) {
-        super(traversal);
-    }
+public class ToUpperGlobalStepTest extends StepTest {
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
-        return String.valueOf(traverser.get());
+    protected List<Traversal> getTraversals() {
+        return Collections.singletonList(__.toUpper());
     }
 
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
+    @Test
+    public void testReturnTypes() {
+        assertEquals("TEST", __.__("test").toUpper().next());
+        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
+                __.__("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWithIncomingArrayList() {
+        __.__(Arrays.asList("a", "b", "c")).toUpper().next();
     }
 
 }

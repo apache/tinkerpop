@@ -67,6 +67,28 @@ Feature: Step - substring()
       | op |
       | ipp |
 
+  Scenario: g_V_hasLabelXpersonX_valueXnameX_order_fold_substringXlocal_2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").order().fold().substring(Scope.local, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[p,pple]|
+
+  Scenario: g_V_hasLabelXsoftwareX_valueXnameX_order_fold_substringXlocal_1_4X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").values("name").order().fold().substring(Scope.local, 1, 4)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[op,ipp] |
+
   Scenario: g_V_hasLabelXsoftwareX_valueXnameX_substringX1_0X
     Given the modern graph
     And the traversal of

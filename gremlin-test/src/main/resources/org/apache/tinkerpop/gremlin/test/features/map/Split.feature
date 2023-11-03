@@ -70,16 +70,16 @@ Feature: Step - split()
       | l[josh] |
       | l[peter] |
 
-  Scenario: g_V_hasLabelXpersonX_valueXnameX_splitXaX
+  Scenario: g_V_hasLabelXpersonX_valueXnameX_order_fold_splitXlocal_aX_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").values("name").split("a")
+      g.V().hasLabel("person").values("name").order().fold().split(Scope.local, "a").unfold()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[m,rko] |
-      | l[v,d,s] |
       | l[josh] |
+      | l[m,rko] |
       | l[peter] |
+      | l[v,d,s] |

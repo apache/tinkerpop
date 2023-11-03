@@ -21,35 +21,41 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Reference implementation for toLower() step, a mid-traversal step which returns a lower case string representation
- * of the incoming string traverser. Null values are not processed and remain as null when returned.
- * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+ * Reference implementation for length() step, a mid-traversal step which returns the length of the incoming string
+ * traverser. Null values are not processed and remain as null when returned. If the incoming traverser is a non-String
+ * value then an {@code IllegalArgumentException} will be thrown.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public final class ToLowerStep<S> extends ScalarMapStep<S, String> {
+public final class LengthGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
-    public ToLowerStep(final Traversal.Admin traversal) {
+    public LengthGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected String map(final Traverser.Admin<S> traverser) {
+    protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
-        // throws when incoming traverser isn't a string
-        if (null != item && !(item instanceof String)) {
+
+        if (null == item) {
+            // we will pass null values to next step
+            return null;
+        } else if (item instanceof String) {
+            return (E) Integer.valueOf(((String) item).length());
+        } else {
             throw new IllegalArgumentException(
-                    String.format("The toLower() step can only take string as argument, encountered %s", item.getClass()));
+                    String.format("The length() step can only take string as argument, encountered %s", item.getClass()));
         }
 
-        // we will pass null values to next step
-        return null == item? null : ((String) item).toLowerCase();
     }
 
     @Override

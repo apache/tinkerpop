@@ -33,7 +33,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class SplitStepTest extends StepTest {
+public class SplitGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {

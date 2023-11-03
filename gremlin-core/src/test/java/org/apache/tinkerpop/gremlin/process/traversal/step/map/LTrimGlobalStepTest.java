@@ -33,23 +33,23 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class ToLowerStepTest extends StepTest {
+public class LTrimGlobalStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.toLower());
+        return Collections.singletonList(__.lTrim());
     }
 
     @Test
     public void testReturnTypes() {
-        assertEquals("test", __.__("TEST").toLower().next());
-        assertArrayEquals(new String[]{"hello", "test", "no.123", null, ""},
-                __.inject("hElLo", "TEST", "NO.123", null, "").toLower().toList().toArray());
+        assertEquals("test   ", __.__("test   ").lTrim().next());
+        assertArrayEquals(new String[]{"hello world ", "test  ", null, "", ""},
+                __.inject(" hello world ", "  test  ", null, "", " ").lTrim().toList().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).toLower().next();
+        __.__(Arrays.asList(" a ", " b ", " c" )).lTrim().next();
     }
 
 }

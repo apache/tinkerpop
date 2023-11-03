@@ -19,37 +19,36 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
 
 /**
+ * Reference implementation for rTrim() step, a mid-traversal step which a string with trailing
+ * whitespace removed. Null values are not processed and remain as null when returned.
+ * If the incoming traverser is a non-String value then an {@code IllegalArgumentException} will be thrown.
+ *
+ * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
  */
-public class ToUpperStepTest extends StepTest {
+public final class RTrimLocalStep<S, E> extends StringLocalStep<S, E> {
+
+    public RTrimLocalStep(final Traversal.Admin traversal) {
+        super(traversal);
+    }
 
     @Override
-    protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.toUpper());
+    protected E applyStringOperation(String item) {
+        return (E) item.substring(0,getEndIdx(item)+1);
     }
 
-    @Test
-    public void testReturnTypes() {
-        assertEquals("TEST", __.__("test").toUpper().next());
-        assertArrayEquals(new String[]{"HELLO", "TEST", "NO.123", null, ""},
-                __.inject("hElLo", "test", "no.123", null, "").toUpper().toList().toArray());
-    }
+    @Override
+    public String getStepName() { return "rTrim(local)"; }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWithIncomingArrayList() {
-        __.__(Arrays.asList("a", "b", "c")).toUpper().next();
+    private int getEndIdx(final String str) {
+        int idx = str.length() - 1;
+        while (idx >= 0 && Character.isWhitespace(str.charAt(idx))) {
+            idx--;
+        }
+        return idx;
     }
 
 }
