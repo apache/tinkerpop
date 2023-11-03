@@ -978,6 +978,9 @@ with a custom sub-protocol.  Under this configuration, Gremlin Server accepts re
 evaluates that script and then streams back the results.  The notion of "streaming" is depicted in the diagram to the
 right.
 
+There is also an experimental possibility to use link:http://en.wikipedia.org/wiki/HTTP[HTTP]. Currently this is only
+supported by Java and Python GLV's.
+
 The diagram shows an incoming request to process the Gremlin script of `g.V()`.  Gremlin Server evaluates that script,
 getting an `Iterator` of vertices as a result, and steps through each `Vertex` within it.  The vertices are batched
 together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each
@@ -1032,6 +1035,21 @@ The above JSON represents the "body" of the request to send to Gremlin Server. W
 WebSocket, Gremlin Server can accept a packet frame using a "text" (1) or a "binary" (2) opcode. Using "text"
 is a bit more limited in that Gremlin Server will always process the body of that request as JSON.  Generally speaking
 "text" is just for testing purposes.
+
+For HTTP can be used following serializers distinguished by `Content-Type` HTTP header
+[width="100%",cols="3,10, 10",options="header"]
+|=========================================================
+|Serializer | Content-Type| Description
+|GraphBinaryMessageSerializerV1 | application/vnd.graphbinary-v1.0 | Efficient binary format recommended for default use.
+|GraphSONMessageSerializerV3 | application/vnd.gremlin-v3.0+json | Json-compatible format containing types of all data.
+|GraphSONUntypedMessageSerializerV3 | application/vnd.gremlin-v3.0+json;types=false | Json-compatible format without metadata. For this reason it cannot be used for transmission of ByteCode requests.
+|=========================================================
+
+Same options can be used for `Accept` Header. By default, same serializer will handle both request and response.
+Only HTTP Post requests are supported.
+Both Gremlin strings and Gremlin bytecode requests may be supported.
+
+NOTE: All this HTTP options designed for GLV's. For usage with browsers, curl, Postman and other tools see link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-http[Connecting via HTTP section].
 
 The preferred method for sending requests to Gremlin Server is to use the "binary" opcode.  In this case, a "header"
 will need be sent in addition to to the "body".  The "header" basically consists of a "mime type" so that Gremlin
