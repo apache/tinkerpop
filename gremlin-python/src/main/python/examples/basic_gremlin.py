@@ -43,7 +43,7 @@ def main():
     print("name: " + marko)
 
     # find the "marko" vertex and then traverse to the people he "knows" and return their data
-    people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').toList()
+    people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').to_list()
     for person in people_marko_knows:
         print("marko knows " + person)
 
