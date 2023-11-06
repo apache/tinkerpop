@@ -208,33 +208,17 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
     # Transforms request message into string
     def write(self, request_id, request_message):
-        payload = {
-            'requestId': request_id
-        }
-
-        gremlinArgs = request_message.args['gremlin']
-        useBytecode = isinstance(gremlinArgs, Bytecode)
-
-        # translate bytecode into scripts
-        if useBytecode:
-            request_message.args['gremlin'] = Translator().of('g').translate(gremlinArgs)
-            payload['op'] = 'bytecode'
-
-        # add all args into the payload
-        for k, v in request_message.args.items():
-            payload[k] = v
-
-        json_data = json.dumps(payload)
 
         basic_auth = {}
         if self._username and self._password:
             basic_auth['username'] = self._username
             basic_auth['password'] = self._password
 
+        content_type = str(self._message_serializer.version, encoding='utf-8')
         message = {
-            'headers': {'CONTENT-TYPE': 'application/json',
-                        'ACCEPT': str(self._message_serializer.version, encoding='utf-8')},
-            'payload': json_data,
+            'headers': {'CONTENT-TYPE': content_type,
+                        'ACCEPT': content_type},
+            'payload': self._message_serializer.serialize_message(request_id, request_message),
             'auth': basic_auth
         }
 

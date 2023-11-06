@@ -92,7 +92,7 @@ public class HttpHandlerUtil {
                 buffer.readBytes(bytes);
                 final String mimeType = new String(bytes, StandardCharsets.UTF_8);
 
-                if (Arrays.stream(serializer.mimeTypesSupported()).anyMatch(t -> !t.equals(mimeType)))
+                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
                     throw new IllegalArgumentException("Mime type mismatch. Value in content-type header not equal payload header.");
             } else
                 buffer.resetReaderIndex();
