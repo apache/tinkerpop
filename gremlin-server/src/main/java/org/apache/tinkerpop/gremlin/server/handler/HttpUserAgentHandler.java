@@ -42,38 +42,9 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
      */
     private static final int MAX_USER_AGENT_METRICS = 10000;
 
-    private static final Logger logger = LoggerFactory.getLogger(WsUserAgentHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpUserAgentHandler.class);
     public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(UserAgent.USER_AGENT_HEADER_NAME);
 
-    @Override
-    public void userEventTriggered(final ChannelHandlerContext ctx, java.lang.Object evt) {
-        if (evt instanceof FullHttpMessage) {
-            final FullHttpMessage request = (FullHttpMessage) evt;
-            if (!request.headers().contains("User-Agent")) {
-                return;
-            }
-            if (request.headers().contains(UserAgent.USER_AGENT_HEADER_NAME)){
-                final String userAgent = request.headers().get(UserAgent.USER_AGENT_HEADER_NAME);
-
-                ctx.channel().attr(USER_AGENT_ATTR_KEY).set(userAgent);
-                logger.debug("New Connection on channel [{}] with user agent [{}]", ctx.channel().id().asShortText(), userAgent);
-
-                String metricName = MetricRegistry.name(GremlinServer.class, "user-agent", userAgent);
-
-                // This check is to address a concern that an attacker may try to fill the server's memory with a very
-                // large number of unique user agents. For this reason the user agent is replaced with "other"
-                // for the purpose of metrics if this cap is ever exceeded and the user agent is not already being tracked.
-                if(MetricManager.INSTANCE.getCounterSize() > MAX_USER_AGENT_METRICS &&
-                        !MetricManager.INSTANCE.contains(metricName)) {
-                    metricName = MetricRegistry.name(GremlinServer.class, "user-agent", "other");
-                }
-                MetricManager.INSTANCE.getCounter(metricName).inc();
-            } else {
-                logger.debug("New Connection on channel [{}] with no user agent provided", ctx.channel().id().asShortText());
-            }
-        }
-        ctx.fireUserEventTriggered(evt);
-    }
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
 //        if (msg instanceof HttpRequest) {
@@ -99,6 +70,6 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("New Connection on channel [{}] with no user agent provided", ctx.channel().id().asShortText());
             }
         }
-        ctx.fireUserEventTriggered(msg);
+        ctx.fireChannelRead(msg);
     }
 }
