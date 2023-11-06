@@ -47,8 +47,6 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
-//        if (msg instanceof HttpRequest) {
-//            final HttpRequest request = (HttpRequest) msg;
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
             if (request.headers().contains(UserAgent.USER_AGENT_HEADER_NAME)){
