@@ -42,7 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -78,16 +80,21 @@ public class HttpHandlerUtil {
                                                                   Map<String, MessageSerializer<?>> serializers) throws SerializationException {
         final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (!contentType.equals("application/json") && serializers.containsKey(contentType)) {
+        if (contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
             final MessageSerializer<?> serializer = serializers.get(contentType);
 
             final ByteBuf buffer = request.content();
 
-            // !!! skip header.
+            // additional validation for header
             final int first = buffer.readByte();
-            if (first != 0x7b)
-                buffer.readBytes(new byte[first]);
-            else
+            if (first != 0x7b) {
+                final byte[] bytes = new byte[first];
+                buffer.readBytes(bytes);
+                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+
+                if (Arrays.stream(serializer.mimeTypesSupported()).anyMatch(t -> !t.equals(mimeType)))
+                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header not equal payload header.");
+            } else
                 buffer.resetReaderIndex();
 
             return serializer.deserializeRequest(buffer);
