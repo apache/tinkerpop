@@ -1036,7 +1036,7 @@ WebSocket, Gremlin Server can accept a packet frame using a "text" (1) or a "bin
 is a bit more limited in that Gremlin Server will always process the body of that request as JSON.  Generally speaking
 "text" is just for testing purposes.
 
-For HTTP can be used following serializers distinguished by `Content-Type` HTTP header
+For HTTP the following serializers can be used, distinguished by `Content-Type` HTTP header
 [width="100%",cols="3,10, 10",options="header"]
 |=========================================================
 |Serializer | Content-Type| Description
@@ -1047,9 +1047,9 @@ For HTTP can be used following serializers distinguished by `Content-Type` HTTP 
 
 Same options can be used for `Accept` Header. By default, same serializer will handle both request and response.
 Only HTTP Post requests are supported.
-Both Gremlin strings and Gremlin bytecode requests may be supported.
+Both Gremlin scripts and Gremlin `Bytecode` requests are supported.
 
-NOTE: All this HTTP options designed for GLV's. For usage with browsers, curl, Postman and other tools see link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-http[Connecting via HTTP section].
+NOTE: All of the above HTTP options are designed for use with GLV's. For usage with browsers, cURL, Postman and other tools see link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-http[Connecting via HTTP section].
 
 The preferred method for sending requests to Gremlin Server is to use the "binary" opcode.  In this case, a "header"
 will need be sent in addition to to the "body".  The "header" basically consists of a "mime type" so that Gremlin
