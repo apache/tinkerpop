@@ -380,10 +380,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Client client = cluster.connect();
 
             client.submit("g.V()");
-            java.lang.Thread.sleep(1000);
+            java.lang.Thread.sleep(2000);
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.submit("g.V()");
-            java.lang.Thread.sleep(1000);
+            java.lang.Thread.sleep(2000);
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.close();
             cluster.close();
