@@ -269,7 +269,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             attemptCommit(requestMessage.getArg(Tokens.ARGS_ALIASES), graphManager, settings.strictTransactionManagement);
 
                             try {
-                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage, ctx.alloc()).getBytes(UTF8));
+                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsBinary(responseMessage, ctx.alloc()));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
 

@@ -206,7 +206,6 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
     def connection_made(self, transport):
         super(GremlinServerHTTPProtocol, self).connection_made(transport)
 
-    # Transforms request message into string
     def write(self, request_id, request_message):
 
         basic_auth = {}
@@ -230,13 +229,6 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
             log.error("Received empty message from server.")
             raise GremlinServerError({'code': 500,
                                       'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
-
-        # if a request query cannot be compiled by Gremlin Server, the HTTP handler will send back the exception in
-        # json string without a requestId
-        if 'message' in message and 'requestId' not in message:
-            log.error("\r\nReceived error message from server '%s'", str(message))
-            raise GremlinServerError({'code': 400,
-                                      'message': message, 'attributes': {}})
 
         message = self._message_serializer.deserialize_message(message)
         request_id = message['requestId']

@@ -55,6 +55,7 @@ import java.util.UUID;
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -80,7 +81,7 @@ public class HttpHandlerUtil {
                                                                   Map<String, MessageSerializer<?>> serializers) throws SerializationException {
         final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
+        if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
             final MessageSerializer<?> serializer = serializers.get(contentType);
 
             final ByteBuf buffer = request.content();
