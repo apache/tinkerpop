@@ -69,5 +69,6 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
             }
         }
         ctx.fireChannelRead(msg);
+        ctx.fireUserEventTriggered(msg);
     }
 }
