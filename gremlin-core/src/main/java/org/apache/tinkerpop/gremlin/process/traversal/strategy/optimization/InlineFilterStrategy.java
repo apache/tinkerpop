@@ -110,10 +110,11 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     ////////////////////////////
     ///////////////////////////
 
-    private static final boolean processHasStep(final HasStep<?> step, final Traversal.Admin<?, ?> traversal) {
+    private static boolean processHasStep(final HasStep<?> step, final Traversal.Admin<?, ?> traversal) {
         if (step.getPreviousStep() instanceof HasStep) {
             final HasStep<?> previousStep = (HasStep<?>) step.getPreviousStep();
-            for (final HasContainer hasContainer : step.getHasContainers()) {
+            final List<HasContainer> hasContainers = new ArrayList<>(step.getHasContainers());
+            for (final HasContainer hasContainer : hasContainers) {
                 previousStep.addHasContainer(hasContainer);
             }
             TraversalHelper.copyLabels(step, previousStep, false);
