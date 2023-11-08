@@ -46,3 +46,4 @@ public class WsAndHttpTestChannelizer extends WsAndHttpChannelizer implements Te
         contextHandler.resetChannelHandlerContext();
     }
 }
+
