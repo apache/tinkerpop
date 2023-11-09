@@ -18,18 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.codec.EncoderException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -81,13 +86,32 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-            assertEquals("2", g.inject("2").toList().get(0));
+            final String result = g.inject("2").toList().get(0);
+            assertEquals("2", result);
         } catch (Exception ex) {
             throw ex;
         } finally {
             cluster.close();
         }
     }
+
+//    @Test
+//    public void shouldGetErrorForBytecodeWithUntypedGraphSON() throws Exception {
+//        final Cluster cluster = TestClientFactory.build()
+//                .channelizer(Channelizer.HttpChannelizer.class)
+//                .serializer(Serializers.GRAPHSON_V3_UNTYPED)
+//                .create();
+//        try {
+//            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+//            g.inject("2").toList();
+//            fail("Exception expected");
+//        } catch (EncoderException ex) {
+//            assertThat(ex.getMessage(), allOf(containsString("An error occurred during serialization of this request"),
+//                    endsWith("it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV3")));
+//        } finally {
+//            cluster.close();
+//        }
+//    }
 
     @Test
     public void shouldSubmitBytecodeWithGraphBinary() throws Exception {
@@ -97,7 +121,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-            assertEquals("2", g.inject("2").toList().get(0));
+            final String result = g.inject("2").toList().get(0);
+            assertEquals("2", result);
         } catch (Exception ex) {
             throw ex;
         } finally {
