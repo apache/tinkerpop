@@ -103,6 +103,8 @@ public class HttpHandlerUtil {
 
             // additional validation for header
             final int first = buffer.readByte();
+            // payload can be plain json or can start with additional header with content type.
+            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
             if (first != 0x7b) {
                 final byte[] bytes = new byte[first];
                 buffer.readBytes(bytes);
