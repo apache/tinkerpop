@@ -76,6 +76,21 @@ public class HttpHandlerUtil {
 
     /**
      * Convert a http request into a {@link RequestMessage}.
+     * There are 2 payload types options here.
+     * 1.
+     *     existing https://tinkerpop.apache.org/docs/current/reference/#connecting-via-http
+     *     intended to use with curl, postman, etc. by users
+     *     both GET and POST
+     *     Content-Type header can be empty or application/json
+     *     Accept header can be any, most useful can be application/json, text/plain, application/vnd.gremlin-v3.0+json and application/vnd.gremlin-v3.0+json;types=false
+     *     Request body example: { "gremlin": "g.V()" }
+     * 2.
+     *     experimental payload with serialized RequestMessage
+     *     intended for drivers/GLV's. Support both gremlin and bytecode queries.
+     *     only POST
+     *     Content-Type is defined by used serializer, expected type GraphSON application/vnd.gremlin-v3.0+json or GraphBinary application/vnd.graphbinary-v1.0. Untyped GraphSON is not supported, it can't deserialize bytecode
+     *     Accept header can be any.
+     *     Request body contains serialized RequestMessage
      */
     public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request,
                                                                   Map<String, MessageSerializer<?>> serializers) throws SerializationException {
@@ -94,7 +109,7 @@ public class HttpHandlerUtil {
                 final String mimeType = new String(bytes, StandardCharsets.UTF_8);
 
                 if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
-                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header not equal payload header.");
+                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
             } else
                 buffer.resetReaderIndex();
 

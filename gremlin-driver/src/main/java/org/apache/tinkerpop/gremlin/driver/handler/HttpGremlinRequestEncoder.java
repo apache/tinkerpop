@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
@@ -47,8 +48,6 @@ import java.util.function.UnaryOperator;
 public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private final MessageSerializer<?> serializer;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
     private final UnaryOperator<FullHttpRequest> interceptor;
 
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
@@ -58,12 +57,23 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
+        final String mimeType = serializer.mimeTypesSupported()[0];
+        // only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests
+        if (requestMessage.getArg("gremlin") instanceof Bytecode &&
+                !mimeType.equals(SerTokens.MIME_GRAPHSON_V3) &&
+                !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V1)
+        ) {
+            throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
+                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
+                    requestMessage, serializer.getClass().getName()));
+        }
+
         try {
             final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
             final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
-            request.headers().add(HttpHeaderNames.CONTENT_TYPE, serializer.mimeTypesSupported()[0]);
+            request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
-            request.headers().add(HttpHeaderNames.ACCEPT, serializer.mimeTypesSupported()[0]);
+            request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
 
             objects.add(interceptor.apply(request));
         } catch (Exception ex) {

@@ -241,7 +241,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             // results to Traverser so that GLVs can handle the results. don't quite get the same
                             // benefit here because the bulk has to be 1 since we've already resolved the result,
                             // but at least http is compatible
-                            // !!! not friendly for console users?
                             final List<Object> results = requestMessage.getOp().equals(Tokens.OPS_BYTECODE) ?
                                     (List<Object>) IteratorUtils.asList(o).stream().map(r -> new DefaultRemoteTraverser<Object>(r, 1)).collect(Collectors.toList()) :
                                     IteratorUtils.asList(o);
