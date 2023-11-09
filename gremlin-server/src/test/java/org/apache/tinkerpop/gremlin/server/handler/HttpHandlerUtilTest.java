@@ -79,7 +79,7 @@ public class HttpHandlerUtilTest {
             HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
             fail("SerializationException expected");
         } catch (IllegalArgumentException ex) {
-            assertEquals("Mime type mismatch. Value in content-type header not equal payload header.", ex.getMessage());
+            assertEquals("Mime type mismatch. Value in content-type header is not equal payload header.", ex.getMessage());
         }
     }
 
