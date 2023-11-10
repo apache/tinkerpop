@@ -1372,7 +1372,7 @@ If the incoming traverser is not a Date, then an `IllegalArgumentException` will
 
 [gremlin-groovy,modern]
 ----
-g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(inject("2023-08-03T00:00:00Z").asDate()) <1>
+g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()) <1>
 ----
 
 <1> Find difference between two dates

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -57,7 +58,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
                     String.format("DateDiff can only take Date as argument, encountered %s", object.getClass()));
 
         final Date otherDate = value != null ? value :
-                dateTraversal != null && dateTraversal.hasNext() ? dateTraversal.next() : null;
+                dateTraversal != null ? TraversalUtil.apply(traverser, dateTraversal) : null;
 
         // let's not throw exception and assume null date == 0
         final long otherDateMs = otherDate == null ? 0 : otherDate.getTime();
