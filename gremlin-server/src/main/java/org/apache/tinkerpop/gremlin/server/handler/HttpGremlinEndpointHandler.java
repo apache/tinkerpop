@@ -220,6 +220,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
                 final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(
                         requestMessage.getArg(Tokens.ARGS_GREMLIN), requestMessage.getArg(Tokens.ARGS_LANGUAGE), bindings,
+                        requestMessage.getArgOrDefault(Tokens.ARGS_EVAL_TIMEOUT, null),
                         FunctionUtils.wrapFunction(o -> {
                             // stopping the timer here is roughly equivalent to where the timer would have been stopped for
                             // this metric in other contexts.  we just want to measure eval time not serialization time.

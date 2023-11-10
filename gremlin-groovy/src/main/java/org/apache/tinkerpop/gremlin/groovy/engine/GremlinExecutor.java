@@ -184,7 +184,7 @@ public class GremlinExecutor implements AutoCloseable {
      * @param boundVars the bindings to evaluate in the context of the script
      */
     public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars) {
-        return eval(script, language, boundVars, null, null);
+        return eval(script, language, boundVars, null, null, null);
     }
 
     /**
@@ -192,14 +192,30 @@ public class GremlinExecutor implements AutoCloseable {
      * result after script evaluates but before transaction commit and before the returned {@link CompletableFuture}
      * is completed.
      *
-     * @param script the script to evaluate
+     * @param gremlin the script or bytecode to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
      */
-    public CompletableFuture<Object> eval(final Object script, final String language, final Map<String, Object> boundVars,
+    public CompletableFuture<Object> eval(final Object gremlin, final String language, final Map<String, Object> boundVars,
                                           final Function<Object, Object> transformResult) {
-        return eval(script, language, new SimpleBindings(boundVars), transformResult, null);
+        return eval(gremlin, language, new SimpleBindings(boundVars), transformResult, null);
+    }
+
+    /**
+     * Evaluate a script and allow for the submission of a transform {@link Function} that will transform the
+     * result after script evaluates but before transaction commit and before the returned {@link CompletableFuture}
+     * is completed.
+     *
+     * @param gremlin the script or bytecode to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     * @param timeOut optional override for evaluation timeout
+     * @param transformResult a {@link Function} that transforms the result - can be {@code null}
+     */
+    public CompletableFuture<Object> eval(final Object gremlin, final String language, final Map<String, Object> boundVars,
+                                          final Long timeOut, final Function<Object, Object> transformResult) {
+        return eval(gremlin, language, new SimpleBindings(boundVars), timeOut, transformResult, null);
     }
 
     /**
@@ -224,34 +240,54 @@ public class GremlinExecutor implements AutoCloseable {
      * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
      * transaction is committed.
      *
-     * @param script the script to evaluate
+     * @param gremlin the script or bytecode to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
      * @param withResult a {@link Consumer} that accepts the result - can be {@code null}
      */
-    public CompletableFuture<Object> eval(final Object script, final String language, final Bindings boundVars,
+    public CompletableFuture<Object> eval(final Object gremlin, final String language, final Bindings boundVars,
+                                          final Function<Object, Object> transformResult, final Consumer<Object> withResult) {
+        return eval(gremlin, language, boundVars, null, transformResult, withResult);
+    }
+
+    /**
+     * Evaluate a script and allow for the submission of both a transform {@link Function} and {@link Consumer}.
+     * The {@link Function} will transform the result after script evaluates but before transaction commit and before
+     * the returned {@link CompletableFuture} is completed. The {@link Consumer} will take the result for additional
+     * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
+     * transaction is committed.
+     *
+     * @param gremlin the script or bytecode to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     * @param timeOut optional override for evaluation timeout
+     * @param transformResult a {@link Function} that transforms the result - can be {@code null}
+     * @param withResult a {@link Consumer} that accepts the result - can be {@code null}
+     */
+    public CompletableFuture<Object> eval(final Object gremlin, final String language, final Bindings boundVars, final Long timeOut,
                                           final Function<Object, Object> transformResult, final Consumer<Object> withResult) {
         final LifeCycle lifeCycle = LifeCycle.build()
+                .evaluationTimeoutOverride(timeOut)
                 .transformResult(transformResult)
                 .withResult(withResult).create();
 
-        return eval(script, language, boundVars, lifeCycle);
+        return eval(gremlin, language, boundVars, lifeCycle);
     }
 
     /**
      * Evaluate a script and allow for the submission of alteration to the entire evaluation execution lifecycle.
      *
-     * @param script the script to evaluate
+     * @param gremlin the script or bytecode to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param lifeCycle a set of functions that can be applied at various stages of the evaluation process
      */
-    public CompletableFuture<Object> eval(final Object script, final String language, final Bindings boundVars,  final LifeCycle lifeCycle) {
+    public CompletableFuture<Object> eval(final Object gremlin, final String language, final Bindings boundVars, final LifeCycle lifeCycle) {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
+            logger.debug("Preparing to evaluate script - {} - in thread [{}]", gremlin, Thread.currentThread().getName());
         }
 
         final Bindings bindings = new SimpleBindings();
@@ -260,8 +296,8 @@ public class GremlinExecutor implements AutoCloseable {
 
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
         // options then allow that value to override what's provided on the lifecycle
-        final Optional<Long> timeoutDefinedInScript = script instanceof String
-                ? GremlinScriptChecker.parse((String) script).getTimeout()
+        final Optional<Long> timeoutDefinedInScript = gremlin instanceof String
+                ? GremlinScriptChecker.parse((String) gremlin).getTimeout()
                 : Optional.empty();
         final long scriptEvalTimeOut = timeoutDefinedInScript.orElse(
                 lifeCycle.getEvaluationTimeoutOverride().orElse(evaluationTimeout));
@@ -271,19 +307,22 @@ public class GremlinExecutor implements AutoCloseable {
             try {
                 lifeCycle.getBeforeEval().orElse(beforeEval).accept(bindings);
 
-                logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                logger.debug("Evaluating script - {} - in thread [{}]", gremlin, Thread.currentThread().getName());
 
-                Object o = null;
-                if (script instanceof String)
-                    o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) script, bindings);
-                else if (script instanceof Bytecode) {
-                    final Bytecode bytecode = (Bytecode) script;
+                Object o;
+                if (gremlin instanceof String) {
+                    o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) gremlin, bindings);
+                }
+                else if (gremlin instanceof Bytecode) {
+                    final Bytecode bytecode = (Bytecode) gremlin;
                     final Traversal.Admin<?, ?> traversal = eval(
                             bytecode, bindings, BytecodeHelper.getLambdaLanguage(bytecode).orElse("gremlin-groovy"), "g");
 
                     o = IteratorUtils.asList(traversal);
                 }
-                // todo: else throw
+                else {
+                    throw new IllegalArgumentException("Invalid gremlin type.");
+                }
 
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
@@ -314,7 +353,7 @@ public class GremlinExecutor implements AutoCloseable {
                         || root instanceof InterruptedIOException) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings, root);
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, script, root.getMessage())));
+                            String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, gremlin, root.getMessage())));
                 } else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -333,7 +372,7 @@ public class GremlinExecutor implements AutoCloseable {
                     final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
                         ef.completeExceptionally(new TimeoutException(
-                                String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, script)));
+                                String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, gremlin)));
                     }
                 }
             }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
@@ -341,7 +380,7 @@ public class GremlinExecutor implements AutoCloseable {
             // Cancel the scheduled timeout if the eval future is complete or the script evaluation failed with exception
             evaluationFuture.handleAsync((v, t) -> {
                 if (!sf.isDone()) {
-                    logger.debug("Killing scheduled timeout on script evaluation - {} - as the eval completed (possibly with exception).", script);
+                    logger.debug("Killing scheduled timeout on script evaluation - {} - as the eval completed (possibly with exception).", gremlin);
                     sf.cancel(true);
                 }
 

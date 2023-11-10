@@ -95,23 +95,23 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
-//    @Test
-//    public void shouldGetErrorForBytecodeWithUntypedGraphSON() throws Exception {
-//        final Cluster cluster = TestClientFactory.build()
-//                .channelizer(Channelizer.HttpChannelizer.class)
-//                .serializer(Serializers.GRAPHSON_V3_UNTYPED)
-//                .create();
-//        try {
-//            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-//            g.inject("2").toList();
-//            fail("Exception expected");
-//        } catch (EncoderException ex) {
-//            assertThat(ex.getMessage(), allOf(containsString("An error occurred during serialization of this request"),
-//                    endsWith("it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV3")));
-//        } finally {
-//            cluster.close();
-//        }
-//    }
+    @Test
+    public void shouldGetErrorForBytecodeWithUntypedGraphSON() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .channelizer(Channelizer.HttpChannelizer.class)
+                .serializer(Serializers.GRAPHSON_V2D0_UNTYPED)
+                .create();
+        try {
+            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+            g.inject("2").toList();
+            fail("Exception expected");
+        } catch (EncoderException ex) {
+            assertThat(ex.getMessage(), allOf(containsString("An error occurred during serialization of this request"),
+                    containsString("it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used org.apache.tinkerpop.gremlin.")));
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldSubmitBytecodeWithGraphBinary() throws Exception {
