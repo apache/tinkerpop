@@ -152,11 +152,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[HadoopGra
 implementations for ideas and patterns.
 
 . Online Transactional Processing Graph Systems (*OLTP*)
-.. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
-.. Process API: `TraversalStrategy` instances for optimizing Gremlin traversals to the provider's graph system (i.e. `TinkerGraphStepStrategy`).
+ .. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
+ .. Process API: `TraversalStrategy` instances for optimizing Gremlin traversals to the provider's graph system (i.e. `TinkerGraphStepStrategy`).
 . Online Analytics Processing Graph Systems (*OLAP*)
-.. Everything required of OLTP is required of OLAP (but not vice versa).
-.. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
+ .. Everything required of OLTP is required of OLAP (but not vice versa).
+ .. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
 
 Please consider the following implementation notes:
 
