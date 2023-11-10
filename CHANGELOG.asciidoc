@@ -27,6 +27,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
 * Fixed a javadoc comment in `GraphTraversal.not()` method.
 * Allowed `gremlin-driver` to be used over HTTP for experimental purposes.
+* Added user agent handling to gremlin-server for HTTP requests.
 * Allowed `io()` to automatically detect ".graphml" as a file extension.
 * Deprecated the `HandshakeInterceptor` in favor of a more generic `RequestInterceptor`.
 * Allowed `gremlin-python` to be used over HTTP for experimental purposes.

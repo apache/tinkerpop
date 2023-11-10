@@ -33,6 +33,9 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Providers
 
+The `gremlinRequestEncoder` constructor has been deprecated in favor of one with an additional parameter `boolean userAgentEnabled`.
+User agent HTTP headers can now be encoded if this flag is enabled.
+
 ==== Graph System Providers
 
 
