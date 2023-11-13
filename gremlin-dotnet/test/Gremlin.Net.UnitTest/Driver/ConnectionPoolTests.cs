@@ -29,7 +29,9 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using NSubstitute.Extensions;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
@@ -42,24 +44,24 @@ namespace Gremlin.Net.UnitTest.Driver
         [InlineData(10)]
         public void ShouldEstablishConfiguredNrConnections(int poolSize)
         {
-            var mockedConnectionFactory = new Mock<IConnectionFactory>();
-            var mockedConnection = new Mock<IConnection>();
-            mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnection.Object);
-            var pool = CreateConnectionPool(mockedConnectionFactory.Object, poolSize);
+            var mockedConnectionFactory = Substitute.For<IConnectionFactory>();
+            var mockedConnection = Substitute.For<IConnection>();
+            mockedConnectionFactory.CreateConnection().Returns(mockedConnection);
+            var pool = CreateConnectionPool(mockedConnectionFactory, poolSize);
             
             Assert.Equal(poolSize, pool.NrConnections);
-            mockedConnectionFactory.Verify(m => m.CreateConnection(), Times.Exactly(poolSize));
-            mockedConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Exactly(poolSize));
+            mockedConnectionFactory.Received(poolSize).CreateConnection();
+            mockedConnection.Received(poolSize).ConnectAsync(Arg.Any<CancellationToken>());
         }
 
         [Fact]
         public void GetAvailableConnectionShouldReturnFirstOpenConnection()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
             var openConnectionToReturn = OpenConnection;
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
-                .Returns(ClosedConnection).Returns(openConnectionToReturn);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection, _ => ClosedConnection,
+                _ => openConnectionToReturn);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3);
 
             var returnedConnection = pool.GetAvailableConnection();
 
@@ -69,9 +71,9 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void GetAvailableConnectionShouldThrowIfAllConnectionsAreClosed()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory);
 
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
         }
@@ -79,11 +81,11 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void GetAvailableConnectionShouldEmptyPoolIfServerUnavailable()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
-                .Returns(ClosedConnection).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection, _ => ClosedConnection, _ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => CannotConnectConnection);
 
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
                 
@@ -93,15 +95,15 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void GetAvailableConnectionShouldEventuallyRefillPoolIfEmpty()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
-                .Returns(ClosedConnection).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection, _ => ClosedConnection, _ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => CannotConnectConnection);
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
             // Pool is now empty
-            Assert.Equal(0, pool.NrConnections); 
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            Assert.Equal(0, pool.NrConnections);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => OpenConnection);
             
             pool.GetAvailableConnection();
             
@@ -111,19 +113,17 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void GetAvailableConnectionsShouldEventuallyFillUpPoolIfNotFull()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
-                .Returns(ClosedConnection)
-                .Returns(ClosedConnection)
-                .Returns(OpenConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(CannotConnectConnection);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection, _ => ClosedConnection, _ => OpenConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => CannotConnectConnection);
             pool.GetAvailableConnection();
             pool.GetAvailableConnection();
             // Pool is now just partially filled
             Assert.Equal(1, pool.NrConnections); 
             
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => OpenConnection);
             pool.GetAvailableConnection();
             
             AssertNrOpenConnections(pool, 3);
@@ -132,11 +132,11 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void GetAvailableConnectionShouldReplaceClosedConnections()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
-                .Returns(ClosedConnection).Returns(OpenConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3);
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection, _ => ClosedConnection, _ => OpenConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => OpenConnection);
             var nrCreatedConnections = pool.NrConnections;
             
             pool.GetAvailableConnection();
@@ -159,11 +159,11 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task ShouldNotCreateMoreConnectionsThanConfiguredForParallelRequests()
         {
-            var mockedConnectionFactory = new Mock<IConnectionFactory>();
-            mockedConnectionFactory.SetupSequence(m => m.CreateConnection()).Returns(ClosedConnection)
-                .Returns(ClosedConnection).Returns(OpenConnection);
-            var pool = CreateConnectionPool(mockedConnectionFactory.Object, 3);
-            mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            var mockedConnectionFactory = Substitute.For<IConnectionFactory>();
+            mockedConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection, _ => ClosedConnection, _ => OpenConnection);
+            var pool = CreateConnectionPool(mockedConnectionFactory, 3);
+            mockedConnectionFactory.Configure().CreateConnection().Returns(_ => OpenConnection);
             var nrCreatedConnections = pool.NrConnections;
             var getConnectionTasks = new List<Task<IConnection>>();
 
@@ -180,14 +180,14 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task ShouldReplaceConnectionClosedDuringSubmit()
         {
-            var mockedConnectionFactory = new Mock<IConnectionFactory>();
-            var fakedConnection = new Mock<IConnection>();
-            fakedConnection.Setup(f => f.IsOpen).Returns(true);
-            mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(fakedConnection.Object);
-            var pool = CreateConnectionPool(mockedConnectionFactory.Object, 1);
+            var mockedConnectionFactory = Substitute.For<IConnectionFactory>();
+            var fakedConnection = Substitute.For<IConnection>();
+            fakedConnection.IsOpen.Returns(true);
+            mockedConnectionFactory.CreateConnection().Returns(fakedConnection);
+            var pool = CreateConnectionPool(mockedConnectionFactory, 1);
             var returnedConnection = pool.GetAvailableConnection();
-            fakedConnection.Setup(f => f.IsOpen).Returns(false);
-            mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            fakedConnection.IsOpen.Returns(false);
+            mockedConnectionFactory.CreateConnection().Returns(_ => OpenConnection);
 
             await returnedConnection.SubmitAsync<bool>(RequestMessage.Build(string.Empty).Create(),
                 CancellationToken.None);
@@ -200,10 +200,10 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldWaitForHostToBecomeAvailable()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1);
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(OpenConnection);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 1);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(_ => OpenConnection);
             var nrCreatedConnections = pool.NrConnections;
             
             var connection = pool.GetAvailableConnection();
@@ -218,13 +218,13 @@ namespace Gremlin.Net.UnitTest.Driver
         [InlineData(2)]
         public void ShouldPerformConfiguredNrReconnectionAttemptsForUnavailableServer(int nrAttempts)
         {
-            var mockedConnectionFactory = new Mock<IConnectionFactory>();
-            mockedConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(mockedConnectionFactory.Object, 1, nrAttempts);
+            var mockedConnectionFactory = Substitute.For<IConnectionFactory>();
+            mockedConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(mockedConnectionFactory, 1, nrAttempts);
 
             Assert.ThrowsAny<Exception>(() => pool.GetAvailableConnection());
 
-            mockedConnectionFactory.Verify(m => m.CreateConnection(), Times.Exactly(nrAttempts + 2));
+            mockedConnectionFactory.Received(nrAttempts + 2).CreateConnection();
             // 2 additional calls are expected: 1 for the initial creation of the pool and 1 when the connection should
             // be returned and none is open for the first attempt (before any retries)
         }
@@ -232,29 +232,29 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldThrowAfterWaitingTooLongForUnavailableServer()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 1);
             
             Assert.Throws<ServerUnavailableException>(() => pool.GetAvailableConnection());
         }
-
+        
         [Fact]
         public async Task ShouldNotLeakConnectionsIfDisposeIsCalledWhilePoolIsPopulating()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1);
-            var mockedConnectionToBeDisposed = new Mock<IConnection>();
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 1);
+            var mockedConnectionToBeDisposed = Substitute.For<IConnection>();
             var poolWasDisposedSignal = new SemaphoreSlim(0, 1);
-            mockedConnectionToBeDisposed.Setup(m => m.ConnectAsync(It.IsAny<CancellationToken>()))
-                .Returns((CancellationToken _) => poolWasDisposedSignal.WaitAsync(CancellationToken.None));
+            mockedConnectionToBeDisposed.ConnectAsync(Arg.Any<CancellationToken>())
+                .Returns(x => poolWasDisposedSignal.WaitAsync(CancellationToken.None));
             var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
-            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
-                .Callback(() => connectionWasSuccessfullyDisposed.Release());
+            mockedConnectionToBeDisposed.When(x => x.Dispose())
+                .Do(_ => connectionWasSuccessfullyDisposed.Release());
             // We don't use the `CancellationToken` here as the connection should also be disposed if it did not
             //  react on the cancellation. This can happen if the task is cancelled just before `ConnectAsync` returns.
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
+            fakeConnectionFactory.Configure().CreateConnection().Returns(mockedConnectionToBeDisposed);
             try
             {
                 pool.GetAvailableConnection();
@@ -269,23 +269,23 @@ namespace Gremlin.Net.UnitTest.Driver
             
             await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
             Assert.Equal(0, pool.NrConnections);
-            mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
-            mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
+            await mockedConnectionToBeDisposed.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+            mockedConnectionToBeDisposed.Received(1).Dispose();
         }
-
+        
         [Fact]
         public async Task DisposeShouldCancelConnectionEstablishment()
         {
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(ClosedConnection);
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 1, 0);
-            var mockedConnectionToBeDisposed = new Mock<IConnection>();
-            mockedConnectionToBeDisposed.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
-                .Returns((CancellationToken ct) => Task.Delay(-1, ct));
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection().Returns(_ => ClosedConnection);
+            var pool = CreateConnectionPool(fakeConnectionFactory, 1, 0);
+            var mockedConnectionToBeDisposed = Substitute.For<IConnection>();
+            mockedConnectionToBeDisposed.ConnectAsync(Arg.Any<CancellationToken>())
+                .Returns(x => Task.Delay(-1, (CancellationToken)x[0]));
             var connectionWasSuccessfullyDisposed = new SemaphoreSlim(0, 1);
-            mockedConnectionToBeDisposed.Setup(m => m.Dispose())
-                .Callback(() => connectionWasSuccessfullyDisposed.Release());
-            fakeConnectionFactory.Setup(m => m.CreateConnection()).Returns(mockedConnectionToBeDisposed.Object);
+            mockedConnectionToBeDisposed.When(x => x.Dispose())
+                .Do(_ => connectionWasSuccessfullyDisposed.Release());
+            fakeConnectionFactory.Configure().CreateConnection().Returns(mockedConnectionToBeDisposed);
             try
             {
                 pool.GetAvailableConnection();
@@ -296,11 +296,11 @@ namespace Gremlin.Net.UnitTest.Driver
             }
             
             pool.Dispose();
-
+        
             await connectionWasSuccessfullyDisposed.WaitAsync(TimeSpan.FromSeconds(2));
             Assert.Equal(0, pool.NrConnections);
-            mockedConnectionToBeDisposed.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()));
-            mockedConnectionToBeDisposed.Verify(m => m.Dispose(), Times.Once);
+            await mockedConnectionToBeDisposed.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+            mockedConnectionToBeDisposed.Received(1).Dispose();
         }
         
         [Fact]
@@ -311,20 +311,19 @@ namespace Gremlin.Net.UnitTest.Driver
             //  exception.
             
             // First create a pool with only closed connections that we can then let the pool replace:
-            var fakeConnectionFactory = new Mock<IConnectionFactory>();
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
-                .Returns(ClosedConnection) // We need to do it like this as we use a dictionary of dead connections in 
-                .Returns(ClosedConnection) //   ConnectionPool and the three connections need to be different objects
-                .Returns(ClosedConnection);//   for this to work.
-            var pool = CreateConnectionPool(fakeConnectionFactory.Object, 3, 0);
+            var fakeConnectionFactory = Substitute.For<IConnectionFactory>();
+            fakeConnectionFactory.CreateConnection()
+                .Returns(_ => ClosedConnection,      // We need to do it like this as we use a dictionary of dead connections in 
+                    _ => ClosedConnection,    //   ConnectionPool and the three connections need to be different objects
+                    _ => ClosedConnection);                  //   for this to work.
+            var pool = CreateConnectionPool(fakeConnectionFactory, 3, 0);
             var startEstablishingProblematicConnections = new SemaphoreSlim(0, 1);
             // Let the pool get one connection that is so slow to open that the pool will afterwards try to create two
             //  more connections in parallel.
-            var fakedSlowToEstablishConnection = new Mock<IConnection>();
-            fakedSlowToEstablishConnection.Setup(m => m.ConnectAsync(It.IsAny<CancellationToken>()))
-                .Returns(startEstablishingProblematicConnections.WaitAsync);
-            fakeConnectionFactory.Setup(m => m.CreateConnection())
-                .Returns(fakedSlowToEstablishConnection.Object);
+            var fakedSlowToEstablishConnection = Substitute.For<IConnection>();
+            fakedSlowToEstablishConnection.ConnectAsync(Arg.Any<CancellationToken>())
+                .Returns(async _ => await startEstablishingProblematicConnections.WaitAsync());
+            fakeConnectionFactory.Configure().CreateConnection().Returns(fakedSlowToEstablishConnection);
             // Trigger replacement of closed connections
             try
             {
@@ -335,55 +334,48 @@ namespace Gremlin.Net.UnitTest.Driver
                 // expected as the pool only contain closed connections at this point
             }
             
-            var fakedOpenConnection = FakedOpenConnection;
-            var fakedCannotConnectConnection = FakedCannotConnectConnection;
-            fakeConnectionFactory.SetupSequence(m => m.CreateConnection())
-                .Returns(fakedOpenConnection.Object)
-                .Returns(fakedCannotConnectConnection.Object);
+            var fakedOpenConnection = OpenConnection;
+            var fakedCannotConnectConnection = CannotConnectConnection;
+            fakeConnectionFactory.Configure().CreateConnection()
+                .Returns(fakedOpenConnection, fakedCannotConnectConnection);
             // Let the slow to establish connection finish so the pool can try to establish the other two connections
             startEstablishingProblematicConnections.Release();
             await Task.Delay(TimeSpan.FromMilliseconds(200));
             
             // Verify that the pool tried to establish both connections and then also disposed both, even though one throw an exception
-            fakedOpenConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once());
-            fakedOpenConnection.Verify(m => m.Dispose(), Times.Once);
-            fakedCannotConnectConnection.Verify(m => m.ConnectAsync(It.IsAny<CancellationToken>()), Times.Once);
-            fakedCannotConnectConnection.Verify(m => m.Dispose(), Times.Once);
+            await fakedOpenConnection.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+            fakedOpenConnection.Received(1).Dispose();
+            await fakedCannotConnectConnection.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+            fakedCannotConnectConnection.Received(1).Dispose();
         }
 
-        private static IConnection OpenConnection => FakedOpenConnection.Object;
-
-        private static Mock<IConnection> FakedOpenConnection
+        private static IConnection OpenConnection
         {
             get
             {
-                var fakedConnection = new Mock<IConnection>();
-                fakedConnection.Setup(f => f.IsOpen).Returns(true);
+                var fakedConnection = Substitute.For<IConnection>();
+                fakedConnection.IsOpen.Returns(true);
                 return fakedConnection;
             }
         }
-
-        private static IConnection ClosedConnection => FakedClosedConnection.Object;
         
-        private static Mock<IConnection> FakedClosedConnection
+        private static IConnection ClosedConnection
         {
             get
             {
-                var fakedConnection = new Mock<IConnection>();
-                fakedConnection.Setup(f => f.IsOpen).Returns(false);
+                var fakedConnection = Substitute.For<IConnection>();
+                fakedConnection.IsOpen.Returns(false);
                 return fakedConnection;
             }
         }
-
-        private static IConnection CannotConnectConnection => FakedCannotConnectConnection.Object;
         
-        private static Mock<IConnection> FakedCannotConnectConnection
+        private static IConnection CannotConnectConnection
         {
             get
             {
-                var fakedConnection = new Mock<IConnection>();
-                fakedConnection.Setup(f => f.IsOpen).Returns(false);
-                fakedConnection.Setup(f => f.ConnectAsync(It.IsAny<CancellationToken>()))
+                var fakedConnection = Substitute.For<IConnection>();
+                fakedConnection.IsOpen.Returns(false);
+                fakedConnection.ConnectAsync(Arg.Any<CancellationToken>())
                     .Throws(new Exception("Cannot connect to server."));
                 return fakedConnection;
             }

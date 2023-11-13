@@ -24,7 +24,7 @@
 using System;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
@@ -34,12 +34,12 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldDisposeProvidedGremlinClientOnDispose()
         {
-            var gremlinClientMock = new Mock<IGremlinClient>();
-            var driverRemoteConnection = new DriverRemoteConnection(gremlinClientMock.Object);
+            var gremlinClient = Substitute.For<IGremlinClient>();
+            var driverRemoteConnection = new DriverRemoteConnection(gremlinClient);
 
             driverRemoteConnection.Dispose();
 
-            gremlinClientMock.Verify(m => m.Dispose());
+            gremlinClient.Received().Dispose();
         }
 
         [Fact]

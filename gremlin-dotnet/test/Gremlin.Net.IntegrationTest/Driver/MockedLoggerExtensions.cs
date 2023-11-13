@@ -23,25 +23,22 @@
 
 using System;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Gremlin.Net.IntegrationTest.Driver;
 
 public static class MockedLoggerExtensions
 {
-    public static void VerifyMessageWasLogged(this Mock<ILogger> mockedLogger, LogLevel expectedLogLevel,
-        string logMessagePart)
+    public static void VerifyMessageWasLogged(this ILogger logger, LogLevel expectedLogLevel, string logMessagePart)
     {
-        mockedLogger.Verify(
-            m => m.Log(expectedLogLevel, It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, _) => o.ToString()!.Contains(logMessagePart)), null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
+        logger.Received().Log(expectedLogLevel, Arg.Any<EventId>(),
+            Arg.Is<Arg.AnyType>((object a) => a.ToString()!.Contains(logMessagePart)), null,
+            Arg.Any<Func<Arg.AnyType, Exception?, string>>());
     }
-    
-    public static void VerifyNothingWasLogged(this Mock<ILogger> mockedLogger)
+
+    public static void VerifyNothingWasLogged(this ILogger logger)
     {
-        mockedLogger.Verify(
-            m => m.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
+        logger.DidNotReceive().Log(Arg.Any<LogLevel>(), Arg.Any<EventId>(), Arg.Any<Arg.AnyType>(),
+            Arg.Any<Exception>(), Arg.Any<Func<Arg.AnyType, Exception?, string>>());
     }
 }
