@@ -27,7 +27,7 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver;
@@ -40,49 +40,47 @@ public class DriverRemoteConnectionTests
     [Fact]
     public async Task ShouldLogWithProvidedLoggerFactory()
     {
-        var loggerFactoryMock = new Mock<ILoggerFactory>();
-        var loggerMock = new Mock<ILogger>();
-        loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-        loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
-        using var driverRemoteConnection =
-            new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactoryMock.Object);
+        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+        loggerFactory.CreateLogger(Arg.Any<string>()).Returns(logger);
+        using var driverRemoteConnection = new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactory);
         var bytecodeToLog = SomeValidBytecode;
 
         await driverRemoteConnection.SubmitAsync<object, object>(bytecodeToLog);
         
-        loggerMock.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
+        logger.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
     }
     
     [Fact]
     public async Task ShouldNotLogForDisabledLogLevel()
     {
-        var loggerFactoryMock = new Mock<ILoggerFactory>();
-        var loggerMock = new Mock<ILogger>();
-        loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(false);
-        loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
-        using var driverRemoteConnection =
-            new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactoryMock.Object);
+        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(false);
+        loggerFactory.CreateLogger(Arg.Any<string>()).Returns(logger);
+        using var driverRemoteConnection = new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactory);
 
         await driverRemoteConnection.SubmitAsync<object, object>(SomeValidBytecode);
         
-        loggerMock.VerifyNothingWasLogged();
+        logger.VerifyNothingWasLogged();
     }
             
     [Fact]
     public async Task ShouldLogWithLoggerFactoryFromGremlinClient()
     {
-        var loggerFactoryMock = new Mock<ILoggerFactory>();
-        var loggerMock = new Mock<ILogger>();
-        loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-        loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+        var loggerFactory = Substitute.For<ILoggerFactory>();
+        var logger = Substitute.For<ILogger>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+        loggerFactory.CreateLogger(Arg.Any<string>()).Returns(logger);
         using var gremlinClient =
-            new GremlinClient(new GremlinServer(TestHost, TestPort), loggerFactory: loggerFactoryMock.Object);
+            new GremlinClient(new GremlinServer(TestHost, TestPort), loggerFactory: loggerFactory);
         var driverRemoteConnection = new DriverRemoteConnection(gremlinClient);
         var bytecodeToLog = SomeValidBytecode;
 
         await driverRemoteConnection.SubmitAsync<object, object>(SomeValidBytecode);
 
-        loggerMock.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
+        logger.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
     }
 
     private static Bytecode SomeValidBytecode
