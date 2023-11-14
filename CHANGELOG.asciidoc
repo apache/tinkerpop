@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
-*
+* Added support for deserialization of `Set` for `gremlin-javascript`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

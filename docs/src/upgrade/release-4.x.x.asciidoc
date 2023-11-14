@@ -29,6 +29,10 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Changes to deserialization for gremlin-javascript
+Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
+these were deserialized into arrays.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
