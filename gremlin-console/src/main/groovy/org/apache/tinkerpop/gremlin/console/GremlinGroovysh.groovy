@@ -123,6 +123,8 @@ class GremlinGroovysh extends Groovysh {
                                     break
                                 }
                                 throw t
+                            } catch (MissingPropertyException mpe) {
+                                // Ignore any local missing properties since it doesn't affect remote execution.
                             }
                         } else {
                             // Evaluate Buffer wrapped with code storing bounded vars
@@ -135,6 +137,8 @@ class GremlinGroovysh extends Groovysh {
                                     break
                                 }
                                 throw t
+                            } catch (MissingPropertyException mpe) {
+                                // Ignore any local missing properties since it doesn't affect remote execution.
                             }
                         }
 
@@ -195,7 +199,7 @@ try {$COLLECTED_BOUND_VARS_MAP_VARNAME[\"$varname\"] = $varname;
         } else {
             buff = [importsSpec] + ['true'] + current
         }
-        setLastResult(result = interp.evaluate(buff))
+        interp.evaluate(buff)
 
         if (variableBlocks) {
             def boundVarValues = (Map<String, Object>) interp.context.getVariable(COLLECTED_BOUND_VARS_MAP_VARNAME)
