@@ -46,6 +46,8 @@ const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
 const pingIntervalDelay = 60 * 1000;
 const pongTimeoutDelay = 30 * 1000;
 
+const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
 /**
  * Represents a single connection to a Gremlin Server.
  */
@@ -175,6 +177,10 @@ class Connection extends EventEmitter {
   submit(processor, op, args, requestId) {
     // TINKERPOP-2847: Use lower case to prevent string comparison issues.
     const rid = (requestId || utils.getUuid()).toLowerCase();
+    if (!rid.match(uuidPattern)) {
+      throw new Error('Provided requestId "' + rid + '" is not a valid UUID.');
+    }
+
     return this.open().then(
       () =>
         new Promise((resolve, reject) => {
@@ -204,6 +210,9 @@ class Connection extends EventEmitter {
   stream(processor, op, args, requestId) {
     // TINKERPOP-2847: Use lower case to prevent string comparison issues.
     const rid = (requestId || utils.getUuid()).toLowerCase();
+    if (!rid.match(uuidPattern)) {
+      throw new Error('Provided requestId "' + rid + '" is not a valid UUID.');
+    }
 
     const readableStream = new Stream.Readable({
       objectMode: true,
