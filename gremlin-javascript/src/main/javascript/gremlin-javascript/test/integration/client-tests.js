@@ -200,6 +200,54 @@ describe('Client', function () {
       assert.ok(output[0] instanceof graphModule.Vertex);
     });
 
+    it("should get error for malformed requestId for script stream", async () => {
+      try {
+        const readable = client.stream('g.V()', {}, {requestId: 'malformed'});
+        for await (const result of readable) {
+          assert.fail("malformed requestId should throw");
+        }
+      } catch (e) {
+        assert.ok(e);
+        assert.ok(e.message);
+        assert.ok(e.message.includes("is not a valid UUID."));
+      }
+    });
+
+    it("should get error for malformed requestId for script submit", async () => {
+      try {
+        await client.submit('g.V()', {}, {requestId: 'malformed'});
+        assert.fail("malformed requestId should throw");
+      } catch (e) {
+        assert.ok(e);
+        assert.ok(e.message);
+        assert.ok(e.message.includes("is not a valid UUID."));
+      }
+    });
+
+    it("should get error for malformed requestId for bytecode stream", async () => {
+      try {
+        const readable = client.stream(new Bytecode().addStep('V', []), {}, {requestId: 'malformed'});
+        for await (const result of readable) {
+          assert.fail("malformed requestId should throw");
+        }
+      } catch (e) {
+        assert.ok(e);
+        assert.ok(e.message);
+        assert.ok(e.message.includes("is not a valid UUID."));
+      }
+    });
+
+    it("should get error for malformed requestId for bytecode submit", async () => {
+      try {
+        await client.submit(new Bytecode().addStep('V', []), {}, {requestId: 'malformed'});
+        assert.fail("malformed requestId should throw");
+      } catch (e) {
+        assert.ok(e);
+        assert.ok(e.message);
+        assert.ok(e.message.includes("is not a valid UUID."));
+      }
+    });
+
     it("should reject pending traversal promises if connection closes", async () => {
       const closingClient = helper.getClient('gmodern');
       await closingClient.open();
