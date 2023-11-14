@@ -245,8 +245,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         if (null != changedEdges)
             changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
 
+        final Set<TinkerElementContainer> readElements = txReadElements.get();
+        if (readElements != null)
+            readElements.stream().forEach(e -> e.reset());
+
         txChangedVertices.remove();
         txChangedEdges.remove();
+        txReadElements.remove();
 
         txNumber.set(NOT_STARTED);
     }
