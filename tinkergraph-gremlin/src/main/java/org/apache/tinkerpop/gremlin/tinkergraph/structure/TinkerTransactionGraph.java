@@ -72,8 +72,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
 
-    final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
-    final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
+    private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
+    private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
     /**
      * An empty private constructor that initializes {@link TinkerTransactionGraph}.

@@ -235,7 +235,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     /**
      * Cleanup changes made in the current transaction.
      */
-    void reset() {
+    public void reset() {
         transactionUpdatedValue.remove();
         isDeletedInTx.set(false);
         isModifiedInTx.set(false);

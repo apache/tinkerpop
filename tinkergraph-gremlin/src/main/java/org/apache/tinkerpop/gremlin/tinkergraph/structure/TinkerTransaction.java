@@ -198,8 +198,8 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             throw ex;
         } finally {
             // remove elements from graph if not used in other tx's
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
 
             final Set<TinkerElementContainer> readElements = txReadElements.get();
             if (readElements != null)
@@ -241,9 +241,9 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
         // cleanup unused containers
         if (null != changedVertices)
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
         if (null != changedEdges)
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
 
         final Set<TinkerElementContainer> readElements = txReadElements.get();
         if (readElements != null)
