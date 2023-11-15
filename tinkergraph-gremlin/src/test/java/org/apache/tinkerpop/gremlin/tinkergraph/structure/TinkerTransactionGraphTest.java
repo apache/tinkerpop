@@ -114,6 +114,7 @@ public class TinkerTransactionGraphTest {
         // read vertex in new TX
         final GraphTraversalSource gtx2 = g.tx().begin();
         final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
         // should be the same instance
         assertEquals(v, g.getVertices().get(vid).getModified());
         // commit without modifications
@@ -136,6 +137,7 @@ public class TinkerTransactionGraphTest {
         // read vertex in new TX
         final GraphTraversalSource gtx2 = g.tx().begin();
         final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
         // should be the same instance
         assertEquals(v, g.getVertices().get(vid).getModified());
         // rollback without modifications

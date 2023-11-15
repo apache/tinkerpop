@@ -94,10 +94,13 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
         final T cloned = (T) element.clone();
         transactionUpdatedValue.set(cloned);
-        isReadInTx.set(true);
-        usesInTransactions.incrementAndGet();
 
-        tx.markRead(this);
+        if (!isReadInTx.get()) {
+            isReadInTx.set(true);
+            usesInTransactions.incrementAndGet();
+            tx.markRead(this);
+        }
+
         return cloned;
     }
 
@@ -164,10 +167,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void setDraft(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (!isModifiedInTx.get())
+        if (!isModifiedInTx.get()) {
             usesInTransactions.incrementAndGet();
+            isModifiedInTx.set(true);
+        }
         transactionUpdatedValue.set(transactionElement);
-        isModifiedInTx.set(true);
         tx.markChanged(this);
     }
 
