@@ -183,8 +183,8 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
         final Map elements =
                 Vertex.class.isAssignableFrom(indexClass) ?
-                        ((TinkerTransactionGraph) graph).vertices :
-                        ((TinkerTransactionGraph) graph).edges;
+                        ((TinkerTransactionGraph) graph).getVertices() :
+                        ((TinkerTransactionGraph) graph).getEdges();
 
         for (Object element : elements.values()) {
             addContainer((TinkerElementContainer<T>) element);

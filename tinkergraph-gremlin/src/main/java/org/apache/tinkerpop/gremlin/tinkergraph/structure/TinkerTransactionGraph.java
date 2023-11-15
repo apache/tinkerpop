@@ -72,8 +72,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
 
-    protected Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
-    protected Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
+    private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
+    private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
     /**
      * An empty private constructor that initializes {@link TinkerTransactionGraph}.
@@ -184,7 +184,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             this.tx().readWrite();
             container.touch(vertex, (TinkerTransaction) tx());
         }
-    };
+    }
 
     @Override
     public void touch(final TinkerEdge edge) {
@@ -197,7 +197,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             this.tx().readWrite();
             container.touch(edge, (TinkerTransaction) tx());
         }
-    };
+    }
 
     @Override
     public Edge addEdge(final TinkerVertex outVertex, final TinkerVertex inVertex, final String label, final Object... keyValues) {
@@ -310,7 +310,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Vertex vertex(final Object vertexId) {
         final TinkerElementContainer<TinkerVertex> container = vertices.get(vertexIdManager.convert(vertexId));
-        return container == null ? null : container.getWithClone();
+        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
     }
 
     @Override
@@ -321,7 +321,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Edge edge(final Object edgeId) {
         final TinkerElementContainer<TinkerEdge> container = edges.get(edgeIdManager.convert(edgeId));
-        return container == null ? null : container.getWithClone();
+        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
     }
 
     @Override
@@ -340,7 +340,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (0 == ids.length) {
             iterator = new TinkerGraphIterator<>(
                     // todo: clone only if traversal contains mutating steps
-                    elements.values().stream().map(c -> (T) c.getWithClone()).filter(e -> e != null).iterator());
+                    elements.values().stream().map(c -> (T) c.getWithClone((TinkerTransaction) tx())).filter(e -> e != null).iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -353,7 +353,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
                 final TinkerElementContainer<C> container = elements.get(iid);
-                return container == null ? null : (T) container.getWithClone();
+                return container == null ? null : (T) container.getWithClone((TinkerTransaction) tx());
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
@@ -380,7 +380,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (null == vertex.inEdgesId) vertex.inEdgesId = new ConcurrentHashMap<>();
         Set<Object> edges = vertex.inEdgesId.get(label);
         if (null == edges) {
-            edges = ConcurrentHashMap.newKeySet();;
+            edges = ConcurrentHashMap.newKeySet();
             vertex.inEdgesId.put(label, edges);
         }
         edges.add(edge.id());
@@ -491,23 +491,6 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
-        } else {
-            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-        }
-    }
-
-    /**
-     * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).
-     *
-     * @param elementClass the element class to get the indexed keys for
-     * @param <E>          The type of the element class
-     * @return the set of keys currently being indexed
-     */
-    public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
-        if (Vertex.class.isAssignableFrom(elementClass)) {
-            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
-        } else if (Edge.class.isAssignableFrom(elementClass)) {
-            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
