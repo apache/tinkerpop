@@ -806,7 +806,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             
             Assert.Equal(expected.OperatorName, actual.OperatorName);
             Assert.Equal(expected.Other, actual.Other);
-            Assert.Equal(expected.Value, actual.Value);
+            Assert.Equal((object[])expected.Value, (object[])actual.Value);
         }
         
         [Fact]
