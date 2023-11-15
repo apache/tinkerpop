@@ -487,9 +487,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            var deserializedValue = reader.ToObject(jsonElement);
+            object[] deserializedValue = reader.ToObject(jsonElement);
             
-            Assert.Equal(new object[0], deserializedValue);
+            Assert.Equal(Array.Empty<object>(), deserializedValue);
         }
         
         [Theory, MemberData(nameof(VersionsSupportingCollections))]
