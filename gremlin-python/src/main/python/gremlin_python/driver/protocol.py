@@ -206,35 +206,18 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
     def connection_made(self, transport):
         super(GremlinServerHTTPProtocol, self).connection_made(transport)
 
-    # Transforms request message into string
     def write(self, request_id, request_message):
-        payload = {
-            'requestId': request_id
-        }
-
-        gremlinArgs = request_message.args['gremlin']
-        useBytecode = isinstance(gremlinArgs, Bytecode)
-
-        # translate bytecode into scripts
-        if useBytecode:
-            request_message.args['gremlin'] = Translator().of('g').translate(gremlinArgs)
-            payload['op'] = 'bytecode'
-
-        # add all args into the payload
-        for k, v in request_message.args.items():
-            payload[k] = v
-
-        json_data = json.dumps(payload)
 
         basic_auth = {}
         if self._username and self._password:
             basic_auth['username'] = self._username
             basic_auth['password'] = self._password
 
+        content_type = str(self._message_serializer.version, encoding='utf-8')
         message = {
-            'headers': {'CONTENT-TYPE': 'application/json',
-                        'ACCEPT': str(self._message_serializer.version, encoding='utf-8')},
-            'payload': json_data,
+            'headers': {'CONTENT-TYPE': content_type,
+                        'ACCEPT': content_type},
+            'payload': self._message_serializer.serialize_message(request_id, request_message),
             'auth': basic_auth
         }
 
@@ -246,13 +229,6 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
             log.error("Received empty message from server.")
             raise GremlinServerError({'code': 500,
                                       'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
-
-        # if a request query cannot be compiled by Gremlin Server, the HTTP handler will send back the exception in
-        # json string without a requestId
-        if 'message' in message and 'requestId' not in message:
-            log.error("\r\nReceived error message from server '%s'", str(message))
-            raise GremlinServerError({'code': 400,
-                                      'message': message, 'attributes': {}})
 
         message = self._message_serializer.deserialize_message(message)
         request_id = message['requestId']

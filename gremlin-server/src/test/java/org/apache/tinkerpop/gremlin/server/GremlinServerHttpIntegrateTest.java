@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
@@ -47,6 +50,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
@@ -401,9 +405,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals(mime, response.getEntity().getContentType().getValue());
-            final String base64 = EntityUtils.toString(response.getEntity());
+
             final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
-            final ResponseMessage msg = serializer.deserializeResponse(base64);
+            final ResponseMessage msg = serializer.deserializeResponse(toByteBuf(response.getEntity()));
             final List<Object> data = (List<Object>) msg.getResult().getData();
             assertEquals(6, data.size());
             for (Object o : data) {
@@ -422,9 +426,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals(mime, response.getEntity().getContentType().getValue());
-            final String base64 = EntityUtils.toString(response.getEntity());
+
             final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
-            final ResponseMessage msg = serializer.deserializeResponse(base64);
+            final ResponseMessage msg = serializer.deserializeResponse(toByteBuf(response.getEntity()));
             final List<Object> data = (List<Object>) msg.getResult().getData();
             assertEquals(6, data.size());
             for (Object o : data) {
@@ -1069,5 +1073,13 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         assertEquals(500, secondGetResult.get().intValue());
 
         threadPool.shutdown();
+    }
+
+    private static ByteBuf toByteBuf(final HttpEntity httpEntity) throws IOException {
+        final byte[] asArray = new byte[(int)httpEntity.getContentLength()];
+
+        httpEntity.getContent().read(asArray);
+
+        return Unpooled.wrappedBuffer(asArray);
     }
 }

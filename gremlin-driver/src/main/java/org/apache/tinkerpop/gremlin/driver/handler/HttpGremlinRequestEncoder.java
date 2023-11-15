@@ -28,15 +28,12 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -47,8 +44,6 @@ import java.util.function.UnaryOperator;
 public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private final MessageSerializer<?> serializer;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
-
     private final UnaryOperator<FullHttpRequest> interceptor;
 
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
@@ -58,29 +53,22 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
-        try {
-            final String gremlin;
-            final Object gremlinStringOrBytecode = requestMessage.getArg(Tokens.ARGS_GREMLIN);
+        final String mimeType = serializer.mimeTypesSupported()[0];
+        // only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests
+        if (requestMessage.getArg("gremlin") instanceof Bytecode &&
+                !mimeType.equals(SerTokens.MIME_GRAPHSON_V3D0) &&
+                !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V1D0)) {
+            throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
+                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
+                    requestMessage, serializer.getClass().getName()));
+        }
 
-            // the gremlin key can contain a Gremlin script or bytecode. if it's bytecode we can't submit it over
-            // http as such. it has to be converted to a script and we can do that with the Groovy translator.
-            final boolean usesBytecode = gremlinStringOrBytecode instanceof Bytecode;
-            if (usesBytecode) {
-                gremlin = GroovyTranslator.of("g").translate((Bytecode) gremlinStringOrBytecode).getScript();
-            } else {
-                gremlin = gremlinStringOrBytecode.toString();
-            }
-            final byte[] payload = mapper.writeValueAsBytes(new HashMap<String,Object>() {{
-                put(Tokens.ARGS_GREMLIN, gremlin);
-                put(Tokens.REQUEST_ID, requestMessage.getRequestId());
-                if (usesBytecode) put("op", Tokens.OPS_BYTECODE);
-            }});
-            final ByteBuf bb = channelHandlerContext.alloc().buffer(payload.length);
-            bb.writeBytes(payload);
-            final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", bb);
-            request.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/json");
-            request.headers().add(HttpHeaderNames.CONTENT_LENGTH, payload.length);
-            request.headers().add(HttpHeaderNames.ACCEPT, serializer.mimeTypesSupported()[0]);
+        try {
+            final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+            final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
+            request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
+            request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
+            request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
 
             objects.add(interceptor.apply(request));
         } catch (Exception ex) {
