@@ -21,10 +21,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.MetricRegistry;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.FullHttpMessage;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
@@ -49,7 +46,7 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
-            if (request.headers().contains(UserAgent.USER_AGENT_HEADER_NAME)){
+            if (request.headers().contains(UserAgent.USER_AGENT_HEADER_NAME)) {
                 final String userAgent = request.headers().get(UserAgent.USER_AGENT_HEADER_NAME);
                 ctx.channel().attr(USER_AGENT_ATTR_KEY).set(userAgent);
                 logger.debug("New Connection on channel [{}] with user agent [{}]", ctx.channel().id().asShortText(), userAgent);
@@ -59,7 +56,7 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
                 // This check is to address a concern that an attacker may try to fill the server's memory with a very
                 // large number of unique user agents. For this reason the user agent is replaced with "other"
                 // for the purpose of metrics if this cap is ever exceeded and the user agent is not already being tracked.
-                if(MetricManager.INSTANCE.getCounterSize() > MAX_USER_AGENT_METRICS &&
+                if (MetricManager.INSTANCE.getCounterSize() > MAX_USER_AGENT_METRICS &&
                         !MetricManager.INSTANCE.contains(metricName)) {
                     metricName = MetricRegistry.name(GremlinServer.class, "user-agent", "other");
                 }
