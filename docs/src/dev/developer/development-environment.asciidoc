@@ -119,7 +119,7 @@ an issue when working with SNAPSHOT dependencies.
 === Documentation Environment
 
 The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
-scripts should work on Mac and Linux.
+scripts should work on Mac and Linux. Javadocs should be built using Java 11.
 
 TIP: We recommend performing documentation generation on Linux. For the scripts to work on Mac, you will need to
 install GNU versions of the utility programs via `homebrew`, e.g.`grep`, `awk`, `sed`, `findutils`, and `diffutils`.
