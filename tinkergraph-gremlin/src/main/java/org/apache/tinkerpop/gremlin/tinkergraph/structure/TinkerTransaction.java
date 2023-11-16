@@ -60,6 +60,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      */
     private final ThreadLocal<Set<TinkerElementContainer<TinkerEdge>>> txChangedEdges = new ThreadLocal<>();
 
+    /**
+     * Set of references to element containers read in current transaction.
+     */
+    private final ThreadLocal<Set<TinkerElementContainer>> txReadElements = new ThreadLocal<>();
+
     private final TinkerTransactionGraph graph;
 
     static {
@@ -84,9 +89,6 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
     @Override
     protected void doOpen() {
-        if (isOpen())
-            Transaction.Exceptions.transactionAlreadyOpen();
-
         txNumber.set(openedTx.getAndIncrement());
     }
 
@@ -112,6 +114,18 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 txChangedEdges.set(new HashSet<>());
             txChangedEdges.get().add((TinkerElementContainer<TinkerEdge>) container);
         }
+    }
+
+    /**
+     * Adds element to list of read in current transaction.
+     */
+    protected <T extends TinkerElement> void markRead(TinkerElementContainer container) {
+        if (!isOpen()) txNumber.set(openedTx.getAndIncrement());
+
+        if (null == txReadElements.get())
+            txReadElements.set(new HashSet<>());
+
+        txReadElements.get().add(container);
     }
 
     /**
@@ -148,10 +162,12 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             // try to lock all element containers, throw exception if any element already locked by other tx
             changedVertices.forEach(v -> {
-                if (!v.tryLock()) throw new TransactionException(TX_CONFLICT);
+                if (!v.tryLock())
+                    throw new TransactionException(TX_CONFLICT);
             });
             changedEdges.forEach(e -> {
-                if (!e.tryLock()) throw new TransactionException(TX_CONFLICT);
+                if (!e.tryLock())
+                    throw new TransactionException(TX_CONFLICT);
             });
 
             // verify versions of all elements to be sure no element changes during setting lock
@@ -182,11 +198,16 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             throw ex;
         } finally {
             // remove elements from graph if not used in other tx's
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+
+            final Set<TinkerElementContainer> readElements = txReadElements.get();
+            if (readElements != null)
+                readElements.stream().forEach(e -> e.reset());
 
             txChangedVertices.remove();
             txChangedEdges.remove();
+            txReadElements.remove();
 
             changedVertices.forEach(v -> v.releaseLock());
             changedEdges.forEach(e -> e.releaseLock());
@@ -220,12 +241,17 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
         // cleanup unused containers
         if (null != changedVertices)
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.vertices.remove(v.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
         if (null != changedEdges)
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.edges.remove(e.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+
+        final Set<TinkerElementContainer> readElements = txReadElements.get();
+        if (readElements != null)
+            readElements.stream().forEach(e -> e.reset());
 
         txChangedVertices.remove();
         txChangedEdges.remove();
+        txReadElements.remove();
 
         txNumber.set(NOT_STARTED);
     }

@@ -19,18 +19,27 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
@@ -39,7 +48,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +61,7 @@ import java.util.UUID;
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -70,10 +82,55 @@ public class HttpHandlerUtil {
 
     /**
      * Convert a http request into a {@link RequestMessage}.
+     * There are 2 payload types options here.
+     * 1.
+     *     existing https://tinkerpop.apache.org/docs/current/reference/#connecting-via-http
+     *     intended to use with curl, postman, etc. by users
+     *     both GET and POST
+     *     Content-Type header can be empty or application/json
+     *     Accept header can be any, most useful can be application/json, text/plain, application/vnd.gremlin-v3.0+json and application/vnd.gremlin-v3.0+json;types=false
+     *     Request body example: { "gremlin": "g.V()" }
+     * 2.
+     *     experimental payload with serialized RequestMessage
+     *     intended for drivers/GLV's. Support both gremlin and bytecode queries.
+     *     only POST
+     *     Content-Type is defined by used serializer, expected type GraphSON application/vnd.gremlin-v3.0+json or GraphBinary application/vnd.graphbinary-v1.0. Untyped GraphSON is not supported, it can't deserialize bytecode
+     *     Accept header can be any.
+     *     Request body contains serialized RequestMessage
+     */
+    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request,
+                                                                  Map<String, MessageSerializer<?>> serializers) throws SerializationException {
+        final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
+
+        if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
+            final MessageSerializer<?> serializer = serializers.get(contentType);
+
+            final ByteBuf buffer = request.content();
+
+            // additional validation for header
+            final int first = buffer.readByte();
+            // payload can be plain json or can start with additional header with content type.
+            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
+            if (first != 0x7b) {
+                final byte[] bytes = new byte[first];
+                buffer.readBytes(bytes);
+                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+
+                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
+                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
+            } else
+                buffer.resetReaderIndex();
+
+            return serializer.deserializeRequest(buffer);
+        }
+
+        return getRequestMessageFromHttpRequest(request);
+    }
+
+    /**
+     * Convert a http request into a {@link RequestMessage}.
      */
     public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
-        final String contentType = Optional.ofNullable(request.headers().get(HttpHeaderNames.CONTENT_TYPE)).orElse("application/json");
-
         // default is just the StandardOpProcessor which maintains compatibility with older versions which only
         // processed scripts.
         final RequestMessage.Builder msgBuilder = RequestMessage.build(StandardOpProcessor.OP_PROCESSOR_NAME);

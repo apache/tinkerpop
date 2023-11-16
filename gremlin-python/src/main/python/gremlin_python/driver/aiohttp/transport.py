@@ -187,7 +187,6 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
             else:
                 self._client_session = aiohttp.ClientSession(base_url=url, headers=headers, loop=self._loop)
 
-
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
 
@@ -212,8 +211,7 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         # Inner function to perform async read.
         async def async_read():
             async with async_timeout.timeout(self._read_timeout):
-                # using http request read()
-                return await self._http_req_resp.text()
+                return await self._http_req_resp.read()
 
         return self._loop.run_until_complete(async_read())
 
