@@ -57,7 +57,7 @@ Feature: Step - toUpper()
       | result |
       | FEATURE |
       | TEST |
-      | NULL |
+      | null |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_toUpper

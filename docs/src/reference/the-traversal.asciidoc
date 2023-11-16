@@ -782,7 +782,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[asString-step]]
 === AsString Step
 
-The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned as a string value "null".
+The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned unchanged.
 
 [gremlin-groovy,modern]
 ----
@@ -1215,7 +1215,7 @@ link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#concat-step++[`Sema
 The `conjoin()`-step (*map*) joins together the elements in the incoming list traverser together with the provided argument
 as a delimiter. The resulting `String` is added to the Traversal Stream. This step only expects list data (array or
 Iterable) in the incoming traverser and will throw an `IllegalArgumentException` if any other type is encountered
-(including null). However, null is allowed as an element within the list and is converted to "null".
+(including null). Null values are skipped and not included in the result.
 
 [gremlin-groovy,modern]
 ----
