@@ -79,7 +79,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
             if (userAgentEnabled) {
-                request.headers().add(UserAgent.USER_AGENT_HEADER_NAME, UserAgent.USER_AGENT);
+                request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
             objects.add(interceptor.apply(request));
         } catch (Exception ex) {

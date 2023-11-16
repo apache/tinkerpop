@@ -351,7 +351,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         shouldStoreUserAgentInHttpContext();
     }
 
-    private void shouldStoreUserAgentInContext() throws InterruptedException {
+    private void shouldStoreUserAgentInContext() {
         if(server.getChannelizer() instanceof TestChannelizer) {
             TestChannelizer channelizer = (TestChannelizer) server.getChannelizer();
             channelizer.resetChannelHandlerContext();
@@ -380,10 +380,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Client client = cluster.connect();
 
             client.submit("g.V()");
-            java.lang.Thread.sleep(2000);
+            waitForUserAgentAvailability();
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.submit("g.V()");
-            java.lang.Thread.sleep(2000);
+            waitForUserAgentAvailability();
             assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
             client.close();
             cluster.close();
@@ -401,6 +401,17 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             return null;
         }
         return channelizer.getMostRecentChannelHandlerContext().channel().attr(userAgentAttrKey).get();
+    }
+
+    private void waitForUserAgentAvailability() throws InterruptedException {
+        final int maxWait = 2000;
+        final int waitInterval = 50;
+        for(int i = 0; i < maxWait; i += waitInterval) {
+            if (getUserAgentIfAvailable() != null) {
+                return;
+            }
+            java.lang.Thread.sleep(waitInterval);
+        }
     }
 
     @Test

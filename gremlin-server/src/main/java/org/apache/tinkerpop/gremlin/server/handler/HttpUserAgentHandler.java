@@ -21,16 +21,13 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.MetricRegistry;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendError;
 
 public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     /**
@@ -66,6 +63,5 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
             }
         }
         ctx.fireChannelRead(msg);
-        ctx.fireUserEventTriggered(msg);
     }
 }

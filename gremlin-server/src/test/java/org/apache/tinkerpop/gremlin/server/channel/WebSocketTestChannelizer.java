@@ -35,7 +35,7 @@ public class WebSocketTestChannelizer extends WebSocketChannelizer implements Te
     @Override
     public void configure(final ChannelPipeline pipeline) {
         super.configure(pipeline);
-        pipeline.addLast(contextHandler);
+        pipeline.addFirst(contextHandler);
     }
 
     public ChannelHandlerContext getMostRecentChannelHandlerContext() {

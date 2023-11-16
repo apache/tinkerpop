@@ -69,7 +69,6 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
             //
             // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
             //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
-            //    WebSocketServerProtocolHandler ->
             //    WebSocketServerCompressionHandler -> WebSocketServerProtocolHandshakeHandler -> (more websockets)
             //
             // and shifts to this (setting aside the authentication condition):
@@ -78,7 +77,6 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
             //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
             //    HttpUserAgentHandler -> HttpGremlinEndpointHandler ->
             //    WebSocketServerCompressionHandler - WebSocketServerProtocolHandshakeHandler -> (more websockets)
-            ChannelHandler test = pipeline.get(PIPELINE_REQUEST_HANDLER);
             pipeline.remove(PIPELINE_REQUEST_HANDLER);
             if (null != pipeline.get(PIPELINE_HTTP_USER_AGENT_HANDLER)) {
                 pipeline.remove(PIPELINE_HTTP_USER_AGENT_HANDLER);
