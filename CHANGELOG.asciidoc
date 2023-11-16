@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
+* Added integer overflow checks.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -471,6 +472,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 * Added `TextP.regex` and `TextP.notRegex`.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
+* Added throwing `ArithmeticException` when arithmetic operations overflow for byte, short, int and long arguments.
 * Added `element()` step.
 * Added `call()` step.
 * Added `fail()` step.
