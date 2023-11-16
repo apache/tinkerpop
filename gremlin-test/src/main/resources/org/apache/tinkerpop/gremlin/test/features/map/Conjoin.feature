@@ -139,7 +139,7 @@ Feature: Step - conjoin()
     When iterated to list
     Then the result should be unordered
       | result |
-      | str[axyznullxyzb] |
+      | str[axyzb] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_conjoinX_X

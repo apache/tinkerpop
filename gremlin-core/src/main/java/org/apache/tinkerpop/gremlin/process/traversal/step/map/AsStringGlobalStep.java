@@ -27,7 +27,7 @@ import java.util.Set;
 
 /**
  * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned as a string value "null".
+ * as a string. Null values are returned unchanged.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
@@ -40,7 +40,8 @@ public final class AsStringGlobalStep<S, E> extends ScalarMapStep<S, E> {
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        return (E) String.valueOf(traverser.get());
+        S traverserObject = traverser.get();
+        return (E) ((traverserObject == null) ? null : String.valueOf(traverserObject));
     }
 
     @Override

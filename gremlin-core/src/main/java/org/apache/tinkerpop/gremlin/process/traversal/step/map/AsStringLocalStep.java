@@ -31,7 +31,7 @@ import java.util.Set;
 
 /**
  * Reference implementation for asString() step, a mid-traversal step which returns the incoming traverser value
- * as a string. Null values are returned as a string value "null".
+ * as a string. Null values are returned unchanged.
  *
  * @author David Bechberger (http://bechberger.com)
  * @author Yang Xia (http://github.com/xiazcy)
@@ -54,7 +54,7 @@ public final class AsStringLocalStep<S, E> extends ScalarMapStep<S, E> {
             final Iterator<E> iterator = IteratorUtils.asIterator(item);
             while (iterator.hasNext()) {
                 final E i = iterator.next();
-                resList.add(String.valueOf(i));
+                resList.add((i == null) ? null : String.valueOf(i));
             }
             return (E) resList;
         } else {

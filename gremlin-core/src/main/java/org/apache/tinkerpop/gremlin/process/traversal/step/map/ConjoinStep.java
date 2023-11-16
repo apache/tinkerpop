@@ -48,18 +48,22 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
     @Override
     protected String map(Traverser.Admin<S> traverser) {
         final Collection elements = convertTraverserToCollection(traverser);
+        if (elements.isEmpty()) { return ""; }
 
         final StringBuilder joinResult = new StringBuilder();
 
         for (Object elem : elements) {
-            joinResult.append(String.valueOf(elem)).append(delimiter);
+            if (elem != null) {
+                joinResult.append(String.valueOf(elem)).append(delimiter);
+            }
         }
 
         if (joinResult.length() != 0) {
             joinResult.delete(joinResult.length() - delimiter.length(), joinResult.length());
+            return joinResult.toString();
+        } else {
+            return null;
         }
-
-        return joinResult.toString();
     }
 
     @Override
