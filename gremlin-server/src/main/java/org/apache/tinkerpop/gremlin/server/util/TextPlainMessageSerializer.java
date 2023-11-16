@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
@@ -42,7 +43,11 @@ public class TextPlainMessageSerializer implements MessageTextSerializer<Functio
 
     @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        throw new UnsupportedOperationException("text/plain does not produce binary");
+        final String payload = serializeResponseAsString(responseMessage, allocator);
+        final ByteBuf encodedMessage = allocator.buffer(payload.length());
+        encodedMessage.writeCharSequence(payload, CharsetUtil.UTF_8);
+
+        return encodedMessage;
     }
 
     @Override

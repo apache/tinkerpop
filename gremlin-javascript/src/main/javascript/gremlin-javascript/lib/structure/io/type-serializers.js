@@ -474,6 +474,10 @@ class SetSerializer extends ArraySerializer {
   constructor() {
     super('g:Set');
   }
+
+  deserialize(obj) {
+    return new Set(super.deserialize(obj));
+  }
 }
 
 module.exports = {

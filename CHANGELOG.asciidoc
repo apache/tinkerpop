@@ -23,7 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
-*
+* Added support for deserialization of `Set` for `gremlin-javascript`.
+* Added integer overflow checks.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -58,6 +59,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Fixed deserialization of element properties for GraphBinary.
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
+* Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 [[release-3-7.0]]
@@ -267,6 +269,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
 * Fixed bug where the `partitionKey` was not being written when using `PartitionStrategy` with `mergeV()` and `mergeE()`
+* Added checking for valid UUID requestIds in `gremlin-python` and `gremlin-javascript`.
 * Do not use `XOR` for hashCode computation of Step when only simple keys are used and duplicate keys are allowed.
 
 [[release-3-6-5]]
@@ -469,6 +472,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 * Added `TextP.regex` and `TextP.notRegex`.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
+* Added throwing `ArithmeticException` when arithmetic operations overflow for byte, short, int and long arguments.
 * Added `element()` step.
 * Added `call()` step.
 * Added `fail()` step.

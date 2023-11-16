@@ -61,6 +61,7 @@ class Connection:
         request_id = str(uuid.uuid4())
         if request_message.args.get("requestId"):
             request_id = request_message.args.get("requestId")
+            uuid.UUID(request_id) # Checks for proper UUID or else server will return an error.
         result_set = resultset.ResultSet(queue.Queue(), request_id)
         self._results[request_id] = result_set
         # Create write task

@@ -75,14 +75,14 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(-604800L, (long) __.__(now).dateDiff(__.__(other)).next());
+        assertEquals(-604800L, (long) __.__(now).dateDiff(__.constant(other)).next());
     }
 
     @Test
     public void shouldHandleNullTraversalParam() {
         final Date now = new Date();
 
-        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.__()).next());
+        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test

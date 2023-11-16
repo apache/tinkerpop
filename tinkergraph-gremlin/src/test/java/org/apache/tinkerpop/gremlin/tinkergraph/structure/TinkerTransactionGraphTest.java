@@ -102,6 +102,51 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, g.getVertices().size());
     }
 
+    @Test
+    public void shouldCleanUpVertexContainerOnCommit() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        // read vertex in new TX
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
+        // should be the same instance
+        assertEquals(v, g.getVertices().get(vid).getModified());
+        // commit without modifications
+        gtx.tx().commit();
+
+        // should clean up unused value in container
+        assertEquals(1, g.getVertices().size());
+        assertNull(g.getVertices().get(vid).getModified());
+    }
+
+    @Test
+    public void shouldCleanUpVertexContainerOnRollback() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        gtx.addV().property(T.id, vid).iterate();
+        gtx.tx().commit();
+
+        // read vertex in new TX
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        final Vertex v = gtx.V(vid).next();
+        gtx.V(vid).iterate();
+        // should be the same instance
+        assertEquals(v, g.getVertices().get(vid).getModified());
+        // rollback without modifications
+        gtx.tx().rollback();
+
+        // should clean up unused value in container
+        assertEquals(1, g.getVertices().size());
+        assertNull(g.getVertices().get(vid).getModified());
+    }
 
     @Test
     public void shouldDeleteUnusedVertexContainerOnCommit() {

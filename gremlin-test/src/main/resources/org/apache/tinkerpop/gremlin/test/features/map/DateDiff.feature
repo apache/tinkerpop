@@ -31,13 +31,25 @@ Feature: Step - dateDiff()
       | d[-604800].l |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX
+  Scenario: g_injectXdatetimeXstr1XX_dateDiffXconstantXdatetimeXstr2XXX
     Given the empty graph
     And the traversal of
       """
-      g.inject(datetime('2023-08-08T00:00:00Z')).dateDiff(inject(datetime('2023-08-01T00:00:00Z')))
+      g.inject(datetime('2023-08-08T00:00:00Z')).dateDiff(constant(datetime('2023-08-01T00:00:00Z')))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | d[604800].l |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXdatetimeXstr1XX_dateDiffXinjectXdatetimeXstr2XXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(datetime('2023-08-08T00:00:00Z')).dateDiff(inject(datetime('2023-10-11T00:00:00Z')))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].l |

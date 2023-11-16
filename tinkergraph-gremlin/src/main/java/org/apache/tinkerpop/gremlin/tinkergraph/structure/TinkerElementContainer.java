@@ -42,22 +42,27 @@ final class TinkerElementContainer<T extends TinkerElement> {
     /**
      * Value of elements updated in current transaction.
      */
-    private ThreadLocal<T> transactionUpdatedValue = ThreadLocal.withInitial(() -> null);
+    private final ThreadLocal<T> transactionUpdatedValue = ThreadLocal.withInitial(() -> null);
     /**
      * Marker for element deleted in current transaction.
      */
-    private ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
+    private final ThreadLocal<Boolean> isDeletedInTx = ThreadLocal.withInitial(() -> false);
 
     /**
      * Marker for element modified in current transaction.
      */
-    private ThreadLocal<Boolean> isModifiedInTx = ThreadLocal.withInitial(() -> false);
+    private final ThreadLocal<Boolean> isModifiedInTx = ThreadLocal.withInitial(() -> false);
+
+    /**
+     * Marker for element read in current transaction.
+     */
+    private final ThreadLocal<Boolean> isReadInTx = ThreadLocal.withInitial(() -> false);
 
     /**
      * Count of usages of container in different transactions.
      * Needed to understand whether this element is used in other transactions or it can be deleted during rollback.
      */
-    private AtomicInteger usesInTransactions = new AtomicInteger(0);
+    private final AtomicInteger usesInTransactions = new AtomicInteger(0);
 
     /**
      * Used to protect container from simultaneous modification in different transactions.
@@ -82,13 +87,20 @@ final class TinkerElementContainer<T extends TinkerElement> {
         return element;
     }
 
-    public T getWithClone() {
+    public T getWithClone(final TinkerTransaction tx) {
         if (isDeletedInTx.get()) return null;
         if (transactionUpdatedValue.get() != null) return transactionUpdatedValue.get();
         if (isDeleted || null == element) return null;
 
         final T cloned = (T) element.clone();
         transactionUpdatedValue.set(cloned);
+
+        if (!isReadInTx.get()) {
+            isReadInTx.set(true);
+            usesInTransactions.incrementAndGet();
+            tx.markRead(this);
+        }
+
         return cloned;
     }
 
@@ -143,7 +155,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
      * @param tx current transaction
      */
     public void touch(final T transactionElement, final TinkerTransaction tx) {
-        elementId = transactionElement.id();
         if (transactionUpdatedValue.get() == transactionElement && isModifiedInTx.get()) return;
 
         setDraft(transactionElement, tx);
@@ -156,10 +167,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
      */
     public void setDraft(final T transactionElement, final TinkerTransaction tx) {
         elementId = transactionElement.id();
-        if (!isModifiedInTx.get())
+        if (!isModifiedInTx.get()) {
             usesInTransactions.incrementAndGet();
+            isModifiedInTx.set(true);
+        }
         transactionUpdatedValue.set(transactionElement);
-        isModifiedInTx.set(true);
         tx.markChanged(this);
     }
 
@@ -208,6 +220,8 @@ final class TinkerElementContainer<T extends TinkerElement> {
             usesInTransactions.decrementAndGet();
         if (isModifiedInTx.get())
             usesInTransactions.decrementAndGet();
+        if (isReadInTx.get())
+            usesInTransactions.decrementAndGet();
     }
 
     /**
@@ -221,10 +235,11 @@ final class TinkerElementContainer<T extends TinkerElement> {
     /**
      * Cleanup changes made in the current transaction.
      */
-    private void reset() {
+    public void reset() {
         transactionUpdatedValue.remove();
         isDeletedInTx.set(false);
         isModifiedInTx.set(false);
+        isReadInTx.set(false);
     }
 
     /**

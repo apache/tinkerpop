@@ -21,7 +21,10 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
@@ -38,9 +41,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,6 +52,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -67,7 +73,7 @@ public class GraphSONMessageSerializerV3Test {
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public final MessageSerializer<ObjectMapper> serializer = new GraphSONMessageSerializerV3();
+    public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -80,8 +86,8 @@ public class GraphSONMessageSerializerV3Test {
 
         final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
         assertEquals(2, deserializedFunList.size());
-        assertEquals(new Integer(1), deserializedFunList.get(0));
-        assertEquals(new Integer(100), deserializedFunList.get(1));
+        assertEquals(Integer.valueOf(1), deserializedFunList.get(0));
+        assertEquals(Integer.valueOf(100), deserializedFunList.get(1));
     }
 
     @Test
@@ -96,9 +102,9 @@ public class GraphSONMessageSerializerV3Test {
 
         final List<Integer> deserializedFunList = (List<Integer>) response.getResult().getData();
         assertEquals(3, deserializedFunList.size());
-        assertEquals(new Integer(1), deserializedFunList.get(0));
+        assertEquals(Integer.valueOf(1), deserializedFunList.get(0));
         assertNull(deserializedFunList.get(1));
-        assertEquals(new Integer(100), deserializedFunList.get(2));
+        assertEquals(Integer.valueOf(100), deserializedFunList.get(2));
     }
 
     @Test
@@ -221,7 +227,7 @@ public class GraphSONMessageSerializerV3Test {
 
         v.property(VertexProperty.Cardinality.single, "friends", friends);
 
-        final List list = IteratorUtils.list(graph.vertices());
+        final List<Vertex> list = IteratorUtils.list(graph.vertices());
 
         final ResponseMessage response = convert(list);
         assertCommon(response);
@@ -263,7 +269,7 @@ public class GraphSONMessageSerializerV3Test {
 
         final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) response.getResult().getData();
         assertEquals(1, deserializedMap.size());
-        assertEquals(new Integer(1000), deserializedMap.get(v1));
+        assertEquals(Integer.valueOf(1000), deserializedMap.get(v1));
     }
 
     @Test
@@ -344,6 +350,32 @@ public class GraphSONMessageSerializerV3Test {
         final RequestMessage m = serializer.deserializeRequest(bb);
         assertEquals("bytecode", m.getOp());
         assertNotNull(m.getArgs());
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeRequest() throws Exception {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        final Traversal.Admin t = g.V().hasLabel("person").out().asAdmin();
+
+        final Map<String, String> aliases = new HashMap<>();
+        aliases.put("g","g");
+
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_BYTECODE)
+                .processor("traversal")
+                .overrideRequestId(UUID.randomUUID())
+                .addArg(Tokens.ARGS_GREMLIN, t.getBytecode())
+                .addArg(Tokens.ARGS_ALIASES, aliases)
+                .create();
+
+        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        final int mimeLen = buffer.readByte();
+        final byte[] bytes = new byte[mimeLen];
+        buffer.readBytes(bytes);
+        final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+
+        final RequestMessage deserialized = serializer.deserializeRequest(buffer);
+        assertThat(request, reflectionEquals(deserialized));
+        assertThat(serializer.mimeTypesSupported(), hasItemInArray(mimeType));
     }
 
     @Test
