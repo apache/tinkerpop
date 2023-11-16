@@ -1097,6 +1097,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> none adds the all step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> None(P? predicate)
+        {
+            return new GraphTraversal<object, object>().None(predicate);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the not step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Not(ITraversal notTraversal)

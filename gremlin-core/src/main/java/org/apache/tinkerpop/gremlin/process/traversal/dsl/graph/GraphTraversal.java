@@ -67,6 +67,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ListNoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
@@ -2008,7 +2009,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the updated traversal with respective {@link NoneStep}.
      */
-    @Override
+    @Deprecated
     default GraphTraversal<S, E> none() {
         return (GraphTraversal<S, E>) Traversal.super.none();
     }
@@ -2827,6 +2828,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <S2> GraphTraversal<S, E> any(final P<S2> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.any, predicate);
         return this.asAdmin().addStep(new AnyStep<>(this.asAdmin(), predicate));
+    }
+
+    /**
+     * Filters <code>E</code> lists given the provided {@code predicate}.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link ListNoneStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#none-step" target="_blank">Reference Documentation - None Step</a>
+     * @since 3.7.1
+     */
+    public default <S2> GraphTraversal<S, E> none(final P<S2> predicate) {
+        this.asAdmin().getBytecode().addStep(Symbols.none, predicate);
+        return this.asAdmin().addStep(new ListNoneStep<>(this.asAdmin(), predicate));
     }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
@@ -4078,6 +4092,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String dateDiff = "dateDiff";
         public static final String all = "all";
         public static final String any = "any";
+        public static final String listNone = "listNone";
         public static final String merge = "merge";
         public static final String product = "product";
         public static final String combine = "combine";

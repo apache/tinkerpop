@@ -662,6 +662,11 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_none_P() throws Exception {
+        compare(g.V().id().fold().none(gt(1)), eval("g.V().id().fold().none(gt(1))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_not() throws Exception {
         compare(g.V().not(both()), eval("g.V().not(both())"));
     }
