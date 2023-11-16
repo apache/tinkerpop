@@ -69,14 +69,16 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
             //
             // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
             //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
-            //    WebSocketServerCompressionHandler -> WebSocketServerProtocolHandshakeHandler -> (more websockets)
+            //    WebSocketServerCompressionHandler -> WebSocketServerProtocolHandshakeHandler ->
+            //    Utf8FrameValidator -> WebSocketServerProtocolHandler -> (more websockets)
             //
             // and shifts to this (setting aside the authentication condition):
             //
             // IdleStateHandler -> HttpResponseEncoder -> HttpRequestDecoder ->
             //    WsAndHttpChannelizerHandler -> HttpObjectAggregator ->
             //    HttpUserAgentHandler -> HttpGremlinEndpointHandler ->
-            //    WebSocketServerCompressionHandler - WebSocketServerProtocolHandshakeHandler -> (more websockets)
+            //    WebSocketServerCompressionHandler - WebSocketServerProtocolHandshakeHandler ->
+            //    Utf8FrameValidator -> (more websockets)
             pipeline.remove(PIPELINE_REQUEST_HANDLER);
             if (null != pipeline.get(PIPELINE_HTTP_USER_AGENT_HANDLER)) {
                 pipeline.remove(PIPELINE_HTTP_USER_AGENT_HANDLER);
