@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Added integer overflow checks.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -742,6 +743,7 @@ This release also includes changes from <<release-3-5-3, 3.5.3>>.
 * Added `TextP.regex` and `TextP.notRegex`.
 * Changed TinkerGraph to allow identifiers to be heterogeneous when filtering.
 * Prevented values of `T` to `property()` from being `null`.
+* Added throwing `ArithmeticException` when arithmetic operations overflow for byte, short, int and long arguments.
 * Added `element()` step.
 * Added `call()` step.
 * Added `fail()` step.
