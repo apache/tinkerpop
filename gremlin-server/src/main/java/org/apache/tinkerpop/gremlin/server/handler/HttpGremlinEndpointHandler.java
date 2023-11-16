@@ -19,39 +19,6 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Timer;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
-import org.javatuples.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.server.GraphManager;
-import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
@@ -59,13 +26,50 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.TooLongFrameException;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -76,12 +80,12 @@ import java.util.stream.Stream;
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -93,7 +97,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
-    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
@@ -147,9 +150,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             final RequestMessage requestMessage;
             try {
-                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req);
-            } catch (IllegalArgumentException iae) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
+            } catch (IllegalArgumentException|SerializationException ex) {
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, ex.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -220,6 +223,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
                 final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(
                         requestMessage.getArg(Tokens.ARGS_GREMLIN), requestMessage.getArg(Tokens.ARGS_LANGUAGE), bindings,
+                        requestMessage.getArgOrDefault(Tokens.ARGS_EVAL_TIMEOUT, null),
                         FunctionUtils.wrapFunction(o -> {
                             // stopping the timer here is roughly equivalent to where the timer would have been stopped for
                             // this metric in other contexts.  we just want to measure eval time not serialization time.
@@ -229,13 +233,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     requestMessage.getArg(Tokens.ARGS_GREMLIN),
                                     requestMessage.getArg(Tokens.ARGS_BINDINGS), o, Thread.currentThread().getName());
 
-                            final Optional<String> mp = GremlinScriptChecker.parse(requestMessage.getArg(Tokens.ARGS_GREMLIN)).getMaterializeProperties();
+                            final Optional<String> mp = requestMessage.getArg(Tokens.ARGS_GREMLIN) instanceof String
+                                    ? GremlinScriptChecker.parse(requestMessage.getArg(Tokens.ARGS_GREMLIN)).getMaterializeProperties()
+                                    : Optional.empty();
 
                             // need to replicate what TraversalOpProcessor does with the bytecode op. it converts
                             // results to Traverser so that GLVs can handle the results. don't quite get the same
                             // benefit here because the bulk has to be 1 since we've already resolved the result,
                             // but at least http is compatible
-                            final List<Object> results = requestMessage.getProcessor().equals(Tokens.OPS_BYTECODE) ?
+                            final List<Object> results = requestMessage.getOp().equals(Tokens.OPS_BYTECODE) ?
                                     (List<Object>) IteratorUtils.asList(o).stream().map(r -> new DefaultRemoteTraverser<Object>(r, 1)).collect(Collectors.toList()) :
                                     IteratorUtils.asList(o);
 
@@ -262,7 +268,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             attemptCommit(requestMessage.getArg(Tokens.ARGS_ALIASES), graphManager, settings.strictTransactionManagement);
 
                             try {
-                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage, ctx.alloc()).getBytes(UTF8));
+                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsBinary(responseMessage, ctx.alloc()));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
 

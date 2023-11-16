@@ -20,14 +20,19 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItemInArray;
 
 public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
@@ -44,17 +50,28 @@ public class GraphBinaryMessageSerializerV1Test {
 
     @Test
     public void shouldSerializeAndDeserializeRequest() throws SerializationException {
-        final RequestMessage request = RequestMessage.build("op1")
-                .processor("proc1")
+        final GraphTraversalSource g = EmptyGraph.instance().traversal();
+        final Traversal.Admin t = g.V().hasLabel("person").out().asAdmin();
+
+        final Map<String, String> aliases = new HashMap<>();
+        aliases.put("g","g");
+
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_BYTECODE)
+                .processor("traversal")
                 .overrideRequestId(UUID.randomUUID())
-                .addArg("arg1", "value1")
+                .addArg(Tokens.ARGS_GREMLIN, t.getBytecode())
+                .addArg(Tokens.ARGS_ALIASES, aliases)
                 .create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
         final int mimeLen = buffer.readByte();
-        buffer.readBytes(new byte[mimeLen]);
+        final byte[] bytes = new byte[mimeLen];
+        buffer.readBytes(bytes);
+        final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+
         final RequestMessage deserialized = serializer.deserializeRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
+        assertThat(serializer.mimeTypesSupported(), hasItemInArray(mimeType));
     }
 
     @Test
