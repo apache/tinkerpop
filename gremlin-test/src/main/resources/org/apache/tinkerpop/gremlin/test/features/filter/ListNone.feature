@@ -147,7 +147,7 @@ Feature: Step - none()
     And using the parameter xx1 defined as "l[null,null]"
     And the traversal of
       """
-      g.inject(xx1).none(P.not(null))
+      g.inject(xx1).none(P.neq(null))
       """
     When iterated to list
     Then the result should be unordered

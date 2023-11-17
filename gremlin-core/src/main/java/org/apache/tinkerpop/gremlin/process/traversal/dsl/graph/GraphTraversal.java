@@ -2839,7 +2839,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <S2> GraphTraversal<S, E> none(final P<S2> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.none, predicate);
+        this.asAdmin().getBytecode().addStep(Symbols.listNone, predicate);
         return this.asAdmin().addStep(new ListNoneStep<>(this.asAdmin(), predicate));
     }
 
@@ -4092,7 +4092,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String dateDiff = "dateDiff";
         public static final String all = "all";
         public static final String any = "any";
-        public static final String listNone = "listNone";
+        public static final String listNone = "none";
         public static final String merge = "merge";
         public static final String product = "product";
         public static final String combine = "combine";
