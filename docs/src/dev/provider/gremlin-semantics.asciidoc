@@ -632,8 +632,9 @@ incoming list traverser as string.
 *Arguments:*
 
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all to string. The `local` scope will behave like `global`
-for everything except lists, where it will cast individual elements inside the list into string and return a list of string instead.
+The `global` scope will operate on individual traverser, casting all (except null) to string. The `local` scope will behave like
+`global` for everything except lists, where it will cast individual non-null elements inside the list into string and return a
+list of string instead.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
 
@@ -1121,9 +1122,9 @@ None
 
 *Considerations:*
 
-Every element in the list (including nulls) is converted to a String. The delimiter is inserted between neighboring
-elements to form the final result. This step only applies to list types which means that non-iterable types (including
-null) will cause exceptions to be thrown.
+Every element in the list (except null) is converted to a String. Null values are ignored. The delimiter is inserted
+between neighboring elements to form the final result. This step only applies to list types which means that
+non-iterable types (including null) will cause exceptions to be thrown.
 
 *Exceptions*
 

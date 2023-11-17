@@ -23,12 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -49,6 +51,7 @@ public class ConjoinStepTest extends StepTest {
         assertEquals("5AA8AA10", __.__(new long[] {5L, 8L, 10L}).conjoin("AA").next());
         assertEquals("715", __.__(1).constant(new Long[] {7L, 15L}).conjoin("").next());
         assertEquals("5.5,8.0,10.1", __.__(new double[] {5.5, 8.0, 10.1}).conjoin(",").next());
+        assertNull(__.__(Arrays.asList(null, null)).conjoin(",").next());
 
         final Set<Integer> set = new HashSet<>();
         set.add(10); set.add(11); set.add(12);

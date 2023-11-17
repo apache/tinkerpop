@@ -72,7 +72,7 @@ Feature: Step - asString()
     When iterated to list
     Then the result should be unordered
       | result |
-      | str[null] |
+      | null |
       | 1 |
 
   @GraphComputerVerificationInjectionNotSupported
@@ -86,7 +86,7 @@ Feature: Step - asString()
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[1,str[null]] |
+      | l[1,null] |
 
   Scenario: g_V_valueMapXnameX_asString
     Given the modern graph
