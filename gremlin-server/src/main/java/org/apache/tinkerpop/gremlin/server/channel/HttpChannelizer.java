@@ -85,6 +85,7 @@ public class HttpChannelizer extends AbstractChannelizer {
 
         pipeline.addLast("http-user-agent-handler", new HttpUserAgentHandler());
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
+        // Note that channelRead()'s do not propagate down the pipeline past HttpGremlinEndpointHandler
     }
 
     private AbstractAuthenticationHandler instantiateAuthenticationHandler(final Settings settings) {

@@ -92,6 +92,7 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
             } else {
                 pipeline.addAfter(PIPELINE_HTTP_AGGREGATOR, PIPELINE_HTTP_USER_AGENT_HANDLER, new HttpUserAgentHandler());
                 pipeline.addAfter(PIPELINE_HTTP_USER_AGENT_HANDLER, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
+                // Note that channelRead()'s do not propagate down the pipeline past HttpGremlinEndpointHandler
             }
         }
         ctx.fireChannelRead(obj);
