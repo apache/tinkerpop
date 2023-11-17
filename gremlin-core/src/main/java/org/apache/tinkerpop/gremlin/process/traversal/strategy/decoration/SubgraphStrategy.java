@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -58,7 +59,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,24 +89,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     private SubgraphStrategy(final Builder builder) {
 
         this.vertexCriterion = null == builder.vertexCriterion ? null : builder.vertexCriterion.asAdmin().clone();
+        this.edgeCriterion = null == builder.edgeCriterion ? null : builder.edgeCriterion.asAdmin().clone();
         this.checkAdjacentVertices = builder.checkAdjacentVertices;
-
-        // if there is no vertex predicate there is no need to test either side of the edge - also this option can
-        // be simply configured in the builder to not be used
-        if (null == this.vertexCriterion || !checkAdjacentVertices) {
-            this.edgeCriterion = null == builder.edgeCriterion ? null : builder.edgeCriterion.asAdmin().clone();
-        } else {
-            final Traversal.Admin<Edge, ?> vertexPredicate;
-            vertexPredicate = __.<Edge>and(
-                    __.inV().filter(this.vertexCriterion),
-                    __.outV().filter(this.vertexCriterion)).asAdmin();
-
-            // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
-            // edge predicate provided by the user.
-            this.edgeCriterion = null == builder.edgeCriterion ?
-                    vertexPredicate :
-                    builder.edgeCriterion.asAdmin().clone().addStep(new TraversalFilterStep<>(builder.edgeCriterion.asAdmin(), vertexPredicate));
-        }
 
         this.vertexPropertyCriterion = null == builder.vertexPropertyCriterion ? null : builder.vertexPropertyCriterion.asAdmin().clone();
 
@@ -116,16 +103,19 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
     }
 
     private static void applyCriterion(final List<Step> stepsToApplyCriterionAfter, final Traversal.Admin traversal,
-                                       final Traversal.Admin<? extends Element, ?> criterion) {
+                                       final Function<Step<?,?>, Optional<Traversal.Admin<? extends Element, ?>>> criterionMaker) {
         for (final Step<?, ?> step : stepsToApplyCriterionAfter) {
             // re-assign the step label to the criterion because the label should apply seamlessly after the filter
-            final Step filter = new TraversalFilterStep<>(traversal, criterion.clone());
-            TraversalHelper.insertAfterStep(filter, step, traversal);
-            TraversalHelper.copyLabels(step, filter, true);
+            final Optional<Traversal.Admin<? extends Element, ?>> crit = criterionMaker.apply(step);
+            if (crit.isPresent()) {
+                final Step filter = new TraversalFilterStep<>(traversal, crit.get());
+                TraversalHelper.insertAfterStep(filter, step, traversal);
+                TraversalHelper.copyLabels(step, filter, true);
+            }
         }
     }
 
-    private static final char processesPropertyType(Step step) {
+    private static char processesPropertyType(Step step) {
         while (!(step instanceof EmptyStep)) {
             if (step instanceof FilterStep || step instanceof SideEffectStep)
                 step = step.getPreviousStep();
@@ -151,7 +141,6 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             return;
         }
 
-        //
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
         final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
         if (null != this.vertexCriterion) {
@@ -161,24 +150,49 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
-            applyCriterion(vertexStepsToInsertFilterAfter, traversal, this.vertexCriterion);
+            vertexStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsVertex).collect(Collectors.toList()));
+            applyCriterion(vertexStepsToInsertFilterAfter, traversal, s -> Optional.of(this.vertexCriterion.clone()));
         }
 
-        if (null != this.edgeCriterion) {
+        if (null != this.edgeCriterion || checkAdjacentVertices) {
             final List<Step> edgeStepsToInsertFilterAfter = new ArrayList<>();
             edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
             edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
             edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
-            applyCriterion(edgeStepsToInsertFilterAfter, traversal, this.edgeCriterion);
+            applyCriterion(edgeStepsToInsertFilterAfter, traversal, s -> {
+                if (checkAdjacentVertices && this.vertexCriterion != null) {
+                    if (s instanceof VertexStep) {
+                        // based on the directionality of the step choose the appropriate filter direction to apply.
+                        // we scan skip AddEdgeStep, because its vertices must be in the Subgraph for it to even work.
+                        final Direction d = ((VertexStep) s).getDirection();
+                        final Traversal.Admin<Edge, ? extends Element> vertexPredicate;
+                        vertexPredicate = getVertexPredicateGivenDirection(d);
+                        return applyVertexPredicate(vertexPredicate);
+                    } else if (s instanceof GraphStep) {
+                        // for E() we need to test both incident vertices as there is no directionality
+                        final Traversal.Admin<Edge, ? extends Element> vertexPredicate = __.<Edge>and(
+                                __.inV().filter(this.vertexCriterion.clone()),
+                                __.outV().filter(this.vertexCriterion.clone())).asAdmin();
+                        return applyVertexPredicate(vertexPredicate);
+                    }
+                }
+
+                if (null == edgeCriterion)
+                    return Optional.empty();
+                else {
+                    final Traversal.Admin<Edge, ?> ec = edgeCriterion.clone();
+                    TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), ec);
+                    return Optional.of(ec);
+                }
+            });
         }
 
-        // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
+        // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate
         for (final VertexStep<?> step : vertexSteps) {
             if (step.returnsEdge())
                 continue;
-            if (null != this.vertexCriterion && null == edgeCriterion) {
-                TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, (Traversal) this.vertexCriterion.clone()), step, traversal);
-            } else {
+
+            if (edgeCriterion != null) {
                 final VertexStep<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
                 final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
@@ -188,8 +202,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);
                 TraversalHelper.copyLabels(step, someVStep, true);
 
-                if (null != this.edgeCriterion)
-                    TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.edgeCriterion.clone()), someEStep, traversal);
+                TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.edgeCriterion.clone()), someEStep, traversal);
+
                 if (null != this.vertexCriterion)
                     TraversalHelper.insertAfterStep(new TraversalFilterStep<>(traversal, this.vertexCriterion.clone()), someVStep, traversal);
             }
@@ -268,6 +282,30 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 }
             }
         }
+    }
+
+    private Optional<Traversal.Admin<? extends Element, ?>> applyVertexPredicate(final Traversal.Admin<Edge, ? extends Element> vertexPredicate) {
+        if (null == edgeCriterion) {
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), vertexPredicate);
+            return Optional.of(vertexPredicate);
+        } else {
+            final Traversal.Admin<Edge, ?> ec = edgeCriterion.clone();
+            ec.addStep(new TraversalFilterStep<>(ec, vertexPredicate));
+            TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), ec);
+            return Optional.of(ec);
+        }
+    }
+
+    private Traversal.Admin<Edge, Vertex> getVertexPredicateGivenDirection(final Direction d) {
+        final Traversal.Admin<Edge, Vertex> vertexPredicate;
+        if (d == Direction.OUT) {
+            vertexPredicate = __.inV().filter(this.vertexCriterion.clone()).asAdmin();
+        } else if (d == Direction.IN) {
+            vertexPredicate = __.outV().filter(this.vertexCriterion.clone()).asAdmin();
+        } else {
+            vertexPredicate = __.otherV().filter(this.vertexCriterion.clone()).asAdmin();
+        }
+        return vertexPredicate;
     }
 
     @Override

@@ -35,7 +35,7 @@ public class WsAndHttpTestChannelizer extends WsAndHttpChannelizer implements Te
     @Override
     public void configure(final ChannelPipeline pipeline) {
         super.configure(pipeline);
-        pipeline.addLast(contextHandler);
+        pipeline.addFirst(contextHandler);
     }
 
     public ChannelHandlerContext getMostRecentChannelHandlerContext() {

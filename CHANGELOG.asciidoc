@@ -33,7 +33,10 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Allowed `gremlin-python` to be used over HTTP for experimental purposes.
 * Fixed translation of `P`, `TraversalStrategy` and Enums, and added translation for `Vertex`, `Edge`, `VertexProperty`, list, set, dict, number, binding and lambda in Groovy Translator for Python.
 * Fixed a bug in `StarGraph` where `EdgeFilter` did not remove associated Edge Properties.
-* Added translator to the Go GLV.
+* Added Gremlin translator implementation to the Go GLV.
+* Fixed Go translator to handle array arguments.
+* In Go GLV `P.Within` and `P.Without` extended to accept array arguments similar to other GLV's
+* Improved `SubgraphStrategy` by reducing chance for redundant filtering of adjacent vertices.
 * Fixed bug with filtering for `group()` when the side-effect label was defined for it.
 * ProjectStep now throws exception when a duplicate key is provided in a query.
 * Fixed bug in `replaceLocalChild` where child traversal was not correctly integrated.
@@ -43,6 +46,7 @@ This release also includes changes from <<release-3-5-8, 3.5.8>>.
 * Fixed bug in `PythonTranslator` where `Set` syntax was not being generated properly.
 * Fixed bug in configuration object given to `PartitionStrategy` for Go that prevented `readPartitions` from behing set properly.
 * Fixed bug where the `partitionKey` was not being written when using `PartitionStrategy` with `mergeV()` and `mergeE()`
+* Added checking for valid UUID requestIds in `gremlin-python` and `gremlin-javascript`.
 * Do not use `XOR` for hashCode computation of Step when only simple keys are used and duplicate keys are allowed.
 
 [[release-3-6-5]]

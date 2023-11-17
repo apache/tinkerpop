@@ -21,6 +21,7 @@ import os
 import threading
 import uuid
 
+from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
@@ -425,3 +426,46 @@ def test_asyncio(client):
         asyncio.get_event_loop().run_until_complete(asyncio_func())
     except RuntimeError:
         assert False
+
+
+def test_client_custom_invalid_request_id_graphson_script(client):
+    client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphSONSerializersV3d0())
+    try:
+        client.submit('g.V()', request_options={"requestId":"malformed"}).all().result()
+    except Exception as ex:
+        assert "badly formed hexadecimal UUID string" in str(ex)
+
+
+def test_client_custom_invalid_request_id_graphbinary_script(client):
+    client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphBinarySerializersV1())
+    try:
+        client.submit('g.V()', request_options={"requestId":"malformed"}).all().result()
+    except Exception as ex:
+        assert "badly formed hexadecimal UUID string" in str(ex)
+
+
+def test_client_custom_valid_request_id_script(client):
+    assert len(client.submit('g.V()', request_options={"requestId":str(uuid.uuid4())}).all().result()) == 6
+
+
+def test_client_custom_invalid_request_id_graphson_bytecode(client):
+    client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphSONSerializersV3d0())
+    query = Graph().traversal().V().bytecode
+    try:
+        client.submit(query, request_options={"requestId":"malformed"}).all().result()
+    except Exception as ex:
+        assert "badly formed hexadecimal UUID string" in str(ex)
+
+
+def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
+    client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphBinarySerializersV1())
+    query = Graph().traversal().V().bytecode
+    try:
+        client.submit(query, request_options={"requestId":"malformed"}).all().result()
+    except Exception as ex:
+        assert "badly formed hexadecimal UUID string" in str(ex)
+
+
+def test_client_custom_valid_request_id_bytecode(client):
+    query = Graph().traversal().V().bytecode
+    assert len(client.submit(query).all().result()) == 6
