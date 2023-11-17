@@ -52,6 +52,24 @@ describe('Client', function () {
           assert.ok(result.first() instanceof graphModule.Vertex);
         });
     });
+    it('should allow to pass custom connection to Client', async function () {
+      const options = { traversalSource: g, mimeType: process.env.CLIENT_MIMETYPE };
+      const connection = new Connection(serverUrl, options);
+      options.connection = connection;
+      const client = new Client(serverUrl, options);
+
+      assert.strictEqual(connection, client._);
+
+      await client.open();
+
+      const result = await crewClient.submit('g.V().tail()');
+
+      assert.ok(result);
+      assert.strictEqual(result.length, 1);
+      assert.ok(result.first() instanceof graphModule.Vertex);
+
+      await client.close();
+    });
     it('should send and parse a script with bindings', function () {
       return client.submit('x + x', { x: 3 })
         .then(function (result) {

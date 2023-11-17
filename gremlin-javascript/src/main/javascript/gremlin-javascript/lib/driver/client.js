@@ -46,6 +46,7 @@ class Client {
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
+   * @param {Connection} [options.connection] Connection to be used by this client. Defaults to: new Connection.
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */
@@ -59,7 +60,7 @@ class Client {
       // re-assign processor to 'session' when in session mode
       this._options.processor = options.processor || 'session';
     }
-    this._connection = new Connection(url, options);
+    this._connection = this._options.connection || new Connection(url, options);
   }
 
   /**
