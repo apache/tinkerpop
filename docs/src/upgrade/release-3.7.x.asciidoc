@@ -30,9 +30,10 @@ complete list of all the modifications that are part of this release.
 === Upgrading for Users
 
 ==== String Manipulation Steps
-Modifications to the concat() step as well as additional String manipulation steps have been added to this version.
+This version introduces the following new string manipulation steps `asString()`, `length()`, `toLower()`, `toUpper()`, `trim()`,
+`lTrim()`, `rTrim()`, `reverse()`, `replace()`, `split()`, `substring()`, and `format()`, as well as modifications to the `concat()` step introduced in 3.7.0.
 
-===== Updates to concat():
+===== Updates to String Step concat():
 Concat has been modified to take traversal varargs instead of a single traversal. Users no longer have to chain
 concat() steps together to concatenate multiple traversals:
 [source,text]
@@ -59,9 +60,9 @@ gremlin> g.inject("a").concat(constant("b"))
 ==>ab
 ----
 
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[concat()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[concat()-step]
 
-===== String Steps asString(), length(), toLower(), toUpper():
+===== New String Steps asString(), length(), toLower(), toUpper():
 
 The following example demonstrates the use of a closure to perform the above functions:
 [source,text]
@@ -133,7 +134,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[length()-ste
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[toLower()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[toUpper()-step]
 
-===== String Steps trim(), lTrim(), rTrim(), reverse():
+===== New String Steps trim(), lTrim(), rTrim(), reverse():
 
 The following example demonstrates the use of a closure to reverse and trim strings (concatenated with a string for demonstration):
 
@@ -181,13 +182,13 @@ gremlin> g.inject(["  hello  ", " world "]).trim(Scope.local)
 ==>[hello,world]
 ----
 
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[trim()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[lTrim()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[trim()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[lTrim()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[rTrim()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reverse()-step],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
-===== String Steps replace(), split(), substring()
+===== New String Steps replace(), split(), substring()
 
 The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
 [source,text]
@@ -255,15 +256,14 @@ gremlin> g.V().hasLabel("person").values("name").substring(-2)
 ==>er
 ----
 
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[replace()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-step]
-See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[replace()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[split()-step],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[substring()-step],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
-===== Format Step
-This step is designed to simplify some string operations.
-In general, it is similar to the string formatting function available in many programming languages.
-Variable values can be picked up from Element properties, maps and scope variables.
+===== New String Step format()
+This step is designed to simplify some string operations. In general, it is similar to the string formatting function
+available in many programming languages. Variable values can be picked up from Element properties, maps and scope variables.
 
 [source,text]
 ----
@@ -282,7 +282,7 @@ gremlin> g.V(1).format("%{name} has %{_} connections").by(bothE().count())
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[format()-step]
 
-==== List Traverser based Steps
+==== List Manipulation Steps
 Additional List manipulation/filter steps have been added to replace the use of closures: `any()`, `all()`, `product()`,
 `merge()`, `intersect()`, `combine()`, `conjoin()`, `difference()`,`disjunct()` and `reverse()`.
 
@@ -323,7 +323,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[conjoin()-s
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[difference()-step],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[disjunct()-step]
 
-==== Date manipulation functions
+==== Date Manipulation Steps
 
 Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
 different providers. In 3.7.1, we introduce the `asDate()`, `dateAdd` and `dateDiff` steps aimed to replace the usage of closure.
@@ -341,7 +341,7 @@ See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[dateAd
 See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[dateDiff()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2979[TINKERPOP-2979]
 
-===== `datetime()` for current server time
+===== `datetime()` for Current Server Time
 
 Function `datetime()` extended to return current server time when used without argument.
 
@@ -363,6 +363,8 @@ As time has gone on, some tests have used the empty graph and inserted their own
 feature. In an effort to better allow graphs to support one feature or the other and to test them the single tag has
 been split into two tags: `@MultiProperties` and `@MetaProperties`. The original `@MultiMetaProperties` tag has been
 removed.
+
+===== InsertionOrderingRequired Test Tag
 
 Added a new `@InsertionOrderingRequired` tag which signifies Gherkin feature tests which are reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph. These tests should be skipped by any graph which does not guarantee such ordering.
 
