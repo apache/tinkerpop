@@ -40,7 +40,7 @@ public class WsUserAgentHandler extends ChannelInboundHandlerAdapter {
      */
     private static final int MAX_USER_AGENT_METRICS = 10000;
 
-    private static final String USER_AGENT_HEADER_NAME = "User-Agent";
+    static final String USER_AGENT_HEADER_NAME = "User-Agent";
 
     private static final Logger logger = LoggerFactory.getLogger(WsUserAgentHandler.class);
     public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(USER_AGENT_HEADER_NAME);
