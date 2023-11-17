@@ -529,7 +529,7 @@ understand implementation expectations.
 
 *Description:* Filters array data from the Traversal Stream if all of the array's items match the supplied predicate.
 
-*Syntax:* `all(Predicate)`
+*Syntax:* `all(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -539,7 +539,7 @@ understand implementation expectations.
 
 *Arguments:*
 
-* `Predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate to use to test each value in the array data.
 
 *Modulation:*
 
@@ -562,7 +562,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
 *Description:* Filters array data from the Traversal Stream if any of the array's items match the supplied predicate.
 
-*Syntax:* `any(Predicate)`
+*Syntax:* `any(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -572,7 +572,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
 *Arguments:*
 
-* `Predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate to use to test each value in the array data.
 
 *Modulation:*
 
@@ -621,7 +621,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 *Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
 incoming list traverser as string.
 
-*Syntax:* `asString()` | `asString(Scope)`
+*Syntax:* `asString()` | `asString(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -632,8 +632,8 @@ incoming list traverser as string.
 *Arguments:*
 
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all (except null) to string. The `local` scope will behave like
-`global` for everything except lists, where it will cast individual non-null elements inside the list into string and return a
+The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
+`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
 list of string instead.
 
 Null values from the incoming traverser are not processed and remain as null when returned.
@@ -641,7 +641,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 *Exceptions*
 None
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
 [[call-step]]
@@ -649,7 +650,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
 *Description:* Provides support for provider-specific service calls.
 
-*Syntax:* `call()` | `call(String, Map)` | `call(String, Traversal)` | `call(String, Map, Traversal)`
+*Syntax:* `call()` | `call(String service, Map params)` | `call(String service, Traversal childTraversal)` | `call(String service, Map params, Traversal childTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -659,10 +660,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
 *Arguments:*
 
-* `String` - The name of the service call.
-* `Map` - A collection of static parameters relevant to the particular service call. Keys and values can be any
+* `service` - The name of the service call.
+* `params` - A collection of static parameters relevant to the particular service call. Keys and values can be any
 type currently supported by the Gremlin type system.
-* `Traversal` - A traversal used to dynamically build at query time a collection of parameters relevant to the service
+* `childTraversal` - A traversal used to dynamically build at query time a collection of parameters relevant to the service
 call.
 
 *Modulation:*
@@ -734,7 +735,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 *Description:* Appends one list to the other and returns the result to the Traversal Stream.
 
-*Syntax:* `combine(Object)`
+*Syntax:* `combine(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -744,7 +745,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
 
 *Modulation:*
 
@@ -763,14 +764,14 @@ will cause exceptions to be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CombineStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference]
 
 [[concat-step]]
 === concat()
 
 *Description:* Concatenates the incoming String traverser with the input String arguments, and return the joined String.
 
-*Syntax:* `concat()` | `concat(String...)` | `concat(Traversal, Traversal...)`
+*Syntax:* `concat()` | `concat(String... concatStrings)` | `concat(Traversal concatTraveral, Traversal... otherConcatTraverals)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -802,7 +803,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 
 *Description:* Increase value of input Date.
 
-*Syntax:* `dateAdd(DT, Integer)`
+*Syntax:* `dateAdd(DT dateToken, Integer value)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -812,8 +813,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 
 *Arguments:*
 
-* `DT` - Date token enum. Supported values `second`, `minute`, `hour`, `day`.
-* `Integer` - The number of units, specified by the DT Token, to add to the incoming values. May be negative for subtraction.
+* `dateToken` - Date token enum. Supported values `second`, `minute`, `hour`, `day`.
+* `value` - The number of units, specified by the DT Token, to add to the incoming values. May be negative for subtraction.
 
 *Exceptions*
 
@@ -827,7 +828,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
 *Description:* Returns the difference between two Dates in epoch time.
 
-*Syntax:* `dateDiff(Date)` | `dateDiff(Traversal)`
+*Syntax:* `dateDiff(Date value)` | `dateDiff(Traversal dateTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -837,8 +838,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
 *Arguments:*
 
-* `Date` - Date for subtraction.
-* `Traversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
+* `value` - Date for subtraction.
+* `dateTraversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
 subtracted with the incoming traverser.
 
 If argument resolves as `null` then incoming date will not be changed.
@@ -855,7 +856,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 
 *Description:* Removes repeatedly seen results from the Traversal Stream.
 
-*Syntax:* `dedup()` | `dedup(labels)`
+*Syntax:* `dedup()` | `dedup(String... labels)` | `dedup(Scope scope, String... labels)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -864,6 +865,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 |=========================================================
 
 *Arguments:*
+
+* `scope` - Determines the scope in which `dedup` is applied.
+The `global` scope will drop duplicate values across the global stream of traversers. The `local` scope operates at the
+individual traverser level, and will remove duplicate values from within a collection.
 
 * `labels` - If `dedup()` is provided a list of labels, then it will ensure that the de-duplication
 is not with respect to the current traverser object, but to the path history of the traverser.
@@ -911,6 +916,7 @@ can return any of:
 `["Alex", "Bob"]`, `["Bob", "Alex"]`, `["Bob", "Chloe"]`, or `["Chloe", "Bob"]`
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DedupGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DedupLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
 [[difference-step]]
@@ -918,7 +924,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
 *Description:* Adds the difference of two lists to the Traversal Stream. 
 
-*Syntax:* `difference(Object)`
+*Syntax:* `difference(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -928,7 +934,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -953,7 +959,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[referenc
 
 *Description:* Adds the disjunct set to the Traversal Stream.
 
-*Syntax:* `disjunct(Object)`
+*Syntax:* `disjunct(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -963,8 +969,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[referenc
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array).
-* `Traversal` - A traversal that will produce a list of items.
+* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1009,17 +1014,17 @@ None
 
 *Description:* a mid-traversal step which will handle result formatting to string values.
 
-*Syntax:* `format(String)`
+*Syntax:* `format(String formatString)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |Y |`any` |`String`
+|N |Y |`by()` |`any` |`String`
 |=========================================================
 
 *Arguments:*
 
-Format string. Variables can be represented with `%{variable_name}` notation.
+* `formatString` - Variables can be represented with `%{variable_name}` notation.
 Positional arguments can be used as `%{_}` token. Can be used multiple times.
 The variable values are used in the order that the first one will be found: Element properties, then Scope values.
 If value for some variable was not found, then the result is filtered out.
@@ -1042,7 +1047,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 *Description:* Returns the length of the incoming string or list, if `Scope.local` is specified, returns
 the length of each string elements inside incoming list traverser.
 
-*Syntax:* `length()` | `length(Scope)`
+*Syntax:* `length()` | `length(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1061,7 +1066,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
 [[intersect-step]]
@@ -1069,7 +1075,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
 *Description:* Adds the intersection to the Traversal Stream.
 
-*Syntax:* `intersect(Object)`
+*Syntax:* `intersect(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1079,7 +1085,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
 
 
 *Modulation:*
@@ -1104,7 +1110,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference
 
 *Description:* Joins every element in a list together into a String. 
 
-*Syntax:* `conjoin(String)`
+*Syntax:* `conjoin(String delimiter)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1114,7 +1120,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference
 
 *Arguments:*
 
-* `String` - A delimiter to use to join the elements together. Can't be null.
+* `delimiter` - A delimiter to use to join the elements together. Can't be null.
 
 *Modulation:*
 
@@ -1122,9 +1128,9 @@ None
 
 *Considerations:*
 
-Every element in the list (except null) is converted to a String. Null values are ignored. The delimiter is inserted
+Every element in the list (except `null`) is converted to a String. Null values are ignored. The delimiter is inserted
 between neighboring elements to form the final result. This step only applies to list types which means that
-non-iterable types (including null) will cause exceptions to be thrown.
+non-iterable types (including `null`) will cause exceptions to be thrown.
 
 *Exceptions*
 
@@ -1139,7 +1145,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 
 *Description:* Returns a string with leading whitespace removed.
 
-*Syntax:* `lTrim()`
+*Syntax:* `lTrim()` | `lTrim(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1158,7 +1164,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
 [[merge-step]]
@@ -1166,7 +1173,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
 *Description:* Adds the union of two sets (or two maps) to the Traversal Stream.
 
-*Syntax:* `merge(Object)`
+*Syntax:* `merge(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1176,7 +1183,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array), a map, or a traversal that will produce a list of items.
+* `values` - A list of items (as an `Iterable` or an array), a `Map`, or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1202,7 +1209,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 
 *Description:* Provides upsert-like functionality for edges.
 
-*Syntax:* `mergeE()` | `mergeE(Map)` | `mergeE(Traversal)`
+*Syntax:* `mergeE()` | `mergeE(Map searchCreate)` | `mergeE(Traversal searchCreate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1280,7 +1287,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
 *Description:* Provides upsert-like functionality for vertices.
 
-*Syntax:* `mergeV()` | `mergeV(Map)` | `mergeV(Traversal)`
+*Syntax:* `mergeV()` | `mergeV(Map searchCreate)` | `mergeV(Traversal searchCreate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1344,7 +1351,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
 *Description:* Adds the cartesian product to the Traversal Stream.
 
-*Syntax:* `product(Object)`
+*Syntax:* `product(Object values)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1354,7 +1361,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
 *Arguments:*
 
-* `Object` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items (as an `Iterable` or an array) or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1378,7 +1385,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Description:* Returns a string with the specified characters in the original string replaced with the new characters.
 
-*Syntax:* `replace(String, String)` | `replace(Scope, String, String)`
+*Syntax:* `replace(String oldChar, String newChar)` | `replace(Scope scope, String oldChar, String newChar)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1401,7 +1408,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
 [[reverse-step]]
@@ -1437,7 +1445,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 
 *Description:* Returns a string with trailing whitespace removed.
 
-*Syntax:* `rTrim()`
+*Syntax:* `rTrim()` | `rTrim(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1456,7 +1464,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
 [[split-step]]
@@ -1464,7 +1473,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
 *Description:* Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
 
-*Syntax:* `split(String)` | `split(Scope, String)`
+*Syntax:* `split(String separator)` | `split(Scope scope, String separator)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1485,7 +1494,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 [[substring-step]]
@@ -1493,7 +1503,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(int, int)` | `substring(Scope, int, int)`
+*Syntax:* `substring(int startIndex, int endIndex)` | `substring(Scope scope, int startIndex, int endIndex)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1516,7 +1526,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
 
 [[toLower-step]]
@@ -1525,7 +1536,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference
 *Description:* Returns the lowercase representation of incoming string traverser, or if `Scope.local` is specified, returns
 the lowercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toLower()` | `toLower(Scope)`
+*Syntax:* `toLower()` | `toLower(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1544,7 +1555,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 
 [[toUpper-step]]
@@ -1553,7 +1565,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 *Description:* Returns the uppercase representation of incoming string traverser, or if `Scope.local` is specified, returns
 the uppercase representation of each string elements inside incoming list traverser.
 
-*Syntax:* `toUpper()` | `toUpper(Scope)`
+*Syntax:* `toUpper()` | `toUpper(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1572,7 +1584,8 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
 [[trim-step]]
@@ -1580,7 +1593,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
 *Description:* Returns a string with leading and trailing whitespace removed.
 
-*Syntax:* `trim()`
+*Syntax:* `trim()` | `trim(Scope scope)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1599,5 +1612,6 @@ Null values from the incoming traverser are not processed and remain as null whe
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimStep.java[source],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
