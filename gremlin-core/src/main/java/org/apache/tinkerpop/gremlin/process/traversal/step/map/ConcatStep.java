@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,14 +54,16 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
 
     public ConcatStep(final Traversal.Admin traversal, final String... concatStrings) {
         super(traversal);
-        this.concatStrings = Collections.unmodifiableList(Arrays.asList(concatStrings));
+        this.concatStrings = null == concatStrings? null : Collections.unmodifiableList(Arrays.asList(concatStrings));
         this.stringArgsResult = processStrings(concatStrings);
     }
 
     public ConcatStep(final Traversal.Admin traversal, final Traversal<?, String> concatTraversal, final Traversal<?, String>... otherConcatTraversals) {
         super(traversal);
-        this.concatTraversals = new ArrayList<>(Collections.singletonList((Traversal.Admin<S, String>) concatTraversal.asAdmin()));
-        this.concatTraversals.addAll(Stream.of(otherConcatTraversals).map(ct -> (Traversal.Admin<S, String>) ct.asAdmin()).collect(Collectors.toList()));
+        this.concatTraversals = null == concatTraversal? new ArrayList<>() : new ArrayList<>(Collections.singletonList((Traversal.Admin<S, String>) concatTraversal.asAdmin()));
+        if (null != otherConcatTraversals) {
+            this.concatTraversals.addAll(Stream.of(otherConcatTraversals).filter(Objects::nonNull).map(ct -> (Traversal.Admin<S, String>) ct.asAdmin()).collect(Collectors.toList()));
+        }
         this.concatTraversals.forEach(this::integrateChild);
     }
 

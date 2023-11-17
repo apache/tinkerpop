@@ -59,6 +59,11 @@ public class ConcatStepTest extends StepTest {
                 __.__("a", "b", "c", "d").as("letters").
                         constant("Hello ").concat(__.constant("Mr."), __.select("letters")).toList().toArray());
 
+        assertNull(__.inject(null).concat(null).next());
+        assertNull(__.inject(null).concat(__.constant(null)).next());
+        assertArrayEquals(new String[]{"hi"},
+                __.__(null).concat(null, null, __.constant("hi")).toList().toArray());
+
         String nullStr = null;
         assertNull(__.inject(null).concat(nullStr).next());
         assertArrayEquals(new String[]{"a", "b", null},
