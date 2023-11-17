@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
@@ -43,12 +44,20 @@ import java.util.function.UnaryOperator;
 @ChannelHandler.Sharable
 public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private final MessageSerializer<?> serializer;
-
+    private final boolean userAgentEnabled;
     private final UnaryOperator<FullHttpRequest> interceptor;
 
+    @Deprecated
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
         this.serializer = serializer;
         this.interceptor = interceptor;
+        this.userAgentEnabled = true;
+    }
+
+    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor, boolean userAgentEnabled) {
+        this.serializer = serializer;
+        this.interceptor = interceptor;
+        this.userAgentEnabled = userAgentEnabled;
     }
 
     @Override
@@ -69,7 +78,9 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
-
+            if (userAgentEnabled) {
+                request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
+            }
             objects.add(interceptor.apply(request));
         } catch (Exception ex) {
             throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(

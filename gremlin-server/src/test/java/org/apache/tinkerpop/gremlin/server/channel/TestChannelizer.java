@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 public interface TestChannelizer extends Channelizer {
     public ChannelHandlerContext getMostRecentChannelHandlerContext();
 
+    public void resetChannelHandlerContext();
+
     @ChannelHandler.Sharable
     class ContextHandler extends ChannelInboundHandlerAdapter {
 
@@ -45,6 +47,10 @@ public interface TestChannelizer extends Channelizer {
 
         public ChannelHandlerContext getMostRecentChannelHandlerContext() {
             return this.ctx;
+        }
+
+        public void resetChannelHandlerContext() {
+            this.ctx = null;
         }
     }
 }
