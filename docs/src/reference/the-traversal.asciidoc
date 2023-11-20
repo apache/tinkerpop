@@ -1911,7 +1911,7 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops()++[`loops()`]
 
-link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping[`Looping Recipes`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
 [[match-step]]
 === Match Step
@@ -2899,7 +2899,7 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#read--[`read()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#read()++[`read()`]
 
 [[repeat-step]]
 === Repeat Step
@@ -2999,7 +2999,7 @@ an adjacent vertex's properties or edges.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`]
 
-link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping[`Looping Recipes`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
 [[sack-step]]
 === Sack Step
@@ -3994,7 +3994,7 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write--[`write()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write()++[`write()`]
 
 [[a-note-on-predicates]]
 == A Note on Predicates
