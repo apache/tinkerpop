@@ -126,6 +126,10 @@ limitations under the License.
                                     <resource>META-INF/licenses/minlog</resource>
                                     <file>src/main/static/licenses/minlog</file>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/bigint</resource>
+                                    <file>src/main/static/licenses/bigint</file>
+                                </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                     <resources>
                                         <resource>NOTICE</resource>
