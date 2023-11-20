@@ -199,10 +199,11 @@ limitations under the License.
                                         <resource>NOTICE.txt</resource>
                                         <resource>NOTICE</resource>
                                         <resource>licenses</resource>
-                                        <!--Exclude kryo and minlog licenses to avoid conflict as they are included in
+                                        <!--Exclude kryo, minlog and bigint licenses to avoid conflict as they are included in
                                             both gremlin-shaded and gremlin-driver-->
                                         <resource>META-INF/licenses/kryo</resource>
                                         <resource>META-INF/licenses/minlog</resource>
+                                        <resource>META-INF/licenses/bigint</resource>
                                     </resources>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
@@ -220,6 +221,10 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/minlog</resource>
                                     <file>src/main/static/licenses/minlog</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/bigint</resource>
+                                    <file>src/main/static/licenses/bigint</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/logback</resource>
