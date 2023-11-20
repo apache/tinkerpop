@@ -70,8 +70,8 @@ class Client:
                 from gremlin_python.driver.aiohttp.transport import (
                     AiohttpTransport, AiohttpHTTPTransport)
             except ImportError:
-                raise Exception("Please install AIOHTTP or pass "
-                                "custom transport factory")
+                raise Exception("Please install AIOHTTP and async-timeout "
+                                "or pass custom transport factory")
             else:
                 def transport_factory():
                     if self._use_http:
