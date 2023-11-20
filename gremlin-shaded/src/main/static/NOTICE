@@ -5,7 +5,7 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ------------------------------------------------------------------------
-Jackson-Databind 2.14.0 and Jackson-Core
+Jackson-Databind, Jackson-Annotation and Jackson-Core 2.15.2
 ------------------------------------------------------------------------
 # Jackson JSON processor
 
@@ -14,16 +14,25 @@ It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
 been in development since 2007.
 It is currently developed by a community of developers.
 
-## Licensing
+* FastDoubleParser
 
-Jackson 2.x core and extension components are licensed under Apache License 2.0
-To find the details that apply to this artifact see the accompanying LICENSE file.
+    jackson-core bundles a shaded copy of FastDoubleParser <https://github.com/wrandelshofer/FastDoubleParser>.
+    That code is available under an MIT license <https://github.com/wrandelshofer/FastDoubleParser/blob/main/LICENSE>
+    under the following copyright.
 
-## Credits
+    Copyright © 2023 Werner Randelshofer, Switzerland. MIT License.
 
-A list of contributors may be found from CREDITS(-2.x) file, which is included
-in some artifacts (usually source distributions); but is always available
-from the source code management (SCM) system project uses.
+    Some portions of the code have been derived from other projects.
+
+        fast_double_parser, Copyright (c) 2022 Daniel Lemire. Apache 2.0 License.
+        https://github.com/fastfloat/fast_float
+
+        fast_float, Copyright (c) 2021 The fast_float authors. Apache 2.0 License.
+        https://github.com/fastfloat/fast_float
+
+        bigint, Copyright 2020 Tim Buktu. 2-clause BSD License.
+        https://github.com/tbuktu/bigint/tree/floatfft
+        (We only use those portions of the bigint project that can be licensed under 2-clause BSD License.)
 
 ------------------------------------------------------------------------
 Objenesis 2.4
