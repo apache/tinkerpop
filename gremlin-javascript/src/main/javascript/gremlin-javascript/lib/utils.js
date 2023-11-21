@@ -26,7 +26,7 @@
 const crypto = require('crypto');
 const os = require('os');
 
-const gremlinVersion = '3.6.6-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = '3.6.6'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 exports.toLong = function toLong(value) {
   return new Long(value);

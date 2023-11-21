@@ -22,28 +22,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 *Tinkerheart*
 
 == TinkerPop 3.6.6
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: November 20, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.6/CHANGELOG.asciidoc#release-3-6.6[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.6/CHANGELOG.asciidoc#release-3-6-6[changelog] for a
 complete list of all the modifications that are part of this release.
-
-=== Upgrading for Users
-
-
 
 === Upgrading for Providers
 
 The `HttpGremlinRequestEncoder` constructor has been deprecated in favor of one with an additional parameter `boolean userAgentEnabled`.
 User agent HTTP headers can now be encoded if this flag is enabled.
-
-==== Graph System Providers
-
-
-
-==== Graph Driver Providers
-
-
-
 
 == TinkerPop 3.6.5
 
