@@ -21,10 +21,20 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-sleeping-beauty.png[width=185]
 
 [[release-3-5-8]]
-=== TinkerPop 3.5.8 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.5.8 (Release Date: November 20, 2023)
 
 * Fixed a bug in Gremlin.Net that can lead to an `InvalidOperationException` due to modifying a collection while iterating over it in the serializers.
 * Bumped Netty to 4.1.96
+
+==== Bugs
+
+* TINKERPOP-2976 InvalidOperationException: Collection was modified in GraphBinary serialization
+* TINKERPOP-2983 Upgrade Netty for Security Reasons
+
+==== Improvements
+
+* TINKERPOP-2984 Replace Moq mocking library in .NET tests
+* TINKERPOP-2991 Reformat Javadoc link in reference docs
 
 
 [[release-3-5-7]]
