@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-1]]
-=== TinkerPop 3.7.1 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.1 (November 20, 2023)
 
 This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
 
@@ -51,6 +51,43 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
+
+==== Bugs
+
+* TINKERPOP-2811 ElementIdStrategy doesn't replace all references of an element's id with the specified custom id property
+* TINKERPOP-2921 Filters not working when side-effect is used with group()
+* TINKERPOP-2976 InvalidOperationException: Collection was modified in GraphBinary serialization
+* TINKERPOP-2983 Upgrade Netty for Security Reasons
+* TINKERPOP-2996 Golang Translator in core does not properly translate list arguments
+* TINKERPOP-2999 3.7.0 Remote Console Sends Incomplete Queries
+* TINKERPOP-3000 Issue with union step when using path().by()
+* TINKERPOP-3001 Gremlin Console complains about missing serializers field
+* TINKERPOP-3004 Low performance for queries with a large number of element comparisons
+* TINKERPOP-3009 SubgraphStrategy produces excessive filtering when multiple labels are filtered upon
+* TINKERPOP-3010 Move TinkerGraph specific transaction testing
+* TINKERPOP-3013 Console not sending scripts to the server when :remote console is enabled
+* TINKERPOP-3014 Dependencny jcl-over-slf4j in gremlin-core is declared but unused due to dependency conflict.
+* TINKERPOP-3016 TinkerTransactionGraph can incorrectly handle some read operations.
+
+==== Improvements
+
+* TINKERPOP-2334 Add format() step
+* TINKERPOP-2672 Add String Manipulation Steps to Gremlin
+* TINKERPOP-2802 Support Adding Custom Serializer for Gremlin Go
+* TINKERPOP-2830 Handle User-Agent from HTTP Requests to server
+* TINKERPOP-2946 Resolve ordering issues in gherkin tests
+* TINKERPOP-2951 Add translator to the Go GLV
+* TINKERPOP-2964  Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
+* TINKERPOP-2978 Add List Manipulation Steps to Gremlin
+* TINKERPOP-2979 Add Date Manipulation Steps to Gremlin
+* TINKERPOP-2982 Allow gremlin-driver usage over HTTP
+* TINKERPOP-2984 Replace Moq mocking library in .NET tests
+* TINKERPOP-2986 StarGraph shall drop edge properties when dropping edges
+* TINKERPOP-2988 Serialization error throws an Invalid OpProcessor exception when using stream() API
+* TINKERPOP-2991 Reformat Javadoc link in reference docs
+* TINKERPOP-2994 PartitionStrategy does not work with mergeV() and mergeE()
+* TINKERPOP-2998 UnionStep.isStart needs a public getter
+* TINKERPOP-3008 Update concat() to accept traversal varargs and remove special treatment of inject child traversals *(breaking)*
 
 [[release-3-7.0]]
 === TinkerPop 3.7.0 (Release Date: July 31, 2023)
