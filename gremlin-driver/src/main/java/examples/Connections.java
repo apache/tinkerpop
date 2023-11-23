@@ -38,7 +38,6 @@ public class Connections {
     public static void main(String[] args) throws Exception {
         withEmbedded();
         withRemote();
-        withConf();
         withCluster();
         withSerializer();
     }
@@ -63,17 +62,6 @@ public class Connections {
         g.V().drop().iterate();
 
         // Simple query to verify connection
-        g.addV().iterate();
-        long count = g.V().count().next();
-        System.out.println("Vertex count: " + count);
-
-        g.close();
-    }
-
-    // Connecting to the server with a configurations file
-    private static void withConf() throws Exception {
-        GraphTraversalSource g = traversal().withRemote("gremlin-driver/src/main/java/examples/conf/remote-graph.properties");
-
         g.addV().iterate();
         long count = g.V().count().next();
         System.out.println("Vertex count: " + count);
