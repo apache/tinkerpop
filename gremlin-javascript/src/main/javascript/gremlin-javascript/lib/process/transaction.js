@@ -63,7 +63,7 @@ class Transaction {
       throw new Error('Cannot commit a transaction that is not started');
     }
 
-    return this._sessionBasedConnection.commit().then(() => this.close());
+    return this._sessionBasedConnection.commit().finally(() => this.close());
   }
 
   /**
@@ -74,7 +74,7 @@ class Transaction {
       throw new Error('Cannot rollback a transaction that is not started');
     }
 
-    return this._sessionBasedConnection.rollback().then(() => this.close());
+    return this._sessionBasedConnection.rollback().finally(() => this.close());
   }
 
   /**

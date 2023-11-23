@@ -26,7 +26,6 @@ const Mocha = require('mocha');
 const assert = require('assert');
 const { AssertionError } = require('assert');
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
-const ResponseError = require('../../lib/driver/response-error');
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
@@ -223,7 +222,9 @@ describe('Traversal', function () {
     it('should throw exception on commit if graph not support tx', async function() {
       const g = traversal().withRemote(connection);
       const tx = g.tx();
-      tx.begin();
+      const gtx = tx.begin();
+      const result = await g.V().count().next();
+      assert.strictEqual(6, result.value);
       try {
         await tx.commit();
       } catch (err) {
