@@ -46,10 +46,14 @@ func withRemote() {
     // Creating the graph traversal
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
+    // Drop existing vertices
+    prom := g.V().Drop().Iterate()
+    <-prom
+
     // Simple query to verify connection
     g.AddV().Iterate()
     count, _ := g.V().Count().Next()
-    fmt.Println(*count)
+    fmt.Println("Vertex count:", *count)
 }
 
 func withConfigs() {
@@ -73,5 +77,5 @@ func withConfigs() {
 
     g.AddV().Iterate()
     count, _ := g.V().Count().Next()
-    fmt.Println(*count)
+    fmt.Println("Vertex count:", *count)
 }

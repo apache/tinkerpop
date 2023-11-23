@@ -32,10 +32,13 @@ async function withRemote() {
     const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
     const g = traversal().withRemote(dc);
 
+    // Drop existing vertices
+    await g.V().drop().iterate();
+
     // Simple query to verify connection
     const v = await g.addV().iterate();
     const count = await g.V().count().next();
-    console.log(count.value);
+    console.log("Vertex count: " + count.value);
 
     // Cleanup
     await dc.close();
@@ -54,7 +57,7 @@ async function withConfigs() {
 
     const v = await g.addV().iterate();
     const count = await g.V().count().next();
-    console.log(count.value);
+    console.log("Vertex count: " + count.value);
 
     await dc.close();
 }
