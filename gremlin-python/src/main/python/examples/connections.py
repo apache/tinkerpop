@@ -42,10 +42,13 @@ def with_remote():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
     g = traversal().with_remote(rc)
 
+    # drop existing vertices
+    g.V().drop().iterate()
+
     # simple query to verify connection
     v = g.add_v().iterate()
     count = g.V().count().next()
-    print(count)
+    print("Vertex count: " + str(count))
 
     # cleanup
     rc.close()
@@ -58,7 +61,7 @@ def with_auth():
 
     v = g.add_v().iterate()
     count = g.V().count().next()
-    print(count)
+    print("Vertex count: " + str(count))
 
     rc.close()
 
@@ -70,7 +73,7 @@ def with_kerberos():
 
     v = g.add_v().iterate()
     count = g.V().count().next()
-    print(count)
+    print("Vertex count: " + str(count))
 
     rc.close()
 
@@ -88,7 +91,7 @@ def with_configs():
 
     v = g.add_v().iterate()
     count = g.V().count().next()
-    print(count)
+    print("Vertex count: " + str(count))
 
     rc.close()
 

@@ -50,7 +50,7 @@ public class Connections {
 
         g.addV().iterate();
         long count = g.V().count().next();
-        System.out.println(count);
+        System.out.println("Vertex count: " + count);
 
         g.close();
     }
@@ -59,9 +59,13 @@ public class Connections {
     private static void withRemote() throws Exception {
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182, "g"));
 
+        // Drop existing vertices
+        g.V().drop().iterate();
+
+        // Simple query to verify connection
         g.addV().iterate();
         long count = g.V().count().next();
-        System.out.println(count);
+        System.out.println("Vertex count: " + count);
 
         g.close();
     }
@@ -72,7 +76,7 @@ public class Connections {
 
         g.addV().iterate();
         long count = g.V().count().next();
-        System.out.println(count);
+        System.out.println("Vertex count: " + count);
 
         g.close();
     }
@@ -92,7 +96,7 @@ public class Connections {
 
         g.addV().iterate();
         long count = g.V().count().next();
-        System.out.println(count);
+        System.out.println("Vertex count: " + count);
 
         g.close();
     }
@@ -110,7 +114,7 @@ public class Connections {
 
         g.addV().iterate();
         long count = g.V().count().next();
-        System.out.println(count);
+        System.out.println("Vertex count: " + count);
 
         g.close();
     }

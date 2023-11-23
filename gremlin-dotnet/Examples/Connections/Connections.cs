@@ -38,9 +38,13 @@ public class ConnectionExample
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
         var g = Traversal().WithRemote(remoteConnection);
 
+        // Drop existing vertices
+        g.V().Drop().Iterate();
+
+        // Simple query to verify connection
         var v = g.AddV().Iterate();
         var count = g.V().Count().Next();
-        Console.WriteLine(count);
+        Console.WriteLine("Vertex count: " + count);
     }
 
     // Connecting to the server with customized configurations
@@ -52,7 +56,7 @@ public class ConnectionExample
 
         var v = g.AddV().Iterate();
         var count = g.V().Count().Next();
-        Console.WriteLine(count);
+        Console.WriteLine("Vertex count: " + count);
     }
 
     // Specifying a serializer
@@ -65,6 +69,6 @@ public class ConnectionExample
 
         var v = g.AddV().Iterate();
         var count = g.V().Count().Next();
-        Console.WriteLine(count);
+        Console.WriteLine("Vertex count: " + count);
     }
 }
