@@ -33,7 +33,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
     internal class RemoteConnectionFactory : IDisposable
     {
         private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
-        private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
+        private static readonly int TestPort = 8182;
 
         private readonly IList<DriverRemoteConnectionImpl> _connections = new List<DriverRemoteConnectionImpl>();
         private readonly IMessageSerializer _messageSerializer;
@@ -46,7 +46,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public IRemoteConnection CreateRemoteConnection(int connectionPoolSize = 2)
         {
             // gmodern is the standard test traversalsource that the main body of test uses
-            return CreateRemoteConnection("gmodern", connectionPoolSize);
+            return CreateRemoteConnection("g", connectionPoolSize);
         }
 
         public IRemoteConnection CreateRemoteConnection(string traversalSource, int connectionPoolSize = 2)

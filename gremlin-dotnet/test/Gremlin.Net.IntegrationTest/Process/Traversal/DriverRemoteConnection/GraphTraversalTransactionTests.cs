@@ -23,6 +23,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Xunit;

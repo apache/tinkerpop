@@ -26,6 +26,7 @@ const Mocha = require('mocha');
 const assert = require('assert');
 const { AssertionError } = require('assert');
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
+const ResponseError = require('../../lib/driver/response-error');
 const { Vertex } = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
@@ -216,6 +217,38 @@ describe('Traversal', function () {
         assert.ok(item1);
         assert.strictEqual(item1.value, 1);
       }, (err) => assert.fail("tanked: " + err));
+    });
+  });
+  describe("should handle tx errors if graph not support tx", function() {
+    it('should throw exception on commit if graph not support tx', async function() {
+      const g = traversal().withRemote(connection);
+      const tx = g.tx();
+      tx.begin();
+      try {
+        await tx.commit();
+      } catch (err) {
+        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
+      }
+    });
+    it('should throw exception on rollback if graph not support tx', async function() {
+      const g = traversal().withRemote(connection);
+      const tx = g.tx();
+      tx.begin();
+      try {
+        await tx.rollback();
+      } catch (err) {
+        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
+      }
+    });
+    it('should throw exception on close if graph not support tx', async function() {
+      const g = traversal().withRemote(connection);
+      const tx = g.tx();
+      tx.begin();
+      try {
+        await tx.close();
+      } catch (err) {
+        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
+      }
     });
   });
   describe('support remote transactions - commit', function() {
