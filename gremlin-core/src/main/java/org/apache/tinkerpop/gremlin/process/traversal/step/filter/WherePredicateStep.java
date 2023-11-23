@@ -185,6 +185,6 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
         this.traversalRing.replaceTraversal(
                 (Traversal.Admin) oldTraversal,
-                (Traversal.Admin) newTraversal);
+                this.integrateChild(newTraversal));
     }
 }

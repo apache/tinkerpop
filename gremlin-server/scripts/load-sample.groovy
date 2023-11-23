@@ -31,7 +31,14 @@ globals << [hook : [
     ctx.logger.info("Loading graph data from data/sample.kryo.")
 
     // An example of an initialization script that can be configured to run in Gremlin Server.
-    graph.io(GryoIo.build()).readGraph('data/sample.kryo')
+    def gLoader = traversal().withEmbedded(graph)
+    try {
+        gLoader.io('data/sample.kryo').read().iterate()
+    } catch (Exception ex) {
+        ctx.logger.error(ex)
+    } finally {
+        gLoader.close()
+    }
   }
 ] as LifeCycleHook]
 

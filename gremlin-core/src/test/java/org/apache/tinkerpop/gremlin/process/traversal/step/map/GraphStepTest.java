@@ -21,9 +21,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,5 +44,25 @@ public class GraphStepTest extends StepTest {
                 __.V(1,4),
                 __.V(2,3)
         );
+    }
+
+    /**
+     * We used to have an issue that because we use XOR of vertex ids, V() and V("x", "x") are considered equal.
+     * The same 2 vertex ids "x" are reset as a result of XOR. See: <a href="https://issues.apache.org/jira/browse/TINKERPOP-2423">TINKERPOP-2423</a>
+     * This test verifies that the issue was fixed.
+     */
+    @Test
+    public void testCheckEqualityWithRedundantIds() {
+        final Traversal<?, ?> t0 = __.V();
+        final Traversal<?, ?> t1 = __.V(1, 1);
+
+        assertThat(t0.asAdmin().getSteps(), hasSize(1));
+        assertThat(t1.asAdmin().getSteps(), hasSize(1));
+        assertThat(t0.asAdmin().getSteps().get(0), instanceOf(GraphStep.class));
+        assertThat(t1.asAdmin().getSteps().get(0), instanceOf(GraphStep.class));
+
+        final GraphStep<?, ?> graphStep0 = (GraphStep<?, ?>) t0.asAdmin().getSteps().get(0);
+        final GraphStep<?, ?> graphStep1 = (GraphStep<?, ?>) t1.asAdmin().getSteps().get(0);
+        assertThat("V() and V(1,1) must not be considered equal", graphStep0, not(equalTo(graphStep1)));
     }
 }

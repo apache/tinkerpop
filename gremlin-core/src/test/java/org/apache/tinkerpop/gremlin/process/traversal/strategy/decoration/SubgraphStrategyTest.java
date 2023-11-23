@@ -57,6 +57,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inV;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.is;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.otherV;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
@@ -82,18 +83,18 @@ public class SubgraphStrategyTest {
                     {__.bothV(), 1},
                     {__.inV(), 1},
                     {__.outV(), 1},
-                    {__.in(), 2},
-                    {__.in("test"), 2},
-                    {__.both(), 2},
-                    {__.both("test"), 2},
-                    {__.out(), 2},
-                    {__.out("test"), 2},
-                    {__.out().inE().otherV(), 4},
+                    {__.in(), 3},
+                    {__.in("test"), 3},
+                    {__.both(), 3},
+                    {__.both("test"), 3},
+                    {__.out(), 3},
+                    {__.out("test"), 3},
+                    {__.out().bothE().otherV(), 5},
                     {g.addV(), 1},
                     {g.V(1).addE("test"), 2},
-                    {__.in().out(), 4},
-                    {__.out().out().out(), 6},
-                    {__.in().out().in(), 6},
+                    {__.in().out(), 6},
+                    {__.out().out().out(), 9},
+                    {__.in().out().in(), 9},
                     {__.inE().outV().inE().outV(), 4}});
         }
 
@@ -145,9 +146,9 @@ public class SubgraphStrategyTest {
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Traversal[][]{
-                    {__.outE(), __.outE().hasLabel("knows").and(
-                            inV().has("name", "marko").has("age", 29),
-                            outV().has("name", "marko").has("age", 29))},
+                    {__.outE(), __.outE().hasLabel("knows").filter(inV().has("name", "marko").has("age", 29)) },
+                    {__.inE(), __.inE().hasLabel("knows").filter(outV().has("name", "marko").has("age", 29)) },
+                    {__.bothE(), __.bothE().hasLabel("knows").filter(otherV().has("name", "marko").has("age", 29)) },
                     {__.V(), __.V().has("name", "marko").has("age", 29)},
                     {__.V().has("location", "santa fe"), __.V().has("name", "marko").has("age", 29).has("location", "santa fe")},
                     {__.V().where(has("location", "santa fe")), __.V().has("name", "marko").has("age", 29).has("location", "santa fe")},
@@ -200,13 +201,13 @@ public class SubgraphStrategyTest {
             final Traversal.Admin<?, ?> t = out().inE().asAdmin();
             t.setStrategies(t.getStrategies().clone().addStrategies(strategy, StandardVerificationStrategy.instance()));
             t.applyStrategies();
-            assertEquals(t.getSteps().get(0).getClass(), VertexStep.class);
-            assertEquals(t.getSteps().get(1).getClass(), TraversalFilterStep.class);
-            assertEquals(AndStep.class, ((TraversalFilterStep<?>) t.getSteps().get(1)).getLocalChildren().get(0).getStartStep().getClass());
+            assertEquals(VertexStep.class, t.getSteps().get(0).getClass());
+            assertEquals(TraversalFilterStep.class, t.getSteps().get(1).getClass());
+            assertEquals(VertexStep.class, ((TraversalFilterStep<?>) t.getSteps().get(1)).getLocalChildren().get(0).getStartStep().getClass());
             assertEquals(0, ((TraversalFilterStep<?>) t.getSteps().get(1)).getLocalChildren().get(0).getStartStep().getLabels().size());
-            assertEquals(t.getSteps().get(2).getClass(), EdgeVertexStep.class);
-            assertEquals(t.getSteps().get(3).getClass(), TraversalFilterStep.class);
-            assertEquals(VertexStep.class, ((TraversalFilterStep<?>) t.getSteps().get(3)).getLocalChildren().get(0).getStartStep().getClass());
+            assertEquals(VertexStep.class, t.getSteps().get(2).getClass());
+            assertEquals(TraversalFilterStep.class, t.getSteps().get(3).getClass());
+            assertEquals(EdgeVertexStep.class, ((TraversalFilterStep<?>) t.getSteps().get(3)).getLocalChildren().get(0).getStartStep().getClass());
             assertEquals(0, ((TraversalFilterStep<?>) t.getSteps().get(3)).getLocalChildren().get(0).getStartStep().getLabels().size());
             TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, t).forEach(step -> assertTrue(step.getLabels().isEmpty()));
         }

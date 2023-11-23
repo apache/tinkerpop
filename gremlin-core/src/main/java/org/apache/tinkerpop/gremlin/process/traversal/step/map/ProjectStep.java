@@ -112,7 +112,7 @@ public class ProjectStep<S, E> extends ScalarMapStep<S, Map<String, E>> implemen
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
         this.traversalRing.replaceTraversal(
                 (Traversal.Admin<S, E>) oldTraversal,
-                (Traversal.Admin<S, E>) newTraversal);
+                this.integrateChild(newTraversal));
     }
 
     public List<String> getProjectKeys() {

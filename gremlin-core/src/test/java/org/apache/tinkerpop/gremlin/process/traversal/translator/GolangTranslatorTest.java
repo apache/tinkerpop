@@ -34,6 +34,8 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
@@ -116,5 +118,11 @@ public class GolangTranslatorTest {
                         "Order().By(&gremlingo.Lambda{Script:\"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\", Language:\"\"})." +
                         "Sack(&gremlingo.Lambda{Script:\"a,b -> a + b\", Language:\"\"})",
                 translator.translate(bytecode).getScript());
+    }
+
+    @Test
+    public void shouldTranslateArrayOfArray() {
+        assertEquals("g.Inject([]interface{}{[]interface{}{1, 2}, []interface{}{3, 4}})",
+                translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getBytecode()).getScript());
     }
 }

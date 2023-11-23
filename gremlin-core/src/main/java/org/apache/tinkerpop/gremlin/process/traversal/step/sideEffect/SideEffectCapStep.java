@@ -28,10 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -56,11 +58,8 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        for (final String sideEffectKey : this.sideEffectKeys) {
-            result ^= sideEffectKey.hashCode();
-        }
-        return result;
+        // keys' order does not matter because cap("x", "y") and cap("y", "x") should be considered equal.
+        return Objects.hash(super.hashCode(), Arrays.hashCode(sideEffectKeys.stream().sorted().toArray()));
     }
 
     public List<String> getSideEffectKeys() {

@@ -28,7 +28,7 @@ using System.Text.Json;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
@@ -80,11 +80,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         [Fact]
         public void ShouldDeserializeWithCustomDeserializerForCommonType()
         {
-            var customSerializerMock = new Mock<IGraphSONDeserializer>();
+            var customSerializerMock = Substitute.For<IGraphSONDeserializer>();
             const string overrideTypeString = "g:Int64";
             var customSerializerByType = new Dictionary<string, IGraphSONDeserializer>
             {
-                {overrideTypeString, customSerializerMock.Object}
+                {overrideTypeString, customSerializerMock}
             };
             var reader = new GraphSON2Reader(customSerializerByType);
 
@@ -92,7 +92,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
                 JsonSerializer.Deserialize<JsonElement>($"{{\"@type\":\"{overrideTypeString}\",\"@value\":12}}");
             var deserializedValue = reader.ToObject(jsonElement);
 
-            customSerializerMock.Verify(m => m.Objectify(It.IsAny<JsonElement>(), It.IsAny<GraphSONReader>()));
+            customSerializerMock.Received(1).Objectify(Arg.Any<JsonElement>(), Arg.Any<GraphSONReader>());
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -487,9 +487,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            var deserializedValue = reader.ToObject(jsonElement);
+            object[] deserializedValue = reader.ToObject(jsonElement);
             
-            Assert.Equal(new object[0], deserializedValue);
+            Assert.Equal(Array.Empty<object>(), deserializedValue);
         }
         
         [Theory, MemberData(nameof(VersionsSupportingCollections))]

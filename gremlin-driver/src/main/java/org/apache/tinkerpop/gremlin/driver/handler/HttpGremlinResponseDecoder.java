@@ -45,12 +45,6 @@ public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<Fu
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final FullHttpResponse httpResponse, final List<Object> objects) throws Exception {
-        final String content = httpResponse.content().toString(CharsetUtil.UTF_8);
-
-        if (!(serializer instanceof MessageTextSerializer))
-            throw new IllegalStateException(String.format("%s must be of type %s to decode responses from HTTP endpoints",
-                    serializer.getClass().getSimpleName(), HttpGremlinResponseDecoder.class.getSimpleName()));
-
-        objects.add(((MessageTextSerializer) serializer).deserializeResponse(content));
+        objects.add(serializer.deserializeResponse(httpResponse.content()));
     }
 }

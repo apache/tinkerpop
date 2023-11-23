@@ -19,7 +19,9 @@ under the License.
 
 package gremlingo
 
-import "math/big"
+import (
+	"math/big"
+)
 
 // Traverser is the objects propagating through the traversal.
 type Traverser struct {
@@ -286,8 +288,8 @@ type merges struct {
 var Merge = merges{
 	OnCreate: "onCreate",
 	OnMatch:  "onMatch",
-	OutV:  "outV",
-	InV:  "inV",
+	OutV:     "outV",
+	InV:      "inV",
 }
 
 type operator string
@@ -443,14 +445,23 @@ func (*p) Test(args ...interface{}) Predicate {
 	return newP("test", args...)
 }
 
+func convertArguments(args []interface{}) []interface{} {
+	if len(args) == 1 {
+		if asArray, ok := args[0].([]interface{}); ok {
+			return asArray
+		}
+	}
+	return args
+}
+
 // Within Predicate determines if value is within given list of values.
 func (*p) Within(args ...interface{}) Predicate {
-	return newP("within", args...)
+	return newP("within", convertArguments(args)...)
 }
 
 // Without Predicate determines if value is not within the specified.
 func (*p) Without(args ...interface{}) Predicate {
-	return newP("without", args...)
+	return newP("without", convertArguments(args)...)
 }
 
 // And Predicate returns a Predicate composed of two predicates (logical AND of them).

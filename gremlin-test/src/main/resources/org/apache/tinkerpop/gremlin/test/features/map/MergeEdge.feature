@@ -206,7 +206,7 @@ Feature: Step - mergeE()
       g.mergeE([:])
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
   Scenario: g_V_mergeEXemptyX_two_exist
     Given the empty graph
@@ -237,7 +237,7 @@ Feature: Step - mergeE()
       g.mergeE(null)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
   # Directions not specified
   Scenario: g_V_mergeEXnullX
@@ -251,7 +251,7 @@ Feature: Step - mergeE()
       g.V().mergeE(null)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Out Vertex not specified in onCreate - edge cannot be created"
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX
     Given the empty graph
