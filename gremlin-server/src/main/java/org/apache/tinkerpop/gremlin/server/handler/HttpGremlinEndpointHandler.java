@@ -66,6 +66,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -154,10 +155,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
+            final UUID requestId = requestMessage.getRequestId();
             final String acceptMime = Optional.ofNullable(req.headers().get(HttpHeaderNames.ACCEPT)).orElse("application/json");
             final Pair<String, MessageTextSerializer<?>> serializer = chooseSerializer(acceptMime);
             if (null == serializer) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptMime),
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, requestId, String.format("no serializer for requested Accept header: %s", acceptMime),
                         keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
@@ -210,7 +212,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     bindings = createBindings(requestMessage.getArgOrDefault(Tokens.ARGS_BINDINGS, Collections.emptyMap()),
                             requestMessage.getArgOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap()));
                 } catch (IllegalStateException iae) {
-                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, requestId, iae.getMessage(), keepAlive);
                     ReferenceCountUtil.release(msg);
                     return;
                 }
@@ -237,7 +239,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             final List<Object> results = requestMessage.getOp().equals(Tokens.OPS_BYTECODE) ?
                                     (List<Object>) IteratorUtils.asList(o).stream().map(r -> new DefaultRemoteTraverser<Object>(r, 1)).collect(Collectors.toList()) :
                                     IteratorUtils.asList(o);
-                            final ResponseMessage responseMessage = ResponseMessage.build(requestMessage.getRequestId())
+                            final ResponseMessage responseMessage = ResponseMessage.build(requestId)
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(results).create();
 
@@ -269,9 +271,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                 evalFuture.exceptionally(t -> {
                     if (t.getMessage() != null)
-                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), Optional.of(t), keepAlive);
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestId, t.getMessage(), Optional.of(t), keepAlive);
                     else
-                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, String.format("Error encountered evaluating script: %s",
+                        HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestId, String.format("Error encountered evaluating script: %s",
                                         requestMessage.getArg(Tokens.ARGS_GREMLIN))
                                 , Optional.of(t), keepAlive);
                     promise.setFailure(t);
@@ -289,11 +291,11 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 // context on whether to close the connection or not, based on keepalive.
                 final Throwable t = ExceptionHelper.getRootCause(ex);
                 if (t instanceof TooLongFrameException) {
-                    HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, t.getMessage() + " - increase the maxContentLength", keepAlive);
+                    HttpHandlerUtil.sendError(ctx, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, requestId, t.getMessage() + " - increase the maxContentLength", keepAlive);
                 } else if (t != null){
-                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, t.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestId, t.getMessage(), keepAlive);
                 } else {
-                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, ex.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestId, ex.getMessage(), keepAlive);
                 }
             }
         }

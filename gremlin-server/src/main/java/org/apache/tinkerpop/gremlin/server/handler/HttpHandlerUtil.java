@@ -230,10 +230,15 @@ public class HttpHandlerUtil {
 
     static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
                           final String message, final boolean keepAlive) {
-        sendError(ctx, status, message, Optional.empty(), keepAlive);
+        sendError(ctx, status, null, message, Optional.empty(), keepAlive);
     }
 
-    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
+    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final UUID requestId,
+                          final String message, final boolean keepAlive) {
+        sendError(ctx, status, requestId, message, Optional.empty(), keepAlive);
+    }
+
+    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final UUID requestId,
                           final String message, final Optional<Throwable> t, final boolean keepAlive) {
         if (t.isPresent())
             logger.warn(String.format("Invalid request - responding with %s and %s", status, message), t.get());
@@ -250,6 +255,9 @@ public class HttpHandlerUtil {
             final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
             ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
             node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
+        }
+        if (requestId != null) {
+            node.put("requestId", requestId.toString());
         }
 
         final FullHttpResponse response = new DefaultFullHttpResponse(

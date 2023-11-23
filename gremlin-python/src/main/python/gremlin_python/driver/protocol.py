@@ -223,35 +223,37 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
         self._transport.write(message)
 
-    def data_received(self, message, results_dict):
+    def data_received(self, response, results_dict):
         # if Gremlin Server cuts off then we get a None for the message
-        if message is None:
+        if response is None:
             log.error("Received empty message from server.")
             raise GremlinServerError({'code': 500,
                                       'message': 'Server disconnected - please try to reconnect', 'attributes': {}})
 
-        message = self._message_serializer.deserialize_message(message)
-        request_id = message['requestId']
-        result_set = results_dict[request_id] if request_id in results_dict else ResultSet(None, None)
-        status_code = message['status']['code']
-        aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
-        data = message['result']['data']
-        result_set.aggregate_to = aggregate_to
+        if response['ok']:
+            message = self._message_serializer.deserialize_message(response['content'])
+            request_id = message['requestId']
+            result_set = results_dict[request_id] if request_id in results_dict else ResultSet(None, None)
+            status_code = message['status']['code']
+            aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
+            data = message['result']['data']
+            result_set.aggregate_to = aggregate_to
 
-        if status_code == 204:
-            result_set.stream.put_nowait([])
-            del results_dict[request_id]
-            return status_code
-        elif status_code in [200, 206]:
-            result_set.stream.put_nowait(data)
-            if status_code == 200:
-                result_set.status_attributes = message['status']['attributes']
+            if status_code == 204:
+                result_set.stream.put_nowait([])
                 del results_dict[request_id]
-            return status_code
+                return status_code
+            elif status_code in [200, 206]:
+                result_set.stream.put_nowait(data)
+                if status_code == 200:
+                    result_set.status_attributes = message['status']['attributes']
+                    del results_dict[request_id]
+                return status_code
         else:
             # This message is going to be huge and kind of hard to read, but in the event of an error,
             # it can provide invaluable info, so space it out appropriately.
             log.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
-                      str(message), str(results_dict))
-            del results_dict[request_id]
-            raise GremlinServerError(message['status'])
+                      str(response['content']), str(results_dict))
+            body = json.loads(response['content'])
+            del results_dict[body['requestId']]
+            raise GremlinServerError({'code': response['status'], 'message': body['message'], 'attributes': {}})
