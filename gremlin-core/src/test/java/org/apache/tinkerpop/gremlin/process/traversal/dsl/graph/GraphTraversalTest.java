@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
@@ -159,6 +160,16 @@ public class GraphTraversalTest {
                     }
                 } else if (stepMethod.getName().equals("math")) {
                     list.add(arguments[0] = random.nextInt(100) + " + " + random.nextInt(100));
+                } else if (stepMethod.getName().equals("project")) {
+                    // project has two arguments [String, String[]]
+                    list.add(arguments[0] = randomString(random));
+                    arguments[1] = new String[random.nextInt(10) + 1];
+                    for (int j = 0; j < ((String[]) arguments[1]).length; j++) {
+                        ((String[]) arguments[1])[j] = arguments[0] + randomString(random); // adds argument[0] to avoid getting its duplicate in argument[1]
+                    }
+                    // remove duplicates in argument[1] if any
+                    arguments[1] = Arrays.stream((String[]) arguments[1]).distinct().toArray(String[]::new);
+                    list.addAll(Arrays.stream((String[]) arguments[1]).collect(Collectors.toList()));
                 } else {
                     for (int i = 0; i < stepMethod.getParameterTypes().length; i++) {
                         final Class<?> type = stepMethod.getParameterTypes()[i];
@@ -175,13 +186,8 @@ public class GraphTraversalTest {
                         else if (String[].class.isAssignableFrom(type)) {
                             arguments[i] = new String[random.nextInt(10) + 1];
                             for (int j = 0; j < ((String[]) arguments[i]).length; j++) {
-                                list.add(((String[]) arguments[i])[j] = arguments[0] + randomString(random)); // adds the first string to all to avoid duplicates
+                                list.add(((String[]) arguments[i])[j] = randomString(random));
                             }
-                            // makes sure that no duplicated random string is created by removing duplicates
-                            arguments[i] = Arrays.stream((String[]) arguments[i]).distinct().toArray(String[]::new);
-                            final Set<Object> tempSet = new LinkedHashSet<>(list);
-                            list.clear();
-                            list.addAll(tempSet);
                         } else if (Traversal.class.isAssignableFrom(type))
                             list.add(arguments[i] = __.out(randomString(random)).in(randomString(random)).groupCount(randomString(random)));
                         else if (Traversal[].class.isAssignableFrom(type)) {
