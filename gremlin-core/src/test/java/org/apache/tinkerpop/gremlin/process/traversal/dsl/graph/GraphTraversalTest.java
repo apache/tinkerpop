@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -174,8 +175,13 @@ public class GraphTraversalTest {
                         else if (String[].class.isAssignableFrom(type)) {
                             arguments[i] = new String[random.nextInt(10) + 1];
                             for (int j = 0; j < ((String[]) arguments[i]).length; j++) {
-                                list.add(((String[]) arguments[i])[j] = randomString(random));
+                                list.add(((String[]) arguments[i])[j] = arguments[0] + randomString(random)); // adds the first string to all to avoid duplicates
                             }
+                            // makes sure that no duplicated random string is created by removing duplicates
+                            arguments[i] = Arrays.stream((String[]) arguments[i]).distinct().toArray(String[]::new);
+                            final Set<Object> tempSet = new LinkedHashSet<>(list);
+                            list.clear();
+                            list.addAll(tempSet);
                         } else if (Traversal.class.isAssignableFrom(type))
                             list.add(arguments[i] = __.out(randomString(random)).in(randomString(random)).groupCount(randomString(random)));
                         else if (Traversal[].class.isAssignableFrom(type)) {
