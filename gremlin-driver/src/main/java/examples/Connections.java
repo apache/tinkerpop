@@ -66,6 +66,7 @@ public class Connections {
         long count = g.V().count().next();
         System.out.println("Vertex count: " + count);
 
+        // Cleanup
         g.close();
     }
 
