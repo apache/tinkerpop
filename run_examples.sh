@@ -18,7 +18,7 @@
 #under the License.
 
 open -a Docker
-docker pull tinkerpop/gremlin-server:3.6
+docker pull tinkerpop/gremlin-server:3.7
 docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:3.6
 echo -n "Starting Gremlin server on port 8182..."
 until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q "healthy"; do
