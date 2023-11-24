@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.tinkerpop</groupId>
   <artifactId>run-examples</artifactId>
-  <version>3.6.6-SNAPSHOT</version>
+  <version>3.7.1</version>
   <build>
     <sourceDirectory>.</sourceDirectory>
     <plugins>
@@ -37,7 +37,7 @@
     </plugins>
   </build>
   <properties>
-    <gremlin.version>3.6.6</gremlin.version>
+    <gremlin.version>3.7.1</gremlin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
