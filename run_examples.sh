@@ -17,17 +17,15 @@
 #specific language governing permissions and limitations
 #under the License.
 
-echo "hello world"
 open -a Docker
-
-echo
 docker pull tinkerpop/gremlin-server:3.6
-docker run -d --rm -p 8182:8182 --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s --name ClassicTestServer tinkerpop/gremlin-server:3.6 conf/gremlin-server-modern.yaml
-echo -n "Starting container on port 8182..."
-until docker inspect --format '{{.State.Health.Status}}' ClassicTestServer | grep -q "healthy"; do
+docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:3.6
+echo -n "Starting Gremlin server on port 8182..."
+until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q "healthy"; do
      echo -n "."
      sleep 1
 done
+echo
 
 cd gremlin-driver/src/main/java/examples || exit
 mvn clean install
@@ -61,13 +59,14 @@ go run connections.go
 go run basic_gremlin.go
 cd ../.. || exit
 
+echo
 echo -n "Shutting down container: "
-docker stop ClassicTestServer
+docker stop glv-examples
 
 echo
-docker run -d --rm -p 8182:8182 --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s --name ModernTestServer tinkerpop/gremlin-server:3.6 conf/gremlin-server-modern.yaml
-echo -n "Starting container on port 8182..."
-until docker inspect --format '{{.State.Health.Status}}' ModernTestServer | grep -q "healthy"; do
+docker run -d --rm -p 8182:8182 --name glv-examples-modern --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:3.6 conf/gremlin-server-modern.yaml
+echo -n "Starting Modern server on port 8182..."
+until docker inspect --format '{{.State.Health.Status}}' glv-examples-modern | grep -q "healthy"; do
      echo -n "."
      sleep 1
 done
@@ -75,7 +74,9 @@ echo
 
 echo
 echo "Running Java traversals"
+cd gremlin-driver/src/main/java/examples || exit
 java -cp target/run-examples-shaded.jar examples.ModernTraversals
+cd ../../../../.. || exit
 
 echo
 echo "Running python traversals:"
@@ -98,4 +99,4 @@ cd ../.. || exit
 
 echo
 echo -n "Shutting down container: "
-docker stop ModernTestServer
+docker stop glv-examples-modern
