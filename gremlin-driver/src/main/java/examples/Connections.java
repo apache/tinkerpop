@@ -56,7 +56,8 @@ public class Connections {
 
     // Connecting to the server
     private static void withRemote() throws Exception {
-        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost", 8182, "g"));
+        Cluster cluster = Cluster.build("localhost").port(8182).create();
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
         // Drop existing vertices
         g.V().drop().iterate();
@@ -67,6 +68,7 @@ public class Connections {
         System.out.println("Vertex count: " + count);
 
         // Cleanup
+        cluster.close();
         g.close();
     }
 
@@ -87,6 +89,7 @@ public class Connections {
         long count = g.V().count().next();
         System.out.println("Vertex count: " + count);
 
+        cluster.close();
         g.close();
     }
 
@@ -105,6 +108,7 @@ public class Connections {
         long count = g.V().count().next();
         System.out.println("Vertex count: " + count);
 
+        cluster.close();
         g.close();
     }
 
