@@ -168,7 +168,7 @@ public class GraphTraversalTest {
                     }
                     // remove duplicates in argument[1] if any
                     arguments[1] = Arrays.stream((String[]) arguments[1]).distinct().toArray(String[]::new);
-                    list.addAll(Arrays.stream((String[]) arguments[1]).collect(Collectors.toList()));
+                    list.addAll(Arrays.asList((String[]) arguments[1]));
                 } else {
                     for (int i = 0; i < stepMethod.getParameterTypes().length; i++) {
                         final Class<?> type = stepMethod.getParameterTypes()[i];
