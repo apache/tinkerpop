@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -221,11 +221,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
      * that a traversal should be re-written in another form.
      *
-     * @return the updated traversal with respective {@link NoneStep}.
+     * @return the updated traversal with respective {@link DiscardStep}.
      */
     public default Traversal<S, E> none() {
         this.asAdmin().getBytecode().addStep(Symbols.none);
-        return this.asAdmin().addStep(new NoneStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
     }
 
     /**

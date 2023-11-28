@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
@@ -38,7 +38,7 @@ import java.util.List;
  * This strategy looks for {@link RangeGlobalStep}s that can be moved further left in the traversal and thus be applied
  * earlier. It will also try to merge multiple {@link RangeGlobalStep}s into one.
  * If the logical consequence of one or multiple {@link RangeGlobalStep}s is an empty result, the strategy will remove
- * as many steps as possible and add a {@link NoneStep} instead.
+ * as many steps as possible and add a {@link DiscardStep} instead.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
@@ -73,8 +73,8 @@ public final class EarlyLimitStrategy
                     // previous RangeStep; keep the RangeStep's labels at its preceding step
                     TraversalHelper.copyLabels(step, step.getPreviousStep(), true);
                     insertAfter = moveRangeStep((RangeGlobalStep) step, insertAfter, traversal, merge);
-                    if (insertAfter instanceof NoneStep) {
-                        // any step besides a SideEffectCapStep after a NoneStep would be pointless
+                    if (insertAfter instanceof DiscardStep) {
+                        // any step besides a SideEffectCapStep after a DiscardStep would be pointless
                         final int noneStepIndex = TraversalHelper.stepIndex(insertAfter, traversal);
                         for (i = j - 2; i > noneStepIndex; i--) {
                             if (!(steps.get(i) instanceof SideEffectCapStep) && !(steps.get(i) instanceof ProfileSideEffectStep)) {
@@ -106,7 +106,7 @@ public final class EarlyLimitStrategy
         if (insertAfter instanceof RangeGlobalStep) {
             // there's a previous RangeStep which might affect the effective range of the current RangeStep
             // recompute this step's low and high; if the result is still a valid range, create a new RangeStep,
-            // otherwise a NoneStep
+            // otherwise a DiscardStep
             final RangeGlobalStep other = (RangeGlobalStep) insertAfter;
             final long low = other.getLowRange() + step.getLowRange();
             if (other.getHighRange() == -1L) {
@@ -116,11 +116,11 @@ public final class EarlyLimitStrategy
                 if (low < high) {
                     rangeStep = new RangeGlobalStep(traversal, low, high);
                 } else {
-                    rangeStep = new NoneStep<>(traversal);
+                    rangeStep = new DiscardStep<>(traversal);
                 }
             } else {
                 final long high = Math.min(other.getLowRange() + step.getHighRange(), other.getHighRange());
-                rangeStep = high > low ? new RangeGlobalStep(traversal, low, high) : new NoneStep<>(traversal);
+                rangeStep = high > low ? new RangeGlobalStep(traversal, low, high) : new DiscardStep<>(traversal);
             }
             remove = merge;
             TraversalHelper.replaceStep(merge ? insertAfter : step, rangeStep, traversal);
