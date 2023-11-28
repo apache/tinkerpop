@@ -90,7 +90,9 @@ Feature: Step - none()
       g.inject(xx1).none(TextP.startingWith("a"))
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | l[null,bcd] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5_8_10_10_7X_noneXltX7XX
