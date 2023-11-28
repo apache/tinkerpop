@@ -18,8 +18,11 @@
 #under the License.
 
 open -a Docker
-docker pull tinkerpop/gremlin-server:3.6
-docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:3.6
+docker pull tinkerpop/gremlin-server
+docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server
+
+echo
+echo "Not having docker open initially may cause an error loop. If so, simply restart this script."
 echo -n "Starting Gremlin server on port 8182..."
 until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q "healthy"; do
      echo -n "."
@@ -64,7 +67,7 @@ echo -n "Shutting down container: "
 docker stop glv-examples
 
 echo
-docker run -d --rm -p 8182:8182 --name glv-examples-modern --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:3.6 conf/gremlin-server-modern.yaml
+docker run -d --rm -p 8182:8182 --name glv-examples-modern --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 echo -n "Starting Modern server on port 8182..."
 until docker inspect --format '{{.State.Health.Status}}' glv-examples-modern | grep -q "healthy"; do
      echo -n "."
