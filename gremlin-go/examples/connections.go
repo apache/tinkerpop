@@ -43,8 +43,8 @@ func withRemote() {
 	// Cleanup
 	defer driverRemoteConnection.Close()
 
-    // Creating the graph traversal
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	// Creating graph traversal
+	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
     // Drop existing vertices
     prom := g.V().Drop().Iterate()

@@ -22,7 +22,7 @@ from gremlin_python.process.traversal import Bytecode, P
 from gremlin_python.process.graph_traversal import (
     GraphTraversalSource, GraphTraversal)
 from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
-from gremlin_python.structure.graph import Graph
+from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -71,7 +71,7 @@ class SocialTraversalSource(GraphTraversalSource):
 
 
 def test_dsl(remote_connection):
-    social = Graph().traversal(SocialTraversalSource).withRemote(remote_connection)
+    social = traversal(SocialTraversalSource).with_(remote_connection)
     assert social.persons("marko").knows("josh").next()
     assert social.persons("marko").youngestFriendsAge().next() == 27
     assert social.persons().count().next() == 4

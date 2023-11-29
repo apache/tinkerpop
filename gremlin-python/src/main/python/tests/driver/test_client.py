@@ -25,7 +25,8 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
-from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.graph_traversal import __, GraphTraversalSource
+from gremlin_python.process.traversal import TraversalStrategies
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
@@ -39,7 +40,7 @@ test_no_auth_url = gremlin_server_url.format(45940)
 
 
 def test_connection(connection):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     results_set = connection.write(message).result()
@@ -192,7 +193,7 @@ def test_client_gremlin(client):
 
 
 def test_client_bytecode(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -202,7 +203,7 @@ def test_client_bytecode(client):
 def test_client_bytecode_options(client):
     # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
     # test perspective because there's no way to access the internals of the strategy via bytecode
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -215,7 +216,7 @@ def test_client_bytecode_options(client):
 
 
 def test_iterate_result_set(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -226,7 +227,7 @@ def test_iterate_result_set(client):
 
 
 def test_client_async(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     future = client.submit_async(message)
@@ -237,7 +238,7 @@ def test_client_async(client):
 def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
     client = Client(test_no_auth_url, 'gmodern', pool_size=1)
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
@@ -254,7 +255,7 @@ def test_connection_share(client):
 
 
 def test_multi_conn_pool(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     message2 = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
@@ -271,7 +272,7 @@ def test_multi_conn_pool(client):
 
 
 def test_multi_thread_pool(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     traversals = [g.V(),
                   g.V().count(),
                   g.E(),
@@ -311,7 +312,7 @@ def test_multi_thread_pool(client):
     assert results[3][0][0].object == 6
 
 def test_client_bytecode_with_short(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', short(16)).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -321,7 +322,7 @@ def test_client_bytecode_with_short(client):
     assert len(results) == 1
 
 def test_client_bytecode_with_long(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', long(851401972585122)).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -332,7 +333,7 @@ def test_client_bytecode_with_long(client):
 
 
 def test_client_bytecode_with_bigint(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
@@ -373,7 +374,7 @@ def test_client_pool_in_session(client):
 
 
 def test_big_result_set(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
     result_set = client.submit(message)
@@ -416,7 +417,7 @@ def test_big_result_set(client):
 
 
 def test_big_result_set_secure(authenticated_client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.inject(1).repeat(__.addV('person').property('name', __.loops())).times(20000).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'g'}})
     result_set = authenticated_client.submit(message)
@@ -495,7 +496,7 @@ def test_client_custom_valid_request_id_script_string(client):
 
 def test_client_custom_invalid_request_id_graphson_bytecode(client):
     client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphSONSerializersV3d0())
-    query = Graph().traversal().V().bytecode
+    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     try:
         client.submit(query, request_options={"requestId":"malformed"}).all().result()
     except Exception as ex:
@@ -504,7 +505,7 @@ def test_client_custom_invalid_request_id_graphson_bytecode(client):
 
 def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
     client = Client(test_no_auth_url, 'gmodern', message_serializer=serializer.GraphBinarySerializersV1())
-    query = Graph().traversal().V().bytecode
+    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     try:
         client.submit(query, request_options={"requestId":"malformed"}).all().result()
     except Exception as ex:
@@ -512,5 +513,5 @@ def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
 
 
 def test_client_custom_valid_request_id_bytecode(client):
-    query = Graph().traversal().V().bytecode
+    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     assert len(client.submit(query).all().result()) == 6

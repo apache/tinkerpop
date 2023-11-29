@@ -34,13 +34,13 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
     public class IntroTests
     {
         private readonly GraphTraversalSource g = Traversal()
-            .WithRemote(new RemoteConnectionFactory().CreateRemoteConnection());
+            .With(new RemoteConnectionFactory().CreateRemoteConnection());
 
         [Fact(Skip="No Server under localhost")]
         public void TraversalSourceCreationTest()
         {
 // tag::traversalSourceCreation[]
-var g = Traversal().WithRemote(new DriverRemoteConnection("localhost", 8182));
+var g = Traversal().With(new DriverRemoteConnection("localhost", 8182));
 // end::traversalSourceCreation[]
         }
         

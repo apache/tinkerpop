@@ -61,7 +61,7 @@ public class CompressionBenchmarks
 
     private static async Task PerformBenchmarkWithClient(GremlinClient client)
     {
-        var g = Traversal().WithRemote(new DriverRemoteConnection(client));
+        var g = Traversal().With(new DriverRemoteConnection(client));
         for (var i = 0; i < 5; i++)
         {
             await g.V().Repeat(Both()).Times(10).Emit().Fold().Promise(t => t.ToList());

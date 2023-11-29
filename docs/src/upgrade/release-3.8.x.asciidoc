@@ -30,6 +30,36 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Simplification to g creation
+The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
+long recommended the use of the anonymous `traversal()` function for this creation.
+[source,groovy]
+----
+// for embedded cases
+graph = TinkerGraph.open()
+g = traversal().withEmbedded(graph)
+// for remote cases
+g = traversal().withRemote(DriverRemoteConnection.using(...)))
+----
+As of this release, those two methods have been deprecated in favor of just `with()` which means you could simply write:
+[source,groovy]
+----
+// for embedded cases
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+// for remote cases
+g = traversal().with(DriverRemoteConnection.using(...)))
+----
+That's a bit less to type, but also removes need to programmatically decide which function to call which hopefully
+strengthens the abstraction further. To demonstrate this further consider this next example:
+[source,groovy]
+----
+g = traversal().with("config.properties")
+----
+The properties file in the above example can either point to a remote configuration or a embedded configuration allowing
+"g" to be switched as needed without code changes.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

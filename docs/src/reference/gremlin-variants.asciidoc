@@ -92,7 +92,7 @@ creating a `GraphTraversalSource`. A `GraphTraversalSource` is created from the 
 [source,go]
 ----
 remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := gremlingo.Traversal_().WithRemote(remote)
+g := gremlingo.Traversal_().With(remote)
 ----
 
 If you need to additional parameters to connection setup, you can pass in a configuration function.
@@ -210,7 +210,7 @@ builds on that content by demonstrating the transactional syntax for Go.
 [source,go]
 ----
 remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := gremlingo.Traversal_().WithRemote(remote)
+g := gremlingo.Traversal_().With(remote)
 
 // Create a Transaction.
 tx := g.Tx()
@@ -442,7 +442,7 @@ driverRemoteConnection, _ := gremlingo.NewDriverRemoteConnection("ws://localhost
 defer driverRemoteConnection.Close()
 
 // Create social traversal source from graph traversal source.
-social := &socialTraversalSource{gremlingo.Traversal_().WithRemote(driverRemoteConnection)}
+social := &socialTraversalSource{gremlingo.Traversal_().With(driverRemoteConnection)}
 
 // We can now use the social traversal source as well as traversal steps
 resBool, _ := social.persons("marko", "stephen").knows("josh").HasNext()
@@ -645,7 +645,7 @@ to creating a `GraphTraversalSource`. For <<connecting-embedded,embedded>> mode,
 [source,java]
 ----
 Graph graph = ...;
-GraphTraversalSource g = traversal().withEmbedded(graph);
+GraphTraversalSource g = traversal().with(graph);
 ----
 
 Using "g" it is then possible to start writing Gremlin. The "g" allows for the setting of many configuration options
@@ -659,14 +659,14 @@ are provided as follows:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"));
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using("localhost",8182,"g"));
 ----
 
 It is also possible to create it from a configuration. The most basic way to do so involves the following line of code:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().with('conf/remote-graph.properties');
 ----
 
 The `remote-graph.properties` file simply provides connection information to the `GraphTraversalSource` which is used
@@ -686,7 +686,7 @@ TinkerPop driver. The driver is configured by the specified `gremlin.remote.driv
 bound to the `GraphTraversalSource` on the remote end with `gremlin.remote.driver.sourceName` which in this case is
 also "g".
 
-There are other ways to configure the traversal using `withRemote()` as it has other overloads. It can take an
+There are other ways to configure the traversal using `with()` as it has other overloads. It can take an
 Apache Commons `Configuration` object which would have keys similar to those shown in the properties file and it
 can also take a `RemoteConnection` instance directly. The latter is interesting in that it means it is possible to
 programmatically construct all aspects of the `RemoteConnection`. For TinkerPop usage, that might mean directly
@@ -696,26 +696,26 @@ the command shown above could be re-written using programmatic construction as f
 [source,java]
 ----
 Cluster cluster = Cluster.open();
-GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g"));
 ----
 
 Please consider the following example:
 
 [gremlin-groovy]
 ----
-g = traversal().withRemote('conf/remote-graph.properties')
+g = traversal().with('conf/remote-graph.properties')
 g.V().elementMap()
 g.close()
 ----
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote("conf/remote-graph.properties");
+GraphTraversalSource g = traversal().with("conf/remote-graph.properties");
 List<Map> list = g.V().elementMap();
 g.close();
 ----
 
-Note the call to `close()` above. The call to `withRemote()` internally instantiates a connection via the driver that
+Note the call to `close()` above. The call to `with()` internally instantiates a connection via the driver that
 can only be released by "closing" the `GraphTraversalSource`. It is important to take that step to release network
 resources associated with `g`.
 
@@ -726,7 +726,7 @@ objects and then re-use them.
 ----
 cluster = Cluster.open('conf/remote-objects.yaml')
 client = cluster.connect()
-g = traversal().withRemote(DriverRemoteConnection.using(client, "g"))
+g = traversal().with(DriverRemoteConnection.using(client, "g"))
 g.V().elementMap()
 g.close()
 client.close()
@@ -743,7 +743,7 @@ on the `TraversalSource`. For instance to set request timeout to 500 millisecond
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote(conf);
+GraphTraversalSource g = traversal().with(conf);
 List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
 ----
 
@@ -851,7 +851,7 @@ Cluster cluster = Cluster.build().
                           serializer(serializer).
                           create();
 Client client = cluster.connect();
-GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "g"));
 ----
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
@@ -1094,7 +1094,7 @@ Using the DSL then just involves telling the `Graph` to use it:
 
 [source,java]
 ----
-SocialTraversalSource social = traversal(SocialTraversalSource.class).withEmbedded(graph);
+SocialTraversalSource social = traversal(SocialTraversalSource.class).with(graph);
 social.V().has("name","marko").knows("josh");
 ----
 
@@ -1150,7 +1150,7 @@ It is then possible to use the `persons()` method to start traversals:
 
 [source,java]
 ----
-SocialTraversalSource social = traversal(SocialTraversalSource.class).withEmbedded(graph);
+SocialTraversalSource social = traversal(SocialTraversalSource.class).with(graph);
 social.persons("marko").knows("josh");
 ----
 
@@ -1280,7 +1280,7 @@ the remote end.
 
 [source,javascript]
 ----
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = traversal().with(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 
 Gremlin-JavaScript supports plain text SASL authentication, you can set it on the connection options.
@@ -1288,7 +1288,7 @@ Gremlin-JavaScript supports plain text SASL authentication, you can set it on th
 [source,javascript]
 ----
 const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator('myuser', 'mypassword');
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
+const g = traversal().with(new DriverRemoteConnection('ws://localhost:8182/gremlin', { authenticator });
 ----
 
 Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
@@ -1405,7 +1405,7 @@ builds on that content by demonstrating the transactional syntax for Javascript.
 
 [source,javascript]
 ----
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = traversal().with(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 const tx = g.tx(); // create a Transaction
 
 // spawn a new GraphTraversalSource binding all traversals established from it to tx
@@ -1603,7 +1603,7 @@ To use the DSL, simply initialize the `g` as follows:
 
 [source,javascript]
 ----
-const g = traversal(SocialTraversalSource).withRemote(connection);
+const g = traversal(SocialTraversalSource).with(connection);
 g.person('marko').aged(29).values('name').toList().
   then(names => console.log(names));
 ----
@@ -2128,7 +2128,7 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 
 [source,python]
 ----
-g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+g = traversal().with_(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 ----
 
 If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
@@ -2136,7 +2136,7 @@ to the `DriverRemoteConnection` constructor.
 
 [source,python]
 ----
-g = traversal().with_remote(DriverRemoteConnection(
+g = traversal().with_(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
 ----
 
@@ -2145,11 +2145,11 @@ Gremlin-Python supports plain text and Kerberos SASL authentication, you can set
 [source,python]
 ----
 # Plain text authentication
-g = traversal().with_remote(DriverRemoteConnection(
+g = traversal().with_(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', username='stephen', password='password'))
 
 # Kerberos authentication
-g = traversal().with_remote(DriverRemoteConnection(
+g = traversal().with_(DriverRemoteConnection(
     'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
 ----
 
@@ -2291,7 +2291,7 @@ and the ability to call the api from an event loop:
 ----
 import ssl
 ...
-g = traversal().with_remote(
+g = traversal().with_(
   DriverRemoteConnection('ws://localhost:8182/gremlin','g',
                          transport_factory=lambda: AiohttpTransport(read_timeout=60,
                                                                     write_timeout=20,
@@ -2352,7 +2352,7 @@ builds on that content by demonstrating the transactional syntax for Python.
 
 [source,python]
 ----
-g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin'))
+g = traversal().with_(DriverRemoteConnection('ws://localhost:8182/gremlin'))
 
 # Create a Transaction.
 tx = g.tx()
@@ -2556,7 +2556,7 @@ be used:
 
 [source,python]
 ----
-social = traversal(SocialTraversalSource).with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+social = traversal(SocialTraversalSource).with_(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 social.persons('marko').knows('josh')
 social.persons('marko').youngest_friends_age()
 social.persons().filter(__.created_at_least(2)).count()
@@ -2626,7 +2626,7 @@ from asynchronous code using a thread.
 [source,python]
 ----
 def print_vertices():
-    g = traversal().withRemote(DriverRemoteConnection("ws://localhost:8182/gremlin"))
+    g = traversal().with_(DriverRemoteConnection("ws://localhost:8182/gremlin"))
     # Do your traversal.
 
 async def run_in_thread():

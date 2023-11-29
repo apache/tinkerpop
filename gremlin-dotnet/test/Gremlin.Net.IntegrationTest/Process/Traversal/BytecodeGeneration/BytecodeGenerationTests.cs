@@ -32,7 +32,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void GraphTraversalStepsShouldUnrollParamsParameters()
         {
-            var g = AnonymousTraversalSource.Traversal();
+            var g = AnonymousTraversalSource.Traversal().With(null);
 
             var bytecode = g.V().HasLabel("firstLabel", "secondLabel", "thirdLabel").Bytecode;
 
@@ -44,7 +44,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void g_V_OutXcreatedX()
         {
-            var g = AnonymousTraversalSource.Traversal();
+            var g = AnonymousTraversalSource.Traversal().With(null);
 
             var bytecode = g.V().Out("created").Bytecode;
 
@@ -59,7 +59,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void g_WithSackX1X_E_GroupCount_ByXweightX()
         {
-            var g = AnonymousTraversalSource.Traversal();
+            var g = AnonymousTraversalSource.Traversal().With(null);
 
             var bytecode = g.WithSack(1).E().GroupCount<double>().By("weight").Bytecode;
 
@@ -79,7 +79,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         [Fact]
         public void g_InjectX1_2_3X()
         {
-            var g = AnonymousTraversalSource.Traversal();
+            var g = AnonymousTraversalSource.Traversal().With(null);
 
             var bytecode = g.Inject(1, 2, 3).Bytecode;
 

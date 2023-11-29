@@ -25,7 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
-*
+* Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
+* Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
+* Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

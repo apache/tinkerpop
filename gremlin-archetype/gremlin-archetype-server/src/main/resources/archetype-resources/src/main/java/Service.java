@@ -21,7 +21,6 @@ package ${package};
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class Service implements AutoCloseable {
      * Construct a remote GraphTraversalSource using the above created Cluster instance that will connect to Gremlin
      * Server.
      */
-    private final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+    private final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
 
     /**
      * Create Service as a singleton given the simplicity of App.

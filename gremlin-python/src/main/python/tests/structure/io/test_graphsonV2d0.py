@@ -35,6 +35,7 @@ import gremlin_python.structure.io.graphsonV2d0
 from gremlin_python.process.traversal import P, Merge, Operator, Order, Barrier, Direction
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.anonymous_traversal import traversal
 
 
 class TestGraphSONReader:
@@ -493,7 +494,7 @@ class TestFunctionalGraphSONIO:
     """Functional IO tests"""
 
     def test_timestamp(self, remote_connection_graphsonV2):
-        g = Graph().traversal().withRemote(remote_connection_graphsonV2)
+        g = traversal().with_(remote_connection_graphsonV2)
         ts = timestamp(1481750076295 / 1000)
         resp = g.addV('test_vertex').property('ts', ts)
         resp = resp.toList()
@@ -508,7 +509,7 @@ class TestFunctionalGraphSONIO:
             g.V(vid).drop().iterate()
 
     def test_datetime(self, remote_connection_graphsonV2):
-        g = Graph().traversal().withRemote(remote_connection_graphsonV2)
+        g = traversal().with_(remote_connection_graphsonV2)
         dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
         resp = g.addV('test_vertex').property('dt', dt).toList()
         vid = resp[0].id
@@ -522,7 +523,7 @@ class TestFunctionalGraphSONIO:
             g.V(vid).drop().iterate()
 
     def test_uuid(self, remote_connection_graphsonV2):
-        g = Graph().traversal().withRemote(remote_connection_graphsonV2)
+        g = traversal().with_(remote_connection_graphsonV2)
         uid = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
         resp = g.addV('test_vertex').property('uuid', uid).toList()
         vid = resp[0].id

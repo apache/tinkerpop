@@ -222,7 +222,7 @@ $ bin/gremlin.sh
 -----oOOo-(3)-oOOo-----
 gremlin> graph = TinkerFactory.createModern() // <1>
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = traversal().withEmbedded(graph)        // <2>
+gremlin> g = traversal().with(graph)        // <2>
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ==>vadas
@@ -330,7 +330,7 @@ named "g":
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withEmbedded(graph);
+GraphTraversalSource g = traversal().with(graph);
 List<Vertex> vertices = g.V().toList()
 ----
 
@@ -385,7 +385,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 // gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-GraphTraversalSource g = traversal().withRemote(
+GraphTraversalSource g = traversal().with(
                 DriverRemoteConnection.using("localhost", 8182));
 ----
 [source,groovy]
@@ -396,7 +396,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 // gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-def g = traversal().withRemote(
+def g = traversal().with(
                 DriverRemoteConnection.using('localhost', 8182))
 ----
 [source,csharp]
@@ -409,14 +409,14 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ----
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 
-const g = traversal().withRemote(
+const g = traversal().with(
                 new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 [source,python]
 ----
 from gremlin_python.process.anonymous_traversal_source import traversal
 
-g = traversal().withRemote(
+g = traversal().with(
           DriverRemoteConnection('ws://localhost:8182/gremlin'))
 ----
 [source,go]
@@ -426,7 +426,7 @@ import (
 )
 
 remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := gremlingo.Traversal_().WithRemote(remote)
+g := gremlingo.Traversal_().With(remote)
 ----
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
