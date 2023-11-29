@@ -389,7 +389,7 @@ func createConnection(host string, port, poolSize, buffersSize int) (*GraphTrave
 	if err != nil {
 		log.Fatalln(err)
 	} else {
-		g = gremlingo.Traversal_().WithRemote(drc)
+		g = gremlingo.Traversal_().With(drc)
 	}
 	return g, drc, err
 }

@@ -37,7 +37,7 @@ anonymous_url = gremlin_server_url.format(45940)
 
 class TestTraversal(object):
     def test_bytecode(self):
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
         bytecode = g.V().out("created").bytecode
         assert 0 == len(bytecode.bindings.keys())
         assert 0 == len(bytecode.source_instructions)
@@ -111,7 +111,7 @@ class TestTraversal(object):
         assert 0 == len(bytecode.step_instructions)
 
     def test_clone_traversal(self):
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
         original = g.V().out("created")
         clone = original.clone().out("knows")
         cloneClone = clone.clone().out("created")
@@ -128,7 +128,7 @@ class TestTraversal(object):
         assert 4 == len(cloneClone.bytecode.step_instructions)
 
     def test_no_sugar_for_magic_methods(self):
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
 
         t = g.V().age
         assert 2 == len(t.bytecode.step_instructions)
@@ -141,7 +141,7 @@ class TestTraversal(object):
                 err) == 'Python magic methods or keys starting with double underscore cannot be used for Gremlin sugar - prefer values(__len__)'
 
     def test_enforce_anonymous_child_traversal(self):
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
         g.V(0).addE("self").to(__.V(1))
 
         try:
@@ -152,7 +152,7 @@ class TestTraversal(object):
 
     def test_transaction_commit(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         start_count = g.V().count().next()
         tx = g.tx()
 
@@ -175,7 +175,7 @@ class TestTraversal(object):
 
     def test_transaction_rollback(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         start_count = g.V().count().next()
         tx = g.tx()
 
@@ -198,7 +198,7 @@ class TestTraversal(object):
 
     def test_transaction_no_begin(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         tx = g.tx()
 
         # Except transaction to not be open until begin is called.
@@ -249,7 +249,7 @@ class TestTraversal(object):
 
     def test_multi_commit_transaction(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         start_count = g.V().count().next()
 
         # Create two transactions.
@@ -279,7 +279,7 @@ class TestTraversal(object):
 
     def test_multi_rollback_transaction(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         start_count = g.V().count().next()
 
         # Create two transactions.
@@ -309,7 +309,7 @@ class TestTraversal(object):
 
     def test_multi_commit_and_rollback(self, remote_transaction_connection):
         # Start a transaction traversal.
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         start_count = g.V().count().next()
 
         # Create two transactions.
@@ -339,7 +339,7 @@ class TestTraversal(object):
 
     def test_transaction_close_tx(self):
         remote_conn = create_connection_to_gtx()
-        g = traversal().withRemote(remote_conn)
+        g = traversal().with_(remote_conn)
 
         drop_graph_check_count(g)
 
@@ -367,14 +367,14 @@ class TestTraversal(object):
         verify_gtx_closed(gtx2)
 
         remote_conn = create_connection_to_gtx()
-        g = traversal().withRemote(remote_conn)
+        g = traversal().with_(remote_conn)
         assert g.V().count().next() == 0
 
         drop_graph_check_count(g)
 
     def test_transaction_close_tx_from_parent(self):
         remote_conn = create_connection_to_gtx()
-        g = traversal().withRemote(remote_conn)
+        g = traversal().with_(remote_conn)
 
         drop_graph_check_count(g)
 
@@ -402,7 +402,7 @@ class TestTraversal(object):
         verify_gtx_closed(gtx2)
 
         remote_conn = create_connection_to_gtx()
-        g = traversal().withRemote(remote_conn)
+        g = traversal().with_(remote_conn)
         assert g.V().count().next() == 0
 
         drop_graph_check_count(g)

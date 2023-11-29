@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class SocialDslTest {
 
     private Graph graph = TinkerFactory.createModern();
-    private SocialTraversalSource social = traversal(SocialTraversalSource.class).withGraph(graph);
+    private SocialTraversalSource social = traversal(SocialTraversalSource.class).with(graph);
 
     @Test
     public void shouldValidateThatMarkoKnowsJosh() {

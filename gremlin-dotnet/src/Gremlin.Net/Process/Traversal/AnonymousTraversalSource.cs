@@ -21,7 +21,10 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using Gremlin.Net.Structure;
+using Gremlin.Net.Process.Remote;
 
 namespace Gremlin.Net.Process.Traversal
 {
@@ -39,10 +42,23 @@ namespace Gremlin.Net.Process.Traversal
         ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
         /// </summary>
         /// <returns>A graph traversal source.</returns>
-        public static GraphTraversalSource Traversal()
+        public static AnonymousTraversalSource Traversal()
         {
-            return new GraphTraversalSource();
+            return new AnonymousTraversalSource();
         }
+
+        /// <summary>
+        ///     Configures the <see cref="GraphTraversalSource" /> as a "remote" to issue the
+        ///     <see cref="GraphTraversal{SType, EType}" /> for execution elsewhere.
+        /// </summary>
+        /// <param name="remoteConnection">
+        ///     The <see cref="IRemoteConnection" /> instance to use to submit the
+        ///     <see cref="GraphTraversal{SType, EType}" />.
+        /// </param>
+        /// <returns>A <see cref="GraphTraversalSource" /> configured to use the provided <see cref="IRemoteConnection" />.</returns>
+        public GraphTraversalSource With(IRemoteConnection remoteConnection) =>
+            new GraphTraversalSource(new List<ITraversalStrategy>(),
+                new Bytecode(), remoteConnection);
     }
 
 }

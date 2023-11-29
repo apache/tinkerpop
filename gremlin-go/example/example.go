@@ -44,7 +44,7 @@ func main() {
 	defer driverRemoteConnection.Close()
 
 	// Creating graph traversal
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
 	// Perform traversal
 	result, err := g.V().HasLabel("person").Has("age", __.Is(gt(28))).Order().By("age", order.Desc).Values("name").ToList()

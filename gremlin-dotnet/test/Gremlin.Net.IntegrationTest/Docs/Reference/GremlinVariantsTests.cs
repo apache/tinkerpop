@@ -55,14 +55,14 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
     public class GremlinVariantsTests
     {
         private readonly GraphTraversalSource g = Traversal()
-            .WithRemote(new RemoteConnectionFactory().CreateRemoteConnection());
+            .With(new RemoteConnectionFactory().CreateRemoteConnection());
         
         [Fact(Skip="No Server under localhost")]
         public void ConnectingTest()
         {
 // tag::connecting[]
 using var remoteConnection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)), "g");
-var g = Traversal().WithRemote(remoteConnection);
+var g = Traversal().With(remoteConnection);
 // end::connecting[]
         }
         
@@ -169,7 +169,7 @@ var gremlinServer = new GremlinServer("localhost", 8182, true, username, passwor
         {
 // tag::transactions[]
 using var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182));
-var g = Traversal().WithRemote(new DriverRemoteConnection(gremlinClient));
+var g = Traversal().With(new DriverRemoteConnection(gremlinClient));
 var tx = g.Tx();    // create a transaction
 
 // spawn a new GraphTraversalSource binding all traversals established from it to tx
