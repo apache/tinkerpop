@@ -20,6 +20,11 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
+[[release-3-6-7]]
+=== TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
+* Added ExplainStrategy which allows to get traversal explanation for remote traversals and GLV's.
+
+
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
 

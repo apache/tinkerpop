@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ExplainStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
@@ -209,6 +210,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             RepeatUnrollStrategy.class,
                             ComputerVerificationStrategy.class,
                             LambdaRestrictionStrategy.class,
+                            ExplainStrategy.class,
                             ReadOnlyStrategy.class,
                             StandardVerificationStrategy.class,
                             EarlyLimitStrategy.class,
@@ -340,6 +342,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     RepeatUnrollStrategy.class,
                     ComputerVerificationStrategy.class,
                     LambdaRestrictionStrategy.class,
+                    ExplainStrategy.class,
                     ReadOnlyStrategy.class,
                     StandardVerificationStrategy.class,
                     EarlyLimitStrategy.class,
@@ -450,6 +453,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             RepeatUnrollStrategy.class,
                             ComputerVerificationStrategy.class,
                             LambdaRestrictionStrategy.class,
+                            ExplainStrategy.class,
                             ReadOnlyStrategy.class,
                             StandardVerificationStrategy.class,
                             EarlyLimitStrategy.class,
@@ -571,6 +575,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     RepeatUnrollStrategy.class,
                     ComputerVerificationStrategy.class,
                     LambdaRestrictionStrategy.class,
+                    ExplainStrategy.class,
                     ReadOnlyStrategy.class,
                     StandardVerificationStrategy.class,
                     EarlyLimitStrategy.class,

@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ExplainStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
@@ -50,6 +51,8 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                 return ReadOnlyStrategy.instance();
             else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
                 return ProductiveByStrategy.instance();
+            else if (strategyName.equals(ExplainStrategy.class.getSimpleName()))
+                return ExplainStrategy.instance();
         } else if (ctx.getChild(0).getText().equals("new")) {
             final String strategyName = ctx.getChild(1).getText();
             if (strategyName.equals(PartitionStrategy.class.getSimpleName()))
