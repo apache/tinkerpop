@@ -845,6 +845,7 @@ traversalStrategy
     | 'ReadOnlyStrategy'
     | NEW 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
 //  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
+    | 'ExplainStrategy' LPAREN RPAREN
     ;
 
 traversalStrategyArgs_ProductiveByStrategy

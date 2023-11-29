@@ -121,6 +121,11 @@ class MatchAlgorithmStrategy(TraversalStrategy):
             self.configuration["matchAlgorithm"] = match_algorithm
 
 
+class ExplainStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self, fqcn=finalization_namespace + 'ExplainStrategy')
+
+
 ###########################
 # OPTIMIZATION STRATEGIES #
 ###########################

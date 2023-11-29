@@ -87,6 +87,7 @@ class StrategyLoader {
         EdgeLabelVerificationStrategy.metaClass.constructor << { Map conf -> EdgeLabelVerificationStrategy.create(new MapConfiguration(conf)) }
         // # LambdaRestrictionStrategy is singleton
         // # ReadOnlyStrategy is singleton
+        // # ExplainStrategy is singleton
         ReservedKeysVerificationStrategy.metaClass.constructor << { Map conf -> ReservedKeysVerificationStrategy.create(new MapConfiguration(conf)) }
         // # StandardVerificationStrategy is singleton/internal
     }

@@ -78,6 +78,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ExplainStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -266,6 +267,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(IncidentToAdjacentStrategy.class);
         CLASS_IMPORTS.add(MatchPredicateStrategy.class);
         CLASS_IMPORTS.add(EarlyLimitStrategy.class);
+        CLASS_IMPORTS.add(ExplainStrategy.class);
         CLASS_IMPORTS.add(OrderLimitStrategy.class);
         CLASS_IMPORTS.add(PathProcessorStrategy.class);
         CLASS_IMPORTS.add(ComputerVerificationStrategy.class);

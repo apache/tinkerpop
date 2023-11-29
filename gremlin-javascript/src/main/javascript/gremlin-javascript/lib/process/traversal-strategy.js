@@ -167,6 +167,12 @@ class VertexProgramStrategy extends TraversalStrategy {
   }
 }
 
+class ExplainStrategy extends TraversalStrategy {
+  constructor() {
+    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ExplainStrategy');
+  }
+}
+
 class MatchAlgorithmStrategy extends TraversalStrategy {
   /**
    * @param matchAlgorithm
@@ -328,6 +334,7 @@ module.exports = {
   SubgraphStrategy: SubgraphStrategy,
   VertexProgramStrategy: VertexProgramStrategy,
   // finalization
+  ExplainStrategy: ExplainStrategy,
   MatchAlgorithmStrategy: MatchAlgorithmStrategy,
   // optimization
   AdjacentToIncidentStrategy: AdjacentToIncidentStrategy,

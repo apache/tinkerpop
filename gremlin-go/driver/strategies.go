@@ -186,6 +186,11 @@ type VertexProgramStrategyConfig struct {
 
 // Finalization strategies
 
+// ExplainStrategy produces traversal explanation.
+func ExplainStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "ExplainStrategy"}
+}
+
 func MatchAlgorithmStrategy(config MatchAlgorithmStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
 	if config.MatchAlgorithm != "" {
@@ -307,9 +312,10 @@ func IdentityRemovalStrategy() TraversalStrategy {
 // IncidentToAdjacentStrategy looks for .OutE().InV(), .InE().OutV() and .BothE().OtherV()
 // and replaces these step sequences with .Out(), .In() or .Both() respectively.
 // The strategy won't modify the traversal if:
-//   the Edge step is labeled
-//   the traversal contains a Path step
-//   the traversal contains a Lambda step
+//
+//	the Edge step is labeled
+//	the traversal contains a Path step
+//	the traversal contains a Lambda step
 func IncidentToAdjacentStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "IncidentToAdjacentStrategy"}
 }
@@ -379,9 +385,10 @@ type ProductiveByStrategyConfig struct {
 // RepeatUnrollStrategy is an OLTP-only strategy that unrolls any RepeatStep if it uses a constant
 // number of loops (Times(x)) and doesn't emit intermittent elements. If any of the following 3 steps appears
 // within the Repeat-traversal, the strategy will not be applied:
-//   DedupGlobalStep
-//   LoopsStep
-//   LambdaHolder
+//
+//	DedupGlobalStep
+//	LoopsStep
+//	LambdaHolder
 func RepeatUnrollStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "RepeatUnrollStrategy"}
 }
