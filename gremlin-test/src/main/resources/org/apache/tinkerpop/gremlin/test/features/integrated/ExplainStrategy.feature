@@ -18,8 +18,7 @@
 @StepClassIntegrated
 Feature: Step - ExplainStrategy
 
-  @WithExplainStrategy
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @WithExplainStrategy
   Scenario: g_withStrategiesXExplainStrategyX_V
     Given the modern graph
     And the traversal of
