@@ -1441,6 +1441,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).min_(*args)
 
     @classmethod
+    def none(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).none(*args)
+
+    @classmethod
     def not_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).not_(*args)
 

@@ -117,7 +117,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> all adds the all step to that traversal.
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the all step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> All(P? predicate)
         {
@@ -135,7 +135,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> any adds the any step to that traversal.
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the any step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Any(P? predicate)
         {
@@ -1094,6 +1094,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Min<E2>(Scope scope)
         {
             return new GraphTraversal<object, E2>().Min<E2>(scope);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the none step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> None(P? predicate)
+        {
+            return new GraphTraversal<object, object>().None(predicate);
         }
 
         /// <summary>

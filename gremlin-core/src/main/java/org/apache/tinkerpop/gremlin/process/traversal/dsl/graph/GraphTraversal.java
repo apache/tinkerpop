@@ -171,6 +171,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
@@ -182,7 +183,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSid
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
@@ -2841,6 +2841,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new AnyStep<>(this.asAdmin(), predicate));
     }
 
+    /**
+     * Filters <code>E</code> lists given the provided {@code predicate}.
+     *
+     * @param predicate the filter to apply
+     * @return the traversal with an appended {@link NoneStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#none-step" target="_blank">Reference Documentation - None Step</a>
+     * @since 4.0.0
+     */
+    public default <S2> GraphTraversal<S, E> none(final P<S2> predicate) {
+        this.asAdmin().getBytecode().addStep(Symbols.none, predicate);
+        return this.asAdmin().addStep(new NoneStep<>(this.asAdmin(), predicate));
+    }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     /**
@@ -4090,6 +4103,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String dateDiff = "dateDiff";
         public static final String all = "all";
         public static final String any = "any";
+        public static final String none = "none";
         public static final String merge = "merge";
         public static final String product = "product";
         public static final String combine = "combine";

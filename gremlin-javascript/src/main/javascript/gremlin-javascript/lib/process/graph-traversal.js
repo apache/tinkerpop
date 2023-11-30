@@ -1799,6 +1799,7 @@ const statics = {
   mergeE: (...args) => callOnEmptyTraversal('mergeE', args),
   mergeV: (...args) => callOnEmptyTraversal('mergeV', args),
   min: (...args) => callOnEmptyTraversal('min', args),
+  none: (...args) => callOnEmptyTraversal('none', args),
   not: (...args) => callOnEmptyTraversal('not', args),
   optional: (...args) => callOnEmptyTraversal('optional', args),
   or: (...args) => callOnEmptyTraversal('or', args),
