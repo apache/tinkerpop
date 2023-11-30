@@ -109,7 +109,7 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
      */
     @Override
     public Traversal visitTraversalSelfMethod_none(final GremlinParser.TraversalSelfMethod_noneContext ctx) {
-        this.traversal = traversal.none();
+        this.traversal = traversal.discard();
         return this.traversal;
     }
 

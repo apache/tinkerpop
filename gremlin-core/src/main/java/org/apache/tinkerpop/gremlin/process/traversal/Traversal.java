@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -35,6 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,8 +55,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 
 /**
  * A {@link Traversal} represents a directed walk over a {@link Graph}.
@@ -75,7 +75,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         public static final String profile = "profile";
-        public static final String none = "none";
+        public static final String discard = "discard";
     }
 
     /**
@@ -201,7 +201,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     public default <A, B> Traversal<A, B> iterate() {
         try {
             if (!this.asAdmin().isLocked()) {
-                this.none();
+                this.discard();
                 this.asAdmin().applyStrategies();
             }
             // use the end step so the results are bulked
@@ -221,12 +221,25 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
      * that a traversal should be re-written in another form.
      *
-     * @return the updated traversal with respective {@link NoneStep}.
+     * @return the updated traversal with respective {@link DiscardStep}.
      */
-    public default Traversal<S, E> none() {
-        this.asAdmin().getBytecode().addStep(Symbols.none);
-        return this.asAdmin().addStep(new NoneStep<>(this.asAdmin()));
+    public default Traversal<S, E> discard() {
+        this.asAdmin().getBytecode().addStep(Symbols.discard);
+        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
     }
+
+    /**
+     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
+     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
+     * that a traversal should be re-written in another form.
+     *
+     * @return the updated traversal with respective {@link DiscardStep}.
+     */
+//    @Deprecated
+//    public default Traversal<S, E> none() {
+//        this.asAdmin().getBytecode().addStep(Symbols.discard);
+//        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
+//    }
 
     /**
      * Profile the traversal.
