@@ -23,9 +23,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finaliza
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -74,9 +73,9 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
         if (TraversalHelper.hasStepOfClass(ProfileSideEffectStep.class, traversal) &&
                 !(endStep instanceof ProfileSideEffectStep ||
                         (endStep instanceof SideEffectCapStep && endStep.getPreviousStep() instanceof ProfileSideEffectStep) ||
-                        (endStep instanceof NoneStep && endStep.getPreviousStep() instanceof SideEffectCapStep && endStep.getPreviousStep().getPreviousStep() instanceof ProfileSideEffectStep) ||
+                        (endStep instanceof DiscardStep && endStep.getPreviousStep() instanceof SideEffectCapStep && endStep.getPreviousStep().getPreviousStep() instanceof ProfileSideEffectStep) ||
                         (endStep instanceof RequirementsStep && endStep.getPreviousStep() instanceof SideEffectCapStep && endStep.getPreviousStep().getPreviousStep() instanceof ProfileSideEffectStep) ||
-                        (endStep instanceof RequirementsStep && endStep.getPreviousStep() instanceof NoneStep && endStep.getPreviousStep().getPreviousStep() instanceof SideEffectCapStep && endStep.getPreviousStep().getPreviousStep().getPreviousStep() instanceof ProfileSideEffectStep))) {
+                        (endStep instanceof RequirementsStep && endStep.getPreviousStep() instanceof DiscardStep && endStep.getPreviousStep().getPreviousStep() instanceof SideEffectCapStep && endStep.getPreviousStep().getPreviousStep().getPreviousStep() instanceof ProfileSideEffectStep))) {
             throw new VerificationException("When specified, the profile()-Step must be the last step or followed only by the cap()-step.", traversal);
         }
 
