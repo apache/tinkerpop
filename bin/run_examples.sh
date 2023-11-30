@@ -30,7 +30,7 @@ until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q 
 done
 echo
 
-cd gremlin-driver/src/main/java/examples || exit
+cd ../gremlin-driver/src/main/java/examples || exit
 mvn clean install
 
 echo
