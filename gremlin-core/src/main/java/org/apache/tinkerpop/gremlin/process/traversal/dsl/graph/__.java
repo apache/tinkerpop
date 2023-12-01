@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FormatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -804,6 +803,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, Set<?>> difference(final Object values) {
         return __.<A>start().difference(values);
+    }
+
+    /**
+     * @see GraphTraversal#discard()
+     */
+    public static <A> GraphTraversal<A, A> discard() {
+        return __.<A>start().discard();
     }
 
     /**
