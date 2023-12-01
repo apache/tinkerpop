@@ -1492,11 +1492,11 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the none step to this <see cref="GraphTraversal{SType, EType}" />.
+        ///     Adds the discard step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> None ()
+        public GraphTraversal<TStart, TEnd> Discard ()
         {
-            Bytecode.AddStep("none");
+            Bytecode.AddStep("discard");
             return Wrap<TStart, TEnd>(this);
         }
 
