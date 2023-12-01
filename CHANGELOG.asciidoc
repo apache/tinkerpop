@@ -30,6 +30,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
+* Removed traversal discarding `none()`, which was deprecated in 3.7.2 in favor of `discard()`.
+* Added new list filtering step `none()`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Bumped to `commons-collection4`.
 
@@ -40,7 +42,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (NOT OFFICIALLY RELEASED YET)
 
-
+* Deprecated `none()` in favor of `discard()` to make room for a list filtering `none()` step.
 
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (November 20, 2023)
@@ -99,7 +101,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * TINKERPOP-2830 Handle User-Agent from HTTP Requests to server
 * TINKERPOP-2946 Resolve ordering issues in gherkin tests
 * TINKERPOP-2951 Add translator to the Go GLV
-* TINKERPOP-2964  Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
+* TINKERPOP-2964 Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
 * TINKERPOP-2978 Add List Manipulation Steps to Gremlin
 * TINKERPOP-2979 Add Date Manipulation Steps to Gremlin
 * TINKERPOP-2982 Allow gremlin-driver usage over HTTP

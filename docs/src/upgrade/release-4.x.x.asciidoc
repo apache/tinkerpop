@@ -82,6 +82,11 @@ skipped with incorrect result.
 
 === Upgrading for Providers
 
+==== Renaming None Step to Discard
+`none()`, which was deprecated in 3.7.2 favor of `discard()`, has been removed. In its place will be a new list
+filtering step `none()`, which takes a predicate and passes lists with no elements matching the predicate.
+
+
 ==== Graph System Providers
 
 ===== AbstractAuthenticatorHandler Constructor
