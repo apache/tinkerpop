@@ -234,6 +234,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * that a traversal should be re-written in another form.
      *
      * @return the updated traversal with respective {@link DiscardStep}.
+     *
+     * @deprecated As of release 3.7.2, replaced by {@link #discard()}.
      */
     @Deprecated
     public default Traversal<S, E> none() {
