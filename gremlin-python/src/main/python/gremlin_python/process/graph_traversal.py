@@ -684,8 +684,8 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("min", *args)
         return self
 
-    def none(self, *args):
-        self.bytecode.add_step("none", *args)
+    def discard(self, *args):
+        self.bytecode.add_step("discard", *args)
         return self
 
     def not_(self, *args):

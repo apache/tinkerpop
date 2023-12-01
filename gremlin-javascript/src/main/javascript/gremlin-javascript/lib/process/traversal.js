@@ -84,7 +84,7 @@ class Traversal {
    * @returns {Promise}
    */
   iterate() {
-    this.bytecode.addStep('none');
+    this.bytecode.addStep('discard');
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
