@@ -235,11 +235,11 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      *
      * @return the updated traversal with respective {@link DiscardStep}.
      */
-//    @Deprecated
-//    public default Traversal<S, E> none() {
-//        this.asAdmin().getBytecode().addStep(Symbols.discard);
-//        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
-//    }
+    @Deprecated
+    public default Traversal<S, E> none() {
+        this.asAdmin().getBytecode().addStep(Symbols.discard);
+        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
+    }
 
     /**
      * Profile the traversal.
