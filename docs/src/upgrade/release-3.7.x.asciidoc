@@ -21,6 +21,17 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremfir Master of the Pan Flute*
 
+== TinkerPop 3.7.2
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.1/CHANGELOG.asciidoc#release-3-7-1[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Providers
+
+==== Renaming None Step to Discard
+`none()`, which is primarily used by `iterate()` to discard traversal results in remote contexts, has been deprecated
+in favor of `discard()` and will be removed in the next major release to make room for a list filtering step `none()`.
+
 == TinkerPop 3.7.1
 *Release Date: November 20, 2023*
 

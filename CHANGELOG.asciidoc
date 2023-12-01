@@ -50,6 +50,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
+* Deprecated `none()` in favor of  `discard()` to make room for a list filtering `none()` step.
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 ==== Bugs
@@ -77,7 +78,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * TINKERPOP-2830 Handle User-Agent from HTTP Requests to server
 * TINKERPOP-2946 Resolve ordering issues in gherkin tests
 * TINKERPOP-2951 Add translator to the Go GLV
-* TINKERPOP-2964  Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
+* TINKERPOP-2964 Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
 * TINKERPOP-2978 Add List Manipulation Steps to Gremlin
 * TINKERPOP-2979 Add Date Manipulation Steps to Gremlin
 * TINKERPOP-2982 Allow gremlin-driver usage over HTTP
