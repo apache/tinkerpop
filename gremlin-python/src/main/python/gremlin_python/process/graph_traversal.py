@@ -684,8 +684,12 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("min", *args)
         return self
 
-    def discard(self, *args):
-        self.bytecode.add_step("discard", *args)
+    def none(self, *args):
+        self.bytecode.add_step("none", *args)
+        warnings.warn(
+            "gremlin_python.process.GraphTraversalSource.none will be replaced by "
+            "gremlin_python.process.GraphTraversalSource.discard.",
+            DeprecationWarning)
         return self
 
     def not_(self, *args):

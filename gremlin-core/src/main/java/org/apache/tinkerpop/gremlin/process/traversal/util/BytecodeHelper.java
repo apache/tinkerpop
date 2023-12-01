@@ -19,10 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponentVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRankVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
@@ -169,8 +165,12 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -323,6 +323,7 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.option, Collections.emptyList());
             put(Traversal.Symbols.profile, Collections.singletonList(ProfileStep.class));
             put(Traversal.Symbols.discard, Collections.singletonList(DiscardStep.class));
+            put(Traversal.Symbols.none, Collections.singletonList(DiscardStep.class));
             put(TraversalSource.Symbols.withSack, Collections.emptyList());
             put(TraversalSource.Symbols.withoutStrategies, Collections.emptyList());
             put(TraversalSource.Symbols.withStrategies, Collections.emptyList());

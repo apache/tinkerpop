@@ -76,6 +76,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
 
         public static final String profile = "profile";
         public static final String discard = "discard";
+        public static final String none = "none";
     }
 
     /**
@@ -239,7 +240,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     @Deprecated
     public default Traversal<S, E> none() {
-        this.asAdmin().getBytecode().addStep(Symbols.discard);
+        this.asAdmin().getBytecode().addStep(Symbols.none);
         return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
     }
 
