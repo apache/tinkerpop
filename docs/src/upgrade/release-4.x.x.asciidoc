@@ -84,4 +84,11 @@ skipped with incorrect result.
 
 ==== Graph System Providers
 
+===== AbstractAuthenticatorHandler Constructor
+
+The deprecated one-arg constructor for `AbstractAuthenticationHandler` has been removed along with two-arg constructors
+for the implementations. Gremlin Server formerly supported the two-arg `Authenticator`, and `Settings` constructor for
+instantiating new custom instances. It now expects implementations of `AbstractAuthenticationHandler` to use a
+three-arg constructor that takes `Authenticator`, `Authorizer`, and `Settings`.
+
 ==== Graph Driver Providers

@@ -24,7 +24,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
-* Added integer overflow checks.
+* Added integer overflow checks for `sum()`.
+* Gremlin Server only supports instantiation of `authentication.authenticationHandler` with three-arg constructor.
+* Removed previously deprecated two-arg constructors for `authentication.authenticationHandler` implementations.
+* Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.

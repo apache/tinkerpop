@@ -60,14 +60,6 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
     protected final Settings settings;
 
-    /**
-     * @deprecated As of release 3.5.0, replaced by {@link #SaslAuthenticationHandler(Authenticator, Authorizer, Settings)}.
-     */
-    @Deprecated
-    public SaslAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
-        this(authenticator, null, settings);
-    }
-
     public SaslAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer, final Settings settings) {
         super(authenticator, authorizer);
         this.settings = settings;

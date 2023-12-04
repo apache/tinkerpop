@@ -39,14 +39,6 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
 
     private final String HTTP_AUTH = "http-authentication";
 
-    /**
-     * @deprecated As of release 3.5.0, replaced by {@link #SaslAndHttpBasicAuthenticationHandler(Authenticator, Authorizer, Settings)}.
-     */
-    @Deprecated
-    public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
-        this(authenticator, null, settings);
-    }
-
     public SaslAndHttpBasicAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer, final Settings settings) {
         super(authenticator, authorizer, settings);
     }
@@ -58,7 +50,7 @@ public class SaslAndHttpBasicAuthenticationHandler extends SaslAuthenticationHan
             if (null != pipeline.get(HTTP_AUTH)) {
                 pipeline.remove(HTTP_AUTH);
             }
-            pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, this.settings));
+            pipeline.addAfter(PIPELINE_AUTHENTICATOR, HTTP_AUTH, new HttpBasicAuthenticationHandler(authenticator, authorizer, this.settings));
 
             if (authorizer != null) {
                 final ChannelInboundHandlerAdapter authorizationHandler = new HttpBasicAuthorizationHandler(authorizer);

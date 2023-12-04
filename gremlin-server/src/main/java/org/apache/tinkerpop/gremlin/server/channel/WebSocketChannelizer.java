@@ -143,7 +143,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         final String authenticationHandler = settings.authentication.authenticationHandler;
         if (authenticationHandler == null) {
             //Keep things backwards compatible
-            return new SaslAuthenticationHandler(authenticator, settings);
+            return new SaslAuthenticationHandler(authenticator, authorizer, settings);
         } else {
             return createAuthenticationHandler(settings);
         }
