@@ -438,6 +438,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("difference", *args)
         return self
 
+    def discard(self, *args):
+        self.bytecode.add_step("discard", *args)
+        return self
+
     def disjunct(self, *args):
         self.bytecode.add_step("disjunct", *args)
         return self
