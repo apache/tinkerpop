@@ -280,6 +280,7 @@ describe('Traversal', function () {
       const tx = g.tx();
       try {
         await tx.commit();
+        assert.fail("should throw error");
       } catch (err) {
         assert.strictEqual('Cannot commit a transaction that is not started', err.message);
       }
@@ -289,6 +290,7 @@ describe('Traversal', function () {
       const tx = g.tx();
       try {
         await tx.rollback();
+        assert.fail("should throw error");
       } catch (err) {
         assert.strictEqual('Cannot rollback a transaction that is not started', err.message);
       }
