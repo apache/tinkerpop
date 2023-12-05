@@ -17,6 +17,20 @@
 #specific language governing permissions and limitations
 #under the License.
 
+function cleanup {
+  if [ -n "$(docker ps -q -f name=glv-examples)" ]
+  then
+    echo -n "Shutting down container: "
+    docker stop glv-examples
+  fi
+  if [ -n "$(docker ps -q -f name=glv-examples-modern)" ]
+  then
+    echo -n "Shutting down container: "
+    docker stop glv-examples-modern
+  fi
+}
+trap cleanup EXIT
+
 open -a Docker
 docker pull tinkerpop/gremlin-server
 docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server
