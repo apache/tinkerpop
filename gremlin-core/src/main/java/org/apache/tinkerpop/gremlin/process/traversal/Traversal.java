@@ -76,7 +76,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
 
         public static final String profile = "profile";
         public static final String discard = "discard";
-        public static final String none = "none";
     }
 
     /**
@@ -226,21 +225,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      */
     public default Traversal<S, E> discard() {
         this.asAdmin().getBytecode().addStep(Symbols.discard);
-        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
-    }
-
-    /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
-     *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     *
-     * @deprecated As of release 3.7.2, replaced by {@link #discard()}.
-     */
-    @Deprecated
-    public default Traversal<S, E> none() {
-        this.asAdmin().getBytecode().addStep(Symbols.none);
         return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
     }
 

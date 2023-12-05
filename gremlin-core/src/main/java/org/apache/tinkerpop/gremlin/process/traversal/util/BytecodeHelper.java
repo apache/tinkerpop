@@ -323,7 +323,6 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.option, Collections.emptyList());
             put(Traversal.Symbols.profile, Collections.singletonList(ProfileStep.class));
             put(Traversal.Symbols.discard, Collections.singletonList(DiscardStep.class));
-            put(Traversal.Symbols.none, Collections.singletonList(DiscardStep.class));
             put(TraversalSource.Symbols.withSack, Collections.emptyList());
             put(TraversalSource.Symbols.withoutStrategies, Collections.emptyList());
             put(TraversalSource.Symbols.withStrategies, Collections.emptyList());
