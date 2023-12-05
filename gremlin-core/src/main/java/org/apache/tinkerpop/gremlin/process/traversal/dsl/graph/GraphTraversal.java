@@ -2014,21 +2014,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
-     *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     *
-     * @deprecated As of release 3.7.2, replaced by {@link #discard()}.
-     */
-    @Deprecated
-    @Override
-    default GraphTraversal<S, E> none() {
-        return (GraphTraversal<S, E>) Traversal.super.none();
-    }
-
-    /**
      * Ensures that at least one of the provided traversals yield a result.
      *
      * @param orTraversals filter traversals where at least one must be satisfied

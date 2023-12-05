@@ -117,15 +117,6 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
      * {@inheritDoc}
      */
     @Override
-    public Traversal visitTraversalSelfMethod_none(final GremlinParser.TraversalSelfMethod_noneContext ctx) {
-        this.traversal = traversal.none();
-        return this.traversal;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Traversal visitChainedParentOfGraphTraversal(final GremlinParser.ChainedParentOfGraphTraversalContext ctx) {
         if (ctx.getChildCount() == 1) {
             return visitChildren(ctx);

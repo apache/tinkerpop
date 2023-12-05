@@ -1122,16 +1122,6 @@ class GraphTraversal extends Traversal {
   }
 
   /**
-   * Graph traversal none method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  none(...args) {
-    this.bytecode.addStep('none', args);
-    return this;
-  }
-
-  /**
    * Graph traversal not method.
    * @param {...Object} args
    * @returns {GraphTraversal}
