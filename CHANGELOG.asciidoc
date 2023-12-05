@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added integer overflow checks.
+* Removed `none()`, which was deprecated in 3.7.2 in favor of `discard()`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
