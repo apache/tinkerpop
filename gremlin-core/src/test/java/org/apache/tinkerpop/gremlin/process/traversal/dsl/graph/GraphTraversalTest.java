@@ -158,6 +158,16 @@ public class GraphTraversalTest {
                     }
                 } else if (stepMethod.getName().equals("math")) {
                     list.add(arguments[0] = random.nextInt(100) + " + " + random.nextInt(100));
+                } else if (stepMethod.getName().equals("project")) {
+                    // project has two arguments [String, String[]]
+                    list.add(arguments[0] = randomString(random));
+                    arguments[1] = new String[random.nextInt(10) + 1];
+                    for (int j = 0; j < ((String[]) arguments[1]).length; j++) {
+                        ((String[]) arguments[1])[j] = arguments[0] + randomString(random); // adds argument[0] to avoid getting its duplicate in argument[1]
+                    }
+                    // remove duplicates in argument[1] if any
+                    arguments[1] = Arrays.stream((String[]) arguments[1]).distinct().toArray(String[]::new);
+                    list.addAll(Arrays.asList((String[]) arguments[1]));
                 } else {
                     for (int i = 0; i < stepMethod.getParameterTypes().length; i++) {
                         final Class<?> type = stepMethod.getParameterTypes()[i];
