@@ -5,7 +5,7 @@
         <title>Gremlin.Net Template</title>
 
         <!-- do not edit the version directly - maven updates it automatically -->
-        <version>3.6.6</version>
+        <version>3.6.7-SNAPSHOT</version>
 
         <description>Gremlin.Net template to create a console application with dotnet new.</description>
         <authors>Apache TinkerPop</authors>
