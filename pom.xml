@@ -173,7 +173,7 @@ limitations under the License.
         <logback.version>1.2.11</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.3.3</mockito.version>
-        <netty.version>4.1.96.Final</netty.version>
+        <netty.version>4.1.101.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.2.1</spark.version>
