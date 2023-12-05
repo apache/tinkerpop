@@ -271,6 +271,11 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
+[[release-3-6-7]]
+=== TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
+
+
+
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
 
