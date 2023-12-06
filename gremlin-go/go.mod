@@ -23,7 +23,7 @@ require (
 	github.com/cucumber/godog v0.13.0
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/websocket v1.5.1
-	github.com/nicksnyder/go-i18n/v2 v2.2.2
+	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1

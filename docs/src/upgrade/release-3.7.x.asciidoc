@@ -23,8 +23,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.7.2
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.7.1/CHANGELOG.asciidoc#release-3-7-1[changelog] for a
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.2/CHANGELOG.asciidoc#release-3-7-2[changelog] for a
 complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
 
 === Upgrading for Providers
 
@@ -176,7 +181,7 @@ gremlin> g.V().values("name").reverse()
 ==>hsoj
 ==>elppir
 ==>retep
-gremlin>  g.inject("  hi  ").trim().concat()
+gremlin>  g.inject("  hi  ").trim().concat("trim")
 ==>hitrim
 gremlin>  g.inject("  hi  ").lTrim().concat("left_trim")
 ==>hi  left_trim
