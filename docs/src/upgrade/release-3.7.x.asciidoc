@@ -30,12 +30,15 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Deprecated `none()` Step
+`none()`, which is primarily used by `iterate()` to discard traversal results in remote contexts, has been deprecated
+in favor of `discard()`.  Going forward, users should instead use `discard()` as `none()` will be removed in future versions.
 
 === Upgrading for Providers
 
 ==== Renaming None Step to Discard
-`none()`, which is primarily used by `iterate()` to discard traversal results in remote contexts, has been deprecated
-in favor of `discard()` and will be removed in the next major release to make room for a list filtering step `none()`.
+NoneStep, which is primarily used by `iterate()` to discard traversal results in remote contexts, has been deprecated
+in favor of DiscardStep and will be removed in the next major release to make room for a list filtering step NoneStep.
 
 == TinkerPop 3.7.1
 *Release Date: November 20, 2023*
