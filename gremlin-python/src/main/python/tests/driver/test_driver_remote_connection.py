@@ -228,6 +228,37 @@ class TestDriverRemoteConnection(object):
         # after closing transaction we should remove spawned_session
         assert 0 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
 
+    def test_tx_on_graph_without_tx_support(self, remote_connection):
+        g = traversal().withRemote(remote_connection)
+        tx = g.tx()
+        try:
+            # tx is just a session, so no exception here
+            gtx = tx.begin()
+            # read operation is ok for sessioned connection
+            assert 6 == gtx.V().count().next()
+            tx.commit().all().result()
+            assert False
+        except GremlinServerError as ex:
+            assert "500: Graph does not support transactions" == str(ex)
+
+    def test_tx_commit_on_graph_without_tx_support(self, remote_connection):
+        g = traversal().withRemote(remote_connection)
+        tx = g.tx()
+        try:
+            tx.commit()
+            assert False
+        except Exception as ex:
+            assert "Cannot commit a transaction that is not started." == str(ex)
+
+    def test_tx_rollback_on_graph_without_tx_support(self, remote_connection):
+        g = traversal().withRemote(remote_connection)
+        tx = g.tx()
+        try:
+            tx.rollback()
+            assert False
+        except Exception as ex:
+            assert "Cannot rollback a transaction that is not started." == str(ex)
+
     def test_clone(self, remote_connection):
         g = traversal().withRemote(remote_connection)
         t = g.V().both()
