@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (NOT OFFICIALLY RELEASED YET)
 
+* Deprecated `none()` in favor of `discard()` to make room for a list filtering `none()` step.
 
 
 [[release-3-7-1]]
@@ -55,7 +56,6 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
-* Deprecated `none()` in favor of  `discard()` to make room for a list filtering `none()` step.
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 ==== Bugs
