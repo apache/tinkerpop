@@ -274,6 +274,29 @@ describe('Traversal', function () {
     });
   });
 
+  describe('not opened transactions', function() {
+    it('should not allow commit for not opened transactions', async function() {
+      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const tx = g.tx();
+      try {
+        await tx.commit();
+        assert.fail("should throw error");
+      } catch (err) {
+        assert.strictEqual('Cannot commit a transaction that is not started', err.message);
+      }
+    });
+    it('should not allow rollback for not opened transactions', async function() {
+      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const tx = g.tx();
+      try {
+        await tx.rollback();
+        assert.fail("should throw error");
+      } catch (err) {
+        assert.strictEqual('Cannot rollback a transaction that is not started', err.message);
+      }
+    });
+  });
+
   describe('tx#begin()', function() {
     it("should not allow a transaction to begin more than once", function() {
       const g = anon.traversal().with_(new MockRemoteConnection());

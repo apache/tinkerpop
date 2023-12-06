@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -349,6 +350,49 @@ func TestTraversal(t *testing.T) {
 		remote = newConnection(t)
 		g = Traversal_().With(remote)
 		assert.Equal(t, int32(0), getCount(t, g))
+	})
+
+	t.Run("Test commit if no transaction started", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		// try to commit
+		err := tx.Commit()
+		assert.Equal(t, "E1103: cannot commit a transaction that is not started", err.Error())
+	})
+
+	t.Run("Test rollback if no transaction started", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		// try to rollback
+		err := tx.Rollback()
+		assert.Equal(t, "E1102: cannot rollback a transaction that is not started", err.Error())
+	})
+
+	t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		_, err := tx.Begin()
+		assert.Nil(t, err)
+
+		// try to commit
+		err = tx.Commit()
+		assert.True(t, strings.HasPrefix(err.Error(),
+			"E0502: error in read loop, error message '{code:244 message:Graph does not support transactions"))
 	})
 
 	t.Run("Test WithOptions.Tokens WithOptions.None", func(t *testing.T) {

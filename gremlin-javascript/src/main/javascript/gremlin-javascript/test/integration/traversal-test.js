@@ -218,6 +218,32 @@ describe('Traversal', function () {
       }, (err) => assert.fail("tanked: " + err));
     });
   });
+  describe("should handle tx errors if graph not support tx", function() {
+    it('should throw exception on commit if graph not support tx', async function() {
+      const g = traversal().withRemote(connection);
+      const tx = g.tx();
+      const gtx = tx.begin();
+      const result = await g.V().count().next();
+      assert.strictEqual(6, result.value);
+      try {
+        await tx.commit();
+        assert.fail("should throw error");
+      } catch (err) {
+        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
+      }
+    });
+    it('should throw exception on rollback if graph not support tx', async function() {
+      const g = traversal().withRemote(connection);
+      const tx = g.tx();
+      tx.begin();
+      try {
+        await tx.rollback();
+        assert.fail("should throw error");
+      } catch (err) {
+        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
+      }
+    });
+  });
   describe('support remote transactions - commit', function() {
     before(function () {
       txConnection = helper.getConnection('gtx');
