@@ -353,7 +353,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test commit if no transaction started", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 
@@ -366,7 +365,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test rollback if no transaction started", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 
@@ -379,7 +377,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 
