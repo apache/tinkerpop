@@ -1751,7 +1751,7 @@ class Transaction:
     def rollback(self):
         with self.__mutex:
             # Verify transaction is open, close session and return result of transaction's rollback.
-            self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
+            self.__verify_transaction_state(True, "Cannot rollback a transaction that is not started.")
             return self.__close_session(self._session_based_connection.rollback())
 
     # Commits the current transaction.
