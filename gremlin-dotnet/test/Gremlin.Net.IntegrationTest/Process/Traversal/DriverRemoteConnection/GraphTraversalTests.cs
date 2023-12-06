@@ -276,7 +276,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldThrowExceptionOnCommitWhenGraphNotSupportTx()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var tx = g.Tx();
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.CommitAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
@@ -286,7 +286,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldThrowExceptionOnRollbackWhenGraphNotSupportTx()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var tx = g.Tx();
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.RollbackAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
