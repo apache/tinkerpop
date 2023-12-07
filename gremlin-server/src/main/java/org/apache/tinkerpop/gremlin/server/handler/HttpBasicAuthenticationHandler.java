@@ -49,19 +49,10 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.Credenti
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandler {
-    private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthenticationHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private final Settings settings;
 
     private final Base64.Decoder decoder = Base64.getUrlDecoder();
-
-    /**
-     * @deprecated As of release 3.5.0, replaced by {@link #HttpBasicAuthenticationHandler(Authenticator, Authorizer, Settings)}.
-     */
-    @Deprecated
-    public HttpBasicAuthenticationHandler(final Authenticator authenticator, final Settings settings) {
-        this(authenticator, null, settings);
-    }
 
     public HttpBasicAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer, final Settings settings) {
         super(authenticator, authorizer);

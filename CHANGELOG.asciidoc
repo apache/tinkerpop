@@ -24,7 +24,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
-* Added integer overflow checks.
+* Added integer overflow checks for `sum()`.
+* Gremlin Server only supports instantiation of `authentication.authenticationHandler` with three-arg constructor.
+* Removed previously deprecated two-arg constructors for `authentication.authenticationHandler` implementations.
+* Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
+* Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
+* Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
+* Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Removed `none()`, which was deprecated in 3.7.2 in favor of `discard()`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
@@ -286,6 +292,12 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 == TinkerPop 3.6.0 (Tinkerheart)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
+
+[[release-3-6-7]]
+=== TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
+
+* Improved error message from `JavaTranslator` by including exception source.
+* Added tests for error handling for GLV's if tx.commit() is called remotely for graphs without transactions support.
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)

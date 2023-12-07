@@ -185,28 +185,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         try {
             final Class<?> clazz = Class.forName(settings.authentication.authenticationHandler);
             AbstractAuthenticationHandler aah;
-            try {
-                // the three arg constructor is the new form as a handler may need the authorizer in some cases
-                final Class<?>[] threeArgForm = new Class[]{Authenticator.class, Authorizer.class, Settings.class};
-                final Constructor<?> twoArgConstructor = clazz.getDeclaredConstructor(threeArgForm);
-                return (AbstractAuthenticationHandler) twoArgConstructor.newInstance(authenticator, authorizer, settings);
-            } catch (Exception threeArgEx) {
-                try {
-                    // the two arg constructor is the "old form" that existed prior to Authorizers. should probably
-                    // deprecate this form
-                    final Class<?>[] twoArgForm = new Class[]{Authenticator.class, Settings.class};
-                    final Constructor<?> twoArgConstructor = clazz.getDeclaredConstructor(twoArgForm);
-
-                    if (authorizer != null) {
-                        logger.warn("There is an authorizer configured but the {} does not have a constructor of ({}, {}, {}) so it cannot be added",
-                                clazz.getName(), Authenticator.class.getSimpleName(), Authorizer.class.getSimpleName(), Settings.class.getSimpleName());
-                    }
-
-                    return (AbstractAuthenticationHandler) twoArgConstructor.newInstance(authenticator, settings);
-                } catch (Exception twoArgEx) {
-                    throw twoArgEx;
-                }
-            }
+            // the three arg constructor is the new form as a handler may need the authorizer in some cases
+            final Class<?>[] threeArgForm = new Class[]{Authenticator.class, Authorizer.class, Settings.class};
+            final Constructor<?> threeArgConstructor = clazz.getDeclaredConstructor(threeArgForm);
+            return (AbstractAuthenticationHandler) threeArgConstructor.newInstance(authenticator, authorizer, settings);
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
             throw new IllegalStateException(String.format("Could not create/configure AuthenticationHandler %s", settings.authentication.authenticationHandler), ex);

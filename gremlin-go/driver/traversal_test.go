@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test Transaction commit", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		startCount := getCount(t, g)
 		tx := g.Tx()
 
@@ -105,7 +106,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test Transaction rollback", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		startCount := getCount(t, g)
 		tx := g.Tx()
 
@@ -134,7 +135,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test Transaction flows", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		tx := g.Tx()
 		assert.False(t, tx.IsOpen())
 
@@ -180,7 +181,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test multi commit Transaction", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		startCount := getCount(t, g)
 
 		// Create two transactions.
@@ -214,7 +215,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test multi rollback Transaction", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		startCount := getCount(t, g)
 
 		// Create two transactions.
@@ -248,7 +249,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		startCount := getCount(t, g)
 
 		// Create two transactions.
@@ -282,7 +283,7 @@ func TestTraversal(t *testing.T) {
 	t.Run("Test Transaction close", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		dropGraphCheckCount(t, g)
 
 		// Create two transactions.
@@ -310,14 +311,14 @@ func TestTraversal(t *testing.T) {
 		verifyGtxClosed(t, gtx2)
 
 		remote = newConnection(t)
-		g = Traversal_().WithRemote(remote)
+		g = Traversal_().With(remote)
 		assert.Equal(t, int32(0), getCount(t, g))
 	})
 
 	t.Run("Test Transaction close tx from parent", func(t *testing.T) {
 		// Start a transaction traversal.
 		remote := newConnection(t)
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 		dropGraphCheckCount(t, g)
 
 		// Create two transactions.
@@ -347,8 +348,48 @@ func TestTraversal(t *testing.T) {
 		verifyGtxClosed(t, gtx2)
 
 		remote = newConnection(t)
-		g = Traversal_().WithRemote(remote)
+		g = Traversal_().With(remote)
 		assert.Equal(t, int32(0), getCount(t, g))
+	})
+
+	t.Run("Test commit if no transaction started", func(t *testing.T) {
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		// try to commit
+		err := tx.Commit()
+		assert.Equal(t, "E1103: cannot commit a transaction that is not started", err.Error())
+	})
+
+	t.Run("Test rollback if no transaction started", func(t *testing.T) {
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		// try to rollback
+		err := tx.Rollback()
+		assert.Equal(t, "E1102: cannot rollback a transaction that is not started", err.Error())
+	})
+
+	t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
+		// Start a traversal.
+		g := newWithOptionsConnection(t)
+
+		// Create transactions
+		tx := g.Tx()
+
+		_, err := tx.Begin()
+		assert.Nil(t, err)
+
+		// try to commit
+		err = tx.Commit()
+		assert.True(t, strings.HasPrefix(err.Error(),
+			"E0502: error in read loop, error message '{code:244 message:Graph does not support transactions"))
 	})
 
 	t.Run("Test WithOptions.Tokens WithOptions.None", func(t *testing.T) {
@@ -500,7 +541,7 @@ func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
-	return Traversal_().WithRemote(remote)
+	return Traversal_().With(remote)
 }
 
 func newConnection(t *testing.T) *DriverRemoteConnection {

@@ -36,25 +36,22 @@ class AnonymousTraversalSource(object):
     def traversal(cls, traversal_source_class=GraphTraversalSource):
         return AnonymousTraversalSource(traversal_source_class)
 
-    def withGraph(self, graph):
-        warnings.warn(
-            "gremlin_python.process.AnonymousTraversalSource.withGraph will be replaced by "
-            "gremlin_python.process.AnonymousTraversalSource.with_graph.",
-            DeprecationWarning)
-        return self.with_graph(graph)
-
-    def with_graph(self, graph):
-        return self.traversal_source_class(graph, TraversalStrategies.global_cache[graph.__class__])
+    def with_(self, remote_connection):
+        return self.traversal_source_class(Graph(), TraversalStrategies(), None, remote_connection)
 
     def withRemote(self, remote_connection):
         warnings.warn(
             "gremlin_python.process.AnonymousTraversalSource.withRemote will be replaced by "
-            "gremlin_python.process.AnonymousTraversalSource.with_remote.",
+            "gremlin_python.process.AnonymousTraversalSource.with_.",
             DeprecationWarning)
-        return self.with_remote(remote_connection)
+        return self.with_(remote_connection)
 
     def with_remote(self, remote_connection):
-        return self.with_graph(Graph()).with_remote(remote_connection)
+        warnings.warn(
+            "gremlin_python.process.AnonymousTraversalSource.with_remote will be replaced by "
+            "gremlin_python.process.AnonymousTraversalSource.with_.",
+            DeprecationWarning)
+        return self.with_(remote_connection)
 
 
 def traversal(traversal_source_class=GraphTraversalSource):

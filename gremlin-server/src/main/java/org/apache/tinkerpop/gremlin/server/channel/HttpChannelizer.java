@@ -92,7 +92,7 @@ public class HttpChannelizer extends AbstractChannelizer {
         final String authHandlerClass = settings.authentication.authenticationHandler;
         if (authHandlerClass == null) {
             //Keep things backwards compatible
-            return new HttpBasicAuthenticationHandler(authenticator, settings);
+            return new HttpBasicAuthenticationHandler(authenticator, authorizer, settings);
         } else {
             return createAuthenticationHandler(settings);
         }

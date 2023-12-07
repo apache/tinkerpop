@@ -688,7 +688,6 @@ TRAVERSAL STRATEGIES
 
 
 class TraversalStrategies(object):
-    global_cache = {}
 
     def __init__(self, traversal_strategies=None):
         self.traversal_strategies = traversal_strategies.traversal_strategies if traversal_strategies is not None else []

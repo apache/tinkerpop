@@ -137,7 +137,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                     }
                     return traversal;
                 } catch (final Throwable e) {
-                    throw new IllegalStateException(e.getMessage());
+                    throw new IllegalStateException(e.getMessage(), e);
                 }
             }
         } else if (object instanceof TraversalStrategyProxy) {

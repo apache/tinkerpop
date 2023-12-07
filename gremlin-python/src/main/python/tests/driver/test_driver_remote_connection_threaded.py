@@ -64,7 +64,7 @@ def _executor(q, conn):
         close = True
         conn = DriverRemoteConnection(test_no_auth_url, 'gmodern', pool_size=4)
     try:
-        g = traversal().withRemote(conn)
+        g = traversal().with_(conn)
         future = g.V().promise()
         t = future.result()
         assert len(t.toList()) == 6
@@ -80,7 +80,7 @@ def _executor(q, conn):
 def handle_request():
     try:
         remote_connection = DriverRemoteConnection(test_no_auth_url, "g")
-        g = traversal().withRemote(remote_connection)
+        g = traversal().with_(remote_connection)
         g.V().limit(1).toList()
         remote_connection.close()
         return True
