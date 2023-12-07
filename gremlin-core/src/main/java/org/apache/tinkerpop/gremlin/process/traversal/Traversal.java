@@ -75,7 +75,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         public static final String profile = "profile";
-        public static final String discard = "discard";
+        public static final String discard = "none";
         public static final String none = "none";
     }
 

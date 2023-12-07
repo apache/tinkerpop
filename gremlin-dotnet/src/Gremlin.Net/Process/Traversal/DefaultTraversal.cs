@@ -228,7 +228,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <returns>The fully drained traversal.</returns>
         public ITraversal<TStart, TEnd> Iterate()
         {
-            Bytecode.AddStep("discard");
+            Bytecode.AddStep("none");
             while (MoveNext())
             {
             }

@@ -709,7 +709,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TEnd> Discard ()
         {
-            Bytecode.AddStep("discard");
+            Bytecode.AddStep("none");
             return Wrap<TStart, TEnd>(this);
         }
 

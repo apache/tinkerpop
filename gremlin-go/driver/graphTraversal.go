@@ -254,7 +254,7 @@ func (g *GraphTraversal) Difference(args ...interface{}) *GraphTraversal {
 
 // Discard adds the discard step to the GraphTraversal.
 func (g *GraphTraversal) Discard(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("discard", args...)
+	g.Bytecode.AddStep("none", args...)
 	return g
 }
 

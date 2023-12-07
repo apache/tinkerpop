@@ -43,7 +43,7 @@ public class TraversalRootVisitorTest {
     @Test
     public void shouldParseTraversalMethod_discard()  {
         compare(g.V().discard(), eval("g.V().discard()"));
-        compare(g.V().union(__.identity().discard()), eval("g.V().union(__.identity().discard())"));
+        compare(g.V().union(__.identity().discard()), eval("g.V().union(__.identity().none())"));
     }
 
     @Test

@@ -699,7 +699,7 @@ class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   discard(...args) {
-    this.bytecode.addStep('discard', args);
+    this.bytecode.addStep('none', args);
     return this;
   }
 

@@ -146,6 +146,8 @@ public class GraphTraversalTest {
                     traversal.branch(__.identity().out(randomString(random)));
                 else if (stepMethod.getName().equals("to") || stepMethod.getName().equals("from"))
                     traversal.addE(randomString(random));
+                else if (stepMethod.getName().equals("discard"))
+                    continue;
 
                 if (stepMethod.getName().equals("range")) {
                     if (Scope.class.isAssignableFrom(stepMethod.getParameterTypes()[0])) {
