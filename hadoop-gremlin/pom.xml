@@ -103,7 +103,7 @@ limitations under the License.
         <dependency>
             <groupId>ch.qos.reload4j</groupId>
             <artifactId>reload4j</artifactId>
-            <version>1.2.19</version>
+            <version>1.2.25</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
