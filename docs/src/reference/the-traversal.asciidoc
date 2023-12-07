@@ -1451,7 +1451,7 @@ link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`
 [[discard-step]]
 === Discard Step
 
-The `discard()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for to traversals
+The `discard()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
 that are executed remotely where returning results is not useful and the traversal is only meant to generate
 side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
 the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
@@ -3163,7 +3163,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[none-step]]
 === None Step
 
-The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for to traversals
+The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
 that are executed remotely where returning results is not useful and the traversal is only meant to generate
 side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
 the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
