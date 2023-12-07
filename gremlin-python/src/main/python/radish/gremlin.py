@@ -295,7 +295,7 @@ world.gremlins = {
     'g_V_valuesXageX_order_byXdescX_fold_noneXgtX30XX': [(lambda g:g.V().age.order().by(Order.desc).fold().none(P.gt(30)))], 
     'g_injectXabc_bcdX_noneXeqXbcdXX': [(lambda g:g.inject(['abc','bcd']).none(P.eq('bcd')))], 
     'g_injectXbcd_bcdX_noneXeqXabcXX': [(lambda g, xx1=None:g.inject(xx1).none(P.eq('abc')))], 
-    'g_injectXnull_bcdX_noneXTextP_startingWithXaXX': [(lambda g, xx1=None:g.inject(xx1).none(TextP.startingWith('a')))], 
+    'g_injectXnull_bcdX_noneXP_eqXabcXX': [(lambda g, xx1=None:g.inject(xx1).none(P.eq('abc')))], 
     'g_injectX5_8_10_10_7X_noneXltX7XX': [(lambda g, xx1=None,xx2=None:g.inject(xx1,xx2).none(P.lt(7)))], 
     'g_injectXnullX_noneXeqXnullXX': [(lambda g:g.inject(None).none(P.eq(None)))], 
     'g_injectX7X_noneXeqX7XX': [(lambda g:g.inject(7).none(P.eq(7)))], 

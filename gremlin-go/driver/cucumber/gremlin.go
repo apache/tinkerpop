@@ -293,7 +293,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_valuesXageX_order_byXdescX_fold_noneXgtX30XX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Values("age").Order().By(gremlingo.Order.Desc).Fold().None(gremlingo.P.Gt(30))}}, 
     "g_injectXabc_bcdX_noneXeqXbcdXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject([]interface{}{"abc", "bcd"}).None(gremlingo.P.Eq("bcd"))}}, 
     "g_injectXbcd_bcdX_noneXeqXabcXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).None(gremlingo.P.Eq("abc"))}}, 
-    "g_injectXnull_bcdX_noneXTextP_startingWithXaXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).None(gremlingo.TextP.StartingWith("a"))}}, 
+    "g_injectXnull_bcdX_noneXP_eqXabcXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).None(gremlingo.P.Eq("abc"))}}, 
     "g_injectX5_8_10_10_7X_noneXltX7XX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"], p["xx2"]).None(gremlingo.P.Lt(7))}}, 
     "g_injectXnullX_noneXeqXnullXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil).None(gremlingo.P.Eq(nil))}}, 
     "g_injectX7X_noneXeqX7XX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(7).None(gremlingo.P.Eq(7))}}, 

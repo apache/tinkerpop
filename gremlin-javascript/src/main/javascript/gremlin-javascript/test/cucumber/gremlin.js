@@ -313,7 +313,7 @@ const gremlins = {
     g_V_valuesXageX_order_byXdescX_fold_noneXgtX30XX: [function({g}) { return g.V().values("age").order().by(Order.desc).fold().none(P.gt(30)) }], 
     g_injectXabc_bcdX_noneXeqXbcdXX: [function({g}) { return g.inject(["abc", "bcd"]).none(P.eq("bcd")) }], 
     g_injectXbcd_bcdX_noneXeqXabcXX: [function({g, xx1}) { return g.inject(xx1).none(P.eq("abc")) }], 
-    g_injectXnull_bcdX_noneXTextP_startingWithXaXX: [function({g, xx1}) { return g.inject(xx1).none(TextP.startingWith("a")) }], 
+    g_injectXnull_bcdX_noneXP_eqXabcXX: [function({g, xx1}) { return g.inject(xx1).none(P.eq("abc")) }], 
     g_injectX5_8_10_10_7X_noneXltX7XX: [function({g, xx1, xx2}) { return g.inject(xx1,xx2).none(P.lt(7)) }], 
     g_injectXnullX_noneXeqXnullXX: [function({g}) { return g.inject(null).none(P.eq(null)) }], 
     g_injectX7X_noneXeqX7XX: [function({g}) { return g.inject(7).none(P.eq(7)) }], 

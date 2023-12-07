@@ -322,7 +322,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_valuesXageX_order_byXdescX_fold_noneXgtX30XX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").Order().By(Order.Desc).Fold().None(P.Gt(30))}}, 
                {"g_injectXabc_bcdX_noneXeqXbcdXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(new List<object> {"abc", "bcd"}).None(P.Eq("bcd"))}}, 
                {"g_injectXbcd_bcdX_noneXeqXabcXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).None(P.Eq("abc"))}}, 
-               {"g_injectXnull_bcdX_noneXTextP_startingWithXaXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).None(TextP.StartingWith("a"))}}, 
+               {"g_injectXnull_bcdX_noneXP_eqXabcXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).None(P.Eq("abc"))}}, 
                {"g_injectX5_8_10_10_7X_noneXltX7XX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"],p["xx2"]).None(P.Lt(7))}}, 
                {"g_injectXnullX_noneXeqXnullXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null).None(P.Eq(null))}}, 
                {"g_injectX7X_noneXeqX7XX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(7).None(P.Eq(7))}}, 
