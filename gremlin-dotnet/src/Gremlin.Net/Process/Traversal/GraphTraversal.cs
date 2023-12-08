@@ -226,19 +226,19 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, string> AsString ()
+        public GraphTraversal<TStart, string?> AsString ()
         {
             Bytecode.AddStep("asString");
-            return Wrap<TStart, string>(this);
+            return Wrap<TStart, string?>(this);
         }
         
         /// <summary>
         ///     Adds the asString step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TNewEnd> AsString<TNewEnd> (Scope scope)
+        public GraphTraversal<TStart, TNewEnd?> AsString<TNewEnd> (Scope scope)
         {
             Bytecode.AddStep("asString", scope);
-            return Wrap<TStart, TNewEnd>(this);
+            return Wrap<TStart, TNewEnd?>(this);
         }
 
         /// <summary>
@@ -591,10 +591,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the conjoin step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Conjoin (string delimiter)
+        public GraphTraversal<TStart, TEnd?> Conjoin (string delimiter)
         {
             Bytecode.AddStep("conjoin", delimiter);
-            return Wrap<TStart, TEnd>(this);
+            return Wrap<TStart, TEnd?>(this);
         }
 
         /// <summary>
