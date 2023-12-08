@@ -155,7 +155,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asString step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, string> AsString()
+        public static GraphTraversal<object, string?> AsString()
         {
             return new GraphTraversal<object, string>().AsString();            
         }
@@ -163,7 +163,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asString step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, E2> AsString<E2>(Scope scope)
+        public static GraphTraversal<object, E2?> AsString<E2>(Scope scope)
         {
             return new GraphTraversal<object, E2>().AsString<E2>(scope);            
         }
@@ -381,7 +381,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the conjoin step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Conjoin(string delimiter)
+        public static GraphTraversal<object, object?> Conjoin(string delimiter)
         {
             return new GraphTraversal<object, object>().Conjoin(delimiter);
         }
