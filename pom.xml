@@ -384,10 +384,11 @@ limitations under the License.
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                     </execution>
-                    <execution>
+<!--                    <execution>-->
+<!--                    Excluded as latest tag is currently only updated for the 3.7.x branch    -->
                         <!-- sets the docker.tags.latest property to "latest" unless a prerelease version was,
                             used. If a prerelease is used, an empty string is assigned instead. -->
-                        <id>build-helper-regex-set-docker-latest-tag</id>
+<!--                    <id>build-helper-regex-set-docker-latest-tag</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>regex-property</goal>
@@ -399,7 +400,7 @@ limitations under the License.
                             <replacement></replacement>
                             <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
-                    </execution>
+                    </execution> -->
                     <execution>
                         <id>parse-version</id>
                         <goals>
