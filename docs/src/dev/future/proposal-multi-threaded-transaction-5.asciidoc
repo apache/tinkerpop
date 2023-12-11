@@ -1,0 +1,146 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 4*
+
+Proposal for adding support for tx which are not thread bound.
+
+=== Introduction
+The current implementation of transactions and sessions uses approach with thread local variables that requires complex implementation and LifeCycle management. Using non-threaded sessions can improve performance in some scenarios.
+
+=== Motivation
+* Simlify GremlinExecutor. Complex LifeCycle control is now used.
+* Easier integration with HTTP because transactions can be used without being tied to a connection.
+
+=== Assumptions
+
+* Need to reuse existing code as much as possible.
+* Users should be able to work both types of transactions, thread-bound and new non-thread bound. Perhaps after performance testing only one type will be left.
+* Transaction implementation should not have additional external dependencies.
+* Existing drivers should work without changes.
+
+
+=== Specifications
+==== Design Overview
+The main components are Graph with committed data and Graph with tx specific (modified or cached for consistent read) data.
+At the stage of resolving bindings for Graph and GraphTraversalSource need to create an instance that will be specific only for the current session/tx and use it until the end of the operation ending with commit/rollback. Now bindings are stored in different places, for example GremlinScriptEngineManager.globalScope and GraphManager.getTraversalSource/getGraph, also need to add a used Graph and GraphTraversalSource to Session.
+
+
+==== Overview of changes to code base
+===== TinkerTransactionGraph2 (suggest a better name)
+Storage for committed data. Should not be used directly for graph operations.
+[code]
+----
+class TinkerTransactionGraph2 implements Graph {
+    private final Map<Object, TinkerElementLockContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
+
+    // I haven't decided which option is better yet
+    public Transaction tx() { throw new Exception("use TinkerGraphTx instead"); }
+    public Transaction tx() { return new TinkerGraphTx(this); }
+}
+----
+
+===== TinkerElementLockContainer
+Storage for Element and lock for concurrent modification.
+[code]
+----
+class TinkerElementLockContainer<T extends TinkerElement> {
+    T element;
+	ReentrantLock lock = new ReentrantLock();
+}
+----
+
+===== TinkerGraphTx (suggest a better name)
+Graph for use in single transaction
+[code]
+----
+class TinkerGraphTx implements Graph, Transaction {
+    private final Map<Object, TinkerElementTxContainer<TinkerVertex>> changedVertices = new ConcurrentHashMap<>();
+	private final TinkerTransactionGraph2 commitedGraph;
+
+    public Transaction tx() { return this; }
+
+	public Vertex addVertex(final Object... keyValues) {
+		// create and add vertex to changedVertices
+	}
+
+	public Vertex vertex(final Object vertexId) {
+		// search for vertex in changedVertices, if not found than in commitedGraph
+	}
+
+	protected void doCommit() throws TransactionException {
+		// propagate changes to commitedGraph
+	}
+}
+----
+
+===== TinkerElementTxContainer (suggest a better name)
+Storage for element used in transaction.
+Can be unmodified (cached for consistent read) or created/modified in current tx.
+Unchanged element is simply a reference to the element that was there at the time of first reading. When a change
+is made, a clone is created and further work is done with it.
+[code]
+----
+final class TinkerElementTxContainer<T extends TinkerElement> {
+	T element;
+	boolean isDeleted;
+	boolean isModified;
+}
+----
+
+
+==== CRUD operations without transaction
+1. Create TinkerGraphTx and GraphTraversalSource from it.
+2. Execute traversal
+3. Commit or rollback on error.
+
+
+==== CRUD operations with transaction
+===== Create
+Add new TinkerElementTxContainer to `vertices` and `edges` in TinkerGraphTx.
+
+==== Read
+Read values from `vertices` TinkerElementTxContainer in TinkerGraphTx.
+If marked as deleted than return null;
+If not found try TinkerTransactionGraph2.vertices.
+
+===== Update
+Add or update if exist corresponding TinkerElementTxContainer  in `vertices`.
+
+===== Delete
+Set `isDeleted` flag in TinkerElementTxContainer  in `vertices`.
+
+
+==== Transaction flows
+===== Commit flow
+To reduce lock time double-checked locking used.
+1. Verify versions of all changed elements. If any has a newer version, then fail.
+2. Try to lock all Vertices/Edges changed in transaction. For vertex/edge delete operation also need to lock adjacent edges/vertices. Lock is for write operations only. If some Vertex/Edge is already locked then fail.
+3. Check versions again, fail if some element is updated.
+4. For all Elements replace current version with value updated in transaction (or remove Element on Delete operation).
+5. Change version of all updated Elements.
+6. Unlock.
+7. Update indexes if needed.
+
+===== Rollback
+Drop TinkerGraphTx.
+
+===== Error
+On any error, including transaction conflict:
+1. Rollback
+2. Throw exception
