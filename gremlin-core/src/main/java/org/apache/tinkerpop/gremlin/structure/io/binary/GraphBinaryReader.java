@@ -48,6 +48,7 @@ import java.io.IOException;
  */
 public class GraphBinaryReader {
     private final TypeSerializerRegistry registry;
+    private Buffer savedBuffer;
 
     public GraphBinaryReader() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -56,6 +57,7 @@ public class GraphBinaryReader {
     public GraphBinaryReader(final TypeSerializerRegistry registry) {
         this.registry = registry;
     }
+
 
     /**
      * Reads a value for an specific type.
@@ -83,6 +85,11 @@ public class GraphBinaryReader {
     public <T> T read(final Buffer buffer) throws IOException {
         // Fully-qualified format: {type_code}{type_info}{value_flag}{value}
         final DataType type = DataType.get(Byte.toUnsignedInt(buffer.readByte()));
+
+        if (type == DataType.DURATION) {
+            // for testing purposes, this shouldn't happen (it's the start of a new response message)
+            savedBuffer = buffer;
+        }
 
         if (type == DataType.UNSPECIFIED_NULL) {
             // There is no TypeSerializer for unspecified null object

@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBuffer;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
@@ -34,29 +36,81 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ResponseMessageSerializer {
+    public static final int RESPONSE_START_SIZE = -1;
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+    ByteBuf retainedBuf = Unpooled.buffer(0);
+    int retainedSize = RESPONSE_START_SIZE;
 
     public ResponseMessage readValue(final ByteBuf byteBuf, final GraphBinaryReader context) throws SerializationException {
         // Wrap netty's buffer
-        final Buffer buffer = bufferFactory.create(byteBuf);
-        final int version = buffer.readByte() & 0xff;
+        final Buffer buffer = bufferFactory.create(retainedBuf.readableBytes() > 0 ? retainedBuf : byteBuf);
 
-        if (version >>> 7 != 1) {
-            // This is an indication that the response buffer was incorrectly built
-            // Or the buffer offsets are wrong
-            throw new SerializationException("The most significant bit should be set according to the format");
+        if (retainedBuf.readableBytes() == 0) {
+            retainedBuf.release();
+            retainedBuf = Unpooled.buffer(0);
         }
 
-        try {
-            return ResponseMessage.build(context.readValue(buffer, UUID.class, true))
-                    .code(ResponseStatusCode.getFromValue(context.readValue(buffer, Integer.class, false)))
-                    .statusMessage(context.readValue(buffer, String.class, true))
-                    .statusAttributes(context.readValue(buffer, Map.class, false))
-                    .responseMetaData(context.readValue(buffer, Map.class, false))
-                    .result(context.read(buffer))
-                    .create();
-        } catch (IOException ex) {
-            throw new SerializationException(ex);
+        if (retainedSize == RESPONSE_START_SIZE && byteBuf.readableBytes() >= 5) {
+            final int version = buffer.readByte() & 0xff;
+
+            if (version >>> 7 != 1) {
+                // This is an indication that the response buffer was incorrectly built
+                // Or the buffer offsets are wrong
+                throw new SerializationException("The most significant bit should be set according to the format");
+            }
+
+            retainedSize = buffer.readInt() - 5;
+
+            if ((retainedBuf.readableBytes() + buffer.readableBytes()) < retainedSize) {
+                retainedBuf.writeBytes(byteBuf);
+
+                return null;
+            } else {
+
+                if (byteBuf.readableBytes() > 0) {
+                    retainedBuf.writeBytes(byteBuf);
+                }
+
+                try {
+                    final Buffer messageBuffer = bufferFactory.create(retainedBuf.readSlice(retainedSize));
+                    ResponseMessage respMsg = ResponseMessage.build(context.readValue(messageBuffer, UUID.class, true))
+                            .code(ResponseStatusCode.getFromValue(context.readValue(messageBuffer, Integer.class, false)))
+                            .statusMessage(context.readValue(messageBuffer, String.class, true))
+                            .statusAttributes(context.readValue(messageBuffer, Map.class, false))
+                            .responseMetaData(context.readValue(messageBuffer, Map.class, false))
+                            .result(context.read(messageBuffer))
+                            .create();
+
+                    retainedSize = RESPONSE_START_SIZE;
+
+                    return respMsg;
+                } catch (Exception ex) {
+                    throw new SerializationException(ex);
+                }
+            }
+        } else {
+            retainedBuf.writeBytes(byteBuf);
+
+            if (((retainedBuf.readableBytes()) < retainedSize) || retainedSize == RESPONSE_START_SIZE) {
+                return null;
+            } else {
+                try {
+                    final Buffer messageBuffer = bufferFactory.create(retainedBuf.readSlice(retainedSize));
+                    ResponseMessage respMsg = ResponseMessage.build(context.readValue(messageBuffer, UUID.class, true))
+                            .code(ResponseStatusCode.getFromValue(context.readValue(messageBuffer, Integer.class, false)))
+                            .statusMessage(context.readValue(messageBuffer, String.class, true))
+                            .statusAttributes(context.readValue(messageBuffer, Map.class, false))
+                            .responseMetaData(context.readValue(messageBuffer, Map.class, false))
+                            .result(context.read(messageBuffer))
+                            .create();
+
+                    retainedSize = RESPONSE_START_SIZE;
+
+                    return respMsg;
+                } catch (Exception ex) {
+                    throw new SerializationException(ex);
+                }
+            }
         }
     }
 
@@ -70,6 +124,8 @@ public class ResponseMessageSerializer {
         try {
             // Version
             buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
+            // Make placeholder for size
+            buffer.writeInt(0);
             // Nullable request id
             context.writeValue(value.getRequestId(), buffer, true);
             // Status code
@@ -82,6 +138,13 @@ public class ResponseMessageSerializer {
             context.writeValue(result.getMeta(), buffer, false);
             // Fully-qualified value
             context.write(result.getData(), buffer);
+            // overwrite version
+            buffer.markWriterIndex();
+            final int readable = buffer.readableBytes(); // set this because changing writer index affects its value
+            buffer.writerIndex(1);
+            buffer.writeInt(readable);
+            buffer.resetWriterIndex();
+
         } catch (IOException ex) {
             throw new SerializationException(ex);
         }

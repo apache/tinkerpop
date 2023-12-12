@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer;
@@ -82,6 +83,7 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
             pipeline.remove(PIPELINE_REQUEST_HANDLER);
             if (null != pipeline.get(PIPELINE_HTTP_USER_AGENT_HANDLER)) {
                 pipeline.remove(PIPELINE_HTTP_USER_AGENT_HANDLER);
+                pipeline.remove("chunk-handler");
             }
             if (null != pipeline.get(PIPELINE_AUTHENTICATOR)) {
                 final ChannelHandler authenticator = pipeline.get(PIPELINE_AUTHENTICATOR);
@@ -91,7 +93,8 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
                 pipeline.addAfter(PIPELINE_HTTP_USER_AGENT_HANDLER, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
             } else {
                 pipeline.addAfter(PIPELINE_HTTP_AGGREGATOR, PIPELINE_HTTP_USER_AGENT_HANDLER, new HttpUserAgentHandler());
-                pipeline.addAfter(PIPELINE_HTTP_USER_AGENT_HANDLER, PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
+                pipeline.addAfter(PIPELINE_HTTP_USER_AGENT_HANDLER, "chunk-handler", new ChunkedWriteHandler());
+                pipeline.addAfter("chunk-handler", PIPELINE_REQUEST_HANDLER, this.httpGremlinEndpointHandler);
                 // Note that channelRead()'s do not propagate down the pipeline past HttpGremlinEndpointHandler
             }
         }

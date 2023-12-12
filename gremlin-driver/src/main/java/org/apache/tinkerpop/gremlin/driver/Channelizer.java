@@ -296,7 +296,7 @@ public interface Channelizer extends ChannelHandler {
             handler = new HttpClientCodec();
 
             pipeline.addLast("http-codec", handler);
-            pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
+//            pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("gremlin-encoder", gremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", gremlinResponseDecoder);
         }

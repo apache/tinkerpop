@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 /**
  * Represents a {@link Buffer} backed by Netty's {@link ByteBuf}.
  */
-final class NettyBuffer implements Buffer {
+final public class NettyBuffer implements Buffer {
     private final ByteBuf buffer;
 
     /**
