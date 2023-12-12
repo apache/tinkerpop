@@ -127,7 +127,7 @@ import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
-import org.apache.commons.collections.map.ReferenceMap;
+import org.apache.commons.collections4.map.ReferenceMap;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
