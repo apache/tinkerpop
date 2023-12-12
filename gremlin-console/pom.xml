@@ -26,12 +26,7 @@ limitations under the License.
     <artifactId>gremlin-console</artifactId>
     <name>Apache TinkerPop :: Gremlin Console</name>
     <properties>
-    <!--Testing in macOs on ARM reveals that the linux/arm64/v8 console
-        container is quite unstable at this time and results in frequent freezes.
-        It is believed the issue lies with the ARM docker engine. The stability of ARM
-        images is likely to improve overtime and this omition should be intermittently
-        re-evaluated.-->
-        <docker.platforms>linux/amd64<!--,linux/arm64/v8--></docker.platforms>
+        <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
     </properties>
     <dependencies>
         <dependency>
