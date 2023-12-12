@@ -142,6 +142,10 @@ limitations under the License.
                             <artifactId>commons-lang3</artifactId>
                         </exclusion>
                         <exclusion>
+                            <groupId>commons-beanutils</groupId>
+                            <artifactId>commons-beanutils</artifactId>
+                        </exclusion>
+                        <exclusion>
                             <groupId>org.apache.commons</groupId>
                             <artifactId>commons-text</artifactId>
                         </exclusion>
