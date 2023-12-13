@@ -226,6 +226,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasXlabel_personX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has(T.Label,"person")}}, 
                {"g_V_hasXlabel_eqXpersonXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has(T.Label,P.Eq("person"))}}, 
                {"g_V_hasXlabel_isXpersonXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has(T.Label,__.Is("person"))}}, 
+               {"g_V_hasXname_nullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name",(object) null)}}, 
                {"g_V_hasIdXemptyX_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(p["xx1"]).Count()}}, 
                {"g_V_hasIdXwithinXemptyXX_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(p["xx1"]).Count()}}, 
                {"g_V_hasIdXwithoutXemptyXX_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasId(p["xx1"]).Count()}}, 
