@@ -35,6 +35,6 @@ handler()
 }
 
 exec $GREMLIN_SERVER "$@" &
-PID=$(ps aux | grep -w $GREMLIN_SERVER | grep -v grep | awk '{print $1}')
+PID=$(ps aux | grep -w $GREMLIN_SERVER | grep -v grep | awk 'NR==1 {print $1}')
 trap 'handler $PID' SIGTERM
 wait "$PID"
