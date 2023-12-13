@@ -16,23 +16,25 @@ limitations under the License.
 ////
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
-*x.y.z - Proposal 4*
+*x.y.z - Proposal 5*
 
-Proposal for adding support for tx which are not thread bound.
+Proposal for adding support for multi-threaded tx.
 
 === Introduction
-The current implementation of transactions and sessions uses approach with thread local variables that requires complex implementation and LifeCycle management. Using non-threaded sessions can improve performance in some scenarios.
+The current implementation of transactions and sessions uses approach with thread local variables that requires
+complex implementation and LifeCycle management. Using non-threaded sessions can improve performance in some scenarios.
+
 
 === Motivation
-* Simlify GremlinExecutor. Complex LifeCycle control is now used.
+* Simplify GremlinExecutor. Complex LifeCycle control is now used.
 * Easier integration with HTTP because transactions can be used without being tied to a connection.
 
-=== Assumptions
 
-* Need to reuse existing code as much as possible.
+=== Assumptions
 * Users should be able to work both types of transactions, thread-bound and new non-thread bound. Perhaps after performance testing only one type will be left.
-* Transaction implementation should not have additional external dependencies.
+* Transaction implementation should not have additional external dependencies like third-party libraries.
 * Existing drivers should work without changes.
+* Good to reuse existing code as much as possible.
 
 
 === Specifications
