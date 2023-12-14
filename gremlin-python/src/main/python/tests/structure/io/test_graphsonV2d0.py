@@ -48,6 +48,12 @@ class TestGraphSONReader(object):
         assert isinstance(x, SingleByte)
         assert 1 == x
         x = self.graphson_reader.read_object(json.dumps({
+            "@type": "gx:Int16",
+            "@value": 16
+        }))
+        assert isinstance(x, short)
+        assert 16 == x
+        x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Int32",
             "@value": 31
         }))
@@ -298,6 +304,8 @@ class TestGraphSONWriter(object):
 
     def test_numbers(self):
         assert {"@type": "gx:Byte", "@value": 1} == json.loads(self.graphson_writer.write_object(int.__new__(SingleByte, 1)))
+        assert {"@type": "gx:Int16", "@value": 16} == json.loads(self.graphson_writer.write_object(short(16)))
+        assert {"@type": "gx:Int16", "@value": -16} == json.loads(self.graphson_writer.write_object(short(-16)))
         assert {"@type": "g:Int64", "@value": 2} == json.loads(self.graphson_writer.write_object(long(2)))
         assert {"@type": "g:Int64", "@value": 851401972585122} == json.loads(self.graphson_writer.write_object(long(851401972585122)))
         assert {"@type": "g:Int64", "@value": -2} == json.loads(self.graphson_writer.write_object(long(-2)))
