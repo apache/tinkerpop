@@ -36,7 +36,7 @@ public class ModernTraversals {
     public static void main(String[] args) {
         // Performs basic traversals on the Modern toy graph which can be created using TinkerFactory
         Graph modern = TinkerFactory.createModern();
-        GraphTraversalSource g = traversal().withEmbedded(modern);
+        GraphTraversalSource g = traversal().with(modern);
 
         List<Edge> e1 = g.V(1).bothE().toList(); // (1)
         List<Edge> e2 = g.V(1).bothE().where(otherV().hasId(2)).toList(); // (2)
