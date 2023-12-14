@@ -232,6 +232,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_hasXlabel_personX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has(gremlingo.T.Label, "person")}}, 
     "g_V_hasXlabel_eqXpersonXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has(gremlingo.T.Label, gremlingo.P.Eq("person"))}}, 
     "g_V_hasXlabel_isXpersonXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has(gremlingo.T.Label, gremlingo.T__.Is("person"))}}, 
+    "g_V_hasXname_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has("name", nil)}}, 
     "g_V_hasIdXemptyX_count": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["xx1"]).Count()}}, 
     "g_V_hasIdXwithinXemptyXX_count": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["xx1"]).Count()}}, 
     "g_V_hasIdXwithoutXemptyXX_count": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["xx1"]).Count()}}, 
