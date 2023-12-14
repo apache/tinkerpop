@@ -612,3 +612,12 @@ Feature: Step - has()
       | v[vadas] |
       | v[josh] |
       | v[peter] |
+
+  Scenario: g_V_hasXname_nullX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().has("name", null)
+    """
+    When iterated to list
+    Then the result should be empty
