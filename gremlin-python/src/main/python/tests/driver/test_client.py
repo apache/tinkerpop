@@ -299,7 +299,7 @@ def test_multi_thread_pool(client):
     assert results[3][0][0].object == 6
 
 def test_client_bytecode_with_short(client):
-    g = Graph().traversal()
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', short(16)).count()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
