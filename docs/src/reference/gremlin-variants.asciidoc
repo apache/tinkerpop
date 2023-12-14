@@ -527,14 +527,37 @@ that can be used to fulfill the `gremlingo.Set` interface if desired.
 [[gremlin-go-examples]]
 === Application Examples
 
-The TinkerPop source code contains a simple Go script that shows a basic example of how gremlin-go works. It
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-go/example/example.go[here]
-and is designed to work best with a running <<gremlin-server,Gremlin Server>> configured with the default
-`conf/gremlin-server.yaml` file as included with the standard release packaging.
+The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Go. They
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-go/examples/[here]
+and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
+`conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
+To run the examples, first download an image of Gremlin Server from Docker Hub:
 [source,shell]
 ----
-go run example.go
+docker pull tinkerpop/gremlin-server
+----
+
+The remote connection and basic Gremlin examples can be run on a clean server, which uses the default configuration file
+`conf/gremlin-server.yaml`. To start a clean server, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server
+----
+
+The traversal examples should be run on a server configured to start with the Modern toy graph, using `conf/gremlin-server-modern.yaml`.
+To start a server with the Modern graph preloaded, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+----
+
+Each example can now be run with the following commands:
+[source,shell]
+----
+go run connections.go
+go run basic_gremlin.go
+go run modern_traversals.go
 ----
 
 [[gremlin-groovy]]
@@ -1201,8 +1224,8 @@ Connection Pool Status (size=1 max=5 min=1 toCreate=0 bin=0)
 
 anchor:java-application-examples[]
 anchor:gremlin-archetypes[]
-[[gremlin-java-examples]]
-=== Application Examples
+[[gremlin-java-archetypes]]
+=== Application Archetypes
 
 The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are
 as follows:
@@ -1223,6 +1246,24 @@ $ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArti
 This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
 `com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
 execute it.
+
+[[gremlin-java-examples]]
+=== Application Examples
+
+The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Java. They
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-driver/src/main/java/examples/[here].
+
+The remote connection examples in particular are designed to connect to a running <<gremlin-server,Gremlin Server>>
+configured with the `conf/gremlin-server.yaml` file as included with the standard release packaging.
+
+To do so, download an image of Gremlin Server from Docker Hub, then launch a new container with `docker run`:
+[source,shell]
+----
+docker pull tinkerpop/gremlin-server
+docker run -d -p 8182:8182 tinkerpop/gremlin-server
+----
+
+All examples can then be run using your IDE of choice.
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
@@ -1629,6 +1670,48 @@ the possibility of `null`.
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.
 
+[[gremlin-javascript-examples]]
+=== Application Examples
+
+The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-JavaScript. They
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-javascript/examples/[here]
+and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
+`conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
+
+To run the examples, first download an image of Gremlin Server from Docker Hub:
+[source,shell]
+----
+docker pull tinkerpop/gremlin-server
+----
+
+The remote connection and basic Gremlin examples can be run on a clean server, which uses the default configuration file
+`conf/gremlin-server.yaml`. To start a clean server, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server
+----
+
+The traversal examples should be run on a server configured to start with the Modern toy graph, using `conf/gremlin-server-modern.yaml`.
+To start a server with the Modern graph preloaded, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+----
+
+Make sure to install all necessary packages:
+[source,shell]
+----
+npm install
+----
+
+Each example can now be run with the following commands:
+[source,shell]
+----
+node connections.js
+node basic-gremlin.js
+node modern-traversals.js
+----
+
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
@@ -1967,8 +2050,8 @@ no `Graph` instance to deserialize a result into on the client-side. A workaroun
 anchor:gremlin-dotnet-template[]
 anchor:dotnet-application-examples[]
 anchor:gremlin-net-examples[]
-[[gremlin-dotnet-examples]]
-=== Application Examples
+[[gremlin-dotnet-startup]]
+=== Getting Started
 
 This link:https://docs.microsoft.com/dotnet/core/tools/custom-templates[dotnet template] helps getting started with
 <<gremlin-dotnet,Gremlin.Net>>. It creates a new C# console project that shows how to connect to a
@@ -1987,6 +2070,40 @@ Specify the output directory for the new project which will then also be used as
 
 [source,shell]
 dotnet new gremlin -o MyFirstGremlinProject
+
+[[gremlin-dotnet-examples]]
+=== Application Examples
+
+The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Dotnet. They
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-dotnet/Examples/[here]
+and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
+`conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
+
+To run the examples, first download an image of Gremlin Server from Docker Hub:
+[source,shell]
+----
+docker pull tinkerpop/gremlin-server
+----
+
+The remote connection and basic Gremlin examples can be run on a clean server, which uses the default configuration file
+`conf/gremlin-server.yaml`. To start a clean server, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server
+----
+
+The traversal examples should be run on a server configured to start with the Modern toy graph, using `conf/gremlin-server-modern.yaml`.
+To start a server with the Modern graph preloaded, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+----
+
+Each example can now be run with the following command in their respective project directories:
+[source,shell]
+----
+dotnet run
+----
 
 [[gremlin-python]]
 == Gremlin-Python
@@ -2527,14 +2644,35 @@ async def run_in_thread():
 [[gremlin-python-examples]]
 === Application Examples
 
-The TinkerPop source code contains a simple Python script that shows a basic example of how gremlinpython works. It
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-python/src/main/python/example.py[here]
-and is designed to work best with a running <<gremlin-server,Gremlin Server>> configured with the default
-`conf/gremlin-server.yaml` file as included with the standard release packaging.
+The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Python. They
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-python/src/main/python/examples/[here]
+and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
+`conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
+To run the examples, first download an image of Gremlin Server from Docker Hub:
 [source,shell]
 ----
-pip install gremlinpython
-pip install aiohttp
-python example.py
+docker pull tinkerpop/gremlin-server
+----
+
+The remote connection and basic Gremlin examples can be run on a clean server, which uses the default configuration file
+`conf/gremlin-server.yaml`. To start a clean server, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server
+----
+
+The traversal examples should be run on a server configured to start with the Modern toy graph, using `conf/gremlin-server-modern.yaml`.
+To start a server with the Modern graph preloaded, launch a new container with `docker run`:
+[source,shell]
+----
+docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+----
+
+Each example can now be run with the following commands:
+[source,shell]
+----
+python connections.py
+python basic_gremlin.py
+python modern_traversals.py
 ----
