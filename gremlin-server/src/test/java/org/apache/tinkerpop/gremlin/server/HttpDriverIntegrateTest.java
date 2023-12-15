@@ -209,7 +209,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     public void shouldDeserializeErrorWithGraphBinary() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V1D0)
+                .serializer(Serializers.GRAPHBINARY_V1)
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
@@ -226,7 +226,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     public void shouldDeserializeErrorWithGraphSON() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHSON_V3D0)
+                .serializer(Serializers.GRAPHSON_V3)
                 .create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
