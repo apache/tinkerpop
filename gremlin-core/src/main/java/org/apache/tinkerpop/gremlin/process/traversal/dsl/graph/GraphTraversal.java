@@ -63,7 +63,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
@@ -2006,21 +2006,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
      * that a traversal should be re-written in another form.
      *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     */
-    @Override
-    default GraphTraversal<S, E> discard() {
-        return (GraphTraversal<S, E>) Traversal.super.discard();
-    }
-
-    /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
+     * @return the updated traversal with respective {@link NoneStep}.
      *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     *
-     * @deprecated As of release 3.7.2, replaced by {@link #discard()}.
+     * @deprecated As of release 3.7.2 and will be renamed to discard() in 4.0.0.
      */
     @Deprecated
     @Override

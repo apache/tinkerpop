@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -75,7 +75,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         public static final String profile = "profile";
-        public static final String discard = "none";
         public static final String none = "none";
     }
 
@@ -202,7 +201,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     public default <A, B> Traversal<A, B> iterate() {
         try {
             if (!this.asAdmin().isLocked()) {
-                this.discard();
+                this.none();
                 this.asAdmin().applyStrategies();
             }
             // use the end step so the results are bulked
@@ -222,26 +221,14 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
      * that a traversal should be re-written in another form.
      *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     */
-    public default Traversal<S, E> discard() {
-        this.asAdmin().getBytecode().addStep(Symbols.discard);
-        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
-    }
-
-    /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
+     * @return the updated traversal with respective {@link NoneStep}.
      *
-     * @return the updated traversal with respective {@link DiscardStep}.
-     *
-     * @deprecated As of release 3.7.2, replaced by {@link #discard()}.
+     * @deprecated As of release 3.7.2 and will be renamed to discard() in 4.0.0.
      */
     @Deprecated
     public default Traversal<S, E> none() {
         this.asAdmin().getBytecode().addStep(Symbols.none);
-        return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
+        return this.asAdmin().addStep(new NoneStep<>(this.asAdmin()));
     }
 
     /**

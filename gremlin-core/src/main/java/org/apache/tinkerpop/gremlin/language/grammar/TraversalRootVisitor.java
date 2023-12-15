@@ -104,14 +104,6 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
         return visitChildren(ctx);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Traversal visitTraversalSelfMethod_discard(final GremlinParser.TraversalSelfMethod_discardContext ctx) {
-        this.traversal = traversal.discard();
-        return this.traversal;
-    }
 
     /**
      * {@inheritDoc}

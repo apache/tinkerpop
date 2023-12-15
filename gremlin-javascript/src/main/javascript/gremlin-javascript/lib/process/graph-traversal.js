@@ -694,16 +694,6 @@ class GraphTraversal extends Traversal {
   }
 
   /**
-   * Graph traversal discard method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  discard(...args) {
-    this.bytecode.addStep('none', args);
-    return this;
-  }
-
-  /**
    * Graph traversal disjunct method.
    * @param {...Object} args
    * @returns {GraphTraversal}

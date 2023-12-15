@@ -1147,8 +1147,7 @@ traversalSackMethod
     ;
 
 traversalSelfMethod
-    : traversalSelfMethod_discard
-    | traversalSelfMethod_none
+    : traversalSelfMethod_none
     ;
 
 // Additional special rules that are derived from above
@@ -1280,10 +1279,6 @@ traversalTerminalMethod_toSet
 
 traversalTerminalMethod_toBulkSet
     : 'toBulkSet' LPAREN RPAREN
-    ;
-
-traversalSelfMethod_discard
-    : 'discard' LPAREN RPAREN
     ;
 
 traversalSelfMethod_none

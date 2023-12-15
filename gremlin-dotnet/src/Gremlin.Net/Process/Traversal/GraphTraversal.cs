@@ -705,15 +705,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Adds the discard step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<TStart, TEnd> Discard ()
-        {
-            Bytecode.AddStep("none");
-            return Wrap<TStart, TEnd>(this);
-        }
-
-        /// <summary>
         ///     Adds the disjunct step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> Disjunct (object disjunctObject)
