@@ -26,4 +26,4 @@ idna==3.4
 isodate==0.6.1
 multidict==4.7.6
 six==1.15.0
-yarl==1.9.2
+yarl==1.9.4
