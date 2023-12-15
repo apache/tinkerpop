@@ -61,13 +61,20 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
         if (msg instanceof FullHttpMessage){
             final FullHttpMessage request = (FullHttpMessage) msg;
             final boolean keepAlive = HttpUtil.isKeepAlive(request);
+            final RequestMessage requestMessage;
+            try {
+                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest((FullHttpRequest) request);
+            } catch (IllegalArgumentException iae) {
+                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                return;
+            }
 
             try {
                 user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-                final RequestMessage requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest((FullHttpRequest) request);
+
                 authorizer.authorize(user, requestMessage);
                 ctx.fireChannelRead(request);
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
@@ -77,18 +84,18 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 try {
                     script = HttpHandlerUtil.getRequestMessageFromHttpRequest((FullHttpRequest) request).getArgOrDefault(Tokens.ARGS_GREMLIN, "");
                 } catch (IllegalArgumentException iae) {
-                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
+                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, requestMessage.getRequestId(), iae.getMessage(), keepAlive);
                     return;
                 }
                 auditLogger.info("User {} with address {} attempted an unauthorized http request: {}",
                     user.getName(), address, script);
                 final String message = String.format("No authorization for script [%s] - check permissions.", script);
-                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, message, keepAlive);
+                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, requestMessage.getRequestId(), message, keepAlive);
                 ReferenceCountUtil.release(msg);
             } catch (Exception ex) {
                 final String message = String.format(
                         "%s is not ready to handle requests - unknown error", authorizer.getClass().getSimpleName());
-                HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, message, keepAlive);
+                HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestMessage.getRequestId(), message, keepAlive);
                 ReferenceCountUtil.release(msg);
             }
         } else {
