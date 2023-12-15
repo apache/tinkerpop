@@ -18,19 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Converts {@code HttpResponse} to a {@link ResponseMessage}.
@@ -38,6 +41,7 @@ import java.util.List;
 @ChannelHandler.Sharable
 public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<FullHttpResponse> {
     private final MessageSerializer<?> serializer;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public HttpGremlinResponseDecoder(final MessageSerializer<?> serializer) {
         this.serializer = serializer;
@@ -45,6 +49,14 @@ public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<Fu
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final FullHttpResponse httpResponse, final List<Object> objects) throws Exception {
-        objects.add(serializer.deserializeResponse(httpResponse.content()));
+        if (httpResponse.status() == HttpResponseStatus.OK) {
+            objects.add(serializer.deserializeResponse(httpResponse.content()));
+        } else {
+            final JsonNode root = mapper.readTree(new ByteBufInputStream(httpResponse.content()));
+            objects.add(ResponseMessage.build(UUID.fromString(root.get(Tokens.REQUEST_ID).asText()))
+                        .code(ResponseStatusCode.SERVER_ERROR)
+                        .statusMessage(root.get(SerTokens.TOKEN_MESSAGE).asText())
+                        .create());
+        }
     }
 }

@@ -265,3 +265,24 @@ def remote_connection_http_authenticated(request):
         request.addfinalizer(fin)
         return remote_conn
 """
+
+
+@pytest.fixture(params=['graphsonv3', 'graphbinaryv1'])
+def invalid_alias_remote_connection_http(request):
+    try:
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(anonymous_url_http, 'does_not_exist',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(anonymous_url_http, 'does_not_exist',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        else:
+            raise ValueError("Invalid serializer option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn

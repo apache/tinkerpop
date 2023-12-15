@@ -30,6 +30,7 @@ from gremlin_python.structure.graph import Vertex
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.serializer import GraphSONSerializersV2d0
+from gremlin_python.driver.protocol import GremlinServerError
 
 gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
 test_no_auth_http_url = gremlin_server_url_http.format(45940)
@@ -212,6 +213,15 @@ class TestDriverRemoteConnectionHttp(object):
         assert 5 == t.clone().limit(5).count().next()
         assert 10 == t.clone().limit(10).count().next()
 
+    def test_receive_error(self, invalid_alias_remote_connection_http):
+        g = traversal().withRemote(invalid_alias_remote_connection_http)
+
+        try:
+            g.V().next()
+            assert False
+        except GremlinServerError as err:
+            assert err.status_code == 400
+            assert 'Could not rebind' in err.status_message
 
     """
     # The WsAndHttpChannelizer somehow does not distinguish the ssl handlers so authenticated https remote connection

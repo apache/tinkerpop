@@ -211,7 +211,9 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         # Inner function to perform async read.
         async def async_read():
             async with async_timeout.timeout(self._read_timeout):
-                return await self._http_req_resp.read()
+                return {"content": await self._http_req_resp.read(),
+                        "ok": self._http_req_resp.ok,
+                        "status": self._http_req_resp.status}
 
         return self._loop.run_until_complete(async_read())
 
