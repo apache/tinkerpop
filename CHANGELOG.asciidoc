@@ -301,6 +301,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added tests for error handling for GLV's if tx.commit() is called remotely for graphs without transactions support.
 * Introduced multi-architecture AMD64/ARM64 docker images for gremlin-console.
 * Fixed bug in `JavaTranslator` where `has(String, null)` could call `has(String, Traversal)` to generate an error.
+* Fixed issue where server errors weren't being properly parsed when sending bytecode over HTTP.
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
