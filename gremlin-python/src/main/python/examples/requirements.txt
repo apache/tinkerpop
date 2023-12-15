@@ -25,5 +25,5 @@ frozenlist==1.4.0
 idna==3.4
 isodate==0.6.1
 multidict==4.7.6
-six==1.15.0
+six==1.16.0
 yarl==1.9.2
