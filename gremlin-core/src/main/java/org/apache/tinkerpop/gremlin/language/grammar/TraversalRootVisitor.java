@@ -104,7 +104,6 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
         return visitChildren(ctx);
     }
 
-
     /**
      * {@inheritDoc}
      */
