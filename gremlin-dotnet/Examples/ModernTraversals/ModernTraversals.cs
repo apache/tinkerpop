@@ -30,7 +30,7 @@ public class ModernTraversalExample
     {
         var server = new GremlinServer("localhost", 8182);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         /*
         This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.

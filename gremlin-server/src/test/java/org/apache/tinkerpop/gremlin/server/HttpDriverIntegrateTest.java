@@ -204,4 +204,38 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             cluster.close();
         }
     }
+
+    @Test
+    public void shouldDeserializeErrorWithGraphBinary() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .channelizer(Channelizer.HttpChannelizer.class)
+                .serializer(Serializers.GRAPHBINARY_V1)
+                .create();
+        try {
+            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
+            g.V().next();
+            fail("Expected exception to be thrown.");
+        } catch (Exception ex) {
+            assert ex.getMessage().contains("Could not rebind");
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldDeserializeErrorWithGraphSON() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
+                .channelizer(Channelizer.HttpChannelizer.class)
+                .serializer(Serializers.GRAPHSON_V3)
+                .create();
+        try {
+            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
+            g.V().next();
+            fail("Expected exception to be thrown.");
+        } catch (Exception ex) {
+            assert ex.getMessage().contains("Could not rebind");
+        } finally {
+            cluster.close();
+        }
+    }
 }
