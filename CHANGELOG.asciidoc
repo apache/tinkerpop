@@ -30,7 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
-* Renamed the deprecated traversal discarding `none()` step to `discard()`.
+* Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Bumped to `commons-collection4`.
@@ -42,7 +42,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (NOT OFFICIALLY RELEASED YET)
 
-* Deprecated `none()`, which will be renamed to `discard()` in release 4.0.0.
 
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (November 20, 2023)
