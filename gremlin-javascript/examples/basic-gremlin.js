@@ -23,7 +23,7 @@ const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 
 async function main() {
     const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    const g = traversal().with(dc);
+    const g = traversal().withRemote(dc);
 
     // Basic Gremlin: adding and retrieving data
     const v1 = await g.addV('person').property('name','marko').next();

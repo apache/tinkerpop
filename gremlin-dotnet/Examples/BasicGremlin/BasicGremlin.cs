@@ -27,7 +27,7 @@ public class BasicGremlinExample
     {
         var server = new GremlinServer("localhost", 8182);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
-        var g = Traversal().With(remoteConnection);
+        var g = Traversal().WithRemote(remoteConnection);
 
         // Basic Gremlin: adding and retrieving data
         var v1 = g.AddV("person").Property("name", "marko").Next();

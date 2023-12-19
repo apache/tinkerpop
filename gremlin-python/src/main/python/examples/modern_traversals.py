@@ -32,7 +32,7 @@ def main():
     # For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
     # conf/gremlin-server-modern.yaml.
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-    g = traversal().with_(rc)
+    g = traversal().with_remote(rc)
 
     e1 = g.V(1).both_e().to_list()  # (1)
     e2 = g.V(1).both_e().where(__.other_v().has_id(2)).to_list()  # (2)

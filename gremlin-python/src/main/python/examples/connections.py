@@ -41,7 +41,7 @@ def with_remote():
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-    g = traversal().with_(rc)
+    g = traversal().with_remote(rc)
 
     # drop existing vertices
     g.V().drop().iterate()

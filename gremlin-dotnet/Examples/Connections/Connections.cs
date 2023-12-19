@@ -36,7 +36,7 @@ public class ConnectionExample
     {
         var server = new GremlinServer("localhost", 8182);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
-        var g = Traversal().With(remoteConnection);
+        var g = Traversal().WithRemote(remoteConnection);
 
         // Drop existing vertices
         g.V().Drop().Iterate();

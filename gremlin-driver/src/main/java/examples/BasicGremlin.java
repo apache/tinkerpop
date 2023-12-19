@@ -31,7 +31,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 public class BasicGremlin {
     public static void main(String[] args) {
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = traversal().with(graph);
+        GraphTraversalSource g = traversal().withEmbedded(graph);
 
         // Basic Gremlin: adding and retrieving data
         Vertex v1 = g.addV("person").property("name","marko").next();

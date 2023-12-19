@@ -45,7 +45,7 @@ public class Connections {
     // Creating an embedded graph
     private static void withEmbedded() throws Exception {
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = traversal().with(graph);
+        GraphTraversalSource g = traversal().withEmbedded(graph);
 
         g.addV().iterate();
         long count = g.V().count().next();
@@ -57,7 +57,7 @@ public class Connections {
     // Connecting to the server
     private static void withRemote() throws Exception {
         Cluster cluster = Cluster.build("localhost").port(8182).create();
-        GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g"));
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
         // Drop existing vertices
         g.V().drop().iterate();
@@ -83,7 +83,7 @@ public class Connections {
             port(8182).
             serializer(new GraphBinaryMessageSerializerV1()).
             create();
-        GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g"));
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
         g.addV().iterate();
         long count = g.V().count().next();
@@ -102,7 +102,7 @@ public class Connections {
             serializer(serializer).
             create();
         Client client = cluster.connect();
-        GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "g"));
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
 
         g.addV().iterate();
         long count = g.V().count().next();

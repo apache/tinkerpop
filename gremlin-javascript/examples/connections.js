@@ -30,7 +30,7 @@ async function main() {
 async function withRemote() {
     // Connecting to the server
     const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    const g = traversal().with(dc);
+    const g = traversal().withRemote(dc);
 
     // Drop existing vertices
     await g.V().drop().iterate();

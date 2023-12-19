@@ -26,7 +26,7 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 
 def main():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
-    g = traversal().with_(rc)
+    g = traversal().with_remote(rc)
 
     # basic Gremlin: adding and retrieving data
     v1 = g.add_v('person').property('name', 'marko').next()
