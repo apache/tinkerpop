@@ -31,7 +31,7 @@ async function main() {
     conf/gremlin-server-modern.yaml.
     */
     const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
-    const g = traversal().with(dc);
+    const g = traversal().withRemote(dc);
 
     const e1 = await g.V(1).bothE().toList(); // (1)
     const e2 = await g.V(1).bothE().where(__.otherV().hasId(2)).toList(); // (2)

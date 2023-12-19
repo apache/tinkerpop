@@ -36,7 +36,7 @@ func main() {
 		return
 	}
 	defer driverRemoteConnection.Close()
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
 	/*
 	  This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.

@@ -52,7 +52,7 @@ public class ConnectionExample
     {
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
         new GremlinServer(hostname: "localhost", port: 8182, enableSsl: false, username: "", password: "")), "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         var v = g.AddV().Iterate();
         var count = g.V().Count().Next();
@@ -65,7 +65,7 @@ public class ConnectionExample
         var server = new GremlinServer("localhost", 8182);
         var client = new GremlinClient(server, new GraphSON3MessageSerializer());
         using var remoteConnection = new DriverRemoteConnection(client, "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         var v = g.AddV().Iterate();
         var count = g.V().Count().Next();

@@ -58,7 +58,7 @@ def with_remote():
 # connecting with plain text authentication
 def with_auth():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
-    g = traversal().with_remote(rc)
+    g = traversal().with_(rc)
 
     v = g.add_v().iterate()
     count = g.V().count().next()
@@ -70,7 +70,7 @@ def with_auth():
 # connecting with Kerberos SASL authentication
 def with_kerberos():
     rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
-    g = traversal().with_remote(rc)
+    g = traversal().with_(rc)
 
     v = g.add_v().iterate()
     count = g.V().count().next()
@@ -88,7 +88,7 @@ def with_configs():
         graphson_writer=None, headers=None, session=None,
         enable_user_agent_on_connect=True
     )
-    g = traversal().with_remote(rc)
+    g = traversal().with_(rc)
 
     v = g.add_v().iterate()
     count = g.V().count().next()

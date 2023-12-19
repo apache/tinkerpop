@@ -73,7 +73,7 @@ func withConfigs() {
 	}
 
 	defer driverRemoteConnection.Close()
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
 	g.AddV().Iterate()
 	count, _ := g.V().Count().Next()
