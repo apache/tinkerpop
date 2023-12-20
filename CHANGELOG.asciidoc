@@ -99,7 +99,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * TINKERPOP-2830 Handle User-Agent from HTTP Requests to server
 * TINKERPOP-2946 Resolve ordering issues in gherkin tests
 * TINKERPOP-2951 Add translator to the Go GLV
-* TINKERPOP-2964  Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
+* TINKERPOP-2964 Many TraversalParent's steps have a replaceLocalChild logic that can result in a new ChildTraversal having an ID that already exists.
 * TINKERPOP-2978 Add List Manipulation Steps to Gremlin
 * TINKERPOP-2979 Add Date Manipulation Steps to Gremlin
 * TINKERPOP-2982 Allow gremlin-driver usage over HTTP
