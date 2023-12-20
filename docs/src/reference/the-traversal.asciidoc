@@ -3178,8 +3178,6 @@ g.V().values('age').fold().none(gt(25)) <1>
 
 <1> Return the list of ages only if no one's age is greater than 25.
 
-NOTE: As of release 4.0.0, `none()` will be renamed to `discard()`.
-
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#none(org.apache.tinkerpop.gremlin.process.traversal.P)++[`none(P)`],
