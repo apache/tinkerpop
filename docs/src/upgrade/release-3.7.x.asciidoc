@@ -30,7 +30,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Renaming `none()` Step to `discard()`
+==== Notice: Renaming `none()` step to `discard()` in 4.0.0
 `none()`, which is primarily used by `iterate()` to discard traversal results in remote contexts, will be renamed to
 `discard()` in release 4.0.0.
 
