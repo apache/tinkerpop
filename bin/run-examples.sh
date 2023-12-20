@@ -36,7 +36,7 @@ docker pull tinkerpop/gremlin-server
 docker run -d --rm -p 8182:8182 --name glv-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server
 
 echo
-echo "Not having docker open initially may cause an error loop. If so, simply restart this script."
+echo "Not having Docker open initially or occupying port 8182 may cause an error loop. If so, simply restart this script."
 echo -n "Starting Gremlin server on port 8182..."
 until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q "healthy"; do
      echo -n "."
@@ -44,7 +44,7 @@ until docker inspect --format '{{.State.Health.Status}}' glv-examples | grep -q 
 done
 echo
 
-cd ../gremlin-driver/src/main/java/examples || exit
+cd gremlin-driver/src/main/java/examples || exit
 mvn clean install
 
 echo
