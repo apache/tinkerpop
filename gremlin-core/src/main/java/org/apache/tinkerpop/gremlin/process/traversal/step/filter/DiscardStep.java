@@ -26,71 +26,22 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-<<<<<<<< HEAD:gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DiscardStep.java
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class DiscardStep<S> extends FilterStep<S> {
 
     public DiscardStep(final Traversal.Admin traversal) {
-========
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Set;
-
-public final class NoneStep<S, S2> extends FilterStep<S> {
-
-    private P<S2> predicate;
-
-    public NoneStep(final Traversal.Admin traversal, final P<S2> predicate) {
->>>>>>>> 2b1ce0901b (Implement none step):gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/NoneStep.java
         super(traversal);
-
-        if (null == predicate) {
-            throw new IllegalArgumentException("Input predicate to none step can't be null.");
-        }
-
-        this.predicate = predicate;
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        final S item = traverser.get();
-
-        if (item instanceof Iterable || item instanceof Iterator || ((item != null) && item.getClass().isArray())) {
-            GremlinTypeErrorException typeError = null;
-            final Iterator<S2> iterator = IteratorUtils.asIterator(item);
-            while (iterator.hasNext()) {
-                try {
-                    if (this.predicate.test(iterator.next())) {
-                        return false;
-                    }
-                } catch (GremlinTypeErrorException gtee) {
-                    // hold onto it until the end in case any other element evaluates to TRUE
-                    typeError = gtee;
-                }
-            }
-            if (typeError != null) throw typeError;
-            return true;
-        }
-
         return false;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.predicate);
-    }
-
-    @Override
-    public NoneStep<S, S2> clone() {
-        final NoneStep<S, S2> clone = (NoneStep<S, S2>) super.clone();
-        clone.predicate = this.predicate.clone();
-        return clone;
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return EnumSet.of(TraverserRequirement.OBJECT);
+        return StringFactory.stepString(this);
     }
 }

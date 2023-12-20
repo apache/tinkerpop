@@ -208,7 +208,7 @@ type AnonymousTraversal interface {
 	// Min adds the min step to the GraphTraversal.
 	Min(args ...interface{}) *GraphTraversal
 	// None adds the none step to the GraphTraversal.
-	None(args ...interface{}) *GraphTraversal
+    None(args ...interface{}) *GraphTraversal
 	// Not adds the not step to the GraphTraversal.
 	Not(args ...interface{}) *GraphTraversal
 	// Option adds the option step to the GraphTraversal.
