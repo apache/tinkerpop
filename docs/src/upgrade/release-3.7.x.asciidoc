@@ -36,7 +36,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Providers
 
-==== Renaming NoneStep to DiscardStep
+==== Notice: Renaming NoneStep to DiscardStep in 4.0.0
 NoneStep, which is primarily used by `iterate()` to discard traversal results in remote contexts, will be renamed to
 DiscardStep in release 4.0.0 to make room for a list filtering NoneStep.
 
