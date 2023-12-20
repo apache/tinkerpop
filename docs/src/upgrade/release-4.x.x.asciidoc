@@ -75,6 +75,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
+==== Renaming none() to discard()
+`none()`, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
+`discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and passes lists
+with no elements matching the predicate.
+
 ==== Improved handling of integer overflows
 
 Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
@@ -82,10 +87,10 @@ skipped with incorrect result.
 
 === Upgrading for Providers
 
-==== Renaming None Step to Discard
-`none()` has been renamed to `discard()`. In its place will be a new list filtering step
-`none()`, which takes a predicate as an argument and passes lists with no elements matching the predicate.
-
+==== Renaming NoneStep to DiscardStep
+NoneStep, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
+DiscardStep. In its place is a new list filtering NoneStep, which takes a predicate as an argument and passes lists with
+no elements matching the predicate.
 
 ==== Graph System Providers
 
