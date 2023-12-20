@@ -33,7 +33,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
-* Renamed the traversal discarding `none()` step to `discard()`.
 * Bumped to `commons-collection4`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
