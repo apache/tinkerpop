@@ -1,8 +1,8 @@
 {
-  "name": "example",
+  "name": "examples",
   "version": "1.0.0",
   "description": "GLV example for JavaScript with Node",
-  "main": "example.js",
+  "main": "connections.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
