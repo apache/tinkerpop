@@ -30,15 +30,9 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Renaming `none()` Step to `discard()`
-`none()`, which is primarily used by `iterate()` to discard traversal results in remote contexts, will be renamed to
-`discard()` in release 4.0.0.
 
 === Upgrading for Providers
 
-==== Renaming NoneStep to DiscardStep
-NoneStep, which is primarily used by `iterate()` to discard traversal results in remote contexts, will be renamed to
-DiscardStep in release 4.0.0 to make room for a list filtering NoneStep.
 
 == TinkerPop 3.7.1
 *Release Date: November 20, 2023*
