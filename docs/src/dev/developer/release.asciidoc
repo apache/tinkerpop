@@ -80,7 +80,7 @@ Take care to commit or not commit changes related to that as necessary.
 
 == Release Manager Requirements
 
-If this is your first time as release manager, you will need to setup keys for signing purposes per the Apache
+If this is your first time as release manager, you will need to set up keys for signing purposes per the Apache
 release process. Generally speaking, this will mean that you will need to generate a key-pair and then publish your
 public key.
 
@@ -326,6 +326,8 @@ the help of a PMC member for those steps.
 . Examine the `future.asciidoc` and update the "Roadmap" as needed.
 . Send email to advise that code freeze is lifted.
 . Consider the changes made to Gremlin and determine if the community needs to organize a PR to [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/gremlin) to keep TypeScript up to date.
+. Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
+.. Make changes as necessary to update the examples.
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Set up the IO tests for the current `SNAPSHOT` as discussed in the <<io,IO Documentation and Testing Section>>
 

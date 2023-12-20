@@ -18,17 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
-import org.apache.commons.collections.map.ReferenceMap;
+import org.apache.commons.collections4.map.AbstractReferenceMap;
+import org.apache.commons.collections4.map.ReferenceMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 
 public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     protected Stack<LabelledCounter> nestedLoops;
-    protected ReferenceMap loopNames = null;
+    protected ReferenceMap<String,Object> loopNames = null;
 
     protected B_NL_O_S_SE_SL_Traverser() {
     }
@@ -36,7 +38,8 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public B_NL_O_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
         this.nestedLoops = new Stack<>();
-        this.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
+        this.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
+                AbstractReferenceMap.ReferenceStrength.WEAK);
     }
 
     /////////////////
@@ -87,11 +90,12 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
             clone.nestedLoops.push((LabelledCounter) lc.clone());
 
         if (this.loopNames != null) {
-            clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
+            clone.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
+                    AbstractReferenceMap.ReferenceStrength.WEAK);
 
-            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            final Iterator<Map.Entry<String,Object>> loopNamesIterator = this.loopNames.entrySet().iterator();
             while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+                final ReferenceMap.Entry<String,Object> pair = loopNamesIterator.next();
 
                 final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)
@@ -111,11 +115,12 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
             clone.nestedLoops.push((LabelledCounter) lc.clone());
 
         if (this.loopNames != null) {
-            clone.loopNames = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
+            clone.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
+                    AbstractReferenceMap.ReferenceStrength.WEAK);
 
-            final Iterator loopNamesIterator = this.loopNames.entrySet().iterator();
+            final Iterator<Map.Entry<String,Object>> loopNamesIterator = this.loopNames.entrySet().iterator();
             while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry pair = (ReferenceMap.Entry) loopNamesIterator.next();
+                final ReferenceMap.Entry<String,Object> pair = loopNamesIterator.next();
 
                 final int idx = this.nestedLoops.indexOf(pair.getValue());
                 if (idx != -1)

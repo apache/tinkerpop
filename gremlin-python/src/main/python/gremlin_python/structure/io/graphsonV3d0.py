@@ -29,7 +29,7 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
+from gremlin_python.statics import FloatType, FunctionType, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
@@ -596,6 +596,31 @@ class Int32IO(Int64IO):
             return GraphSONUtil.typed_value("Int64", n)
         else:
             return GraphSONUtil.typed_value(cls.graphson_base_type, n)
+
+
+class Int16IO(Int64IO):
+    python_type = ShortType
+    graphson_type = "gx:Int16"
+    graphson_base_type = "Int16"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        # if we exceed Java int range then we need a long
+        if isinstance(n, bool):
+            return n
+        elif n < -9223372036854775808 or n > 9223372036854775807:
+            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
+        elif n < -2147483648 or n > 2147483647:
+            return GraphSONUtil.typed_value("Int64", n)
+        elif n < -32768 or n > 32767:
+            return GraphSONUtil.typed_value("Int32", n)
+        else:
+            return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        return int.__new__(ShortType, v)
+
 
 class ByteIO(_NumberIO):
     python_type = SingleByte

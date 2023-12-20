@@ -255,6 +255,7 @@ const gremlins = {
     g_V_hasXlabel_personX: [function({g}) { return g.V().has(T.label,"person") }], 
     g_V_hasXlabel_eqXpersonXX: [function({g}) { return g.V().has(T.label,P.eq("person")) }], 
     g_V_hasXlabel_isXpersonXX: [function({g}) { return g.V().has(T.label,__.is("person")) }], 
+    g_V_hasXname_nullX: [function({g}) { return g.V().has("name",null) }], 
     g_V_hasIdXemptyX_count: [function({g, xx1}) { return g.V().hasId(xx1).count() }], 
     g_V_hasIdXwithinXemptyXX_count: [function({g, xx1}) { return g.V().hasId(xx1).count() }], 
     g_V_hasIdXwithoutXemptyXX_count: [function({g, xx1}) { return g.V().hasId(xx1).count() }], 

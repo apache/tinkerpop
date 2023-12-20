@@ -237,6 +237,7 @@ world.gremlins = {
     'g_V_hasXlabel_personX': [(lambda g:g.V().has(T.label,'person'))], 
     'g_V_hasXlabel_eqXpersonXX': [(lambda g:g.V().has(T.label,P.eq('person')))], 
     'g_V_hasXlabel_isXpersonXX': [(lambda g:g.V().has(T.label,__.is_('person')))], 
+    'g_V_hasXname_nullX': [(lambda g:g.V().has('name',None))], 
     'g_V_hasIdXemptyX_count': [(lambda g, xx1=None:g.V().hasId(xx1).count())], 
     'g_V_hasIdXwithinXemptyXX_count': [(lambda g, xx1=None:g.V().hasId(xx1).count())], 
     'g_V_hasIdXwithoutXemptyXX_count': [(lambda g, xx1=None:g.V().hasId(xx1).count())], 
