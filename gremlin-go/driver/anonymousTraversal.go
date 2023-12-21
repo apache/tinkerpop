@@ -728,6 +728,11 @@ func (anonymousTraversal *anonymousTraversal) Min(args ...interface{}) *GraphTra
 	return anonymousTraversal.graphTraversal().Min(args...)
 }
 
+// None adds the none step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) None(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().None(args...)
+}
+
 // Not adds the not step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Not(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Not(args...)
