@@ -3168,8 +3168,8 @@ the supplied predicate and if none of the items pass then the traverser is passe
 filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
 
 
-NOTE: Prior to release 4.0.0, `none()` was a traversal discarding step primarily used by `iterate()`. This step has
-since been renamed to `discard()`
+NOTE: Prior to release 4.0.0, `none()` was a traversal discarding step primarily used by <<iterate-step,`iterate()`>>. This step has
+since been renamed to <<discard-step,`discard()`>>
 
 
 [gremlin-groovy,modern]
