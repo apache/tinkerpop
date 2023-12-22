@@ -77,8 +77,8 @@ these were deserialized into arrays.
 
 ==== Renaming none() to discard()
 `none()`, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
-`discard()`. In its place will be a new list filtering step `none()`, which takes a predicate as an argument and passes
-lists with no elements matching the predicate.
+`discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and passes lists
+with no elements matching the predicate.
 
 ==== Improved handling of integer overflows
 
@@ -89,8 +89,8 @@ skipped with incorrect result.
 
 ==== Renaming NoneStep to DiscardStep
 NoneStep, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
-DiscardStep. In its place will be a new list filtering NoneStep, which takes a predicate as an argument and passes lists
-with no elements matching the predicate.
+DiscardStep. In its place is a new list filtering NoneStep, which takes a predicate as an argument and passes lists with
+no elements matching the predicate.
 
 ==== Graph System Providers
 
