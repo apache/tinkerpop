@@ -28,7 +28,6 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Process.Traversal.Step.Util;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure.IO.GraphBinary;
 using Gremlin.Net.Structure.IO.GraphSON;

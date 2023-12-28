@@ -53,7 +53,7 @@ Feature: Step - repeat()
     Given the modern graph
     And the traversal of
       """
-      g.V().repeat(__.outE().inV()).times(2).path().by("name").by(T.label);
+      g.V().repeat(__.outE().inV()).times(2).path().by("name").by(T.label)
       """
     When iterated to list
     Then the result should be unordered

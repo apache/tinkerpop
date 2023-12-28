@@ -32,6 +32,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
+import org.apache.tinkerpop.gremlin.language.translator.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -443,7 +445,11 @@ public final class StepDefinition {
     }
 
     private Traversal parseGremlin(final String script) {
-        final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+        // tests the normalizer by running the script from the feature file first
+        final String normalizedGremlin = GremlinTranslator.translate(script, Translator.LANGUAGE).getTranslated();
+
+        // parse the Gremlin to a Traversal
+        final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(normalizedGremlin));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.QueryContext ctx = parser.query();
         return (Traversal) new GremlinAntlrToJava(g).visitQuery(ctx);
