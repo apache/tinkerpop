@@ -1713,4 +1713,9 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitKeyword(final GremlinParser.KeywordContext ctx) { return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T visitTraversalBarrier(final GremlinParser.TraversalBarrierContext ctx) { notImplemented(ctx); return null; }
 }

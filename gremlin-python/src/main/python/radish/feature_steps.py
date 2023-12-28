@@ -42,12 +42,25 @@ ignores = [
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
+    # if we have no traversals then we are ignoring the test - should be temporary until we can settle out the
+    # issue of handling the removal of lambdas from Gremlin as a language
+    step.context.ignore = len(step.context.traversals) == 0
+    tagset = [tag.name for tag in step.all_tags]
+    if not step.context.ignore:
+        step.context.ignore = "AllowNullPropertyValues" in tagset
+
+    if (step.context.ignore):
+        return
+
     step.context.graph_name = graph_name
     step.context.g = traversal().with_(step.context.remote_conn[graph_name])
 
 
 @given("the graph initializer of")
 def initialize_graph(step):
+    if (step.context.ignore):
+        return
+
     t = step.context.traversals.pop(0)(g=step.context.g)
 
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
@@ -65,6 +78,9 @@ def unsupported_scenario(step):
 
 @given("using the parameter {param_name:w} of P.{p_val:w}({param:QuotedString})")
 def add_p_parameter(step, param_name, p_val, param):
+    if (step.context.ignore):
+        return
+
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
@@ -73,6 +89,9 @@ def add_p_parameter(step, param_name, p_val, param):
 
 @given("using the parameter {param_name:w} defined as {param:QuotedString}")
 def add_parameter(step, param_name, param):
+    if (step.context.ignore):
+        return
+
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
@@ -81,14 +100,15 @@ def add_parameter(step, param_name, param):
 
 @given("the traversal of")
 def translate_traversal(step):
-    step.context.ignore = step.text in ignores
+    if step.context.ignore == False:
+        step.context.ignore = step.text in ignores
+    if step.context.ignore:
+        return
+
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     localg = step.context.g
+
     tagset = [tag.name for tag in step.all_tags]
-
-    if not step.context.ignore:
-        step.context.ignore = "AllowNullPropertyValues" in tagset
-
     if "GraphComputerOnly" in tagset:
         localg = step.context.g.withComputer()
     p['g'] = localg
@@ -103,6 +123,7 @@ def iterate_the_traversal(step):
     try:
         step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
         step.context.failed = False
+        step.context.failed_message = ''
     except Exception as e:
         step.context.failed = True
         step.context.failed_message = getattr(e, 'message', repr(e))
@@ -116,6 +137,7 @@ def next_the_traversal(step):
     try:
         step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
         step.context.failed = False
+        step.context.failed_message = ''
     except Exception as e:
         step.context.failed = True
         step.context.failed_message = getattr(e, 'message', repr(e))
@@ -145,7 +167,7 @@ def assert_result(step, characterized_as):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     if characterized_as == "empty":  # no results
         assert_that(len(step.context.result), equal_to(0))
@@ -164,7 +186,7 @@ def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     p['g'] = step.context.g
@@ -178,7 +200,7 @@ def assert_count(step, count):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     assert_that(len(list(step.context.result)), equal_to(count))
 

@@ -23,7 +23,7 @@
 
 using Gremlin.Net.Structure;
 
-namespace Gremlin.Net.Process.Traversal.Step.Util
+namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     Configuration options to be passed to the <c>With()</c> modulator.

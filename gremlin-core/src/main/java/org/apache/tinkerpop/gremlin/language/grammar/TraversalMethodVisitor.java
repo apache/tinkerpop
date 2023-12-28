@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
@@ -218,9 +219,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_barrier_Consumer(final GremlinParser.TraversalMethod_barrier_ConsumerContext ctx) {
-        // normSack is a special consumer enum type defined in org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier
-        // it is not used in any other traversal methods.
-        return this.graphTraversal.barrier(normSack);
+        return this.graphTraversal.barrier(TraversalEnumParser.parseTraversalEnumFromContext(SackFunctions.Barrier.class, ctx.getChild(2)));
     }
 
     /**
@@ -1138,6 +1137,12 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     public Traversal visitTraversalMethod_option_Merge_Map_Cardinality(final GremlinParser.TraversalMethod_option_Merge_Map_CardinalityContext ctx) {
         if (ctx.genericLiteralMapNullableArgument().nullLiteral() != null) {
             return this.graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()), (Map) null);
+        }
+
+        if (ctx.genericLiteralMapNullableArgument().variable() != null) {
+            return graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()),
+                    (Map) antlr.argumentVisitor.visitVariable(ctx.genericLiteralMapNullableArgument().variable()),
+                    TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
         }
 
         return graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()),

@@ -87,7 +87,7 @@ class SubgraphStrategy(TraversalStrategy):
         if vertex_properties is not None:
             self.configuration["vertexProperties"] = vertex_properties
         if check_adjacent_vertices is not None:
-            self.configuration["checkAdjacentProperties"] = check_adjacent_vertices
+            self.configuration["checkAdjacentVertices"] = check_adjacent_vertices
 
 
 class VertexProgramStrategy(TraversalStrategy):

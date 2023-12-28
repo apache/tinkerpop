@@ -136,7 +136,9 @@ const ignoredScenarios = {
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
-  if (ignoredScenarios[this.scenario]) {
+  // if the scenario is ignored or if the scenario has no gremlin (i.e. happens for skipped lambdas that can't
+  // translate) then skipp the test
+  if (ignoredScenarios[this.scenario] || gremlin[this.scenario].length === 0) {
     return 'skipped';
   }
   this.graphName = graphName;

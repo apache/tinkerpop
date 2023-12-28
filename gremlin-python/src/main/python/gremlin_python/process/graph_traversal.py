@@ -544,6 +544,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("hasKey", *args)
         return self
 
+    def has_key(self, *args):
+        self.bytecode.add_step("hasKey", *args)
+        return self
+
     def hasLabel(self, *args):
         warnings.warn(
             "gremlin_python.process.GraphTraversalSource.hasLabel will be replaced by "
@@ -1430,7 +1434,7 @@ class __(object, metaclass=MagicType):
             "gremlin_python.process.__.l_trim.",
             DeprecationWarning)
         return cls.l_trim(*args)
-    
+
     @classmethod
     def l_trim(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).l_trim(*args)

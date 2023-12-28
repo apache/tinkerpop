@@ -39,6 +39,16 @@ namespace Gremlin.Net.Process.Traversal
             public const String maxDistance = "~tinkerpop.shortestPath.maxDistance";
         
             public const String target = "~tinkerpop.shortestPath.target";
+
+            public const String Distance = "~tinkerpop.shortestPath.distance";
+
+            public const String Edges = "~tinkerpop.shortestPath.edges";
+
+            public const String IncludeEdges = "~tinkerpop.shortestPath.includeEdges";
+
+            public const String MaxDistance = "~tinkerpop.shortestPath.maxDistance";
+
+            public const String Target = "~tinkerpop.shortestPath.target";
         
     }
 

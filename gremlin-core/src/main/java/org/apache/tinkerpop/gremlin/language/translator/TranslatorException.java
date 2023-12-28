@@ -1,5 +1,3 @@
-#region License
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,32 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.language.translator;
 
-#endregion
-
-using System;
-
-namespace Gremlin.Net.Process.Traversal
-{
-#pragma warning disable 1591
-
-    public class PeerPressure
-    {
-        
-            public const String edges = "~tinkerpop.peerPressure.edges";
-        
-            public const String propertyName = "~tinkerpop.peerPressure.propertyName";
-        
-            public const String times = "~tinkerpop.peerPressure.times";
-
-            public const String Edges = "~tinkerpop.peerPressure.edges";
-
-            public const String PropertyName = "~tinkerpop.peerPressure.propertyName";
-
-            public const String Times = "~tinkerpop.peerPressure.times";
-
-        
+/**
+ * Exception produced by the {@link Translator} when it encounters an error.
+ */
+public class TranslatorException extends RuntimeException {
+    public TranslatorException(final String message) {
+        super(message);
     }
-
-#pragma warning restore 1591
 }
