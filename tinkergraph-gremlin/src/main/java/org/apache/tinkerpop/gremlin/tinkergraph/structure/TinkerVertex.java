@@ -28,13 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -42,6 +36,10 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class TinkerVertex extends TinkerElement implements Vertex {
+    List<Object> pathLabel = new ArrayList<>();
+    Set<TinkerVertex> parents = new HashSet<>();
+    Set<TinkerVertex> children = new HashSet<>();
+    Set<TinkerVertex> criticalAncestors = new HashSet<>();
 
     protected Map<String, List<VertexProperty>> properties;
     // Edges should be used by non-transaction Graph due to performance
@@ -56,6 +54,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         super(id, label);
+        this.pathLabel.add(id);
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
@@ -63,9 +62,37 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         super(id, label, currentVersion);
+        this.pathLabel.add(id);
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+    }
+
+
+    public void recomputeLabel(Set<Object> visited) {
+        if(visited.contains(id)) {
+            return;
+        }
+        visited.add(id);
+        List<Object> oldPathLabel = new ArrayList<>(pathLabel);
+        pathLabel.clear();
+        for(TinkerVertex parent : parents) {
+            if(pathLabel.isEmpty()){
+                pathLabel.addAll(parent.pathLabel);
+            } else {
+               pathLabel.retainAll(parent.pathLabel);
+            }
+            if(!pathLabel.contains(id)){
+                pathLabel.add(id);
+            }
+            if(!pathLabel.equals(oldPathLabel)){
+                for(TinkerVertex child : children) {
+                    child.recomputeLabel(visited);
+                }
+            }
+            visited.remove(id);
+        }
+
     }
 
     @Override
@@ -75,6 +102,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             vertex.inEdgesId = inEdgesId;
             vertex.outEdgesId = outEdgesId;
             vertex.properties = properties;
+            vertex.pathLabel = pathLabel;
             return vertex;
         }
 
@@ -99,6 +127,9 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             vertex.properties = result;
         }
 
+        if(pathLabel != null) {
+            vertex.pathLabel = new ArrayList<>(pathLabel);
+        }
         return vertex;
     }
 

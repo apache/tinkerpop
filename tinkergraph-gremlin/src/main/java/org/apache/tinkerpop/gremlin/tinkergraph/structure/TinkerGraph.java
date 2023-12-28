@@ -179,6 +179,9 @@ public class TinkerGraph extends AbstractTinkerGraph {
         edges.put(edge.id(), edge);
         addOutEdge(outVertex, label, edge);
         addInEdge(inVertex, label, edge);
+        inVertex.parents.add(outVertex);
+        outVertex.children.add(inVertex);
+        inVertex.recomputeLabel(new HashSet<>());
         return edge;
     }
 
