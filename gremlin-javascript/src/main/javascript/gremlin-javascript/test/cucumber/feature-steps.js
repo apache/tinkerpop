@@ -41,7 +41,7 @@ const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
 const merge = traversalModule.merge;
-
+const { deepMembersById, deepMembersByIdOrdered } = require('../unit/element-comparison')
 const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -237,10 +237,10 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
+      expect(deepMembersByIdOrdered(toCompare(this.result), expectedResult));
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
+      expect(deepMembersById(toCompare(this.result), expectedResult));
       break;
     case 'of':
       // result is a subset of the expected
