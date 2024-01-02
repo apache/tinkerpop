@@ -25,9 +25,8 @@ function deepSort(obj) {
     if (!Array.isArray(obj)) {
         return obj;
     } else {
-        obj.map((item) => deepSort(item));
+        return obj.map((item) => deepSort(item)).sort();
     }
-    return obj.sort();
 }
 
 function deepCopy(obj) {
@@ -111,8 +110,21 @@ function deepMembersByIdOrdered(a, b) {
     return deepMembersById(a, b, true)
 }
 
+function deepIncludesById(array, subset) {
+    console.log(array);
+    console.log(subset);
+    for (let item of subset) {
+        const included = array.some((arrayItem) => deepMembersById(item, arrayItem));
+        if (!included) {
+            return false;
+        }
+    }
+    return true;
+}
+
 module.exports = {
     deepCopy,
+    deepIncludesById,
     deepMembersById,
     deepMembersByIdOrdered,
     deepSort,
