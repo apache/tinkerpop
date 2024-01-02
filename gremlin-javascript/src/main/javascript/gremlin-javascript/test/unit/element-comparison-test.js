@@ -212,7 +212,6 @@ describe('objects', function () {
         k2: "v2",
         k3: [ 1, 2, 3 ]
     };
-
     const obj7 = {
         k3: [ 1, 2, 3 ],
         k1: "v1",
@@ -233,4 +232,23 @@ describe('objects', function () {
         expect(deepMembersByIdOrdered(obj6, obj7)).to.be.true; // kvp can be unordered
         expect(deepMembersByIdOrdered(obj6, obj8)).to.be.false; // array must be ordered
     });
+
+    const path1 = new Path(["path"], [new Vertex(1, 'person', undefined),
+                                      new Vertex(2, 'person', undefined)]);
+    const path2 = new Path(["path"], [new Vertex(1, 'person', undefined)]);
+    const path3 = new Path(["path"], [new Vertex(2, 'person', undefined),
+                                      new Vertex(1, 'person', undefined)]);
+
+    it('unordered', function () {
+        expect(deepMembersById(path1, path1)).to.be.true;
+        expect(deepMembersById(path1, path2)).to.be.false;
+        expect(deepMembersById(path1, path3)).to.be.false;
+    });
+
+    it('ordered', function () {
+        expect(deepMembersById(path1, path1)).to.be.true;
+        expect(deepMembersById(path1, path2)).to.be.false;
+        expect(deepMembersById(path1, path3)).to.be.false;
+    });
+
 });
