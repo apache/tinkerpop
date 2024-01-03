@@ -30,6 +30,18 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlin.Net: Fixed a bug in traversal enumeration on .NET 8
+
+The behavior of `IEnumerable` was changed in .NET 8 when `Current` was accessed on it before starting the enumeration
+via `MoveNext()`.
+The Gremlin.Net driver unfortunately did exactly that in some cases which led to exceptions
+(`InvalidOperationException: Enumeration has not started. Call MoveNext.`) on .NET 8 for some traversals.
+Traversal enumeration has been changed for this version of Gremlin.Net to avoid this problem.
+
+Older platforms than .NET 8 are not affected as `IEnumerable.Current` returned `null` there which is what the
+Gremlin.Net driver expected.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3029[TINKERPOP-3029]
 
 === Upgrading for Providers
 

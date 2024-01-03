@@ -82,21 +82,22 @@ namespace Gremlin.Net.Process.Traversal
         }
         
         private bool MoveNextInternal()
-        {                   
+        {
             if (_fetchedNext) return _nextAvailable;
-            
-            var currentTraverser = TraverserEnumerator.Current;
-            if (currentTraverser?.Bulk > 1)
-            {
-                currentTraverser.Bulk--;
-                _nextAvailable = true;
-            }
-            else
+
+            if (!_nextAvailable || TraverserEnumerator.Current?.Bulk == 0)
             {
                 _nextAvailable = TraverserEnumerator.MoveNext();
             }
+            if (!_nextAvailable) return false;
+            
+            var currentTraverser = TraverserEnumerator.Current;
+            if (currentTraverser?.Bulk >= 1)
+            {
+                currentTraverser.Bulk--;
+            }
 
-            return _nextAvailable;
+            return true;
         }
 
         /// <summary>
