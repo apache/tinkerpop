@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -28,6 +28,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -65,6 +66,56 @@ public class BulkSetTest {
             list.add(random.nextBoolean());
         }
         assertEquals(10000000, list.size());
+    }
+
+    @Test
+    public void shouldHaveSameClassAsLongAsSameTypesAreAdded() {
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(new ReferenceVertex("1"), 1);
+        bulkSet.add(new ReferenceVertex("2"), 1);
+        bulkSet.add(new ReferenceVertex("3"), 3);
+        assertTrue(bulkSet.allContainedElementsSameClass());
+        assertEquals(bulkSet.getAllContainedElementsClass(), ReferenceVertex.class);
+        bulkSet.add(new ReferenceVertex("4"), 5);
+        assertEquals(bulkSet.getAllContainedElementsClass(), ReferenceVertex.class);
+        bulkSet.add(new Long(2), 5);
+        assertFalse(bulkSet.allContainedElementsSameClass());
+        assertNull(bulkSet.getAllContainedElementsClass());
+    }
+
+    @Test
+    public void shouldNotHaveSameClassForDifferentTypes() {
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(new ReferenceVertex("1"), 1);
+        bulkSet.add(new Long(2), 5);
+        bulkSet.add(new ReferenceVertex("3"), 3);
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
+        bulkSet.add(new ReferenceVertex("4"), 5);
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
+    }
+
+    @Test
+    public void shouldNotHaveSameClassWhenEmpty() {
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
+    }
+
+    @Test
+    public void shouldNotHaveSameClassForNull() {
+        final BulkSet<Object> bulkSet = new BulkSet<>();
+        bulkSet.add(null, 5);
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
+        assertFalse(bulkSet.isEmpty());
+        bulkSet.add(new Long(2), 5);
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
+        bulkSet.add(null, 3);
+        assertNull(bulkSet.getAllContainedElementsClass());
+        assertFalse(bulkSet.allContainedElementsSameClass());
     }
 
     @Test
