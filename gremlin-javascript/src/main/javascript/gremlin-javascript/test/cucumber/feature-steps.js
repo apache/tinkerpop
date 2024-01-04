@@ -41,7 +41,7 @@ const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
 const merge = traversalModule.merge;
-const { deepMembersById, deepMembersByIdOrdered } = require('../unit/element-comparison')
+const { deepMembersById, deepMembersById2 } = require('./element-comparison');
 const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -63,6 +63,12 @@ const parsers = [
   [ 'D\\[(.+)\\]', toDirection ],
   [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
+
+chai.use(function (chai, chaiUtils) {
+  chai.Assertion.overwriteMethod('members', function (_super) {
+    return deepMembersById2;
+    });
+});
 
 const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
@@ -237,14 +243,19 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      expect(deepMembersByIdOrdered(toCompare(this.result), expectedResult));
+      expect(expectedResult).to.have.deep.ordered.members(toCompare(this.result));
+//      expect(expectedResult).to.test(toCompare(this.result));
+//      expect(deepMembersByIdOrdered(toCompare(this.result), expectedResult)).to.be.true;
       break;
     case 'unordered':
-      expect(deepMembersById(toCompare(this.result), expectedResult));
+      expect(expectedResult).to.have.deep.members(toCompare(this.result));
+//      expect(expectedResult).to.test(toCompare(this.result));
+//      expect(deepMembersById(toCompare(this.result), expectedResult)).to.be.true;
       break;
     case 'of':
       // result is a subset of the expected
       expect(expectedResult).to.include.deep.members(toCompare(this.result));
+//        expect(deepIncludesById(expectedResult, toCompare(this.result))).to.be.true;
       break;
   }
 });

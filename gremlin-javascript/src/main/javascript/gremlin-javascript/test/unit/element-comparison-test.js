@@ -17,13 +17,26 @@
  *  under the License.
  */
 
+const chai = require('chai')
 const { expect } = require('chai');
 const { VertexProperty, Property, Vertex, Edge, Path } = require('../../lib/structure/graph');
 const { deepCopy, deepMembersById, deepMembersByIdOrdered, deepSort, isElement} = require('../cucumber/element-comparison');
 
+chai.use(function (chai, utils) {
+  chai.Assertion.addChainableMethod('test', function (expected) {
+    const obj = this._obj;
+    const result = deepMembersById(obj, expected);
+    this.assert(
+      result,
+      `expected ${obj} to deeply equal ${expected}`,
+      `expected ${obj} not to deeply equal ${expected}`
+    );
+  });
+});
 
 describe('primitives', function () {
     it('should pass', function () {
+        expect(1).to.test(1);
         expect(deepMembersById(1, 1)).to.be.true;
         expect(deepMembersById(false, false)).to.be.true;
         expect(deepMembersById(null, null)).to.be.true;
