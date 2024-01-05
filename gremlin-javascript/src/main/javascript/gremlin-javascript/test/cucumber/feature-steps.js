@@ -243,10 +243,10 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      expect(expectedResult).to.have.deep.ordered.members(toCompare(this.result));
+      expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      expect(expectedResult).to.have.deep.members(toCompare(this.result));
+      expect(toCompare(this.result)).to.have.deep.members(toCompare(expectedResult));
       break;
     case 'of':
       // result is a subset of the expected
