@@ -17,6 +17,13 @@
  *  under the License.
  */
 
+/*
+ * Portions of this code are based on the Chai Assertion Library
+ * at https://www.chaijs.com/, which is licensed under the MIT License.
+ * The functions deepMembersById, flag, and isSubsetOf are adapted from
+ * Chai's source code.
+ */
+
 const chai = require('chai');
 const deepEqual = require('deep-eql');
 
