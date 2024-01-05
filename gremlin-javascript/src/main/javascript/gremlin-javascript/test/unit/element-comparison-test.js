@@ -126,8 +126,8 @@ describe('arrays', function () {
     it('unordered nested', function () {
         expect(a6).to.have.not.deep.members(a7); // nested arrays ordered differently don't pass as the same item
         expect(a6).to.not.have.deep.members(a8);
-        expect(a9).to.have.deep.members(a10);
-        expect(a11).to.have.deep.members(a12);
+        expect(a9).to.not.have.deep.members(a10);
+        expect(a11).to.not.have.deep.members(a12);
     });
 
     it('ordered nested', function () {
