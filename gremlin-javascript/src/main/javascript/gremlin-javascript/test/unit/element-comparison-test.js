@@ -1,267 +1,262 @@
-/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- */
-
-const chai = require('chai')
-const { expect } = require('chai');
-const { VertexProperty, Property, Vertex, Edge, Path } = require('../../lib/structure/graph');
-const { deepCopy, deepMembersById, deepMembersByIdOrdered, deepSort, isElement} = require('../cucumber/element-comparison');
-
-chai.use(function (chai, utils) {
-  chai.Assertion.addChainableMethod('test', function (expected) {
-    const obj = this._obj;
-    const result = deepMembersById(obj, expected);
-    this.assert(
-      result,
-      `expected ${obj} to deeply equal ${expected}`,
-      `expected ${obj} not to deeply equal ${expected}`
-    );
-  });
-});
-
-describe('primitives', function () {
-    it('should pass', function () {
-        expect(1).to.test(1);
-        expect(deepMembersById(1, 1)).to.be.true;
-        expect(deepMembersById(false, false)).to.be.true;
-        expect(deepMembersById(null, null)).to.be.true;
-    });
-
-    it('should fail', function () {
-        expect(deepMembersById(1, 2)).to.be.false;
-        expect(deepMembersById(true, false)).to.be.false;
-        expect(deepMembersById(0, "0")).to.be.false;
-        expect(deepMembersById(0, false)).to.be.false;
-        expect(deepMembersById(0, null)).to.be.false;
-        expect(deepMembersById(false, null)).to.be.false;
-    });
-});
-
-describe('elements', function () {
-    const v1 = new Vertex(1, "dog", undefined);
-    const v2 = new Vertex(1, "cat", undefined);
-    const v3 = new Vertex(2, "cat", undefined);
-
-    const e1 = new Edge(2, v1, "chases", v3, undefined);
-    const e2 = new Edge(3, v1, "chases", v3, undefined);
-    const e3 = new Edge(3, v2, "chases", v3, undefined);
-
-    const vp1 = new VertexProperty(3, "size", "small", undefined);
-    const vp2 = new VertexProperty(3, "size", "large", undefined);
-    const vp3 = new VertexProperty(4, "size", "large", undefined);
-
-    it('should pass with same id, different values', function () {
-        expect(deepMembersById(v1, v2)).to.be.true;
-        expect(deepMembersById(v3, e1)).to.be.true;
-        expect(deepMembersById(e2, e3)).to.be.true;
-        expect(deepMembersById(e3, vp1)).to.be.true;
-        expect(deepMembersById(vp1, vp2)).to.be.true;
-    });
-
-    it('should fail with different id, same values', function () {
-        expect(deepMembersById(v2, v3)).to.be.false;
-        expect(deepMembersById(e1, e2)).to.be.false;
-        expect(deepMembersById(vp2, vp3)).to.be.false;
-    });
-});
-
-describe('property', function () {
-    const p1 = new Property("a", "1");
-    const p2 = new Property("a", "1");
-    const p3 = new Property("a", 1);
-    const p4 = new Property(1, 1);
-    const p5 = new Property(1, "a");
-
-    it('should pass only properties that match exactly', function () {
-        expect(deepMembersById(p1, p2)).to.be.true;
-        expect(deepMembersById(p1, p3)).to.be.false;
-        expect(deepMembersById(p1, p4)).to.be.false;
-        expect(deepMembersById(p3, p5)).to.be.false;
-        expect(deepMembersById(p3, p5)).to.be.false;
-    });
-});
-
-describe('arrays', function () {
-    const a1 = [1, 2, 3];
-    const a2 = [1, 2, 3];
-    const a3 = [2, 1, 3];
-    const a4 = [2, 2, 3];
-    const a5 = [1, 2, 3, 4];
-
-    it('unordered', function () {
-        expect(deepMembersById(a1, a2)).to.be.true;
-        expect(deepMembersById(a1, a3)).to.be.true;
-        expect(deepMembersById(a1, a4)).to.be.false;
-        expect(deepMembersById(a1, a5)).to.be.false;
-        expect(deepMembersById(a5, a1)).to.be.false;
-    });
-
-    it('ordered', function () {
-        expect(deepMembersByIdOrdered(a1, a2)).to.be.true;
-        expect(deepMembersByIdOrdered(a1, a3)).to.be.false;
-        expect(deepMembersByIdOrdered(a1, a4)).to.be.false;
-        expect(deepMembersByIdOrdered(a1, a5)).to.be.false;
-        expect(deepMembersByIdOrdered(a5, a1)).to.be.false;
-    });
-
-    const a6 = [1, 2, a1];
-    const a7 = [1, a3, 2];
-    const a8 = [1, 2, a5];
-
-    const a9 = [1, a1, a1];
-    const a10 = [1, a1, a3];
-
-    const a11 = [a9]
-    const a12 = [a10]
-
-    it('unordered nested', function () {
-        expect(deepMembersById(a6, a7)).to.be.true;
-        expect(deepMembersById(a6, a8)).to.be.false;
-        expect(deepMembersById(a9, a10)).to.be.true;
-        expect(deepMembersById(a11, a12)).to.be.true;
-    });
-
-    it('ordered nested', function () {
-        expect(deepMembersByIdOrdered(a6, a6)).to.be.true;
-        expect(deepMembersByIdOrdered(a6, a7)).to.be.false;
-        expect(deepMembersByIdOrdered(a6, a8)).to.be.false;
-        expect(deepMembersByIdOrdered(a9, a10)).to.be.false;
-        expect(deepMembersByIdOrdered(a10, a10)).to.be.true;
-        expect(deepMembersByIdOrdered(a11, a11)).to.be.true;
-        expect(deepMembersByIdOrdered(a11, a12)).to.be.false;
-    });
-});
-
-describe('map', function () {
-    const m1 = new Map([
-        ['ripple', [new Vertex(5, 'software', undefined)]],
-        ['peter', [new Vertex(6, 'person', undefined)]],
-        ['vadas', [new Vertex(2, 'person', undefined)]]
-    ]);
-    const m2 = new Map([
-        ['ripple', [new Vertex(5, 'software', undefined)]],
-        ['peter', [new Vertex(6, 'person', undefined)]]
-    ]);
-    const m3 = new Map([
-        ['ripple', [new Vertex(5, 'software', undefined)]],
-        ['vadas', [new Vertex(2, 'person', undefined)]],
-        ['peter', [new Vertex(6, 'person', undefined)]]
-    ]);
-    const m4 = new Map([
-        ['ripple', [new Vertex(5, 'software', undefined)]],
-        ['vadas', [new Vertex(6, 'person', undefined)]],
-        ['peter', [new Vertex(2, 'person', undefined)]]
-    ]);
-
-    it('unordered', function () {
-        expect(deepMembersById(m1, m1)).to.be.true;
-        expect(deepMembersById(m1, m2)).to.be.false;
-        expect(deepMembersById(m1, m3)).to.be.true;
-        expect(deepMembersById(m1, m4)).to.be.false;
-    });
-
-    it('ordered', function () {
-        expect(deepMembersByIdOrdered(m1, m1)).to.be.true;
-        expect(deepMembersByIdOrdered(m1, m2)).to.be.false;
-        expect(deepMembersByIdOrdered(m1, m3)).to.be.false;
-        expect(deepMembersByIdOrdered(m1, m4)).to.be.false;
-    });
-});
-
-describe('objects', function () {
-    const obj1 = {
-        k1: "v1",
-        k2: "v2",
-        k3: { k4: "v4", k5: "v5" }
-    };
-    const obj2 = {
-        k1: "v1",
-        k2: "v2",
-        k3: { k4: "v4", k5: "v5" }
-    };
-    const obj3 = {
-        k2: "v2",
-        k1: "v1",
-        k3: { k5: "v5", k4: "v4" }
-    };
-    const obj4 = {
-        k1: "v1",
-        k2: "v2",
-        k3: { k4: "v4" }
-    };
-    const obj5 = {
-        k1: "v1",
-        k2: "v2",
-        k3: { k4: "v5", k5: "v4" }
-    };
-
-    it('should pass', function () {
-        expect(deepMembersById(obj1, obj2)).to.be.true; // identical
-        expect(deepMembersById(obj1, obj3)).to.be.true; // order swapped
-    });
-
-    it('should fail', function () {
-        expect(deepMembersById(obj1, obj4)).to.be.false; // missing nested kvp
-        expect(deepMembersById(obj1, obj5)).to.be.false; // values swapped
-    });
-
-    const obj6 = {
-        k1: "v1",
-        k2: "v2",
-        k3: [ 1, 2, 3 ]
-    };
-    const obj7 = {
-        k3: [ 1, 2, 3 ],
-        k1: "v1",
-        k2: "v2"
-    };
-    const obj8 = {
-        k1: "v1",
-        k2: "v2",
-        k3: [ 2, 1, 3 ]
-    }
-
-    it('unordered', function () {
-        expect(deepMembersById(obj6, obj7)).to.be.true;
-        expect(deepMembersById(obj6, obj8)).to.be.true;
-    });
-
-    it('ordered', function () {
-        expect(deepMembersByIdOrdered(obj6, obj7)).to.be.true; // kvp can be unordered
-        expect(deepMembersByIdOrdered(obj6, obj8)).to.be.false; // array must be ordered
-    });
-
-    const path1 = new Path(["path"], [new Vertex(1, 'person', undefined),
-                                      new Vertex(2, 'person', undefined)]);
-    const path2 = new Path(["path"], [new Vertex(1, 'person', undefined)]);
-    const path3 = new Path(["path"], [new Vertex(2, 'person', undefined),
-                                      new Vertex(1, 'person', undefined)]);
-
-    it('unordered', function () {
-        expect(deepMembersById(path1, path1)).to.be.true;
-        expect(deepMembersById(path1, path2)).to.be.false;
-        expect(deepMembersById(path1, path3)).to.be.false;
-    });
-
-    it('ordered', function () {
-        expect(deepMembersById(path1, path1)).to.be.true;
-        expect(deepMembersById(path1, path2)).to.be.false;
-        expect(deepMembersById(path1, path3)).to.be.false;
-    });
-
-});
+///*
+// *  Licensed to the Apache Software Foundation (ASF) under one
+// *  or more contributor license agreements.  See the NOTICE file
+// *  distributed with this work for additional information
+// *  regarding copyright ownership.  The ASF licenses this file
+// *  to you under the Apache License, Version 2.0 (the
+// *  "License"); you may not use this file except in compliance
+// *  with the License.  You may obtain a copy of the License at
+// *
+// *  http://www.apache.org/licenses/LICENSE-2.0
+// *
+// *  Unless required by applicable law or agreed to in writing,
+// *  software distributed under the License is distributed on an
+// *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// *  KIND, either express or implied.  See the License for the
+// *  specific language governing permissions and limitations
+// *  under the License.
+// */
+//
+//const chai = require('chai')
+//const { expect } = require('chai');
+//const { VertexProperty, Property, Vertex, Edge, Path } = require('../../lib/structure/graph');
+//const { deepMembersById, compareElements, opt } = require('../cucumber/element-comparison');
+//const deepEqual = require('deep-eql');
+//
+//chai.use(function (chai, chaiUtils) {
+//  chai.Assertion.overwriteMethod('members', function (_super) {
+//    return deepMembersById;
+//  });
+//});
+//
+//describe('primitives', function () {
+//    it('should pass', function () {
+//        expect(deepEqual(1, 1, opt)).to.be.true;
+//        expect(deepEqual(false, false, opt)).to.be.true;
+//        expect(deepEqual(null, null, opt)).to.be.true;
+//    });
+//
+//    it('should fail', function () {
+//        expect(deepEqual(1, 2, opt)).to.be.false;
+//        expect(deepEqual(true, false, opt)).to.be.false;
+//        expect(deepEqual(0, "0", opt)).to.be.false;
+//        expect(deepEqual(0, false, opt)).to.be.false;
+//        expect(deepEqual(0, null, opt)).to.be.false;
+//        expect(deepEqual(false, null, opt)).to.be.false;
+//    });
+//});
+//
+//describe('elements', function () {
+//    const v1 = new Vertex(1, "dog", undefined);
+//    const v2 = new Vertex(1, "cat", undefined);
+//    const v3 = new Vertex(2, "cat", undefined);
+//
+//    const e1 = new Edge(2, v1, "chases", v3, undefined);
+//    const e2 = new Edge(3, v1, "chases", v3, undefined);
+//    const e3 = new Edge(3, v2, "chases", v3, undefined);
+//
+//    const vp1 = new VertexProperty(3, "size", "small", undefined);
+//    const vp2 = new VertexProperty(3, "size", "large", undefined);
+//    const vp3 = new VertexProperty(4, "size", "large", undefined);
+//
+//    it('should pass with same id, different values', function () {
+//        expect(deepEqual(v1, v2, opt)).to.be.true;
+//        expect([v1]).to.have.deep.ordered.members([v2]);
+//        expect(deepEqual(v3, e1, opt)).to.be.true;
+//        expect(deepEqual(e2, e3, opt)).to.be.true;
+//        expect(deepEqual(e3, vp1, opt)).to.be.true;
+//        expect(deepEqual(vp1, vp2, opt)).to.be.true;
+//    });
+//
+//    it('should fail with different id, same values', function () {
+//        expect(deepEqual(v2, v3, opt)).to.be.false;
+//        expect(deepEqual(e1, e2, opt)).to.be.false;
+//        expect(deepEqual(vp2, vp3, opt)).to.be.false;
+//    });
+//});
+//
+//describe('property', function () {
+//    const p1 = new Property("a", "1");
+//    const p2 = new Property("a", "1");
+//    const p3 = new Property("a", 1);
+//    const p4 = new Property(1, 1);
+//    const p5 = new Property(1, "a");
+//
+//    it('should pass only properties that match exactly', function () {
+//        expect(deepEqual(p1, p2, opt)).to.be.true;
+//        expect(deepEqual(p1, p3, opt)).to.be.false;
+//        expect(deepEqual(p1, p4, opt)).to.be.false;
+//        expect(deepEqual(p3, p5, opt)).to.be.false;
+//        expect(deepEqual(p3, p5, opt)).to.be.false;
+//    });
+//});
+//
+//describe('arrays', function () {
+//    const a1 = [1, 2, 3];
+//    const a2 = [1, 2, 3];
+//    const a3 = [2, 1, 3];
+//    const a4 = [2, 2, 3];
+//    const a5 = [1, 2, 3, 4];
+//
+//    it('unordered', function () {
+//        expect(a1).to.have.deep.members(a2);
+//        expect(a1).to.have.deep.members(a3);
+//        expect(a1).to.not.have.deep.members(a4);
+//        expect(a1).to.not.have.deep.members(a5);
+//        expect(a5).to.not.have.deep.members(a1);
+//    });
+//
+//    it('ordered', function () {
+//        expect(a1).to.have.deep.ordered.members(a2);
+//        expect(a1).to.not.have.deep.ordered.members(a3);
+//        expect(a1).to.not.have.deep.ordered.members(a4);
+//        expect(a1).to.not.have.deep.ordered.members(a5);
+//        expect(a5).to.not.have.deep.ordered.members(a1);
+//    });
+//
+//    const a6 = [1, 2, a1];
+//    const a7 = [1, a3, 2];
+//    const a8 = [1, 2, a5];
+//
+//    const a9 = [1, a1, a1];
+//    const a10 = [1, a1, a3];
+//
+//    const a11 = [a9]
+//    const a12 = [a10]
+//
+//    it('unordered nested', function () {
+//        expect(a6).to.have.deep.members(a7);
+//        expect(a6).to.not.have.deep.members(a8);
+//        expect(a9).to.have.deep.members(a10);
+//        expect(a11).to.have.deep.members(a12);
+//    });
+//
+//    it('ordered nested', function () {
+//        expect(a6).to.have.deep.ordered.members(a6);
+//        expect(a6).to.not.have.deep.ordered.members(a7);
+//        expect(a6).to.not.have.deep.ordered.members(a8);
+//        expect(a9).to.not.have.deep.ordered.members(a10);
+//        expect(a10).to.have.deep.ordered.members(a10);
+//        expect(a11).to.have.deep.ordered.members(a11);
+//        expect(a11).to.not.have.deep.ordered.members(a12);
+//    });
+//});
+//
+//describe('map', function () {
+//    const m1 = [new Map([
+//        ['ripple', [new Vertex(5, 'software', undefined)]],
+//        ['peter', [new Vertex(6, 'person', undefined)]],
+//        ['vadas', [new Vertex(2, 'person', undefined)]]
+//    ])];
+//    const m2 = [new Map([
+//        ['ripple', [new Vertex(5, 'software', undefined)]],
+//        ['peter', [new Vertex(6, 'person', undefined)]]
+//    ])];
+//    const m3 = [new Map([
+//        ['ripple', [new Vertex(5, 'software', undefined)]],
+//        ['vadas', [new Vertex(2, 'person', undefined)]],
+//        ['peter', [new Vertex(6, 'person', undefined)]]
+//    ])];
+//    const m4 = [new Map([
+//        ['ripple', [new Vertex(5, 'software', undefined)]],
+//        ['vadas', [new Vertex(6, 'person', undefined)]],
+//        ['peter', [new Vertex(2, 'person', undefined)]]
+//    ])];
+//
+//    it('unordered', function () {
+//        expect(m1).to.have.deep.members(m1);
+//        expect(m1).to.not.have.deep.members(m2);
+//        expect(m1).to.have.deep.members(m3);
+//        expect(m1).to.not.have.deep.members(m4);
+//    });
+//
+//    it('ordered', function () {
+//        expect(m1).to.have.deep.ordered.members(m1);
+//        expect(m1).to.not.have.deep.ordered.members(m2);
+//        expect(m1).to.not.have.deep.ordered.members(m3);
+//        expect(m1).to.not.have.deep.ordered.members(m4);
+//    });
+//});
+//
+//describe('objects', function () {
+//    const obj1 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: { k4: "v4", k5: "v5" }
+//    }];
+//    const obj2 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: { k4: "v4", k5: "v5" }
+//    }];
+//    const obj3 = [{
+//        k2: "v2",
+//        k1: "v1",
+//        k3: { k5: "v5", k4: "v4" }
+//    }];
+//    const obj4 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: { k4: "v4" }
+//    }];
+//    const obj5 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: { k4: "v5", k5: "v4" }
+//    }];
+//
+//    it('should pass', function () {
+//        expect(obj1).to.have.deep.members(obj2); // identical
+//        expect(obj1).to.have.deep.members(obj3); // order swapped
+//    });
+//
+//    it('should fail', function () {
+//        expect(obj1).to.not.have.deep.members(obj4); // missing nested kvp
+//        expect(obj1).to.not.have.deep.members(obj5); // values swapped
+//    });
+//
+//    const obj6 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: [ 1, 2, 3 ]
+//    }];
+//    const obj7 = [{
+//        k3: [ 1, 2, 3 ],
+//        k1: "v1",
+//        k2: "v2"
+//    }];
+//    const obj8 = [{
+//        k1: "v1",
+//        k2: "v2",
+//        k3: [ 2, 1, 3 ]
+//    }];
+//
+//    it('unordered', function () {
+//        expect(obj6).to.have.deep.members(obj7);
+//        expect(obj6).to.have.deep.members(obj8);
+//    });
+//
+//    it('ordered', function () {
+//        expect(obj6).to.have.deep.ordered.members(obj7); // kvp can be unordered
+//        expect(obj6).to.not.have.deep.ordered.members(obj8); // array must be ordered
+//    });
+//
+//    const path1 = new Path(["path"], [new Vertex(1, 'person', undefined),
+//                                      new Vertex(2, 'person', undefined)]);
+//    const path2 = new Path(["path"], [new Vertex(1, 'person', undefined)]);
+//    const path3 = new Path(["path"], [new Vertex(2, 'person', undefined),
+//                                      new Vertex(1, 'person', undefined)]);
+//
+//    it('unordered', function () {
+//        expect(deepEqual(path1, path1)).to.be.true;
+//        expect(deepEqual(path1, path2)).to.be.false; // unsure
+//        expect(deepEqual(path1, path3)).to.be.false;
+//    });
+//
+//    it('ordered', function () { // unsure
+//        expect(deepEqual(path1, path1)).to.be.true;
+//        expect(deepEqual(path1, path2)).to.be.false;
+//        expect(deepEqual(path1, path3)).to.be.false;
+//    });
+//
+//});

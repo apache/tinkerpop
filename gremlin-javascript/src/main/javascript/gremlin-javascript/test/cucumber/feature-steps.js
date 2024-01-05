@@ -41,7 +41,7 @@ const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
 const merge = traversalModule.merge;
-const { deepMembersById, deepMembersById2 } = require('./element-comparison');
+const deepMembersById = require('./element-comparison').deepMembersById;
 const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -66,8 +66,8 @@ const parsers = [
 
 chai.use(function (chai, chaiUtils) {
   chai.Assertion.overwriteMethod('members', function (_super) {
-    return deepMembersById2;
-    });
+    return deepMembersById;
+  });
 });
 
 const ignoreReason = {
@@ -244,18 +244,13 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   switch (characterizedAs) {
     case 'ordered':
       expect(expectedResult).to.have.deep.ordered.members(toCompare(this.result));
-//      expect(expectedResult).to.test(toCompare(this.result));
-//      expect(deepMembersByIdOrdered(toCompare(this.result), expectedResult)).to.be.true;
       break;
     case 'unordered':
       expect(expectedResult).to.have.deep.members(toCompare(this.result));
-//      expect(expectedResult).to.test(toCompare(this.result));
-//      expect(deepMembersById(toCompare(this.result), expectedResult)).to.be.true;
       break;
     case 'of':
       // result is a subset of the expected
       expect(expectedResult).to.include.deep.members(toCompare(this.result));
-//        expect(deepIncludesById(expectedResult, toCompare(this.result))).to.be.true;
       break;
   }
 });

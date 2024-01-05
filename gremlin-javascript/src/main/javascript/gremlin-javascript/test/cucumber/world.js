@@ -69,15 +69,12 @@ setWorldConstructor(TinkerPopWorld);
 BeforeAll(function () {
   // load all traversals
   const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty'].map(graphName => {
-    console.log("🚀 ~ file: world.js:72 ~ promises ~ graphName:", graphName)
     let connection = null;
     if (graphName === 'empty') {
       connection = helper.getConnection('ggraph');
-      console.log("🚀 ~ file: world.js:75 ~ promises ~ connection:", connection)
       return connection.open().then(() => cache['empty'] = { connection: connection });
     }
     connection = helper.getConnection('g' + graphName);
-    console.log("🚀 ~ file: world.js:78 ~ promises ~ connection:", connection)
     return connection.open()
       .then(() => Promise.all([getVertices(connection), getEdges(connection), getVertexProperties(connection)]))
       .then(values => {
