@@ -19,11 +19,12 @@
 
 const chai = require('chai');
 const deepEqual = require('deep-eql');
-const opt = {comparator: compareElements};
 
 function isElement(obj) {
     return obj !== null && obj.hasOwnProperty('id') && obj.hasOwnProperty('label');
 }
+
+const opt = {comparator: compareElements};
 
 function isSubsetOf(subset, superset, cmp, contains, ordered) {
     if (!contains) {
