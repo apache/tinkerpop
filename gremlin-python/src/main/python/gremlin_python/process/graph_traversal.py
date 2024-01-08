@@ -2461,6 +2461,8 @@ statics.add_static('inE', inE)
 
 statics.add_static('in_e', in_e)
 
+statics.add_static('inV', inV)
+
 statics.add_static('in_v', in_v)
 
 statics.add_static('in_', in_)
