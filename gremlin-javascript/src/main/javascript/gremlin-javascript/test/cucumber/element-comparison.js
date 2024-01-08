@@ -22,6 +22,7 @@
  * at https://www.chaijs.com/, which is licensed under the MIT License.
  * The functions deepMembersById, flag, and isSubsetOf are adapted from
  * Chai's source code.
+ * See licenses/chai for full license.
  */
 
 const chai = require('chai');
