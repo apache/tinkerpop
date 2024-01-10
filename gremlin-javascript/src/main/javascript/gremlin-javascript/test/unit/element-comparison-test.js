@@ -75,6 +75,29 @@ describe('elements', function () {
         expect(deepEqual(v3, e1, opt)).to.be.false;
         expect(deepEqual(e3, vp1, opt)).to.be.false;
     });
+
+    describe('element arrays', function () {
+        const ea1 = [v1, e2, v3];
+        const ea2 = [v1, e2, v3];
+        const ea3 = [e2, v1, v3];
+        const ea4 = [e2, e2, v3];
+        const ea5 = [v1, e2, v3, vp1];
+
+        it('unordered', function () {
+            expect(ea1).to.have.deep.members(ea2);
+            expect(ea1).to.have.deep.members(ea3);
+            expect(ea1).to.not.have.deep.members(ea4);
+            expect(ea1).to.not.have.deep.members(ea5);
+            expect(ea5).to.not.have.deep.members(ea1);
+        });
+
+        it('ordered', function () {
+            expect(ea1).to.have.deep.ordered.members(ea2);
+            expect(ea1).to.not.have.deep.ordered.members(ea3);
+            expect(ea1).to.not.have.deep.ordered.members(ea4);
+            expect(ea1).to.not.have.deep.ordered.members(ea5);
+            expect(ea5).to.not.have.deep.ordered.members(ea1);
+        });
 });
 
 describe('property', function () {
