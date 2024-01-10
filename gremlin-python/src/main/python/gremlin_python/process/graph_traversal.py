@@ -1468,10 +1468,6 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).min_(*args)
 
     @classmethod
-    def none(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).none(*args)
-
-    @classmethod
     def not_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).not_(*args)
 
@@ -2496,8 +2492,6 @@ statics.add_static('identity', identity)
 statics.add_static('inE', inE)
 
 statics.add_static('in_e', in_e)
-
-statics.add_static('inV', inV)
 
 statics.add_static('in_v', in_v)
 
