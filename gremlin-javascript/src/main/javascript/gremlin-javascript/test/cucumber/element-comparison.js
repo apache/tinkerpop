@@ -27,9 +27,10 @@
 
 const chai = require('chai');
 const deepEqual = require('deep-eql');
+const { Edge, Vertex, VertexProperty } = require('../../lib/structure/graph');
 
 function isElement(obj) {
-    return obj !== null && obj.hasOwnProperty('id') && obj.hasOwnProperty('label');
+    return obj instanceof Edge || obj instanceof Vertex || obj instanceof VertexProperty;
 }
 
 const opt = {comparator: compareElements};
