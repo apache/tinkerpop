@@ -98,6 +98,19 @@ describe('elements', function () {
             expect(ea1).to.not.have.deep.ordered.members(ea5);
             expect(ea5).to.not.have.deep.ordered.members(ea1);
         });
+
+        it('include', function () {
+            expect(ea1).to.include.deep.members(ea2);
+            expect(ea1).to.include.deep.members(ea3);
+            expect(ea1).to.include.deep.members(ea4);
+            expect(ea1).to.not.include.deep.members(ea5);
+
+            expect(ea2).to.include.deep.members(ea1);
+            expect(ea3).to.include.deep.members(ea1);
+            expect(ea4).to.not.include.deep.members(ea1);
+            expect(ea5).to.include.deep.members(ea1);
+        });
+    });
 });
 
 describe('property', function () {
@@ -111,7 +124,6 @@ describe('property', function () {
         expect(deepEqual(p1, p2, opt)).to.be.true;
         expect(deepEqual(p1, p3, opt)).to.be.false;
         expect(deepEqual(p1, p4, opt)).to.be.false;
-        expect(deepEqual(p3, p5, opt)).to.be.false;
         expect(deepEqual(p3, p5, opt)).to.be.false;
     });
 });
