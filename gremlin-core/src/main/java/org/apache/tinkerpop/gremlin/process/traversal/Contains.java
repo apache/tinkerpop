@@ -54,9 +54,6 @@ public enum Contains implements BiPredicate<Object, Collection> {
         public boolean test(final Object first, final Collection second) {
             if (first instanceof Element &&
                     second instanceof BulkSet<?> &&
-                    ((BulkSet<?>)second).allContainedElementsSameClass() &&
-                    ((BulkSet<?>)second).getAllContainedElementsClass() != null &&
-                    Element.class.isAssignableFrom(((BulkSet<?>)second).getAllContainedElementsClass()) &&
                     first.getClass() == ((BulkSet<?>)second).getAllContainedElementsClass()) {
                 /*
                  * For elements (i.e., vertices, edges, vertex properties) it is safe to use the contains check

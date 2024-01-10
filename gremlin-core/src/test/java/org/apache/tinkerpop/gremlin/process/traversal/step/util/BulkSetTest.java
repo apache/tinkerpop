@@ -116,6 +116,19 @@ public class BulkSetTest {
         bulkSet.add(null, 3);
         assertNull(bulkSet.getAllContainedElementsClass());
         assertFalse(bulkSet.allContainedElementsSameClass());
+
+        // adding null in the middle
+        final BulkSet<Object> bulkSet2 = new BulkSet<>();
+        bulkSet2.add(new ReferenceVertex("4"), 5);
+        assertEquals(bulkSet2.getAllContainedElementsClass(), ReferenceVertex.class);
+        assertTrue(bulkSet2.allContainedElementsSameClass());
+        assertFalse(bulkSet2.isEmpty());
+        bulkSet2.add(null, 5);
+        assertNull(bulkSet2.getAllContainedElementsClass());
+        assertFalse(bulkSet2.allContainedElementsSameClass());
+        bulkSet2.add(new ReferenceVertex("3"), 5);
+        assertNull(bulkSet2.getAllContainedElementsClass());
+        assertFalse(bulkSet2.allContainedElementsSameClass());
     }
 
     @Test

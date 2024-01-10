@@ -85,13 +85,8 @@ public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializ
             allContainedElementsClassChecked = true;
             boolean hadNull = false;
             for (final S key : this.map.keySet()) {
-                if ((key == null || key.getClass() == null)) {
-                    if (allContainedElementsClass != null) {
-                        allContainedElementsClass = null;
-                        break;
-                    }
-                    hadNull = true;
-                } else if (hadNull) {
+                if (key == null) {
+                    allContainedElementsClass = null;
                     break;
                 } else if (allContainedElementsClass != null && !key.getClass().equals(allContainedElementsClass)) {
                     allContainedElementsClass = null;
