@@ -112,7 +112,7 @@ function compareElements(a, b) {
     if (!isElement(a) || !isElement(b)) {
         return null;
     } else {
-        return a.id === b.id;
+        return a.constructor === b.constructor && a.id === b.id;
     }
 }
 

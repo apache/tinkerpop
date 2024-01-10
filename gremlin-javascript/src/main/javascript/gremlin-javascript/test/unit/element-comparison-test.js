@@ -61,9 +61,7 @@ describe('elements', function () {
 
     it('should pass with same id, different values', function () {
         expect(deepEqual(v1, v2, opt)).to.be.true;
-        expect(deepEqual(v3, e1, opt)).to.be.true;
         expect(deepEqual(e2, e3, opt)).to.be.true;
-        expect(deepEqual(e3, vp1, opt)).to.be.true;
         expect(deepEqual(vp1, vp2, opt)).to.be.true;
     });
 
@@ -71,6 +69,11 @@ describe('elements', function () {
         expect(deepEqual(v2, v3, opt)).to.be.false;
         expect(deepEqual(e1, e2, opt)).to.be.false;
         expect(deepEqual(vp2, vp3, opt)).to.be.false;
+    });
+
+    it('should fail with same id, different type', function () {
+        expect(deepEqual(v3, e1, opt)).to.be.false;
+        expect(deepEqual(e3, vp1, opt)).to.be.false;
     });
 });
 
