@@ -659,6 +659,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("lTrim", *args)
         return self
 
+    def l_trim(self, *args):
+        self.bytecode.add_step("lTrim", *args)
+        return self
+
     def map(self, *args):
         self.bytecode.add_step("map", *args)
         return self
@@ -838,6 +842,10 @@ class GraphTraversal(Traversal):
         return self
 
     def rTrim(self, *args):
+        self.bytecode.add_step("rTrim", *args)
+        return self
+
+    def r_trim(self, *args):
         self.bytecode.add_step("rTrim", *args)
         return self
 
@@ -1413,7 +1421,15 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def ltrim(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).ltrim(*args)
+        warnings.warn(
+            "gremlin_python.process.__.ltrim will be replaced by "
+            "gremlin_python.process.__.l_trim.",
+            DeprecationWarning)
+        return cls.l_trim(*args)
+    
+    @classmethod
+    def l_trim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).l_trim(*args)
 
     @classmethod
     def map(cls, *args):
@@ -1557,7 +1573,15 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def rTrim(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).rTrim(*args)
+        warnings.warn(
+            "gremlin_python.process.__.rTrim will be replaced by "
+            "gremlin_python.process.__.r_trim.",
+            DeprecationWarning)
+        return cls.r_trim(*args)
+
+    @classmethod
+    def r_trim(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).r_trim(*args)
 
     @classmethod
     def sack(cls, *args):
@@ -2084,7 +2108,11 @@ def loops(*args):
 
 
 def ltrim(*args):
-    return __.ltrim(*args)
+    return __.l_trim(*args)
+
+
+def l_trim(*args):
+    return __.l_trim(*args)
 
 
 def map(*args):
@@ -2204,7 +2232,11 @@ def reverse(*args):
 
 
 def rTrim(*args):
-    return __.rTrim(*args)
+    return __.r_trim(*args)
+
+
+def r_trim(*args):
+    return __.r_trim(*args)
 
 
 def sack(*args):
@@ -2485,6 +2517,8 @@ statics.add_static('loops', loops)
 
 statics.add_static('ltrim', ltrim)
 
+statics.add_static('l_trim', l_trim)
+
 statics.add_static('map', map)
 
 statics.add_static('match', match)
@@ -2544,6 +2578,8 @@ statics.add_static('replace', replace)
 statics.add_static('reverse', reverse)
 
 statics.add_static('rTrim', rTrim)
+
+statics.add_static('r_trim', r_trim)
 
 statics.add_static('sack', sack)
 
