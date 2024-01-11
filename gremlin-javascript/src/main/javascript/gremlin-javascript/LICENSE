@@ -200,3 +200,11 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+   ========================================================================
+   MIT Licenses
+   ========================================================================
+
+   The Apache TinkerPop project bundles the following components under the MIT License:
+
+        chai 5.0.0 (https://www.chaijs.com/) - for details, see licenses/chai

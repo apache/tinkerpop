@@ -55,6 +55,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Fixed bug in `union()` as a start step where the `Path` was including the starting dummy traverser.
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
+* Updated JavaScript tests to check equality on only id and class when comparing elements for consistency with other GLVs.
 * Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
 
 ==== Bugs
