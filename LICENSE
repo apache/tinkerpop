@@ -212,3 +212,4 @@ The Apache TinkerPop project bundles the following components under the MIT Lice
      normalize.css 2.1.2 (https://necolas.github.io/normalize.css/) - for details, see licenses/normalize
      prism.css/js 1.27.0 (https://prismjs.com/) - for details, see licenses/prism
      wow.js 1.1.2 (https://wowjs.uk/) - for details, see licenses/wow
+     chai 5.0.0 (https://www.chaijs.com/) - for details, see licenses/chai
