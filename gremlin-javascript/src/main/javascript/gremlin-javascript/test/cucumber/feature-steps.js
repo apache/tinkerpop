@@ -41,7 +41,7 @@ const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
 const merge = traversalModule.merge;
-
+const deepMembersById = require('./element-comparison').deepMembersById;
 const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
@@ -63,6 +63,12 @@ const parsers = [
   [ 'D\\[(.+)\\]', toDirection ],
   [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
+
+chai.use(function (chai, chaiUtils) {
+  chai.Assertion.overwriteMethod('members', function (_super) {
+    return deepMembersById;
+  });
+});
 
 const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
@@ -193,7 +199,7 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
+      expect(toCompare(this.result)).to.have.deep.members(toCompare(expectedResult));
       break;
     case 'of':
       // result is a subset of the expected
