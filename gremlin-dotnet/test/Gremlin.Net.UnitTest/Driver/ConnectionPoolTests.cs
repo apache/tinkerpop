@@ -338,7 +338,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 .Returns(fakedOpenConnection, fakedCannotConnectConnection);
             // Let the slow to establish connection finish so the pool can try to establish the other two connections
             startEstablishingProblematicConnections.Release();
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
+            await Task.Delay(TimeSpan.FromSeconds(1));
             
             // Verify that the pool tried to establish both connections and then also disposed both, even though one throw an exception
             await fakedOpenConnection.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
