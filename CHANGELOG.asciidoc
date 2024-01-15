@@ -299,6 +299,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
 
+* Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
 * Improved error message from `JavaTranslator` by including exception source.
 * Added missing `short` serialization (`gx:Int16`) to GraphSONV2 and GraphSONV3 in `gremlin-python`
 * Added tests for error handling for GLV's if tx.commit() is called remotely for graphs without transactions support.
