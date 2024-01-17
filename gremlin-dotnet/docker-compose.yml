@@ -45,7 +45,7 @@ services:
 
   gremlin-dotnet-integration-tests:
     container_name: gremlin-dotnet-integration-tests
-    image: mcr.microsoft.com/dotnet/sdk:6.0
+    image: mcr.microsoft.com/dotnet/sdk:8.0
     volumes:
       - .:/gremlin-dotnet
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features

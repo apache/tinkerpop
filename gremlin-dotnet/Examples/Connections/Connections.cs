@@ -26,13 +26,13 @@ public class ConnectionExample
 {
     static void Main()
     {
-        withRemote();
-        withConf();
-        withSerializer();
+        WithRemote();
+        WithConf();
+        WithSerializer();
     }
 
     // Connecting to the server
-    static void withRemote()
+    static void WithRemote()
     {
         var server = new GremlinServer("localhost", 8182);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
@@ -48,7 +48,7 @@ public class ConnectionExample
     }
 
     // Connecting to the server with customized configurations
-    static void withConf()
+    static void WithConf()
     {
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
         new GremlinServer(hostname: "localhost", port: 8182, enableSsl: false, username: "", password: "")), "g");
@@ -60,7 +60,7 @@ public class ConnectionExample
     }
 
     // Specifying a serializer
-    static void withSerializer()
+    static void WithSerializer()
     {
         var server = new GremlinServer("localhost", 8182);
         var client = new GremlinClient(server, new GraphSON3MessageSerializer());
