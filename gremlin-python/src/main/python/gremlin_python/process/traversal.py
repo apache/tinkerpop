@@ -214,9 +214,9 @@ statics.add_static('shuffle', Order.shuffle)
 statics.add_static('asc', Order.asc)
 statics.add_static('desc', Order.desc)
 
-Pick = Enum('Pick', ' any none')
+Pick = Enum('Pick', ' any_ none')
 
-statics.add_static('any', Pick.any)
+statics.add_static('any_', Pick.any_)
 statics.add_static('none', Pick.none)
 
 Pop = Enum('Pop', ' all_ first last mixed')
