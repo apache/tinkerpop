@@ -204,10 +204,9 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Pick o) {
             if (o.equals(Pick.any)) {
-                // We don't want this getting resolved to Pick.any_ due to any() being a built-in function in Python.
-                return "Pick.any";
+                // Translates to Pick.any_ due to any() being a built-in function in Python.
+                return "Pick.any_";
             }
-
             return "Pick." + resolveSymbol(o.toString());
         }
 
