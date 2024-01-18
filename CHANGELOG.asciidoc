@@ -306,6 +306,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Introduced multi-architecture AMD64/ARM64 docker images for gremlin-console.
 * Fixed bug in `JavaTranslator` where `has(String, null)` could call `has(String, Traversal)` to generate an error.
 * Fixed issue where server errors weren't being properly parsed when sending bytecode over HTTP.
+* Improved bulkset contains check for elements if all elements in bulkset are of the same type
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
