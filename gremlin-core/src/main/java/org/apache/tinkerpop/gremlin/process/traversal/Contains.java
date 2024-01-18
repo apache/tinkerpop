@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
@@ -52,6 +52,18 @@ public enum Contains implements BiPredicate<Object, Collection> {
     within {
         @Override
         public boolean test(final Object first, final Collection second) {
+            if (first instanceof Element &&
+                    second instanceof BulkSet<?> &&
+                    first.getClass() == ((BulkSet<?>)second).getAllContainedElementsClass()) {
+                /*
+                 * For elements (i.e., vertices, edges, vertex properties) it is safe to use the contains check
+                 * since the hash code computation and equals comparison give the same result as the Gremlin equality comparison
+                 * (using GremlinValueComparator.COMPARABILITY.equals) based on the Gremlin comparison semantics
+                 * (cf. <a href="https://tinkerpop.apache.org/docs/3.7.0/dev/provider/#gremlin-semantics-concepts">...</a>).
+                 * In both cases, we just compare the ids of the elements. Therefore, it is safe to use the contains check.
+                 */
+                return second.contains(first);
+            }
             GremlinTypeErrorException typeError = null;
             for (final Object o : second) {
                 try {
