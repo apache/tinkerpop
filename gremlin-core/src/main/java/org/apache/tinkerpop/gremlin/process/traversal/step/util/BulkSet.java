@@ -42,6 +42,63 @@ import java.util.stream.Collectors;
 public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
     private final Map<S, Long> map = new LinkedHashMap<>();
 
+
+    /**
+     * Represents the class/type of all added elements/objects in the bulk set if they are of the same class/type.
+     * If elements/objects of different types/classes are added, then the class is set to null (within the add) method.
+     * Note that it is not guaranteed that there some elements/objects are of different types/classes if the value is null.
+     *
+     * This is mainly used as an optimization in some cases. In fact, the contains within check can use this to improve
+     * the lookup whether vertices or edges are contained in the bulk set (see
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.Contains#within Contains.within}).
+     * This works for elements (i.e., vertices, edges, vertex properties) since the
+     * hash code computation and equals comparison give the same result as the Gremlin equality comparison (using
+     * GremlinValueComparator.COMPARABILITY.equals) based on the Gremlin comparison semantics
+     * (cf. <a href="https://tinkerpop.apache.org/docs/3.7.0/dev/provider/#gremlin-semantics-concepts">...</a>).
+     * For other types of objects, it is not completely clear, whether this would also result in the same results.
+     *
+     * The field is marked as transient such that it is not considered for serialization.
+     */
+    private transient Class<?> allContainedElementsClass = null;
+    private transient boolean allContainedElementsClassChecked = true;
+
+    /**
+     * @return the class of all contained elements/objects if it is guaranteed that all are of the same type/class (but not
+     * necessarily, i.e., they can have the same type/class, but we may return null here if it was not analysed/identified).
+     * If no common class was identified, then null is returned.
+     */
+    public Class<?> getAllContainedElementsClass() {
+        if (allContainedElementsSameClass()) {
+            return allContainedElementsClass;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @return true if it is guaranteed that all contained elements/objects are of the same type/class and not null (but not
+     * necessarily, i.e., they can have the same type/class, but we may return false here if it was not analysed/identified)
+     */
+    public boolean allContainedElementsSameClass() {
+        if (!allContainedElementsClassChecked) {
+            allContainedElementsClass = null;
+            allContainedElementsClassChecked = true;
+            boolean hadNull = false;
+            for (final S key : this.map.keySet()) {
+                if (key == null) {
+                    allContainedElementsClass = null;
+                    break;
+                } else if (allContainedElementsClass != null && !key.getClass().equals(allContainedElementsClass)) {
+                    allContainedElementsClass = null;
+                    break;
+                } else if (allContainedElementsClass == null) {
+                    allContainedElementsClass = key.getClass();
+                }
+            }
+        }
+        return allContainedElementsClass != null;
+    }
+
     @Override
     public int size() {
         return (int) this.longSize();
@@ -89,6 +146,7 @@ public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializ
     }
 
     public boolean add(final S s, final long bulk) {
+        allContainedElementsClassChecked = false;
         final Long current = this.map.get(s);
         if (current != null) {
             this.map.put(s, current + bulk);
