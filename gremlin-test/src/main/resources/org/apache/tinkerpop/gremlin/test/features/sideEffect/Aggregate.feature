@@ -270,3 +270,19 @@ Feature: Step - aggregate()
       | null |
       | null |
       | null |
+
+  Scenario: g_V_aggregateXaX_hasXperson_age_gteX30XXX_capXaX_unfold_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate("a").has("person","age", P.gte(30)).cap("a").unfold().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | peter |
+      | lop |
+      | vadas |
+      | ripple |
