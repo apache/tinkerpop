@@ -397,3 +397,15 @@ Feature: Step - where()
       | peter |
       | lop |
       | ripple |
+
+  Scenario: g_V_hasLabelXpersonX_asXxX_whereXinEXknowsX_count_isXgteX1XXX_selectXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").as("x").where(__.inE("knows").count().is(P.gte(1))).select("x")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |

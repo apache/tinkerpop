@@ -566,3 +566,30 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 0 for count of "g.V().has(\"person\",\"age\",50)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"age\",51)"
+
+  Scenario: g_V_limitX3X_addVXsoftwareX_aggregateXa1X_byXlabelX_aggregateXa2X_byXlabelX_capXa1_a2X_selectXa_bX_byXunfoldX_foldX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().limit(3).addV("software").aggregate("a1").by(T.label).aggregate("a2").by(T.label).cap("a1", "a2").
+        select("a1","a2").by(unfold().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a1": ["software", "software", "software"], "a2": ["software", "software", "software"]}] |

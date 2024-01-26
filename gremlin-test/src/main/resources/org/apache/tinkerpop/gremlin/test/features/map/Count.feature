@@ -169,3 +169,25 @@ Feature: Step - count()
     Then the result should be ordered
       | result |
       | d[0].l |
+
+  Scenario: g_V_group_byXlabelX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(label).count()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[1].l |
+
+  Scenario: g_V_group_byXlabelX_countXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(label).count(local)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | d[2].l |
