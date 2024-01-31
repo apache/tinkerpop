@@ -250,7 +250,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected Script produceScript(final Class<?> o) {
-            return script.append("GremlinType(" + o.getCanonicalName() + ")");
+            return script.append("GremlinType('" + o.getCanonicalName() + "')");
         }
 
         @Override

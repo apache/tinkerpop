@@ -75,10 +75,43 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
+==== Gremlin Grammar Changes
+
+A number of changes have been introduce to the Gremlin grammar to help make it be more consistent and easier to use.
+
+*`new` keyword is now optional*
+
+The `new` keyword is now optional in all cases where it was previously used. Both of the following examples are now
+valid syntax with the second being the preferred form going forward:
+
+[source,groovy]
+----
+g.V().withStrategies(new SubgraphStrategy(vertices: __.hasLabel('person')))
+
+g.V().withStrategies(SubgraphStrategy(vertices: __.hasLabel('person')))
+----
+
+In a future version, it is likely that the `new` keyword will be removed entirely from the grammar.
+
+*Supports withoutStrategies()*
+
+The `withoutStrategies()` configuration step is now supported syntax for the grammar. While this option is not commonly
+used it is still a part of the Gremlin language and there are times where it is helpful to have this fine grained
+control over how a traversal works.
+
+[source,groovy]
+----
+g.V().withoutStrategies(CountStrategy)
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
+
 ==== Renaming none() to discard()
-`none()`, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
-`discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and passes lists
-with no elements matching the predicate.
+
+The `none()` step, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been
+renamed to `discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and
+passes lists with no elements matching the predicate.
 
 ==== Improved handling of integer overflows
 
