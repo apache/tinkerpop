@@ -335,6 +335,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 key = visitGenericLiteralCollection((GremlinParser.GenericLiteralCollectionContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralMapContext) {
                 key = visitGenericLiteralMap((GremlinParser.GenericLiteralMapContext) kctx);
+            } else if (kctx instanceof GremlinParser.KeywordContext) {
+                key = ((GremlinParser.KeywordContext) kctx).getText();
             } else if (kctx instanceof TerminalNode) {
                 key = ((TerminalNode) kctx).getText();
             } else {

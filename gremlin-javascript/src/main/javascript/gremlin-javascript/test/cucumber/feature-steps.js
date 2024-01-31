@@ -71,6 +71,7 @@ chai.use(function (chai, chaiUtils) {
 });
 
 const ignoreReason = {
+  classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
@@ -128,6 +129,7 @@ const ignoredScenarios = {
   'g_injectXa_null_bX_mergeXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
   'g_injectX3_threeX_mergeXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
+  'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),

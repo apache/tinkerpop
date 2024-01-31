@@ -127,7 +127,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better
     // solution may become necessary as testing of nulls expands.
-    def staticTranslate = [:]
+    def staticTranslate = [g_withoutStrategiesXCountStrategyX_V_count: "               {\"g_withoutStrategiesXCountStrategyX_V_count\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(CountStrategy)).V().Count()}}, "]
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
     gremlins.each { k,v ->

@@ -62,6 +62,7 @@ traversalSourceSelfMethod
     | traversalSourceSelfMethod_withSack
     | traversalSourceSelfMethod_withSideEffect
     | traversalSourceSelfMethod_withStrategies
+    | traversalSourceSelfMethod_withoutStrategies
     | traversalSourceSelfMethod_with
     ;
 
@@ -85,6 +86,10 @@ traversalSourceSelfMethod_withSideEffect
 
 traversalSourceSelfMethod_withStrategies
     : 'withStrategies' LPAREN traversalStrategy (COMMA traversalStrategyList)? RPAREN
+    ;
+
+traversalSourceSelfMethod_withoutStrategies
+    : 'withoutStrategies' LPAREN classType (COMMA classTypeList)? RPAREN
     ;
 
 traversalSourceSelfMethod_with
@@ -950,74 +955,16 @@ traversalMethod_dateDiff
 // fail fast scenarios in that processing model. It is not relevant to the grammar however when a user is creating
 // the Vertex to be used in a Traversal and therefore both id and label are required.
 structureVertex
-    : NEW ('Vertex'|'ReferenceVertex') LPAREN genericLiteralArgument COMMA stringArgument RPAREN
+    : NEW? ('Vertex'|'ReferenceVertex') LPAREN genericLiteralArgument COMMA stringArgument RPAREN
     ;
 
 traversalStrategy
-//  : 'ConnectiveStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'ElementIdStrategy' - not supported as the configuration takes a lambda
-//  | 'EventStrategy' - not supported as there is no way to send events back to the client
-//  | 'HaltedTraverserStrategy' - not supported as it is not typically relevant to OLTP
-//  | 'OptionsStrategy' - not supported as it's internal to with()
-    : NEW 'PartitionStrategy' LPAREN traversalStrategyArgs_PartitionStrategy? (COMMA traversalStrategyArgs_PartitionStrategy)* RPAREN
-//  | 'RequirementStrategy' - not supported as it's internally relevant only
-//  | 'SackStrategy' - not supported directly as it's internal to withSack()
-    | NEW 'SeedStrategy' LPAREN 'seed' COLON integerArgument RPAREN
-//  | 'SideEffectStrategy' - not supported directly as it's internal to withSideEffect()
-    | NEW 'SubgraphStrategy' LPAREN traversalStrategyArgs_SubgraphStrategy? (COMMA traversalStrategyArgs_SubgraphStrategy)* RPAREN
-//  | 'MatchAlgorithmStrategy' - not supported directly as it's internal to match()
-//  | 'ProfileStrategy' - not supported directly as it's internal to profile()
-//  | 'ReferenceElementStrategy' - not supported directly as users really can't/shouldn't change this in our context of a remote Gremlin provider
-//  | 'AdjacentToIncidentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'ByModulatorOptimizationStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-    | NEW? 'ProductiveByStrategy' (LPAREN traversalStrategyArgs_ProductiveByStrategy? RPAREN)?
-//  | 'CountStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'EarlyLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'FilterRankingStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'IdentityRemovalStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'IncidentToAdjacentStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'InlineFilterStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'LazyBarrierStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'MatchPredicateStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'OrderLimitStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'PathProcessorStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'PathRetractionStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'RepeatUnrollStrategy' - not supported as it is a default strategy and we don't allow removal at this time
-//  | 'ComputerVerificationStrategy' - not supported since it's GraphComputer related
-    | NEW 'EdgeLabelVerificationStrategy' LPAREN traversalStrategyArgs_EdgeLabelVerificationStrategy? (COMMA traversalStrategyArgs_EdgeLabelVerificationStrategy)* RPAREN
-//  | 'LambdaRestrictionStrategy' - not supported as we don't support lambdas in any situation
-    | 'ReadOnlyStrategy'
-    | NEW 'ReservedKeysVerificationStrategy' LPAREN traversalStrategyArgs_ReservedKeysVerificationStrategy? (COMMA traversalStrategyArgs_ReservedKeysVerificationStrategy)* RPAREN
-//  | 'StandardVerificationStrategy' - not supported since this is an interal strategy
+    : NEW? classType (LPAREN (configuration (COMMA configuration)*)? RPAREN)?
     ;
 
-traversalStrategyArgs_ProductiveByStrategy
-    : 'productiveKeys' COLON stringLiteralList
-    ;
-
-traversalStrategyArgs_PartitionStrategy
-    : 'includeMetaProperties' COLON booleanArgument
-    | 'writePartition' COLON stringArgument
-    | 'partitionKey' COLON stringArgument
-    | 'readPartitions' COLON stringLiteralList
-    ;
-
-traversalStrategyArgs_SubgraphStrategy
-    : 'vertices' COLON nestedTraversal
-    | 'edges' COLON nestedTraversal
-    | 'vertexProperties' COLON nestedTraversal
-    | 'checkAdjacentVertices' COLON booleanArgument
-    ;
-
-traversalStrategyArgs_EdgeLabelVerificationStrategy
-    : 'throwException' COLON booleanArgument
-    | 'logWarning' COLON booleanArgument
-    ;
-
-traversalStrategyArgs_ReservedKeysVerificationStrategy
-    : 'keys' COLON stringLiteralList
-    | 'throwException' COLON booleanArgument
-    | 'logWarning' COLON booleanArgument
+configuration
+    : keyword COLON genericLiteralArgument
+    | Identifier COLON genericLiteralArgument
     ;
 
 traversalScope
@@ -1066,8 +1013,8 @@ traversalCardinality
     ;
 
 traversalColumn
-    : 'keys' | 'Column.keys'
-    | 'values' | 'Column.values'
+    : KEYS | 'Column.keys'
+    | VALUES | 'Column.values'
     ;
 
 traversalPop
@@ -1341,7 +1288,7 @@ connectedComponentConstants_component
     ;
 
 connectedComponentConstants_edges
-    : connectedComponentStringConstant DOT 'edges'
+    : connectedComponentStringConstant DOT EDGES
     ;
 
 connectedComponentConstants_propertyName
@@ -1349,7 +1296,7 @@ connectedComponentConstants_propertyName
     ;
 
 pageRankConstants_edges
-    : pageRankStringConstant DOT 'edges'
+    : pageRankStringConstant DOT EDGES
     ;
 
 pageRankConstants_times
@@ -1361,7 +1308,7 @@ pageRankConstants_propertyName
     ;
 
 peerPressureConstants_edges
-    : peerPressureStringConstant DOT 'edges'
+    : peerPressureStringConstant DOT EDGES
     ;
 
 peerPressureConstants_times
@@ -1377,7 +1324,7 @@ shortestPathConstants_target
     ;
 
 shortestPathConstants_edges
-    : shortestPathStringConstant DOT 'edges'
+    : shortestPathStringConstant DOT EDGES
     ;
 
 shortestPathConstants_distance
@@ -1605,6 +1552,14 @@ traversalStrategyExpr
     : traversalStrategy (COMMA traversalStrategy)*
     ;
 
+classTypeList
+    : classTypeExpr?
+    ;
+
+classTypeExpr
+    : classType (COMMA classType)*
+    ;
+
 nestedTraversalList
     : nestedTraversalExpr?
     ;
@@ -1677,13 +1632,13 @@ genericLiteralMap
 
 // allow builds of Map that sorta make sense in the Gremlin context.
 mapEntry
-    : NEW COLON genericLiteral  // explicit for [new: true] - if we had other keywords like that maybe we'd group them up?
-    | (LPAREN stringLiteral RPAREN | stringLiteral) COLON genericLiteral
+    : (LPAREN stringLiteral RPAREN | stringLiteral) COLON genericLiteral
     | (LPAREN numericLiteral RPAREN | numericLiteral) COLON genericLiteral
     | (LPAREN traversalToken RPAREN | traversalToken) COLON genericLiteral
     | (LPAREN traversalDirection RPAREN | traversalDirection) COLON genericLiteral
     | (LPAREN genericLiteralCollection RPAREN | genericLiteralCollection) COLON genericLiteral
     | (LPAREN genericLiteralMap RPAREN | genericLiteralMap) COLON genericLiteral
+    | keyword COLON genericLiteral
     | Identifier COLON genericLiteral
     ;
 
@@ -1732,8 +1687,21 @@ infLiteral
     : SignedInfLiteral
     ;
 
+classType
+    : Identifier
+    ;
+
 variable
     : Identifier
+    ;
+
+// need to complete this list to fix https://issues.apache.org/jira/browse/TINKERPOP-3047 but this much proves the
+// approach works and allows the TraversalStrategy work to be complete.
+keyword
+    : EDGES
+    | KEYS
+    | NEW
+    | VALUES
     ;
 
 /*********************************************
@@ -1746,192 +1714,194 @@ variable
 
 // §3.9 Keywords
 
+EDGES: 'edges';
+KEYS: 'keys';
 NEW : 'new';
+VALUES: 'values';
 
 // Integer Literals
 
 IntegerLiteral
-    :    Sign? DecimalIntegerLiteral
-    |    Sign? HexIntegerLiteral
-    |    Sign? OctalIntegerLiteral
+    : Sign? DecimalIntegerLiteral
+    | Sign? HexIntegerLiteral
+    | Sign? OctalIntegerLiteral
     ;
 
 fragment
 DecimalIntegerLiteral
-    :    DecimalNumeral IntegerTypeSuffix?
+    : DecimalNumeral IntegerTypeSuffix?
     ;
 
 fragment
 HexIntegerLiteral
-    :    HexNumeral IntegerTypeSuffix?
+    : HexNumeral IntegerTypeSuffix?
     ;
 
 fragment
 OctalIntegerLiteral
-    :    OctalNumeral IntegerTypeSuffix?
+    : OctalNumeral IntegerTypeSuffix?
     ;
 
 fragment
 IntegerTypeSuffix
-    :    [bBsSnNiIlL]
+    : [bBsSnNiIlL]
     ;
 
 fragment
 DecimalNumeral
-    :    '0'
-    |    NonZeroDigit (Digits? | Underscores Digits)
+    : '0'
+    | NonZeroDigit (Digits? | Underscores Digits)
     ;
 
 fragment
 Digits
-    :    Digit (DigitsAndUnderscores? Digit)?
+    : Digit (DigitsAndUnderscores? Digit)?
     ;
 
 fragment
 Digit
-    :    '0'
-    |    NonZeroDigit
+    : '0'
+    | NonZeroDigit
     ;
 
 fragment
 NonZeroDigit
-    :    [1-9]
+    : [1-9]
     ;
 
 fragment
 DigitsAndUnderscores
-    :    DigitOrUnderscore+
+    : DigitOrUnderscore+
     ;
 
 fragment
 DigitOrUnderscore
-    :    Digit
-    |    '_'
+    : Digit
+    | '_'
     ;
 
 fragment
 Underscores
-    :    '_'+
+    : '_'+
     ;
 
 fragment
 HexNumeral
-    :    '0' [xX] HexDigits
+    : '0' [xX] HexDigits
     ;
 
 fragment
 HexDigits
-    :    HexDigit (HexDigitsAndUnderscores? HexDigit)?
+    : HexDigit (HexDigitsAndUnderscores? HexDigit)?
     ;
 
 fragment
 HexDigit
-    :    [0-9a-fA-F]
+    : [0-9a-fA-F]
     ;
 
 fragment
 HexDigitsAndUnderscores
-    :    HexDigitOrUnderscore+
+    : HexDigitOrUnderscore+
     ;
 
 fragment
 HexDigitOrUnderscore
-    :    HexDigit
-    |    '_'
+    : HexDigit
+    | '_'
     ;
 
 fragment
 OctalNumeral
-    :    '0' Underscores? OctalDigits
+    : '0' Underscores? OctalDigits
     ;
 
 fragment
 OctalDigits
-    :    OctalDigit (OctalDigitsAndUnderscores? OctalDigit)?
+    : OctalDigit (OctalDigitsAndUnderscores? OctalDigit)?
     ;
 
 fragment
 OctalDigit
-    :    [0-7]
+    : [0-7]
     ;
 
 fragment
 OctalDigitsAndUnderscores
-    :    OctalDigitOrUnderscore+
+    : OctalDigitOrUnderscore+
     ;
 
 fragment
 OctalDigitOrUnderscore
-    :    OctalDigit
-    |    '_'
+    : OctalDigit
+    | '_'
     ;
 
 // Floating-Point Literals
 
 FloatingPointLiteral
-    :    Sign? DecimalFloatingPointLiteral
+    : Sign? DecimalFloatingPointLiteral
     ;
 
 fragment
 DecimalFloatingPointLiteral
-    :   Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
-    |    Digits FloatTypeSuffix
+    : Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
+    | Digits FloatTypeSuffix
     ;
 
 fragment
 ExponentPart
-    :    ExponentIndicator SignedInteger
+    : ExponentIndicator SignedInteger
     ;
 
 fragment
 ExponentIndicator
-    :    [eE]
+    : [eE]
     ;
 
 fragment
 SignedInteger
-    :    Sign? Digits
+    : Sign? Digits
     ;
 
 fragment
 Sign
-    :    [+-]
+    : [+-]
     ;
 
 fragment
 FloatTypeSuffix
-    :    [fFdDmM]
+    : [fFdDmM]
     ;
 
 // Boolean Literals
 
 BooleanLiteral
-    :    'true'
-    |    'false'
+    : 'true'
+    | 'false'
     ;
 
 // Null Literal
 
 NullLiteral
-    :    'null'
+    : 'null'
     ;
 
 // NaN Literal
 
 NaNLiteral
-    :    'NaN'
+    : 'NaN'
     ;
 
 // Inf Literal
 
 SignedInfLiteral
-    :    Sign? InfLiteral
+    : Sign? InfLiteral
     ;
 
 InfLiteral
-    :    'Infinity'
+    : 'Infinity'
     ;
-
 
 // String Literals
 
@@ -1939,38 +1909,38 @@ InfLiteral
 // literals also. A side effect of this is ANTLR will not be able to parse single character string literals with
 // single quoted so we instead remove char literal altogether and only have string literal in lexer tokens.
 NonEmptyStringLiteral
-    :   '"' DoubleQuotedStringCharacters '"'
-    |   '\'' SingleQuotedStringCharacters '\''
+    : '"' DoubleQuotedStringCharacters '"'
+    | '\'' SingleQuotedStringCharacters '\''
     ;
 
 // We define NonEmptyStringLiteral and EmptyStringLiteral separately so that we can unambiguously handle empty queries
 EmptyStringLiteral
-    :   '""'
-    |   '\'\''
+    : '""'
+    | '\'\''
     ;
 
 fragment
 DoubleQuotedStringCharacters
-    :    DoubleQuotedStringCharacter+
+    : DoubleQuotedStringCharacter+
     ;
 
 fragment
 DoubleQuotedStringCharacter
-    :    ~('"' | '\\')
-    |   JoinLineEscape
-    |    EscapeSequence
+    : ~('"' | '\\')
+    | JoinLineEscape
+    | EscapeSequence
     ;
 
 fragment
 SingleQuotedStringCharacters
-    :    SingleQuotedStringCharacter+
+    : SingleQuotedStringCharacter+
     ;
 
 fragment
 SingleQuotedStringCharacter
-    :    ~('\'' | '\\')
-    |   JoinLineEscape
-    |    EscapeSequence
+    : ~('\'' | '\\')
+    | JoinLineEscape
+    | EscapeSequence
     ;
 
 // Escape Sequences for Character and String Literals
@@ -1980,21 +1950,21 @@ fragment JoinLineEscape
 
 fragment
 EscapeSequence
-    :    '\\' [btnfr"'\\]
-    |    OctalEscape
-    |   UnicodeEscape // This is not in the spec but prevents having to preprocess the input
+    : '\\' [btnfr"'\\]
+    | OctalEscape
+    | UnicodeEscape // This is not in the spec but prevents having to preprocess the input
     ;
 
 fragment
 OctalEscape
-    :    '\\' OctalDigit
-    |    '\\' OctalDigit OctalDigit
-    |    '\\' ZeroToThree OctalDigit OctalDigit
+    : '\\' OctalDigit
+    | '\\' OctalDigit OctalDigit
+    | '\\' ZeroToThree OctalDigit OctalDigit
     ;
 
 fragment
 ZeroToThree
-    :    [0-3]
+    : [0-3]
     ;
 
 // This is not in the spec but prevents having to preprocess the input

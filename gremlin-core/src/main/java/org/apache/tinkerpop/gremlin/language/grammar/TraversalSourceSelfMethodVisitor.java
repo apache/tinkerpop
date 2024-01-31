@@ -19,12 +19,14 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
@@ -98,7 +100,6 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
 
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withStrategies(final GremlinParser.TraversalSourceSelfMethod_withStrategiesContext ctx) {
-
         if (null == traversalStrategyVisitor)
             traversalStrategyVisitor = new TraversalStrategyVisitor(antlr);
 
@@ -113,6 +114,22 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
             strats.add(0, traversalStrategyVisitor.visitTraversalStrategy((GremlinParser.TraversalStrategyContext) ctx.getChild(2)));
             return source.withStrategies(strats.toArray(new TraversalStrategy[strats.size()]));
         }
+    }
+
+    @Override
+    public GraphTraversalSource visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) {
+        final List<GremlinParser.ClassTypeContext> contexts = new ArrayList<>();
+        contexts.add(ctx.classType());
+        if (ctx.classTypeList() != null) {
+            contexts.addAll(ctx.classTypeList().classTypeExpr().classType());
+        }
+
+        final Class[] strategyClasses = contexts.stream().map(c -> TraversalStrategies.GlobalCache.getRegisteredStrategyClass(c.getText()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toArray(Class[]::new);
+
+        return source.withoutStrategies(strategyClasses);
     }
 
     /**

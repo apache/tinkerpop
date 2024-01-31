@@ -29,6 +29,9 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
+* Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
+* Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
+* Made `new` keyword optional in the Gremlin grammar.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

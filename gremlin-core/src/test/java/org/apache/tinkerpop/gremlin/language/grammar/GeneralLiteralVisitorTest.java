@@ -535,6 +535,7 @@ public class GeneralLiteralVisitorTest {
                     {"[name:\"simba\", age: 29]", 2},
                     {"[:]", 0},
                     {"[1:'a']", 1},
+                    {"[edges: 'person', T.id: 1]", 2},
                     {"[label: 'person', T.id: 1]", 2},
                     {"[(label): 'person', (T.id): 1]", 2},
                     {"[from: 'source', Direction.to: 'target']", 2},
