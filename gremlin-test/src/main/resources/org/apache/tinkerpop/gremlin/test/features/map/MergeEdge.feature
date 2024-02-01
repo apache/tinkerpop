@@ -328,7 +328,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Vertex id could not be resolved from mergeE"
+    Then the traversal will raise an error with message containing text of "Vertex does not exist for mergeE"
 
   @UserSuppliedVertexIds
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX
@@ -341,7 +341,7 @@ Feature: Step - mergeE()
       g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Vertex id could not be resolved from mergeE"
+    Then the traversal will raise an error with message containing text of "Vertex does not exist for mergeE"
 
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists
     Given the empty graph

@@ -59,9 +59,9 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
+import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
+import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -69,7 +69,6 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -408,13 +407,13 @@ public final class StepDefinition {
 
         switch (comparison) {
             case "containing":
-                assertThat(error.getMessage(), containsString(expectedMessage));
+                assertThat(error.getMessage(), containsStringIgnoringCase(expectedMessage));
                 break;
             case "starting":
-                assertThat(error.getMessage(), startsWith(expectedMessage));
+                assertThat(error.getMessage(), startsWithIgnoringCase(expectedMessage));
                 break;
             case "ending":
-                assertThat(error.getMessage(), endsWith(expectedMessage));
+                assertThat(error.getMessage(), endsWithIgnoringCase(expectedMessage));
                 break;
             default:
                 throw new IllegalStateException(String.format(

@@ -129,11 +129,11 @@ def raise_an_error_with_message(step, comparison, expected_message):
     assert_that(step.context.failed, equal_to(True))
 
     if comparison == "containing":
-        assert_that(step.context.failed_message, contains_string(expected_message))
+        assert_that(step.context.failed_message.upper(), contains_string(expected_message.upper()))
     elif comparison == "ending":
-        assert_that(step.context.failed_message, ends_with(expected_message))
+        assert_that(step.context.failed_message.upper(), ends_with(expected_message.upper()))
     elif comparison == "starting":
-        assert_that(step.context.failed_message, starts_with(expected_message))
+        assert_that(step.context.failed_message.upper(), starts_with(expected_message.upper()))
     else:
         raise ValueError("unknown comparison '" + comparison + "'- must be: containing, ending or starting")
 

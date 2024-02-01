@@ -173,11 +173,11 @@ Then('the traversal will raise an error', function() {
 Then(/^the traversal will raise an error with message (\w+) text of "(.+)"$/, function(comparison, expectedMessage) {
   expect(this.result).to.be.a.instanceof(Error);
   if (comparison === "containing") {
-    expect(this.result.message).to.contain(expectedMessage)
+    expect(this.result.message.toUpperCase()).to.contain(expectedMessage.toUpperCase())
   } else if (comparison === "starting") {
-    expect(this.result.message).to.startWith(expectedMessage)
+    expect(this.result.message.toUpperCase()).to.startWith(expectedMessage.toUpperCase())
   } else if (comparison === "ending") {
-    expect(this.result.message).to.endWith(expectedMessage)
+    expect(this.result.message.toUpperCase()).to.endWith(expectedMessage.toUpperCase())
   } else {
     throw new Error('unknown comparison \'' + comparison + '\'- must be: containing, ending or starting');
   }

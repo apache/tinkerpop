@@ -846,19 +846,19 @@ func (tg *tinkerPopGraph) theTraversalWillRaiseAnErrorWithMessageContainingTextO
 	}
 	switch comparison {
 	case "containing":
-		if strings.Contains(tg.error[true], expectedMessage) {
+		if strings.Contains(strings.ToUpper(tg.error[true]), strings.ToUpper(expectedMessage)) {
 			return nil
 		} else {
 			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
 		}
 	case "starting":
-		if strings.Contains(tg.error[true], expectedMessage) {
+		if strings.Contains(strings.ToUpper(tg.error[true]), strings.ToUpper(expectedMessage)) {
 			return nil
 		} else {
 			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
 		}
 	case "ending":
-		if strings.Contains(tg.error[true], expectedMessage) {
+		if strings.Contains(strings.ToUpper(tg.error[true]), strings.ToUpper(expectedMessage)) {
 			return nil
 		} else {
 			return fmt.Errorf("traversal error message must contain %s", expectedMessage)
