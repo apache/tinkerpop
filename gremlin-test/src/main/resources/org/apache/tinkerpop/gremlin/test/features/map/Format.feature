@@ -95,9 +95,10 @@ Feature: Step - format()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX
     Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(1).format("%{_}").by(constant("hello")).by(values("name"))
+      g.V(vid1).format("%{_}").by(constant("hello")).by(values("name"))
       """
     When iterated to list
     Then the result should be unordered
