@@ -687,7 +687,7 @@ world.gremlins = {
     'g_injectX1X_asXageX_V_formatXstrX': [(lambda g:g.inject(1).as_('age').V().format_('%{name} is %{age} years old'))], 
     'g_V_formatXstrX_byXvaluesXnameXX_byXvaluesXageXX': [(lambda g:g.V().format_('%{_} is %{_} years old').by(__.name).by(__.age))], 
     'g_V_hasLabelXpersonX_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX': [(lambda g:g.V().hasLabel('person').format_('%{_} %{_} %{_}').by(__.constant('hello')).by(__.name))], 
-    'g_VX1X_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX': [(lambda g:g.V(1).format_('%{_}').by(__.constant('hello')).by(__.name))], 
+    'g_VX1X_formatXstrX_byXconstantXhelloXX_byXvaluesXnameXX': [(lambda g, vid1=None:g.V(vid1).format_('%{_}').by(__.constant('hello')).by(__.name))], 
     'g_V_formatXstrX_byXbothE_countX': [(lambda g:g.V().format_('%{name} has %{_} connections').by(__.bothE().count()))], 
     'g_V_projectXname_countX_byXvaluesXnameXX_byXbothE_countX_formatXstrX': [(lambda g:g.V().project('name','count').by(__.name).by(__.bothE().count()).format_('%{name} has %{count} connections'))], 
     'g_V_elementMap_formatXstrX': [(lambda g:g.V().elementMap().format_('%{name} is %{age} years old'))], 
