@@ -281,3 +281,16 @@ Feature: Step - range()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  Scenario: g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().map(__.in().hasId(vid1)).limit(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | marko |

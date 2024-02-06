@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSid
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.util.StepOutputArityPredictor;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.List;
@@ -85,7 +86,7 @@ public final class EarlyLimitStrategy
                     }
                     j = steps.size();
                 }
-            } else if (!(step instanceof MapStep || step instanceof SideEffectStep)) {
+            } else if (!(isMapStepMovable(step) || step instanceof SideEffectStep)) {
                 // remember the last step that can be used to move any RangeStep to
                 // any RangeStep can be moved in front of all its preceding map- and sideEffect-steps
                 insertAfter = step;
@@ -96,6 +97,9 @@ public final class EarlyLimitStrategy
                 merge = false;
             }
         }
+    }
+    private boolean isMapStepMovable(final Step<?,?> step) {
+        return step instanceof MapStep && StepOutputArityPredictor.hasAlwaysBoundResult(step);
     }
 
     @SuppressWarnings("unchecked")
