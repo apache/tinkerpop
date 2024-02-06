@@ -345,6 +345,7 @@ const gremlins = {
     g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X: [function({g}) { return g.V().as("a").in_().as("a").in_().as("a").select(Pop.mixed,"a").by(__.unfold().values("name").fold()).limit(Scope.local,2) }], 
     g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X: [function({g}) { return g.V().hasLabel("person").order().by("age").values("name").skip(1) }], 
     g_VX1X_valuesXageX_rangeXlocal_20_30X: [function({g, vid1}) { return g.V(vid1).values("age").range(Scope.local,20,30) }], 
+    g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX: [function({g, vid1}) { return g.V().map(__.in_().hasId(vid1)).limit(2).values("name") }], 
     g_E_sampleX1X: [function({g}) { return g.E().sample(1) }], 
     g_E_sampleX2X_byXweightX: [function({g}) { return g.E().sample(2).by("weight") }], 
     g_V_localXoutE_sampleX1X_byXweightXX: [function({g}) { return g.V().local(__.outE().sample(1).by("weight")) }], 

@@ -327,6 +327,7 @@ world.gremlins = {
     'g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_2X': [(lambda g:g.V().as_('a').in_().as_('a').in_().as_('a').select(Pop.mixed,'a').by(__.unfold().name.fold()).limit(Scope.local,2))], 
     'g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X': [(lambda g:g.V().hasLabel('person').order().by('age').name.skip(1))], 
     'g_VX1X_valuesXageX_rangeXlocal_20_30X': [(lambda g, vid1=None:g.V(vid1).age.range_(Scope.local,20,30))], 
+    'g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX': [(lambda g, vid1=None:g.V().map(__.in_().hasId(vid1))[0:2].name)], 
     'g_E_sampleX1X': [(lambda g:g.E().sample(1))], 
     'g_E_sampleX2X_byXweightX': [(lambda g:g.E().sample(2).by('weight'))], 
     'g_V_localXoutE_sampleX1X_byXweightXX': [(lambda g:g.V().local(__.outE().sample(1).by('weight')))], 
