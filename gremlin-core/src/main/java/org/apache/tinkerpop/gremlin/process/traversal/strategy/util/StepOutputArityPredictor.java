@@ -18,8 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.util;
 
-
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -78,12 +79,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
-
-import com.google.common.collect.ImmutableMap;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * Output Arity Predictor for Tinkerpop steps
@@ -236,29 +231,34 @@ public class StepOutputArityPredictor {
     final private static Map<String, Function<Traversal, Arity>> SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP;
 
     static {
-        final ImmutableMap.Builder<String, Function<Step, Arity>> builder1 = ImmutableMap.builder();
-        STEP_CLASSES_WITH_DEFINITELY_SINGULAR_ARITY_BEHAVIOR.forEach(
-                elem -> builder1.put(elem.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_STEP_INPUT));
+        final Map<String, Function<Step, Arity>> tempMap1 = new HashMap<>();
+        for (Class elem : STEP_CLASSES_WITH_DEFINITELY_SINGULAR_ARITY_BEHAVIOR) {
+            tempMap1.put(elem.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_STEP_INPUT);
+        }
 
-        STEP_CLASSES_WITH_OPTIONAL_SINGULAR_ARITY_BEHAVIOR.forEach(
-                elem -> builder1.put(elem.getSimpleName(), RETURN_MAY_BE_SINGLE_ARITY_FOR_STEP_INPUT));
+        for (Class elem : STEP_CLASSES_WITH_OPTIONAL_SINGULAR_ARITY_BEHAVIOR) {
+            tempMap1.put(elem.getSimpleName(), RETURN_MAY_BE_SINGLE_ARITY_FOR_STEP_INPUT);
+        }
 
-        builder1.put(EdgeVertexStep.class.getSimpleName(), StepOutputArityPredictor::wouldEdgeVertexStepHaveSingleResult);
-        builder1.put(TraversalMapStep.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTraversalMapStep);
+        tempMap1.put(EdgeVertexStep.class.getSimpleName(), StepOutputArityPredictor::wouldEdgeVertexStepHaveSingleResult);
+        tempMap1.put(TraversalMapStep.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTraversalMapStep);
 
-        STEP_TO_ARITY_FUNCTION_MAP = builder1.build();
+        STEP_TO_ARITY_FUNCTION_MAP = Collections.unmodifiableMap(tempMap1);
 
-        final ImmutableMap.Builder<String, Function<Traversal, Arity>> builder2 = ImmutableMap.builder();
-        builder2.put(ValueTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForValueTraversal);
-        builder2.put(TokenTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTokenTraversal);
-        builder2.put(IdentityTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
-        builder2.put(ColumnTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
-        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP = builder2.build();
+        final Map<String, Function<Traversal, Arity>> tempMap2 = new HashMap<>();
+        tempMap2.put(ValueTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForValueTraversal);
+        tempMap2.put(TokenTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTokenTraversal);
+        tempMap2.put(IdentityTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
+        tempMap2.put(ColumnTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
+
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP = Collections.unmodifiableMap(tempMap2);
     }
 
+    private static Arity getStepOutputArity(final Step step, final Arity inputArity) {
+        if (step == null) {
+            throw new NullPointerException("step is marked non-null but is null");
+        }
 
-
-    private static Arity getStepOutputArity(@NonNull final Step step, final Arity inputArity) {
         final String stepName = step.getClass().getSimpleName();
         final Arity result;
         // Step 1. Check if it is a STEP_TO_ARITY_FUNCTION_MAP member.
@@ -275,12 +275,19 @@ public class StepOutputArityPredictor {
     }
 
 
-    private static Arity getOutputArity(@NonNull final Traversal<?, ?> traversal) {
-        return getOutputArity(traversal, Arity.DEFINITELY_SINGULAR);
+    private static Arity getOutputArity(final Traversal<?, ?> traversal) {
+        if (traversal == null) {
+            throw new NullPointerException("traversal is marked non-null but is null");
+        }
 
+        return getOutputArity(traversal, Arity.DEFINITELY_SINGULAR);
     }
 
-    private static Arity getOutputArity(@NonNull final Traversal<?, ?> traversal, final Arity inputArity) {
+    private static Arity getOutputArity(final Traversal<?, ?> traversal, final Arity inputArity) {
+        if (traversal == null) {
+            throw new NullPointerException("traversal is marked non-null but is null");
+        }
+
         Arity result = inputArity;
         if (traversal instanceof AbstractLambdaTraversal<?, ?>) {
             if (SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP.containsKey(traversal.getClass().getSimpleName())) {
@@ -297,32 +304,56 @@ public class StepOutputArityPredictor {
         return result;
     }
 
-    public static boolean hasSingularOutputArity(@NonNull final Traversal<?,?> traversal) {
+    public static boolean hasSingularOutputArity(final Traversal<?,?> traversal) {
+        if (traversal == null) {
+            throw new NullPointerException("traversal is marked non-null but is null");
+        }
+
         final Arity resultArity = getOutputArity(traversal);
         return resultArity.getPriority()==1;
     }
 
-    public static boolean hasAlwaysBoundResult(@NonNull final Traversal<?,?> traversal) {
+    public static boolean hasAlwaysBoundResult(final Traversal<?,?> traversal) {
+        if (traversal == null) {
+            throw new NullPointerException("traversal is marked non-null but is null");
+        }
+
         final Arity resultArity = getOutputArity(traversal);
         return resultArity.equals(Arity.DEFINITELY_SINGULAR);
     }
 
-    public static boolean hasMultiOutputArity(@NonNull final Traversal<?,?> traversal) {
+    public static boolean hasMultiOutputArity(final Traversal<?,?> traversal) {
+        if (traversal == null) {
+            throw new NullPointerException("traversal is marked non-null but is null");
+        }
+
         final Arity resultArity = getOutputArity(traversal);
         return resultArity.getPriority()!=1;
     }
 
-    public static boolean hasSingularOutputArity(@NonNull final Step<?,?> step) {
+    public static boolean hasSingularOutputArity(final Step<?,?> step) {
+        if (step == null) {
+            throw new NullPointerException("step is marked non-null but is null");
+        }
+
         final Arity resultArity = getStepOutputArity(step, Arity.DEFINITELY_SINGULAR);
         return resultArity.getPriority()==1;
     }
 
-    public static boolean hasAlwaysBoundResult(@NonNull final Step<?,?> step) {
+    public static boolean hasAlwaysBoundResult(final Step<?,?> step) {
+        if (step == null) {
+            throw new NullPointerException("step is marked non-null but is null");
+        }
+
         final Arity resultArity = getStepOutputArity(step, Arity.DEFINITELY_SINGULAR);
         return resultArity.equals(Arity.DEFINITELY_SINGULAR);
     }
 
-    public static boolean hasMultiOutputArity(@NonNull final Step<?,?> step) {
+    public static boolean hasMultiOutputArity(final Step<?,?> step) {
+        if (step == null) {
+            throw new NullPointerException("step is marked non-null but is null");
+        }
+
         final Arity resultArity = getStepOutputArity(step, Arity.DEFINITELY_SINGULAR);
         return resultArity.getPriority()!=1;
     }
