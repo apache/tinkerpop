@@ -926,7 +926,7 @@ Feature: Step - mergeV()
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
     And the traversal of
-      """
+      """e
       g.mergeV([name: "marko"]).
           option(Merge.onMatch, [name: "allen", age: Cardinality.set(31)], single)
       """
@@ -956,6 +956,48 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\", 31)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").properties(\"age\")"
+
+  @MultiProperties
+  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_singleX81XX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([name: "alice", (T.label): "person"]).
+          option(Merge.onCreate, [age: Cardinality.single(81)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\", 81)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
+
+  @MultiProperties
+  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_setX81XX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([name: "alice", (T.label): "person"]).
+          option(Merge.onCreate, [age: Cardinality.set(81)])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\", 81)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
+
+  @MultiProperties
+  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_singleX81X_age_81_setX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([name: "alice", (T.label): "person"]).
+          option(Merge.onCreate, [age: 81], Cardinality.set)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\", 81)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
 
   # cannot use hidden namespace for label key for onMatch
   Scenario: g_mergeV_hidden_label_key_onMatch_matched_prohibited
