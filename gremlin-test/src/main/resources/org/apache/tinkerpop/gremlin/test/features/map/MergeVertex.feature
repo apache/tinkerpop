@@ -926,7 +926,7 @@ Feature: Step - mergeV()
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
     And the traversal of
-      """e
+      """
       g.mergeV([name: "marko"]).
           option(Merge.onMatch, [name: "allen", age: Cardinality.set(31)], single)
       """
