@@ -231,27 +231,23 @@ public class StepOutputArityPredictor {
     final private static Map<String, Function<Traversal, Arity>> SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP;
 
     static {
-        final Map<String, Function<Step, Arity>> tempMap1 = new HashMap<>();
+        STEP_TO_ARITY_FUNCTION_MAP = new HashMap<>();
         for (Class elem : STEP_CLASSES_WITH_DEFINITELY_SINGULAR_ARITY_BEHAVIOR) {
-            tempMap1.put(elem.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_STEP_INPUT);
+            STEP_TO_ARITY_FUNCTION_MAP.put(elem.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_STEP_INPUT);
         }
 
         for (Class elem : STEP_CLASSES_WITH_OPTIONAL_SINGULAR_ARITY_BEHAVIOR) {
-            tempMap1.put(elem.getSimpleName(), RETURN_MAY_BE_SINGLE_ARITY_FOR_STEP_INPUT);
+            STEP_TO_ARITY_FUNCTION_MAP.put(elem.getSimpleName(), RETURN_MAY_BE_SINGLE_ARITY_FOR_STEP_INPUT);
         }
 
-        tempMap1.put(EdgeVertexStep.class.getSimpleName(), StepOutputArityPredictor::wouldEdgeVertexStepHaveSingleResult);
-        tempMap1.put(TraversalMapStep.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTraversalMapStep);
+        STEP_TO_ARITY_FUNCTION_MAP.put(EdgeVertexStep.class.getSimpleName(), StepOutputArityPredictor::wouldEdgeVertexStepHaveSingleResult);
+        STEP_TO_ARITY_FUNCTION_MAP.put(TraversalMapStep.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTraversalMapStep);
 
-        STEP_TO_ARITY_FUNCTION_MAP = Collections.unmodifiableMap(tempMap1);
-
-        final Map<String, Function<Traversal, Arity>> tempMap2 = new HashMap<>();
-        tempMap2.put(ValueTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForValueTraversal);
-        tempMap2.put(TokenTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTokenTraversal);
-        tempMap2.put(IdentityTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
-        tempMap2.put(ColumnTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
-
-        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP = Collections.unmodifiableMap(tempMap2);
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP = new HashMap<>();
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP.put(ValueTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForValueTraversal);
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP.put(TokenTraversal.class.getSimpleName(), StepOutputArityPredictor::getOutputArityBehaviorForTokenTraversal);
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP.put(IdentityTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
+        SPECIAL_TRAVERSAL_TO_ARITY_FUNCTION_MAP.put(ColumnTraversal.class.getSimpleName(), RETURN_DEFINITELY_SINGLE_ARITY_FOR_TRAVERSAL_INPUT);
     }
 
     private static Arity getStepOutputArity(final Step step, final Arity inputArity) {
