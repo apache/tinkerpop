@@ -32,6 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed issue where server errors weren't being properly parsed when sending bytecode over HTTP.
 * Improved bulkset contains check for elements if all elements in bulkset are of the same type
 * Fixed bug in `EarlyLimitStrategy` which was too aggressive when promoting `limit()` before `map()`.
+* Fixed bug in mid-traversal `mergeE()` where mutations in `sideEffect()` were being applied to the current traverser rather than a `onMatch` edge.
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
