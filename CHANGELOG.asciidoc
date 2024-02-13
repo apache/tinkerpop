@@ -33,6 +33,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
+* Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)

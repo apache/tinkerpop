@@ -85,6 +85,12 @@ with no elements matching the predicate.
 Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
 skipped with incorrect result.
 
+==== Removal of `gremlin-archetype`
+
+`gremlin-archetype`, which contained example projects demonstrating the use cases of TinkerPop, has been removed in
+favor of newer sample applications which can be found in each GLV's `examples` folder.
+
+
 === Upgrading for Providers
 
 ==== Renaming NoneStep to DiscardStep
