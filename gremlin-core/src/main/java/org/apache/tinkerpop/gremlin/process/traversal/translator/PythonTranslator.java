@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -308,7 +309,10 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                     script.append("[0:").append(arguments[0].toString()).append("]");
                 else if (methodName.equals("values") && 1 == arguments.length && script.getScript().length() > 3 && !STEP_NAMES.contains(arguments[0].toString()))
                     script.append(".").append(arguments[0].toString());
-                else {
+                else if (methodName.equals(GraphTraversalSource.Symbols.tx)) {
+                    final String command = instruction.getArguments()[0].toString();
+                    script.append(".").append(methodName).append("().").append(command).append("()");
+                } else {
                     script.append(".").append(resolveSymbol(methodName)).append("(");
 
                     // python has trouble with java varargs...wrapping in collection seems to solve the problem
