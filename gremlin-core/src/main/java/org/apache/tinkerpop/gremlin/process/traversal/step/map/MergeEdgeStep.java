@@ -273,9 +273,9 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
 
             edges = IteratorUtils.peek(edges, e -> {
 
-                // if this was a start step the traverser is initialized with placeholder edge, so override that with
-                // the matched Edge so that the option() traversal can operate on it properly
-                if (isStart) traverser.set((S) e);
+                // override current traverser with the matched Edge so that the option() traversal can operate
+                // on it properly
+                traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);

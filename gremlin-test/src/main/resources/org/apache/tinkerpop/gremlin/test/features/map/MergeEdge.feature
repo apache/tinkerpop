@@ -841,3 +841,45 @@ Feature: Step - mergeE()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
+
+  Scenario: g_V_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_sideEffectXpropertyXweight_0XX_constantXemptyXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").property("weight", 1).from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And the traversal of
+      """
+      g.V().mergeE(xx1).
+              option(Merge.onMatch, __.sideEffect(__.property("weight", 0)).constant([:]))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\",1)"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
+    And the graph should return 0 for count of "g.V().has(\"weight\")"
+
+  Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_sideEffectXpropertyXweight_0XX_constantXemptyXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").property("weight", 1).from("a").to("b")
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).
+          option(Merge.onMatch, __.sideEffect(__.property("weight", 0)).constant([:]))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\",1)"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
+    And the graph should return 0 for count of "g.V().has(\"weight\")"
