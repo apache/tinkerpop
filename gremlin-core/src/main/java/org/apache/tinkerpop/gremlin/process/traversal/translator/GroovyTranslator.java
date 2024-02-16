@@ -30,9 +30,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -351,6 +351,9 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                             convertToScript(o);
                             if (itty.hasNext()) script.append(",");
                         }
+                    } else if (methodName.equals(GraphTraversalSource.Symbols.tx)) {
+                        final String command = instruction.getArguments()[0].toString();
+                        script.append(").").append(command).append("(");
                     } else {
                         final Iterator<Object> itty = Arrays.stream(instruction.getArguments()).iterator();
                         while (itty.hasNext()) {

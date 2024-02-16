@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -334,6 +335,14 @@ public class DotNetTranslatorTest {
                 translator.translate(g.inject("hello").substring(1, 2).asAdmin().getBytecode()).getScript());
         assertEquals("g.Inject(\"hello\").Substring<object>(Scope.Local,1,2)",
                 translator.translate(g.inject("hello").substring(Scope.local, 1, 2).asAdmin().getBytecode()).getScript());
+    }
+
+    @Test
+    public void shouldTranslateTx() {
+        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        assertEquals("g.Tx().Commit()", script);
+        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        assertEquals("g.Tx().Rollback()", script);
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {

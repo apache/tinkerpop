@@ -331,6 +331,7 @@ public final class BytecodeHelper {
             put(TraversalSource.Symbols.withComputer, Collections.emptyList());
             put(GraphTraversalSource.Symbols.withBulk, Collections.emptyList());
             put(GraphTraversalSource.Symbols.withPath, Collections.emptyList());
+            put(GraphTraversalSource.Symbols.tx, Collections.emptyList());
         }};
         byteCodeSymbolStepMap = Collections.unmodifiableMap(operationStepMap);
     }

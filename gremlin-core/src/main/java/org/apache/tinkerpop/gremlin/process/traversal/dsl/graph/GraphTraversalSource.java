@@ -79,6 +79,7 @@ public class GraphTraversalSource implements TraversalSource {
 
         public static final String withBulk = "withBulk";
         public static final String withPath = "withPath";
+        public static final String tx = "tx";
 
     }
 
