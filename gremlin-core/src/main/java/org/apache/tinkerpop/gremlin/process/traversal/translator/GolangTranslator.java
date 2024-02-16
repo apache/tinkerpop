@@ -26,10 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
-import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -308,16 +308,21 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                 final String methodName = instruction.getOperator();
                 final Object[] arguments = instruction.getArguments();
 
-                script.append(".").append(resolveSymbol(methodName)).append("(");
+                if (methodName.equals(GraphTraversalSource.Symbols.tx)) {
+                    final String command = resolveSymbol(arguments[0].toString());
+                    script.append(".").append(resolveSymbol(methodName)).append("().").append(resolveSymbol(command)).append("()");
+                } else {
+                    script.append(".").append(resolveSymbol(methodName)).append("(");
 
-                for (int i = 0; i < arguments.length; i++) {
-                    convertToScript(arguments[i]);
-                    if (i != arguments.length - 1) {
-                        script.append(", ");
+                    for (int i = 0; i < arguments.length; i++) {
+                        convertToScript(arguments[i]);
+                        if (i != arguments.length - 1) {
+                            script.append(", ");
+                        }
                     }
-                }
 
-                script.append(")");
+                    script.append(")");
+                }
             }
             return script;
         }

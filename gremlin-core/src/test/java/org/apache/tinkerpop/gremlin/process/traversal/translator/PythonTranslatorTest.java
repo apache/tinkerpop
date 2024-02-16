@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -143,6 +144,14 @@ public class PythonTranslatorTest {
           .translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getBytecode())
           .getScript();
       assertEquals("g.V().range_(0,10).has('person','name','marko').limit(2).values('name')", gremlinAsPython);
+    }
+
+    @Test
+    public void shouldTranslateTx() {
+        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        assertEquals("g.tx().commit()", script);
+        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        assertEquals("g.tx().rollback()", script);
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {

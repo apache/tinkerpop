@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -311,6 +312,14 @@ public class GroovyTranslatorTest {
                         ".to(new ReferenceVertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\"))" +
                         ".property(\"when\",\"2018/09/21\")",
                 script4);
+    }
+
+    @Test
+    public void shouldTranslateTx() {
+        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        assertEquals("g.tx().commit()", script);
+        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        assertEquals("g.tx().rollback()", script);
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
