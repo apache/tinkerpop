@@ -26,7 +26,7 @@
 
 from radish import world
 import datetime
-from gremlin_python.statics import long
+from gremlin_python.statics import long, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
@@ -383,6 +383,7 @@ world.gremlins = {
     'g_V_asXnX_whereXorXhasLabelXsoftwareX_hasLabelXpersonXXX_selectXnX_byXnameX': [(lambda g:g.V().as_('n').where(__.or_(__.hasLabel('software'),__.hasLabel('person'))).select('n').by('name'))], 
     'g_V_asXnX_whereXorXselectXnX_hasLabelXsoftwareX_selectXnX_hasLabelXpersonXXX_selectXnX_byXnameX': [(lambda g:g.V().as_('n').where(__.or_(__.select('n').hasLabel('software'),__.select('n').hasLabel('person'))).select('n').by('name'))], 
     'g_V_hasLabelXpersonX_asXxX_whereXinEXknowsX_count_isXgteX1XXX_selectXxX': [(lambda g:g.V().hasLabel('person').as_('x').where(__.inE('knows').count().is_(P.gte(1))).select('x'))], 
+    'g_withoutStrategiesXCountStrategyX_V_count': [(lambda g:g.withoutStrategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy')]).V().count())], 
     'g_V_coworker': [(lambda g, xx1=None:g.V().hasLabel('person').filter_(__.outE('created')).aggregate('p').as_('p1').name.as_('p1n').select('p').unfold().where(P.neq('p1')).as_('p2').name.as_('p2n').select('p2').out('created').choose(__.in_('created').where(P.eq('p1')),__.name,__.constant(xx1)).group().by(__.select('p1n')).by(__.group().by(__.select('p2n')).by(__.unfold().fold().project('numCoCreated','coCreated').by(__.count(Scope.local)).by())).unfold())], 
     'g_V_coworker_with_midV': [(lambda g:g.V().hasLabel('person').filter_(__.outE('created')).as_('p1').V().hasLabel('person').where(P.neq('p1')).filter_(__.outE('created')).as_('p2').map(__.out('created').where(__.in_('created').as_('p1')).name.fold()).group().by(__.select('p1').by('name')).by(__.group().by(__.select('p2').by('name')).by(__.project('numCoCreated','coCreated').by(__.count(Scope.local)).by())).unfold())], 
     'g_withStrategiesXPartitionStrategyXwrite_a_read_aXX_V_name': [(lambda g:g.addV('person').property('_partition','a').property('name','alice').addV('person').property('_partition','b').property('name','bob')), (lambda g:g.withStrategies(*[TraversalStrategy('PartitionStrategy',{'includeMetaProperties':False,'partitionKey':'_partition','readPartitions':set(('a')),'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy','writePartition':'a'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy')]).V().name)], 

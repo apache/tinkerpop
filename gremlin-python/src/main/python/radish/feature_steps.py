@@ -35,7 +35,9 @@ inV = __.inV
 project = __.project
 tail = __.tail
 
-ignores = []
+ignores = [
+    "g.withoutStrategies(CountStrategy).V().count()" # serialization issues with Class in GraphSON
+]
 
 
 @given("the {graph_name:w} graph")
