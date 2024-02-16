@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -385,6 +386,9 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                             convertToScript(instArg);
                         }
                         script.append(",");
+                    } else if (methodName.equals(GraphTraversalSource.Symbols.tx)) {
+                        final String command = resolveSymbol(instruction.getArguments()[0].toString());
+                        script.append(").").append(command).append("()");
                     } else if (methodName.equals(GraphTraversal.Symbols.call)) {
                         // call()
                         // call(String)

@@ -36,6 +36,20 @@ import java.util.function.Consumer;
  */
 public interface Transaction extends AutoCloseable {
 
+    ////////////////
+
+    public static final class Symbols {
+
+        private Symbols() {
+            // static fields only
+        }
+
+        public static final String commit = "commit";
+        public static final String rollback = "rollback";
+
+    }
+
+    ////////////////
     /**
      * Opens a transaction.
      */

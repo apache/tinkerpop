@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -124,5 +125,13 @@ public class GolangTranslatorTest {
     public void shouldTranslateArrayOfArray() {
         assertEquals("g.Inject([]interface{}{[]interface{}{1, 2}, []interface{}{3, 4}})",
                 translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getBytecode()).getScript());
+    }
+
+    @Test
+    public void shouldTranslateTx() {
+        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        assertEquals("g.Tx().Commit()", script);
+        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        assertEquals("g.Tx().Rollback()", script);
     }
 }
