@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+
 /**
  * A {@code GraphOp} or "graph operation" is a static {@link Bytecode} form that does not translate to a traversal
  * but instead refers to a specific function to perform on a graph instance.
@@ -27,12 +30,12 @@ public enum GraphOp {
     /**
      * Commit a transaction.
      */
-    TX_COMMIT(new Bytecode("tx", "commit")),
+    TX_COMMIT(new Bytecode(GraphTraversalSource.Symbols.tx, Transaction.Symbols.commit)),
 
     /**
      * Rollback a transaction.
      */
-    TX_ROLLBACK(new Bytecode("tx", "rollback"));
+    TX_ROLLBACK(new Bytecode(GraphTraversalSource.Symbols.tx, Transaction.Symbols.rollback));
 
     private final Bytecode bytecode;
 

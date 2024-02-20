@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -322,6 +323,9 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                         script.append(", (").append(castSecondArgTo).append(") ");
                         convertToScript(instruction.getArguments()[1]);
                         script.append(",");
+                    } else if (methodName.equals(GraphTraversalSource.Symbols.tx)) {
+                        final String command = instruction.getArguments()[0].toString();
+                        script.append(").").append(command).append("()");
                     } else {
                         for (final Object object : instruction.getArguments()) {
                             convertToScript(object);
