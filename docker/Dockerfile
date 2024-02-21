@@ -15,24 +15,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM --platform=linux/amd64 ubuntu:bionic
+FROM --platform=linux/amd64 ubuntu:focal
 
 LABEL maintainer="Daniel Kuppitz <me@gremlin.guru>"
 
 RUN apt-get update
 RUN apt-get -y install software-properties-common python3-software-properties apt-transport-https curl dpkg netcat net-tools iproute2
 RUN add-apt-repository ppa:openjdk-r/ppa
-RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
+RUN sh -c 'curl -s https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -o packages-microsoft-prod.deb'
 RUN sh -c 'dpkg -i packages-microsoft-prod.deb'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 RUN apt-get install apt-transport-https gnupg ca-certificates
-RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
+RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 
 # include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
 # for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
 RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
-RUN apt-get install -y --force-yes dotnet-sdk-6.0 mono-devel
+RUN apt-get install -y --force-yes dotnet-sdk-8.0 mono-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y python3 python3.8 python3-dev python3.8-dev python3-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
