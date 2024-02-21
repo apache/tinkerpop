@@ -59,7 +59,7 @@ NOTE: For those using Windows, efforts have been made to keep the build OS indep
 that TinkerPop's build system will only allow for a minimum build at best. +
  +
  Refer to <<building-on-windows>> section for more details.
- 
+
 [[groovy-environment]]
 === Groovy Environment
 
@@ -278,7 +278,7 @@ See the <<release-environment,Release Environment>> section for more information
 [[dotnet-environment]]
 === DotNet Environment
 
-The build optionally requires link:https://dotnet.microsoft.com/download[.NET SDK] (>=6.0) to work with the
+The build optionally requires link:https://dotnet.microsoft.com/download[.NET SDK] (>=8.0) to work with the
 `gremlin-dotnet` module. If .NET SDK is not installed, TinkerPop will still build with Maven, but .NET projects
 will be skipped.
 

@@ -278,10 +278,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - name: Set up .NET 6.0.x
+      - name: Set up .NET 8.0.x
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'
       - name: Get Cached Server Base Image
         uses: actions/cache@v4
         id: gremlin-server-test-docker-image
