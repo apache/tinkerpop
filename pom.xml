@@ -140,7 +140,6 @@ limitations under the License.
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
-        <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
         <module>gremlin-util</module>

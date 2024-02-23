@@ -1160,8 +1160,8 @@ SocialTraversalSource social = traversal(SocialTraversalSource.class).with(graph
 social.persons("marko").knows("josh");
 ----
 
-NOTE: Using Maven, as shown in the `gremlin-archetype-dsl` module, makes developing DSLs with the annotation processor
-straightforward in that it sets up appropriate paths to the generated code automatically.
+NOTE: Using Maven makes developing DSLs with the annotation processor straightforward in that it sets up appropriate
+paths to the generated code automatically.
 
 [[gremlin-java-troubleshooting]]
 === Troubleshooting
@@ -1223,30 +1223,6 @@ Connection Pool Status (size=1 max=5 min=1 toCreate=0 bin=0)
 ----
 
 anchor:java-application-examples[]
-anchor:gremlin-archetypes[]
-[[gremlin-java-archetypes]]
-=== Application Archetypes
-
-The available link:https://maven.apache.org/guides/introduction/introduction-to-archetypes.html[Maven archetypes] are
-as follows:
-
-* `gremlin-archetype-dsl` - An example project that demonstrates how to build Domain Specific Languages with Gremlin
-in Java.
-* `gremlin-archetype-server` - An example project that demonstrates the basic structure of a
-<<gremlin-server,Gremlin Server>> project, how to connect with the Gremlin Driver, and how to embed Gremlin Server in
-a testing framework.
-* `gremlin-archetype-tinkergraph` - A basic example of how to structure a TinkerPop project with Maven.
-
-Use Maven to generate these example projects with a command like:
-
-[source,shell]
-$ mvn archetype:generate -DarchetypeGroupId=org.apache.tinkerpop -DarchetypeArtifactId=gremlin-archetype-server \
-      -DarchetypeVersion=x.y.z -DgroupId=com.my -DartifactId=app -Dversion=0.1 -DinteractiveMode=false
-
-This command will generate a new Maven project in a directory called "app" with a `pom.xml` specifying a `groupId` of
-`com.my`. Please see the `README.asciidoc` in the root of each generated project for information on how to build and
-execute it.
-
 [[gremlin-java-examples]]
 === Application Examples
 
