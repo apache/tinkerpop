@@ -35,18 +35,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
@@ -85,35 +88,24 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
             // this cache holds the parent and a pair. the first item in the pair is a boolean which is true if
             // lambda is present and false otherwise. the second item in the pair is a set of labels from any
             // Scoping steps
-            final Map<TraversalParent, Pair<Boolean, Set<String>>> traversalParentCache = new HashMap<>();
             final Map<Step, Integer> stepRanking = new HashMap<>();
 
             // gather the parents and their Scoping/LambdaHolder steps to build up the cache. since the traversal is
             // processed in depth first manner, the entries gathered to m are deepest child first and held in order,
             // so that the cache can be constructed with parent's knowing their children were processed first
-            final Map<TraversalParent, List<Step<?,?>>> m =
-                    TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, TraversalParent.class).stream().
-                    collect(Collectors.groupingBy(step -> ((Step) step).getTraversal().getParent(), LinkedHashMap::new, Collectors.toList()));
+            // Note: We should avoid using streams with groupingBy collectors for this (e.g., with code of the form
+            // TraversalHelper.getStepsOfAssignableClassRecursivelyFromDepth(traversal, TraversalParent.class).stream().
+            // collect(Collectors.groupingBy(step -> ((Step) step).getTraversal().getParent(), LinkedHashMap::new, Collectors.toList())) )
+            // since it would mean that we do hash computation multiple times for the traversal parent (which can be a
+            // complex step with many children).
+            // Also note that IdentityHashMap is not an option for above Collectors.groupingBy call since it would not
+            // retain the required order (deepest traversal parents first).
+            final List<Pair<TraversalParent, List<Step<?,?>>>> traversalParentsStepsCollection =
+                    collectStepsOfAssignableClassRecursivelyFromDepthGroupedByParent(traversal);
 
-            // build the cache and use it to detect if any children impact the Pair in any way. in the case of a
-            // child with a lambda, the parent would simply inherit that true. in the case of additional labels they
-            // would just be appended to the list for the parent.
-            m.forEach((k, v) -> {
-                final boolean hasLambda = v.stream().anyMatch(s -> s instanceof LambdaHolder ||
-                        (traversalParentCache.containsKey(s) && traversalParentCache.get(s).getValue0()));
-                if (hasLambda) {
-                    traversalParentCache.put(k, Pair.with(true, Collections.emptySet()));
-                } else {
-                    final Set<String> currentEntryScopeLabels = v.stream().filter(s -> s instanceof Scoping).
-                            flatMap(s -> ((Scoping) s).getScopeKeys().stream()).collect(Collectors.toSet());
-                    final Set<String> allScopeLabels = new HashSet<>(currentEntryScopeLabels);
-                    v.stream().filter(traversalParentCache::containsKey).forEach(s -> {
-                        final TraversalParent parent = (TraversalParent) s;
-                        allScopeLabels.addAll(traversalParentCache.get(parent).getValue1());
-                    });
-                    traversalParentCache.put(k, Pair.with(false, allScopeLabels));
-                }
-            });
+            // create cache
+            final Map<TraversalParent, Pair<Boolean, Set<String>>> traversalParentCache =
+                    getTraversalParentCache(traversalParentsStepsCollection);
 
             TraversalHelper.applyTraversalRecursively(t -> {
                 boolean modified = true;
@@ -142,6 +134,34 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
                 }
             }, traversal);
         }
+    }
+
+    public static Map<TraversalParent, Pair<Boolean, Set<String>>> getTraversalParentCache(
+            final List<Pair<TraversalParent, List<Step<?,?>>>> traversalParentsStepsCollection) {
+        final Map<TraversalParent, Pair<Boolean, Set<String>>> traversalParentCache = new HashMap<>();
+
+        // build the cache and use it to detect if any children impact the Pair in any way. in the case of a
+        // child with a lambda, the parent would simply inherit that true. in the case of additional labels they
+        // would just be appended to the list for the parent.
+        traversalParentsStepsCollection.forEach(pair -> {
+            final TraversalParent k = pair.getValue0();
+            final List<Step<?,?>> v = pair.getValue1();
+            final boolean hasLambda = v.stream().anyMatch(s -> s instanceof LambdaHolder ||
+                    (traversalParentCache.containsKey(s) && traversalParentCache.get(s).getValue0()));
+            if (hasLambda) {
+                traversalParentCache.put(k, Pair.with(true, Collections.emptySet()));
+            } else {
+                final Set<String> currentEntryScopeLabels = v.stream().filter(s -> s instanceof Scoping).
+                        flatMap(s -> ((Scoping) s).getScopeKeys().stream()).collect(Collectors.toSet());
+                final Set<String> allScopeLabels = new HashSet<>(currentEntryScopeLabels);
+                v.stream().filter(traversalParentCache::containsKey).forEach(s -> {
+                    final TraversalParent parent = (TraversalParent) s;
+                    allScopeLabels.addAll(traversalParentCache.get(parent).getValue1());
+                });
+                traversalParentCache.put(k, Pair.with(false, allScopeLabels));
+            }
+        });
+        return traversalParentCache;
     }
 
     /**
@@ -231,5 +251,64 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
 
     public static FilterRankingStrategy instance() {
         return INSTANCE;
+    }
+
+    /**
+     * Get steps of the specified class throughout the traversal and grouping them based on the traversal parent
+     * collecting them in a fashion that orders them from the deepest steps first
+     */
+    public static List<Pair<TraversalParent, List<Step<?,?>>>> collectStepsOfAssignableClassRecursivelyFromDepthGroupedByParent(
+            final Traversal.Admin<?, ?> traversal) {
+
+        final List<Pair<TraversalParent, List<Step<?,?>>>> traversalParentCollectionList = new ArrayList<>();
+        final Stack<Step<?,?>> processingStack = new Stack<>();
+
+        final List<Step<?,?>> noParentlist = new ArrayList<>();
+        traversal.getSteps().forEach(childStep -> {
+            handleChildStepCollection(processingStack, noParentlist, childStep);
+        });
+        if (!noParentlist.isEmpty()) {
+            // we reverse the list here to keep it the same way as we had it before combining
+            // the recursive collection and grouping into this method
+            Collections.reverse(noParentlist);
+            // steps of the main/root traversal do not have any parent, so we just add them under the EmptyStep
+            traversalParentCollectionList.add(new Pair<>((TraversalParent)EmptyStep.instance(), noParentlist));
+        }
+
+        while (!processingStack.isEmpty()) {
+            final List<Step<?,?>> childStepCollectionlist = new ArrayList<>();
+            final Step<?,?> current = processingStack.pop();
+
+            if (current instanceof TraversalParent) {
+                ((TraversalParent) current).getLocalChildren().forEach(localChild -> localChild.getSteps().forEach(childStep -> {
+                    handleChildStepCollection(processingStack, childStepCollectionlist, childStep);
+                }));
+                ((TraversalParent) current).getGlobalChildren().forEach(globalChild -> globalChild.getSteps().forEach(childStep -> {
+                    handleChildStepCollection(processingStack, childStepCollectionlist, childStep);
+                }));
+
+                if (!childStepCollectionlist.isEmpty()) {
+                    // we reverse the childStepCollectionlist here to keep it the same way as we had it before combining
+                    // the recursive collection and grouping into this method
+                    Collections.reverse(childStepCollectionlist);
+                    // desired children are added together/grouped on the traversal parent
+                    traversalParentCollectionList.add(new Pair<>((TraversalParent)current, childStepCollectionlist));
+                }
+            }
+        }
+        // reverse the list such that we get the deepest steps first
+        Collections.reverse(traversalParentCollectionList);
+        return traversalParentCollectionList;
+    }
+
+    /**
+     * Small helper method that collects desired children (i.e., steps that are either traversal parents or LambdaHolders).
+     * All children are added to the stack such that they are also processed.
+     */
+    private static void handleChildStepCollection(final Stack<Step<?, ?>> processingStack, final List<Step<?, ?>> collectionList, final Step<?, ?> childStep) {
+        if (TraversalParent.class.isAssignableFrom(childStep.getClass()) || LambdaHolder.class.isAssignableFrom(childStep.getClass())) {
+            collectionList.add(childStep);
+        }
+        processingStack.push(childStep);
     }
 }
