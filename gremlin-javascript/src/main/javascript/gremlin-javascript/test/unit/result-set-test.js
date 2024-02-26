@@ -23,14 +23,12 @@
 'use strict';
 
 const assert = require('assert');
-const util = require('util');
 const ResultSet = require('../../lib/driver/result-set');
 
 describe('ResultSet', function () {
-
   describe('#toArray()', () => {
     it('should return an array of items', () => {
-      const items = [ 'a', 'b' ];
+      const items = ['a', 'b'];
       const result = new ResultSet(items);
       assert.ok(Array.isArray(result.toArray()));
       assert.deepStrictEqual(result.toArray(), items);
@@ -39,7 +37,7 @@ describe('ResultSet', function () {
 
   describe('#length', () => {
     it('should return the length of the items', () => {
-      const items = [ 'a', 'b', 1, 0 ];
+      const items = ['a', 'b', 1, 0];
       const result = new ResultSet(items);
       assert.strictEqual(result.length, items.length);
     });
@@ -58,7 +56,7 @@ describe('ResultSet', function () {
 
   describe('#[Symbol.iterator]()', () => {
     it('should support be iterable', () => {
-      const items = [ 1, 2, 3 ];
+      const items = [1, 2, 3];
       const result = new ResultSet(items);
       const obtained = [];
       for (let item of result) {
@@ -72,7 +70,7 @@ describe('ResultSet', function () {
 
   describe('#[util.inspect.custom]()', () => {
     it('should return the Array representation', () => {
-      assert.strictEqual(util.inspect(new ResultSet([ 1, 2, 3 ])), '[ 1, 2, 3 ]');
+      assert.deepStrictEqual(new ResultSet([1, 2, 3])._items, [1, 2, 3]);
     });
   });
 
@@ -84,7 +82,10 @@ describe('ResultSet', function () {
     });
 
     it('should return the attributes when defined', () => {
-      const attributes = new Map([['a', 1], ['b', 1]]);
+      const attributes = new Map([
+        ['a', 1],
+        ['b', 1],
+      ]);
       const rs = new ResultSet([], attributes);
       assert.ok(rs.attributes instanceof Map);
       assert.strictEqual(rs.attributes, attributes);

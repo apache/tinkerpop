@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const g = require('../../../graph');
 
 module.exports = class PathSerializer {

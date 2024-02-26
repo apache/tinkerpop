@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const typeSerializers = require('./type-serializers');
 const Bytecode = require('../../process/bytecode');
 

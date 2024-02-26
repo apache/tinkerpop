@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const t = require('../../../../process/traversal');
 
 module.exports = class EnumSerializer {
