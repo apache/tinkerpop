@@ -759,6 +759,22 @@ Feature: Step - SubgraphStrategy
       | e[josh-created->ripple] |
 
   @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withStrategiesXSubgraphStrategyXcheckAdjacentVertices_subgraphDXX_E
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(new SubgraphStrategy(checkAdjacentVertices: true,
+                                            vertices: __.has("name", P.within("josh", "lop", "ripple")),
+                                            edges: __.or(__.has("weight", 0.4).hasLabel("created"),
+                                                         __.has("weight", 1.0).hasLabel("created")))).E()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
   Scenario: g_withStrategiesXSubgraphStrategyXsubgraphDXX_VX4X_outE
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -914,3 +930,17 @@ Feature: Step - SubgraphStrategy
     Then the result should be unordered
       | result |
       | v[lop] |
+
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withStrategiesXSubgraphStrategyXcheckAdjacentVertices_subgraphDXX_EX9X_bothV
+    Given the modern graph
+    And using the parameter eid9 defined as "e[marko-created->lop].id"
+    And the traversal of
+      """
+      g.withStrategies(new SubgraphStrategy(checkAdjacentVertices: true,
+                                            vertices: __.has("name", P.within("josh", "lop", "ripple")),
+                                            edges: __.or(__.has("weight", 0.4).hasLabel("created"),
+                                                         __.has("weight", 1.0).hasLabel("created")))).E(eid9).bothV()
+      """
+    When iterated to list
+    Then the result should be empty
