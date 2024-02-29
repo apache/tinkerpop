@@ -240,7 +240,7 @@ class GraphBinarySerializersV1(object):
     def finalize_message(self, message, mime_len, mime_type):
         ba = bytearray()
 
-        request_id = uuid.UUID(message['requestId'])
+        request_id = uuid.UUID(str(message['requestId']))
         ba.extend(self.header_pack(mime_len, mime_type, 0x81,
                                    (request_id.int >> 64) & self.max_int64, request_id.int & self.max_int64))
 

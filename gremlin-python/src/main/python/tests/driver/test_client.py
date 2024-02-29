@@ -453,7 +453,11 @@ def test_client_custom_invalid_request_id_graphbinary_script(client):
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
-def test_client_custom_valid_request_id_script(client):
+def test_client_custom_valid_request_id_script_uuid(client):
+    assert len(client.submit('g.V()', request_options={"requestId":uuid.uuid4()}).all().result()) == 6
+
+
+def test_client_custom_valid_request_id_script_string(client):
     assert len(client.submit('g.V()', request_options={"requestId":str(uuid.uuid4())}).all().result()) == 6
 
 
