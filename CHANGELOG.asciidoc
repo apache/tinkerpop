@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
 * Fixed message requestId serialization in `gremlin-python`.
+* Improved performance of `PathRetractionStrategy` for traversals that carry many children, but don't hold many labels to propogate.
 * Fixed bug in bytecode translation of `g.tx().commit()` and `g.tx().rollback()` in all languages.
 * Improved error message from `JavaTranslator` by including exception source.
 * Added missing `short` serialization (`gx:Int16`) to GraphSONV2 and GraphSONV3 in `gremlin-python`.
