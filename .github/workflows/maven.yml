@@ -26,6 +26,7 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+          cache: maven
       - name: Build with Maven
         run: mvn clean install -DskipTests -pl independent-projects/qute/core -am
 
