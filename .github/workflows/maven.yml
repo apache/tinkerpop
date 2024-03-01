@@ -28,7 +28,7 @@ jobs:
           distribution: 'adopt'
           cache: maven
       - name: Build with Maven
-        run: mvn clean install -DskipTests -pl independent-projects/qute/core -am
+        run: mvn clean install -DskipTests -pl gremlin-core -am
 
       - name: Run specific test
         run: mvn -pl gremlin-core test -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.util.ParametersTest#shouldAllowNullValues'
