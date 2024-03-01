@@ -1,0 +1,36 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'oracle'
+      - name: Build with Maven
+        run: mvn clean install -DskipTests -pl independent-projects/qute/core -am
+
+      - name: Run specific test
+        run: mvn -pl gremlin-core test -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.util.ParametersTest#shouldAllowNullValues'
+
+      - name: Run specific test using NON-DEX
+        run: mvn -pl gremlin-core edu.illinois:nondex-maven-plugin:2.1.1:nondex -DnondexRunsWithoutShuffling=10 -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.util.ParametersTest#shouldAllowNullValues'
