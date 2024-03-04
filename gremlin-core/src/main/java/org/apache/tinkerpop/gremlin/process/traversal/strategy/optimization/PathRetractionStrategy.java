@@ -245,6 +245,10 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
     }
 
     private void applyToChildren(final Set<String> keepLabels, final List<Traversal.Admin<Object, Object>> children) {
+        // if there are no labels to keep, then there no need to iterate all the children because we won't be
+        // adding anything PathProcessor keepLabels - avoids the added recursion
+        if (keepLabels.isEmpty()) return;
+
         for (final Traversal.Admin<Object, Object> child : children) {
             TraversalHelper.applyTraversalRecursively(trav -> addLabels(trav, keepLabels), child);
         }
