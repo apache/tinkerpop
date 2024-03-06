@@ -52,7 +52,7 @@ describe('Client', function () {
         it('should include user agent in handshake request', async function () {
             let result = await client.submit('1', null, {requestId: settings.USER_AGENT_REQUEST_ID});
 
-            assert.strictEqual(result.first(), getUserAgent());
+            assert.strictEqual(result.first(), await getUserAgent());
         });
         it('should not include user agent in handshake request if disabled', async function () {
             let noUserAgentClient = helper.getGremlinSocketServerClientNoUserAgent('gmodern');

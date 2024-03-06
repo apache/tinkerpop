@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 module.exports = class ShortSerializer {
   constructor(ioc) {
     this.ioc = ioc;

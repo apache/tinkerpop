@@ -18,6 +18,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const SaslMechanismBase = require('./sasl-mechanism-base');
 
 class SaslMechanismPlain extends SaslMechanismBase {

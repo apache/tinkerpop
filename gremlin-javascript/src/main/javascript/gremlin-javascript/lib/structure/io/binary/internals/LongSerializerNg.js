@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 // TODO: it's based on BigInt native JavaScript type to completely support
 // 64 bits integers, but for backward compatibility with current GraphSON
 // implementation we do not use this for now. Consider its removal.

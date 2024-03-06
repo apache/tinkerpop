@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const Bytecode = require('../../../../process/bytecode');
 const t = require('../../../../process/traversal');
 

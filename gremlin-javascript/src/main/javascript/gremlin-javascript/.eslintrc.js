@@ -22,18 +22,17 @@
 module.exports = {
   env: {
     commonjs: true,
-    es6: true,
+    es2022: true,
     node: true,
   },
   parserOptions: {
-    ecmaVersion: 2021,
+    ecmaVersion: 2022,
   },
   ignorePatterns: ['test/**/*.js', 'doc/**/*.js'],
   extends: ['eslint:recommended', 'prettier'],
   plugins: ['prettier'],
   rules: {
     'prettier/prettier': ['error', { endOfLine: 'auto' }],
-    indent: ['error', 2, { SwitchCase: 1 }],
     'linebreak-style': 0,
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
@@ -128,7 +127,7 @@ module.exports = {
     'require-atomic-updates': 'off',
   },
   globals: {
-    Buffer: false,
+    Buffer: 'off',
     Promise: true,
     Symbol: false,
     Uint16Array: false,

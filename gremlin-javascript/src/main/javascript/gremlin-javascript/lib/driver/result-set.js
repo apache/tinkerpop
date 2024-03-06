@@ -22,8 +22,6 @@
  */
 'use strict';
 
-const util = require('util');
-const inspect = util.inspect.custom || 'inspect';
 const utils = require('../utils');
 const emptyMap = Object.freeze(new utils.ImmutableMap());
 
@@ -62,13 +60,6 @@ class ResultSet {
    */
   [Symbol.iterator]() {
     return this._items[Symbol.iterator]();
-  }
-
-  /**
-   * Provides a representation useful for debug and tracing.
-   */
-  [inspect]() {
-    return this._items;
   }
 
   /**
