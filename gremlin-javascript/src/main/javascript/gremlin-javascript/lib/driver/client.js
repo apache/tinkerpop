@@ -43,9 +43,6 @@ class Client {
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {String} [options.processor] The name of the opProcessor to use, leave it undefined or set 'session' when session mode.
    * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
-   * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
-   * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
-   * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */

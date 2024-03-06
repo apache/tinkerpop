@@ -512,12 +512,16 @@ limitations under the License.
                         <exclude>**/NuGet.Config</exclude>
                         <exclude>**/*.nuspec</exclude>
                         <exclude>**/BenchmarkDotNet.Artifacts/**</exclude>
+                        <exclude>**/.nvmrc</exclude>
+                        <exclude>**/.yarnrc.yml</exclude>
+                        <exclude>**/yarn.lock</exclude>
                         <exclude>**/node/**</exclude>
                         <exclude>**/node_modules/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
                         <!-- javascript docs/lib -->
                         <exclude>**/doc/**</exclude>
                         <exclude>**/lib/**</exclude>
+                        <exclude>**/.env</exclude>
                         <exclude>**/.prettierrc</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>

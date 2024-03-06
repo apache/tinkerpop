@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 const { TraversalStrategySerializer: GraphsonTraversalStrategySerializer } = require('../../type-serializers');
 
 module.exports = class TraversalStrategySerializer {

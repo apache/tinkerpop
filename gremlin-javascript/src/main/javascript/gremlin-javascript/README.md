@@ -26,7 +26,7 @@
 data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's
 property graph.
 
-Gremlin-Javascript implements Gremlin within the JavaScript language and can be used on Node.js.
+Gremlin-Javascript implements Gremlin within the JavaScript language and can be used on Node.js and has experimental support for Web APIs compatible runtimes.
 
 ```bash
 npm install gremlin

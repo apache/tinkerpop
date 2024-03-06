@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 module.exports = class IntSerializer {
   get INT32_MIN() {
     return -2147483648;

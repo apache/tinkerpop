@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const { valueKey, LambdaSerializer: GraphsonLambdaSerializer } = require('../../type-serializers');
 
 module.exports = class LambdaSerializer {

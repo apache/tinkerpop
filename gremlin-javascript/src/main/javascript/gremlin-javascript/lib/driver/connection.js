@@ -22,11 +22,11 @@
  */
 'use strict';
 
-const EventEmitter = require('events');
-const Stream = require('stream');
-const WebSocket = require('ws');
-const util = require('util');
+const { Buffer } = require('buffer');
+const EventEmitter = require('eventemitter3');
+const Stream = require('readable-stream');
 const utils = require('../utils');
+const { DeferredPromise } = utils;
 const serializer = require('../structure/io/graph-serializer');
 const { graphBinaryReader, graphBinaryWriter } = require('../structure/io/binary/GraphBinary');
 const ResultSet = require('./result-set');
@@ -42,9 +42,6 @@ const responseStatusCode = {
 const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
 const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
-
-const pingIntervalDelay = 60 * 1000;
-const pongTimeoutDelay = 30 * 1000;
 
 const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
@@ -67,9 +64,6 @@ class Connection extends EventEmitter {
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
-   * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
-   * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
-   * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */
@@ -87,14 +81,12 @@ class Connection extends EventEmitter {
 
     // A map containing the request id and the handler. The id should be in lower case to prevent string comparison issues.
     this._responseHandlers = {};
-    this._reader = options.reader || this._getDefaultReader(this.mimeType);
-    this._writer = options.writer || this._getDefaultWriter(this.mimeType);
+    this._reader = options.reader || this.#getDefaultReader(this.mimeType);
+    this._writer = options.writer || this.#getDefaultWriter(this.mimeType);
     this._openPromise = null;
     this._openCallback = null;
     this._closePromise = null;
     this._closeCallback = null;
-    this._pingInterval = null;
-    this._pongTimeout = null;
 
     this._header = String.fromCharCode(this.mimeType.length) + this.mimeType; // TODO: what if mimeType.length > 255
     this._header_buf = Buffer.from(this._header);
@@ -102,23 +94,21 @@ class Connection extends EventEmitter {
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
-
-    this._pingEnabled = this.options.pingEnabled === false ? false : true;
-    this._pingIntervalDelay = this.options.pingInterval || pingIntervalDelay;
-    this._pongTimeoutDelay = this.options.pongTimeout || pongTimeoutDelay;
   }
 
   /**
    * Opens the connection, if its not already opened.
    * @returns {Promise}
    */
-  open() {
+  async open() {
     if (this.isOpen) {
-      return Promise.resolve();
+      return;
     }
     if (this._openPromise) {
       return this._openPromise;
     }
+
+    this._openPromise = DeferredPromise();
 
     this.emit('log', 'ws open');
     let headers = this.options.headers;
@@ -126,46 +116,39 @@ class Connection extends EventEmitter {
       if (!headers) {
         headers = [];
       }
-      headers[utils.getUserAgentHeader()] = utils.getUserAgent();
+
+      const userAgent = await utils.getUserAgent();
+      if (userAgent !== undefined) {
+        headers[utils.getUserAgentHeader()] = await utils.getUserAgent();
+      }
     }
 
-    this._ws = new WebSocket(this.url, {
-      headers: headers,
-      ca: this.options.ca,
-      cert: this.options.cert,
-      pfx: this.options.pfx,
-      rejectUnauthorized: this.options.rejectUnauthorized,
-      agent: this.options.agent,
-    });
+    const WebSocket = globalThis.WebSocket ?? (await import('ws')).default;
 
-    this._ws.on('message', (data) => this._handleMessage(data));
-    this._ws.on('close', (code, message) => this._handleClose(code, message));
+    this._ws = new WebSocket(
+      this.url,
+      globalThis.WebSocket === undefined
+        ? {
+            headers: headers,
+            ca: this.options.ca,
+            cert: this.options.cert,
+            pfx: this.options.pfx,
+            rejectUnauthorized: this.options.rejectUnauthorized,
+            agent: this.options.agent,
+          }
+        : undefined,
+    );
 
-    this._ws.on('pong', () => {
-      this.emit('log', 'ws pong received');
-      if (this._pongTimeout) {
-        clearTimeout(this._pongTimeout);
-        this._pongTimeout = null;
-      }
-    });
-    this._ws.on('ping', () => {
-      this.emit('log', 'ws ping received');
-      this._ws.pong();
-    });
+    if ('binaryType' in this._ws) {
+      this._ws.binaryType = 'arraybuffer';
+    }
 
-    return (this._openPromise = new Promise((resolve, reject) => {
-      this._ws.on('open', () => {
-        this.isOpen = true;
-        if (this._pingEnabled) {
-          this._pingHeartbeat();
-        }
-        resolve();
-      });
-      this._ws.on('error', (err) => {
-        this._handleError(err);
-        reject(err);
-      });
-    }));
+    this._ws.addEventListener('open', this.#handleOpen);
+    this._ws.addEventListener('error', this.#handleError);
+    this._ws.addEventListener('message', this.#handleMessage);
+    this._ws.addEventListener('close', this.#handleClose);
+
+    return await this._openPromise;
   }
 
   /** @override */
@@ -195,7 +178,7 @@ class Connection extends EventEmitter {
           };
 
           const request_buf = this._writer.writeRequest(request);
-          const message = Buffer.concat([this._header_buf, request_buf]);
+          const message = utils.toArrayBuffer(Buffer.concat([this._header_buf, request_buf]));
           this._ws.send(message);
         }),
     );
@@ -230,7 +213,7 @@ class Connection extends EventEmitter {
         };
 
         const request_buf = this._writer.writeRequest(request);
-        const message = Buffer.concat([this._header_buf, request_buf]);
+        const message = utils.toArrayBuffer(Buffer.concat([this._header_buf, request_buf]));
         this._ws.send(message);
       })
       .catch((err) => readableStream.destroy(err));
@@ -238,7 +221,7 @@ class Connection extends EventEmitter {
     return readableStream;
   }
 
-  _getDefaultReader(mimeType) {
+  #getDefaultReader(mimeType) {
     if (mimeType === graphBinaryMimeType) {
       return graphBinaryReader;
     }
@@ -246,7 +229,7 @@ class Connection extends EventEmitter {
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
   }
 
-  _getDefaultWriter(mimeType) {
+  #getDefaultWriter(mimeType) {
     if (mimeType === graphBinaryMimeType) {
       return graphBinaryWriter;
     }
@@ -254,68 +237,58 @@ class Connection extends EventEmitter {
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
   }
 
-  _pingHeartbeat() {
-    if (this._pingInterval) {
-      clearInterval(this._pingInterval);
-      this._pingInterval = null;
-    }
+  #handleOpen = () => {
+    this._openPromise.resolve();
+    this.isOpen = true;
+  };
 
-    this._pingInterval = setInterval(() => {
-      if (this.isOpen === false) {
-        // in case of if not open..
-        if (this._pingInterval) {
-          clearInterval(this._pingInterval);
-          this._pingInterval = null;
-        }
-      }
+  /**
+   * @param {Event} event
+   */
+  #handleError = ({ error }) => {
+    this._openPromise.reject(error);
+    this.emit('log', `ws error ${error}`);
+    this.#cleanupWebsocket(error);
+    this.emit('socketError', error);
+  };
 
-      this._pongTimeout = setTimeout(() => {
-        this._ws.terminate();
-      }, this._pongTimeoutDelay);
-
-      this._ws.ping();
-    }, this._pingIntervalDelay);
-  }
-
-  _handleError(err) {
-    this.emit('log', `ws error ${err}`);
-    this._cleanupWebsocket(err);
-    this.emit('socketError', err);
-  }
-
-  _handleClose(code, message) {
+  /**
+   * @param {CloseEvent} event
+   */
+  #handleClose = ({ code, message }) => {
     this.emit('log', `ws close code=${code} message=${message}`);
-    this._cleanupWebsocket();
+    this.#cleanupWebsocket();
     if (this._closeCallback) {
       this._closeCallback();
     }
     this.emit('close', code, message);
-  }
+  };
 
-  _handleMessage(data) {
+  /**
+   * @param {MessageEvent<any>} event
+   */
+  #handleMessage = ({ data: _data }) => {
+    const data = _data instanceof ArrayBuffer ? Buffer.from(_data) : _data;
+
     const response = this._reader.readResponse(data);
     if (response.requestId === null || response.requestId === undefined) {
       // There was a serialization issue on the server that prevented the parsing of the request id
       // We invoke any of the pending handlers with an error
       Object.keys(this._responseHandlers).forEach((requestId) => {
         const handler = this._responseHandlers[requestId];
-        this._clearHandler(requestId);
+        this.#clearHandler(requestId);
         if (response.status !== undefined && response.status.message) {
           return handler.callback(
             // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
             new ResponseError(
-              util.format(
-                'Server error (no request information): %s (%d)',
-                response.status.message,
-                response.status.code,
-              ),
+              `Server error (no request information): ${response.status.message} (${response.status.code})`,
               response.status,
             ),
           );
         }
         // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
         return handler.callback(
-          new ResponseError(util.format('Server error (no request information): %j', response), response.status),
+          new ResponseError(`Server error (no request information): ${JSON.stringify(response)}`, response.status),
         );
       });
       return;
@@ -342,10 +315,7 @@ class Connection extends EventEmitter {
       // callback in error
       return handler.callback(
         // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
-        new ResponseError(
-          util.format('Server error: %s (%d)', response.status.message, response.status.code),
-          response.status,
-        ),
+        new ResponseError(`Server error: ${response.status.message} (${response.status.code})`, response.status),
       );
     }
 
@@ -353,7 +323,7 @@ class Connection extends EventEmitter {
 
     switch (response.status.code) {
       case responseStatusCode.noContent:
-        this._clearHandler(response.requestId);
+        this.#clearHandler(response.requestId);
         if (isStreamingResponse) {
           handler.result.push(new ResultSet(utils.emptyArray, response.status.attributes));
           return handler.callback(null);
@@ -377,24 +347,15 @@ class Connection extends EventEmitter {
         } else {
           handler.result = response.result.data;
         }
-        this._clearHandler(response.requestId);
+        this.#clearHandler(response.requestId);
         return handler.callback(null, new ResultSet(handler.result, response.status.attributes));
     }
-  }
+  };
 
   /**
    * clean websocket context
    */
-  _cleanupWebsocket(err) {
-    if (this._pingInterval) {
-      clearInterval(this._pingInterval);
-    }
-    this._pingInterval = null;
-    if (this._pongTimeout) {
-      clearTimeout(this._pongTimeout);
-    }
-    this._pongTimeout = null;
-
+  #cleanupWebsocket(err) {
     // Invoke waiting callbacks to complete Promises when closing the websocket
     Object.keys(this._responseHandlers).forEach((requestId) => {
       const handler = this._responseHandlers[requestId];
@@ -406,7 +367,10 @@ class Connection extends EventEmitter {
         handler.callback(cause);
       }
     });
-    this._ws.removeAllListeners();
+    this._ws.removeEventListener('open', this.#handleOpen);
+    this._ws.removeEventListener('error', this.#handleError);
+    this._ws.removeEventListener('message', this.#handleMessage);
+    this._ws.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
     this._closePromise = null;
     this.isOpen = false;
@@ -417,7 +381,7 @@ class Connection extends EventEmitter {
    * @param requestId
    * @private
    */
-  _clearHandler(requestId) {
+  #clearHandler(requestId) {
     delete this._responseHandlers[requestId];
   }
 

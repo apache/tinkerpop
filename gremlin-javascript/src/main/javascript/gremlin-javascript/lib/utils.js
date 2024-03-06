@@ -23,8 +23,7 @@
  */
 'use strict';
 
-const crypto = require('crypto');
-const os = require('os');
+const uuid = require('uuid');
 
 const gremlinVersion = '4.0.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
@@ -40,27 +39,8 @@ const Long = (exports.Long = function Long(value) {
 });
 
 exports.getUuid = function getUuid() {
-  const buffer = crypto.randomBytes(16);
-  //clear the version
-  buffer[6] &= 0x0f;
-  //set the version 4
-  buffer[6] |= 0x40;
-  //clear the variant
-  buffer[8] &= 0x3f;
-  //set the IETF variant
-  buffer[8] |= 0x80;
-  const hex = buffer.toString('hex');
-  return (
-    hex.substr(0, 8) +
-    '-' +
-    hex.substr(8, 4) +
-    '-' +
-    hex.substr(12, 4) +
-    '-' +
-    hex.substr(16, 4) +
-    '-' +
-    hex.substr(20, 12)
-  );
+  // TODO: replace with `globalThis.crypto.randomUUID` once supported Node version is bump to >=19
+  return uuid.v4();
 };
 
 exports.emptyArray = Object.freeze([]);
@@ -83,8 +63,10 @@ class ImmutableMap extends Map {
 
 exports.ImmutableMap = ImmutableMap;
 
-function generateUserAgent() {
-  const applicationName = (process.env.npm_package_name || 'NotAvailable').replace('_', ' ');
+async function generateNodeUserAgent() {
+  const os = await import('node:os');
+
+  const applicationName = (process?.env.npm_package_name ?? 'NotAvailable').replace('_', ' ');
   let runtimeVersion;
   let osName;
   let osVersion;
@@ -98,6 +80,7 @@ function generateUserAgent() {
       cpuArch = process.arch.replace(' ', '_');
     }
   }
+
   if (os != null) {
     osName = os.platform().replace(' ', '_');
     osVersion = os.release().replace(' ', '_');
@@ -112,8 +95,36 @@ exports.getUserAgentHeader = function getUserAgentHeader() {
   return 'User-Agent';
 };
 
-const userAgent = generateUserAgent();
+exports.getUserAgent = async () => {
+  if ('navigator' in globalThis) {
+    return globalThis.navigator.userAgent;
+  }
 
-exports.getUserAgent = function getUserAgent() {
-  return userAgent;
+  if (process?.versions?.node !== undefined) {
+    return await generateNodeUserAgent();
+  }
+
+  return undefined;
 };
+
+/**
+ * @param {Buffer} buffer
+ * @returns {ArrayBuffer}
+ */
+const toArrayBuffer = (buffer) => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+exports.toArrayBuffer = toArrayBuffer;
+
+const DeferredPromise = () => {
+  let resolve = (value) => {};
+  let reject = (reason) => {};
+
+  const promise = new Promise((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
+
+  return Object.assign(promise, { resolve, reject });
+};
+
+module.exports.DeferredPromise = DeferredPromise;

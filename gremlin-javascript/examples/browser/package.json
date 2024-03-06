@@ -1,0 +1,22 @@
+{
+  "name": "browser",
+  "version": "0.0.0",
+  "description": "GLV example for JavaScript in the browser",
+  "author": "Apache TinkerPop team",
+  "license": "Apache-2.0",
+  "type": "module",
+  "packageManager": "yarn@4.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "colorjs.io": "^0.5.0",
+    "cytoscape": "^3.28.1",
+    "gremlin": "file:../../src/main/javascript/gremlin-javascript"
+  },
+  "devDependencies": {
+    "vite": "^5.1.4"
+  }
+}
