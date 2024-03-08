@@ -25,20 +25,29 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -48,9 +57,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +76,7 @@ import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT;
 
 /**
  * Provides methods shared by the HTTP handlers.
@@ -159,7 +173,7 @@ public class HttpHandlerUtil {
                     .forEach(kv -> aliases.put(kv.getKey().substring(ARGS_ALIASES_DOT.length()), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
-            final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
+            final String language = (null == languageParms || languageParms.size() == 0) ? "gremlin-groovy" : languageParms.get(0);
 
             return msgBuilder.addArg(Tokens.ARGS_GREMLIN, script).addArg(Tokens.ARGS_LANGUAGE, language)
                     .addArg(Tokens.ARGS_BINDINGS, bindings).addArg(Tokens.ARGS_ALIASES, aliases).create();
@@ -191,7 +205,7 @@ public class HttpHandlerUtil {
                 aliasesNode.fields().forEachRemaining(kv -> aliases.put(kv.getKey(), kv.getValue().asText()));
 
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final String language = null == languageNode ? null : languageNode.asText();
+            final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
 
             final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
             final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
@@ -284,6 +298,16 @@ public class HttpHandlerUtil {
         if (!keepAlive) {
             // Close the connection as soon as the response is sent.
             flushPromise.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    static void writeErrorFrame(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+        try {
+            ctx.writeAndFlush(new DefaultHttpContent(
+                    (ByteBuf) new Frame(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc())).getMsg()));
+            ctx.writeAndFlush(EMPTY_LAST_CONTENT);
+        } catch (SerializationException se) {
+            logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
         }
     }
 }
