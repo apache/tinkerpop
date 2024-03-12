@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { booleanSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { booleanSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 const { from, concat } = Buffer;
 
@@ -73,7 +72,7 @@ describe('GraphBinary.BooleanSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -89,7 +88,7 @@ describe('GraphBinary.BooleanSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -134,7 +133,7 @@ describe('GraphBinary.BooleanSerializer', () => {
       { v: -1,                e: false },
       { v: true,              e: true  },
       { v: false,             e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( booleanSerializer.canBeUsedFor(v), e )
     ))
   );

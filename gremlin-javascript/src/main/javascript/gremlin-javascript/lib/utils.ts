@@ -21,32 +21,32 @@
  * A module containing any utility functions.
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const uuid = require('uuid');
+import * as uuid from 'uuid';
 
 const gremlinVersion = '4.0.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
-exports.toLong = function toLong(value) {
+export function toLong(value: number | string) {
   return new Long(value);
-};
+}
 
-const Long = (exports.Long = function Long(value) {
-  if (typeof value !== 'string' && typeof value !== 'number') {
-    throw new TypeError('The value must be a string or a number');
+export class Long {
+  constructor(public value: number | string) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      throw new TypeError('The value must be a string or a number');
+    }
   }
-  this.value = value.toString();
-});
+}
 
-exports.getUuid = function getUuid() {
+export function getUuid() {
   // TODO: replace with `globalThis.crypto.randomUUID` once supported Node version is bump to >=19
   return uuid.v4();
-};
+}
 
-exports.emptyArray = Object.freeze([]);
+export const emptyArray = Object.freeze([]) as any as any[];
 
-class ImmutableMap extends Map {
-  constructor(iterable) {
+export class ImmutableMap<K, V> extends Map<K, V> implements ReadonlyMap<K, V> {
+  constructor(iterable?: Iterable<[K, V]>) {
     super(iterable);
   }
 
@@ -60,8 +60,6 @@ class ImmutableMap extends Map {
 
   clear() {}
 }
-
-exports.ImmutableMap = ImmutableMap;
 
 async function generateNodeUserAgent() {
   const os = await import('node:os');
@@ -91,11 +89,11 @@ async function generateNodeUserAgent() {
   return userAgent;
 }
 
-exports.getUserAgentHeader = function getUserAgentHeader() {
+export function getUserAgentHeader() {
   return 'User-Agent';
-};
+}
 
-exports.getUserAgent = async () => {
+export const getUserAgent = async () => {
   if ('navigator' in globalThis) {
     return globalThis.navigator.userAgent;
   }
@@ -107,24 +105,17 @@ exports.getUserAgent = async () => {
   return undefined;
 };
 
-/**
- * @param {Buffer} buffer
- * @returns {ArrayBuffer}
- */
-const toArrayBuffer = (buffer) => buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+export const toArrayBuffer = (buffer: Buffer) =>
+  buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 
-exports.toArrayBuffer = toArrayBuffer;
+export const DeferredPromise = <T>() => {
+  let resolve = (value: T) => {};
+  let reject = (reason: unknown) => {};
 
-const DeferredPromise = () => {
-  let resolve = (value) => {};
-  let reject = (reason) => {};
-
-  const promise = new Promise((_resolve, _reject) => {
+  const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
   });
 
   return Object.assign(promise, { resolve, reject });
 };
-
-module.exports.DeferredPromise = DeferredPromise;

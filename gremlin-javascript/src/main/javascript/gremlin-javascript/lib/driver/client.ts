@@ -16,16 +16,28 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-'use strict';
 
-const utils = require('../utils');
-const Connection = require('./connection');
-const Bytecode = require('../process/bytecode');
+import * as utils from '../utils.js';
+import Connection, { ConnectionOptions } from './connection.js';
+import Bytecode from '../process/bytecode.js';
+import { Readable } from 'stream';
+
+export type RequestOptions = {
+  requestId?: string;
+  session?: string;
+  bindings?: any;
+  language?: string;
+  accept?: string;
+};
+
+type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
 
 /**
  * A {@link Client} contains methods to send messages to a Gremlin Server.
  */
-class Client {
+export default class Client {
+  private readonly _connection: Connection;
+
   /**
    * Creates a new instance of {@link Client}.
    * @param {String} url The resource uri.
@@ -46,15 +58,17 @@ class Client {
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */
-  constructor(url, options = {}) {
-    this._options = options;
-    if (this._options.processor === 'session') {
+  constructor(
+    url: string,
+    private readonly options: ClientOptions = {},
+  ) {
+    if (this.options.processor === 'session') {
       // compatibility with old 'session' processor setting
-      this._options.session = options.session || utils.getUuid();
+      this.options.session = options.session || utils.getUuid();
     }
-    if (this._options.session) {
+    if (this.options.session) {
       // re-assign processor to 'session' when in session mode
-      this._options.processor = options.processor || 'session';
+      this.options.processor = options.processor || 'session';
     }
     this._connection = new Connection(url, options);
   }
@@ -63,7 +77,7 @@ class Client {
    * Opens the underlying connection to the Gremlin Server, if it's not already opened.
    * @returns {Promise}
    */
-  open() {
+  open(): Promise<void> {
     return this._connection.open();
   }
 
@@ -71,7 +85,7 @@ class Client {
    * Returns true if the underlying connection is open
    * @returns {Boolean}
    */
-  get isOpen() {
+  get isOpen(): boolean {
     return this._connection.isOpen;
   }
 
@@ -88,11 +102,11 @@ class Client {
   /**
    * Send a request to the Gremlin Server, can send a script or bytecode steps.
    * @param {Bytecode|string} message The bytecode or script to send
-   * @param {Object} [bindings] The script bindings, if any.
+   * @param {Object|null} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
    */
-  submit(message, bindings, requestOptions) {
+  submit(message: Bytecode | string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
     const requestIdOverride = requestOptions && requestOptions.requestId;
     if (requestIdOverride) {
       delete requestOptions['requestId'];
@@ -101,17 +115,17 @@ class Client {
     const args = Object.assign(
       {
         gremlin: message,
-        aliases: { g: this._options.traversalSource || 'g' },
+        aliases: { g: this.options.traversalSource || 'g' },
       },
       requestOptions,
     );
 
-    if (this._options.session && this._options.processor === 'session') {
-      args['session'] = this._options.session;
+    if (this.options.session && this.options.processor === 'session') {
+      args['session'] = this.options.session;
     }
 
     if (message instanceof Bytecode) {
-      if (this._options.session && this._options.processor === 'session') {
+      if (this.options.session && this.options.processor === 'session') {
         return this._connection.submit('session', 'bytecode', args, requestIdOverride);
       }
       return this._connection.submit('traversal', 'bytecode', args, requestIdOverride);
@@ -119,7 +133,7 @@ class Client {
       args['bindings'] = bindings;
       args['language'] = 'gremlin-groovy';
       args['accept'] = this._connection.mimeType;
-      return this._connection.submit(this._options.processor || '', 'eval', args, requestIdOverride);
+      return this._connection.submit(this.options.processor || '', 'eval', args, requestIdOverride);
     }
     throw new TypeError('message must be of type Bytecode or string');
   }
@@ -131,7 +145,7 @@ class Client {
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {ReadableStream}
    */
-  stream(message, bindings, requestOptions) {
+  stream(message: Bytecode | string, bindings: any, requestOptions?: RequestOptions): Readable {
     const requestIdOverride = requestOptions && requestOptions.requestId;
     if (requestIdOverride) {
       delete requestOptions['requestId'];
@@ -140,17 +154,17 @@ class Client {
     const args = Object.assign(
       {
         gremlin: message,
-        aliases: { g: this._options.traversalSource || 'g' },
+        aliases: { g: this.options.traversalSource || 'g' },
       },
       requestOptions,
     );
 
-    if (this._options.session && this._options.processor === 'session') {
-      args['session'] = this._options.session;
+    if (this.options.session && this.options.processor === 'session') {
+      args['session'] = this.options.session;
     }
 
     if (message instanceof Bytecode) {
-      if (this._options.session && this._options.processor === 'session') {
+      if (this.options.session && this.options.processor === 'session') {
         return this._connection.stream('session', 'bytecode', args, requestIdOverride);
       }
       return this._connection.stream('traversal', 'bytecode', args, requestIdOverride);
@@ -158,7 +172,7 @@ class Client {
       args['bindings'] = bindings;
       args['language'] = 'gremlin-groovy';
       args['accept'] = this._connection.mimeType;
-      return this._connection.stream(this._options.processor || '', 'eval', args, requestIdOverride);
+      return this._connection.stream(this.options.processor || '', 'eval', args, requestIdOverride);
     }
     throw new TypeError('message must be of type Bytecode or string');
   }
@@ -168,10 +182,10 @@ class Client {
    * send session close request before connection close if session mode
    * @returns {Promise}
    */
-  close() {
-    if (this._options.session && this._options.processor === 'session') {
-      const args = { session: this._options.session };
-      return this._connection.submit(this._options.processor, 'close', args, null).then(() => this._connection.close());
+  close(): Promise<void> {
+    if (this.options.session && this.options.processor === 'session') {
+      const args = { session: this.options.session };
+      return this._connection.submit(this.options.processor, 'close', args, null).then(() => this._connection.close());
     }
     return this._connection.close();
   }
@@ -181,7 +195,7 @@ class Client {
    * @param {String} event The event name that you want to listen to.
    * @param {Function} handler The callback to be called when the event occurs.
    */
-  addListener(event, handler) {
+  addListener(event: string, handler: (...args: any[]) => unknown) {
     this._connection.on(event, handler);
   }
 
@@ -190,9 +204,7 @@ class Client {
    * @param {String} event The event name that you want to listen to.
    * @param {Function} handler The event handler to be removed.
    */
-  removeListener(event, handler) {
+  removeListener(event: string, handler: (...args: any[]) => unknown) {
     this._connection.removeListener(event, handler);
   }
 }
-
-module.exports = Client;

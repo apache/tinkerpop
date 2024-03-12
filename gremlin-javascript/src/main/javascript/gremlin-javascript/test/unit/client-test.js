@@ -17,10 +17,8 @@
  *  under the License.
  */
 
-'use strict';
-
-const assert = require('assert');
-const Client = require('../../lib/driver/client');
+import assert from 'assert';
+import Client from '../../lib/driver/client.js';
 
 describe('Client', function () {
   const customOpProcessor = 'customOpProcessor';

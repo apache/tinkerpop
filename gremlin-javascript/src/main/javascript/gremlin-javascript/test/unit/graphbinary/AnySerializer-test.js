@@ -20,17 +20,16 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { DataType, anySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+import { ser_title, des_title } from './utils.js';
+import assert from 'assert';
+import { DataType, anySerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 
-const { Vertex, VertexProperty, Edge, Path, Property } = require('../../../lib/structure/graph');
-const t = require('../../../lib/process/traversal');
-const ts = require('../../../lib/process/traversal-strategy');
-const Bytecode = require('../../../lib/process/bytecode');
-const { GraphTraversal } = require('../../../lib/process/graph-traversal');
+import { Vertex, VertexProperty, Edge, Path, Property } from '../../../lib/structure/graph.js';
+import { Traverser, P, TextP, EnumValue } from '../../../lib/process/traversal.js';
+import { OptionsStrategy } from '../../../lib/process/traversal-strategy.js';
+import Bytecode from '../../../lib/process/bytecode.js';
+import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
 
 const { from, concat } = Buffer;
@@ -101,7 +100,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TraverserSerializer
-      { v: new t.Traverser("A1", 16),
+      { v: new Traverser("A1", 16),
         b: [
           DataType.TRAVERSER,0x00,
           0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10,
@@ -110,7 +109,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TraversalStrategySerializer
-      { v: new ts.OptionsStrategy({ 'B': 1, 'A': 2 }),
+      { v: new OptionsStrategy({ 'B': 1, 'A': 2 }),
         b: [
           DataType.TRAVERSALSTRATEGY,0x00,
           0x00,0x00,0x00,0x52, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy'),
@@ -125,7 +124,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // PSerializer
-      { v: t.P.eq('marko'),
+      { v: P.eq('marko'),
         b: [
           DataType.P,0x00,
           0x00,0x00,0x00,0x02, ...from('eq'),
@@ -135,7 +134,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // TextPSerializer
-      { v: t.TextP.containing('ValuE'),
+      { v: TextP.containing('ValuE'),
         b: [
           DataType.TEXTP,0x00,
           0x00,0x00,0x00,0x0A, ...from('containing'),
@@ -155,40 +154,40 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // EnumSerializer (actually represents different enum like types)
-      { v: new t.EnumValue('Barrier', 'normSack'),
+      { v: new EnumValue('Barrier', 'normSack'),
         b: [ DataType.BARRIER,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x08, ...from('normSack') ]
       },
-      { v: new t.EnumValue('Cardinality', 'single'),
+      { v: new EnumValue('Cardinality', 'single'),
         b: [ DataType.CARDINALITY,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('single') ]
       },
-      { v: new t.EnumValue('Column', 'keys'),
+      { v: new EnumValue('Column', 'keys'),
         b: [ DataType.COLUMN,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('keys') ]
       },
-      { v: new t.EnumValue('Direction', 'OUT'),
+      { v: new EnumValue('Direction', 'OUT'),
         b: [ DataType.DIRECTION,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('OUT') ]
       },
-      { v: new t.EnumValue('DT', 'minute'),
+      { v: new EnumValue('DT', 'minute'),
         b: [ DataType.DT,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('minute') ]
       },
-      { v: new t.EnumValue('Merge', 'onMatch'),
+      { v: new EnumValue('Merge', 'onMatch'),
         b: [ DataType.MERGE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x07, ...from('onMatch') ]
       },
-      { v: new t.EnumValue('Operator', 'addAll'),
+      { v: new EnumValue('Operator', 'addAll'),
         b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
       },
-      { v: new t.EnumValue('Order', 'desc'),
+      { v: new EnumValue('Order', 'desc'),
         b: [ DataType.ORDER,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('desc') ]
       },
-      { v: new t.EnumValue('Pick', 'any'),
+      { v: new EnumValue('Pick', 'any'),
         b: [ DataType.PICK,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x03, ...from('any') ]
       },
-      { v: new t.EnumValue('Pop', 'first'),
+      { v: new EnumValue('Pop', 'first'),
         b: [ DataType.POP,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x05, ...from('first') ]
       },
-      { v: new t.EnumValue('Scope', 'local'),
+      { v: new EnumValue('Scope', 'local'),
         b: [ DataType.SCOPE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x05, ...from('local') ]
       },
-      { v: new t.EnumValue('T', 'id'),
+      { v: new EnumValue('T', 'id'),
         b: [ DataType.T,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x02, ...from('id') ]
       },
 
@@ -322,7 +321,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,      fq:1, b:[0xFE,0x01] },
       { v:undefined, fq:1, b:[0xFE,0x01] },
 
-    ].forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    ].forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -476,7 +475,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // BARRIER
       { v:null,                                   b:[0x13,0x01] },
-      { v:new t.EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
+      { v:new EnumValue('Barrier','normSack'),  b:[0x13,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('normSack')] },
 
       // BINDING
       // TODO: it's ignored for now
@@ -487,57 +486,57 @@ describe('GraphBinary.AnySerializer', () => {
 
       // CARDINALITY
       { v:null,                                   b:[0x16,0x01] },
-      { v:new t.EnumValue('Cardinality', 'set'),  b:[0x16,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('set')] },
+      { v:new EnumValue('Cardinality', 'set'),  b:[0x16,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('set')] },
 
       // COLUMN
       { v:null,                                   b:[0x17,0x01] },
-      { v:new t.EnumValue('Column','keys'),       b:[0x17,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('keys')] },
+      { v:new EnumValue('Column','keys'),       b:[0x17,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('keys')] },
 
       // DIRECTION
       { v:null,                                   b:[0x18,0x01] },
-      { v:new t.EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
+      { v:new EnumValue('Direction','OUT'),     b:[0x18,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('OUT')] },
 
       // DT
       { v:null,                                   b:[0x2f,0x01] },
-      { v:new t.EnumValue('DT','minute'),         b:[0x2f,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('minute')] },
+      { v:new EnumValue('DT','minute'),         b:[0x2f,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('minute')] },
 
       // MERGE
       { v:null,                                   b:[0x2e,0x01] },
-      { v:new t.EnumValue('Merge','onCreate'),    b:[0x2e,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('onCreate')] },
+      { v:new EnumValue('Merge','onCreate'),    b:[0x2e,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('onCreate')] },
 
       // OPERATOR
       { v:null,                                   b:[0x19,0x01] },
-      { v:new t.EnumValue('Operator','addAll'),   b:[0x19,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('addAll')] },
+      { v:new EnumValue('Operator','addAll'),   b:[0x19,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('addAll')] },
 
       // ORDER
       { v:null,                                   b:[0x1A,0x01] },
-      { v:new t.EnumValue('Order','desc'),        b:[0x1A,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('desc')] },
+      { v:new EnumValue('Order','desc'),        b:[0x1A,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('desc')] },
 
       // PICK
       { v:null,                                   b:[0x1B,0x01] },
-      { v:new t.EnumValue('Pick','any'),          b:[0x1B,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('any')] },
+      { v:new EnumValue('Pick','any'),          b:[0x1B,0x00, 0x03,0x00, 0x00,0x00,0x00,0x03, ...from('any')] },
 
       // POP
       { v:null,                                   b:[0x1C,0x01] },
-      { v:new t.EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
+      { v:new EnumValue('Pop','first'),         b:[0x1C,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('first')] },
 
       // LAMBDA
       // TODO: it's not expected to be deserialized, is it correct assumption?
 
       // P
-      { v:t.P.eq(7),                              b:[0x1E,0x00, 0x00,0x00,0x00,0x02, ...from('eq'), 0x00,0x00,0x00,0x01, 0x01,0x00,0x00,0x00,0x00,0x07] },
+      { v:P.eq(7),                              b:[0x1E,0x00, 0x00,0x00,0x00,0x02, ...from('eq'), 0x00,0x00,0x00,0x01, 0x01,0x00,0x00,0x00,0x00,0x07] },
 
       // SCOPE
       { v:null,                                   b:[0x1F,0x01] },
-      { v:new t.EnumValue('Scope','local'),       b:[0x1F,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('local')] },
+      { v:new EnumValue('Scope','local'),       b:[0x1F,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('local')] },
 
       // T
       { v:null,                                   b:[0x20,0x01] },
-      { v:new t.EnumValue('T','id'),              b:[0x20,0x00, 0x03,0x00, 0x00,0x00,0x00,0x02, ...from('id')] },
+      { v:new EnumValue('T','id'),              b:[0x20,0x00, 0x03,0x00, 0x00,0x00,0x00,0x02, ...from('id')] },
 
       // TRAVERSER
       { v:null,                                   b:[0x21,0x01] },
-      { v:new t.Traverser('A', 2),                b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+      { v:new Traverser('A', 2),                b:[0x21,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
       // BIGINTEGER
       { v:null,                                   b:[0x23,0x01] },
@@ -561,7 +560,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TEXTP
       { v:null,                                   b:[0x28,0x01] },
-      { v:t.TextP.containing('ValuE'),
+      { v:TextP.containing('ValuE'),
         b:[
           0x28,0x00,
           0x00,0x00,0x00,0x0A, ...from('containing'),
@@ -589,7 +588,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // TODO: "register" other types
     ]
-    .forEach(({ v, b, err }, i) => it(utils.des_title({i,b}), () => {
+    .forEach(({ v, b, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 

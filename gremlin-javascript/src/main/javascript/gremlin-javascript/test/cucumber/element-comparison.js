@@ -25,15 +25,15 @@
  * See licenses/chai for full license.
  */
 
-const chai = require('chai');
-const deepEqual = require('deep-eql');
-const { Edge, Vertex, VertexProperty } = require('../../lib/structure/graph');
+import { Assertion } from 'chai';
+import deepEqual from 'deep-eql';
+import { Edge, Vertex, VertexProperty } from '../../lib/structure/graph.js';
 
 function isElement(obj) {
     return obj instanceof Edge || obj instanceof Vertex || obj instanceof VertexProperty;
 }
 
-const opt = {comparator: compareElements};
+export const opt = {comparator: compareElements};
 
 function isSubsetOf(subset, superset, cmp, contains, ordered) {
     if (!contains) {
@@ -72,14 +72,14 @@ function flag(obj, key, value) {
     }
 };
 
-function deepMembersById (subset, msg) {
+export function deepMembersById (subset, msg) {
     if (msg) flag(this, 'message', msg);
     var obj = flag(this, 'object')
         , flagMsg = flag(this, 'message')
         , ssfi = flag(this, 'ssfi');
 
-    new chai.Assertion(obj, flagMsg, ssfi, true).to.be.an('array');
-    new chai.Assertion(subset, flagMsg, ssfi, true).to.be.an('array');
+    new Assertion(obj, flagMsg, ssfi, true).to.be.an('array');
+    new Assertion(subset, flagMsg, ssfi, true).to.be.an('array');
 
     var contains = flag(this, 'contains');
     var ordered = flag(this, 'ordered');
@@ -108,16 +108,10 @@ function deepMembersById (subset, msg) {
     );
 }
 
-function compareElements(a, b) {
+export function compareElements(a, b) {
     if (!isElement(a) || !isElement(b)) {
         return null;
     } else {
         return a.constructor === b.constructor && a.id === b.id;
     }
-}
-
-module.exports = {
-    deepMembersById,
-    compareElements,
-    opt
 }

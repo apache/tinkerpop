@@ -216,7 +216,7 @@ limitations under the License.
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <configuration>
-                    <file>src/main/javascript/gremlin-javascript/lib/utils.js</file>
+                    <file>src/main/javascript/gremlin-javascript/lib/utils.ts</file>
                     <replacements>
                         <replacement>
                             <token>gremlinVersion = '.*'</token>

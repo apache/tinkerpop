@@ -20,17 +20,27 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const EventEmitter = require('eventemitter3');
-const Stream = require('readable-stream');
-const utils = require('../utils');
+import { Buffer } from 'buffer';
+import { EventEmitter } from 'eventemitter3';
+import type { Agent } from 'node:http';
+import Stream from 'readable-stream';
+import type {
+  CloseEvent as NodeWebSocketCloseEvent,
+  ErrorEvent as NodeWebSocketErrorEvent,
+  MessageEvent as NodeWebSocketMessageEvent,
+  WebSocket as NodeWebSocket,
+  Event as NodeWebSocketEvent,
+} from 'ws';
+import ioc from '../structure/io/binary/GraphBinary.js';
+import * as serializer from '../structure/io/graph-serializer.js';
+import * as utils from '../utils.js';
+import Authenticator from './auth/authenticator.js';
+import ResponseError from './response-error.js';
+import ResultSet from './result-set.js';
+
 const { DeferredPromise } = utils;
-const serializer = require('../structure/io/graph-serializer');
-const { graphBinaryReader, graphBinaryWriter } = require('../structure/io/binary/GraphBinary');
-const ResultSet = require('./result-set');
-const ResponseError = require('./response-error');
+const { graphBinaryReader, graphBinaryWriter } = ioc;
 
 const responseStatusCode = {
   success: 200,
@@ -43,12 +53,50 @@ const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
 const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
 const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
 
+type MimeType = typeof defaultMimeType | typeof graphSON2MimeType | typeof graphBinaryMimeType;
+
 const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
+export type ConnectionOptions = {
+  ca?: string[];
+  cert?: string | string[] | Buffer;
+  mimeType?: MimeType;
+  pfx?: string | Buffer;
+  reader?: any;
+  rejectUnauthorized?: boolean;
+  traversalSource?: string;
+  writer?: any;
+  authenticator?: Authenticator;
+  headers?: Record<string, string | string[]>;
+  enableUserAgentOnConnect?: boolean;
+  agent?: Agent;
+};
 
 /**
  * Represents a single connection to a Gremlin Server.
  */
-class Connection extends EventEmitter {
+export default class Connection extends EventEmitter {
+  private _ws: WebSocket | NodeWebSocket | undefined;
+
+  readonly mimeType: MimeType;
+
+  private readonly _responseHandlers: Record<string, { callback: (...args: any[]) => unknown; result: any }> = {};
+  private readonly _reader: any;
+  private readonly _writer: any;
+  private _openPromise: ReturnType<typeof DeferredPromise<void>> | null;
+  private _openCallback: (() => unknown) | null;
+  private _closePromise: Promise<void> | null;
+  private _closeCallback: (() => unknown) | null;
+
+  private readonly _header: string;
+  private readonly _header_buf: Buffer;
+
+  isOpen = false;
+  traversalSource: string;
+
+  private readonly _authenticator: any;
+  private readonly _enableUserAgentOnConnect: boolean;
+
   /**
    * Creates a new instance of {@link Connection}.
    * @param {String} url The resource uri.
@@ -67,11 +115,11 @@ class Connection extends EventEmitter {
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */
-  constructor(url, options) {
+  constructor(
+    readonly url: string,
+    readonly options: ConnectionOptions = {},
+  ) {
     super();
-
-    this.url = url;
-    this.options = options = options || {};
 
     /**
      * Gets the MIME type.
@@ -90,7 +138,6 @@ class Connection extends EventEmitter {
 
     this._header = String.fromCharCode(this.mimeType.length) + this.mimeType; // TODO: what if mimeType.length > 255
     this._header_buf = Buffer.from(this._header);
-    this.isOpen = false;
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
@@ -114,21 +161,22 @@ class Connection extends EventEmitter {
     let headers = this.options.headers;
     if (this._enableUserAgentOnConnect) {
       if (!headers) {
-        headers = [];
+        headers = {};
       }
 
       const userAgent = await utils.getUserAgent();
       if (userAgent !== undefined) {
-        headers[utils.getUserAgentHeader()] = await utils.getUserAgent();
+        headers[utils.getUserAgentHeader()] = userAgent;
       }
     }
 
-    const WebSocket = globalThis.WebSocket ?? (await import('ws')).default;
+    const WebSocket = (globalThis.WebSocket as typeof globalThis.WebSocket | undefined) ?? (await import('ws')).default;
 
     this._ws = new WebSocket(
       this.url,
       globalThis.WebSocket === undefined
         ? {
+            // @ts-expect-error
             headers: headers,
             ca: this.options.ca,
             cert: this.options.cert,
@@ -139,20 +187,24 @@ class Connection extends EventEmitter {
         : undefined,
     );
 
-    if ('binaryType' in this._ws) {
+    if ('binaryType' in this._ws!) {
       this._ws.binaryType = 'arraybuffer';
     }
 
-    this._ws.addEventListener('open', this.#handleOpen);
-    this._ws.addEventListener('error', this.#handleError);
-    this._ws.addEventListener('message', this.#handleMessage);
-    this._ws.addEventListener('close', this.#handleClose);
+    // @ts-expect-error
+    this._ws!.addEventListener('open', this.#handleOpen);
+    // @ts-expect-error
+    this._ws!.addEventListener('error', this.#handleError);
+    // @ts-expect-error
+    this._ws!.addEventListener('message', this.#handleMessage);
+    // @ts-expect-error
+    this._ws!.addEventListener('close', this.#handleClose);
 
     return await this._openPromise;
   }
 
   /** @override */
-  submit(processor, op, args, requestId) {
+  submit(processor: string | undefined, op: string, args: any, requestId?: string | null) {
     // TINKERPOP-2847: Use lower case to prevent string comparison issues.
     const rid = (requestId || utils.getUuid()).toLowerCase();
     if (!rid.match(uuidPattern)) {
@@ -164,7 +216,7 @@ class Connection extends EventEmitter {
         new Promise((resolve, reject) => {
           if (op !== 'authentication') {
             this._responseHandlers[rid] = {
-              callback: (err, result) => (err ? reject(err) : resolve(result)),
+              callback: (err: Error, result: any) => (err ? reject(err) : resolve(result)),
               result: null,
             };
           }
@@ -179,13 +231,13 @@ class Connection extends EventEmitter {
 
           const request_buf = this._writer.writeRequest(request);
           const message = utils.toArrayBuffer(Buffer.concat([this._header_buf, request_buf]));
-          this._ws.send(message);
+          this._ws!.send(message);
         }),
     );
   }
 
   /** @override */
-  stream(processor, op, args, requestId) {
+  stream(processor: string, op: string, args: any, requestId?: string) {
     // TINKERPOP-2847: Use lower case to prevent string comparison issues.
     const rid = (requestId || utils.getUuid()).toLowerCase();
     if (!rid.match(uuidPattern)) {
@@ -198,7 +250,7 @@ class Connection extends EventEmitter {
     });
 
     this._responseHandlers[rid] = {
-      callback: (err) => (err ? readableStream.destroy(err) : readableStream.push(null)),
+      callback: (err: Error) => (err ? readableStream.destroy(err) : readableStream.push(null)),
       result: readableStream,
     };
 
@@ -214,14 +266,14 @@ class Connection extends EventEmitter {
 
         const request_buf = this._writer.writeRequest(request);
         const message = utils.toArrayBuffer(Buffer.concat([this._header_buf, request_buf]));
-        this._ws.send(message);
+        this._ws!.send(message);
       })
       .catch((err) => readableStream.destroy(err));
 
     return readableStream;
   }
 
-  #getDefaultReader(mimeType) {
+  #getDefaultReader(mimeType: MimeType) {
     if (mimeType === graphBinaryMimeType) {
       return graphBinaryReader;
     }
@@ -229,7 +281,7 @@ class Connection extends EventEmitter {
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
   }
 
-  #getDefaultWriter(mimeType) {
+  #getDefaultWriter(mimeType: MimeType) {
     if (mimeType === graphBinaryMimeType) {
       return graphBinaryWriter;
     }
@@ -237,37 +289,29 @@ class Connection extends EventEmitter {
     return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
   }
 
-  #handleOpen = () => {
-    this._openPromise.resolve();
+  #handleOpen = (_: Event | NodeWebSocketEvent) => {
+    this._openPromise?.resolve();
     this.isOpen = true;
   };
 
-  /**
-   * @param {Event} event
-   */
-  #handleError = ({ error }) => {
-    this._openPromise.reject(error);
+  #handleError = (event: Event | NodeWebSocketErrorEvent) => {
+    const error = 'error' in event ? event.error : event;
+    this._openPromise?.reject(error);
     this.emit('log', `ws error ${error}`);
     this.#cleanupWebsocket(error);
     this.emit('socketError', error);
   };
 
-  /**
-   * @param {CloseEvent} event
-   */
-  #handleClose = ({ code, message }) => {
-    this.emit('log', `ws close code=${code} message=${message}`);
+  #handleClose = ({ code, reason }: CloseEvent | NodeWebSocketCloseEvent) => {
+    this.emit('log', `ws close code=${code} message=${reason}`);
     this.#cleanupWebsocket();
     if (this._closeCallback) {
       this._closeCallback();
     }
-    this.emit('close', code, message);
+    this.emit('close', code, reason);
   };
 
-  /**
-   * @param {MessageEvent<any>} event
-   */
-  #handleMessage = ({ data: _data }) => {
+  #handleMessage = ({ data: _data }: MessageEvent | NodeWebSocketMessageEvent) => {
     const data = _data instanceof ArrayBuffer ? Buffer.from(_data) : _data;
 
     const response = this._reader.readResponse(data);
@@ -307,7 +351,7 @@ class Connection extends EventEmitter {
     if (response.status.code === responseStatusCode.authenticationChallenge && this._authenticator) {
       this._authenticator
         .evaluateChallenge(response.result.data)
-        .then((res) => this.submit(undefined, 'authentication', res, response.requestId))
+        .then((res: any) => this.submit(undefined, 'authentication', res, response.requestId))
         .catch(handler.callback);
 
       return;
@@ -355,7 +399,7 @@ class Connection extends EventEmitter {
   /**
    * clean websocket context
    */
-  #cleanupWebsocket(err) {
+  #cleanupWebsocket(err?: Error) {
     // Invoke waiting callbacks to complete Promises when closing the websocket
     Object.keys(this._responseHandlers).forEach((requestId) => {
       const handler = this._responseHandlers[requestId];
@@ -367,10 +411,14 @@ class Connection extends EventEmitter {
         handler.callback(cause);
       }
     });
-    this._ws.removeEventListener('open', this.#handleOpen);
-    this._ws.removeEventListener('error', this.#handleError);
-    this._ws.removeEventListener('message', this.#handleMessage);
-    this._ws.removeEventListener('close', this.#handleClose);
+    // @ts-expect-error
+    this._ws?.removeEventListener('open', this.#handleOpen);
+    // @ts-expect-error
+    this._ws?.removeEventListener('error', this.#handleError);
+    // @ts-expect-error
+    this._ws?.removeEventListener('message', this.#handleMessage);
+    // @ts-expect-error
+    this._ws?.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
     this._closePromise = null;
     this.isOpen = false;
@@ -381,7 +429,7 @@ class Connection extends EventEmitter {
    * @param requestId
    * @private
    */
-  #clearHandler(requestId) {
+  #clearHandler(requestId: string) {
     delete this._responseHandlers[requestId];
   }
 
@@ -396,11 +444,9 @@ class Connection extends EventEmitter {
     if (!this._closePromise) {
       this._closePromise = new Promise((resolve) => {
         this._closeCallback = resolve;
-        this._ws.close();
+        this._ws?.close();
       });
     }
     return this._closePromise;
   }
 }
-
-module.exports = Connection;

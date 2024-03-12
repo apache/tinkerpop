@@ -20,13 +20,12 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { vertexSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const g = require('../../../lib/structure/graph');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { vertexSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
+import { Vertex } from '../../../lib/structure/graph.js';
 
 const { from, concat } = Buffer;
 
@@ -37,11 +36,11 @@ describe('GraphBinary.VertexSerializer', () => {
 
   const cases = [
     { v:undefined, fq:1, b:[0x11,0x01],                                                     av:null },
-    { v:undefined, fq:0, b:[0x03,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0xFE,0x01], av:new g.Vertex('','',null) },
+    { v:undefined, fq:0, b:[0x03,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0xFE,0x01], av:new Vertex('','',null) },
     { v:null,      fq:1, b:[0x11,0x01] },
-    { v:null,      fq:0, b:[0x03,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0xFE,0x01], av:new g.Vertex('','',null) },
+    { v:null,      fq:0, b:[0x03,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00, 0xFE,0x01], av:new Vertex('','',null) },
 
-    { v:new g.Vertex(42, 'A', -1),
+    { v:new Vertex(42, 'A', -1),
       b:[
         0x01,0x00, 0x00,0x00,0x00,0x2A, // id
         0x00,0x00,0x00,0x01, 0x41, // label
@@ -51,7 +50,7 @@ describe('GraphBinary.VertexSerializer', () => {
 
     // real case with id of UUID type, but JS does not have UUID type, it's presented as a string instead
     { des:1,
-      v:new g.Vertex('28f38e3d-7739-4c99-8284-eb43db2a80f1', 'Person', null),
+      v:new Vertex('28f38e3d-7739-4c99-8284-eb43db2a80f1', 'Person', null),
       b:[
         0x0C,0x00, 0x28,0xF3,0x8E,0x3D, 0x77,0x39, 0x4C,0x99, 0x82,0x84, 0xEB,0x43,0xDB,0x2A,0x80,0xF1, // id
         0x00,0x00,0x00,0x06, ...from('Person'), // label
@@ -82,7 +81,7 @@ describe('GraphBinary.VertexSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -98,7 +97,7 @@ describe('GraphBinary.VertexSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -135,13 +134,13 @@ describe('GraphBinary.VertexSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: new t.P(),         e: false },
+      { v: new Traverser(), e: false },
+      { v: new P(),         e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
-      { v: [new g.Vertex()],  e: false },
-      { v: new g.Vertex(),    e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: [new Vertex()],  e: false },
+      { v: new Vertex(),    e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( vertexSerializer.canBeUsedFor(v), e )
     ))
   );

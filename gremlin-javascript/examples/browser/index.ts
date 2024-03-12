@@ -19,18 +19,19 @@
 
 import Color from "colorjs.io";
 import cytoscape from "cytoscape";
-import gremlin from "gremlin";
+import * as gremlin from "gremlin";
+import type { Edge, Vertex } from "gremlin/build/esm/structure/graph";
 import { createRandomColorGenerator } from "./utils";
 
 const randomColor = createRandomColorGenerator();
 
-const g = gremlin.process.AnonymousTraversalSource.traversal().withRemote(
+const g = gremlin.process.AnonymousTraversalSource.traversal().with_(
   new gremlin.driver.DriverRemoteConnection("ws://localhost:8182/gremlin")
 );
 
 const [vertices, edges] = await Promise.all([
-  await g.V().toList(),
-  await g.E().toList(),
+  await g.V().toList<Vertex>(),
+  await g.E().toList<Edge>(),
 ]);
 
 cytoscape({
@@ -43,9 +44,12 @@ cytoscape({
       style: {
         label: `${vertex.label}\n${vertex.id}`,
         "background-color": randomColor(vertex.label),
-        "border-color": new Color(randomColor(vertex.label)).darken().toString({
-          format: "hex",
-        }),
+        "border-color": new Color(randomColor(vertex.label)).darken().toString(
+          // @ts-expect-error
+          {
+            format: "hex",
+          }
+        ),
       },
     })),
     ...edges.map((edge) => ({

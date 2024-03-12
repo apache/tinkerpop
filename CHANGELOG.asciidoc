@@ -38,6 +38,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Added TypeScript & ECMAScript module support.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

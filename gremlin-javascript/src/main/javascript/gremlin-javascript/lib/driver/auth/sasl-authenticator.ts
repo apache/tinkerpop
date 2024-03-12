@@ -17,18 +17,21 @@
  *  under the License.
  */
 
-'use strict';
 
-const Authenticator = require('./authenticator');
+import Authenticator, { AuthenticatorOptions } from './authenticator.js';
 
-class SaslAuthenticator extends Authenticator {
+export type SaslAuthenticatorOptions = AuthenticatorOptions & {
+  mechanism?: any;
+};
+
+export default class SaslAuthenticator extends Authenticator {
   /**
    * Creates a new instance of SaslAuthenticator.
    * @param {Object} [options] The authentication options.
    * @param {Object} [options.mechanism] The mechanism to be used for authentication.
    * @constructor
    */
-  constructor(options) {
+  constructor(options: SaslAuthenticatorOptions) {
     super(options);
 
     if (options.mechanism === null || options.mechanism === undefined) {
@@ -41,9 +44,7 @@ class SaslAuthenticator extends Authenticator {
    * @param {String} challenge Challenge string presented by the server.
    * @return {Object} A Promise that resolves to a valid sasl response object.
    */
-  evaluateChallenge(challenge) {
-    return this._options.mechanism.evaluateChallenge(challenge);
+  evaluateChallenge(challenge: string) {
+    return this.options.mechanism.evaluateChallenge(challenge);
   }
 }
-
-module.exports = SaslAuthenticator;
