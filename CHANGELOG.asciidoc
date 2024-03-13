@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
+* Fixed a bug in the Gremlin.Net driver that could lead to failed authentication if multiple requests are executed in parallel.
 * Fixed message requestId serialization in `gremlin-python`.
 * Improved performance of `PathRetractionStrategy` for traversals that carry many children, but don't hold many labels to propogate.
 * Fixed bug in bytecode translation of `g.tx().commit()` and `g.tx().rollback()` in all languages.

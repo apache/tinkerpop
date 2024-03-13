@@ -22,13 +22,13 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
-using Gremlin.Net.IntegrationTest.Util;
 using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
@@ -37,7 +37,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
     {
         private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"];
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestSecureServerPort"]);
-        private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
 
         public static bool IgnoreCertificateValidationLiveDangerouslyWheeeeeeee(
               object sender,
@@ -49,48 +48,41 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowForMissingCredentials()
+        public void ShouldThrowForMissingCredentials()
         {
-            ClientWebSocketOptions optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {
                                 options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
                             });
             var gremlinServer = new GremlinServer(TestHost, TestPort, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                    async () => await gremlinClient.SubmitWithSingleResultAsync<string>(_requestMessageProvider
-                        .GetDummyMessage()));
+            var aggregateException = Assert.Throws<AggregateException>(() =>
+                new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration));
 
-                Assert.Contains("authentication", exception.Message);
-                Assert.Contains("credentials", exception.Message);
-            }
+            var innerException = aggregateException.InnerException;
+            Assert.Equal(typeof(InvalidOperationException), innerException!.GetType());
+            Assert.Contains("authentication", innerException.Message);
+            Assert.Contains("credentials", innerException.Message);
         }
 
         [Theory]
         [InlineData("unknownUser", "passwordDoesntMatter")]
         [InlineData("stephen", "wrongPassword")]
-        public async Task ShouldThrowForWrongCredentials(string username, string password)
+        public void ShouldThrowForWrongCredentials(string username, string password)
         {
-            ClientWebSocketOptions optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {
                                 options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
                             });
             var gremlinServer = new GremlinServer(TestHost, TestPort, username: username, password: password, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var exception = await Assert.ThrowsAsync<ResponseException>(
-                    async () => await gremlinClient.SubmitWithSingleResultAsync<string>(_requestMessageProvider
-                        .GetDummyMessage()));
+            var aggregateException = Assert.Throws<AggregateException>(() =>
+                new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration));
 
-                Assert.Contains("Unauthorized", exception.Message);
-            }
+            var innerException = aggregateException.InnerException;
+            Assert.Equal(typeof(ResponseException), innerException!.GetType());
+
+            Assert.Contains("Unauthorized", innerException.Message);
         }
 
         [Theory]
@@ -98,22 +90,45 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ScriptShouldBeEvaluatedAndResultReturnedForCorrectCredentials(string requestMsg,
             string expectedResponse)
         {
-            ClientWebSocketOptions optionsSet = null;
             var webSocketConfiguration =
                             new Action<ClientWebSocketOptions>(options =>
                             {
                                 options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
                             });
             const string username = "stephen";
             const string password = "password";
             var gremlinServer = new GremlinServer(TestHost, TestPort, username: username, password: password, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
+            using var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration);
 
-                Assert.Equal(expectedResponse, response);
+            var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
+
+            Assert.Equal(expectedResponse, response);
+        }
+
+        [Fact]
+        public async Task ExecutingRequestsInParallelOverSameConnectionShouldWorkWithAuthentication()
+        {
+            var webSocketConfiguration =
+                new Action<ClientWebSocketOptions>(options =>
+                {
+                    options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
+                });
+            const string username = "stephen";
+            const string password = "password";
+            const int nrOfParallelRequests = 10;
+            var gremlinServer = new GremlinServer(TestHost, TestPort, username: username, password: password, enableSsl: true);
+            var connectionPoolSettings = new ConnectionPoolSettings
+                { PoolSize = 1, MaxInProcessPerConnection = nrOfParallelRequests };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration,
+                connectionPoolSettings: connectionPoolSettings);
+            var tasks = new List<Task>(nrOfParallelRequests);
+            for (var i = 0; i < nrOfParallelRequests; i++)
+            {
+                tasks.Add(gremlinClient.SubmitWithSingleResultAsync<string>("''"));
             }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

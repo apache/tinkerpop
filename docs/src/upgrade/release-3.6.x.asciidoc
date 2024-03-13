@@ -43,6 +43,22 @@ Gremlin.Net driver expected.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3029[TINKERPOP-3029]
 
+==== Gremlin.Net: Fixed a bug related to authentication for multiple requests in parallel
+
+Executing multiple queries in parallel could lead to authentication failures if `MaxInProcessPerConnection` is set to a
+value higher than `1` as the second request could then be sent to the server while the server was still waiting for
+the authentication challenge response from the driver for the first query.
+
+This is now fixed by simply executing a validation request on each connection right after establishing the connection.
+That validation request will already handle authentication if necessary so user requests can afterwards directly be
+executed in parallel without needing to authenticate again.
+
+This is strictly speaking a breaking change since exceptions caused by authentication failures (no/wrong credentials
+configured) now occur directly when the `GremlinClient` is instantiated.
+In previous versions, the exceptions would only occur when the first request is executed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3063[TINKERPOP-3063]
+
 === Upgrading for Providers
 
 

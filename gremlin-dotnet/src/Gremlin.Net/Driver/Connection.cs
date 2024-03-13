@@ -140,7 +140,7 @@ namespace Gremlin.Net.Driver
             }
             catch (Exception e)
             {
-                if (receivedMsg!.RequestId != null)
+                if (receivedMsg.RequestId != null)
                 {
                     if(_callbackByRequestId.TryRemove(receivedMsg.RequestId.Value, out var responseHandler))
                     {

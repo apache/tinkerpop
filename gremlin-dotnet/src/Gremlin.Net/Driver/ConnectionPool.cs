@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Exceptions;
+using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -163,6 +164,7 @@ namespace Gremlin.Net.Driver
             try
             {
                 await newConnection.ConnectAsync(_cts.Token).ConfigureAwait(false);
+                await ValidateConnectionAsync(newConnection).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -172,6 +174,21 @@ namespace Gremlin.Net.Driver
             }
             return newConnection;
         }
+
+        /// <summary>
+        /// Validates the connection by executing a simple validation request.
+        /// </summary>
+        /// <remarks>This also authenticates the user if necessary and therefore ensures that user requests can directly
+        /// be executed.</remarks>
+        private async Task ValidateConnectionAsync(IConnection connection)
+        {
+            await connection.SubmitAsync<string>(ValidationRequestMessage, _cts.Token).ConfigureAwait(false);
+        }
+        
+        private static readonly string ValidationRequest = "''";
+        
+        private static readonly RequestMessage ValidationRequestMessage = RequestMessage.Build(Tokens.OpsEval)
+            .AddArgument(Tokens.ArgsGremlin, ValidationRequest).Create();
 
         private IConnection GetConnectionFromPool()
         {
