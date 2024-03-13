@@ -31,7 +31,7 @@ jobs:
         run: mvn clean install -DskipTests -pl gremlin-core -am
 
       - name: Run specific test
-        run: mvn -pl gremlin-core test -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.util.ParametersTest#shouldAllowNullValues'
+        run: mvn -pl gremlin-core test -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.map.ConjoinStepTest#testReturnTypes'
 
       - name: Run specific test using NON-DEX
-        run: mvn -pl gremlin-core edu.illinois:nondex-maven-plugin:2.1.1:nondex -DnondexRunsWithoutShuffling=10 -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.util.ParametersTest#shouldAllowNullValues'
+        run: mvn -pl gremlin-core edu.illinois:nondex-maven-plugin:2.1.1:nondex -DnondexRunsWithoutShuffling=10 -Dtest='org.apache.tinkerpop.gremlin.process.traversal.step.map.ConjoinStepTest#testReturnTypes'
