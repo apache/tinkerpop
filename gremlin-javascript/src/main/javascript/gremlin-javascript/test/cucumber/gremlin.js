@@ -1168,6 +1168,7 @@ const gremlins = {
     g_withStrategiesXProductiveByStrategyX_V_asXaX_selectXaX_byXageX: [function({g}) { return g.withStrategies(new ProductiveByStrategy({productiveKeys:[]})).V().as("a").select("a").by("age") }], 
     g_withSideEffectXk_nullX_injectXxX_selectXkX: [function({g}) { return g.withSideEffect("k",null).inject("x").select("k") }], 
     g_V_out_in_selectXall_a_a_aX_byXunfold_name_foldX: [function({g}) { return g.addV("A").property("name","a1").as("a1").addV("A").property("name","a2").as("a2").addV("A").property("name","a3").as("a3").addV("B").property("name","b1").as("b1").addV("B").property("name","b2").as("b2").addV("B").property("name","b3").as("b3").addE("ab").from_("a1").to("b1").addE("ab").from_("a2").to("b2").addE("ab").from_("a3").to("b3") }, function({g}) { return g.V().as("a").out().as("a").in_().as("a").select(Pop.all,"a","a","a").by(__.unfold().values("name").fold()) }], 
+    g_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX: [function({g}) { return g.V().as("label").aggregate(Scope.local,"x").select("x").select("label") }], 
     g_V_shortestPath: [function({g}) { return g.V().identity().shortestPath() }], 
     g_V_both_dedup_shortestPath: [function({g}) { return g.V().both().dedup().shortestPath() }], 
     g_V_shortestPath_edgesIncluded: [function({g}) { return g.V().identity().shortestPath().with_("~tinkerpop.shortestPath.includeEdges") }], 

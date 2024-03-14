@@ -1150,6 +1150,7 @@ world.gremlins = {
     'g_withStrategiesXProductiveByStrategyX_V_asXaX_selectXaX_byXageX': [(lambda g:g.withStrategies(*[TraversalStrategy('ProductiveByStrategy',{'productiveKeys':[],'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy')]).V().as_('a').select('a').by('age'))], 
     'g_withSideEffectXk_nullX_injectXxX_selectXkX': [(lambda g:g.withSideEffect('k',None).inject('x').select('k'))], 
     'g_V_out_in_selectXall_a_a_aX_byXunfold_name_foldX': [(lambda g:g.addV('A').property('name','a1').as_('a1').addV('A').property('name','a2').as_('a2').addV('A').property('name','a3').as_('a3').addV('B').property('name','b1').as_('b1').addV('B').property('name','b2').as_('b2').addV('B').property('name','b3').as_('b3').addE('ab').from_('a1').to('b1').addE('ab').from_('a2').to('b2').addE('ab').from_('a3').to('b3')), (lambda g:g.V().as_('a').out().as_('a').in_().as_('a').select(Pop.all_,'a','a','a').by(__.unfold().name.fold()))], 
+    'g_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX': [(lambda g:g.V().as_('label').aggregate(Scope.local,'x').select('x').select('label'))], 
     'g_V_shortestPath': [(lambda g:g.V().identity().shortestPath())], 
     'g_V_both_dedup_shortestPath': [(lambda g:g.V().both().dedup().shortestPath())], 
     'g_V_shortestPath_edgesIncluded': [(lambda g:g.V().identity().shortestPath().with_('~tinkerpop.shortestPath.includeEdges'))], 
