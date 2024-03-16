@@ -18,23 +18,31 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.ietf.jgss.GSSException;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -164,6 +172,46 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void shouldFailAuthenticateWithUnAuthenticatedRequestAfterMaxDeferrableDuration() throws Exception {
+        try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
+            // First request will initiate the authentication handshake
+            // Subsequent requests will be deferred
+            CompletableFuture<List<ResponseMessage>> future1 = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> future2 = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> future3 = client.submitAsync("");
+
+            // After the maximum allowed deferred request duration,
+            // any non-authenticated request will invalidate all requests with 429 error
+            CompletableFuture<List<ResponseMessage>> future4 = CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(SaslAuthenticationHandler.MAX_REQUEST_DEFERRABLE_DURATION.plus(Duration.ofSeconds(1)).toMillis());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }).thenCompose((__) -> {
+                try {
+                    return client.submitAsync("");
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            List<ResponseMessage> responses = new ArrayList<>();
+
+            responses.addAll(future1.join());
+            responses.addAll(future2.join());
+            responses.addAll(future3.join());
+            responses.addAll(future4.join());
+
+            for (ResponseMessage response : responses) {
+                if (response.getStatus().getCode() != ResponseStatusCode.AUTHENTICATE) {
+                    assertEquals(ResponseStatusCode.TOO_MANY_REQUESTS, response.getStatus().getCode());
+                }
+            }
+        }
+    }
+
+    @Test
     public void shouldAuthenticateWithPlainTextOverDefaultJSONSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
                 .credentials("stephen", "password").create();
@@ -218,9 +266,19 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     private static void assertConnection(final Cluster cluster, final Client client) throws InterruptedException, ExecutionException {
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            CompletableFuture<List<Result>> future1 = client.submitAsync("1+1").thenCompose(ResultSet::all);
+            CompletableFuture<List<Result>> future2 = client.submitAsync("1+2").thenCompose(ResultSet::all);
+            CompletableFuture<List<Result>> future3 = client.submitAsync("1+3").thenCompose(ResultSet::all);
+            CompletableFuture<List<Result>> future4 = client.submitAsync("1+4").thenCompose(ResultSet::all);
+            CompletableFuture<List<Result>> future5 = client.submitAsync("1+5").thenCompose(ResultSet::all);
+            CompletableFuture<List<Result>> future6 = client.submitAsync("1+6").thenCompose(ResultSet::all);
+
+            assertEquals(2, future1.join().get(0).getInt());
+            assertEquals(3, future2.join().get(0).getInt());
+            assertEquals(4, future3.join().get(0).getInt());
+            assertEquals(5, future4.join().get(0).getInt());
+            assertEquals(6, future5.join().get(0).getInt());
+            assertEquals(7, future6.join().get(0).getInt());
         } finally {
             cluster.close();
         }
