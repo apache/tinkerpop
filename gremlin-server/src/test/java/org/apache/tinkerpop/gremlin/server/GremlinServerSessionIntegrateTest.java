@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.junit.After;
@@ -119,29 +118,15 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
-
-                // Unified setting
-                settings.sessionLifetimeTimeout = 3000L;
                 break;
-            case "shouldBlowTheSessionQueueSize":
-                settings.maxSessionTaskQueueSize = 1;
             case "shouldCloseSessionOnClientClose":
-            case "shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
             case "shouldExecuteInSessionWithTransactionManagement":
             case "shouldRollbackOnEvalExceptionForManagedTransaction":
-            case "shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails":
                 useTinkerTransactionGraph(settings);
                 break;
             case "shouldEnsureSessionBindingsAreThreadSafe":
                 settings.threadPoolWorker = 2;
-                break;
-            case "shouldUseGlobalFunctionCache":
-                // OpProcessor settings are good by default
-                // UnifiedHandler settings
-                settings.useCommonEngineForSessions = false;
-                settings.useGlobalFunctionCacheForSessions = true;
-
                 break;
             case "shouldNotUseGlobalFunctionCache":
                 settings.processors.clear();
@@ -153,106 +138,10 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
                 processorSettingsForDisableFunctionCache.config.put(SessionOpProcessor.CONFIG_GLOBAL_FUNCTION_CACHE_ENABLED, false);
                 settings.processors.add(processorSettingsForDisableFunctionCache);
 
-                // UnifiedHandler settings
-                settings.useCommonEngineForSessions = false;
-                settings.useGlobalFunctionCacheForSessions = false;
-
                 break;
         }
 
         return settings;
-    }
-
-    @Test
-    public void shouldBlowTheSessionQueueSize() throws Exception {
-        assumeThat(isUsingUnifiedChannelizer(), is(true));
-
-        final Cluster cluster = TestClientFactory.open();
-        final Client session = cluster.connect(name.getMethodName());
-
-        // maxSessionQueueSize=1
-        // we should be able to do one request at a time serially
-        assertEquals("test1", session.submit("'test1'").all().get().get(0).getString());
-        assertEquals("test2", session.submit("'test2'").all().get().get(0).getString());
-        assertEquals("test3", session.submit("'test3'").all().get().get(0).getString());
-
-        final AtomicBoolean errorTriggered = new AtomicBoolean();
-        final ResultSet r1 = session.submitAsync("Thread.sleep(1000);'test4'").get();
-
-        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
-        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
-            blockers.add(session.submit("'test'").all().exceptionally(t -> {
-                final ResponseException re = (ResponseException) t.getCause();
-                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
-                return null;
-            }));
-
-            // low resource environments like travis might need a break
-            if (ix % 32 == 0) Thread.sleep(500);
-        }
-
-        // wait for the blockage to clear for sure
-        assertEquals("test4", r1.all().get().get(0).getString());
-        blockers.forEach(CompletableFuture::join);
-
-        assertThat(errorTriggered.get(), is(true));
-
-        // should be accepting test6 now
-        assertEquals("test6", session.submit("'test6'").all().get().get(0).getString());
-
-        session.close();
-        cluster.close();
-    }
-
-    @Test
-    public void shouldNotExecuteQueuedRequestsIfOneInFrontOfItFails() throws Exception {
-        assumeThat(isUsingUnifiedChannelizer(), is(true));
-
-        final Cluster cluster = TestClientFactory.open();
-        final Client session = cluster.connect(name.getMethodName());
-        final List<CompletableFuture<ResultSet>> futuresAfterFailure = new ArrayList<>();
-
-        // short, sweet and successful - but will rollback after close
-        final CompletableFuture<List<Result>> first = session.submit("g.addV('person').iterate();1").all();
-        assertEquals(1, first.get().get(0).getInt());
-
-        // leave enough time for the results to queue behind this
-        final int followOnRequestCount = 8;
-        final CompletableFuture<ResultSet> second = session.submitAsync("g.addV('person').sideEffect{Thread.sleep(60000)}");
-
-        // these requests will queue
-        for (int ix = 0; ix < followOnRequestCount; ix ++) {
-            futuresAfterFailure.add(session.submitAsync("g.addV('software')"));
-        }
-
-        // close the session which will interrupt "second" request and flush the queue of requests behind it
-        session.close();
-
-        try {
-            second.join().all().join();
-            fail("should have been interrupted by channel close");
-        } catch (Exception ex) {
-            assertEquals("Connection to server is no longer active", ex.getCause().getMessage());
-        }
-
-        final AtomicInteger fails = new AtomicInteger(0);
-        futuresAfterFailure.forEach(f -> {
-            try {
-                f.join().all().join();
-                fail("should have been interrupted by channel close");
-            } catch (Exception ex) {
-                assertEquals("Connection to server is no longer active", ex.getCause().getMessage());
-                fails.incrementAndGet();
-            }
-        });
-
-        // all are failures
-        assertEquals(followOnRequestCount, fails.get());
-
-        // validate the rollback
-        final Client client = cluster.connect();
-        assertEquals(0, client.submit("g.V().count()").all().get().get(0).getInt());
-        cluster.close();
     }
 
     @Test
@@ -266,12 +155,8 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         cluster1.close();
 
         // the following session close log message is no longer relevant as
-        if (isUsingUnifiedChannelizer()) {
-            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
-        } else {
-            assertThat(logCaptor.getLogs(), hasItem("Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced"));
-            assertThat(logCaptor.getLogs(), hasItem("Session shouldCloseSessionOnClientClose closed"));
-        }
+        assertThat(logCaptor.getLogs(), hasItem("Skipped attempt to close open graph transactions on shouldCloseSessionOnClientClose - close was forced"));
+        assertThat(logCaptor.getLogs(), hasItem("Session shouldCloseSessionOnClientClose closed"));
 
         // try to reconnect to that session and make sure no state is there
         final Cluster clusterReconnect = TestClientFactory.open();
@@ -289,59 +174,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
         // the commit from client1 should not have gone through so there should be no data present.
         assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
-
-        // must turn on maintainStateAfterException for unified channelizer
-        if (!isUsingUnifiedChannelizer()) {
-            assertEquals(100, clientReconnect.submit("y").all().join().get(0).getInt());
-        }
-
-        clusterReconnect.close();
-
-        if (isUsingUnifiedChannelizer()) {
-            assertEquals(0, ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().getActiveSessionCount());
-        }
-    }
-
-    @Test
-    public void shouldCloseSessionOnClientCloseWithStateMaintainedBetweenExceptions() throws Exception {
-        assumeThat("Must use UnifiedChannelizer", isUsingUnifiedChannelizer(), is(true));
-
-        final Cluster cluster1 = TestClientFactory.open();
-        final Client client1 = cluster1.connect(name.getMethodName());
-        client1.submit("x = 1").all().join();
-        client1.submit("graph.addVertex()").all().join();
-        client1.close();
-        cluster1.close();
-
-        assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
-
-        // try to reconnect to that session and make sure no state is there
-        final Cluster clusterReconnect = TestClientFactory.open();
-
-        // this configures the client to behave like OpProcessor for UnifiedChannelizer
-        final Client.SessionSettings settings = Client.SessionSettings.build().
-                sessionId(name.getMethodName()).maintainStateAfterException(true).create();
-        final Client clientReconnect = clusterReconnect.connect(Client.Settings.build().useSession(settings).create());
-
-        // should get an error because "x" is not defined as this is a new session
-        try {
-            clientReconnect.submit("y=100").all().join();
-            clientReconnect.submit("x").all().join();
-            fail("Should not have been successful as 'x' was only defined in the old session");
-        } catch(Exception ex) {
-            final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root.getMessage(), startsWith("No such property"));
-        }
-
-        // the commit from client1 should not have gone through so there should be no data present.
-        assertEquals(0, clientReconnect.submit("graph.traversal().V().count()").all().join().get(0).getInt());
-
-        // since maintainStateAfterException is enabled the UnifiedChannelizer works like OpProcessor
         assertEquals(100, clientReconnect.submit("y").all().join().get(0).getInt());
 
         clusterReconnect.close();
-
-        assertEquals(0, ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().getActiveSessionCount());
     }
 
     @Test
@@ -417,7 +252,6 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
                 sessionId(name.getMethodName()).
                 manageTransactions(true).
-                maintainStateAfterException(false).
                 create();
         final Client.Settings clientSettings = Client.Settings.build().useSession(sessionSettings).create();
         final Client client = cluster.connect(clientSettings);
@@ -471,19 +305,15 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             cluster.close();
         }
 
-        if (isUsingUnifiedChannelizer()) {
-            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
-        } else {
-            assertEquals(1, logCaptor.getLogs().stream()
-                    .filter(msg -> msg.equals("Session shouldCloseSessionOnceOnRequest closed")).count());
-        }
+        assertEquals(1, logCaptor.getLogs().stream()
+                .filter(msg -> msg.equals("Session shouldCloseSessionOnceOnRequest closed")).count());
     }
 
     @Test
     public void shouldHaveTheSessionTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client.SessionSettings settings = Client.SessionSettings.build().
-                sessionId(name.getMethodName()).maintainStateAfterException(true).create();
+                sessionId(name.getMethodName()).create();
         final Client session = cluster.connect(Client.Settings.build().useSession(settings).create());
 
         final ResultSet results1 = session.submit("x = [1,2,3,4,5,6,7,8,9]");
@@ -495,18 +325,7 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
 
         // session times out in 3 seconds but slow environments like travis might not be so exacting in the
         // shutdown process so be patient
-        if (isUsingUnifiedChannelizer()) {
-            boolean sessionAlive = true;
-            for (int ix = 1; ix < 11; ix++) {
-                sessionAlive = ((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName());
-                if (!sessionAlive) break;
-                Thread.sleep(ix * 500);
-            }
-
-            assertThat(sessionAlive, is(false));
-        } else {
-            Thread.sleep(5000);
-        }
+        Thread.sleep(5000);
 
         try {
             // the original session should be dead so this call will open a new session with the same name but fail
@@ -524,13 +343,9 @@ public class GremlinServerSessionIntegrateTest extends AbstractGremlinServerInte
             cluster.close();
         }
 
-        if (isUsingUnifiedChannelizer()) {
-            assertThat(((UnifiedChannelizer) server.getChannelizer()).getUnifiedHandler().isActiveSession(name.getMethodName()), is(false));
-        } else {
-            // there will be one for the timeout and a second for closing the cluster
-            assertEquals(2, logCaptor.getLogs().stream()
-                    .filter(msg -> msg.equals("Session shouldHaveTheSessionTimeout closed")).count());
-        }
+        // there will be one for the timeout and a second for closing the cluster
+        assertEquals(2, logCaptor.getLogs().stream()
+                .filter(msg -> msg.equals("Session shouldHaveTheSessionTimeout closed")).count());
     }
 
     @Test
