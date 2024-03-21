@@ -1586,7 +1586,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             // this configures the client to behave like OpProcessor for UnifiedChannelizer
             final Client.SessionSettings settings = Client.SessionSettings.build().
-                    sessionId(name.getMethodName()).maintainStateAfterException(true).create();
+                    sessionId(name.getMethodName()).create();
             final Client client = cluster.connect(Client.Settings.build().useSession(settings).create());
 
             for (int index = 0; index < 50; index++) {

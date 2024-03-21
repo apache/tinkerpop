@@ -131,7 +131,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
-        // matches functionality in the UnifiedHandler
         if (!(message.optionalArgs(Tokens.ARGS_GREMLIN).get() instanceof Bytecode)) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument that is of type %s.",
                     Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN, Bytecode.class.getSimpleName());

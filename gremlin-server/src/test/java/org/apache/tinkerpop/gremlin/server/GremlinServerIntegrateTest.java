@@ -27,8 +27,6 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.server.channel.HttpTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpTestChannelizer;
@@ -52,7 +50,6 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
-import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -150,11 +147,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 name.getMethodName().equals("shouldCloseChannelIfClientDoesntRespond") ||
                 name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
-            final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
             final Logger wsUserAgentHandlerLogger = (Logger) LoggerFactory.getLogger(WsUserAgentHandler.class);
             previousLogLevel = opSelectorHandlerLogger.getLevel();
             opSelectorHandlerLogger.setLevel(Level.INFO);
-            unifiedHandlerLogger.setLevel(Level.INFO);
             wsUserAgentHandlerLogger.setLevel(Level.DEBUG);
         }
 
@@ -168,8 +163,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
             final Logger opSelectorHandlerLogger = (Logger) LoggerFactory.getLogger(OpSelectorHandler.class);
             opSelectorHandlerLogger.setLevel(previousLogLevel);
-            final Logger unifiedHandlerLogger = (Logger) LoggerFactory.getLogger(UnifiedHandler.class);
-            unifiedHandlerLogger.setLevel(previousLogLevel);
             final Logger wsUserAgentHandlerLogger = (Logger) LoggerFactory.getLogger(WsUserAgentHandler.class);
             wsUserAgentHandlerLogger.setLevel(previousLogLevel);
         }
@@ -193,9 +186,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }};
                 settings.processors.clear();
                 settings.processors.add(processorSettingsBig);
-
-                // Unified setting
-                settings.maxParameters = Integer.MAX_VALUE;
                 break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
@@ -235,9 +225,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }};
                 settings.processors.clear();
                 settings.processors.add(processorSettingsSmall);
-
-                // Unified settings
-                settings.maxParameters = 1;
                 break;
             case "shouldTimeOutRemoteTraversal":
                 settings.evaluationTimeout = 500;
@@ -259,18 +246,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
                 settings.channelizer = WebSocketChannelizer.class.getName();
                 break;
-            case "shouldRespondToTimeoutCancelledSingleTaskUnifiedRequest":
-                settings.evaluationTimeout = 5000;
-                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
-                settings.channelizer = UnifiedChannelizer.class.getName();
-                break;
-            case "shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest":
-                useTinkerTransactionGraph(settings);
-                settings.evaluationTimeout = 30000;
-                settings.sessionLifetimeTimeout = 5000; // This needs to be shorter because of the delay in scheduling session task.
-                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
-                settings.channelizer = UnifiedChannelizer.class.getName();
-                break;
             case "shouldStoreUserAgentInContextWebSocket":
                 settings.channelizer = WebSocketTestChannelizer.class.getName();
                 break;
@@ -279,9 +254,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldStoreUserAgentInContextWsAndHttp":
                 settings.channelizer = WsAndHttpTestChannelizer.class.getName();
-                break;
-            case "shouldStoreUserAgentInContextUnified":
-                settings.channelizer = UnifiedTestChannelizer.class.getName();
                 break;
             default:
                 break;
@@ -341,12 +313,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldStoreUserAgentInContextWsAndHttp() throws InterruptedException {
-        shouldStoreUserAgentInContext();
-        shouldStoreUserAgentInHttpContext();
-    }
-
-    @Test
-    public void shouldStoreUserAgentInContextUnified() throws InterruptedException {
         shouldStoreUserAgentInContext();
         shouldStoreUserAgentInHttpContext();
     }
@@ -576,9 +542,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProduceProperExceptionOnTimeout() throws Exception {
-        // this test will not work quite right on UnifiedChannelizer
-        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
-
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect(name.getMethodName());
 
@@ -881,9 +844,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
-        // this test will not work quite right on UnifiedChannelizer, but seems to only be a problem in Travis
-        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
-
         try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[0,1,2,3,4,5,6,7,8,9]").create();
@@ -1244,10 +1204,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
      */
     @Test(timeout = 180000) // Add timeout in case the test hangs.
     public void shouldRespondToTimeoutCancelledSessionRequest() throws Exception {
-        // Don't test with UnifiedChannelizer since we only want to test the case where a task is cancelled before
-        // running which is handled by shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest.
-        assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
-
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
         final GraphTraversalSource gtx = g.tx().begin();
@@ -1255,57 +1211,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         runTimeoutTest(gtx);
 
         gtx.tx().commit();
-        cluster.close();
-    }
-
-    /**
-     * Reproducer for TINKERPOP-2769 with request sent to UnifiedChannelizer.
-     */
-    @Test(timeout = 180000) // Add timeout in case the test hangs.
-    public void shouldRespondToTimeoutCancelledSingleTaskUnifiedRequest() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        runTimeoutTest(g);
-        g.close();
-    }
-
-    /**
-     * Reproducer for TINKERPOP-2769 with request having a Session ID sent to UnifiedChannelizer.
-     */
-    @Test(timeout = 180000) // Add timeout in case the test hangs.
-    public void shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
-        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-        final GraphTraversalSource gtx = g.tx().begin();
-
-        g.addV("person").as("p").addE("self").to("p").iterate();
-
-        // Number of threads/tasks must be larger than the size of the gremlinPool set in overrideSettings().
-        final ScheduledExecutorService threadPool = Executors.newScheduledThreadPool(2);
-        // Use a request without session to fill the queue since we want to test cancel on first session request.
-        final Future<?> firstResult = threadPool.submit(() -> g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate());
-        // Delay this request slightly as we want to test that the MultiTaskSession is properly returning an error when it is cancelled.
-        final Future<?> secondResult = threadPool.schedule(() -> gtx.V().repeat(__.out()).until(__.outE().count().is(0)).iterate(), 5000, TimeUnit.MILLISECONDS);
-
-        try {
-            firstResult.get();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-
-        try {
-            secondResult.get();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-
-        threadPool.shutdown();
-        gtx.tx().rollback();
         cluster.close();
     }
 
@@ -1337,7 +1242,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     /**
-     * Reproducer for TINKERPOP-2765 when run using the UnifiedChannelizer.
+     * Reproducer for TINKERPOP-2765.
      */
     @Test
     public void shouldHandleMultipleLambdaTranslationsInParallel() throws Exception {

@@ -71,8 +71,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
                 settings.processors.add(processorSettings);
 
-                // Unified setting
-                settings.sessionLifetimeTimeout = 3000L;
                 break;
         }
 
@@ -260,7 +258,7 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
 
         // need to open significantly more sessions that we have threads in gremlinPool. if we go too obscene on
         // OpProcessor this test will take too long
-        final int numberOfSessions = isUsingUnifiedChannelizer() ? 1000 : 100;
+        final int numberOfSessions = 100;
         for (int ix = 0; ix < numberOfSessions; ix ++) {
             final Transaction tx = g.tx();
             final GraphTraversalSource gtx = tx.begin();
@@ -370,7 +368,6 @@ public class GremlinSessionTxIntegrateTest extends AbstractGremlinServerIntegrat
         final Client.SessionSettings sessionSettings = Client.SessionSettings.build().
                 sessionId(name.getMethodName()).
                 manageTransactions(false).
-                maintainStateAfterException(false).
                 create();
         final Client.Settings clientSettings = Client.Settings.build().useSession(sessionSettings).create();
         final Client client = cluster.connect();
