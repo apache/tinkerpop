@@ -1063,7 +1063,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test(timeout = 10000) // Add test timeout to prevent incorrect timeout behavior from stopping test run.
     public void should500OnGETWithEvaluationTimeout() throws Exception {
-        // Related to TINKERPOP-2769. This is a similar test to those for WebSocketChannelizer and UnifiedChannelizer.
+        // Related to TINKERPOP-2769. This is a similar test to the one for the WebSocketChannelizer.
         final CloseableHttpClient firstClient = HttpClients.createDefault();
         final CloseableHttpClient secondClient = HttpClients.createDefault();
 
