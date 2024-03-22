@@ -857,7 +857,10 @@ Feature: Step - mergeE()
               option(Merge.onMatch, __.sideEffect(__.property("weight", 0)).constant([:]))
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "The incoming traverser for MergeEdgeStep cannot be an Element"
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
 
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_sideEffectXpropertyXweight_0XX_constantXemptyXX
     Given the empty graph
@@ -902,10 +905,10 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.inject(xx1, xx1, xx2).
-        fold().
-        mergeE(__.limit(Scope.local,1)).
-          option(Merge.onCreate, __.range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.tail(Scope.local))
+        fold().as("m").
+        mergeE(__.select("m").limit(Scope.local,1)).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
+          option(Merge.onMatch, __.select("m").tail(Scope.local))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -936,10 +939,10 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.inject(xx1, xx1, xx2).
-        fold().
-        mergeE(__.limit(Scope.local,1)).
-          option(Merge.onCreate, __.range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.tail(Scope.local))
+        fold().as("m").
+        mergeE(__.select("m").limit(Scope.local,1)).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
+          option(Merge.onMatch, __.select("m").tail(Scope.local))
       """
     When iterated to list
     Then the result should have a count of 1
