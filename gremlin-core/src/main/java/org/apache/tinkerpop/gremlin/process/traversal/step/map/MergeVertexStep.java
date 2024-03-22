@@ -93,10 +93,10 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
             // attach the onMatch properties
             vertices = IteratorUtils.peek(vertices, v -> {
 
-                // override current traverser with the matched Edge so that the option() traversal can operate
+                // override current traverser with the matched Vertex so that the option() traversal can operate
                 // on it properly. this should only work this way for the start step form to retain the original
                 // behavior for 3.6.0 where you might do g.inject(Map).mergeV() and want that Map to pass through.
-                // in 4.x this will be rectified such that the edge will always be promoted and you will be forced
+                // in 4.x this will be rectified such that the vertex will always be promoted and you will be forced
                 // to select() the map if you did want the behavior.
                 if (isStart) traverser.set((S) v);
 
