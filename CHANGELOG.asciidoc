@@ -310,13 +310,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in bytecode translation of `g.tx().commit()` and `g.tx().rollback()` in all languages.
 * Improved error message from `JavaTranslator` by including exception source.
 * Added missing `short` serialization (`gx:Int16`) to GraphSONV2 and GraphSONV3 in `gremlin-python`.
-* Added tests for error handling for GLV's if tx.commit() is called remotely for graphs without transactions support.
+* Added tests for error handling for GLV's if `tx.commit()`` is called remotely for graphs without transactions support.
 * Introduced multi-architecture AMD64/ARM64 docker images for gremlin-console.
 * Fixed bug in `JavaTranslator` where `has(String, null)` could call `has(String, Traversal)` to generate an error.
 * Fixed issue where server errors weren't being properly parsed when sending bytecode over HTTP.
-* Improved bulkset contains check for elements if all elements in bulkset are of the same type.
+* Improved `Bulkset` contains check for elements if all elements in `Bulkset` are of the same type.
 * Fixed bug in `EarlyLimitStrategy` which was too aggressive when promoting `limit()` before `map()`.
-* Fixed bug in mid-traversal `mergeE()` where mutations in `sideEffect()` were being applied to the current traverser rather than a `onMatch` edge.
+* Prevented mid-traversal `mergeE()` and `mergeV()` from operating on an incoming `Traverser` that contains an `Element`.
 * Improved performance of the application of `FilterRankingStrategy` for large traversals with deeply nested traversals by improving the cache operation.
 
 [[release-3-6-6]]

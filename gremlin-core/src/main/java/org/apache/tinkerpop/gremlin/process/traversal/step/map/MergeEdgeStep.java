@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -274,8 +275,11 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             edges = IteratorUtils.peek(edges, e -> {
 
                 // override current traverser with the matched Edge so that the option() traversal can operate
-                // on it properly
-                traverser.set((S) e);
+                // on it properly. this should only work this way for the start step form to retain the original
+                // behavior for 3.6.0 where you might do g.inject(Map).mergeE() and want that Map to pass through.
+                // in 4.x this will be rectified such that the edge will always be promoted and you will be forced
+                // to select() the map if you did want the behavior.
+                if (isStart) traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);
