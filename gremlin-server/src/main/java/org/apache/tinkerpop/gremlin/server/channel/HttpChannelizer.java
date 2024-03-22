@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthorizationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpRequestCheckingHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpUserAgentHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
@@ -47,6 +48,8 @@ public class HttpChannelizer extends AbstractChannelizer {
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
 
+    private HttpRequestCheckingHandler httpRequestCheckingHandler = new HttpRequestCheckingHandler();
+
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
@@ -66,6 +69,8 @@ public class HttpChannelizer extends AbstractChannelizer {
         final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
         aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
         pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
+
+        pipeline.addLast("http-request-checker", httpRequestCheckingHandler);
 
         if (authenticator != null) {
             // Cannot add the same handler instance multiple times unless
