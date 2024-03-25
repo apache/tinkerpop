@@ -906,7 +906,7 @@ Feature: Step - select()
     Given the modern graph
     And the traversal of
       """
-      g.V().as("label").aggregate(local,"x").select("x").select("label")
+      g.V().as("label").aggregate(local,"x").barrier().select("x").select("label")
       """
     When iterated to list
     Then the result should be unordered
