@@ -19,11 +19,21 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.REQUEST_ID;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -86,6 +96,26 @@ public final class RequestOptions {
 
     public static Builder build() {
         return new Builder();
+    }
+
+    public static RequestOptions getRequestOptions(final Bytecode bytecode) {
+        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
+        final Builder builder = RequestOptions.build();
+        while (itty.hasNext()) {
+            final OptionsStrategy optionsStrategy = itty.next();
+            final Map<String,Object> options = optionsStrategy.getOptions();
+            if (options.containsKey(ARGS_EVAL_TIMEOUT))
+                builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
+            if (options.containsKey(REQUEST_ID))
+                builder.overrideRequestId((UUID) options.get(REQUEST_ID));
+            if (options.containsKey(ARGS_BATCH_SIZE))
+                builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
+            if (options.containsKey(ARGS_USER_AGENT))
+                builder.userAgent((String) options.get(ARGS_USER_AGENT));
+            if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
+                builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
+        }
+        return builder.create();
     }
 
     public static final class Builder {

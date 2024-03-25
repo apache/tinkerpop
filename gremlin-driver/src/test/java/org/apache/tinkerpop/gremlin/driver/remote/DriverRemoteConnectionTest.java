@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.util.UUID;
 
+import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -37,7 +38,7 @@ public class DriverRemoteConnectionTest {
     @Test
     public void shouldBuildRequestOptions() {
         final UUID requestId = UUID.fromString("34a9f45f-8854-4d33-8b40-92a8171ee495");
-        final RequestOptions options = DriverRemoteConnection.getRequestOptions(
+        final RequestOptions options = getRequestOptions(
                 g.with("x").
                         with("y", 100).
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
@@ -53,7 +54,7 @@ public class DriverRemoteConnectionTest {
 
     @Test
     public void shouldBuildRequestOptionsWithNumerics() {
-        final RequestOptions options = DriverRemoteConnection.getRequestOptions(
+        final RequestOptions options = getRequestOptions(
                 g.with(Tokens.ARGS_BATCH_SIZE, 100).
                   with(Tokens.ARGS_EVAL_TIMEOUT, 1000).
                   V().asAdmin().getBytecode());

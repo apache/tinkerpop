@@ -295,6 +295,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `EarlyLimitStrategy` which was too aggressive when promoting `limit()` before `map()`.
 * Prevented mid-traversal `mergeE()` and `mergeV()` from operating on an incoming `Traverser` that contains an `Element`.
 * Improved performance of the application of `FilterRankingStrategy` for large traversals with deeply nested traversals by improving the cache operation.
+* Updated aliased client to pass along options via `with()` when submitting traversals.
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
