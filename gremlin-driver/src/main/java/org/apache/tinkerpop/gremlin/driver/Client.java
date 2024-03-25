@@ -52,7 +52,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
@@ -644,7 +645,7 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
-            return submitAsync(bytecode, RequestOptions.EMPTY);
+            return submitAsync(bytecode, getRequestOptions(bytecode));
         }
 
         @Override
