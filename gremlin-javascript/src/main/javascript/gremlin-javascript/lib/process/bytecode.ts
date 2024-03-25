@@ -20,16 +20,18 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const { Traversal } = require('./traversal');
+import { Traversal } from './traversal.js';
 
-class Bytecode {
+export default class Bytecode {
+  sourceInstructions: any[] = [];
+  stepInstructions: any[] = [];
+
   /**
    * Creates a new instance of Bytecode
    * @param {Bytecode} [toClone]
    */
-  constructor(toClone) {
+  constructor(toClone?: Bytecode) {
     if (!toClone) {
       this.sourceInstructions = [];
       this.stepInstructions = [];
@@ -45,7 +47,7 @@ class Bytecode {
    * @param {Array} values
    * @returns {Bytecode}
    */
-  addSource(name, values) {
+  addSource(name: string, values: any[]): Bytecode {
     if (name === undefined) {
       throw new Error('Name is not defined');
     }
@@ -64,7 +66,7 @@ class Bytecode {
    * @param {Array} values
    * @returns {Bytecode}
    */
-  addStep(name, values) {
+  addStep(name: string, values?: any[]): Bytecode {
     if (name === undefined) {
       throw new Error('Name is not defined');
     }
@@ -72,12 +74,12 @@ class Bytecode {
     return this;
   }
 
-  static _generateInstruction(name, values) {
+  private static _generateInstruction(name: string, values?: any[]) {
     const length = (values ? values.length : 0) + 1;
     const instruction = new Array(length);
     instruction[0] = name;
     for (let i = 1; i < length; i++) {
-      const val = values[i - 1];
+      const val = values?.[i - 1];
       if (val instanceof Traversal && val.graph != null) {
         throw new Error(
           `The child traversal of ${val} was not spawned anonymously - use ` +
@@ -93,7 +95,7 @@ class Bytecode {
    * Returns the JSON representation of the source and step instructions
    * @returns {String}
    */
-  toString() {
+  toString(): string {
     return JSON.stringify([this.sourceInstructions, this.stepInstructions]);
   }
 
@@ -103,7 +105,7 @@ class Bytecode {
    * @param {Array} values
    * @returns {Bytecode}
    */
-  static _createGraphOp(name, values) {
+  static _createGraphOp(name: string, values: any[]): Bytecode {
     const bc = new Bytecode();
     bc.addSource(name, values);
     return bc;
@@ -113,12 +115,10 @@ class Bytecode {
    * Gets the <code>Bytecode</code> that is meant to be sent as "graph operations" to the server.
    * @returns {{rollback: Bytecode, commit: Bytecode}}
    */
-  static get GraphOp() {
+  static get GraphOp(): { rollback: Bytecode; commit: Bytecode } {
     return {
       commit: Bytecode._createGraphOp('tx', ['commit']),
       rollback: Bytecode._createGraphOp('tx', ['rollback']),
     };
   }
 }
-
-module.exports = Bytecode;

@@ -20,6 +20,7 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-require('./SetSerializerTestTemplate')({ ID: 0x0B, name: 'Set' });
+import SetSerializerTestTemplate from './SetSerializerTestTemplate.js';
+
+SetSerializerTestTemplate({ ID: 0x0b, name: 'Set' });

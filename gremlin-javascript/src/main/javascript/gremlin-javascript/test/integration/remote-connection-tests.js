@@ -20,18 +20,17 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const assert = require('assert');
-const Bytecode = require('../../lib/process/bytecode');
-const graphModule = require('../../lib/structure/graph');
-const helper = require('../helper');
+import assert from 'assert';
+import Bytecode from '../../lib/process/bytecode.js';
+import { Vertex } from '../../lib/structure/graph.js';
+import { getConnection } from '../helper.js';
 
 let connection;
 
 describe('DriverRemoteConnection', function () {
   before(function () {
-    connection = helper.getConnection('gmodern');
+    connection = getConnection('gmodern');
     return connection.open();
   });
   after(function () {
@@ -45,7 +44,7 @@ describe('DriverRemoteConnection', function () {
           assert.ok(response);
           assert.ok(response.traversers);
           assert.strictEqual(response.traversers.length, 1);
-          assert.ok(response.traversers[0].object instanceof graphModule.Vertex);
+          assert.ok(response.traversers[0].object instanceof Vertex);
         });
     });
     it('should send the request with syntax error and parse the response error', function () {

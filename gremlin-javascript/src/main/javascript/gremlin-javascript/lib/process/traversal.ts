@@ -21,22 +21,24 @@
  * @author Jorge Bay Gondra
  */
 
-'use strict';
+import { Graph } from '../structure/graph.js';
+import Bytecode from './bytecode.js';
+import { TraversalStrategies } from './traversal-strategy.js';
 
 const itemDone = Object.freeze({ value: null, done: true });
 const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
-class Traversal {
-  constructor(graph, traversalStrategies, bytecode) {
-    this.graph = graph;
-    this.traversalStrategies = traversalStrategies;
-    this.bytecode = bytecode;
-    /** @type {Array<Traverser>} */
-    this.traversers = null;
-    this.sideEffects = null;
-    this._traversalStrategiesPromise = null;
-    this._traversersIteratorIndex = 0;
-  }
+export class Traversal {
+  traversers: Traverser<any>[] | null = null;
+  sideEffects?: any = null;
+  private _traversalStrategiesPromise: Promise<void> | null = null;
+  private _traversersIteratorIndex = 0;
+
+  constructor(
+    public graph: Graph | null,
+    public traversalStrategies: TraversalStrategies | null,
+    public bytecode: Bytecode,
+  ) {}
 
   /**
    * Async iterable method implementation.
@@ -54,12 +56,12 @@ class Traversal {
    * Returns an Array containing the traverser objects.
    * @returns {Promise.<Array>}
    */
-  toList() {
+  toList<T>(): Promise<T[]> {
     return this._applyStrategies().then(() => {
-      const result = [];
+      const result: T[] = [];
       let it;
       while ((it = this._getNext()) && !it.done) {
-        result.push(it.value);
+        result.push(it.value as T);
       }
       return result;
     });
@@ -98,15 +100,15 @@ class Traversal {
    * Returns a promise containing an iterator item.
    * @returns {Promise.<{value, done}>}
    */
-  next() {
-    return this._applyStrategies().then(() => this._getNext());
+  next<T>(): Promise<IteratorResult<T, null>> {
+    return this._applyStrategies().then(() => this._getNext<T>());
   }
 
   /**
    * Synchronous iterator of traversers including
    * @private
    */
-  _getNext() {
+  _getNext<T>(): IteratorResult<T, null> {
     while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
       const traverser = this.traversers[this._traversersIteratorIndex];
       if (traverser.bulk > 0) {
@@ -123,7 +125,7 @@ class Traversal {
       // Apply strategies only once
       return this._traversalStrategiesPromise;
     }
-    return (this._traversalStrategiesPromise = this.traversalStrategies.applyStrategies(this));
+    return (this._traversalStrategiesPromise = this.traversalStrategies?.applyStrategies(this) ?? Promise.resolve());
   }
 
   /**
@@ -143,7 +145,7 @@ class Traversal {
   }
 }
 
-class IO {
+export class IO {
   static get graphml() {
     return 'graphml';
   }
@@ -237,23 +239,23 @@ class PeerPressure {
   }
 }
 
-class P {
+export class P<T1 = any, T2 = any> {
   /**
    * Represents an operation.
    * @constructor
    */
-  constructor(operator, value, other) {
-    this.operator = operator;
-    this.value = value;
-    this.other = other;
-  }
+  constructor(
+    public operator: string,
+    public value: T1,
+    public other: T2,
+  ) {}
 
   /**
    * Returns the string representation of the instance.
    * @returns {string}
    */
   toString() {
-    function formatValue(value) {
+    function formatValue(value: T1 | T2): any {
       if (Array.isArray(value)) {
         const acc = [];
         for (const item of value) {
@@ -273,22 +275,22 @@ class P {
     return this.operator + '(' + formatValue(this.value) + ', ' + formatValue(this.other) + ')';
   }
 
-  and(arg) {
+  and(arg?: any) {
     return new P('and', this, arg);
   }
 
-  or(arg) {
+  or(arg?: any) {
     return new P('or', this, arg);
   }
 
-  static within(...args) {
+  static within(...args: any[]) {
     if (args.length === 1 && Array.isArray(args[0])) {
       return new P('within', args[0], null);
     }
     return new P('within', args, null);
   }
 
-  static without(...args) {
+  static without(...args: any[]) {
     if (args.length === 1 && Array.isArray(args[0])) {
       return new P('without', args[0], null);
     }
@@ -296,83 +298,83 @@ class P {
   }
 
   /** @param {...Object} args */
-  static between(...args) {
+  static between(...args: any[]) {
     return createP('between', args);
   }
 
   /** @param {...Object} args */
-  static eq(...args) {
+  static eq(...args: any[]) {
     return createP('eq', args);
   }
 
   /** @param {...Object} args */
-  static gt(...args) {
+  static gt(...args: any[]) {
     return createP('gt', args);
   }
 
   /** @param {...Object} args */
-  static gte(...args) {
+  static gte(...args: any[]) {
     return createP('gte', args);
   }
 
   /** @param {...Object} args */
-  static inside(...args) {
+  static inside(...args: any[]) {
     return createP('inside', args);
   }
 
   /** @param {...Object} args */
-  static lt(...args) {
+  static lt(...args: any[]) {
     return createP('lt', args);
   }
 
   /** @param {...Object} args */
-  static lte(...args) {
+  static lte(...args: any[]) {
     return createP('lte', args);
   }
 
   /** @param {...Object} args */
-  static neq(...args) {
+  static neq(...args: any[]) {
     return createP('neq', args);
   }
 
   /** @param {...Object} args */
-  static not(...args) {
+  static not(...args: any[]) {
     return createP('not', args);
   }
 
   /** @param {...Object} args */
-  static outside(...args) {
+  static outside(...args: any[]) {
     return createP('outside', args);
   }
 
   /** @param {...Object} args */
-  static test(...args) {
+  static test(...args: any[]) {
     return createP('test', args);
   }
 }
 
-function createP(operator, args) {
+function createP(operator: string, args: any) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(P, args))();
 }
 
-class TextP {
+export class TextP<T1 = any, T2 = any> {
   /**
    * Represents an operation.
    * @constructor
    */
-  constructor(operator, value, other) {
-    this.operator = operator;
-    this.value = value;
-    this.other = other;
-  }
+  constructor(
+    public operator: string,
+    public value: T1,
+    public other: T2,
+  ) {}
 
   /**
    * Returns the string representation of the instance.
    * @returns {string}
    */
   toString() {
-    function formatValue(value) {
+    function formatValue(value: any) {
       if (value && typeof value === 'string') {
         return `'${value}'`;
       }
@@ -385,70 +387,72 @@ class TextP {
     return this.operator + '(' + formatValue(this.value) + ', ' + formatValue(this.other) + ')';
   }
 
-  and(arg) {
+  and(arg: any) {
     return new P('and', this, arg);
   }
 
-  or(arg) {
+  or(arg: any) {
     return new P('or', this, arg);
   }
 
   /** @param {...Object} args */
-  static containing(...args) {
+  static containing(...args: any[]) {
     return createTextP('containing', args);
   }
 
   /** @param {...Object} args */
-  static endingWith(...args) {
+  static endingWith(...args: any[]) {
     return createTextP('endingWith', args);
   }
 
   /** @param {...Object} args */
-  static notContaining(...args) {
+  static notContaining(...args: any[]) {
     return createTextP('notContaining', args);
   }
 
   /** @param {...Object} args */
-  static notEndingWith(...args) {
+  static notEndingWith(...args: any[]) {
     return createTextP('notEndingWith', args);
   }
 
   /** @param {...Object} args */
-  static notStartingWith(...args) {
+  static notStartingWith(...args: any[]) {
     return createTextP('notStartingWith', args);
   }
 
   /** @param {...Object} args */
-  static startingWith(...args) {
+  static startingWith(...args: any[]) {
     return createTextP('startingWith', args);
   }
 
   /** @param {...Object} args */
-  static regex(...args) {
+  static regex(...args: any[]) {
     return createTextP('regex', args);
   }
 
   /** @param {...Object} args */
-  static notRegex(...args) {
+  static notRegex(...args: any[]) {
     return createTextP('notRegex', args);
   }
 }
 
-function createTextP(operator, args) {
+function createTextP(operator: string, args: any) {
   args.unshift(null, operator);
   return new (Function.prototype.bind.apply(TextP, args))();
 }
 
-class Traverser {
-  constructor(object, bulk) {
-    this.object = object;
+export class Traverser<T = any> {
+  constructor(
+    public object: T,
+    public bulk: number,
+  ) {
     this.bulk = bulk || 1;
   }
 }
 
-class TraversalSideEffects {}
+export class TraversalSideEffects {}
 
-const withOptions = {
+export const withOptions = {
   tokens: '~tinkerpop.valueMap.tokens',
   none: 0,
   ids: 1,
@@ -461,8 +465,8 @@ const withOptions = {
   map: 1,
 };
 
-function toEnum(typeName, keys) {
-  const result = {};
+function toEnum(typeName: string, keys: string) {
+  const result: Record<string, EnumValue> = {};
   keys.split(' ').forEach((k) => {
     let jsKey = k;
     if (jsKey === jsKey.toUpperCase()) {
@@ -476,49 +480,39 @@ function toEnum(typeName, keys) {
 const directionAlias = {
   from_: 'out',
   to: 'in',
-};
+} as const;
 
 // for direction enums, maps the same EnumValue object to the enum aliases after creating them
-function toDirectionEnum(typeName, keys) {
+function toDirectionEnum(typeName: string, keys: string) {
   const result = toEnum(typeName, keys);
   Object.keys(directionAlias).forEach((k) => {
-    result[k] = result[directionAlias[k]];
+    result[k] = result[directionAlias[k as keyof typeof directionAlias]];
   });
   return result;
 }
 
-class EnumValue {
-  constructor(typeName, elementName) {
-    this.typeName = typeName;
-    this.elementName = elementName;
-  }
+export class EnumValue {
+  constructor(
+    public typeName: string,
+    public elementName: string,
+  ) {}
 
   toString() {
     return this.elementName;
   }
 }
 
-module.exports = {
-  EnumValue,
-  P,
-  TextP,
-  withOptions,
-  IO,
-  Traversal,
-  TraversalSideEffects,
-  Traverser,
-  barrier: toEnum('Barrier', 'normSack'),
-  cardinality: toEnum('Cardinality', 'list set single'),
-  column: toEnum('Column', 'keys values'),
-  direction: toDirectionEnum('Direction', 'BOTH IN OUT from_ to'),
-  dt: toEnum('DT', 'second minute hour day'),
-  graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
-  gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
-  merge: toEnum('Merge', 'onCreate onMatch outV inV'),
-  operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
-  order: toEnum('Order', 'asc desc shuffle'),
-  pick: toEnum('Pick', 'any none'),
-  pop: toEnum('Pop', 'all first last mixed'),
-  scope: toEnum('Scope', 'global local'),
-  t: toEnum('T', 'id key label value'),
-};
+export const barrier = toEnum('Barrier', 'normSack');
+export const cardinality = toEnum('Cardinality', 'list set single');
+export const column = toEnum('Column', 'keys values');
+export const direction = toDirectionEnum('Direction', 'BOTH IN OUT from_ to');
+export const dt = toEnum('DT', 'second minute hour day');
+export const graphSONVersion = toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0');
+export const gryoVersion = toEnum('GryoVersion', 'V1_0 V3_0');
+export const merge = toEnum('Merge', 'onCreate onMatch outV inV');
+export const operator = toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong');
+export const order = toEnum('Order', 'asc desc shuffle');
+export const pick = toEnum('Pick', 'any none');
+export const pop = toEnum('Pop', 'all first last mixed');
+export const scope = toEnum('Scope', 'global local');
+export const t = toEnum('T', 'id key label value');

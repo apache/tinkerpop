@@ -20,13 +20,11 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { lambdaSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const g = require('../../../lib/structure/graph');
+import { ser_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { lambdaSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
@@ -60,7 +58,7 @@ describe('GraphBinary.LambdaSerializer', () => {
 
   describe('#serialize', () =>
     cases
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -81,13 +79,13 @@ describe('GraphBinary.LambdaSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: new t.P(),         e: false },
+      { v: new Traverser(), e: false },
+      { v: new P(),         e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
       { v: [function(){}],    e: false },
       { v: function(){},      e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( lambdaSerializer.canBeUsedFor(v), e )
     ))
   );

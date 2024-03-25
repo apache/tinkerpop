@@ -17,8 +17,6 @@
  *  under the License.
  */
 
-'use strict';
-
 module.exports = {
   env: {
     commonjs: true,
@@ -27,8 +25,9 @@ module.exports = {
   },
   parserOptions: {
     ecmaVersion: 2022,
+    sourceType: 'module',
   },
-  ignorePatterns: ['test/**/*.js', 'doc/**/*.js'],
+  ignorePatterns: ['test/**/*.js', 'doc/**/*.js', 'build'],
   extends: ['eslint:recommended', 'prettier'],
   plugins: ['prettier'],
   rules: {

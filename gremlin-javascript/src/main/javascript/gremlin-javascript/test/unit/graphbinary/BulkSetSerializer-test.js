@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { bulkSetSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+import { des_title } from './utils.js';
+import assert from 'assert';
+import { bulkSetSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 const { from, concat } = Buffer;
 
@@ -124,7 +123,7 @@ describe('GraphBinary.BulkSetSerializer', () => {
   ];
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 

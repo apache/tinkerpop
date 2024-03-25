@@ -728,15 +728,15 @@ __metadata:
   linkType: hard
 
 "gremlin@file:../../src/main/javascript/gremlin-javascript::locator=browser%40workspace%3A.":
-  version: 3.7.2-alpha1
-  resolution: "gremlin@file:../../src/main/javascript/gremlin-javascript#../../src/main/javascript/gremlin-javascript::hash=4bd845&locator=browser%40workspace%3A."
+  version: 4.0.0-alpha1
+  resolution: "gremlin@file:../../src/main/javascript/gremlin-javascript#../../src/main/javascript/gremlin-javascript::hash=83bc8e&locator=browser%40workspace%3A."
   dependencies:
     buffer: "npm:^6.0.3"
     eventemitter3: "npm:^5.0.1"
     readable-stream: "npm:^4.5.2"
     uuid: "npm:^9.0.1"
     ws: "npm:^8.16.0"
-  checksum: 10c0/1a8172b44851cb71eb11f5aee438034912762351d941684fae942a142d9d757e3be72bd136a5cc43dd81dd00594a17c36009d46ef06e0ba4120f7644aefa675e
+  checksum: 10c0/13986e0b78a84a421e5542a7bb4ba8cca3fb7a12cb7fcce1426a40233f434a4ce86315aa943ce6818b101126a0167b8fa8e0a516dea0e98576fd68a22eef5650
   languageName: node
   linkType: hard
 

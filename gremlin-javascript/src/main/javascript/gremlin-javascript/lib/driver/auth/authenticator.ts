@@ -16,37 +16,19 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-'use strict';
 
-/** @abstract */
-class SaslMechanismBase {
-  constructor(options) {
-    this.setopts(options);
-  }
+export type AuthenticatorOptions = {
+  username?: string;
+  password?: string;
+  mechanism?: any;
+};
 
-  /**
-   * Returns the name of the mechanism
-   */
-  get name() {
-    return null;
-  }
+export default abstract class Authenticator {
+  constructor(protected readonly options: AuthenticatorOptions) {}
 
   /**
-   * Set the options for the mechanism
-   * @param {object} options Options specific to the mechanism
+   * Evaluates the challenge from the server and returns appropriate response.
+   * @param {String} challenge Challenge string presented by the server.
    */
-  setopts(options) {
-    this._options = options;
-  }
-
-  /**
-   * @abstract
-   * Evaluates the challenge from the server and returns appropriate response
-   * @param {String} challenge Challenge string presented by the server
-   */
-  evaluateChallenge(challenge) {
-    throw new Error('evaluateChallenge should be implemented');
-  }
+  abstract evaluateChallenge(challenge: string): any;
 }
-
-module.exports = SaslMechanismBase;

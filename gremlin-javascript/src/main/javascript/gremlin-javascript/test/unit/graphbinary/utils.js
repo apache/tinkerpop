@@ -20,21 +20,13 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const util = require('util');
+import { inspect } from 'util';
 
-const ser_title = ({ i, v }) =>
-  `should be able to handle case #${i}: ${util.inspect(v, { depth: 1, breakLength: Infinity })}`;
+export const ser_title = ({ i, v }) =>
+  `should be able to handle case #${i}: ${inspect(v, { depth: 1, breakLength: Infinity })}`;
 
-const des_title = ({ i, b }) =>
-  `should be able to handle case #${i}: ${b ? Buffer.from(b).toString('hex') : b}`;
+export const des_title = ({ i, b }) => `should be able to handle case #${i}: ${b ? Buffer.from(b).toString('hex') : b}`;
 
-const cbuf_title = ({ i, v }) =>
-  `should be able to handle case #${i}: ${util.inspect(v, { depth: 1, breakLength: Infinity })}`;
-
-module.exports = {
-  ser_title,
-  des_title,
-  cbuf_title,
-};
+export const cbuf_title = ({ i, v }) =>
+  `should be able to handle case #${i}: ${inspect(v, { depth: 1, breakLength: Infinity })}`;

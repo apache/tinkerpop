@@ -20,13 +20,12 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { vertexPropertySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const g = require('../../../lib/structure/graph');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { vertexPropertySerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
+import { VertexProperty } from '../../../lib/structure/graph.js';
 
 const { from, concat } = Buffer;
 
@@ -37,11 +36,11 @@ describe('GraphBinary.VertexPropertySerializer', () => {
 
   const cases = [
     { v:undefined, fq:1, b:[0x12,0x01],                                                       av:null },
-    { v:undefined, fq:0, b:[0xFE,0x01, 0x00,0x00,0x00,0x00, 0xFE,0x01, 0xFE,0x01, 0xFE,0x01], av:new g.VertexProperty(null,'',null,null) },
+    { v:undefined, fq:0, b:[0xFE,0x01, 0x00,0x00,0x00,0x00, 0xFE,0x01, 0xFE,0x01, 0xFE,0x01], av:new VertexProperty(null,'',null,null) },
     { v:null,      fq:1, b:[0x12,0x01] },
-    { v:null,      fq:0, b:[0xFE,0x01, 0x00,0x00,0x00,0x00, 0xFE,0x01, 0xFE,0x01, 0xFE,0x01], av:new g.VertexProperty(null,'',null,null) },
+    { v:null,      fq:0, b:[0xFE,0x01, 0x00,0x00,0x00,0x00, 0xFE,0x01, 0xFE,0x01, 0xFE,0x01], av:new VertexProperty(null,'',null,null) },
 
-    { v:new g.VertexProperty('Id', 'Label', 'Value', null),
+    { v:new VertexProperty('Id', 'Label', 'Value', null),
       b:[
         0x03,0x00, 0x00,0x00,0x00,0x02, ...from('Id'),
         0x00,0x00,0x00,0x05, ...from('Label'),
@@ -76,7 +75,7 @@ describe('GraphBinary.VertexPropertySerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -92,7 +91,7 @@ describe('GraphBinary.VertexPropertySerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -129,13 +128,13 @@ describe('GraphBinary.VertexPropertySerializer', () => {
       { v: null,                     e: false },
       { v: undefined,                e: false },
       { v: {},                       e: false },
-      { v: new t.Traverser(),        e: false },
-      { v: new t.P(),                e: false },
+      { v: new Traverser(),        e: false },
+      { v: new P(),                e: false },
       { v: [],                       e: false },
       { v: [0],                      e: false },
-      { v: [new g.VertexProperty()], e: false },
-      { v: new g.VertexProperty(),   e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: [new VertexProperty()], e: false },
+      { v: new VertexProperty(),   e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( vertexPropertySerializer.canBeUsedFor(v), e )
     ))
   );

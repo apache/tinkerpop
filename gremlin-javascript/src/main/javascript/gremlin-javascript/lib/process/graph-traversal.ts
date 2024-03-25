@@ -20,17 +20,20 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const { Traversal, cardinality } = require('./traversal');
-const { Transaction } = require('./transaction');
-const Bytecode = require('./bytecode');
-const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require('./traversal-strategy');
+import { EnumValue, Traversal, cardinality } from './traversal.js';
+import { Transaction } from './transaction.js';
+import Bytecode from './bytecode.js';
+import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
+import { Graph } from '../structure/graph.js';
+import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
 
 /**
  * Represents the primary DSL of the Gremlin traversal machine.
  */
-class GraphTraversalSource {
+export class GraphTraversalSource {
+  remoteConnection?: RemoteConnection;
+
   /**
    * Creates a new instance of {@link GraphTraversalSource}.
    * @param {Graph} graph
@@ -39,12 +42,13 @@ class GraphTraversalSource {
    * @param {Function} [graphTraversalSourceClass] Optional {@link GraphTraversalSource} constructor.
    * @param {Function} [graphTraversalClass] Optional {@link GraphTraversal} constructor.
    */
-  constructor(graph, traversalStrategies, bytecode, graphTraversalSourceClass, graphTraversalClass) {
-    this.graph = graph;
-    this.traversalStrategies = traversalStrategies;
-    this.bytecode = bytecode || new Bytecode();
-    this.graphTraversalSourceClass = graphTraversalSourceClass || GraphTraversalSource;
-    this.graphTraversalClass = graphTraversalClass || GraphTraversal;
+  constructor(
+    public graph: Graph,
+    public traversalStrategies: TraversalStrategies,
+    public bytecode: Bytecode = new Bytecode(),
+    public graphTraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource,
+    public graphTraversalClass: typeof GraphTraversal = GraphTraversal,
+  ) {
     const strat = traversalStrategies.strategies.find((ts) => ts.fqcn === 'js:RemoteStrategy');
     this.remoteConnection = strat !== undefined ? strat.connection : undefined;
   }
@@ -53,7 +57,7 @@ class GraphTraversalSource {
    * Spawn a new <code>Transaction</code> object that can then start and stop a transaction.
    * @returns {Transaction}
    */
-  tx() {
+  tx(): Transaction {
     // you can't do g.tx().begin().tx() - no child transactions
     if (this.remoteConnection && this.remoteConnection.isSessionBound) {
       throw new Error('This TraversalSource is already bound to a transaction - child transactions are not supported');
@@ -72,8 +76,16 @@ class GraphTraversalSource {
    * @param configuration
    * @returns {GraphTraversalSource}
    */
-  withComputer(graphComputer, workers, result, persist, vertices, edges, configuration) {
-    const m = {};
+  withComputer(
+    graphComputer: any,
+    workers: any,
+    result: any,
+    persist: any,
+    vertices: any[],
+    edges: any[],
+    configuration: any,
+  ): GraphTraversalSource {
+    const m: any = {};
     if (graphComputer !== undefined) {
       m.graphComputer = graphComputer;
     }
@@ -104,7 +116,7 @@ class GraphTraversalSource {
    * @param {Object} value if not specified, the value with default to {@code true}
    * @returns {GraphTraversalSource}
    */
-  with_(key, value = undefined) {
+  with_(key: string, value: object | undefined = undefined): GraphTraversalSource {
     const val = value === undefined ? true : value;
     let optionsStrategy = this.bytecode.sourceInstructions.find(
       (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
@@ -127,7 +139,7 @@ class GraphTraversalSource {
    * Returns the string representation of the GraphTraversalSource.
    * @returns {string}
    */
-  toString() {
+  toString(): string {
     return 'graphtraversalsource[' + this.graph.toString() + ']';
   }
 
@@ -136,7 +148,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withBulk(...args) {
+  withBulk(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withBulk', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -152,7 +164,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withPath(...args) {
+  withPath(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withPath', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -168,7 +180,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withSack(...args) {
+  withSack(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withSack', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -184,7 +196,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withSideEffect(...args) {
+  withSideEffect(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withSideEffect', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -200,7 +212,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withStrategies(...args) {
+  withStrategies(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withStrategies', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -216,7 +228,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversalSource}
    */
-  withoutStrategies(...args) {
+  withoutStrategies(...args: any[]): GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addSource('withoutStrategies', args);
     return new this.graphTraversalSourceClass(
       this.graph,
@@ -232,7 +244,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  E(...args) {
+  E(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('E', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -242,7 +254,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  V(...args) {
+  V(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('V', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -252,7 +264,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  addE(...args) {
+  addE(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('addE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -262,7 +274,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  mergeE(...args) {
+  mergeE(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('mergeE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -272,7 +284,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  addV(...args) {
+  addV(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('addV', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -282,7 +294,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  mergeV(...args) {
+  mergeV(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('mergeV', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -292,7 +304,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  inject(...args) {
+  inject(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('inject', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -302,7 +314,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  io(...args) {
+  io(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('io', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -312,7 +324,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  call(...args) {
+  call(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('call', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -322,7 +334,7 @@ class GraphTraversalSource {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  union(...args) {
+  union(...args: any[]): GraphTraversal {
     const b = new Bytecode(this.bytecode).addStep('union', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -331,8 +343,8 @@ class GraphTraversalSource {
 /**
  * Represents a graph traversal.
  */
-class GraphTraversal extends Traversal {
-  constructor(graph, traversalStrategies, bytecode) {
+export class GraphTraversal extends Traversal {
+  constructor(graph: Graph | null, traversalStrategies: TraversalStrategies | null, bytecode: Bytecode) {
     super(graph, traversalStrategies, bytecode);
   }
 
@@ -348,7 +360,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  V(...args) {
+  V(...args: any[]): this {
     this.bytecode.addStep('V', args);
     return this;
   }
@@ -358,7 +370,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  E(...args) {
+  E(...args: any[]): this {
     this.bytecode.addStep('E', args);
     return this;
   }
@@ -368,7 +380,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  addE(...args) {
+  addE(...args: any[]): this {
     this.bytecode.addStep('addE', args);
     return this;
   }
@@ -378,7 +390,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  addV(...args) {
+  addV(...args: any[]): this {
     this.bytecode.addStep('addV', args);
     return this;
   }
@@ -388,7 +400,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  aggregate(...args) {
+  aggregate(...args: any[]): this {
     this.bytecode.addStep('aggregate', args);
     return this;
   }
@@ -398,7 +410,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  all(...args) {
+  all(...args: any[]): this {
     this.bytecode.addStep('all', args);
     return this;
   }
@@ -408,7 +420,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  and(...args) {
+  and(...args: any[]): this {
     this.bytecode.addStep('and', args);
     return this;
   }
@@ -418,7 +430,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  any(...args) {
+  any(...args: any[]): this {
     this.bytecode.addStep('any', args);
     return this;
   }
@@ -428,7 +440,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  as(...args) {
+  as(...args: any[]): this {
     this.bytecode.addStep('as', args);
     return this;
   }
@@ -438,7 +450,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  asDate(...args) {
+  asDate(...args: any[]): this {
     this.bytecode.addStep('asDate', args);
     return this;
   }
@@ -448,7 +460,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  asString(...args) {
+  asString(...args: any[]): this {
     this.bytecode.addStep('asString', args);
     return this;
   }
@@ -458,7 +470,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  barrier(...args) {
+  barrier(...args: any[]): this {
     this.bytecode.addStep('barrier', args);
     return this;
   }
@@ -468,7 +480,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  both(...args) {
+  both(...args: any[]): this {
     this.bytecode.addStep('both', args);
     return this;
   }
@@ -478,7 +490,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  bothE(...args) {
+  bothE(...args: any[]): this {
     this.bytecode.addStep('bothE', args);
     return this;
   }
@@ -488,7 +500,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  bothV(...args) {
+  bothV(...args: any[]): this {
     this.bytecode.addStep('bothV', args);
     return this;
   }
@@ -498,7 +510,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  branch(...args) {
+  branch(...args: any[]): this {
     this.bytecode.addStep('branch', args);
     return this;
   }
@@ -508,7 +520,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  by(...args) {
+  by(...args: any[]): this {
     this.bytecode.addStep('by', args);
     return this;
   }
@@ -518,7 +530,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  call(...args) {
+  call(...args: any[]): this {
     this.bytecode.addStep('call', args);
     return this;
   }
@@ -527,7 +539,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  cap(...args) {
+  cap(...args: any[]): this {
     this.bytecode.addStep('cap', args);
     return this;
   }
@@ -537,7 +549,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  choose(...args) {
+  choose(...args: any[]): this {
     this.bytecode.addStep('choose', args);
     return this;
   }
@@ -547,7 +559,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  coalesce(...args) {
+  coalesce(...args: any[]): this {
     this.bytecode.addStep('coalesce', args);
     return this;
   }
@@ -557,7 +569,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  coin(...args) {
+  coin(...args: any[]): this {
     this.bytecode.addStep('coin', args);
     return this;
   }
@@ -567,7 +579,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  combine(...args) {
+  combine(...args: any[]): this {
     this.bytecode.addStep('combine', args);
     return this;
   }
@@ -577,7 +589,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  concat(...args) {
+  concat(...args: any[]): this {
     this.bytecode.addStep('concat', args);
     return this;
   }
@@ -587,7 +599,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  conjoin(...args) {
+  conjoin(...args: any[]): this {
     this.bytecode.addStep('conjoin', args);
     return this;
   }
@@ -597,7 +609,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  connectedComponent(...args) {
+  connectedComponent(...args: any[]): this {
     this.bytecode.addStep('connectedComponent', args);
     return this;
   }
@@ -607,7 +619,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  constant(...args) {
+  constant(...args: any[]): this {
     this.bytecode.addStep('constant', args);
     return this;
   }
@@ -617,7 +629,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  count(...args) {
+  count(...args: any[]): this {
     this.bytecode.addStep('count', args);
     return this;
   }
@@ -627,7 +639,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  cyclicPath(...args) {
+  cyclicPath(...args: any[]): this {
     this.bytecode.addStep('cyclicPath', args);
     return this;
   }
@@ -637,7 +649,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  dateAdd(...args) {
+  dateAdd(...args: any[]): this {
     this.bytecode.addStep('dateAdd', args);
     return this;
   }
@@ -647,7 +659,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  dateDiff(...args) {
+  dateDiff(...args: any[]): this {
     this.bytecode.addStep('dateDiff', args);
     return this;
   }
@@ -657,7 +669,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  dedup(...args) {
+  dedup(...args: any[]): this {
     this.bytecode.addStep('dedup', args);
     return this;
   }
@@ -667,7 +679,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  difference(...args) {
+  difference(...args: any[]): this {
     this.bytecode.addStep('difference', args);
     return this;
   }
@@ -677,7 +689,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  discard(...args) {
+  discard(...args: any[]): this {
     this.bytecode.addStep('discard', args);
     return this;
   }
@@ -687,7 +699,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  disjunct(...args) {
+  disjunct(...args: any[]): this {
     this.bytecode.addStep('disjunct', args);
     return this;
   }
@@ -697,7 +709,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  drop(...args) {
+  drop(...args: any[]): this {
     this.bytecode.addStep('drop', args);
     return this;
   }
@@ -707,7 +719,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  element(...args) {
+  element(...args: any[]): this {
     this.bytecode.addStep('element', args);
     return this;
   }
@@ -716,7 +728,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  elementMap(...args) {
+  elementMap(...args: any[]): this {
     this.bytecode.addStep('elementMap', args);
     return this;
   }
@@ -726,7 +738,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  emit(...args) {
+  emit(...args: any[]): this {
     this.bytecode.addStep('emit', args);
     return this;
   }
@@ -736,7 +748,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  fail(...args) {
+  fail(...args: any[]): this {
     this.bytecode.addStep('fail', args);
     return this;
   }
@@ -746,7 +758,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  filter(...args) {
+  filter(...args: any[]): this {
     this.bytecode.addStep('filter', args);
     return this;
   }
@@ -756,7 +768,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  flatMap(...args) {
+  flatMap(...args: any[]): this {
     this.bytecode.addStep('flatMap', args);
     return this;
   }
@@ -766,7 +778,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  fold(...args) {
+  fold(...args: any[]): this {
     this.bytecode.addStep('fold', args);
     return this;
   }
@@ -776,7 +788,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  format(...args) {
+  format(...args: any[]): this {
     this.bytecode.addStep('format', args);
     return this;
   }
@@ -786,7 +798,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  from_(...args) {
+  from_(...args: any[]): this {
     this.bytecode.addStep('from', args);
     return this;
   }
@@ -796,7 +808,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  group(...args) {
+  group(...args: any[]): this {
     this.bytecode.addStep('group', args);
     return this;
   }
@@ -806,7 +818,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  groupCount(...args) {
+  groupCount(...args: any[]): this {
     this.bytecode.addStep('groupCount', args);
     return this;
   }
@@ -816,7 +828,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  has(...args) {
+  has(...args: any[]): this {
     this.bytecode.addStep('has', args);
     return this;
   }
@@ -826,7 +838,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  hasId(...args) {
+  hasId(...args: any[]): this {
     this.bytecode.addStep('hasId', args);
     return this;
   }
@@ -836,7 +848,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  hasKey(...args) {
+  hasKey(...args: any[]): this {
     this.bytecode.addStep('hasKey', args);
     return this;
   }
@@ -846,7 +858,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  hasLabel(...args) {
+  hasLabel(...args: any[]): this {
     this.bytecode.addStep('hasLabel', args);
     return this;
   }
@@ -856,7 +868,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  hasNot(...args) {
+  hasNot(...args: any[]): this {
     this.bytecode.addStep('hasNot', args);
     return this;
   }
@@ -866,7 +878,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  hasValue(...args) {
+  hasValue(...args: any[]): this {
     this.bytecode.addStep('hasValue', args);
     return this;
   }
@@ -876,7 +888,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  id(...args) {
+  id(...args: any[]): this {
     this.bytecode.addStep('id', args);
     return this;
   }
@@ -886,7 +898,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  identity(...args) {
+  identity(...args: any[]): this {
     this.bytecode.addStep('identity', args);
     return this;
   }
@@ -896,7 +908,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  in_(...args) {
+  in_(...args: any[]): this {
     this.bytecode.addStep('in', args);
     return this;
   }
@@ -906,7 +918,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  inE(...args) {
+  inE(...args: any[]): this {
     this.bytecode.addStep('inE', args);
     return this;
   }
@@ -916,7 +928,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  inV(...args) {
+  inV(...args: any[]): this {
     this.bytecode.addStep('inV', args);
     return this;
   }
@@ -926,7 +938,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  index(...args) {
+  index(...args: any[]): this {
     this.bytecode.addStep('index', args);
     return this;
   }
@@ -936,7 +948,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  inject(...args) {
+  inject(...args: any[]): this {
     this.bytecode.addStep('inject', args);
     return this;
   }
@@ -946,7 +958,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  intersect(...args) {
+  intersect(...args: any[]): this {
     this.bytecode.addStep('intersect', args);
     return this;
   }
@@ -956,7 +968,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  is(...args) {
+  is(...args: any[]): this {
     this.bytecode.addStep('is', args);
     return this;
   }
@@ -966,7 +978,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  key(...args) {
+  key(...args: any[]): this {
     this.bytecode.addStep('key', args);
     return this;
   }
@@ -976,7 +988,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  label(...args) {
+  label(...args: any[]): this {
     this.bytecode.addStep('label', args);
     return this;
   }
@@ -986,7 +998,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  length(...args) {
+  length(...args: any[]): this {
     this.bytecode.addStep('length', args);
     return this;
   }
@@ -996,7 +1008,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  limit(...args) {
+  limit(...args: any[]): this {
     this.bytecode.addStep('limit', args);
     return this;
   }
@@ -1006,7 +1018,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  local(...args) {
+  local(...args: any[]): this {
     this.bytecode.addStep('local', args);
     return this;
   }
@@ -1016,7 +1028,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  loops(...args) {
+  loops(...args: any[]): this {
     this.bytecode.addStep('loops', args);
     return this;
   }
@@ -1026,7 +1038,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  lTrim(...args) {
+  lTrim(...args: any[]): this {
     this.bytecode.addStep('lTrim', args);
     return this;
   }
@@ -1036,7 +1048,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  map(...args) {
+  map(...args: any[]): this {
     this.bytecode.addStep('map', args);
     return this;
   }
@@ -1046,7 +1058,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  match(...args) {
+  match(...args: any[]): this {
     this.bytecode.addStep('match', args);
     return this;
   }
@@ -1056,7 +1068,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  math(...args) {
+  math(...args: any[]): this {
     this.bytecode.addStep('math', args);
     return this;
   }
@@ -1066,7 +1078,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  max(...args) {
+  max(...args: any[]): this {
     this.bytecode.addStep('max', args);
     return this;
   }
@@ -1076,7 +1088,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  mean(...args) {
+  mean(...args: any[]): this {
     this.bytecode.addStep('mean', args);
     return this;
   }
@@ -1086,7 +1098,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  merge(...args) {
+  merge(...args: any[]): this {
     this.bytecode.addStep('merge', args);
     return this;
   }
@@ -1096,7 +1108,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  mergeE(...args) {
+  mergeE(...args: any[]): this {
     this.bytecode.addStep('mergeE', args);
     return this;
   }
@@ -1106,7 +1118,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  mergeV(...args) {
+  mergeV(...args: any[]): this {
     this.bytecode.addStep('mergeV', args);
     return this;
   }
@@ -1116,7 +1128,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  min(...args) {
+  min(...args: any[]): this {
     this.bytecode.addStep('min', args);
     return this;
   }
@@ -1126,7 +1138,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  none(...args) {
+  none(...args: any[]): this {
     this.bytecode.addStep('none', args);
     return this;
   }
@@ -1136,7 +1148,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  not(...args) {
+  not(...args: any[]): this {
     this.bytecode.addStep('not', args);
     return this;
   }
@@ -1146,7 +1158,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  option(...args) {
+  option(...args: any[]): this {
     this.bytecode.addStep('option', args);
     return this;
   }
@@ -1156,7 +1168,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  optional(...args) {
+  optional(...args: any[]): this {
     this.bytecode.addStep('optional', args);
     return this;
   }
@@ -1166,7 +1178,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  or(...args) {
+  or(...args: any[]): this {
     this.bytecode.addStep('or', args);
     return this;
   }
@@ -1176,7 +1188,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  order(...args) {
+  order(...args: any[]): this {
     this.bytecode.addStep('order', args);
     return this;
   }
@@ -1186,7 +1198,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  otherV(...args) {
+  otherV(...args: any[]): this {
     this.bytecode.addStep('otherV', args);
     return this;
   }
@@ -1196,7 +1208,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  out(...args) {
+  out(...args: any[]): this {
     this.bytecode.addStep('out', args);
     return this;
   }
@@ -1206,7 +1218,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  outE(...args) {
+  outE(...args: any[]): this {
     this.bytecode.addStep('outE', args);
     return this;
   }
@@ -1216,7 +1228,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  outV(...args) {
+  outV(...args: any[]): this {
     this.bytecode.addStep('outV', args);
     return this;
   }
@@ -1226,7 +1238,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  pageRank(...args) {
+  pageRank(...args: any[]): this {
     this.bytecode.addStep('pageRank', args);
     return this;
   }
@@ -1236,7 +1248,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  path(...args) {
+  path(...args: any[]): this {
     this.bytecode.addStep('path', args);
     return this;
   }
@@ -1246,7 +1258,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  peerPressure(...args) {
+  peerPressure(...args: any[]): this {
     this.bytecode.addStep('peerPressure', args);
     return this;
   }
@@ -1256,7 +1268,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  product(...args) {
+  product(...args: any[]): this {
     this.bytecode.addStep('product', args);
     return this;
   }
@@ -1266,7 +1278,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  profile(...args) {
+  profile(...args: any[]): this {
     this.bytecode.addStep('profile', args);
     return this;
   }
@@ -1276,7 +1288,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  program(...args) {
+  program(...args: any[]): this {
     this.bytecode.addStep('program', args);
     return this;
   }
@@ -1286,7 +1298,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  project(...args) {
+  project(...args: any[]): this {
     this.bytecode.addStep('project', args);
     return this;
   }
@@ -1296,7 +1308,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  properties(...args) {
+  properties(...args: any[]): this {
     this.bytecode.addStep('properties', args);
     return this;
   }
@@ -1306,7 +1318,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  property(...args) {
+  property(...args: any[]): this {
     this.bytecode.addStep('property', args);
     return this;
   }
@@ -1316,7 +1328,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  propertyMap(...args) {
+  propertyMap(...args: any[]): this {
     this.bytecode.addStep('propertyMap', args);
     return this;
   }
@@ -1326,7 +1338,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  range(...args) {
+  range(...args: any[]): this {
     this.bytecode.addStep('range', args);
     return this;
   }
@@ -1336,7 +1348,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  read(...args) {
+  read(...args: any[]): this {
     this.bytecode.addStep('read', args);
     return this;
   }
@@ -1346,7 +1358,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  repeat(...args) {
+  repeat(...args: any[]): this {
     this.bytecode.addStep('repeat', args);
     return this;
   }
@@ -1356,7 +1368,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  replace(...args) {
+  replace(...args: any[]): this {
     this.bytecode.addStep('replace', args);
     return this;
   }
@@ -1366,7 +1378,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  reverse(...args) {
+  reverse(...args: any[]): this {
     this.bytecode.addStep('reverse', args);
     return this;
   }
@@ -1376,7 +1388,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  rTrim(...args) {
+  rTrim(...args: any[]): this {
     this.bytecode.addStep('rTrim', args);
     return this;
   }
@@ -1386,7 +1398,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  sack(...args) {
+  sack(...args: any[]): this {
     this.bytecode.addStep('sack', args);
     return this;
   }
@@ -1396,7 +1408,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  sample(...args) {
+  sample(...args: any[]): this {
     this.bytecode.addStep('sample', args);
     return this;
   }
@@ -1406,7 +1418,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  select(...args) {
+  select(...args: any[]): this {
     this.bytecode.addStep('select', args);
     return this;
   }
@@ -1416,7 +1428,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  shortestPath(...args) {
+  shortestPath(...args: any[]): this {
     this.bytecode.addStep('shortestPath', args);
     return this;
   }
@@ -1426,7 +1438,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  sideEffect(...args) {
+  sideEffect(...args: any[]): this {
     this.bytecode.addStep('sideEffect', args);
     return this;
   }
@@ -1436,7 +1448,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  simplePath(...args) {
+  simplePath(...args: any[]): this {
     this.bytecode.addStep('simplePath', args);
     return this;
   }
@@ -1446,7 +1458,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  skip(...args) {
+  skip(...args: any[]): this {
     this.bytecode.addStep('skip', args);
     return this;
   }
@@ -1456,7 +1468,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  split(...args) {
+  split(...args: any[]): this {
     this.bytecode.addStep('split', args);
     return this;
   }
@@ -1466,7 +1478,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  store(...args) {
+  store(...args: any[]): this {
     this.bytecode.addStep('store', args);
     return this;
   }
@@ -1476,7 +1488,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  subgraph(...args) {
+  subgraph(...args: any[]): this {
     this.bytecode.addStep('subgraph', args);
     return this;
   }
@@ -1486,7 +1498,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  substring(...args) {
+  substring(...args: any[]): this {
     this.bytecode.addStep('substring', args);
     return this;
   }
@@ -1496,7 +1508,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  sum(...args) {
+  sum(...args: any[]): this {
     this.bytecode.addStep('sum', args);
     return this;
   }
@@ -1506,7 +1518,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  tail(...args) {
+  tail(...args: any[]): this {
     this.bytecode.addStep('tail', args);
     return this;
   }
@@ -1516,7 +1528,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  timeLimit(...args) {
+  timeLimit(...args: any[]): this {
     this.bytecode.addStep('timeLimit', args);
     return this;
   }
@@ -1526,7 +1538,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  times(...args) {
+  times(...args: any[]): this {
     this.bytecode.addStep('times', args);
     return this;
   }
@@ -1536,7 +1548,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  to(...args) {
+  to(...args: any[]): this {
     this.bytecode.addStep('to', args);
     return this;
   }
@@ -1546,7 +1558,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  toE(...args) {
+  toE(...args: any[]): this {
     this.bytecode.addStep('toE', args);
     return this;
   }
@@ -1556,7 +1568,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  toLower(...args) {
+  toLower(...args: any[]): this {
     this.bytecode.addStep('toLower', args);
     return this;
   }
@@ -1566,7 +1578,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  toUpper(...args) {
+  toUpper(...args: any[]): this {
     this.bytecode.addStep('toUpper', args);
     return this;
   }
@@ -1576,7 +1588,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  toV(...args) {
+  toV(...args: any[]): this {
     this.bytecode.addStep('toV', args);
     return this;
   }
@@ -1586,7 +1598,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  tree(...args) {
+  tree(...args: any[]): this {
     this.bytecode.addStep('tree', args);
     return this;
   }
@@ -1596,7 +1608,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  trim(...args) {
+  trim(...args: any[]): this {
     this.bytecode.addStep('trim', args);
     return this;
   }
@@ -1606,7 +1618,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  unfold(...args) {
+  unfold(...args: any[]): this {
     this.bytecode.addStep('unfold', args);
     return this;
   }
@@ -1616,7 +1628,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  union(...args) {
+  union(...args: any[]): this {
     this.bytecode.addStep('union', args);
     return this;
   }
@@ -1626,7 +1638,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  until(...args) {
+  until(...args: any[]): this {
     this.bytecode.addStep('until', args);
     return this;
   }
@@ -1636,7 +1648,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  value(...args) {
+  value(...args: any[]): this {
     this.bytecode.addStep('value', args);
     return this;
   }
@@ -1646,7 +1658,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  valueMap(...args) {
+  valueMap(...args: any[]): this {
     this.bytecode.addStep('valueMap', args);
     return this;
   }
@@ -1656,7 +1668,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  values(...args) {
+  values(...args: any[]): this {
     this.bytecode.addStep('values', args);
     return this;
   }
@@ -1666,7 +1678,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  where(...args) {
+  where(...args: any[]): this {
     this.bytecode.addStep('where', args);
     return this;
   }
@@ -1676,7 +1688,7 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  with_(...args) {
+  with_(...args: any[]): this {
     this.bytecode.addStep('with', args);
     return this;
   }
@@ -1686,19 +1698,19 @@ class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  write(...args) {
+  write(...args: any[]): this {
     this.bytecode.addStep('write', args);
     return this;
   }
 }
 
-class CardinalityValue extends Bytecode {
+export class CardinalityValue extends Bytecode {
   /**
    * Creates a new instance of {@link CardinalityValue}.
    * @param {String} card
    * @param {Object} value
    */
-  constructor(card, value) {
+  constructor(card: string | EnumValue, value: any) {
     super();
     this.addSource('CardinalityValueTraversal', [card, value]);
   }
@@ -1708,7 +1720,7 @@ class CardinalityValue extends Bytecode {
    * @param {Array} value
    * @returns {CardinalityValue}
    */
-  static single(value) {
+  static single(value: any[]): CardinalityValue {
     return new CardinalityValue(cardinality.single, value);
   }
 
@@ -1717,7 +1729,7 @@ class CardinalityValue extends Bytecode {
    * @param {Array} value
    * @returns {CardinalityValue}
    */
-  static list(value) {
+  static list(value: any[]): CardinalityValue {
     return new CardinalityValue(cardinality.list, value);
   }
 
@@ -1726,141 +1738,132 @@ class CardinalityValue extends Bytecode {
    * @param {Array} value
    * @returns {CardinalityValue}
    */
-  static set(value) {
+  static set(value: any[]): CardinalityValue {
     return new CardinalityValue(cardinality.set, value);
   }
 }
 
-function callOnEmptyTraversal(fnName, args) {
+function callOnEmptyTraversal(fnName: string, args: any[]) {
   const g = new GraphTraversal(null, null, new Bytecode());
-  return g[fnName].apply(g, args);
+  return g[fnName as keyof typeof g].apply(g, args);
 }
 
 /**
  * Contains the static method definitions
- * @type {Object}
  */
-const statics = {
-  E: (...args) => callOnEmptyTraversal('E', args),
-  V: (...args) => callOnEmptyTraversal('V', args),
-  addE: (...args) => callOnEmptyTraversal('addE', args),
-  addV: (...args) => callOnEmptyTraversal('addV', args),
-  aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
-  all: (...args) => callOnEmptyTraversal('all', args),
-  and: (...args) => callOnEmptyTraversal('and', args),
-  any: (...args) => callOnEmptyTraversal('any', args),
-  as: (...args) => callOnEmptyTraversal('as', args),
-  asDate: (...args) => callOnEmptyTraversal('asDate', args),
-  asString: (...args) => callOnEmptyTraversal('asString', args),
-  barrier: (...args) => callOnEmptyTraversal('barrier', args),
-  both: (...args) => callOnEmptyTraversal('both', args),
-  bothE: (...args) => callOnEmptyTraversal('bothE', args),
-  bothV: (...args) => callOnEmptyTraversal('bothV', args),
-  branch: (...args) => callOnEmptyTraversal('branch', args),
-  call: (...args) => callOnEmptyTraversal('call', args),
-  cap: (...args) => callOnEmptyTraversal('cap', args),
-  choose: (...args) => callOnEmptyTraversal('choose', args),
-  coalesce: (...args) => callOnEmptyTraversal('coalesce', args),
-  coin: (...args) => callOnEmptyTraversal('coin', args),
-  concat: (...args) => callOnEmptyTraversal('concat', args),
-  constant: (...args) => callOnEmptyTraversal('constant', args),
-  count: (...args) => callOnEmptyTraversal('count', args),
-  cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
-  dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
-  dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
-  dedup: (...args) => callOnEmptyTraversal('dedup', args),
-  drop: (...args) => callOnEmptyTraversal('drop', args),
-  element: (...args) => callOnEmptyTraversal('element', args),
-  elementMap: (...args) => callOnEmptyTraversal('elementMap', args),
-  emit: (...args) => callOnEmptyTraversal('emit', args),
-  fail: (...args) => callOnEmptyTraversal('fail', args),
-  filter: (...args) => callOnEmptyTraversal('filter', args),
-  flatMap: (...args) => callOnEmptyTraversal('flatMap', args),
-  fold: (...args) => callOnEmptyTraversal('fold', args),
-  format: (...args) => callOnEmptyTraversal('format', args),
-  group: (...args) => callOnEmptyTraversal('group', args),
-  groupCount: (...args) => callOnEmptyTraversal('groupCount', args),
-  has: (...args) => callOnEmptyTraversal('has', args),
-  hasId: (...args) => callOnEmptyTraversal('hasId', args),
-  hasKey: (...args) => callOnEmptyTraversal('hasKey', args),
-  hasLabel: (...args) => callOnEmptyTraversal('hasLabel', args),
-  hasNot: (...args) => callOnEmptyTraversal('hasNot', args),
-  hasValue: (...args) => callOnEmptyTraversal('hasValue', args),
-  id: (...args) => callOnEmptyTraversal('id', args),
-  identity: (...args) => callOnEmptyTraversal('identity', args),
-  in_: (...args) => callOnEmptyTraversal('in_', args),
-  inE: (...args) => callOnEmptyTraversal('inE', args),
-  inV: (...args) => callOnEmptyTraversal('inV', args),
-  index: (...args) => callOnEmptyTraversal('index', args),
-  inject: (...args) => callOnEmptyTraversal('inject', args),
-  is: (...args) => callOnEmptyTraversal('is', args),
-  key: (...args) => callOnEmptyTraversal('key', args),
-  label: (...args) => callOnEmptyTraversal('label', args),
-  length: (...args) => callOnEmptyTraversal('length', args),
-  limit: (...args) => callOnEmptyTraversal('limit', args),
-  local: (...args) => callOnEmptyTraversal('local', args),
-  loops: (...args) => callOnEmptyTraversal('loops', args),
-  lTrim: (...args) => callOnEmptyTraversal('lTrim', args),
-  map: (...args) => callOnEmptyTraversal('map', args),
-  match: (...args) => callOnEmptyTraversal('match', args),
-  math: (...args) => callOnEmptyTraversal('math', args),
-  max: (...args) => callOnEmptyTraversal('max', args),
-  mean: (...args) => callOnEmptyTraversal('mean', args),
-  mergeE: (...args) => callOnEmptyTraversal('mergeE', args),
-  mergeV: (...args) => callOnEmptyTraversal('mergeV', args),
-  min: (...args) => callOnEmptyTraversal('min', args),
-  none: (...args) => callOnEmptyTraversal('none', args),
-  not: (...args) => callOnEmptyTraversal('not', args),
-  optional: (...args) => callOnEmptyTraversal('optional', args),
-  or: (...args) => callOnEmptyTraversal('or', args),
-  order: (...args) => callOnEmptyTraversal('order', args),
-  otherV: (...args) => callOnEmptyTraversal('otherV', args),
-  out: (...args) => callOnEmptyTraversal('out', args),
-  outE: (...args) => callOnEmptyTraversal('outE', args),
-  outV: (...args) => callOnEmptyTraversal('outV', args),
-  path: (...args) => callOnEmptyTraversal('path', args),
-  project: (...args) => callOnEmptyTraversal('project', args),
-  properties: (...args) => callOnEmptyTraversal('properties', args),
-  property: (...args) => callOnEmptyTraversal('property', args),
-  propertyMap: (...args) => callOnEmptyTraversal('propertyMap', args),
-  range: (...args) => callOnEmptyTraversal('range', args),
-  repeat: (...args) => callOnEmptyTraversal('repeat', args),
-  replace: (...args) => callOnEmptyTraversal('replace', args),
-  reverse: (...args) => callOnEmptyTraversal('reverse', args),
-  rTrim: (...args) => callOnEmptyTraversal('rTrim', args),
-  sack: (...args) => callOnEmptyTraversal('sack', args),
-  sample: (...args) => callOnEmptyTraversal('sample', args),
-  select: (...args) => callOnEmptyTraversal('select', args),
-  sideEffect: (...args) => callOnEmptyTraversal('sideEffect', args),
-  simplePath: (...args) => callOnEmptyTraversal('simplePath', args),
-  skip: (...args) => callOnEmptyTraversal('skip', args),
-  split: (...args) => callOnEmptyTraversal('split', args),
-  store: (...args) => callOnEmptyTraversal('store', args),
-  subgraph: (...args) => callOnEmptyTraversal('subgraph', args),
-  substring: (...args) => callOnEmptyTraversal('substring', args),
-  sum: (...args) => callOnEmptyTraversal('sum', args),
-  tail: (...args) => callOnEmptyTraversal('tail', args),
-  timeLimit: (...args) => callOnEmptyTraversal('timeLimit', args),
-  times: (...args) => callOnEmptyTraversal('times', args),
-  to: (...args) => callOnEmptyTraversal('to', args),
-  toE: (...args) => callOnEmptyTraversal('toE', args),
-  toLower: (...args) => callOnEmptyTraversal('toLower', args),
-  toUpper: (...args) => callOnEmptyTraversal('toUpper', args),
-  toV: (...args) => callOnEmptyTraversal('toV', args),
-  tree: (...args) => callOnEmptyTraversal('tree', args),
-  trim: (...args) => callOnEmptyTraversal('trim', args),
-  unfold: (...args) => callOnEmptyTraversal('unfold', args),
-  union: (...args) => callOnEmptyTraversal('union', args),
-  until: (...args) => callOnEmptyTraversal('until', args),
-  value: (...args) => callOnEmptyTraversal('value', args),
-  valueMap: (...args) => callOnEmptyTraversal('valueMap', args),
-  values: (...args) => callOnEmptyTraversal('values', args),
-  where: (...args) => callOnEmptyTraversal('where', args),
-};
-
-module.exports = {
-  GraphTraversal,
-  GraphTraversalSource,
-  CardinalityValue,
-  statics,
+export const statics = {
+  E: (...args: any[]) => callOnEmptyTraversal('E', args),
+  V: (...args: any[]) => callOnEmptyTraversal('V', args),
+  addE: (...args: any[]) => callOnEmptyTraversal('addE', args),
+  addV: (...args: any[]) => callOnEmptyTraversal('addV', args),
+  aggregate: (...args: any[]) => callOnEmptyTraversal('aggregate', args),
+  all: (...args: any[]) => callOnEmptyTraversal('all', args),
+  and: (...args: any[]) => callOnEmptyTraversal('and', args),
+  any: (...args: any[]) => callOnEmptyTraversal('any', args),
+  as: (...args: any[]) => callOnEmptyTraversal('as', args),
+  asDate: (...args: any[]) => callOnEmptyTraversal('asDate', args),
+  asString: (...args: any[]) => callOnEmptyTraversal('asString', args),
+  barrier: (...args: any[]) => callOnEmptyTraversal('barrier', args),
+  both: (...args: any[]) => callOnEmptyTraversal('both', args),
+  bothE: (...args: any[]) => callOnEmptyTraversal('bothE', args),
+  bothV: (...args: any[]) => callOnEmptyTraversal('bothV', args),
+  branch: (...args: any[]) => callOnEmptyTraversal('branch', args),
+  call: (...args: any[]) => callOnEmptyTraversal('call', args),
+  cap: (...args: any[]) => callOnEmptyTraversal('cap', args),
+  choose: (...args: any[]) => callOnEmptyTraversal('choose', args),
+  coalesce: (...args: any[]) => callOnEmptyTraversal('coalesce', args),
+  coin: (...args: any[]) => callOnEmptyTraversal('coin', args),
+  concat: (...args: any[]) => callOnEmptyTraversal('concat', args),
+  constant: (...args: any[]) => callOnEmptyTraversal('constant', args),
+  count: (...args: any[]) => callOnEmptyTraversal('count', args),
+  cyclicPath: (...args: any[]) => callOnEmptyTraversal('cyclicPath', args),
+  dateAdd: (...args: any[]) => callOnEmptyTraversal('dateAdd', args),
+  dateDiff: (...args: any[]) => callOnEmptyTraversal('dateDiff', args),
+  dedup: (...args: any[]) => callOnEmptyTraversal('dedup', args),
+  drop: (...args: any[]) => callOnEmptyTraversal('drop', args),
+  element: (...args: any[]) => callOnEmptyTraversal('element', args),
+  elementMap: (...args: any[]) => callOnEmptyTraversal('elementMap', args),
+  emit: (...args: any[]) => callOnEmptyTraversal('emit', args),
+  fail: (...args: any[]) => callOnEmptyTraversal('fail', args),
+  filter: (...args: any[]) => callOnEmptyTraversal('filter', args),
+  flatMap: (...args: any[]) => callOnEmptyTraversal('flatMap', args),
+  fold: (...args: any[]) => callOnEmptyTraversal('fold', args),
+  format: (...args: any[]) => callOnEmptyTraversal('format', args),
+  group: (...args: any[]) => callOnEmptyTraversal('group', args),
+  groupCount: (...args: any[]) => callOnEmptyTraversal('groupCount', args),
+  has: (...args: any[]) => callOnEmptyTraversal('has', args),
+  hasId: (...args: any[]) => callOnEmptyTraversal('hasId', args),
+  hasKey: (...args: any[]) => callOnEmptyTraversal('hasKey', args),
+  hasLabel: (...args: any[]) => callOnEmptyTraversal('hasLabel', args),
+  hasNot: (...args: any[]) => callOnEmptyTraversal('hasNot', args),
+  hasValue: (...args: any[]) => callOnEmptyTraversal('hasValue', args),
+  id: (...args: any[]) => callOnEmptyTraversal('id', args),
+  identity: (...args: any[]) => callOnEmptyTraversal('identity', args),
+  in_: (...args: any[]) => callOnEmptyTraversal('in_', args),
+  inE: (...args: any[]) => callOnEmptyTraversal('inE', args),
+  inV: (...args: any[]) => callOnEmptyTraversal('inV', args),
+  index: (...args: any[]) => callOnEmptyTraversal('index', args),
+  inject: (...args: any[]) => callOnEmptyTraversal('inject', args),
+  is: (...args: any[]) => callOnEmptyTraversal('is', args),
+  key: (...args: any[]) => callOnEmptyTraversal('key', args),
+  label: (...args: any[]) => callOnEmptyTraversal('label', args),
+  length: (...args: any[]) => callOnEmptyTraversal('length', args),
+  limit: (...args: any[]) => callOnEmptyTraversal('limit', args),
+  local: (...args: any[]) => callOnEmptyTraversal('local', args),
+  loops: (...args: any[]) => callOnEmptyTraversal('loops', args),
+  lTrim: (...args: any[]) => callOnEmptyTraversal('lTrim', args),
+  map: (...args: any[]) => callOnEmptyTraversal('map', args),
+  match: (...args: any[]) => callOnEmptyTraversal('match', args),
+  math: (...args: any[]) => callOnEmptyTraversal('math', args),
+  max: (...args: any[]) => callOnEmptyTraversal('max', args),
+  mean: (...args: any[]) => callOnEmptyTraversal('mean', args),
+  mergeE: (...args: any[]) => callOnEmptyTraversal('mergeE', args),
+  mergeV: (...args: any[]) => callOnEmptyTraversal('mergeV', args),
+  min: (...args: any[]) => callOnEmptyTraversal('min', args),
+  not: (...args: any[]) => callOnEmptyTraversal('not', args),
+  optional: (...args: any[]) => callOnEmptyTraversal('optional', args),
+  or: (...args: any[]) => callOnEmptyTraversal('or', args),
+  order: (...args: any[]) => callOnEmptyTraversal('order', args),
+  otherV: (...args: any[]) => callOnEmptyTraversal('otherV', args),
+  out: (...args: any[]) => callOnEmptyTraversal('out', args),
+  outE: (...args: any[]) => callOnEmptyTraversal('outE', args),
+  outV: (...args: any[]) => callOnEmptyTraversal('outV', args),
+  path: (...args: any[]) => callOnEmptyTraversal('path', args),
+  project: (...args: any[]) => callOnEmptyTraversal('project', args),
+  properties: (...args: any[]) => callOnEmptyTraversal('properties', args),
+  property: (...args: any[]) => callOnEmptyTraversal('property', args),
+  propertyMap: (...args: any[]) => callOnEmptyTraversal('propertyMap', args),
+  range: (...args: any[]) => callOnEmptyTraversal('range', args),
+  repeat: (...args: any[]) => callOnEmptyTraversal('repeat', args),
+  replace: (...args: any[]) => callOnEmptyTraversal('replace', args),
+  reverse: (...args: any[]) => callOnEmptyTraversal('reverse', args),
+  rTrim: (...args: any[]) => callOnEmptyTraversal('rTrim', args),
+  sack: (...args: any[]) => callOnEmptyTraversal('sack', args),
+  sample: (...args: any[]) => callOnEmptyTraversal('sample', args),
+  select: (...args: any[]) => callOnEmptyTraversal('select', args),
+  sideEffect: (...args: any[]) => callOnEmptyTraversal('sideEffect', args),
+  simplePath: (...args: any[]) => callOnEmptyTraversal('simplePath', args),
+  skip: (...args: any[]) => callOnEmptyTraversal('skip', args),
+  split: (...args: any[]) => callOnEmptyTraversal('split', args),
+  store: (...args: any[]) => callOnEmptyTraversal('store', args),
+  subgraph: (...args: any[]) => callOnEmptyTraversal('subgraph', args),
+  substring: (...args: any[]) => callOnEmptyTraversal('substring', args),
+  sum: (...args: any[]) => callOnEmptyTraversal('sum', args),
+  tail: (...args: any[]) => callOnEmptyTraversal('tail', args),
+  timeLimit: (...args: any[]) => callOnEmptyTraversal('timeLimit', args),
+  times: (...args: any[]) => callOnEmptyTraversal('times', args),
+  to: (...args: any[]) => callOnEmptyTraversal('to', args),
+  toE: (...args: any[]) => callOnEmptyTraversal('toE', args),
+  toLower: (...args: any[]) => callOnEmptyTraversal('toLower', args),
+  toUpper: (...args: any[]) => callOnEmptyTraversal('toUpper', args),
+  toV: (...args: any[]) => callOnEmptyTraversal('toV', args),
+  tree: (...args: any[]) => callOnEmptyTraversal('tree', args),
+  trim: (...args: any[]) => callOnEmptyTraversal('trim', args),
+  unfold: (...args: any[]) => callOnEmptyTraversal('unfold', args),
+  union: (...args: any[]) => callOnEmptyTraversal('union', args),
+  until: (...args: any[]) => callOnEmptyTraversal('until', args),
+  value: (...args: any[]) => callOnEmptyTraversal('value', args),
+  valueMap: (...args: any[]) => callOnEmptyTraversal('valueMap', args),
+  values: (...args: any[]) => callOnEmptyTraversal('values', args),
+  where: (...args: any[]) => callOnEmptyTraversal('where', args),
 };

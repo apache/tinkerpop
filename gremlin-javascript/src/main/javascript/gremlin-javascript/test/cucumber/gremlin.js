@@ -24,9 +24,9 @@
 //********************************************************************************
 
 
-const graphTraversalModule = require('../../lib/process/graph-traversal');
-const traversalModule = require('../../lib/process/traversal');
-const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } = require('../../lib/process/traversal-strategy');
+import * as graphTraversalModule from '../../lib/process/graph-traversal.js';
+import * as traversalModule from '../../lib/process/traversal.js';
+import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } from '../../lib/process/traversal-strategy.js';
 const __ = graphTraversalModule.statics;
 const Barrier = traversalModule.barrier
 const Cardinality = traversalModule.cardinality
@@ -1514,4 +1514,4 @@ const gremlins = {
     g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX: [function({g}) { return g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum()).cap("a") }], 
 }
 
-exports.gremlin = gremlins
+export const gremlin = gremlins

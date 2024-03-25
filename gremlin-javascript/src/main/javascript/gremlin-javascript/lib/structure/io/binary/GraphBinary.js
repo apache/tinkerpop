@@ -58,52 +58,130 @@
  * @author Igor Ostapenko
  */
 /*eslint-disable*/
-'use strict';
+
+import DataType from './internals/DataType.js';
+import * as utils from './internals/utils.js';
+import IntSerializer from './internals/IntSerializer.js';
+import LongSerializer from './internals/LongSerializer.js';
+import LongSerializerNg from './internals/LongSerializerNg.js';
+import StringSerializer from './internals/StringSerializer.js';
+import DateSerializer from './internals/DateSerializer.js';
+import DoubleSerializer from './internals/DoubleSerializer.js';
+import FloatSerializer from './internals/FloatSerializer.js';
+import ArraySerializer from './internals/ArraySerializer.js';
+import MapSerializer from './internals/MapSerializer.js';
+import SetSerializer from './internals/SetSerializer.js';
+import UuidSerializer from './internals/UuidSerializer.js';
+import EdgeSerializer from './internals/EdgeSerializer.js';
+import PathSerializer from './internals/PathSerializer.js';
+import PropertySerializer from './internals/PropertySerializer.js';
+import VertexSerializer from './internals/VertexSerializer.js';
+import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
+import BytecodeSerializer from './internals/BytecodeSerializer.js';
+import PSerializer from './internals/PSerializer.js';
+import TraverserSerializer from './internals/TraverserSerializer.js';
+import EnumSerializer from './internals/EnumSerializer.js';
+import LambdaSerializer from './internals/LambdaSerializer.js';
+import BigIntegerSerializer from './internals/BigIntegerSerializer.js';
+import ByteSerializer from './internals/ByteSerializer.js';
+import ByteBufferSerializer from './internals/ByteBufferSerializer.js';
+import ShortSerializer from './internals/ShortSerializer.js';
+import BooleanSerializer from './internals/BooleanSerializer.js';
+import TextPSerializer from './internals/TextPSerializer.js';
+import TraversalStrategySerializer from './internals/TraversalStrategySerializer.js';
+import BulkSetSerializer from './internals/BulkSetSerializer.js';
+import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js';
+import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
+import AnySerializer from './internals/AnySerializer.js';
+import GraphBinaryReader from './internals/GraphBinaryReader.js';
+import GraphBinaryWriter from './internals/GraphBinaryWriter.js';
 
 const ioc = {};
 
-ioc.DataType = require('./internals/DataType');
-ioc.utils = require('./internals/utils');
+ioc.DataType = DataType;
+ioc.utils = utils;
 
 ioc.serializers = {};
 
-ioc.intSerializer               = new (require('./internals/IntSerializer'))(ioc);
-ioc.longSerializer              = new (require('./internals/LongSerializer'))(ioc);
-ioc.longSerializerNg            = new (require('./internals/LongSerializerNg'))(ioc);
-ioc.stringSerializer            = new (require('./internals/StringSerializer'))(ioc, ioc.DataType.STRING);
-ioc.dateSerializer              = new (require('./internals/DateSerializer'))(ioc, ioc.DataType.DATE);
-ioc.timestampSerializer         = new (require('./internals/DateSerializer'))(ioc, ioc.DataType.TIMESTAMP);
-ioc.classSerializer             = new (require('./internals/StringSerializer'))(ioc, ioc.DataType.CLASS);
-ioc.doubleSerializer            = new (require('./internals/DoubleSerializer'))(ioc);
-ioc.floatSerializer             = new (require('./internals/FloatSerializer'))(ioc);
-ioc.listSerializer              = new (require('./internals/ArraySerializer'))(ioc, ioc.DataType.LIST);
-ioc.mapSerializer               = new (require('./internals/MapSerializer'))(ioc);
-ioc.setSerializer               = new (require('./internals/SetSerializer'))(ioc, ioc.DataType.SET);
-ioc.uuidSerializer              = new (require('./internals/UuidSerializer'))(ioc);
-ioc.edgeSerializer              = new (require('./internals/EdgeSerializer'))(ioc);
-ioc.pathSerializer              = new (require('./internals/PathSerializer'))(ioc);
-ioc.propertySerializer          = new (require('./internals/PropertySerializer'))(ioc);
-ioc.vertexSerializer            = new (require('./internals/VertexSerializer'))(ioc);
-ioc.vertexPropertySerializer    = new (require('./internals/VertexPropertySerializer'))(ioc);
-ioc.bytecodeSerializer          = new (require('./internals/BytecodeSerializer'))(ioc);
-ioc.pSerializer                 = new (require('./internals/PSerializer'))(ioc);
-ioc.traverserSerializer         = new (require('./internals/TraverserSerializer'))(ioc);
-ioc.enumSerializer              = new (require('./internals/EnumSerializer'))(ioc);
-ioc.lambdaSerializer            = new (require('./internals/LambdaSerializer'))(ioc);
-ioc.bigIntegerSerializer        = new (require('./internals/BigIntegerSerializer'))(ioc);
-ioc.byteSerializer              = new (require('./internals/ByteSerializer'))(ioc);
-ioc.byteBufferSerializer        = new (require('./internals/ByteBufferSerializer'))(ioc);
-ioc.shortSerializer             = new (require('./internals/ShortSerializer'))(ioc);
-ioc.booleanSerializer           = new (require('./internals/BooleanSerializer'))(ioc);
-ioc.textPSerializer             = new (require('./internals/TextPSerializer'))(ioc);
-ioc.traversalStrategySerializer = new (require('./internals/TraversalStrategySerializer'))(ioc);
-ioc.bulkSetSerializer           = new (require('./internals/BulkSetSerializer'))(ioc);
-ioc.unspecifiedNullSerializer   = new (require('./internals/UnspecifiedNullSerializer'))(ioc);
+ioc.intSerializer = new IntSerializer(ioc);
+ioc.longSerializer = new LongSerializer(ioc);
+ioc.longSerializerNg = new LongSerializerNg(ioc);
+ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
+ioc.dateSerializer = new DateSerializer(ioc, ioc.DataType.DATE);
+ioc.timestampSerializer = new DateSerializer(ioc, ioc.DataType.TIMESTAMP);
+ioc.classSerializer = new StringSerializer(ioc, ioc.DataType.CLASS);
+ioc.doubleSerializer = new DoubleSerializer(ioc);
+ioc.floatSerializer = new FloatSerializer(ioc);
+ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
+ioc.mapSerializer = new MapSerializer(ioc);
+ioc.setSerializer = new SetSerializer(ioc, ioc.DataType.SET);
+ioc.uuidSerializer = new UuidSerializer(ioc);
+ioc.edgeSerializer = new EdgeSerializer(ioc);
+ioc.pathSerializer = new PathSerializer(ioc);
+ioc.propertySerializer = new PropertySerializer(ioc);
+ioc.vertexSerializer = new VertexSerializer(ioc);
+ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
+ioc.bytecodeSerializer = new BytecodeSerializer(ioc);
+ioc.pSerializer = new PSerializer(ioc);
+ioc.traverserSerializer = new TraverserSerializer(ioc);
+ioc.enumSerializer = new EnumSerializer(ioc);
+ioc.lambdaSerializer = new LambdaSerializer(ioc);
+ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
+ioc.byteSerializer = new ByteSerializer(ioc);
+ioc.byteBufferSerializer = new ByteBufferSerializer(ioc);
+ioc.shortSerializer = new ShortSerializer(ioc);
+ioc.booleanSerializer = new BooleanSerializer(ioc);
+ioc.textPSerializer = new TextPSerializer(ioc);
+ioc.traversalStrategySerializer = new TraversalStrategySerializer(ioc);
+ioc.bulkSetSerializer = new BulkSetSerializer(ioc);
+ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
 
-ioc.numberSerializationStrategy = new (require('./internals/NumberSerializationStrategy'))(ioc);
-ioc.anySerializer               = new (require('./internals/AnySerializer'))(ioc);
+ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
+ioc.anySerializer = new AnySerializer(ioc);
 
-ioc.graphBinaryReader           = new (require('./internals/GraphBinaryReader.js'))(ioc);
-ioc.graphBinaryWriter           = new (require('./internals/GraphBinaryWriter'))(ioc);
+ioc.graphBinaryReader = new GraphBinaryReader(ioc);
+ioc.graphBinaryWriter = new GraphBinaryWriter(ioc);
 
-module.exports = ioc;
+export { default as DataType } from './internals/DataType.js';
+
+export const {
+  serializers,
+  intSerializer,
+  longSerializer,
+  longSerializerNg,
+  stringSerializer,
+  dateSerializer,
+  timestampSerializer,
+  classSerializer,
+  doubleSerializer,
+  floatSerializer,
+  listSerializer,
+  mapSerializer,
+  setSerializer,
+  uuidSerializer,
+  edgeSerializer,
+  pathSerializer,
+  propertySerializer,
+  vertexSerializer,
+  vertexPropertySerializer,
+  bytecodeSerializer,
+  pSerializer,
+  traverserSerializer,
+  enumSerializer,
+  lambdaSerializer,
+  bigIntegerSerializer,
+  byteSerializer,
+  byteBufferSerializer,
+  shortSerializer,
+  booleanSerializer,
+  textPSerializer,
+  traversalStrategySerializer,
+  bulkSetSerializer,
+  unspecifiedNullSerializer,
+  numberSerializationStrategy,
+  anySerializer,
+  graphBinaryReader,
+  graphBinaryWriter,
+} = ioc;
+
+export default ioc;

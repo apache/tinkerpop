@@ -17,40 +17,39 @@
  *  under the License.
  */
 
+
 /**
- * @author Igor Ostapenko
+ * Represents an error obtained from the server.
  */
+export default class ResponseError extends Error {
+  statusCode: number;
+  statusMessage: string;
+  statusAttributes: Map<string, string>;
 
-import { Buffer } from 'buffer';
+  constructor(
+    message: string,
+    responseStatus: {
+      code: ResponseError['statusCode'];
+      message: ResponseError['statusMessage'];
+      attributes: ResponseError['statusAttributes'];
+    },
+  ) {
+    super(message);
+    this.name = 'ResponseError';
 
-/*
- * Deserialization error general constructor.
- */
-export const des_error = ({ serializer, args, cursor, err }) => {
-  if (cursor === undefined) {
-    cursor = args[0]; // buffer
+    /**
+     * Gets the server status code.
+     */
+    this.statusCode = responseStatus.code;
+
+    /**
+     * Gets the server status message.
+     */
+    this.statusMessage = responseStatus.message;
+
+    /**
+     * Gets the server status attributes as a Map (may contain provider specific status information).
+     */
+    this.statusAttributes = responseStatus.attributes || {};
   }
-  let cursor_tail = '';
-  if (cursor instanceof Buffer) {
-    if (cursor.length > 32) {
-      cursor_tail = '...';
-    }
-    cursor = cursor.slice(0, 32).toString('hex');
-  }
-
-  const fullyQualifiedFormat = args[1];
-  const nullable = args[2];
-
-  let m = `${serializer.constructor.name}.deserialize(cursor=${cursor}${cursor_tail}`;
-  if (fullyQualifiedFormat !== undefined) {
-    m += `, fullyQualifiedFormat=${fullyQualifiedFormat}`;
-  }
-  if (nullable !== undefined) {
-    m += `, nullable=${nullable}`;
-  }
-  m += `): ${err.message.replace(/\.$/, '')}.`;
-
-  err.message = m;
-
-  return err;
-};
+}

@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class MapSerializer {
+export default class MapSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.MAP] = this;
@@ -152,4 +151,4 @@ module.exports = class MapSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

@@ -20,26 +20,31 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const utils = require('../utils');
+import * as utils from '../utils.js';
 const emptyMap = Object.freeze(new utils.ImmutableMap());
 
 /**
  * Represents the response returned from the execution of a Gremlin traversal or script.
  */
-class ResultSet {
+export default class ResultSet {
+  private readonly attributes: Map<string, string>;
+  readonly length: number;
+
   /**
    * Creates a new instance of {@link ResultSet}.
    * @param {Array} items
    * @param {Map} [attributes]
    */
-  constructor(items, attributes) {
+  constructor(
+    private readonly items: any[],
+    attributes: Map<string, any>,
+  ) {
     if (!Array.isArray(items)) {
       throw new TypeError('items must be an Array instance');
     }
 
-    this._items = items;
+    this.items = items;
 
     /**
      * Gets a Map representing the attributes of the response.
@@ -59,25 +64,23 @@ class ResultSet {
    * @returns {Iterator}
    */
   [Symbol.iterator]() {
-    return this._items[Symbol.iterator]();
+    return this.items[Symbol.iterator]();
   }
 
   /**
    * Gets an array of result items.
    * @returns {Array}
    */
-  toArray() {
-    return this._items;
+  toArray(): Array<any> {
+    return this.items;
   }
 
   /**
    * Returns the first item.
    * @returns {Object|null}
    */
-  first() {
-    const item = this._items[0];
+  first(): any | null {
+    const item = this.items[0];
     return item !== undefined ? item : null;
   }
 }
-
-module.exports = ResultSet;

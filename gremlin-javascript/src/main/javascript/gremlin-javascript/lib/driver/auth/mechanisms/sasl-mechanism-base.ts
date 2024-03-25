@@ -17,31 +17,33 @@
  *  under the License.
  */
 
-'use strict';
+import { AuthenticatorOptions } from '../authenticator.js';
 
-/**
- * Represents an error obtained from the server.
- */
-class ResponseError extends Error {
-  constructor(message, responseStatus) {
-    super(message);
-    this.name = 'ResponseError';
+export type SaslMechanismBaseOptions = AuthenticatorOptions & { authzid?: string };
 
-    /**
-     * Gets the server status code.
-     */
-    this.statusCode = responseStatus.code;
-
-    /**
-     * Gets the server status message.
-     */
-    this.statusMessage = responseStatus.message;
-
-    /**
-     * Gets the server status attributes as a Map (may contain provider specific status information).
-     */
-    this.statusAttributes = responseStatus.attributes || {};
+export default abstract class SaslMechanismBase {
+  constructor(protected options: SaslMechanismBaseOptions) {
+    this.setopts(options);
   }
-}
 
-module.exports = ResponseError;
+  /**
+   * Returns the name of the mechanism
+   */
+  get name(): string | null {
+    return null;
+  }
+
+  /**
+   * Set the options for the mechanism
+   * @param {object} options Options specific to the mechanism
+   */
+  setopts(options: SaslMechanismBaseOptions) {
+    this.options = options;
+  }
+
+  /**
+   * Evaluates the challenge from the server and returns appropriate response
+   * @param {String} challenge Challenge string presented by the server
+   */
+  abstract evaluateChallenge(challenge: String): any;
+}

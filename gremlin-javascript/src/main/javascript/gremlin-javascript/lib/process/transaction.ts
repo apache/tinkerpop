@@ -16,11 +16,11 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-'use strict';
 
-const remote = require('../driver/remote-connection');
-const Bytecode = require('./bytecode');
-const { TraversalStrategies } = require('./traversal-strategy');
+import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import Bytecode from './bytecode.js';
+import { GraphTraversalSource } from './graph-traversal.js';
+import { TraversalStrategies } from './traversal-strategy.js';
 
 /**
  * A controller for a remote transaction that is constructed from <code>g.tx()</code>. Calling <code>begin()</code>
@@ -28,37 +28,36 @@ const { TraversalStrategies } = require('./traversal-strategy');
  * multiple traversals may be executed in that context. Calling <code>commit()</code> or <code>rollback()</code> will
  * then close the transaction and thus, the session. This feature only works with transaction enabled graphs.
  */
-class Transaction {
-  constructor(g) {
-    this._g = g;
-    this._sessionBasedConnection = undefined;
-  }
+export class Transaction {
+  private _sessionBasedConnection?: RemoteConnection = undefined;
+
+  constructor(private readonly g: GraphTraversalSource) {}
 
   /**
    * Spawns a <code>GraphTraversalSource</code> that is bound to a remote session which enables a transaction.
-   * @returns {*}
+   * @returns {GraphTraversalSource}
    */
-  begin() {
+  begin(): GraphTraversalSource {
     if (this._sessionBasedConnection) {
       throw new Error('Transaction already started on this object');
     }
 
-    this._sessionBasedConnection = this._g.remoteConnection.createSession();
+    this._sessionBasedConnection = this.g.remoteConnection!.createSession();
     const traversalStrategy = new TraversalStrategies();
-    traversalStrategy.addStrategy(new remote.RemoteStrategy(this._sessionBasedConnection));
-    return new this._g.graphTraversalSourceClass(
-      this._g.graph,
+    traversalStrategy.addStrategy(new RemoteStrategy(this._sessionBasedConnection));
+    return new this.g.graphTraversalSourceClass(
+      this.g.graph,
       traversalStrategy,
-      new Bytecode(this._g.bytecode),
-      this._g.graphTraversalSourceClass,
-      this._g.graphTraversalClass,
+      new Bytecode(this.g.bytecode),
+      this.g.graphTraversalSourceClass,
+      this.g.graphTraversalClass,
     );
   }
 
   /**
    * @returns {Promise}
    */
-  commit() {
+  commit(): Promise<void> {
     if (!this._sessionBasedConnection) {
       throw new Error('Cannot commit a transaction that is not started');
     }
@@ -69,7 +68,7 @@ class Transaction {
   /**
    * @returns {Promise}
    */
-  rollback() {
+  rollback(): Promise<void> {
     if (!this._sessionBasedConnection) {
       throw new Error('Cannot rollback a transaction that is not started');
     }
@@ -81,20 +80,16 @@ class Transaction {
    * Returns true if transaction is open.
    * @returns {Boolean}
    */
-  get isOpen() {
-    return this._sessionBasedConnection.isOpen;
+  get isOpen(): boolean {
+    return this._sessionBasedConnection?.isOpen ?? false;
   }
 
   /**
    * @returns {Promise}
    */
-  close() {
+  async close(): Promise<void> {
     if (this._sessionBasedConnection) {
       this._sessionBasedConnection.close();
     }
   }
 }
-
-module.exports = {
-  Transaction,
-};

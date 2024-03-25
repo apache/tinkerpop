@@ -20,10 +20,9 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const assert = require('assert');
-const ResultSet = require('../../lib/driver/result-set');
+import assert from 'assert';
+import ResultSet from '../../lib/driver/result-set.js';
 
 describe('ResultSet', function () {
   describe('#toArray()', () => {
@@ -70,7 +69,7 @@ describe('ResultSet', function () {
 
   describe('#[util.inspect.custom]()', () => {
     it('should return the Array representation', () => {
-      assert.deepStrictEqual(new ResultSet([1, 2, 3])._items, [1, 2, 3]);
+      assert.deepStrictEqual(new ResultSet([1, 2, 3]).items, [1, 2, 3]);
     });
   });
 

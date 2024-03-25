@@ -21,18 +21,15 @@
  * @author : Liu Jianping
  */
 
-'use strict';
-
-const assert = require('assert');
-const Bytecode = require('../../lib/process/bytecode');
-const graphModule = require('../../lib/structure/graph');
-const helper = require('../helper');
+import assert from 'assert';
+import Bytecode from '../../lib/process/bytecode.js';
+import { getSessionClient } from '../helper.js';
 
 let client;
 
 describe('Client', function () {
   before(function () {
-    client = helper.getSessionClient('g');
+    client = getSessionClient('g');
     return client.open();
   });
   after(function () {

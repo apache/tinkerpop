@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class AnySerializer {
+export default class AnySerializer {
   constructor(ioc) {
     this.ioc = ioc;
 
@@ -94,4 +93,4 @@ module.exports = class AnySerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, err });
     }
   }
-};
+}

@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const g = require('../../../graph');
+import { Buffer } from 'buffer';
+import { Vertex } from '../../../graph.js';
 
-module.exports = class VertexSerializer {
+export default class VertexSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.VERTEX] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof g.Vertex;
+    return value instanceof Vertex;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -127,10 +126,10 @@ module.exports = class VertexSerializer {
       }
       cursor = cursor.slice(properties_len);
 
-      const v = new g.Vertex(id, label, properties);
+      const v = new Vertex(id, label, properties);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

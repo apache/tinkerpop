@@ -20,12 +20,25 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const t = require('../../../../process/traversal');
+import { Buffer } from 'buffer';
+import {
+  barrier,
+  cardinality,
+  column,
+  direction,
+  dt,
+  merge,
+  operator,
+  order,
+  pick,
+  pop,
+  scope,
+  t as _t,
+  EnumValue,
+} from '../../../../process/traversal.js';
 
-module.exports = class EnumSerializer {
+export default class EnumSerializer {
   constructor(ioc) {
     this.ioc = ioc;
 
@@ -38,18 +51,18 @@ module.exports = class EnumSerializer {
     };
     const DT = ioc.DataType;
     this.types = [
-      { name: 'Barrier', code: DT.BARRIER, enum: to_orig_enum(t.barrier) },
-      { name: 'Cardinality', code: DT.CARDINALITY, enum: to_orig_enum(t.cardinality) },
-      { name: 'Column', code: DT.COLUMN, enum: to_orig_enum(t.column) },
-      { name: 'Direction', code: DT.DIRECTION, enum: to_orig_enum(t.direction) },
-      { name: 'DT', code: DT.DT, enum: to_orig_enum(t.dt) },
-      { name: 'Merge', code: DT.MERGE, enum: to_orig_enum(t.merge) },
-      { name: 'Operator', code: DT.OPERATOR, enum: to_orig_enum(t.operator) },
-      { name: 'Order', code: DT.ORDER, enum: to_orig_enum(t.order) },
-      { name: 'Pick', code: DT.PICK, enum: to_orig_enum(t.pick) },
-      { name: 'Pop', code: DT.POP, enum: to_orig_enum(t.pop) },
-      { name: 'Scope', code: DT.SCOPE, enum: to_orig_enum(t.scope) },
-      { name: 'T', code: DT.T, enum: to_orig_enum(t.t) },
+      { name: 'Barrier', code: DT.BARRIER, enum: to_orig_enum(barrier) },
+      { name: 'Cardinality', code: DT.CARDINALITY, enum: to_orig_enum(cardinality) },
+      { name: 'Column', code: DT.COLUMN, enum: to_orig_enum(column) },
+      { name: 'Direction', code: DT.DIRECTION, enum: to_orig_enum(direction) },
+      { name: 'DT', code: DT.DT, enum: to_orig_enum(dt) },
+      { name: 'Merge', code: DT.MERGE, enum: to_orig_enum(merge) },
+      { name: 'Operator', code: DT.OPERATOR, enum: to_orig_enum(operator) },
+      { name: 'Order', code: DT.ORDER, enum: to_orig_enum(order) },
+      { name: 'Pick', code: DT.PICK, enum: to_orig_enum(pick) },
+      { name: 'Pop', code: DT.POP, enum: to_orig_enum(pop) },
+      { name: 'Scope', code: DT.SCOPE, enum: to_orig_enum(scope) },
+      { name: 'T', code: DT.T, enum: to_orig_enum(_t) },
     ];
     this.byname = {};
     this.bycode = {};
@@ -61,7 +74,7 @@ module.exports = class EnumSerializer {
   }
 
   canBeUsedFor(value) {
-    if (!(value instanceof t.EnumValue)) {
+    if (!(value instanceof EnumValue)) {
       return false;
     }
     if (!this.byname[value.typeName]) {
@@ -138,7 +151,7 @@ module.exports = class EnumSerializer {
 
       let v;
       if (!type) {
-        v = new t.EnumValue(undefined, elementName);
+        v = new EnumValue(undefined, elementName);
       } else {
         v = type.enum[elementName]; // users are expected to work with maps like Map.get(T.id), i.e. it must be exactly the same object
       }
@@ -148,4 +161,4 @@ module.exports = class EnumSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

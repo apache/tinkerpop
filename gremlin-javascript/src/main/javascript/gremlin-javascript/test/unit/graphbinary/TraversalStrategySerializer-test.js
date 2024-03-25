@@ -20,13 +20,12 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { traversalStrategySerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const ts = require('../../../lib/process/traversal-strategy');
+import { ser_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { traversalStrategySerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
+import { ElementIdStrategy, OptionsStrategy, TraversalStrategy } from '../../../lib/process/traversal-strategy.js';
 
 const { from, concat } = Buffer;
 
@@ -41,14 +40,14 @@ describe('GraphBinary.TraversalStrategySerializer', () => {
     { v:null,      fq:1, b:[0x29,0x01] },
     { v:null,      fq:0, b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
 
-    { v:new ts.ElementIdStrategy(),
+    { v:new ElementIdStrategy(),
       b:[
         0x00,0x00,0x00,0x54, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy'),
         0x00,0x00,0x00,0x00,
       ]
     },
 
-    { v:new ts.OptionsStrategy({ 'A': 1, 'B': 2 }),
+    { v:new OptionsStrategy({ 'A': 1, 'B': 2 }),
       b:[
         0x00,0x00,0x00,0x52, ...from('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy'),
         0x00,0x00,0x00,0x02,
@@ -64,7 +63,7 @@ describe('GraphBinary.TraversalStrategySerializer', () => {
 
   describe('#serialize', () =>
     cases
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -85,14 +84,14 @@ describe('GraphBinary.TraversalStrategySerializer', () => {
       { v: null,                       e: false },
       { v: undefined,                  e: false },
       { v: {},                         e: false },
-      { v: new t.Traverser(),          e: false },
-      { v: new t.P(),                  e: false },
+      { v: new Traverser(),          e: false },
+      { v: new P(),                  e: false },
       { v: [],                         e: false },
       { v: [0],                        e: false },
       { v: [function(){}],             e: false },
       { v: function(){},               e: false },
-      { v: new ts.TraversalStrategy(), e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: new TraversalStrategy(), e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( traversalStrategySerializer.canBeUsedFor(v), e )
     ))
   );

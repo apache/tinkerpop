@@ -89,9 +89,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("//********************************************************************************\n\n")
 
     writer.writeLine(
-                    'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
-                    'const traversalModule = require(\'../../lib/process/traversal\');\n' +
-                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
+                    'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
+                    'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
+                    'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } from \'../../lib/process/traversal-strategy.js\';\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +
@@ -154,7 +154,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     }
     writer.writeLine('}\n')
 
-    writer.writeLine('exports.gremlin = gremlins')
+    writer.writeLine('export const gremlin = gremlins')
 }
 
 

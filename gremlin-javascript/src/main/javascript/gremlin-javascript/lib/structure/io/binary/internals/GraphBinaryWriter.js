@@ -20,14 +20,13 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
 /**
  * GraphBinary writer.
  */
-module.exports = class GraphBinaryWriter {
+export default class GraphBinaryWriter {
   constructor(ioc) {
     this.ioc = ioc;
   }
@@ -82,4 +81,4 @@ module.exports = class GraphBinaryWriter {
           0x00,0x00,0x00,0x00,
     */
   }
-};
+}

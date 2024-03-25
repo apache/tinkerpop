@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { bigIntegerSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { bigIntegerSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 const { from, concat } = Buffer;
 
@@ -123,7 +122,7 @@ describe('GraphBinary.BigIntegerSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -139,7 +138,7 @@ describe('GraphBinary.BigIntegerSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -192,7 +191,7 @@ describe('GraphBinary.BigIntegerSerializer', () => {
       { v: Infinity,          e: false },
       { v: -Infinity,         e: false },
       { v: NaN,               e: false },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( bigIntegerSerializer.canBeUsedFor(v), e )
     ))
   );

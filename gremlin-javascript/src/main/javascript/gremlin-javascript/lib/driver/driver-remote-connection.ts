@@ -20,24 +20,26 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const rcModule = require('./remote-connection');
+import * as rcModule from './remote-connection.js';
 const RemoteConnection = rcModule.RemoteConnection;
 const RemoteTraversal = rcModule.RemoteTraversal;
-const utils = require('../utils');
-const Client = require('./client');
-const Bytecode = require('../process/bytecode');
-const OptionsStrategy = require('../process/traversal-strategy').OptionsStrategy;
+import * as utils from '../utils.js';
+import Client, { RequestOptions } from './client.js';
+import Bytecode from '../process/bytecode.js';
+import { ConnectionOptions } from './connection.js';
+import { OptionsStrategy } from '../process/traversal-strategy.js';
 
 /**
  * Represents the default {@link RemoteConnection} implementation.
  */
-class DriverRemoteConnection extends RemoteConnection {
+export default class DriverRemoteConnection extends RemoteConnection {
+  private readonly _client: Client;
+
   /**
    * Creates a new instance of {@link DriverRemoteConnection}.
    * @param {String} url The resource uri.
-   * @param {Object} [options] The connection options.
+   * @param {ConnectionOptions} [options] The connection options.
    * @param {Array} [options.ca] Trusted certificates.
    * @param {String|Array|Buffer} [options.cert] The certificate key.
    * @param {String} [options.mimeType] The mime type to use.
@@ -52,7 +54,7 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
    * @constructor
    */
-  constructor(url, options = {}) {
+  constructor(url: string, options: ConnectionOptions = {}) {
     super(url, options);
     this._client = new Client(url, options);
   }
@@ -68,7 +70,7 @@ class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode) {
+  submit(bytecode: Bytecode) {
     const optionsStrategy = bytecode.sourceInstructions.find(
       (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
     );
@@ -81,13 +83,13 @@ class DriverRemoteConnection extends RemoteConnection {
       'materializeProperties',
     ];
 
-    let requestOptions = undefined;
+    let requestOptions: RequestOptions | undefined = undefined;
     if (optionsStrategy !== undefined) {
       requestOptions = {};
       const conf = optionsStrategy[1].configuration;
       for (const key in conf) {
         if (conf.hasOwnProperty(key) && allowedKeys.indexOf(key) > -1) {
-          requestOptions[key] = conf[key];
+          requestOptions[key as keyof RequestOptions] = conf[key];
         }
       }
     }
@@ -95,8 +97,7 @@ class DriverRemoteConnection extends RemoteConnection {
     return this._client.submit(bytecode, null, requestOptions).then((result) => new RemoteTraversal(result.toArray()));
   }
 
-  /** @override */
-  createSession() {
+  override createSession() {
     if (this.isSessionBound) {
       throw new Error('Connection is already bound to a session - child sessions are not allowed');
     }
@@ -107,35 +108,29 @@ class DriverRemoteConnection extends RemoteConnection {
     return new DriverRemoteConnection(this.url, copiedOptions);
   }
 
-  /** @override */
-  get isSessionBound() {
-    return this.options.session;
+  override get isSessionBound() {
+    return Boolean(this.options.session);
   }
 
-  /** @override */
-  commit() {
+  override commit() {
     return this._client.submit(Bytecode.GraphOp.commit, null);
   }
 
-  /** @override */
-  rollback() {
+  override rollback() {
     return this._client.submit(Bytecode.GraphOp.rollback, null);
   }
 
-  /** @override */
-  close() {
+  override close() {
     return this._client.close();
   }
 
   /** @override */
-  addListener(...args) {
-    return this._client.addListener(...args);
+  addListener(event: string, handler: (...args: any[]) => unknown) {
+    return this._client.addListener(event, handler);
   }
 
   /** @override */
-  removeListener(...args) {
-    return this._client.removeListener(...args);
+  removeListener(event: string, handler: (...args: any[]) => unknown) {
+    return this._client.removeListener(event, handler);
   }
 }
-
-module.exports = DriverRemoteConnection;

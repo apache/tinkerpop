@@ -16,12 +16,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const SaslMechanismBase = require('./sasl-mechanism-base');
+import { Buffer } from 'buffer';
+import SaslMechanismBase, { SaslMechanismBaseOptions } from './sasl-mechanism-base.js';
 
-class SaslMechanismPlain extends SaslMechanismBase {
+export type SaslMechanismPlainOptions = SaslMechanismBaseOptions & {};
+
+export default class SaslMechanismPlain extends SaslMechanismBase {
   /**
    * Creates a new instance of SaslMechanismPlain.
    * @param {Object} [options] The mechanism options.
@@ -30,16 +31,16 @@ class SaslMechanismPlain extends SaslMechanismBase {
    * @param {String} [options.password] The password of user with access to server.
    * @constructor
    */
-  constructor(options) {
+  constructor(options: SaslMechanismPlainOptions) {
     super(options);
 
     if (
-      this._options.username === undefined ||
-      this._options.username === null ||
-      this._options.username.length === 0 ||
-      this._options.password === undefined ||
-      this._options.password === null ||
-      this._options.password.length === 0
+      this.options?.username === undefined ||
+      this.options.username === null ||
+      this.options.username.length === 0 ||
+      this.options.password === undefined ||
+      this.options.password === null ||
+      this.options.password.length === 0
     ) {
       throw new Error('Missing credentials for SASL PLAIN mechanism');
     }
@@ -57,16 +58,16 @@ class SaslMechanismPlain extends SaslMechanismBase {
    * @param {String} challenge Challenge string presented by the server.
    * @return {Object} A Promise that resolves to a valid sasl response object.
    */
-  evaluateChallenge(challenge) {
+  evaluateChallenge(challenge: string) {
     if (this._hasInitialResponse(challenge)) {
       return Promise.resolve({
         saslMechanism: this.name,
-        sasl: this._saslArgument(this._options.authzid, this._options.username, this._options.password),
+        sasl: this._saslArgument(this.options!.authzid!, this.options!.username!, this.options!.password!),
       });
     }
 
     return Promise.resolve({
-      sasl: this._saslArgument(this._options.authzid, this._options.username, this._options.password),
+      sasl: this._saslArgument(this.options!.authzid!, this.options!.username!, this.options!.password!),
     });
   }
 
@@ -76,7 +77,7 @@ class SaslMechanismPlain extends SaslMechanismBase {
    * @param {String} username The identity of user with access to server.
    * @param {String} password The password of user with access to server.
    */
-  _saslArgument(authzid, username, password) {
+  _saslArgument(authzid: string, username: String, password: string) {
     if (authzid === undefined || authzid === null) {
       authzid = '';
     }
@@ -95,12 +96,10 @@ class SaslMechanismPlain extends SaslMechanismBase {
    * @param {String} challenge The challenge string from the server.
    * @return {Boolean}
    */
-  _hasInitialResponse(challenge) {
+  _hasInitialResponse(challenge: string) {
     if (challenge === undefined || challenge === null) {
       return false;
     }
     return true;
   }
 }
-
-module.exports = SaslMechanismPlain;

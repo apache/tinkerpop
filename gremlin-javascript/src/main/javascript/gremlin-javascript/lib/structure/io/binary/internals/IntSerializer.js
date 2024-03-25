@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class IntSerializer {
+export default class IntSerializer {
   get INT32_MIN() {
     return -2147483648;
   }
@@ -111,4 +110,4 @@ module.exports = class IntSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

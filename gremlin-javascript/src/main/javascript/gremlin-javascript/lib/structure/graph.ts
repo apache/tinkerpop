@@ -20,24 +20,22 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const gt = require('../process/graph-traversal');
-const { TraversalStrategies } = require('../process/traversal-strategy');
+import { GraphTraversalSource } from '../process/graph-traversal.js';
+import { TraversalStrategies } from '../process/traversal-strategy.js';
 
 /**
  * An "empty" graph object to server only as a reference.
  */
-class Graph {
+export class Graph {
   /**
    * Returns the graph traversal source.
    * @param {Function} [traversalSourceClass] The constructor to use for the {@code GraphTraversalSource} instance.
    * @returns {GraphTraversalSource}
    * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
    */
-  traversal(traversalSourceClass) {
-    const traversalSourceConstructor = traversalSourceClass || gt.GraphTraversalSource;
-    return new traversalSourceConstructor(this, new TraversalStrategies());
+  traversal(TraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource) {
+    return new TraversalSourceClass(this, new TraversalStrategies());
   }
 
   toString() {
@@ -46,25 +44,28 @@ class Graph {
 }
 
 class Element {
-  constructor(id, label) {
-    this.id = id;
-    this.label = label;
-  }
+  constructor(
+    readonly id: string,
+    readonly label: string,
+  ) {}
 
   /**
    * Compares this instance to another and determines if they can be considered as equal.
    * @param {Element} other
    * @returns {boolean}
    */
-  equals(other) {
+  equals(other: any) {
     return other instanceof Element && this.id === other.id;
   }
 }
 
-class Vertex extends Element {
-  constructor(id, label, properties) {
+export class Vertex<T extends Record<string, any> = Record<string, any>> extends Element {
+  constructor(
+    id: string,
+    label: string,
+    readonly properties?: T,
+  ) {
     super(id, label);
-    this.properties = properties;
   }
 
   toString() {
@@ -72,17 +73,20 @@ class Vertex extends Element {
   }
 }
 
-class Edge extends Element {
-  constructor(id, outV, label, inV, properties) {
+export class Edge<T extends Record<string, any> = Record<string, any>> extends Element {
+  constructor(
+    id: string,
+    readonly outV: Element,
+    label: string,
+    readonly inV: Element,
+    readonly properties: T = {} as T,
+  ) {
     super(id, label);
-    this.outV = outV;
-    this.inV = inV;
-    this.properties = {};
     if (properties) {
       const keys = Object.keys(properties);
       for (let i = 0; i < keys.length; i++) {
         const k = keys[i];
-        this.properties[k] = properties[k].value;
+        this.properties[k as keyof T] = properties[k].value;
       }
     }
   }
@@ -95,8 +99,15 @@ class Edge extends Element {
   }
 }
 
-class VertexProperty extends Element {
-  constructor(id, label, value, properties) {
+export class VertexProperty<T1 = any, T2 = any> extends Element {
+  readonly key: string;
+
+  constructor(
+    id: string,
+    label: string,
+    readonly value: T1,
+    readonly properties: T2,
+  ) {
     super(id, label);
     this.value = value;
     this.key = this.label;
@@ -108,38 +119,38 @@ class VertexProperty extends Element {
   }
 }
 
-class Property {
-  constructor(key, value) {
-    this.key = key;
-    this.value = value;
-  }
+export class Property<T = any> {
+  constructor(
+    readonly key: string,
+    readonly value: T,
+  ) {}
 
   toString() {
     return `p[${this.key}->${summarize(this.value)}]`;
   }
 
-  equals(other) {
+  equals(other: any) {
     return other instanceof Property && this.key === other.key && this.value === other.value;
   }
 }
 
-class Path {
+export class Path {
   /**
    * Represents a walk through a graph as defined by a traversal.
    * @param {Array} labels
    * @param {Array} objects
    * @constructor
    */
-  constructor(labels, objects) {
-    this.labels = labels;
-    this.objects = objects;
-  }
+  constructor(
+    readonly labels: string[],
+    readonly objects: any[],
+  ) {}
 
   toString() {
     return `path[${(this.objects || []).join(', ')}]`;
   }
 
-  equals(other) {
+  equals(other: any) {
     if (!(other instanceof Path)) {
       return false;
     }
@@ -150,7 +161,7 @@ class Path {
   }
 }
 
-function areEqual(obj1, obj2) {
+function areEqual(obj1: any, obj2: any) {
   if (obj1 === obj2) {
     return true;
   }
@@ -171,7 +182,7 @@ function areEqual(obj1, obj2) {
   return false;
 }
 
-function summarize(value) {
+function summarize(value: any) {
   if (value === null || value === undefined) {
     return value;
   }
@@ -179,12 +190,3 @@ function summarize(value) {
   const strValue = value.toString();
   return strValue.length > 20 ? strValue.substr(0, 20) : strValue;
 }
-
-module.exports = {
-  Edge,
-  Graph,
-  Path,
-  Property,
-  Vertex,
-  VertexProperty,
-};

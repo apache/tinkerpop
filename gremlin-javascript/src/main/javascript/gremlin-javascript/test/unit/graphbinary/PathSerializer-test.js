@@ -20,13 +20,12 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { pathSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const g = require('../../../lib/structure/graph');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { pathSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
+import { Path } from '../../../lib/structure/graph.js';
 
 const { from, concat } = Buffer;
 
@@ -37,11 +36,11 @@ describe('GraphBinary.PathSerializer', () => {
 
   const cases = [
     { v:undefined, fq:1, b:[0x0E,0x01],                                av:null },
-    { v:undefined, fq:0, b:[0x09,0x00,0x00,0x00,0x00,0x00, 0x09,0x00,0x00,0x00,0x00,0x00], av:new g.Path([],[]) },
+    { v:undefined, fq:0, b:[0x09,0x00,0x00,0x00,0x00,0x00, 0x09,0x00,0x00,0x00,0x00,0x00], av:new Path([],[]) },
     { v:null,      fq:1, b:[0x0E,0x01] },
-    { v:null,      fq:0, b:[0x09,0x00,0x00,0x00,0x00,0x00, 0x09,0x00,0x00,0x00,0x00,0x00], av:new g.Path([],[]) },
+    { v:null,      fq:0, b:[0x09,0x00,0x00,0x00,0x00,0x00, 0x09,0x00,0x00,0x00,0x00,0x00], av:new Path([],[]) },
 
-    { v:new g.Path([ ['A','B'], ['C','D'] ], [ 1,-1 ]),
+    { v:new Path([ ['A','B'], ['C','D'] ], [ 1,-1 ]),
       b:[
         // {labels}
         0x09,0x00,0x00,0x00,0x00,0x02, // List.{length}
@@ -85,7 +84,7 @@ describe('GraphBinary.PathSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -101,7 +100,7 @@ describe('GraphBinary.PathSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -138,13 +137,13 @@ describe('GraphBinary.PathSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: new t.P(),         e: false },
+      { v: new Traverser(), e: false },
+      { v: new P(),         e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
-      { v: [new g.Path()],    e: false },
-      { v: new g.Path(),      e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: [new Path()],    e: false },
+      { v: new Path(),      e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( pathSerializer.canBeUsedFor(v), e )
     ))
   );

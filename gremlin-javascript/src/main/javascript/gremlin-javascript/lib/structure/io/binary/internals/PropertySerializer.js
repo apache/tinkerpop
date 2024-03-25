@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const g = require('../../../graph');
+import { Buffer } from 'buffer';
+import { Property } from '../../../graph.js';
 
-module.exports = class PropertySerializer {
+export default class PropertySerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.PROPERTY] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof g.Property;
+    return value instanceof Property;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -133,10 +132,10 @@ module.exports = class PropertySerializer {
       // TODO: should we verify that parent is null?
       cursor = cursor.slice(parent_len);
 
-      const v = new g.Property(key, value);
+      const v = new Property(key, value);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

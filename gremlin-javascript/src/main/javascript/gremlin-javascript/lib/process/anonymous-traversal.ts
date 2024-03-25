@@ -17,31 +17,27 @@
  *  under the License.
  */
 
-'use strict';
-
-const graphTraversalModule = require('./graph-traversal');
-const remote = require('../driver/remote-connection');
-const TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
-const GraphTraversalSource = graphTraversalModule.GraphTraversalSource;
-const GraphTraversal = graphTraversalModule.GraphTraversal;
-const Bytecode = require('./bytecode');
-const Graph = require('../structure/graph').Graph;
+import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import { Graph } from '../structure/graph.js';
+import Bytecode from './bytecode.js';
+import { GraphTraversalSource, GraphTraversal } from './graph-traversal.js';
+import { TraversalStrategies } from './traversal-strategy.js';
 
 /**
  * Provides a unified way to construct a <code>TraversalSource</code> from the perspective of the traversal. In this
  * syntax the user is creating the source and binding it to a reference which is either an existing <code>Graph</code>
  * instance or a <code>RemoteConnection</code>.
  */
-class AnonymousTraversalSource {
+export default class AnonymousTraversalSource {
   /**
    * Creates a new instance of {@code AnonymousTraversalSource}.
    * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
    * @param {Function} [traversalClass] Optional {@code GraphTraversal} constructor.
    */
-  constructor(traversalSourceClass, traversalClass) {
-    this.traversalSourceClass = traversalSourceClass;
-    this.traversalClass = traversalClass;
-  }
+  constructor(
+    readonly traversalSourceClass?: typeof GraphTraversalSource,
+    readonly traversalClass?: typeof GraphTraversal,
+  ) {}
 
   /**
    * Constructs an {@code AnonymousTraversalSource} which will then be configured to spawn a
@@ -50,7 +46,7 @@ class AnonymousTraversalSource {
    * @param {Function} [traversalClass] Optional {@code GraphTraversalSource} constructor.
    * @returns {AnonymousTraversalSource}.
    */
-  static traversal(traversalSourceClass, traversalClass) {
+  static traversal(traversalSourceClass?: typeof GraphTraversalSource, traversalClass?: typeof GraphTraversal) {
     return new AnonymousTraversalSource(traversalSourceClass || GraphTraversalSource, traversalClass || GraphTraversal);
   }
 
@@ -60,10 +56,10 @@ class AnonymousTraversalSource {
    * @param {RemoteConnection} connection
    * @return {GraphTraversalSource}
    */
-  with_(connection) {
+  with_(connection: RemoteConnection) {
     const traversalStrategies = new TraversalStrategies();
-    traversalStrategies.addStrategy(new remote.RemoteStrategy(connection));
-    return new this.traversalSourceClass(
+    traversalStrategies.addStrategy(new RemoteStrategy(connection));
+    return new this.traversalSourceClass!(
       new Graph(),
       traversalStrategies,
       new Bytecode(),
@@ -79,9 +75,7 @@ class AnonymousTraversalSource {
    * @return {GraphTraversalSource}
    * @deprecated As of release 4.0.0, prefer {@link with_}.
    */
-  withRemote(remoteConnection) {
+  withRemote(remoteConnection: RemoteConnection) {
     return this.with_(remoteConnection);
   }
 }
-
-module.exports = AnonymousTraversalSource;

@@ -20,14 +20,13 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const assert = require('assert');
-const { graphBinaryReader } = require('../../../lib/structure/io/binary/GraphBinary');
+import assert from 'assert';
+import { graphBinaryReader } from '../../../lib/structure/io/binary/GraphBinary.js';
 
-const { Traverser } = require('../../../lib/process/traversal');
-const Bytecode = require('../../../lib/process/bytecode');
-const { GraphTraversal } = require('../../../lib/process/graph-traversal');
+import { Traverser } from '../../../lib/process/traversal.js';
+import Bytecode from '../../../lib/process/bytecode.js';
+import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
 
 const { from } = Buffer;

@@ -13,6 +13,15 @@
     "graphdb"
   ],
   "license": "Apache-2.0",
+  "type": "module",
+  "main": "./build/cjs/index.cjs",
+  "exports": {
+    "import": "./build/esm/index.js",
+    "require": "./build/cjs/index.cjs"
+  },
+  "files": [
+    "build"
+  ],
   "dependencies": {
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
@@ -21,11 +30,16 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^10.3.1",
+    "@knighted/duel": "^1.0.7",
+    "@tsconfig/node18": "^18.2.2",
+    "@types/readable-stream": "^4.0.10",
+    "@types/uuid": "^9.0.8",
+    "@types/ws": "^8.5.10",
     "chai": "~4.4.1",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
-    "cucumber": "~6.0.7",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -33,7 +47,9 @@
     "grunt-cli": "~1.4.3",
     "grunt-jsdoc": "~2.4.1",
     "mocha": "^10.2.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
   },
   "repository": {
     "type": "git",
@@ -44,18 +60,20 @@
     "url": "https://issues.apache.org/jira/browse/TINKERPOP"
   },
   "scripts": {
+    "build": "rm -rf build && duel --dirs",
+    "prepare": "npm run build",
     "test": "npm run unit-test && npm run integration-test",
-    "unit-test": "mocha test/unit/*",
+    "unit-test": "cross-env TS_NODE_PROJECT='tsconfig.test.json' mocha test/unit/*",
     "integration-test": "npm run integration-test-graphson30 && npm run integration-test-graphbinary",
-    "integration-test-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
-    "integration-test-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
+    "integration-test-graphson30": "cross-env TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
+    "integration-test-graphbinary": "cross-env TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
     "TODO": "# test other mime types like graphbinary stringd",
     "features": "npm run features-graphson30 && npm run features-graphbinary",
-    "features-graphson30": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
-    "features-graphbinary": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-graphson30": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --import test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-graphbinary": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --import test/cucumber ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
     "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
-    "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
-    "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",
+    "features-graphson30-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --import test/cucumber ../gremlin-test/",
+    "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --import test/cucumber ../gremlin-test/",
     "lint": "eslint --ext .js ."
   },
   "engines": {

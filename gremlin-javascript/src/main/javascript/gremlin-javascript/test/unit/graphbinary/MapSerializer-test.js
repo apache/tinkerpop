@@ -20,15 +20,14 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { mapSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { mapSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser } from '../../../lib/process/traversal.js';
 
-const Bytecode = require('../../../lib/process/bytecode');
-const { GraphTraversal } = require('../../../lib/process/graph-traversal');
+import Bytecode from '../../../lib/process/bytecode.js';
+import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
 const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
 
 const { from, concat } = Buffer;
@@ -138,7 +137,7 @@ describe('GraphBinary.MapSerializer', () => {
   describe('#serialize', () => {
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       let map;
       if (v)
         map = new Map( Object.entries(v) );
@@ -163,7 +162,7 @@ describe('GraphBinary.MapSerializer', () => {
   });
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -202,12 +201,12 @@ describe('GraphBinary.MapSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: true },
-      { v: new t.Traverser(), e: true },
+      { v: new Traverser(), e: true },
       { v: [],                e: false },
       { v: [{}],              e: false },
       { v: [new Map()],       e: false },
       { v: new Map(),         e: true },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( mapSerializer.canBeUsedFor(v), e )
     ))
   );
