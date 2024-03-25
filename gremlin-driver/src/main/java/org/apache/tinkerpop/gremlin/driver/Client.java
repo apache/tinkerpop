@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -30,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import java.net.ConnectException;
@@ -51,7 +51,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
@@ -642,7 +643,7 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
-            return submitAsync(bytecode, RequestOptions.EMPTY);
+            return submitAsync(bytecode, getRequestOptions(bytecode));
         }
 
         @Override
