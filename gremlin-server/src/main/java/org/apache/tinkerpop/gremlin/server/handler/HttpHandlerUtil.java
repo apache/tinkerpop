@@ -32,18 +32,18 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -59,14 +59,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT;
@@ -111,26 +109,31 @@ public class HttpHandlerUtil {
 
         if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
             final MessageSerializer<?> serializer = serializers.get(contentType);
+            if (serializer instanceof MessageTextSerializerV4) {
+                final MessageTextSerializerV4<?> serializerV4 = (MessageTextSerializerV4) serializer;
 
-            final ByteBuf buffer = request.content();
+                final ByteBuf buffer = request.content();
 
-            // additional validation for header
-            final int first = buffer.readByte();
-            // payload can be plain json or can start with additional header with content type.
-            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
-            if (first != 0x7b) {
-                final byte[] bytes = new byte[first];
-                buffer.readBytes(bytes);
-                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+                // additional validation for header
+                final int first = buffer.readByte();
+                // payload can be plain json or can start with additional header with content type.
+                // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
+                if (first != 0x7b) {
+                    final byte[] bytes = new byte[first];
+                    buffer.readBytes(bytes);
+                    final String mimeType = new String(bytes, StandardCharsets.UTF_8);
 
-                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
-                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
-            } else
-                buffer.resetReaderIndex();
+                    if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
+                        throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
+                } else {
+                    buffer.resetReaderIndex();
+                }
 
-            return serializer.deserializeRequest(buffer);
+                return serializerV4.deserializeRequestMessageV4(buffer).convertToV1();
+            } else {
+                throw new SerializationException("Server only supports RequestMessageV4 requests");
+            }
         }
-
         return getRequestMessageFromHttpRequest(request);
     }
 
@@ -138,78 +141,39 @@ public class HttpHandlerUtil {
      * Convert a http request into a {@link RequestMessage}.
      */
     public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
-        // default is just the StandardOpProcessor which maintains compatibility with older versions which only
-        // processed scripts.
-        final RequestMessage.Builder msgBuilder = RequestMessage.build(StandardOpProcessor.OP_PROCESSOR_NAME);
+        return getRequestMessageV4FromHttpRequest(request).convertToV1();
+    }
 
-        if (request.method() == GET) {
-            final QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
-            final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
-
-            if (null == gremlinParms || gremlinParms.size() == 0)
-                throw new IllegalArgumentException("no gremlin script supplied");
-            final String script = gremlinParms.get(0);
-            if (script.isEmpty()) throw new IllegalArgumentException("no gremlin script supplied");
-
-            final List<String> requestIdParms = decoder.parameters().get(Tokens.REQUEST_ID);
-            if (requestIdParms != null && requestIdParms.size() > 0) {
-                msgBuilder.overrideRequestId(UUID.fromString(requestIdParms.get(0)));
-            }
-
-            // query string parameters - take the first instance of a key only - ignore the rest
-            final Map<String, Object> bindings = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_BINDINGS_DOT))
-                    .forEach(kv -> bindings.put(kv.getKey().substring(ARGS_BINDINGS_DOT.length()), kv.getValue().get(0)));
-
-            final Map<String, String> aliases = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_ALIASES_DOT))
-                    .forEach(kv -> aliases.put(kv.getKey().substring(ARGS_ALIASES_DOT.length()), kv.getValue().get(0)));
-
-            final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
-            final String language = (null == languageParms || languageParms.size() == 0) ? "gremlin-groovy" : languageParms.get(0);
-
-            return msgBuilder.addArg(Tokens.ARGS_GREMLIN, script).addArg(Tokens.ARGS_LANGUAGE, language)
-                    .addArg(Tokens.ARGS_BINDINGS, bindings).addArg(Tokens.ARGS_ALIASES, aliases).create();
-        } else {
-            final JsonNode body;
-            try {
-                body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
-            } catch (IOException ioe) {
-                throw new IllegalArgumentException("body could not be parsed", ioe);
-            }
-
-            final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
-            if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
-
-            final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-            if (bindingsNode != null && !bindingsNode.isObject())
-                throw new IllegalArgumentException("bindings must be a Map");
-
-            final Map<String, Object> bindings = new HashMap<>();
-            if (bindingsNode != null)
-                bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
-
-            final JsonNode aliasesNode = body.get(Tokens.ARGS_ALIASES);
-            if (aliasesNode != null && !aliasesNode.isObject())
-                throw new IllegalArgumentException("aliases must be a Map");
-
-            final Map<String, String> aliases = new HashMap<>();
-            if (aliasesNode != null)
-                aliasesNode.fields().forEachRemaining(kv -> aliases.put(kv.getKey(), kv.getValue().asText()));
-
-            final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-            final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
-
-            final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
-            final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
-
-            final JsonNode opNode = body.get("op");
-            final String op = null == opNode ? "" : opNode.asText();
-
-            return msgBuilder.overrideRequestId(requestId).processor(op)
-                    .addArg(Tokens.ARGS_GREMLIN, scriptNode.asText()).addArg(Tokens.ARGS_LANGUAGE, language)
-                    .addArg(Tokens.ARGS_BINDINGS, bindings).addArg(Tokens.ARGS_ALIASES, aliases).create();
+    public static RequestMessageV4 getRequestMessageV4FromHttpRequest(final FullHttpRequest request) {
+        final JsonNode body;
+        try {
+            body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
+        } catch (IOException ioe) {
+            throw new IllegalArgumentException("body could not be parsed", ioe);
         }
+
+        final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
+        if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
+
+        final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
+        if (bindingsNode != null && !bindingsNode.isObject())
+            throw new IllegalArgumentException("bindings must be a Map");
+
+        final Map<String, Object> bindings = new HashMap<>();
+        if (bindingsNode != null)
+            bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
+
+        final JsonNode gNode = body.get(Tokens.ARGS_G);
+        final String g = (null == gNode) ? null : gNode.asText();
+
+        final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
+        final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
+
+        final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
+        final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
+
+        return RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
+                .addBindings(bindings).addLanguage(language).addG(g).create();
     }
 
     private static Object fromJsonNode(final JsonNode node) {
@@ -294,7 +258,7 @@ public class HttpHandlerUtil {
         }
     }
 
-    static void writeErrorFrame(final ChannelHandlerContext ctx,  final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+    static void writeErrorFrame(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
         try {
             ctx.writeAndFlush(new DefaultHttpContent(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc())));
             ctx.writeAndFlush(EMPTY_LAST_CONTENT);

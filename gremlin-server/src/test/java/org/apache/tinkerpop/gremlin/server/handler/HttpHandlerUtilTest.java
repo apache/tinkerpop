@@ -29,9 +29,12 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
@@ -48,6 +51,8 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class HttpHandlerUtilTest {
@@ -132,34 +137,112 @@ public class HttpHandlerUtilTest {
     }
 
     @Test
-    public void shouldCorrectlyDeserializeGremlinFromGetRequest() throws SerializationException {
-        final String gremlin = "g.V().hasLabel('person')";
+    public void shouldCorrectlyDeserializeGremlinFromPostRequestWithAllScriptFieldsSet() throws SerializationException {
+        final String gremlin = "g.V(x)";
+        final UUID requestId = UUID.fromString("1e55c495-22d5-4a39-934a-a2744ba010ef");
+        final ByteBuf buffer = allocator.buffer();
+        buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
+                        "\", \"requestId\": \"" + requestId +
+                        "\", \"bindings\":{\"x\":\"2\"}" +
+                        ", \"language\":  \"gremlin-groovy\"}",
+                CharsetUtil.UTF_8);
+
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
+                buffer, headers, new DefaultHttpHeaders());
+
+        final RequestMessageV4 deserialized = HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
+        assertEquals(gremlin, deserialized.getGremlin());
+        assertEquals(requestId, deserialized.getRequestId());
+        assertEquals("gremlin-groovy", deserialized.getArg(Tokens.ARGS_LANGUAGE));
+        assertEquals("2", ((Map)deserialized.getArg(Tokens.ARGS_BINDINGS)).get("x"));
+    }
+
+    @Test
+    public void shouldErrorOnBadRequestWithInvalidUuid() throws SerializationException {
+        final String gremlin = "g.V(x)";
+        final String requestId = "notaUUID";
+        final ByteBuf buffer = allocator.buffer();
+        buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
+                        "\", \"requestId\": \"" + requestId +
+                        "\", \"language\":  \"gremlin-groovy\"}",
+                CharsetUtil.UTF_8);
+
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
+                buffer, headers, new DefaultHttpHeaders());
+
+        try {
+            HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
+            fail("Expected an error because of incorrect UUID format.");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Invalid UUID string"));
+        }
+    }
+
+    @Test
+    public void shouldErrorOnBadRequestWithMalformedJson() throws SerializationException {
+        final String gremlin = "g.V(x)";
+        final ByteBuf buffer = allocator.buffer();
+        buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
+                        "\", \"language\":  \"gremlin-groovy\"}",
+                CharsetUtil.UTF_8);
+
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
+                buffer, headers, new DefaultHttpHeaders());
+
+        try {
+            HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
+            fail("Expected an error because of incorrect UUID format.");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("body could not be parsed"));
+        }
+    }
+
+    @Test
+    public void shouldIgnoreInvalidRequestMessageParameter() throws SerializationException {
+        final String gremlin = "g.V(x)";
         final UUID requestId = UUID.randomUUID();
         final ByteBuf buffer = allocator.buffer();
+        // requestId contains a typo here as requetId
+        buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
+                        "\", \"requetId\": \"" + requestId +
+                        "\", \"language\":  \"gremlin-groovy\"}",
+                CharsetUtil.UTF_8);
 
-        final List<String> headerOptions = Arrays.asList("", null, SerTokens.MIME_JSON, "some invalid value");
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
 
-        for (final String contentTypeValue : headerOptions) {
-            final HttpHeaders headers = new DefaultHttpHeaders();
-            if (contentTypeValue != null) {
-                headers.add(HttpHeaderNames.CONTENT_TYPE, contentTypeValue);
-            }
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
+                buffer, headers, new DefaultHttpHeaders());
 
-            final QueryStringEncoder encoder = new QueryStringEncoder("/");
-            encoder.addParam("gremlin", gremlin);
-            encoder.addParam("requestId", requestId.toString());
-            encoder.addParam("language", "gremlin-groovy");
+        final RequestMessageV4 deserialized = HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
+        assertNotEquals(requestId, deserialized.getRequestId());
+    }
 
-            final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
-                    encoder.toString(), buffer, headers, new DefaultHttpHeaders());
+    @Test
+    public void shouldErrorOnBadRequestWithNoParameter() throws SerializationException {
+        final ByteBuf buffer = allocator.buffer();
+        buffer.writeCharSequence("{ }", CharsetUtil.UTF_8);
 
-            final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-            serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
 
-            final RequestMessage deserialized = HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
-            assertEquals(gremlin, deserialized.getArgs().get(Tokens.ARGS_GREMLIN));
-            assertEquals(requestId, deserialized.getRequestId());
-            assertEquals("gremlin-groovy", deserialized.getArg(Tokens.ARGS_LANGUAGE));
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
+                buffer, headers, new DefaultHttpHeaders());
+
+        try {
+            HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
+            fail("Expected an error");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("no gremlin script supplied"));
         }
     }
 }
