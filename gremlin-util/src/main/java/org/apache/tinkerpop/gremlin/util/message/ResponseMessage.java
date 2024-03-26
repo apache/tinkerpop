@@ -67,6 +67,30 @@ public final class ResponseMessage {
                 '}';
     }
 
+    public static class ResponseMessageHeader {
+        private final ResponseMessage responseMessage;
+
+        public ResponseMessageHeader(final ResponseMessage responseMessage) {
+            this.responseMessage = responseMessage;
+        }
+
+        public ResponseMessage getResponseMessage() {
+            return responseMessage;
+        }
+    }
+
+    public static class ResponseMessageFooter {
+        private final ResponseMessage responseMessage;
+
+        public ResponseMessageFooter(final ResponseMessage responseMessage) {
+            this.responseMessage = responseMessage;
+        }
+
+        public ResponseMessage getResponseMessage() {
+            return responseMessage;
+        }
+    }
+
     public static Builder build(final RequestMessage requestMessage) {
         return new Builder(requestMessage);
     }

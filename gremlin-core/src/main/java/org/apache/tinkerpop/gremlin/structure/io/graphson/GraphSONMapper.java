@@ -94,7 +94,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (loadCustomSerializers)
             om.findAndRegisterModules();
 
-        if ((version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) && typeInfo != TypeInfo.NO_TYPES) {
+        if ((version == GraphSONVersion.V4_0 || version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) &&
+                typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
@@ -134,7 +135,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                         .typeProperty(GraphSONTokens.CLASS);
                 om.setDefaultTyping(typer);
             }
-        } else if (version == GraphSONVersion.V3_0) {
+        } else if (version == GraphSONVersion.V3_0 || version == GraphSONVersion.V4_0) {
 
         } else {
             throw new IllegalStateException("Unknown GraphSONVersion: " + version);
@@ -199,7 +200,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
-        private GraphSONVersion version = GraphSONVersion.V3_0;
+        private GraphSONVersion version = GraphSONVersion.V4_0;
         private boolean includeDefaultXModule = false;
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
@@ -218,7 +219,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V3_0}.
+         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V4_0}.
          */
         public Builder version(final GraphSONVersion version) {
             this.version = version;
@@ -253,7 +254,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Supply a default extension module of V2_0 and V3_0 for serialization/deserialization.
+         * Supply a default extension module of V2_0, V3_0 and V4_0 for serialization/deserialization.
          */
         public Builder addDefaultXModule(final boolean includeDefaultXModule) {
             this.includeDefaultXModule = includeDefaultXModule;
@@ -320,6 +321,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 if (this.version == GraphSONVersion.V2_0) {
                     this.addCustomModule(GraphSONXModuleV2.build().create(this.normalize, typeInfo));
                 } else if (this.version == GraphSONVersion.V3_0) {
+                    this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
+                } else if (this.version == GraphSONVersion.V4_0) {
+                    // todo:
                     this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
                 }
             }

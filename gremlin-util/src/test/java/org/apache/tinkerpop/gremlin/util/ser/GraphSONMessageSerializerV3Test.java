@@ -69,9 +69,9 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV3Test {
 
-    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
-    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    protected final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    protected final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    protected final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
 

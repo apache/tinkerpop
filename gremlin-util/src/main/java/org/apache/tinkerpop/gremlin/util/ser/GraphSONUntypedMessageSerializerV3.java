@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2;
