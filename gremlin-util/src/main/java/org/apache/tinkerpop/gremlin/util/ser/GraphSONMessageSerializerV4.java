@@ -21,12 +21,13 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -41,11 +42,90 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+/**
+ * Serialize results to JSON with version 4.0.x schema and the extended module.
+ */
 public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2
-        implements MessageTextSerializer<ObjectMapper>, MessageChunkSerializer<ObjectMapper> {
+        implements MessageTextSerializerV4<ObjectMapper>, MessageChunkSerializer<ObjectMapper> {
 
-    private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV4.class);
+    public final static class GremlinServerModuleV4 extends SimpleModule {
+        public GremlinServerModuleV4() {
+            super("graphsonV4-gremlin-server");
+
+            // SERIALIZERS
+            addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
+            addSerializer(ResponseMessage.ResponseMessageHeader.class, new ResponseMessageHeaderSerializer());
+            addSerializer(ResponseMessage.ResponseMessageFooter.class, new ResponseMessageFooterSerializer());
+            addSerializer(RequestMessageV4.class, new GraphSONMessageSerializerV4.RequestMessageV4Serializer());
+
+            // DESERIALIZERS
+            addDeserializer(ResponseMessage.class, new ResponseMessageDeserializer());
+            addDeserializer(RequestMessageV4.class, new GraphSONMessageSerializerV4.RequestMessageV4Deserializer());
+        }
+    }
+
+    public final static class RequestMessageV4Serializer extends StdSerializer<RequestMessageV4> {
+        public RequestMessageV4Serializer() {
+            super(RequestMessageV4.class);
+        }
+
+        @Override
+        public void serialize(final RequestMessageV4 requestMessage, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            ser(requestMessage, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final RequestMessageV4 requestMessage, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final TypeSerializer typeSerializer) throws IOException {
+            ser(requestMessage, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        public void ser(final RequestMessageV4 requestMessage, final JsonGenerator jsonGenerator,
+                        final SerializerProvider serializerProvider,
+                        final TypeSerializer typeSerializer) throws IOException {
+            GraphSONUtil.writeStartObject(requestMessage, jsonGenerator, typeSerializer);
+
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_GREMLIN, requestMessage.getGremlin());
+            for (Map.Entry<String, Object> kv : requestMessage.getFields().entrySet()) {
+                jsonGenerator.writeObjectField(kv.getKey(), kv.getValue());
+            }
+
+            GraphSONUtil.writeEndObject(requestMessage, jsonGenerator, typeSerializer);
+        }
+    }
+
+    public final static class RequestMessageV4Deserializer extends AbstractObjectDeserializer<RequestMessageV4> {
+        protected RequestMessageV4Deserializer() {
+            super(RequestMessageV4.class);
+        }
+
+        @Override
+        public RequestMessageV4 createObject(final Map<String, Object> data) {
+            RequestMessageV4.Builder builder = RequestMessageV4.build(data.get(SerTokens.TOKEN_GREMLIN));
+
+            if (data.containsKey(SerTokens.TOKEN_REQUEST)) {
+                builder.overrideRequestId(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()));
+            }
+            if (data.containsKey(SerTokens.TOKEN_LANGUAGE)) {
+                builder.addLanguage(data.get(SerTokens.TOKEN_LANGUAGE).toString());
+            }
+            if (data.containsKey(SerTokens.TOKEN_G)) {
+                builder.addG(data.get(SerTokens.TOKEN_G).toString());
+            }
+            if (data.containsKey(SerTokens.TOKEN_BINDINGS)) {
+                builder.addBindings((Map<String, Object>) data.get(SerTokens.TOKEN_BINDINGS));
+            }
+
+            return builder.create();
+        }
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV3.class);
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V4;
 
     private static byte[] header;
@@ -145,7 +225,6 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
         }
     }
 
-
     // !!!
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
@@ -240,6 +319,38 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
         throw new IllegalStateException("Reading for streaming GraphSON is not supported");
     }
 
+    @Override
+    public ByteBuf serializeRequestMessageV4(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
+        ByteBuf encodedMessage = null;
+        try {
+            final byte[] header = obtainHeader();
+            final byte[] payload = mapper.writeValueAsBytes(requestMessage);
+
+            encodedMessage = allocator.buffer(header.length + payload.length);
+            encodedMessage.writeBytes(header);
+            encodedMessage.writeBytes(payload);
+
+            return encodedMessage;
+        } catch (Exception ex) {
+            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
+
+            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGraphSONMessageSerializerV2.class.getName()), ex);
+            throw new SerializationException(ex);
+        }
+    }
+
+    @Override
+    public RequestMessageV4 deserializeRequestMessageV4(ByteBuf msg) throws SerializationException {
+        try {
+            final byte[] payload = new byte[msg.readableBytes()];
+            msg.readBytes(payload);
+            return mapper.readValue(payload, RequestMessageV4.class);
+        } catch (Exception ex) {
+            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV2.class.getName()), ex);
+            throw new SerializationException(ex);
+        }
+    }
+
     public final static class ResponseMessageHeaderSerializer extends StdSerializer<ResponseMessage.ResponseMessageHeader> {
         public ResponseMessageHeaderSerializer() {
             super(ResponseMessage.ResponseMessageHeader.class);
@@ -315,21 +426,4 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
         }
     }
-
-    public final static class GremlinServerModuleV4 extends SimpleModule {
-        public GremlinServerModuleV4() {
-            super("graphson-gremlin-server");
-
-            // SERIALIZERS
-            addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
-            addSerializer(ResponseMessage.ResponseMessageHeader.class, new ResponseMessageHeaderSerializer());
-            addSerializer(ResponseMessage.ResponseMessageFooter.class, new ResponseMessageFooterSerializer());
-            addSerializer(RequestMessage.class, new RequestMessageSerializer());
-
-            //DESERIALIZERS
-            addDeserializer(ResponseMessage.class, new ResponseMessageDeserializer());
-            addDeserializer(RequestMessage.class, new RequestMessageDeserializer());
-        }
-    }
-
 }
