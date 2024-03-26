@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
+import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.Tokens;
@@ -60,6 +61,7 @@ public class Context {
     private final String materializeProperties;
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
+    private HttpGremlinEndpointHandler.RequestState requestState;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
     private ScheduledFuture<?> timeoutExecutor = null;
     private boolean timeoutExecutorGrabbed = false;
@@ -88,6 +90,14 @@ public class Context {
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
+        this(requestMessage, ctx, settings, graphManager, gremlinExecutor, scheduledExecutorService,
+                HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED);
+    }
+
+    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
+                   final Settings settings, final GraphManager graphManager,
+                   final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService,
+                   final HttpGremlinEndpointHandler.RequestState requestState) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
         this.settings = settings;
@@ -97,6 +107,7 @@ public class Context {
 
         // order of calls matter as one depends on the next
         this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
+        this.requestState = requestState;
         this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
         this.materializeProperties = determineMaterializeProperties();
@@ -334,5 +345,13 @@ public class Context {
                     ((AbstractTraverser) item).detach();
             }
         }
+    }
+
+    public HttpGremlinEndpointHandler.RequestState getRequestState() {
+        return requestState;
+    }
+
+    public void setRequestState(HttpGremlinEndpointHandler.RequestState requestState) {
+        this.requestState = requestState;
     }
 }

@@ -26,28 +26,25 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.server.Context;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -57,13 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -301,13 +294,34 @@ public class HttpHandlerUtil {
         }
     }
 
-    static void writeErrorFrame(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+    static void writeErrorFrame(final ChannelHandlerContext ctx,  final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
         try {
-            ctx.writeAndFlush(new DefaultHttpContent(
-                    (ByteBuf) new Frame(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc())).getMsg()));
+            ctx.writeAndFlush(new DefaultHttpContent(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc())));
             ctx.writeAndFlush(EMPTY_LAST_CONTENT);
         } catch (SerializationException se) {
             logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
         }
+    }
+
+    static void writeErrorFrame(final ChannelHandlerContext ctx, final Context context, ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+        try {
+            final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
+                    ? ((MessageChunkSerializer) serializer).writeErrorFooter(responseMessage, ctx.alloc())
+                    : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
+
+            context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
+            ctx.writeAndFlush(new DefaultHttpContent(ByteBuf));
+
+            sendTrailingHeaders(ctx, responseMessage.getStatus().getCode().getValue(), responseMessage.getStatus().getMessage());
+        } catch (SerializationException se) {
+            logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
+        }
+    }
+
+    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final int statusCode, final String message) {
+        final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
+        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode);
+        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_MESSAGE, message);
+        ctx.writeAndFlush(defaultLastHttpContent);
     }
 }
