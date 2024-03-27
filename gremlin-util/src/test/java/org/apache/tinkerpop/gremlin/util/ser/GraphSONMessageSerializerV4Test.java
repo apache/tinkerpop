@@ -60,13 +60,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
         final ByteBuf bb3 = serializer.writeFooter(response, allocator);
 
-        final ByteBuf bbCombined = allocator.buffer(bb0.readableBytes() + bb1.readableBytes() +
-                bb2.readableBytes() + bb3.readableBytes());
-
-        bbCombined.writeBytes(bb0);
-        bbCombined.writeBytes(bb1);
-        bbCombined.writeBytes(bb2);
-        bbCombined.writeBytes(bb3);
+        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
 
@@ -89,13 +83,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
         final ByteBuf bb3 = serializer.writeErrorFooter(response, allocator);
 
-        final ByteBuf bbCombined = allocator.buffer(bb0.readableBytes() + bb1.readableBytes() +
-                bb2.readableBytes() + bb3.readableBytes());
-
-        bbCombined.writeBytes(bb0);
-        bbCombined.writeBytes(bb1);
-        bbCombined.writeBytes(bb2);
-        bbCombined.writeBytes(bb3);
+        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
 
@@ -106,9 +94,8 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         assertEquals("OK", deserialized.getStatus().getMessage());
     }
 
-    private static String getString(final ByteBuf bb) {
-        final String result =  bb.readCharSequence(bb.readableBytes(), CharsetUtil.UTF_8).toString();
-        bb.resetReaderIndex();
-        return result;
+    @Override
+    protected ResponseMessage convert(final Object toSerialize) throws SerializationException {
+        return convert(toSerialize, this.serializer);
     }
 }

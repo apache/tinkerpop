@@ -408,12 +408,12 @@ public class GraphSONMessageSerializerV3Test {
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
-    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
+    protected ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }
 
-    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
+    protected ResponseMessage convert(final Object toSerialize) throws SerializationException {
         return convert(toSerialize, this.serializer);
     }
 }

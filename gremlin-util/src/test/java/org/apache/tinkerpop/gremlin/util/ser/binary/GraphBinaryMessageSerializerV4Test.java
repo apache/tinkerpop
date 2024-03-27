@@ -121,13 +121,7 @@ public class GraphBinaryMessageSerializerV4Test {
         final ByteBuf bb2 = serializer.writeChunk(chunkData2, allocator);
         final ByteBuf bb3 = serializer.writeFooter(footer, allocator);
 
-        final ByteBuf bbCombined = allocator.buffer(bb0.readableBytes() + bb1.readableBytes() +
-                bb2.readableBytes() + bb3.readableBytes());
-
-        bbCombined.writeBytes(bb0);
-        bbCombined.writeBytes(bb1);
-        bbCombined.writeBytes(bb2);
-        bbCombined.writeBytes(bb3);
+        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
         final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
 
@@ -138,6 +132,42 @@ public class GraphBinaryMessageSerializerV4Test {
         // Result
         List<Integer> combinedData = new ArrayList<>();
         Stream.of(headerData, chunkData1, chunkData2, footerData).forEach(combinedData::addAll);
+        assertEquals(combinedData, deserialized.getResult().getData());
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeCompositeResponseWithError() throws SerializationException {
+        final List headerData = Arrays.asList(0, "header");
+        final ResponseMessage header = ResponseMessage.buildV4(UUID.randomUUID())
+                .result(headerData)
+                .create();
+
+        final List chunkData1 = Arrays.asList(1, "data1");
+        final List chunkData2 = Arrays.asList(2, "data2");
+
+        final List footerData = Arrays.asList(0xFF, "footer");
+        final ResponseMessage footer = ResponseMessage.build((UUID)null)
+                .result(footerData)
+                .code(ResponseStatusCode.SERVER_ERROR)
+                .statusMessage("SERVER_ERROR")
+                .create();
+
+        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
+        final ByteBuf bb1 = serializer.writeChunk(chunkData1, allocator);
+        final ByteBuf bb2 = serializer.writeChunk(chunkData2, allocator);
+        final ByteBuf bb3 = serializer.writeErrorFooter(footer, allocator);
+
+        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
+
+        final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
+
+        assertEquals(header.getRequestId(), deserialized.getRequestId());
+        // Status
+        assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
+        assertEquals(footer.getStatus().getMessage(), deserialized.getStatus().getMessage());
+        // Result
+        List<Integer> combinedData = new ArrayList<>();
+        Stream.of(headerData, chunkData1, chunkData2).forEach(combinedData::addAll);
         assertEquals(combinedData, deserialized.getResult().getData());
     }
 
