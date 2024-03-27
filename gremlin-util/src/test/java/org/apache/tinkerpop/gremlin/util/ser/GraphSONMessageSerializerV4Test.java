@@ -36,11 +36,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * Serializer tests that cover non-lossy serialization/deserialization methods.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
 @SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3Test {
 
@@ -49,7 +44,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
     @Test
     public void shouldDeserializeChunkedResponseMessage() throws SerializationException {
         final UUID id = UUID.randomUUID();
-        final ResponseMessage response = ResponseMessage.build(id)
+        final ResponseMessage response = ResponseMessage.buildV4(id)
                 .code(ResponseStatusCode.SUCCESS)
                 .result(Arrays.asList("start/end", 0))
                 .statusMessage("OK")
@@ -72,7 +67,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
     @Test
     public void shouldDeserializeChunkedResponseMessageWithError() throws SerializationException {
         final UUID id = UUID.randomUUID();
-        final ResponseMessage response = ResponseMessage.build(id)
+        final ResponseMessage response = ResponseMessage.buildV4(id)
                 .code(ResponseStatusCode.SUCCESS)
                 .result(Arrays.asList("start/end", 0))
                 .statusMessage("OK")

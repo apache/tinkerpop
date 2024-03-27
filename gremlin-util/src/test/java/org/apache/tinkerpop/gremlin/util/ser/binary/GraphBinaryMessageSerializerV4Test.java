@@ -30,10 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.apache.tinkerpop.shaded.jackson.databind.type.LogicalType.Collection;
 import static org.junit.Assert.assertEquals;
 
 public class GraphBinaryMessageSerializerV4Test {

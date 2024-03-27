@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
@@ -36,11 +37,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class GraphBinaryMessageSerializerV4 extends GraphBinaryMessageSerializerV1
     implements MessageChunkSerializer<GraphBinaryMapper> {
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
+    private final byte[] header = MIME_TYPE.getBytes(UTF_8);
 
     public GraphBinaryMessageSerializerV4() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -55,7 +59,22 @@ public class GraphBinaryMessageSerializerV4 extends GraphBinaryMessageSerializer
         return new String[]{MIME_TYPE};
     }
 
+    @Override
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
+        // todo: get rid off header
+        final ByteBuf buffer = allocator.buffer().writeByte(header.length).writeBytes(header);
 
+        try {
+            requestSerializer.writeValue(requestMessage, buffer, writer);
+        } catch (Exception ex) {
+            buffer.release();
+            throw ex;
+        }
+
+        return buffer;
+    }
+
+    // chunked write
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         // todo: write data or not when error?
@@ -125,7 +144,7 @@ public class GraphBinaryMessageSerializerV4 extends GraphBinaryMessageSerializer
         final List<Object> result = new ArrayList<>();
         while (buffer.readableBytes() != 0) {
             final Object obj = reader.read(buffer);
-            if (obj instanceof Marker && ((Marker) obj).getValue() == 0) {
+            if (obj.equals(Marker.END_OF_STREAM)) {
                 break;
             }
             result.add(obj);
@@ -159,13 +178,13 @@ public class GraphBinaryMessageSerializerV4 extends GraphBinaryMessageSerializer
 
             // no footer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessage.build(requestId)
+                return ResponseMessage.buildV4(requestId)
                         .result(result)
                         .create();
             }
 
             final Pair<ResponseStatusCode, String> footer = readFooter(buffer);
-            return ResponseMessage.build(requestId)
+            return ResponseMessage.buildV4(requestId)
                     .result(result)
                     .code(footer.getValue0())
                     .statusMessage(footer.getValue1())

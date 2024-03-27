@@ -114,6 +114,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHED;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHING;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.STREAMING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTrailingHeaders;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeErrorFrame;
 
@@ -244,7 +248,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             final RequestState requestState = serializer.getValue1() instanceof MessageChunkSerializer
                     ? RequestState.NOT_STARTED
-                    : RequestState.CHUNKING_NOT_SUPPORTED;
+                    : CHUNKING_NOT_SUPPORTED;
 
             final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
                     gremlinExecutor.getScheduledExecutorService(), requestState);
@@ -400,8 +404,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         final Map<String, Object> args = message.getArgs();
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-groovy";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
-        final Object result = scriptEngine.eval((String) message.getArg(Tokens.ARGS_GREMLIN),
-                mergeBindingsFromRequest(context, graphManager.getAsBindings()));
+
+        final Bindings bindings = mergeBindingsFromRequest(context, graphManager.getAsBindings());
+        final Object result = scriptEngine.eval((String) message.getArg(Tokens.ARGS_GREMLIN), bindings);
 
         handleIterator(context, IteratorUtils.asIterator(result), serializer);
     }
@@ -653,10 +658,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        // the batch size can be overridden by the request !!!
-        final int resultIterationBatchSize = 2;
-//            (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
-//                .orElse(settings.resultIterationBatchSize);
+        // the batch size can be overridden by the request
+        final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
+                .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
 
         // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
@@ -726,7 +730,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
                     try {
                         // only need to reset the aggregation list if there's more stuff to write
-                        if (hasMore) { aggregate = new ArrayList<>(resultIterationBatchSize); }
+                        if (hasMore) {
+                            aggregate = new ArrayList<>(resultIterationBatchSize);
+                        }
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
@@ -795,20 +801,28 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             ctx.handleDetachment(aggregate);
 
             if (useBinary) {
-                if (code == ResponseStatusCode.SUCCESS && ctx.getRequestState() == RequestState.STREAMING) {
-                    ctx.setRequestState(RequestState.FINISHING);
+                if (code == ResponseStatusCode.SUCCESS && ctx.getRequestState() == STREAMING) {
+                    ctx.setRequestState(FINISHING);
                 }
 
-                final ResponseMessage responseMessage = ctx.getRequestState() == RequestState.STREAMING ? null :
-                        ResponseMessage.build(msg)
-                                // always return 200, error can be added later
-                                .code(ResponseStatusCode.SUCCESS)
-                                .statusAttributes(statusAttributes)
-                                .responseMetaData(responseMetaData)
-                                .result(aggregate)
-                                .create();
+                ResponseMessage responseMessage = null;
 
-                if (ctx.getRequestState() == RequestState.CHUNKING_NOT_SUPPORTED) {
+                // for this state no need to build full ResponseMessage
+                if (ctx.getRequestState() != STREAMING) {
+                    final ResponseMessage.Builder builder =  ResponseMessage.buildV4(msg.getRequestId())
+                            .statusAttributes(statusAttributes)
+                            .responseMetaData(responseMetaData)
+                            .result(aggregate);
+
+                    // need to put status in last message
+                    if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
+                        builder.code(ResponseStatusCode.SUCCESS).statusMessage("OK");
+                    }
+
+                    responseMessage = builder.create();
+                }
+
+                if (ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
                     return new Frame(serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc()));
                 }
 
@@ -817,16 +831,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 switch (ctx.getRequestState()) {
                     case NOT_STARTED:
                         if (code == ResponseStatusCode.SUCCESS) {
-                            ctx.setRequestState(RequestState.FINISHED);
-                            return new Frame(serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc()));
+                            ctx.setRequestState(FINISHED);
+                            return new Frame(chunkSerializer.writeHeader(responseMessage, nettyContext.alloc()));
                         }
 
-                        ctx.setRequestState(RequestState.STREAMING);
+                        ctx.setRequestState(STREAMING);
                         return new Frame(chunkSerializer.writeHeader(responseMessage, nettyContext.alloc()));
                     case STREAMING:
                         return new Frame(chunkSerializer.writeChunk(aggregate, nettyContext.alloc()));
                     case FINISHING:
-                        ctx.setRequestState(RequestState.FINISHED);
+                        ctx.setRequestState(FINISHED);
                         return new Frame(chunkSerializer.writeFooter(responseMessage, nettyContext.alloc()));
                 }
 

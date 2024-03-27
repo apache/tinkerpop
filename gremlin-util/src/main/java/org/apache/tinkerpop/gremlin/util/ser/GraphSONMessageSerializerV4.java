@@ -42,11 +42,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-/**
- * Serialize results to JSON with version 3.0.x schema and the extended module.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
 public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2
         implements MessageTextSerializer<ObjectMapper>, MessageChunkSerializer<ObjectMapper> {
 

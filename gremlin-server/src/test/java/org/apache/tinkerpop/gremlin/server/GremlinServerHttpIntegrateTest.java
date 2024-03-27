@@ -69,6 +69,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import javax.script.SimpleBindings;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -183,12 +184,14 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse":
             case "shouldHandleErrorsNotInFirstChunkPOSTWithChunkedResponse":
+                settings.resultIterationBatchSize = 16;
                 settings.serializers.clear();
                 final Settings.SerializerSettings serializerSettingsV4 = new Settings.SerializerSettings();
                 serializerSettingsV4.className = GraphSONMessageSerializerV4.class.getName();
                 settings.serializers.add(serializerSettingsV4);
                 break;
             case "should200OnPOSTWithChunkedResponseGraphBinary":
+                settings.resultIterationBatchSize = 16;
                 settings.serializers.clear();
                 final Settings.SerializerSettings serializerSettingsV4b = new Settings.SerializerSettings();
                 serializerSettingsV4b.className = GraphBinaryMessageSerializerV4.class.getName();
@@ -1154,7 +1157,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        // default chunk size is 16, so should be 2 chunks
+        // chunk size is 8, so should be 2 chunks
         httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,'new chunk')\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
@@ -1178,7 +1181,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should200OnPOSTWithChunkedResponseGraphBinary() throws Exception {
-        final String gremlin = "g.inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,'new chunk')";
+        final String gremlin = "inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,'new chunk')";
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
                 RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create(),
@@ -1194,11 +1197,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertTrue(response.getEntity().isChunked());
 
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(8, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(8).get(GraphSONTokens.VALUEPROP).intValue());
-            assertEquals("ten", node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(10).textValue());
-            assertEquals("new chunk", node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(16).textValue());
+            final ResponseMessage responseMessage = serializer.readChunk(toByteBuf(response.getEntity()), true);
+            assertEquals(17, ((List)responseMessage.getResult().getData()).size());
 
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(2, footers.length);
@@ -1241,9 +1241,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        // default chunk size is 16, so should be 2 chunks
+        // chunk size is 16, so should be 2 chunks
         httppost.setEntity(new StringEntity(
-                "{\"gremlin\":\"g.inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,16).coalesce(is(lt(15)),fail('some error'))\"}", Consts.UTF_8));
+                "{\"gremlin\":\"g.inject(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17).coalesce(is(lt(17)),fail('some error'))\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
