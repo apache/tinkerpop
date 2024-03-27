@@ -38,9 +38,11 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV3;
@@ -177,6 +179,20 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should500OnGETWithEvaluationTimeout":
                 settings.evaluationTimeout = 5000;
                 settings.gremlinPool = 1;
+                break;
+            case "should200OnPOSTWithChunkedResponse":
+            case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse":
+            case "shouldHandleErrorsNotInFirstChunkPOSTWithChunkedResponse":
+                settings.serializers.clear();
+                final Settings.SerializerSettings serializerSettingsV4 = new Settings.SerializerSettings();
+                serializerSettingsV4.className = GraphSONMessageSerializerV4.class.getName();
+                settings.serializers.add(serializerSettingsV4);
+                break;
+            case "should200OnPOSTWithChunkedResponseGraphBinary":
+                settings.serializers.clear();
+                final Settings.SerializerSettings serializerSettingsV4b = new Settings.SerializerSettings();
+                serializerSettingsV4b.className = GraphBinaryMessageSerializerV4.class.getName();
+                settings.serializers.add(serializerSettingsV4b);
                 break;
         }
         return settings;
@@ -1145,7 +1161,40 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertTrue(response.getEntity().isChunked());
 
-            String json = EntityUtils.toString(response.getEntity());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(8, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(8).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals("ten", node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(10).textValue());
+            assertEquals("new chunk", node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(16).textValue());
+
+            final Header[] footers = getTrailingHeaders(response);
+            assertEquals(2, footers.length);
+            assertEquals("code", footers[0].getName());
+            assertEquals("200", footers[0].getValue());
+            assertEquals("message", footers[1].getName());
+            assertEquals("OK", footers[1].getValue());
+        }
+    }
+
+    @Test
+    public void should200OnPOSTWithChunkedResponseGraphBinary() throws Exception {
+        final String gremlin = "g.inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,'new chunk')";
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
+        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
+                RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create(),
+                new UnpooledByteBufAllocator(false));
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.getEntity().isChunked());
+
+            final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(8, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(8).get(GraphSONTokens.VALUEPROP).intValue());
             assertEquals("ten", node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(10).textValue());
@@ -1173,7 +1222,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertTrue(response.getEntity().isChunked());
 
-            String json = EntityUtils.toString(response.getEntity());
+            final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals("some error", node.get("status").get("message").textValue());
             assertEquals(500, node.get("status").get("code").intValue());
@@ -1200,7 +1249,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertTrue(response.getEntity().isChunked());
 
-            String json = EntityUtils.toString(response.getEntity());
+            final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
             assertEquals("some error", node.get("status").get("message").textValue());

@@ -189,6 +189,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Metrics.class, new MetricsSerializer()),
             new RegistryEntry<>(TraversalMetrics.class, new TraversalMetricsSerializer()),
+            new RegistryEntry<>(Marker.class, SingleTypeSerializer.MarkerSerializer),
 
             // TransformSerializer implementations
             new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),

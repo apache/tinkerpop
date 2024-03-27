@@ -58,12 +58,12 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
     private static final Base64.Decoder base64Decoder = Base64.getDecoder();
 
     private byte[] header = MIME_TYPE.getBytes(UTF_8);
-    private boolean serializeToString = false;
-    private GraphBinaryReader reader;
-    private GraphBinaryWriter writer;
-    private RequestMessageSerializer requestSerializer;
-    private ResponseMessageSerializer responseSerializer;
-    private GraphBinaryMapper mapper;
+    protected boolean serializeToString = false;
+    protected GraphBinaryReader reader;
+    protected GraphBinaryWriter writer;
+    protected RequestMessageSerializer requestSerializer;
+    protected ResponseMessageSerializer responseSerializer;
+    protected GraphBinaryMapper mapper;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.

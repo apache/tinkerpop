@@ -99,6 +99,10 @@ public final class ResponseMessage {
         return new Builder(requestId);
     }
 
+    public static Builder buildV4(final UUID requestId) {
+        return new Builder(requestId, true);
+    }
+
     public final static class Builder {
 
         private final UUID requestId;
@@ -114,6 +118,13 @@ public final class ResponseMessage {
 
         private Builder(final UUID requestId) {
             this.requestId = requestId;
+        }
+
+        // builder for TP4
+        private Builder(final UUID requestId, final boolean v4) {
+            this.requestId = requestId;
+            this.code = null;
+            this.statusMessage = null;
         }
 
         public Builder code(final ResponseStatusCode code) {
@@ -157,6 +168,10 @@ public final class ResponseMessage {
 
         public ResponseMessage create() {
             final ResponseResult responseResult = new ResponseResult(result, metaData);
+            // skip null values
+            if (code == null && statusMessage == null) {
+                return new ResponseMessage(requestId, null, responseResult);
+            }
             final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, attributes);
             return new ResponseMessage(requestId, responseStatus, responseResult);
         }

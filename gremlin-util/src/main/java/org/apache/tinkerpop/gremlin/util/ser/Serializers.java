@@ -65,7 +65,12 @@ public enum Serializers {
     /**
      * GraphBinary 1.0.
      */
-    GRAPHBINARY_V1(SerTokens.MIME_GRAPHBINARY_V1);
+    GRAPHBINARY_V1(SerTokens.MIME_GRAPHBINARY_V1),
+
+    /**
+     * GraphBinary 4.0.
+     */
+    GRAPHBINARY_V4(SerTokens.MIME_GRAPHBINARY_V4);
 
     private String value;
 

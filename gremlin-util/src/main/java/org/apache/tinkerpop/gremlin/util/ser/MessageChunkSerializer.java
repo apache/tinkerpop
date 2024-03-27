@@ -24,11 +24,13 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 public interface MessageChunkSerializer<M> extends MessageSerializer<M> {
-    public ByteBuf writeResponseHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ByteBuf writeResponseChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ByteBuf writeResponseFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ByteBuf writeError(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
 }

@@ -19,42 +19,15 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.Assert.assertEquals;
@@ -82,10 +55,10 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeResponseHeader(response, allocator);
-        final ByteBuf bb1 = serializer.writeResponseChunk(Arrays.asList("chunk", 1), allocator);
-        final ByteBuf bb2 = serializer.writeResponseChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeResponseFooter(response, allocator);
+        final ByteBuf bb0 = serializer.writeHeader(response, allocator);
+        final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
+        final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
+        final ByteBuf bb3 = serializer.writeFooter(response, allocator);
 
         final ByteBuf bbCombined = allocator.buffer(bb0.readableBytes() + bb1.readableBytes() +
                 bb2.readableBytes() + bb3.readableBytes());
@@ -111,10 +84,10 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeResponseHeader(response, allocator);
-        final ByteBuf bb1 = serializer.writeResponseChunk(Arrays.asList("chunk", 1), allocator);
-        final ByteBuf bb2 = serializer.writeResponseChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeError(response, allocator);
+        final ByteBuf bb0 = serializer.writeHeader(response, allocator);
+        final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
+        final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
+        final ByteBuf bb3 = serializer.writeErrorFooter(response, allocator);
 
         final ByteBuf bbCombined = allocator.buffer(bb0.readableBytes() + bb1.readableBytes() +
                 bb2.readableBytes() + bb3.readableBytes());

@@ -306,7 +306,7 @@ public class HttpHandlerUtil {
     static void writeErrorFrame(final ChannelHandlerContext ctx, final Context context, ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
         try {
             final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
-                    ? ((MessageChunkSerializer) serializer).writeError(responseMessage, ctx.alloc())
+                    ? ((MessageChunkSerializer) serializer).writeErrorFooter(responseMessage, ctx.alloc())
                     : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
 
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);

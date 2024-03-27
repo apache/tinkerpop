@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
@@ -152,7 +153,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
 
     // !!!
     @Override
-    public ByteBuf writeResponseHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final byte[] header = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageHeader(responseMessage));
@@ -185,7 +186,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
     }
 
     @Override
-    public ByteBuf writeResponseChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final byte[] payload = getChunk(false, aggregate);
@@ -202,7 +203,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
     }
 
     @Override
-    public ByteBuf writeResponseFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage));
@@ -222,7 +223,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
     }
 
     @Override
-    public ByteBuf writeError(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage));
@@ -237,6 +238,11 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
             logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, GraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
+    }
+
+    @Override
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) {
+        throw new IllegalStateException("Reading for streaming GraphSON is not supported");
     }
 
     public final static class ResponseMessageHeaderSerializer extends StdSerializer<ResponseMessage.ResponseMessageHeader> {

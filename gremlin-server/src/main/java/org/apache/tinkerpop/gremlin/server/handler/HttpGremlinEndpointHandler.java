@@ -96,7 +96,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -115,7 +114,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTrailingHeaders;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeErrorFrame;
 
@@ -824,12 +822,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         }
 
                         ctx.setRequestState(RequestState.STREAMING);
-                        return new Frame(chunkSerializer.writeResponseHeader(responseMessage, nettyContext.alloc()));
+                        return new Frame(chunkSerializer.writeHeader(responseMessage, nettyContext.alloc()));
                     case STREAMING:
-                        return new Frame(chunkSerializer.writeResponseChunk(aggregate, nettyContext.alloc()));
+                        return new Frame(chunkSerializer.writeChunk(aggregate, nettyContext.alloc()));
                     case FINISHING:
                         ctx.setRequestState(RequestState.FINISHED);
-                        return new Frame(chunkSerializer.writeResponseFooter(responseMessage, nettyContext.alloc()));
+                        return new Frame(chunkSerializer.writeFooter(responseMessage, nettyContext.alloc()));
                 }
 
                 // todo: just throw?
