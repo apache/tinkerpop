@@ -192,18 +192,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse":
             case "shouldHandleErrorsNotInFirstChunkPOSTWithChunkedResponse":
-                settings.resultIterationBatchSize = 16;
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsV4 = new Settings.SerializerSettings();
-                serializerSettingsV4.className = GraphSONMessageSerializerV4.class.getName();
-                settings.serializers.add(serializerSettingsV4);
-                break;
             case "should200OnPOSTWithChunkedResponseGraphBinary":
                 settings.resultIterationBatchSize = 16;
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsV4b = new Settings.SerializerSettings();
-                serializerSettingsV4b.className = GraphBinaryMessageSerializerV4.class.getName();
-                settings.serializers.add(serializerSettingsV4b);
                 break;
         }
         return settings;
@@ -550,7 +540,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.addV()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.addV()\",\"g\":\"g\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -602,7 +592,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"g\":\"gclassic\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\",\"g\":\"gclassic\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -610,6 +600,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).size());
+            assertEquals(GraphSONTokens.VERTEX,
+                    node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.LABEL).asText());
         }
     }
 
@@ -1071,9 +1063,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnPOSTWithChunkedResponseGraphBinary() throws Exception {
         final String gremlin = "inject(0,1,2,3,4,5,6,7,8,9,'ten',11,12,13,14,15,'new chunk')";
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
-        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create(),
-                new UnpooledByteBufAllocator(false));
+        final ByteBuf serializedRequest = serializer.serializeRequestMessageV4(
+                RequestMessageV4.build(gremlin).create(), new UnpooledByteBufAllocator(false));
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
@@ -1274,7 +1265,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertTrue(node.get("status").get("message").asText().contains("A message with [bytecode] op code requires a [aliases] argument."));
+            assertTrue(node.get("status").get("message").asText().contains("A message with [bytecode] op code requires the [aliases] argument"));
         }
     }
 
