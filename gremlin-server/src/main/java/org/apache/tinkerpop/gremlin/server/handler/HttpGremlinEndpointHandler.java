@@ -212,7 +212,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final RequestMessage requestMessage;
             try {
                 requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
-            } catch (IllegalArgumentException|SerializationException ex) {
+            } catch (IllegalArgumentException|SerializationException|NullPointerException ex) {
                 HttpHandlerUtil.sendError(ctx, BAD_REQUEST, ex.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
@@ -819,7 +819,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     case NOT_STARTED:
                         if (code == ResponseStatusCode.SUCCESS) {
                             ctx.setRequestState(FINISHED);
-                            return new Frame(chunkSerializer.writeHeader(responseMessage, nettyContext.alloc()));
+
+                            return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.buildV4(msg.getRequestId())
+                                    .statusAttributes(statusAttributes)
+                                    .responseMetaData(responseMetaData)
+                                    .result(aggregate)
+                                    .code(ResponseStatusCode.SUCCESS)
+                                    .statusMessage("OK")
+                                    .create(), nettyContext.alloc()));
                         }
 
                         ctx.setRequestState(STREAMING);

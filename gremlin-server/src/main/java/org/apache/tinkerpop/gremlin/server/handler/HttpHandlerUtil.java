@@ -109,29 +109,33 @@ public class HttpHandlerUtil {
 
         if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
             final MessageSerializer<?> serializer = serializers.get(contentType);
-            if (serializer instanceof MessageTextSerializerV4) {
-                final MessageTextSerializerV4<?> serializerV4 = (MessageTextSerializerV4) serializer;
+            if (!(serializer instanceof MessageTextSerializerV4)) {
+                throw new SerializationException("Server only supports V4 or later serializers.");
+            }
 
-                final ByteBuf buffer = request.content();
+            final MessageTextSerializerV4<?> serializerV4 = (MessageTextSerializerV4) serializer;
 
-                // additional validation for header
-                final int first = buffer.readByte();
-                // payload can be plain json or can start with additional header with content type.
-                // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
-                if (first != 0x7b) {
-                    final byte[] bytes = new byte[first];
-                    buffer.readBytes(bytes);
-                    final String mimeType = new String(bytes, StandardCharsets.UTF_8);
+            final ByteBuf buffer = request.content();
 
-                    if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
-                        throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
-                } else {
-                    buffer.resetReaderIndex();
-                }
+            // additional validation for header
+            final int first = buffer.readByte();
+            // payload can be plain json or can start with additional header with content type.
+            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
+            if (first != 0x7b) {
+                final byte[] bytes = new byte[first];
+                buffer.readBytes(bytes);
+                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
 
-                return serializerV4.deserializeRequestMessageV4(buffer).convertToV1();
+                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
+                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
             } else {
-                throw new SerializationException("Server only supports RequestMessageV4 requests");
+                buffer.resetReaderIndex();
+            }
+
+            try {
+                return serializerV4.deserializeRequestMessageV4(buffer).convertToV1();
+            } catch (Exception e) {
+                throw new SerializationException("Unable to deserialize request using: " + serializerV4.getClass().getSimpleName(), e);
             }
         }
         return getRequestMessageFromHttpRequest(request);
@@ -172,8 +176,10 @@ public class HttpHandlerUtil {
         final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
         final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
 
-        return RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
-                .addBindings(bindings).addLanguage(language).addG(g).create();
+        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
+                .addBindings(bindings).addLanguage(language);
+        if (null != g) builder.addG(g);
+        return builder.create();
     }
 
     private static Object fromJsonNode(final JsonNode node) {
