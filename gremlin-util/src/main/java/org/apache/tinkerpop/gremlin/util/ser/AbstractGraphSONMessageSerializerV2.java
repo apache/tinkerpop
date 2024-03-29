@@ -145,15 +145,15 @@ public abstract class AbstractGraphSONMessageSerializerV2 extends AbstractMessag
     }
 
     private GraphSONMapper.Builder applyMaxTokenLimits(final GraphSONMapper.Builder builder, final Map<String, Object> config) {
-        if(config != null) {
-            if(config.containsKey("maxNumberLength")) {
-                builder.maxNumberLength((int)config.get("maxNumberLength"));
+        if (config != null) {
+            if (config.containsKey("maxNumberLength")) {
+                builder.maxNumberLength((int) config.get("maxNumberLength"));
             }
-            if(config.containsKey("maxStringLength")) {
-                builder.maxStringLength((int)config.get("maxStringLength"));
+            if (config.containsKey("maxStringLength")) {
+                builder.maxStringLength((int) config.get("maxStringLength"));
             }
-            if(config.containsKey("maxNestingDepth")) {
-                builder.maxNestingDepth((int)config.get("maxNestingDepth"));
+            if (config.containsKey("maxNestingDepth")) {
+                builder.maxNestingDepth((int) config.get("maxNestingDepth"));
             }
         }
         return builder;
@@ -270,7 +270,7 @@ public abstract class AbstractGraphSONMessageSerializerV2 extends AbstractMessag
 
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
-            if (null == responseMessage.getResult().getData()){
+            if (null == responseMessage.getResult().getData()) {
                 jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
             } else {
                 jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
@@ -284,12 +284,12 @@ public abstract class AbstractGraphSONMessageSerializerV2 extends AbstractMessag
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
         }
     }
-    
+
     public final static class ResponseMessageDeserializer extends AbstractObjectDeserializer<ResponseMessage> {
         protected ResponseMessageDeserializer() {
             super(ResponseMessage.class);
         }
-        
+
         @Override
         public ResponseMessage createObject(final Map<String, Object> data) {
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
