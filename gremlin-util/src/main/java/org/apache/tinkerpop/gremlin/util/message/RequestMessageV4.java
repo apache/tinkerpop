@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -179,11 +180,13 @@ public final class RequestMessageV4 {
          * a {@link UUID}.
          */
         public Builder overrideRequestId(final UUID requestId) {
+            Objects.requireNonNull(requestId, "requestId argument cannot be null.");
             this.fields.put(Tokens.REQUEST_ID, requestId);
             return this;
         }
 
         public Builder addLanguage(final String language) {
+            Objects.requireNonNull(language, "language argument cannot be null.");
             this.fields.put(Tokens.ARGS_LANGUAGE, language);
             return this;
         }
@@ -194,11 +197,13 @@ public final class RequestMessageV4 {
         }
 
         public Builder addBindings(final Map<String, Object> otherBindings) {
+            Objects.requireNonNull(otherBindings, "bindings argument cannot be null.");
             this.bindings.putAll(otherBindings);
             return this;
         }
 
         public Builder addG(final String g) {
+            Objects.requireNonNull(g, "g argument cannot be null.");
             this.fields.put(Tokens.ARGS_G, g);
             return this;
         }

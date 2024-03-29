@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -233,8 +234,8 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
             final byte[] header = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageHeader(responseMessage));
             final byte[] result = getChunk(true, responseMessage.getResult().getData());
             // skip closing }
-            encodedMessage = allocator.buffer(header.length - 1 + result.length);
-            encodedMessage.writeBytes(header, 0, header.length - 1);
+            encodedMessage = allocator.buffer(header.length - 4 + result.length);
+            encodedMessage.writeBytes(header, 0, header.length - 4);
             encodedMessage.writeBytes(result);
 
             return encodedMessage;
@@ -380,8 +381,10 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
             // todo: write tx id
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
-
-            jsonGenerator.writeRaw(":{\"@type\":\"g:List\",\"@value\":[");
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+            jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
+            jsonGenerator.writeObject(Collections.emptyList());
+//            jsonGenerator.writeRaw(":{\"@type\":\"g:List\",\"@value\":[");
 
             // jsonGenerator will add 2 closing }
             // jsonGenerator.configure(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT, false);
@@ -415,7 +418,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
             // close result field
-            jsonGenerator.writeRaw("]},");
+            jsonGenerator.writeRaw("]}},");
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_STATUS);
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
