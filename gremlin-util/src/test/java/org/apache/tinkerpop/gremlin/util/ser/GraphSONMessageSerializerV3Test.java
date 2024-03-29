@@ -69,9 +69,9 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV3Test {
 
-    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
-    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    protected final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    protected final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    protected final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
 
@@ -408,12 +408,12 @@ public class GraphSONMessageSerializerV3Test {
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
     }
 
-    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
+    protected ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }
 
-    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
+    protected ResponseMessage convert(final Object toSerialize) throws SerializationException {
         return convert(toSerialize, this.serializer);
     }
 }

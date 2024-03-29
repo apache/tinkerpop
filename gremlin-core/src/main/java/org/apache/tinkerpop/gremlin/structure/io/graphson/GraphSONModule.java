@@ -136,6 +136,259 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
     }
 
     /**
+     * Version 4.0 of GraphSON.
+     */
+    static final class GraphSONModuleV4 extends GraphSONModule {
+
+        private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
+                new LinkedHashMap<Class, String>() {{
+                    // Those don't have deserializers because handled by Jackson,
+                    // but we still want to rename them in GraphSON
+                    put(Integer.class, "Int32");
+                    put(Long.class, "Int64");
+                    put(Double.class, "Double");
+                    put(Float.class, "Float");
+
+                    put(Map.class, "Map");
+                    put(List.class, "List");
+                    put(Set.class, "Set");
+
+                    // TinkerPop Graph objects
+                    put(Lambda.class, "Lambda");
+                    put(Vertex.class, "Vertex");
+                    put(Edge.class, "Edge");
+                    put(Property.class, "Property");
+                    put(Path.class, "Path");
+                    put(VertexProperty.class, "VertexProperty");
+                    put(Metrics.class, "Metrics");
+                    put(TraversalMetrics.class, "TraversalMetrics");
+                    put(TraversalExplanation.class, "TraversalExplanation");
+                    put(Traverser.class, "Traverser");
+                    put(Tree.class, "Tree");
+                    put(BulkSet.class, "BulkSet");
+                    put(Bytecode.class, "Bytecode");
+                    put(Bytecode.Binding.class, "Binding");
+                    put(AndP.class, "P");
+                    put(OrP.class, "P");
+                    put(P.class, "P");
+                    put(TextP.class, "TextP");
+                    Stream.of(
+                            VertexProperty.Cardinality.class,
+                            Column.class,
+                            Direction.class,
+                            DT.class,
+                            Merge.class,
+                            Operator.class,
+                            Order.class,
+                            Pop.class,
+                            SackFunctions.Barrier.class,
+                            Pick.class,
+                            Scope.class,
+                            T.class).forEach(e -> put(e, e.getSimpleName()));
+                    Arrays.asList(
+                            ConnectiveStrategy.class,
+                            ElementIdStrategy.class,
+                            EventStrategy.class,
+                            HaltedTraverserStrategy.class,
+                            PartitionStrategy.class,
+                            SubgraphStrategy.class,
+                            SeedStrategy.class,
+                            LazyBarrierStrategy.class,
+                            MatchAlgorithmStrategy.class,
+                            AdjacentToIncidentStrategy.class,
+                            ByModulatorOptimizationStrategy.class,
+                            ProductiveByStrategy.class,
+                            CountStrategy.class,
+                            FilterRankingStrategy.class,
+                            IdentityRemovalStrategy.class,
+                            IncidentToAdjacentStrategy.class,
+                            InlineFilterStrategy.class,
+                            MatchPredicateStrategy.class,
+                            OrderLimitStrategy.class,
+                            OptionsStrategy.class,
+                            PathProcessorStrategy.class,
+                            PathRetractionStrategy.class,
+                            RepeatUnrollStrategy.class,
+                            ComputerVerificationStrategy.class,
+                            LambdaRestrictionStrategy.class,
+                            ReadOnlyStrategy.class,
+                            StandardVerificationStrategy.class,
+                            EarlyLimitStrategy.class,
+                            EdgeLabelVerificationStrategy.class,
+                            ReservedKeysVerificationStrategy.class,
+                            //
+                            GraphFilterStrategy.class,
+                            VertexProgramStrategy.class
+                    ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
+
+                    GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> put(s, s.getSimpleName()));
+                }});
+
+        /**
+         * Constructs a new object.
+         */
+        protected GraphSONModuleV4(final boolean normalize, final TypeInfo typeInfo) {
+            super("graphson-4.0");
+
+            /////////////////////// SERIALIZERS ////////////////////////////
+
+            // graph
+            addSerializer(Edge.class, new GraphSONSerializersV3.EdgeJacksonSerializer(normalize, typeInfo));
+            addSerializer(Vertex.class, new GraphSONSerializersV3.VertexJacksonSerializer(normalize, typeInfo));
+            addSerializer(VertexProperty.class, new GraphSONSerializersV3.VertexPropertyJacksonSerializer(normalize, true));
+            addSerializer(Property.class, new GraphSONSerializersV3.PropertyJacksonSerializer());
+            addSerializer(Metrics.class, new GraphSONSerializersV3.MetricsJacksonSerializer());
+            addSerializer(TraversalMetrics.class, new GraphSONSerializersV3.TraversalMetricsJacksonSerializer());
+            addSerializer(TraversalExplanation.class, new GraphSONSerializersV3.TraversalExplanationJacksonSerializer());
+            addSerializer(Path.class, new GraphSONSerializersV3.PathJacksonSerializer());
+            addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV3(normalize));
+            addSerializer(Tree.class, new GraphSONSerializersV3.TreeJacksonSerializer());
+
+            // java.util - use the standard jackson serializers for collections when types aren't embedded
+            if (typeInfo != TypeInfo.NO_TYPES) {
+                addSerializer(Map.Entry.class, new JavaUtilSerializersV3.MapEntryJacksonSerializer());
+                addSerializer(Map.class, new JavaUtilSerializersV3.MapJacksonSerializer());
+                addSerializer(List.class, new JavaUtilSerializersV3.ListJacksonSerializer());
+                addSerializer(Set.class, new JavaUtilSerializersV3.SetJacksonSerializer());
+            }
+
+            // need to explicitly add serializers for these types because Jackson doesn't do it at all.
+            addSerializer(Integer.class, new GraphSONSerializersV3.IntegerGraphSONSerializer());
+            addSerializer(Double.class, new GraphSONSerializersV3.DoubleGraphSONSerializer());
+
+            // traversal
+            addSerializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonSerializer());
+            addSerializer(Traversal.class, new TraversalSerializersV3.TraversalJacksonSerializer());
+            addSerializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonSerializer());
+            Stream.of(VertexProperty.Cardinality.class,
+                    Column.class,
+                    Direction.class,
+                    DT.class,
+                    Merge.class,
+                    Operator.class,
+                    Order.class,
+                    Pop.class,
+                    SackFunctions.Barrier.class,
+                    Scope.class,
+                    Pick.class,
+                    T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
+            addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
+            addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
+            addSerializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
+            addSerializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonSerializer());
+            addSerializer(TraversalStrategy.class, new TraversalSerializersV3.TraversalStrategyJacksonSerializer());
+
+            /////////////////////// DESERIALIZERS ////////////////////////////
+
+            // Tinkerpop Graph
+            addDeserializer(Vertex.class, new GraphSONSerializersV3.VertexJacksonDeserializer());
+            addDeserializer(Edge.class, new GraphSONSerializersV3.EdgeJacksonDeserializer());
+            addDeserializer(Property.class, new GraphSONSerializersV3.PropertyJacksonDeserializer());
+            addDeserializer(Path.class, new GraphSONSerializersV3.PathJacksonDeserializer());
+            addDeserializer(TraversalExplanation.class, new GraphSONSerializersV3.TraversalExplanationJacksonDeserializer());
+            addDeserializer(VertexProperty.class, new GraphSONSerializersV3.VertexPropertyJacksonDeserializer());
+            addDeserializer(Metrics.class, new GraphSONSerializersV3.MetricsJacksonDeserializer());
+            addDeserializer(TraversalMetrics.class, new GraphSONSerializersV3.TraversalMetricsJacksonDeserializer());
+            addDeserializer(Tree.class, new GraphSONSerializersV3.TreeJacksonDeserializer());
+
+            // java.util - use the standard jackson serializers for collections when types aren't embedded
+            if (typeInfo != TypeInfo.NO_TYPES) {
+                addDeserializer(Map.class, new JavaUtilSerializersV3.MapJacksonDeserializer());
+                addDeserializer(List.class, new JavaUtilSerializersV3.ListJacksonDeserializer());
+                addDeserializer(Set.class, new JavaUtilSerializersV3.SetJacksonDeserializer());
+            }
+
+            // numbers
+            addDeserializer(Integer.class, new GraphSONSerializersV3.IntegerJackonsDeserializer());
+            addDeserializer(Double.class, new GraphSONSerializersV3.DoubleJacksonDeserializer());
+
+            // traversal
+            addDeserializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonDeserializer());
+            addDeserializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonDeserializer());
+            addDeserializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonDeserializer());
+            Stream.of(VertexProperty.Cardinality.values(),
+                    Column.values(),
+                    Direction.values(),
+                    DT.values(),
+                    Merge.values(),
+                    Operator.values(),
+                    Order.values(),
+                    Pop.values(),
+                    SackFunctions.Barrier.values(),
+                    Scope.values(),
+                    Pick.values(),
+                    T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV3.EnumJacksonDeserializer(e.getDeclaringClass())));
+            addDeserializer(P.class, new TraversalSerializersV3.PJacksonDeserializer());
+            addDeserializer(TextP.class, new TraversalSerializersV3.TextPJacksonDeserializer());
+            addDeserializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonDeserializer());
+            addDeserializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonDeserializer());
+            Arrays.asList(
+                    ConnectiveStrategy.class,
+                    ElementIdStrategy.class,
+                    EventStrategy.class,
+                    HaltedTraverserStrategy.class,
+                    PartitionStrategy.class,
+                    SubgraphStrategy.class,
+                    SeedStrategy.class,
+                    LazyBarrierStrategy.class,
+                    MatchAlgorithmStrategy.class,
+                    AdjacentToIncidentStrategy.class,
+                    ByModulatorOptimizationStrategy.class,
+                    ProductiveByStrategy.class,
+                    CountStrategy.class,
+                    FilterRankingStrategy.class,
+                    IdentityRemovalStrategy.class,
+                    IncidentToAdjacentStrategy.class,
+                    InlineFilterStrategy.class,
+                    MatchPredicateStrategy.class,
+                    OrderLimitStrategy.class,
+                    OptionsStrategy.class,
+                    PathProcessorStrategy.class,
+                    PathRetractionStrategy.class,
+                    RepeatUnrollStrategy.class,
+                    ComputerVerificationStrategy.class,
+                    LambdaRestrictionStrategy.class,
+                    ReadOnlyStrategy.class,
+                    StandardVerificationStrategy.class,
+                    EarlyLimitStrategy.class,
+                    EdgeLabelVerificationStrategy.class,
+                    ReservedKeysVerificationStrategy.class,
+                    //
+                    GraphFilterStrategy.class,
+                    VertexProgramStrategy.class
+            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(strategy)));
+
+            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(s)));
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return TYPE_DEFINITIONS;
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return GraphSONTokens.GREMLIN_TYPE_NAMESPACE;
+        }
+
+        static final class Builder implements GraphSONModuleBuilder {
+
+            private Builder() {
+            }
+
+            @Override
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
+                return new GraphSONModuleV4(normalize, typeInfo);
+            }
+
+        }
+    }
+
+    /**
      * Version 3.0 of GraphSON.
      */
     static final class GraphSONModuleV3 extends GraphSONModule {

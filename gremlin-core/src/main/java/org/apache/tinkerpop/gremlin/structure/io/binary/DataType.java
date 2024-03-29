@@ -90,6 +90,7 @@ public enum DataType {
     ZONEOFFSET(0X8E),
 
     CUSTOM(0),
+    MARKER(0XFD),
     UNSPECIFIED_NULL(0XFE);
 
     private final int code;
