@@ -108,7 +108,6 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
         assumeThat("withComputer() step is not supported", query.startsWith("g.withComputer("), is(false));
         assumeThat("Edge instances are not supported", edgePattern.matcher(query).matches(), is(false));
         assumeThat("fill() terminator is not supported", query.contains("fill("), is(false));
-        assumeThat("withoutStrategies() is not supported", query.contains("withoutStrategies("), is(false));
         assumeThat("program() is not supported", query.contains("program("), is(false));
         assumeThat("Casts are not supported", query.contains("(Map)"), is(false));
 
