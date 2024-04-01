@@ -16,29 +16,26 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-'use strict';
 
-const Traversal = require('./traversal').Traversal;
-const Bytecode = require('./bytecode');
+import { Traversal } from './traversal.js';
+import Bytecode from './bytecode.js';
 
 /**
  * Class to translate glv bytecode steps into executable Gremlin-Groovy script
  */
-class Translator {
-  constructor(traversalSource) {
-    this._traversalSource = traversalSource;
-  }
+export default class Translator {
+  constructor(private traversalSource: string) {}
 
   getTraversalSource() {
-    return this._traversalSource;
+    return this.traversalSource;
   }
 
   getTargetLanguage() {
     return 'gremlin-groovy';
   }
 
-  of(traversalSource) {
-    this._traversalSource = traversalSource;
+  of(traversalSource: string) {
+    this.traversalSource = traversalSource;
   }
 
   /**
@@ -47,8 +44,8 @@ class Translator {
    * @param {boolean} child Determines if a traversal object should be treated as an anonymous child or if it is a spawn from "g"
    * @returns {string} Gremlin-Groovy script
    */
-  translate(bytecodeOrTraversal, child = false) {
-    let script = child ? '__' : this._traversalSource;
+  translate(bytecodeOrTraversal: Traversal | Bytecode, child: boolean = false): string {
+    let script = child ? '__' : this.traversalSource;
     const bc = bytecodeOrTraversal instanceof Bytecode ? bytecodeOrTraversal : bytecodeOrTraversal.getBytecode();
 
     const instructions = bc.stepInstructions;
@@ -79,7 +76,7 @@ class Translator {
    * @param {Object} anyObject The object to convert to a script representation
    * @returns {string} The Gremlin script representation
    */
-  convert(anyObject) {
+  convert(anyObject: any): string {
     let script = '';
     if (Object(anyObject) === anyObject) {
       if (anyObject instanceof Traversal) {
@@ -117,5 +114,3 @@ class Translator {
     return script;
   }
 }
-
-module.exports = Translator;

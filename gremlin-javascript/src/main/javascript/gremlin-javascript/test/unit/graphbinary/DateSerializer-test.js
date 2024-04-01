@@ -20,6 +20,7 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-require('./DateSerializerTestTemplate')({ ID: 0x04, name: 'Date' });
+import DateSerializerTestTemplate from './DateSerializerTestTemplate.js';
+
+DateSerializerTestTemplate({ ID: 0x04, name: 'Date' });

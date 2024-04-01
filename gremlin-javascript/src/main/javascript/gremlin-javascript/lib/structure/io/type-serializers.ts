@@ -20,36 +20,40 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const t = require('../../process/traversal');
-const ts = require('../../process/traversal-strategy');
-const Bytecode = require('../../process/bytecode');
-const g = require('../graph');
-const utils = require('../../utils');
+import * as t from '../../process/traversal.js';
+import * as ts from '../../process/traversal-strategy.js';
+import Bytecode from '../../process/bytecode.js';
+import * as g from '../graph.js';
+import * as utils from '../../utils.js';
 
-const valueKey = '@value';
-const typeKey = '@type';
+export const valueKey = '@value';
+export const typeKey = '@type';
+
+export type SerializedValue = { [typeKey]: string; [valueKey]: any };
 
 /**
  * @abstract
  */
-class TypeSerializer {
-  serialize() {
+export class TypeSerializer<T = any> {
+  reader: any;
+  writer: any;
+
+  serialize(value: T): T | SerializedValue {
     throw new Error('serialize() method not implemented for ' + this.constructor.name);
   }
 
-  deserialize() {
+  deserialize<TObject extends SerializedValue>(value: TObject): T {
     throw new Error('deserialize() method not implemented for ' + this.constructor.name);
   }
 
-  canBeUsedFor() {
+  canBeUsedFor?(value: unknown): boolean {
     throw new Error('canBeUsedFor() method not implemented for ' + this.constructor.name);
   }
 }
 
-class NumberSerializer extends TypeSerializer {
-  serialize(item) {
+export class NumberSerializer extends TypeSerializer<number> {
+  serialize(item: number) {
     if (isNaN(item)) {
       return {
         [typeKey]: 'g:Double',
@@ -69,7 +73,7 @@ class NumberSerializer extends TypeSerializer {
     return item;
   }
 
-  deserialize(obj) {
+  deserialize(obj: SerializedValue) {
     const val = obj[valueKey];
     if (val === 'NaN') {
       return NaN;
@@ -81,50 +85,50 @@ class NumberSerializer extends TypeSerializer {
     return parseFloat(val);
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return typeof value === 'number';
   }
 }
 
-class DateSerializer extends TypeSerializer {
-  serialize(item) {
+export class DateSerializer extends TypeSerializer<Date> {
+  serialize(item: Date) {
     return {
       [typeKey]: 'g:Date',
       [valueKey]: item.getTime(),
     };
   }
 
-  deserialize(obj) {
+  deserialize(obj: SerializedValue) {
     return new Date(obj[valueKey]);
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof Date;
   }
 }
 
-class LongSerializer extends TypeSerializer {
-  serialize(item) {
+export class LongSerializer extends TypeSerializer<utils.Long> {
+  serialize(item: utils.Long) {
     return {
       [typeKey]: 'g:Int64',
       [valueKey]: item.value,
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof utils.Long;
   }
 }
 
-class BytecodeSerializer extends TypeSerializer {
-  serialize(item) {
+export class BytecodeSerializer extends TypeSerializer<Bytecode> {
+  serialize(item: Bytecode) {
     let bytecode = item;
     if (item instanceof t.Traversal) {
       bytecode = item.getBytecode();
     }
-    const result = {};
+    const result: Partial<SerializedValue> = {};
     result[typeKey] = 'g:Bytecode';
-    const resultValue = (result[valueKey] = {});
+    const resultValue: any = (result[valueKey] = {});
     const sources = this._serializeInstructions(bytecode.sourceInstructions);
     if (sources) {
       resultValue['source'] = sources;
@@ -133,32 +137,32 @@ class BytecodeSerializer extends TypeSerializer {
     if (steps) {
       resultValue['step'] = steps;
     }
-    return result;
+    return result as SerializedValue;
   }
 
-  _serializeInstructions(instructions) {
+  _serializeInstructions(instructions: any[]) {
     if (instructions.length === 0) {
       return null;
     }
     const result = new Array(instructions.length);
     result[0] = instructions[0];
     for (let i = 0; i < instructions.length; i++) {
-      result[i] = instructions[i].map((item) => this.writer.adaptObject(item));
+      result[i] = instructions[i].map((item: unknown) => this.writer.adaptObject(item));
     }
     return result;
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof Bytecode || value instanceof t.Traversal;
   }
 }
 
-class PSerializer extends TypeSerializer {
+export class PSerializer extends TypeSerializer<t.P> {
   /** @param {P} item */
-  serialize(item) {
-    const result = {};
+  serialize(item: t.P) {
+    const result: Partial<SerializedValue> = {};
     result[typeKey] = 'g:P';
-    const resultValue = (result[valueKey] = {
+    const resultValue: any = (result[valueKey] = {
       predicate: item.operator,
     });
     if (item.other === undefined || item.other === null) {
@@ -166,20 +170,20 @@ class PSerializer extends TypeSerializer {
     } else {
       resultValue['value'] = [this.writer.adaptObject(item.value), this.writer.adaptObject(item.other)];
     }
-    return result;
+    return result as SerializedValue;
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof t.P;
   }
 }
 
-class TextPSerializer extends TypeSerializer {
+export class TextPSerializer extends TypeSerializer<t.TextP> {
   /** @param {TextP} item */
-  serialize(item) {
-    const result = {};
+  serialize(item: t.TextP) {
+    const result: Partial<SerializedValue> = {};
     result[typeKey] = 'g:TextP';
-    const resultValue = (result[valueKey] = {
+    const resultValue: any = (result[valueKey] = {
       predicate: item.operator,
     });
     if (item.other === undefined || item.other === null) {
@@ -187,17 +191,17 @@ class TextPSerializer extends TypeSerializer {
     } else {
       resultValue['value'] = [this.writer.adaptObject(item.value), this.writer.adaptObject(item.other)];
     }
-    return result;
+    return result as SerializedValue;
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof t.TextP;
   }
 }
 
-class LambdaSerializer extends TypeSerializer {
+export class LambdaSerializer extends TypeSerializer<() => unknown[]> {
   /** @param {Function} item */
-  serialize(item) {
+  serialize(item: () => any[]) {
     const lambdaDef = item();
 
     // check if the language is specified otherwise assume gremlin-groovy.
@@ -223,28 +227,28 @@ class LambdaSerializer extends TypeSerializer {
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return typeof value === 'function';
   }
 }
 
-class EnumSerializer extends TypeSerializer {
+export class EnumSerializer extends TypeSerializer<t.EnumValue> {
   /** @param {EnumValue} item */
-  serialize(item) {
+  serialize(item: t.EnumValue) {
     return {
       [typeKey]: 'g:' + item.typeName,
       [valueKey]: item.elementName,
     };
   }
 
-  canBeUsedFor(value) {
-    return value && value.typeName && value instanceof t.EnumValue;
+  canBeUsedFor(value: unknown) {
+    return value && (value as any).typeName && value instanceof t.EnumValue;
   }
 }
 
-class TraverserSerializer extends TypeSerializer {
+export class TraverserSerializer extends TypeSerializer<t.Traverser> {
   /** @param {Traverser} item */
-  serialize(item) {
+  serialize(item: t.Traverser) {
     return {
       [typeKey]: 'g:Traverser',
       [valueKey]: {
@@ -254,20 +258,20 @@ class TraverserSerializer extends TypeSerializer {
     };
   }
 
-  deserialize(obj) {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new t.Traverser(this.reader.read(value['value']), this.reader.read(value['bulk']));
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof t.Traverser;
   }
 }
 
-class TraversalStrategySerializer extends TypeSerializer {
+export class TraversalStrategySerializer extends TypeSerializer<ts.TraversalStrategy> {
   /** @param {TraversalStrategy} item */
-  serialize(item) {
-    const conf = {};
+  serialize(item: ts.TraversalStrategy) {
+    const conf: ts.TraversalStrategyConfiguration = {};
     for (const k in item.configuration) {
       if (item.configuration.hasOwnProperty(k)) {
         conf[k] = this.writer.adaptObject(item.configuration[k]);
@@ -280,19 +284,19 @@ class TraversalStrategySerializer extends TypeSerializer {
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof ts.TraversalStrategy;
   }
 }
 
-class VertexSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class VertexSerializer extends TypeSerializer<g.Vertex> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new g.Vertex(this.reader.read(value['id']), value['label'], this.reader.read(value['properties']));
   }
 
   /** @param {Vertex} item */
-  serialize(item) {
+  serialize(item: g.Vertex) {
     return {
       [typeKey]: 'g:Vertex',
       [valueKey]: {
@@ -302,13 +306,13 @@ class VertexSerializer extends TypeSerializer {
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof g.Vertex;
   }
 }
 
-class VertexPropertySerializer extends TypeSerializer {
-  deserialize(obj) {
+export class VertexPropertySerializer extends TypeSerializer<g.VertexProperty> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new g.VertexProperty(
       this.reader.read(value['id']),
@@ -319,15 +323,15 @@ class VertexPropertySerializer extends TypeSerializer {
   }
 }
 
-class PropertySerializer extends TypeSerializer {
-  deserialize(obj) {
+export class PropertySerializer extends TypeSerializer<g.Property> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new g.Property(value['key'], this.reader.read(value['value']));
   }
 }
 
-class EdgeSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class EdgeSerializer extends TypeSerializer<g.Edge> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new g.Edge(
       this.reader.read(value['id']),
@@ -339,7 +343,7 @@ class EdgeSerializer extends TypeSerializer {
   }
 
   /** @param {Edge} item */
-  serialize(item) {
+  serialize(item: g.Edge) {
     return {
       [typeKey]: 'g:Edge',
       [valueKey]: {
@@ -353,45 +357,44 @@ class EdgeSerializer extends TypeSerializer {
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof g.Edge;
   }
 }
 
-class PathSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class PathSerializer extends TypeSerializer<g.Path> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
-    const objects = value['objects'].map((o) => this.reader.read(o));
+    const objects = value['objects'].map((o: unknown) => this.reader.read(o));
     return new g.Path(this.reader.read(value['labels']), objects);
   }
 }
 
-class Path3Serializer extends TypeSerializer {
-  deserialize(obj) {
+export class Path3Serializer extends TypeSerializer<g.Path> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     return new g.Path(this.reader.read(value['labels']), this.reader.read(value['objects']));
   }
 }
 
-class TSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class TSerializer extends TypeSerializer<t.EnumValue> {
+  deserialize(obj: SerializedValue) {
     return t.t[obj[valueKey]];
   }
 }
 
-class DirectionSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class DirectionSerializer extends TypeSerializer<t.EnumValue> {
+  deserialize(obj: SerializedValue) {
     return t.direction[obj[valueKey].toLowerCase()];
   }
 }
 
-class ArraySerializer extends TypeSerializer {
-  constructor(typeKey) {
+class ArraySerializer extends TypeSerializer<unknown[]> {
+  constructor(readonly typeKey: string) {
     super();
-    this.typeKey = typeKey;
   }
 
-  deserialize(obj) {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     if (!Array.isArray(value)) {
       throw new Error('Expected Array, obtained: ' + value);
@@ -400,20 +403,20 @@ class ArraySerializer extends TypeSerializer {
   }
 
   /** @param {Array} item */
-  serialize(item) {
+  serialize(item: unknown[]) {
     return {
       [typeKey]: this.typeKey,
       [valueKey]: item.map((x) => this.writer.adaptObject(x)),
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return Array.isArray(value);
   }
 }
 
-class BulkSetSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class BulkSetSerializer extends TypeSerializer<unknown> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     if (!Array.isArray(value)) {
       throw new Error('Expected Array, obtained: ' + value);
@@ -423,7 +426,7 @@ class BulkSetSerializer extends TypeSerializer {
     // so this query will be trouble. we'd need a legit BulkSet implementation here in js. this current
     // implementation is here to replicate the previous functionality that existed on the server side in
     // previous versions.
-    let result = [];
+    let result: unknown[] = [];
     for (let ix = 0, iy = value.length; ix < iy; ix += 2) {
       const pair = value.slice(ix, ix + 2);
       result = result.concat(Array(this.reader.read(pair[1])).fill(this.reader.read(pair[0])));
@@ -433,8 +436,8 @@ class BulkSetSerializer extends TypeSerializer {
   }
 }
 
-class MapSerializer extends TypeSerializer {
-  deserialize(obj) {
+export class MapSerializer extends TypeSerializer<Map<unknown, unknown>> {
+  deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
     if (!Array.isArray(value)) {
       throw new Error('Expected Array, obtained: ' + value);
@@ -447,8 +450,8 @@ class MapSerializer extends TypeSerializer {
   }
 
   /** @param {Map} map */
-  serialize(map) {
-    const arr = [];
+  serialize(map: Map<unknown, unknown>) {
+    const arr: unknown[] = [];
     map.forEach((v, k) => {
       arr.push(this.writer.adaptObject(k));
       arr.push(this.writer.adaptObject(v));
@@ -459,50 +462,23 @@ class MapSerializer extends TypeSerializer {
     };
   }
 
-  canBeUsedFor(value) {
+  canBeUsedFor(value: unknown) {
     return value instanceof Map;
   }
 }
 
-class ListSerializer extends ArraySerializer {
+export class ListSerializer extends ArraySerializer {
   constructor() {
     super('g:List');
   }
 }
 
-class SetSerializer extends ArraySerializer {
+export class SetSerializer extends ArraySerializer {
   constructor() {
     super('g:Set');
   }
 
-  deserialize(obj) {
+  deserialize(obj: SerializedValue): any {
     return new Set(super.deserialize(obj));
   }
 }
-
-module.exports = {
-  BulkSetSerializer,
-  BytecodeSerializer,
-  DateSerializer,
-  DirectionSerializer,
-  EdgeSerializer,
-  EnumSerializer,
-  LambdaSerializer,
-  ListSerializer,
-  LongSerializer,
-  MapSerializer,
-  NumberSerializer,
-  Path3Serializer,
-  PathSerializer,
-  PropertySerializer,
-  PSerializer,
-  TextPSerializer,
-  SetSerializer,
-  TSerializer,
-  TraverserSerializer,
-  TraversalStrategySerializer,
-  typeKey,
-  valueKey,
-  VertexPropertySerializer,
-  VertexSerializer,
-};

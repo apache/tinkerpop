@@ -20,12 +20,11 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { textPSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { textPSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { TextP, Traverser } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
@@ -36,15 +35,15 @@ describe('GraphBinary.TextPSerializer', () => {
 
   const cases = [
     { v:undefined, fq:1, b:[0x28,0x01],                                av:null },
-    { v:undefined, fq:0, b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:new t.TextP('') },
+    { v:undefined, fq:0, b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:new TextP('') },
     { v:null,      fq:1, b:[0x28,0x01] },
-    { v:null,      fq:0, b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:new t.TextP('') },
+    { v:null,      fq:0, b:[0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00], av:new TextP('') },
 
     // TODO: and
     // TODO: or
 
     ...(['containing','endingWith','notContaining','notEndingWith','notStartingWith','startingWith'].map(operator => ({
-      v: t.TextP[operator]('ValuE', 'OtheR'),
+      v: TextP[operator]('ValuE', 'OtheR'),
       b: [
         0x00,0x00,0x00,operator.length, ...from(operator),
         0x00,0x00,0x00,0x02, // {values_length}
@@ -77,7 +76,7 @@ describe('GraphBinary.TextPSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -93,7 +92,7 @@ describe('GraphBinary.TextPSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -130,12 +129,12 @@ describe('GraphBinary.TextPSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
+      { v: new Traverser(), e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
-      { v: [new t.TextP()],   e: false },
-      { v: new t.TextP(),     e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: [new TextP()],   e: false },
+      { v: new TextP(),     e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( textPSerializer.canBeUsedFor(v), e )
     ))
   );
