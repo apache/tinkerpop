@@ -86,6 +86,16 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         return requestSerializerV4.readValue(msg, reader);
     }
 
+    @Override
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+        return writeHeader(responseMessage, allocator);
+    }
+
+    @Override
+    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+        throw new UnsupportedOperationException("Response serialization as String is not supported");
+    }
+
     // chunked write
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
@@ -211,15 +221,5 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         } catch (IOException ex) {
             throw new SerializationException(ex);
         }
-    }
-
-    private enum MessageParts {
-        HEADER, DATA, FOOTER;
-
-        public static final EnumSet<MessageParts> ALL = EnumSet.of(HEADER, DATA, FOOTER);
-        public static final EnumSet<MessageParts> START = EnumSet.of(HEADER, DATA);
-        public static final EnumSet<MessageParts> CHUNK = EnumSet.of(DATA);
-        public static final EnumSet<MessageParts> END = EnumSet.of(DATA, FOOTER);
-        public static final EnumSet<MessageParts> ERROR = EnumSet.of(FOOTER);
     }
 }

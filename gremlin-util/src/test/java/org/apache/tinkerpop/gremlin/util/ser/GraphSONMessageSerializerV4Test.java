@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -49,16 +50,20 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
     @Test
     public void shouldDeserializeChunkedResponseMessage() throws SerializationException, JsonProcessingException {
         final UUID id = UUID.randomUUID();
-        final ResponseMessage response = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4(id)
+                .result(Arrays.asList("header", 0))
+                .create();
+
+        final ResponseMessage footer = ResponseMessage.buildV4(id)
+                .result(Arrays.asList("footer", 3))
                 .code(ResponseStatusCode.SUCCESS)
-                .result(Arrays.asList("start/end", 0))
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(response, allocator);
+        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
         final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
         final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeFooter(response, allocator);
+        final ByteBuf bb3 = serializer.writeFooter(footer, allocator);
 
         final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
@@ -66,23 +71,28 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("start/end", node.get("result").get("@value").get(0).textValue());
+        assertEquals("header", node.get("result").get("@value").get(0).textValue());
+        assertEquals("footer", node.get("result").get("@value").get(6).textValue());
         assertEquals(8, node.get("result").get("@value").size());
     }
 
     @Test
     public void shouldDeserializeChunkedResponseMessageWithError() throws SerializationException, JsonProcessingException {
         final UUID id = UUID.randomUUID();
-        final ResponseMessage response = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4(id)
+                .result(Arrays.asList("header", 0))
+                .create();
+
+        final ResponseMessage footer = ResponseMessage.buildV4(id)
+                .result(Arrays.asList("footer", 3))
                 .code(ResponseStatusCode.SUCCESS)
-                .result(Arrays.asList("start/end", 0))
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(response, allocator);
+        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
         final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
         final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeErrorFooter(response, allocator);
+        final ByteBuf bb3 = serializer.writeErrorFooter(footer, allocator);
 
         final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
@@ -90,9 +100,15 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("start/end", node.get("result").get("@value").get(0).textValue());
+        assertEquals("header", node.get("result").get("@value").get(0).textValue());
         // 6 items in first 3 chunks
         assertEquals(6, node.get("result").get("@value").size());
+    }
+
+    @Override
+    protected ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
+        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        return serializer.deserializeResponse(bb);
     }
 
     @Override
