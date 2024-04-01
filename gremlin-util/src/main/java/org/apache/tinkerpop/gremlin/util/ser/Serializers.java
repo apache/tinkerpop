@@ -63,9 +63,14 @@ public enum Serializers {
     GRAPHSON_V3_UNTYPED(SerTokens.MIME_GRAPHSON_V3_UNTYPED),
 
     /**
-     * GraphSON 3.0 with types.
+     * GraphSON 4.0 with types.
      */
     GRAPHSON_V4(SerTokens.MIME_GRAPHSON_V4),
+
+    /**
+     * GraphSON 4.0 without types.
+     */
+    GRAPHSON_V4_UNTYPED(SerTokens.MIME_GRAPHSON_V4_UNTYPED),
 
     /**
      * GraphBinary 1.0.
@@ -104,6 +109,8 @@ public enum Serializers {
                 return new GraphSONUntypedMessageSerializerV2();
             case SerTokens.MIME_GRAPHSON_V3_UNTYPED:
                 return new GraphSONUntypedMessageSerializerV3();
+            case SerTokens.MIME_GRAPHSON_V4_UNTYPED:
+                return new GraphSONUntypedMessageSerializerV4();
             case SerTokens.MIME_GRAPHBINARY_V4:
                 return new GraphBinaryMessageSerializerV4();
             case SerTokens.MIME_GRAPHBINARY_V1:

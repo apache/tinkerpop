@@ -99,7 +99,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     // chunked write
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        // todo: write data or not when error?
         final EnumSet<MessageParts> parts = responseMessage.getStatus() != null ? MessageParts.ALL : MessageParts.START;
 
         return write(responseMessage, null, allocator, parts);
@@ -164,6 +163,12 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     }
 
     // ------- read message methods
+
+    @Override
+    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
+        return readChunk(msg, true);
+    }
+
     private List<Object> readPayload(final Buffer buffer) throws IOException {
         final List<Object> result = new ArrayList<>();
         while (buffer.readableBytes() != 0) {

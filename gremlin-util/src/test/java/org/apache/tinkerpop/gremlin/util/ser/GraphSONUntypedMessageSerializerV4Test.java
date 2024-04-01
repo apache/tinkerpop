@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -35,11 +37,12 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
-@SuppressWarnings("unchecked")
-public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3Test {
+public class GraphSONUntypedMessageSerializerV4Test {
 
-    private final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
-
+    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+    private final GraphSONUntypedMessageSerializerV4 serializer = new GraphSONUntypedMessageSerializerV4();
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
@@ -66,9 +69,9 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("header", node.get("result").get("@value").get(0).textValue());
-        assertEquals("footer", node.get("result").get("@value").get(6).textValue());
-        assertEquals(8, node.get("result").get("@value").size());
+        assertEquals("header", node.get("result").get(0).textValue());
+        assertEquals("footer", node.get("result").get(6).textValue());
+        assertEquals(8, node.get("result").size());
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
@@ -95,7 +98,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals(0, node.get("result").get("@value").size());
+        assertEquals(0, node.get("result").size());
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
@@ -131,9 +134,9 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("header", node.get("result").get("@value").get(0).textValue());
+        assertEquals("header", node.get("result").get(0).textValue());
         // 6 items in first 3 chunks
-        assertEquals(6, node.get("result").get("@value").size());
+        assertEquals(6, node.get("result").size());
         assertEquals("SERVER_ERROR", node.get("status").get("message").asText());
         assertEquals(500, node.get("status").get("code").asInt());
 
@@ -145,14 +148,12 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
     }
 
-    @Override
-    protected ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
     }
 
-    @Override
-    protected ResponseMessage convert(final Object toSerialize) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize) throws SerializationException {
         return convert(toSerialize, this.serializer);
     }
 }
