@@ -1111,6 +1111,35 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void should200OnPOSTWithEmptyChunkedResponseGraphBinary() throws Exception {
+        final String gremlin = "g.V().iterate()";
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
+        final ByteBuf serializedRequest = serializer.serializeRequestMessageV4(
+                RequestMessageV4.build(gremlin).create(), new UnpooledByteBufAllocator(false));
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.getEntity().isChunked());
+
+            final ResponseMessage responseMessage = serializer.readChunk(toByteBuf(response.getEntity()), true);
+            assertEquals(0, ((List)responseMessage.getResult().getData()).size());
+
+            final Header[] footers = getTrailingHeaders(response);
+            assertEquals(2, footers.length);
+            assertEquals("code", footers[0].getName());
+            assertEquals("206", footers[0].getValue());
+            assertEquals("message", footers[1].getName());
+            assertEquals("NO_CONTENT", footers[1].getValue());
+        }
+    }
+
+    @Test
     public void shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());

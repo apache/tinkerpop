@@ -72,12 +72,39 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
+        // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
         assertEquals(id, deserialized.getRequestId());
         assertEquals(200, deserialized.getStatus().getCode().getValue());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
+    }
+
+    @Test
+    public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
+        final UUID id = UUID.randomUUID();
+        final ResponseMessage header = ResponseMessage.buildV4(id)
+                .code(ResponseStatusCode.SUCCESS)
+                .statusMessage("OK")
+                .create();
+
+        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
+
+        final String json = bb0.readCharSequence(bb0.readableBytes(), CharsetUtil.UTF_8).toString();
+
+        final JsonNode node = mapper.readTree(json);
+
+        assertEquals(0, node.get("result").get("@value").size());
+        assertEquals("OK", node.get("status").get("message").asText());
+        assertEquals(200, node.get("status").get("code").asInt());
+
+        bb0.resetReaderIndex();
+        final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
+        assertEquals(id, deserialized.getRequestId());
+        assertEquals(200, deserialized.getStatus().getCode().getValue());
+        assertEquals("OK", deserialized.getStatus().getMessage());
+        assertEquals(0, ((List)deserialized.getResult().getData()).size());
     }
 
     @Test

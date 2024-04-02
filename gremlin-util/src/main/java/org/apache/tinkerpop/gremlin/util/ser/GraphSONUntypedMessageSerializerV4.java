@@ -25,10 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 import java.nio.ByteBuffer;
 
 /**
- * Serialize results to JSON with version 3.0.x schema and the extended module without embedded types.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
+ * Serialize results to JSON with version 4 schema and the extended module without embedded types.
+  */
 public final class GraphSONUntypedMessageSerializerV4 extends AbstractGraphSONMessageSerializerV4 {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V4_UNTYPED;
 

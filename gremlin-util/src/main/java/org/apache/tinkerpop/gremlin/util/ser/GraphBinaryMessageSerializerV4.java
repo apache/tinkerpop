@@ -34,6 +34,7 @@ import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
     private final byte[] header = MIME_TYPE.getBytes(UTF_8);
-    private RequestMessageSerializerV4 requestSerializerV4;
+    private final RequestMessageSerializerV4 requestSerializerV4;
 
     public GraphBinaryMessageSerializerV4() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -96,7 +97,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         throw new UnsupportedOperationException("Response serialization as String is not supported");
     }
 
-    // chunked write
+    //////////////// chunked write
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         final EnumSet<MessageParts> parts = responseMessage.getStatus() != null ? MessageParts.ALL : MessageParts.START;
@@ -131,7 +132,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
 
                 // Nullable request id
                 writer.writeValue(responseMessage.getRequestId(), buffer, true);
-                // Nullable tx id
+                // Nullable tx id, todo: add real value when ready
                 writer.writeValue((UUID)null, buffer, true);
             }
 
@@ -162,7 +163,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         return byteBuf;
     }
 
-    // ------- read message methods
+    //////////////// read message methods
 
     @Override
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
@@ -191,6 +192,12 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         final Buffer buffer = bufferFactory.create(byteBuf);
 
         try {
+            // empty input buffer
+            if (buffer.readableBytes() == 0) {
+                return ResponseMessage.buildV4(null).
+                        code(ResponseStatusCode.NO_CONTENT).result(Collections.emptyList()).create();
+            }
+
             UUID requestId = null;
 
             if (isFirstChunk) {
@@ -203,7 +210,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
                 }
 
                 requestId = reader.readValue(buffer, UUID.class, true);
-                // todo: tx id !!!
+                // todo: handle tx id
                 reader.readValue(buffer, UUID.class, true);
             }
 

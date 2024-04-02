@@ -634,14 +634,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
-            final Map<String, Object> attributes = generateStatusAttributes(nettyContext, msg, ResponseStatusCode.NO_CONTENT, itty, settings);
-
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
-            context.writeAndFlush(ResponseMessage.build(msg)
-                    .code(ResponseStatusCode.NO_CONTENT)
-                    .statusAttributes(attributes)
-                    .create());
+            sendTrailingHeaders(nettyContext, 206, "NO_CONTENT");
             return;
         }
 

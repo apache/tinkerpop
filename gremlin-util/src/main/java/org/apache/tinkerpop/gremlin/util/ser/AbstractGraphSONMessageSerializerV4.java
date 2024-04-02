@@ -46,10 +46,6 @@ import java.util.UUID;
 public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializerV4<ObjectMapper>, MessageChunkSerializer<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV4.class);
 
-    public AbstractGraphSONMessageSerializerV4(GraphSONMapper mapper) {
-        super(mapper);
-    }
-
     public AbstractGraphSONMessageSerializerV4() {
         super();
     }
@@ -104,7 +100,6 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         throw new UnsupportedOperationException("Response serialization as String is not supported");
     }
 
-    // !!!
     protected boolean isTyped() { return true; };
     @Override
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
@@ -142,7 +137,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
             return new byte[0];
         }
 
-        // todo: cleanup
+        // Gremlin server always produce List
         final List asList = (List) aggregate;
         if (asList.isEmpty()) {
             return new byte[0];
@@ -150,7 +145,9 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
 
         final Object[] array = new Object[asList.size()];
         asList.toArray(array);
+        // List serialization adds extra data, so array used
         String str = mapper.writeValueAsString(array);
+        // skip opening `[` and closing `]`
         str = str.substring(1, str.length() - 1);
         if (!isFirst) {
             str = "," + str;
@@ -181,7 +178,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
             final byte[] data = getChunk(false, responseMessage.getResult().getData());
             // skip opening {
-            encodedMessage = allocator.buffer(footer.length - 1 + data.length).
+            encodedMessage = allocator.buffer(footer.length - 2 + data.length).
                     writeBytes(data).writeBytes(footer, 1, footer.length - 1);
 
             return encodedMessage;
@@ -199,8 +196,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         try {
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
             // skip opening {
-            encodedMessage = allocator.buffer(footer.length - 1);
-            encodedMessage.writeBytes(footer, 1, footer.length - 1);
+            encodedMessage = allocator.buffer(footer.length - 2).
+                    writeBytes(footer, 1, footer.length - 1);
 
             return encodedMessage;
         } catch (Exception ex) {
