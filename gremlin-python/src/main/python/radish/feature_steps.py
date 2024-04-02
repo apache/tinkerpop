@@ -36,7 +36,8 @@ project = __.project
 tail = __.tail
 
 ignores = [
-    "g.withoutStrategies(CountStrategy).V().count()" # serialization issues with Class in GraphSON
+    "g.withoutStrategies(CountStrategy).V().count()",  # serialization issues with Class in GraphSON
+    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")"
 ]
 
 

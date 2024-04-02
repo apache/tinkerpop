@@ -50,7 +50,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 // Add here the name of scenarios to ignore and the reason, e.g.:
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withoutStrategiesXCountStrategyX_V_count", IgnoreReason.NoReason} // needs investigation
+                {"g_withoutStrategiesXCountStrategyX_V_count", IgnoreReason.NoReason}, // needs investigation
+                {"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX", IgnoreReason.NoReason}
             };
 
         private static class Keywords

@@ -17,15 +17,15 @@
  * under the License.
  */
 
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GolangTranslator
+
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
-import org.codehaus.groovy.control.customizers.CompilationCustomizer
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
+import org.apache.tinkerpop.gremlin.process.traversal.translator.GolangTranslator
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
 
 import javax.script.SimpleBindings
 import java.nio.file.Paths
@@ -109,6 +109,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // solution may become necessary as testing of nulls expands.
     def staticTranslate = [
             g_withoutStrategiesXCountStrategyX_V_count: "  \"g_withoutStrategiesXCountStrategyX_V_count\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(6)}}, ", // syntax is all bad for withoutStrategies and who knows what else is causing failures - just do a dummy translation
+            g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX: "  \"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V()}}, ",
             g_injectXnull_nullX: "  \"g_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil, nil)}}, ",
             g_VX1X_valuesXageX_injectXnull_nullX: "  \"g_VX1X_valuesXageX_injectXnull_nullX\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p[\"xx1\"]).Values(\"age\").Inject(nil, nil)}}, "
     ]
