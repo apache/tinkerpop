@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
 
 /**
@@ -43,11 +42,6 @@ public final class StateKey {
      * The key to indicate if the serializer should use its binary format.
      */
     public static final AttributeKey<Boolean> USE_BINARY = AttributeKey.valueOf("useBinary");
-
-    /**
-     * The key for the current {@link Session} object.
-     */
-    public static final AttributeKey<Session> SESSION = AttributeKey.valueOf("session");
 
     /**
      * The key for the current SASL negotiator.
