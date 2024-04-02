@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import io.netty.channel.ChannelHandler;
@@ -53,7 +52,6 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
     protected void encode(final ChannelHandlerContext ctx, final ResponseMessage o, final List<Object> objects) throws Exception {
         final MessageSerializer<?> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
-        final Session session = ctx.channel().attr(StateKey.SESSION).get();
 
         try {
             if (!o.getStatus().getCode().isSuccess())
@@ -67,10 +65,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
                 // problem here is that if the session executor is used in the case of an error and the executor is
                 // blocked by parallel requests then there is no thread available to serialize the result and send
                 // back the response as the workers get all tied up behind the session executor.
-                if (null == session || !o.getStatus().getCode().isSuccess())
-                    serialized = new Frame(serializer.serializeResponseAsBinary(o, ctx.alloc()));
-                else
-                    serialized = new Frame(session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get());
+                serialized = new Frame(serializer.serializeResponseAsBinary(o, ctx.alloc()));
 
                 objects.add(serialized);
             } else {
@@ -82,10 +77,7 @@ public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<Respons
 
                 // if the request came in on a session then the serialization must occur that same thread except
                 // in the case of errors for reasons described above.
-                if (null == session || !o.getStatus().getCode().isSuccess())
-                    serialized = new Frame(textSerializer.serializeResponseAsString(o, ctx.alloc()));
-                else
-                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o, ctx.alloc())).get());
+                serialized = new Frame(textSerializer.serializeResponseAsString(o, ctx.alloc()));
 
                 objects.add(serialized);
             }
