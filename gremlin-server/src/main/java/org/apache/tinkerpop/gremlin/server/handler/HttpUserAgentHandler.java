@@ -28,8 +28,6 @@ import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler.USER_AGENT_HEADER_NAME;
-
 public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     /**
      * This constant caps the number of unique user agents which will be tracked in the metrics. Any new unique
@@ -38,6 +36,9 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     private static final int MAX_USER_AGENT_METRICS = 10000;
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUserAgentHandler.class);
+
+    static final String USER_AGENT_HEADER_NAME = "User-Agent";
+
     public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(USER_AGENT_HEADER_NAME);
 
     @Override

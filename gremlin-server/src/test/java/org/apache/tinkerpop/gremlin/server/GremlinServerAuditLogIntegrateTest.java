@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -147,7 +147,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
                 settings.host = "localhost";
                 settings.channelizer = HttpChannelizer.class.getName();
                 authSettings.authenticator = SimpleAuthenticator.class.getName();
-                authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
+                authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
                 authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
                 break;
         }

@@ -27,9 +27,6 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.server.channel.HttpTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpTestChannelizer;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -54,7 +51,6 @@ import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -140,21 +136,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Before
     public void setupForEachTest() {
-
-        if (name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
-            final Logger wsUserAgentHandlerLogger = (Logger) LoggerFactory.getLogger(WsUserAgentHandler.class);
-            wsUserAgentHandlerLogger.setLevel(Level.DEBUG);
-        }
-
         logCaptor.clearLogs();
     }
 
     @After
     public void teardownForEachTest() {
-        if (name.getMethodName().equals("shouldCaptureUserAgentFromClient")) {
-            final Logger wsUserAgentHandlerLogger = (Logger) LoggerFactory.getLogger(WsUserAgentHandler.class);
-            wsUserAgentHandlerLogger.setLevel(previousLogLevel);
-        }
     }
 
     /**
@@ -206,21 +192,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.gremlinPool = 1;
                 settings.maxWorkQueueSize = 1;
                 break;
-            case "shouldRespondToTimeoutCancelledWsRequest":
-            case "shouldRespondToTimeoutCancelledSessionRequest":
-                useTinkerTransactionGraph(settings);
-                settings.evaluationTimeout = 5000;
-                settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
-                settings.channelizer = WebSocketChannelizer.class.getName();
-                break;
-            case "shouldStoreUserAgentInContextWebSocket":
-                settings.channelizer = WebSocketTestChannelizer.class.getName();
-                break;
             case "shouldStoreUserAgentInContextHttp":
                 settings.channelizer = HttpTestChannelizer.class.getName();
-                break;
-            case "shouldStoreUserAgentInContextWsAndHttp":
-                settings.channelizer = WsAndHttpTestChannelizer.class.getName();
                 break;
             default:
                 break;
@@ -257,48 +230,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldCaptureUserAgentFromClient() {
-        final Cluster cluster = TestClientFactory.build().enableUserAgentOnConnect(true).create();
-        final Client client = cluster.connect();
-        client.submit("test");
-
-        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                ".*New Connection on channel .* with user agent.*$")), is(true));
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldStoreUserAgentInContextWebSocket() throws InterruptedException {
-        shouldStoreUserAgentInContext();
-    }
-
-    @Test
     public void shouldStoreUserAgentInContextHttp() throws InterruptedException {
         shouldStoreUserAgentInHttpContext();
-    }
-
-    @Test
-    public void shouldStoreUserAgentInContextWsAndHttp() throws InterruptedException {
-        shouldStoreUserAgentInContext();
-        shouldStoreUserAgentInHttpContext();
-    }
-
-    private void shouldStoreUserAgentInContext() {
-        if(server.getChannelizer() instanceof TestChannelizer) {
-            TestChannelizer channelizer = (TestChannelizer) server.getChannelizer();
-            channelizer.resetChannelHandlerContext();
-            assertNull(getUserAgentIfAvailable());
-            final Cluster cluster = TestClientFactory.build().enableUserAgentOnConnect(true).create();
-            final Client client = cluster.connect();
-
-            client.submit("test");
-            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
-            client.submit("test");
-            assertEquals(UserAgent.USER_AGENT, getUserAgentIfAvailable());
-            client.close();
-            cluster.close();
-        }
     }
 
     private void shouldStoreUserAgentInHttpContext() throws InterruptedException {
@@ -1119,58 +1052,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
-    }
-
-    /**
-     * Reproducer for TINKERPOP-2769 with request sent to WebSocketChannelizer.
-     */
-    @Test(timeout = 180000) // Add timeout in case the test hangs.
-    public void shouldRespondToTimeoutCancelledWsRequest() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-        runTimeoutTest(g);
-        g.close();
-    }
-
-    /**
-     * Reproducer for TINKERPOP-2769 with request having a Session ID sent to WebSocketChannelizer.
-     */
-    @Test(timeout = 180000) // Add timeout in case the test hangs.
-    public void shouldRespondToTimeoutCancelledSessionRequest() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
-        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
-        final GraphTraversalSource gtx = g.tx().begin();
-
-        runTimeoutTest(gtx);
-
-        gtx.tx().commit();
-        cluster.close();
-    }
-
-    private void runTimeoutTest(GraphTraversalSource g) throws Exception {
-        // make a graph with a cycle in it to force a long run traversal
-        g.addV("person").as("p").addE("self").to("p").iterate();
-
-        // Number of threads/tasks must be larger than the size of the gremlinPool set in overrideSettings().
-        final int numTasksNeededToOverloadPool = POOL_SIZE_FOR_TIMEOUT_TESTS + 2;
-        final ExecutorService threadPool = Executors.newFixedThreadPool(numTasksNeededToOverloadPool);
-        // test "unending" traversals
-        final List<Future<?>> results = new ArrayList<>();
-        for (int i = 0; i < numTasksNeededToOverloadPool; i++) {
-            results.add(threadPool.submit(() -> g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate()));
-        }
-
-        for (final Future<?> result : results) {
-            try {
-                result.get();
-                fail("This traversal should have timed out");
-            } catch (Exception ex) {
-                final Throwable t = ex.getCause().getCause(); // Get the nested ResponseException.
-                assertThat(t, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-            }
-        }
-
-        threadPool.shutdown();
     }
 
     /**

@@ -27,6 +27,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
@@ -36,7 +37,6 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -118,12 +118,12 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             case "shouldFailAuthorizeWithHttpTransport":
             case "shouldKeepAuthorizingWithHttpTransport":
                 settings.channelizer = HttpChannelizer.class.getName();
-                authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
+                authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
                 break;
             case "shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport":
                 settings.channelizer = HttpChannelizer.class.getName();
                 authSettings.authenticator = AllowAllAuthenticator.class.getName();
-                authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
+                authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
                 authSettings.config = null;
                 final String fileHttp = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlHttpName)).getFile();
                 authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, fileHttp);
