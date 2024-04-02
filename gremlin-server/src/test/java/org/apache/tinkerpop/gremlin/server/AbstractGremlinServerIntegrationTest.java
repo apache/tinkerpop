@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.junit.After;
@@ -145,10 +144,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
         if (server != null) {
             server.stop().join();
         }
-
-        // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
-        // between tests
-        OpLoader.reset();
     }
 
     public static boolean deleteDirectory(final File directory) {

@@ -43,7 +43,6 @@ import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -130,10 +129,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.DEBUG);
-        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
-            final Logger opExecutorHandlerLogger = (Logger) LoggerFactory.getLogger(OpExecutorHandler.class);
-            previousLogLevel = opExecutorHandlerLogger.getLevel();
-            opExecutorHandlerLogger.setLevel(Level.ERROR);
         }
 
         logCaptor.clearLogs();
@@ -145,9 +140,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
             final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
-        } else if (name.getMethodName().equals("shouldEventuallySucceedAfterMuchFailure")) {
-            final Logger opExecutorHandlerLogger = (Logger) LoggerFactory.getLogger(OpExecutorHandler.class);
-            opExecutorHandlerLogger.setLevel(previousLogLevel);
         }
     }
 

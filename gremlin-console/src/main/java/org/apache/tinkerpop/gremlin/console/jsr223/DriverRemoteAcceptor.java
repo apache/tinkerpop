@@ -62,7 +62,6 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private Client currentClient;
     private int timeout = NO_TIMEOUT;
     private Map<String,String> aliases = new HashMap<>();
-    private Optional<String> session = Optional.empty();
 
     private static final String TOKEN_RESET = "reset";
     private static final String TOKEN_SHOW = "show";
@@ -70,8 +69,6 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private static final String TOKEN_NONE = "none";
     private static final String TOKEN_TIMEOUT = "timeout";
     private static final String TOKEN_ALIAS = "alias";
-    private static final String TOKEN_SESSION = "session";
-    private static final String TOKEN_SESSION_MANAGED = "session-managed";
     private static final String TOKEN_HELP = "help";
     private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS, TOKEN_HELP);
 
@@ -98,24 +95,15 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
             if (null == currentCluster)
                 throw new RemoteException("Expects the location of a configuration file or variable name for a Cluster object as an argument");
-            final boolean useSession = args.size() >= 2 && (args.get(1).equals(TOKEN_SESSION) || args.get(1).equals(TOKEN_SESSION_MANAGED));
-            if (useSession) {
-                final String sessionName = args.size() == 3 ? args.get(2) : UUID.randomUUID().toString();
-                session = Optional.of(sessionName);
 
-                final boolean managed = args.get(1).equals(TOKEN_SESSION_MANAGED);
-
-                this.currentClient = this.currentCluster.connect(sessionName, managed);
-            } else {
-                this.currentClient = this.currentCluster.connect();
-            }
+            this.currentClient = this.currentCluster.connect();
             this.currentClient.init();
-            return String.format("Configured %s", this.currentCluster) + getSessionStringSegment();
+            return String.format("Configured %s", this.currentCluster);
         } catch (final FileNotFoundException ignored) {
             throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
         } catch (final NoHostAvailableException nhae) {
             return String.format("Configured %s, but host not presently available. The Gremlin Console will attempt to reconnect on each query submission, " +
-                    "however, you may wish to close this remote and investigate the problem directly. %s", this.currentCluster, getSessionStringSegment());
+                    "however, you may wish to close this remote and investigate the problem directly.", this.currentCluster);
         } catch (final Exception ex) {
             throw new RemoteException("Error during 'connect' - " + ex.getMessage(), ex);
         }
@@ -178,7 +166,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             // users may try to submit after initiating cluster on a dead host, if host remains unavailable after initiation, output this error message
             if (ex.getCause().getCause() instanceof NoHostAvailableException) {
                 return String.format("Configured %s, but host not presently available. The Gremlin Console will attempt to reconnect on each query submission, " +
-                        "however, you may wish to close this remote and investigate the problem directly. %s", this.currentCluster, getSessionStringSegment());
+                        "however, you may wish to close this remote and investigate the problem directly.", this.currentCluster);
             }
             final Optional<ResponseException> inner = findResponseException(ex);
             if (inner.isPresent()) {
@@ -255,7 +243,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public String toString() {
-        return "Gremlin Server - [" + this.currentCluster + "]" + getSessionStringSegment();
+        return "Gremlin Server - [" + this.currentCluster + "]";
     }
 
     private Optional<ResponseException> findResponseException(final Throwable ex) {
@@ -266,10 +254,6 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             return Optional.empty();
 
         return findResponseException(ex.getCause());
-    }
-
-    private String getSessionStringSegment() {
-        return session.isPresent() ? String.format("-[%s]", session.get()) : "";
     }
 
     /**

@@ -102,10 +102,4 @@ public class HttpChannelizer extends AbstractChannelizer {
             return createAuthenticationHandler(settings);
         }
     }
-
-    @Override
-    public void finalize(final ChannelPipeline pipeline) {
-        pipeline.remove(PIPELINE_OP_SELECTOR);
-        pipeline.remove(PIPELINE_OP_EXECUTOR);
-    }
 }

@@ -249,22 +249,6 @@ public class Settings {
      */
     public Boolean enableAuditLog = false;
 
-    /**
-     * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
-     * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
-     */
-    public List<ProcessorSettings> processors = new ArrayList<>();
-
-    /**
-     * Find the {@link ProcessorSettings} related to the specified class. If there are multiple entries then only the
-     * first is returned.
-     */
-    public Optional<ProcessorSettings> optionalProcessor(final Class<? extends OpProcessor> clazz) {
-        return processors.stream()
-                .filter(p -> p.className.equals(clazz.getCanonicalName()))
-                .findFirst();
-    }
-
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);
     }
@@ -302,7 +286,6 @@ public class Settings {
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
         settingsDescription.addPropertyParameters("plugins", String.class);
-        settingsDescription.addPropertyParameters("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
@@ -358,23 +341,6 @@ public class Settings {
         final Constructor constructor = createDefaultYamlConstructor();
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, Settings.class);
-    }
-
-    /**
-     * Custom configurations for any {@link OpProcessor} implementations.  These settings will not be relevant
-     * unless the referenced {@link OpProcessor} is actually loaded via {@link ServiceLoader}.
-     */
-    public static class ProcessorSettings {
-        /**
-         * The fully qualified class name of an {@link OpProcessor} implementation.
-         */
-        public String className;
-
-        /**
-         * A set of configurations as expected by the {@link OpProcessor}.  Consult the documentation of the
-         * {@link OpProcessor} for information on what these configurations should be.
-         */
-        public Map<String, Object> config;
     }
 
     /**
