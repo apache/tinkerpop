@@ -34,7 +34,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
@@ -126,9 +125,6 @@ public class GremlinServer {
         // use the ExecutorService returned from ServerGremlinExecutor as it might be initialized there
         serverGremlinExecutor = new ServerGremlinExecutor(settings, gremlinExecutorService, workerGroup);
         this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
-
-        // initialize the OpLoader with configurations being passed to each OpProcessor implementation loaded
-        OpLoader.init(settings);
     }
 
     /**
@@ -236,16 +232,6 @@ public class GremlinServer {
 
         serverStopped = new CompletableFuture<>();
         final CountDownLatch servicesLeftToShutdown = new CountDownLatch(3);
-
-        // release resources in the OpProcessors (e.g. kill sessions)
-        OpLoader.getProcessors().entrySet().forEach(kv -> {
-            logger.info("Shutting down OpProcessor[{}]", kv.getKey());
-            try {
-                kv.getValue().close();
-            } catch (Exception ex) {
-                logger.warn("Shutdown will continue but, there was an error encountered while closing " + kv.getKey(), ex);
-            }
-        });
 
         // it's possible that a channel might not be initialized in the first place if bind() fails because
         // of port conflict.  in that case, there's no need to wait for the channel to close.

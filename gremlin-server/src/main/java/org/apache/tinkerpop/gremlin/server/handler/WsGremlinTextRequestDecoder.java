@@ -57,7 +57,6 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
             // it's important to re-initialize these channel attributes as they apply globally to the channel. in
             // other words, the next request to this channel might not come with the same configuration and mixed
             // state can carry through from one request to the next
-            channelHandlerContext.channel().attr(StateKey.SESSION).set(null);
             channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
             channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(false);
 

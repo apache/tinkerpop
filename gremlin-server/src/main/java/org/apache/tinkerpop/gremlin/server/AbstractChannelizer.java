@@ -32,8 +32,6 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
-import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.channel.ChannelInitializer;
@@ -111,9 +109,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
 
-    private OpSelectorHandler opSelectorHandler;
-    private OpExecutorHandler opExecutorHandler;
-
     protected Authenticator authenticator;
     protected Authorizer authorizer;
 
@@ -122,14 +117,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
      * Modify the pipeline as needed here.
      */
     public abstract void configure(final ChannelPipeline pipeline);
-
-    /**
-     * This method is called after the pipeline is completely configured.  It can be overridden to make any
-     * final changes to the pipeline before it goes into use.
-     */
-    public void finalize(final ChannelPipeline pipeline) {
-        // do nothing
-    }
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
@@ -150,10 +137,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
         authenticator = createAuthenticator(settings.authentication);
         authorizer = createAuthorizer(settings.authorization);
-
-        // these handlers don't share any state and can thus be initialized once per pipeline
-        opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService, this);
-        opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
     }
 
     @Override
@@ -174,11 +157,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
         // instance
         configure(pipeline);
-
-        pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
-        pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
-
-        finalize(pipeline);
     }
 
     protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings settings) {
