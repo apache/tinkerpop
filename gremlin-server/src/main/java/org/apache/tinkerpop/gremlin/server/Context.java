@@ -31,7 +31,6 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
-import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,15 +195,6 @@ public class Context {
      */
     public GremlinExecutor getGremlinExecutor() {
         return gremlinExecutor;
-    }
-
-    /**
-     * Returns the user agent (if any) which was sent from the client during the web socket handshake.
-     * Returns empty string if no user agent exists
-     */
-    public String getUserAgent() {
-        return getChannelHandlerContext().channel().hasAttr(WsUserAgentHandler.USER_AGENT_ATTR_KEY) ?
-                getChannelHandlerContext().channel().attr(WsUserAgentHandler.USER_AGENT_ATTR_KEY).get() : "";
     }
 
     /**
