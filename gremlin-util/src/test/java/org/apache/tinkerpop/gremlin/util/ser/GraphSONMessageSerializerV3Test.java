@@ -45,6 +45,7 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -118,10 +119,10 @@ public class GraphSONMessageSerializerV3Test {
         map.put("y", "some");
         map.put("z", innerMap);
 
-        final ResponseMessage response = convert(map);
+        final ResponseMessage response = convert(Collections.singletonList(map));
         assertCommon(response);
 
-        final Map<String, Object> deserializedMap = (Map<String, Object>) response.getResult().getData();
+        final Map<String, Object> deserializedMap = (Map<String, Object>) ((List)response.getResult().getData()).get(0);
         assertEquals(4, deserializedMap.size());
         assertEquals(true, deserializedMap.get("w"));
         assertEquals(1, deserializedMap.get("x"));
@@ -264,10 +265,10 @@ public class GraphSONMessageSerializerV3Test {
         final Vertex v1 = g.V().has("name", "marko").next();
         map.put(v1, 1000);
 
-        final ResponseMessage response = convert(map);
+        final ResponseMessage response = convert(Collections.singletonList(map));
         assertCommon(response);
 
-        final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) response.getResult().getData();
+        final Map<Vertex, Integer> deserializedMap = (Map<Vertex, Integer>) ((List)response.getResult().getData()).get(0);
         assertEquals(1, deserializedMap.size());
         assertEquals(Integer.valueOf(1000), deserializedMap.get(v1));
     }
@@ -278,10 +279,10 @@ public class GraphSONMessageSerializerV3Test {
         final GraphTraversalSource g = graph.traversal();
         final Tree t = g.V(1).out().properties("name").tree().next();
 
-        final ResponseMessage response = convert(t);
+        final ResponseMessage response = convert(Collections.singletonList(t));
         assertCommon(response);
 
-        final Tree deserializedTree = (Tree)response.getResult().getData();
+        final Tree deserializedTree = (Tree)((List)response.getResult().getData()).get(0);
 
         //check the first object and its key's properties
         assertEquals(1, deserializedTree.size());
