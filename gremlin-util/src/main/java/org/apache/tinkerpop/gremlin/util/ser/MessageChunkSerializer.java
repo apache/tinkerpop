@@ -23,6 +23,8 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
+import java.util.EnumSet;
+
 public interface MessageChunkSerializer<M> extends MessageSerializer<M> {
     public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
@@ -33,4 +35,14 @@ public interface MessageChunkSerializer<M> extends MessageSerializer<M> {
     public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
+
+    public enum MessageParts {
+        HEADER, DATA, FOOTER;
+
+        public static final EnumSet<MessageParts> ALL = EnumSet.of(HEADER, DATA, FOOTER);
+        public static final EnumSet<MessageParts> START = EnumSet.of(HEADER, DATA);
+        public static final EnumSet<MessageParts> CHUNK = EnumSet.of(DATA);
+        public static final EnumSet<MessageParts> END = EnumSet.of(DATA, FOOTER);
+        public static final EnumSet<MessageParts> ERROR = EnumSet.of(FOOTER);
+    }
 }
