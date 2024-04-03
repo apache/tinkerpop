@@ -68,7 +68,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
@@ -104,14 +103,11 @@ import java.util.stream.Stream;
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING;
 import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
-import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
-import static io.netty.handler.codec.http.HttpResponseStatus.HTTP_VERSION_NOT_SUPPORTED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED;
@@ -119,7 +115,7 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHan
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.STREAMING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTrailingHeaders;
-import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeErrorFrame;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeError;
 
 /**
  * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
@@ -212,7 +208,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final RequestMessage requestMessage;
             try {
                 requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest(req, serializers);
-            } catch (IllegalArgumentException|SerializationException|NullPointerException ex) {
+            } catch (IllegalArgumentException | SerializationException | NullPointerException ex) {
                 HttpHandlerUtil.sendError(ctx, BAD_REQUEST, ex.getMessage(), keepAlive);
                 ReferenceCountUtil.release(msg);
                 return;
@@ -305,21 +301,21 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         }
                     } catch (OpProcessorException ope) {
                         logger.warn(ope.getMessage(), ope);
-                        writeErrorFrame(ctx, requestCtx, ope.getResponseMessage(), serializer.getValue1());
+                        writeError(requestCtx, ope.getResponseMessage(), serializer.getValue1());
                     }
                 } catch (Exception ex) {
                     // send the error response here and don't rely on exception caught because it might not have the
                     // context on whether to close the connection or not, based on keepalive.
                     final Throwable t = ExceptionHelper.getRootCause(ex);
                     if (t instanceof TooLongFrameException) {
-                        writeErrorFrame(ctx, requestCtx,
+                        writeError(requestCtx,
                                 ResponseMessage.build(requestId)
                                         .code(ResponseStatusCode.SERVER_ERROR)
                                         .statusMessage(t.getMessage() + " - increase the maxContentLength")
                                         .create(),
                                 serializer.getValue1());
                     } else {
-                        writeErrorFrame(ctx, requestCtx,
+                        writeError(requestCtx,
                                 ResponseMessage.build(requestId)
                                         .code(ResponseStatusCode.SERVER_ERROR)
                                         .statusMessage((t != null) ? t.getMessage() : ex.getMessage())
@@ -348,13 +344,19 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     requestCtx.setTimeoutExecutor(requestCtx.getScheduledExecutorService().schedule(() -> {
                         executionFuture.cancel(true);
                         if (!requestCtx.getStartedResponse()) {
-                            requestCtx.sendTimeoutResponse();
+                            final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", requestMessage);
+                            writeError(requestCtx,
+                                    ResponseMessage.build(requestMessage)
+                                            .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                            .statusMessage(errorMessage)
+                                            .create(),
+                                    serializer.getValue1());
                         }
                     }, seto, TimeUnit.MILLISECONDS));
                 }
             } catch (RejectedExecutionException ree) {
-                writeErrorFrame(requestCtx.getChannelHandlerContext(), requestCtx,
-                        ResponseMessage.build(requestMessage).code(ResponseStatusCode.TOO_MANY_REQUESTS) .statusMessage("Rate limiting").create(),
+                writeError(requestCtx,
+                        ResponseMessage.build(requestMessage).code(ResponseStatusCode.TOO_MANY_REQUESTS).statusMessage("Rate limiting").create(),
                         serializer.getValue1());
             }
         }
@@ -398,7 +400,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         handleIterator(context, IteratorUtils.asIterator(result), serializer);
     }
 
-    private static Traversal.Admin<?,?> translateBytecodeToTraversal(Context ctx) throws OpProcessorException {
+    private static Traversal.Admin<?, ?> translateBytecodeToTraversal(Context ctx) throws OpProcessorException {
         final RequestMessage requestMsg = ctx.getRequestMessage();
 
         if (!requestMsg.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
@@ -468,7 +470,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         final RequestMessage msg = ctx.getRequestMessage();
         if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
             final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_ALIASES);
-            for (Map.Entry<String,String> aliasKv : aliases.entrySet()) {
+            for (Map.Entry<String, String> aliasKv : aliases.entrySet()) {
                 boolean found = false;
 
                 // first check if the alias refers to a Graph instance
@@ -556,24 +558,22 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
                                 statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
                     }
-                    writeErrorFrame(context.getChannelHandlerContext(), context, specialResponseMsg.create(), serializer);
+                    writeError(context, specialResponseMsg.create(), serializer);
                 } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                     final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                     logger.warn(errorMessage);
-                    writeErrorFrame(context.getChannelHandlerContext(),
-                            context,
+                    writeError(context,
                             ResponseMessage.build(msg)
-                                .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                .statusMessage(errorMessage)
-                                .statusAttributeException(ex)
-                                .create(),
+                                    .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                    .statusMessage(errorMessage)
+                                    .statusAttributeException(ex)
+                                    .create(),
                             serializer);
                 } else if (t instanceof TimedInterruptTimeoutException) {
                     // occurs when the TimedInterruptCustomizerProvider is in play
                     final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
                     logger.warn(errorMessage);
-                    writeErrorFrame(context.getChannelHandlerContext(),
-                            context,
+                    writeError(context,
                             ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                                     .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
                                     .statusAttributeException(t).create(),
@@ -581,8 +581,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 } else if (t instanceof TimeoutException) {
                     final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
                     logger.warn(errorMessage, t);
-                    writeErrorFrame(context.getChannelHandlerContext(),
-                            context,
+                    writeError(context,
                             ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
                                     .statusMessage(t.getMessage())
                                     .statusAttributeException(t).create(),
@@ -591,16 +590,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
                     final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
                     logger.warn(errorMessage);
-                    writeErrorFrame(context.getChannelHandlerContext(),
-                            context,
+                    writeError(context,
                             ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                                     .statusMessage(errorMessage)
                                     .statusAttributeException(t).create(),
                             serializer);
                 } else {
                     logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
-                    writeErrorFrame(context.getChannelHandlerContext(),
-                            context,
+                    writeError(context,
                             ResponseMessage.build(msg)
                                     .code(ResponseStatusCode.SERVER_ERROR)
                                     .statusMessage(ex.getMessage())
@@ -611,8 +608,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
         } catch (Throwable t) {
             logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
-            writeErrorFrame(context.getChannelHandlerContext(),
-                    context,
+            writeError(context,
                     ResponseMessage.build(msg)
                             .code(ResponseStatusCode.SERVER_ERROR)
                             .statusMessage(t.getMessage())
@@ -634,9 +630,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
-            // as there is nothing left to iterate if we are transaction managed then we should execute a
-            // commit here before we send back a NO_CONTENT which implies success
-            sendTrailingHeaders(nettyContext, 206, "NO_CONTENT");
+            sendTrailingHeaders(nettyContext, ResponseStatusCode.NO_CONTENT, "NO_CONTENT");
             return;
         }
 
@@ -684,21 +678,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             // results till the timeout. checking for isActive() should help prevent that.
             if (nettyContext.channel().isActive() && nettyContext.channel().isWritable()) {
                 if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
-                    final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
-
-                    // serialize here because in sessionless requests the serialization must occur in the same
-                    // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
-                    // thread that processed the eval of the script so, we have to push serialization down into that
-                    final Map<String, Object> metadata = Collections.emptyMap();
-                    final Map<String, Object> statusAttrb = generateStatusAttributes(nettyContext, msg, code, itty, settings);
-                    Frame frame = null;
+                    ByteBuf chunk = null;
                     try {
-                        frame = makeFrame(context, msg, serializer, true, aggregate, code,
-                                metadata, statusAttrb);
+                        chunk = makeChunk(context, msg, serializer, aggregate, itty.hasNext());
                     } catch (Exception ex) {
-                        // a frame may use a Bytebuf which is a countable release - if it does not get written
-                        // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
+                        // Bytebuf is a countable release - if it does not get written downstream
+                        // it needs to be released here
+                        if (chunk != null) chunk.release();
 
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
@@ -716,20 +702,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
                     } catch (Exception ex) {
-                        // a frame may use a Bytebuf which is a countable release - if it does not get written
-                        // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
+                        // Bytebuf is a countable release - if it does not get written downstream
+                        // it needs to be released here
+                        if (chunk != null) chunk.release();
                         throw ex;
                     }
 
-                    // the flush is called after the commit has potentially occurred.  in this way, if a commit was
-                    // required then it will be 100% complete before the client receives it. the "frame" at this point
-                    // should have completely detached objects from the transaction (i.e. serialization has occurred)
-                    // so a new one should not be opened on the flush down the netty pipeline
-                    context.writeAndFlush(code, new DefaultHttpContent((ByteBuf) frame.getMsg()));
+                    nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
 
                     if (!hasMore) {
-                        sendTrailingHeaders(nettyContext, 200, "OK");
+                        sendTrailingHeaders(nettyContext, ResponseStatusCode.SUCCESS, "OK");
                     }
                 }
             } else {
@@ -762,8 +744,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
      *             this method
      */
     private Map<String, Object> generateStatusAttributes(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                                           final ResponseStatusCode code, final Iterator itty,
-                                                           final Settings settings) {
+                                                         final ResponseStatusCode code, final Iterator itty,
+                                                         final Settings settings) {
         // only return server metadata on the last message
         if (itty.hasNext()) return Collections.emptyMap();
 
@@ -773,82 +755,66 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return metaData;
     }
 
-    private static Frame makeFrame(final Context ctx, final RequestMessage msg,
-                                     final MessageSerializer<?> serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData,
-                                     final Map<String,Object> statusAttributes) throws Exception {
+    private static ByteBuf makeChunk(final Context ctx, final RequestMessage msg,
+                                     final MessageSerializer<?> serializer, final List<Object> aggregate,
+                                     final boolean hasMore) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
             ctx.handleDetachment(aggregate);
 
-            if (useBinary) {
-                if (code == ResponseStatusCode.SUCCESS && ctx.getRequestState() == STREAMING) {
-                    ctx.setRequestState(FINISHING);
-                }
-
-                ResponseMessage responseMessage = null;
-
-                // for this state no need to build full ResponseMessage
-                if (ctx.getRequestState() != STREAMING) {
-                    final ResponseMessage.Builder builder =  ResponseMessage.buildV4(msg.getRequestId())
-                            .statusAttributes(statusAttributes)
-                            .responseMetaData(responseMetaData)
-                            .result(aggregate);
-
-                    // need to put status in last message
-                    if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                        builder.code(ResponseStatusCode.SUCCESS).statusMessage("OK");
-                    }
-
-                    responseMessage = builder.create();
-                }
-
-                if (ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                    return new Frame(serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc()));
-                }
-
-                final MessageChunkSerializer<?> chunkSerializer = (MessageChunkSerializer) serializer;
-
-                switch (ctx.getRequestState()) {
-                    case NOT_STARTED:
-                        if (code == ResponseStatusCode.SUCCESS) {
-                            ctx.setRequestState(FINISHED);
-
-                            return new Frame(serializer.serializeResponseAsBinary(ResponseMessage.buildV4(msg.getRequestId())
-                                    .statusAttributes(statusAttributes)
-                                    .responseMetaData(responseMetaData)
-                                    .result(aggregate)
-                                    .code(ResponseStatusCode.SUCCESS)
-                                    .statusMessage("OK")
-                                    .create(), nettyContext.alloc()));
-                        }
-
-                        ctx.setRequestState(STREAMING);
-                        return new Frame(chunkSerializer.writeHeader(responseMessage, nettyContext.alloc()));
-                    case STREAMING:
-                        return new Frame(chunkSerializer.writeChunk(aggregate, nettyContext.alloc()));
-                    case FINISHING:
-                        ctx.setRequestState(FINISHED);
-                        return new Frame(chunkSerializer.writeFooter(responseMessage, nettyContext.alloc()));
-                }
-
-                // todo: just throw?
-                return new Frame(serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc()));
-            } else {
-                // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
-                // instance on the channel.
-                final MessageTextSerializer<?> textSerializer = (MessageTextSerializer<?>) serializer;
-                return new Frame(textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
-                        .code(code)
-                        .statusAttributes(statusAttributes)
-                        .responseMetaData(responseMetaData)
-                        .result(aggregate).create(), nettyContext.alloc()));
+            if (!hasMore && ctx.getRequestState() == STREAMING) {
+                ctx.setRequestState(FINISHING);
             }
+
+            ResponseMessage responseMessage = null;
+
+            // for this state no need to build full ResponseMessage
+            if (ctx.getRequestState() != STREAMING) {
+                final ResponseMessage.Builder builder = ResponseMessage.buildV4(msg.getRequestId()).result(aggregate);
+
+                // need to put status in last message
+                if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
+                    builder.code(ResponseStatusCode.SUCCESS).statusMessage("OK");
+                }
+
+                responseMessage = builder.create();
+            }
+
+            if (ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
+                return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
+            }
+
+            final MessageChunkSerializer<?> chunkSerializer = (MessageChunkSerializer) serializer;
+
+            switch (ctx.getRequestState()) {
+                case NOT_STARTED:
+                    if (hasMore) {
+                        ctx.setRequestState(STREAMING);
+                        return chunkSerializer.writeHeader(responseMessage, nettyContext.alloc());
+                    }
+                    ctx.setRequestState(FINISHED);
+
+                    return serializer.serializeResponseAsBinary(ResponseMessage.buildV4(msg.getRequestId())
+                            .result(aggregate)
+                            .code(ResponseStatusCode.SUCCESS)
+                            .statusMessage("OK")
+                            .create(), nettyContext.alloc());
+
+                case STREAMING:
+                    return chunkSerializer.writeChunk(aggregate, nettyContext.alloc());
+                case FINISHING:
+                    ctx.setRequestState(FINISHED);
+                    return chunkSerializer.writeFooter(responseMessage, nettyContext.alloc());
+            }
+
+            // todo: just throw?
+            return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
+
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
             final String errorMessage = String.format("Error during serialization: %s", ExceptionHelper.getMessageFromExceptionOrCause(ex));
-            writeErrorFrame(ctx.getChannelHandlerContext(),
+            writeError(ctx,
                     ResponseMessage.build(msg.getRequestId())
                             .statusMessage(errorMessage)
                             .statusAttributeException(ex)

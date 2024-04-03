@@ -1133,7 +1133,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(2, footers.length);
             assertEquals("code", footers[0].getName());
-            assertEquals("206", footers[0].getValue());
+            assertEquals("204", footers[0].getValue());
             assertEquals("message", footers[1].getName());
             assertEquals("NO_CONTENT", footers[1].getValue());
         }

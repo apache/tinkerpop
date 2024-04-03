@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -146,18 +147,6 @@ public class Context {
         return materializeProperties;
     }
 
-    public boolean isFinalResponseWritten() {
-        return this.finalResponseWritten.get();
-    }
-
-    public RequestContentType getRequestContentType() {
-        return requestContentType;
-    }
-
-    public Object getGremlinArgument() {
-        return gremlinArgument;
-    }
-
     public ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
@@ -260,29 +249,19 @@ public class Context {
         writeAndMaybeFlush(code, responseMessage, true);
     }
 
-    public void write(final ResponseMessage message) {
-        this.write(message.getStatus().getCode(), message);
-    }
-
-    public void write(final ResponseStatusCode code, final Object responseMessage) {
-        writeAndMaybeFlush(code, responseMessage, false);
-    }
-
-    /**
-     * Flushes messages to the underlying transport.
-     */
-    public void flush() {
-        this.getChannelHandlerContext().flush();
-    }
-
     private void writeAndMaybeFlush(final ResponseStatusCode code, final Object responseMessage, final boolean flush) {
         final boolean messageIsFinal = code.isFinalResponse();
         if (finalResponseWritten.compareAndSet(false, messageIsFinal)) {
             this.getChannelHandlerContext().write(responseMessage);
             if (flush) this.getChannelHandlerContext().flush();
         } else {
+            // todo: cleanup !!!
             if (responseMessage instanceof Frame) {
                 ((Frame) responseMessage).tryRelease();
+            }
+
+            if (responseMessage instanceof ByteBuf) {
+                ((ByteBuf) responseMessage).release();
             }
 
             final String logMessage = String.format("Another final response message was already written for request %s, ignoring response code: %s",
