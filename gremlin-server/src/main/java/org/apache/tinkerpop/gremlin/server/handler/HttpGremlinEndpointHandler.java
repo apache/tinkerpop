@@ -273,52 +273,106 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                     }
                     ctx.writeAndFlush(responseHeader);
 
-                    try {
-                        switch (requestMessage.getOp()) {
-                            case "":
-                            case Tokens.OPS_EVAL:
-                                iterateScriptEvalResult(requestCtx, serializer.getValue1(), requestMessage);
-                                break;
-                            case Tokens.OPS_BYTECODE:
-                                iterateTraversal(requestCtx, serializer.getValue1(), translateBytecodeToTraversal(requestCtx));
-                                break;
-                            case Tokens.OPS_INVALID:
-                                final String msgInvalid =
-                                        String.format("Message could not be parsed. Check the format of the request. [%s]", requestMessage);
-                                throw new ProcessingException(msgInvalid,
-                                        ResponseMessage.build(requestMessage)
-                                                .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
-                                                .statusMessage(msgInvalid)
-                                                .create());
-                            default:
-                                final String msgDefault =
-                                        String.format("Message with op code [%s] is not recognized.", requestMessage.getOp());
-                                throw new ProcessingException(msgDefault,
-                                        ResponseMessage.build(requestMessage)
-                                                .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
-                                                .statusMessage(msgDefault)
-                                                .create());
-                        }
-                    } catch (ProcessingException ope) {
-                        logger.warn(ope.getMessage(), ope);
-                        writeError(requestCtx, ope.getResponseMessage(), serializer.getValue1());
+                    switch (requestMessage.getOp()) {
+                        case "":
+                        case Tokens.OPS_EVAL:
+                            iterateScriptEvalResult(requestCtx, serializer.getValue1(), requestMessage);
+                            break;
+                        case Tokens.OPS_BYTECODE:
+                            iterateTraversal(requestCtx, serializer.getValue1(), translateBytecodeToTraversal(requestCtx));
+                            break;
+                        case Tokens.OPS_INVALID:
+                            final String msgInvalid =
+                                    String.format("Message could not be parsed. Check the format of the request. [%s]", requestMessage);
+                            throw new ProcessingException(msgInvalid,
+                                    ResponseMessage.build(requestMessage)
+                                            .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
+                                            .statusMessage(msgInvalid)
+                                            .create());
+                        default:
+                            final String msgDefault =
+                                    String.format("Message with op code [%s] is not recognized.", requestMessage.getOp());
+                            throw new ProcessingException(msgDefault,
+                                    ResponseMessage.build(requestMessage)
+                                            .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
+                                            .statusMessage(msgDefault)
+                                            .create());
                     }
                 } catch (Exception ex) {
-                    // send the error response here and don't rely on exception caught because it might not have the
-                    // context on whether to close the connection or not, based on keepalive.
-                    final Throwable t = ExceptionHelper.getRootCause(ex);
-                    if (t instanceof TooLongFrameException) {
+                    Throwable t = ex;
+                    if (ex instanceof UndeclaredThrowableException)
+                        t = t.getCause();
+
+                    // if any exception in the chain is TemporaryException or Failure then we should respond with the
+                    // right error code so that the client knows to retry
+                    final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
+                    if (possibleSpecialException.isPresent()) {
+                        final Throwable special = possibleSpecialException.get();
+                        final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(requestMessage).
+                                statusMessage(special.getMessage()).
+                                statusAttributeException(special);
+                        if (special instanceof TemporaryException) {
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
+                        } else if (special instanceof Failure) {
+                            final Failure failure = (Failure) special;
+                            specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
+                                    statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
+                        }
+                        writeError(requestCtx, specialResponseMsg.create(), serializer.getValue1());
+                    } else if (t instanceof ProcessingException) {
+                        final ProcessingException pe = (ProcessingException) t;
+                        logger.warn(pe.getMessage(), pe);
+                        writeError(requestCtx, pe.getResponseMessage(), serializer.getValue1());
+                    } else if (ExceptionHelper.getRootCause(ex) instanceof TooLongFrameException) {
                         writeError(requestCtx,
                                 ResponseMessage.build(requestId)
                                         .code(ResponseStatusCode.SERVER_ERROR)
                                         .statusMessage(t.getMessage() + " - increase the maxContentLength")
                                         .create(),
                                 serializer.getValue1());
-                    } else {
+                    } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+                        final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
+                        logger.warn(errorMessage);
                         writeError(requestCtx,
-                                ResponseMessage.build(requestId)
-                                        .code(ResponseStatusCode.SERVER_ERROR)
+                                ResponseMessage.build(requestMessage)
+                                        .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                        .statusMessage(errorMessage)
+                                        .statusAttributeException(ex)
+                                        .create(),
+                                serializer.getValue1());
+                    } else if (t instanceof TimedInterruptTimeoutException) {
+                        // occurs when the TimedInterruptCustomizerProvider is in play
+                        final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
+                        logger.warn(errorMessage);
+                        writeError(requestCtx,
+                                ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                        .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
+                                        .statusAttributeException(t).create(),
+                                serializer.getValue1());
+                    } else if (t instanceof TimeoutException) {
+                        final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
+                        logger.warn(errorMessage, t);
+                        writeError(requestCtx,
+                                ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
+                                        .statusMessage(t.getMessage())
+                                        .statusAttributeException(t).create(),
+                                serializer.getValue1());
+                    } else if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method too large") &&
+                            ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
+                        final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(requestMessage));
+                        logger.warn(errorMessage);
+                        writeError(requestCtx,
+                                ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
+                                        .statusMessage(errorMessage)
+                                        .statusAttributeException(t).create(),
+                                serializer.getValue1());
+                    } else {
+                        logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", requestId), ex);
+                        writeError(requestCtx,
+                                ResponseMessage.build(requestMessage)
+                                        .code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                                         .statusMessage((t != null) ? t.getMessage() : ex.getMessage())
+                                        .statusAttributeException(ex)
                                         .create(),
                                 serializer.getValue1());
                     }
@@ -529,97 +583,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         return null;
     }
 
-    private void iterateTraversal(final Context context, MessageSerializer<?> serializer, Traversal.Admin<?, ?> traversal) {
+    private void iterateTraversal(final Context context, MessageSerializer<?> serializer, Traversal.Admin<?, ?> traversal)
+            throws InterruptedException {
         final RequestMessage msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
 
-        try {
-            try {
-                // compile the traversal - without it getEndStep() has nothing in it
-                traversal.applyStrategies();
-                handleIterator(context, new TraverserIterator(traversal), serializer);
-            } catch (Exception ex) {
-                Throwable t = ex;
-                if (ex instanceof UndeclaredThrowableException)
-                    t = t.getCause();
-
-                // if any exception in the chain is TemporaryException or Failure then we should respond with the
-                // right error code so that the client knows to retry
-                final Optional<Throwable> possibleSpecialException = determineIfSpecialException(ex);
-                if (possibleSpecialException.isPresent()) {
-                    final Throwable special = possibleSpecialException.get();
-                    final ResponseMessage.Builder specialResponseMsg = ResponseMessage.build(msg).
-                            statusMessage(special.getMessage()).
-                            statusAttributeException(special);
-                    if (special instanceof TemporaryException) {
-                        specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_TEMPORARY);
-                    } else if (special instanceof Failure) {
-                        final Failure failure = (Failure) special;
-                        specialResponseMsg.code(ResponseStatusCode.SERVER_ERROR_FAIL_STEP).
-                                statusAttribute(Tokens.STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE, failure.format());
-                    }
-                    writeError(context, specialResponseMsg.create(), serializer);
-                } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
-                    final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
-                    logger.warn(errorMessage);
-                    writeError(context,
-                            ResponseMessage.build(msg)
-                                    .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                    .statusMessage(errorMessage)
-                                    .statusAttributeException(ex)
-                                    .create(),
-                            serializer);
-                } else if (t instanceof TimedInterruptTimeoutException) {
-                    // occurs when the TimedInterruptCustomizerProvider is in play
-                    final String errorMessage = String.format("A timeout occurred within the script during evaluation of [%s] - consider increasing the limit given to TimedInterruptCustomizerProvider", msg);
-                    logger.warn(errorMessage);
-                    writeError(context,
-                            ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                    .statusMessage("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider")
-                                    .statusAttributeException(t).create(),
-                            serializer);
-                } else if (t instanceof TimeoutException) {
-                    final String errorMessage = String.format("Script evaluation exceeded the configured threshold for request [%s]", msg);
-                    logger.warn(errorMessage, t);
-                    writeError(context,
-                            ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                    .statusMessage(t.getMessage())
-                                    .statusAttributeException(t).create(),
-                            serializer);
-                } else if (t instanceof MultipleCompilationErrorsException && t.getMessage().contains("Method too large") &&
-                        ((MultipleCompilationErrorsException) t).getErrorCollector().getErrorCount() == 1) {
-                    final String errorMessage = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", trimMessage(msg));
-                    logger.warn(errorMessage);
-                    writeError(context,
-                            ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
-                                    .statusMessage(errorMessage)
-                                    .statusAttributeException(t).create(),
-                            serializer);
-                } else {
-                    logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
-                    writeError(context,
-                            ResponseMessage.build(msg)
-                                    .code(ResponseStatusCode.SERVER_ERROR)
-                                    .statusMessage(ex.getMessage())
-                                    .statusAttributeException(ex)
-                                    .create(),
-                            serializer);
-                }
-            }
-        } catch (Throwable t) {
-            logger.warn(String.format("Exception processing a Traversal on request [%s].", msg.getRequestId()), t);
-            writeError(context,
-                    ResponseMessage.build(msg)
-                            .code(ResponseStatusCode.SERVER_ERROR)
-                            .statusMessage(t.getMessage())
-                            .statusAttributeException(t)
-                            .create(),
-                    serializer);
-            if (t instanceof Error) {
-                //Re-throw any errors to be handled by and set as the result of evalFuture
-                throw t;
-            }
-        }
+        // compile the traversal - without it getEndStep() has nothing in it
+        traversal.applyStrategies();
+        handleIterator(context, new TraverserIterator(traversal), serializer);
     }
 
     private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer) throws InterruptedException {

@@ -29,7 +29,7 @@ import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -501,7 +501,7 @@ public final class Cluster {
         return manager.authProps;
     }
 
-    RequestMessage.Builder validationRequest() {
+    RequestMessageV4.Builder validationRequest() {
         return manager.validationRequest.get();
     }
 
@@ -597,7 +597,7 @@ public final class Cluster {
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-        private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
+        private String channelizer = Channelizer.HttpChannelizer.class.getName();
         private boolean enableSsl = false;
         private String keyStore = null;
         private String keyStorePassword = null;
@@ -1037,7 +1037,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1.simpleInstance();
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
             return new Cluster(this);
         }
     }
@@ -1077,7 +1077,7 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
-        private final Supplier<RequestMessage.Builder> validationRequest;
+        private final Supplier<RequestMessageV4.Builder> validationRequest;
         private final UnaryOperator<FullHttpRequest> interceptor;
 
         /**
@@ -1167,7 +1167,7 @@ public final class Cluster {
             this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
-            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
+            validationRequest = () -> RequestMessageV4.build(builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {

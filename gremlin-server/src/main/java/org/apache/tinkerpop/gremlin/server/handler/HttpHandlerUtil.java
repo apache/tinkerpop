@@ -36,6 +36,7 @@ import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
@@ -177,9 +178,13 @@ public class HttpHandlerUtil {
         final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
         final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
 
+        final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
+        final Integer chunkSize = null == chunkSizeNode ? null : chunkSizeNode.asInt();
+
         final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
                 .addBindings(bindings).addLanguage(language);
         if (null != g) builder.addG(g);
+        if (null != chunkSize) builder.addChunkSize(chunkSize);
         return builder.create();
     }
 

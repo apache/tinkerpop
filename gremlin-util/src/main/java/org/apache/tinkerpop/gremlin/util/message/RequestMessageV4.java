@@ -45,12 +45,6 @@ public final class RequestMessageV4 {
     private Object gremlin; // Should be either a String or Bytecode type.
 
     private Map<String, Object> fields;
-//
-//    private String language;
-//
-//    private Map<String, Object> bindings;
-//
-//    private String g;
 
     private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
         if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
@@ -119,20 +113,14 @@ public final class RequestMessageV4 {
     }
 
     public static Builder from(final RequestMessageV4 msg) {
-        final Builder builder = build(msg.gremlin)
-                .overrideRequestId(msg.requestId)
-                .addLanguage(msg.getArg(Tokens.ARGS_LANGUAGE))
-                .addG(msg.getArg(Tokens.ARGS_G))
-                .addBindings(msg.getArg(Tokens.ARGS_BINDINGS));
+        final Builder builder = build(msg.gremlin);
+        builder.fields.putAll(msg.getFields());
         return builder;
     }
 
     public static Builder from(final RequestMessageV4 msg, final Object gremlin) {
-        final Builder builder = build(gremlin)
-                .overrideRequestId(msg.requestId)
-                .addLanguage(msg.getArg(Tokens.ARGS_LANGUAGE))
-                .addG(msg.getArg(Tokens.ARGS_G))
-                .addBindings(msg.getArg(Tokens.ARGS_BINDINGS));
+        final Builder builder = build(gremlin);
+        builder.fields.putAll(msg.getFields());
         return builder;
     }
 
@@ -205,6 +193,12 @@ public final class RequestMessageV4 {
         public Builder addG(final String g) {
             Objects.requireNonNull(g, "g argument cannot be null.");
             this.fields.put(Tokens.ARGS_G, g);
+            return this;
+        }
+
+        public Builder addChunkSize(final int chunkSize) {
+            Objects.requireNonNull(chunkSize, "chunkSize argument cannot be null.");
+            this.fields.put(Tokens.ARGS_BATCH_SIZE, chunkSize);
             return this;
         }
 

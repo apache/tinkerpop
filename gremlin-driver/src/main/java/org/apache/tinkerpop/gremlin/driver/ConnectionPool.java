@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 
 import java.util.ArrayList;
@@ -51,8 +51,8 @@ final class ConnectionPool {
 
     public static final int MIN_POOL_SIZE = 2;
     public static final int MAX_POOL_SIZE = 8;
-    public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 8;
-    public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 16;
+    public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 0;
+    public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 1;
     // A small buffer in millis used for comparing if a connection was created within a certain amount of time.
     private static final int CONNECTION_SETUP_TIME_DELTA = 25;
 
@@ -523,7 +523,7 @@ final class ConnectionPool {
             // pool needs it. for now that seems like an unnecessary added bit of complexity for dealing with this
             // error state
             connection = connectionFactory.create(this);
-            final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
+            final RequestMessageV4 ping = client.buildMessage(cluster.validationRequest()).create();
             final CompletableFuture<ResultSet> f = new CompletableFuture<>();
             connection.write(ping, f);
             f.get().all().get();
