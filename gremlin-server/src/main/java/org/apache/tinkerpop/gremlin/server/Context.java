@@ -18,22 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.channel.ChannelHandlerContext;
+import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import io.netty.channel.ChannelHandlerContext;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.server.handler.Frame;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -48,14 +43,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Context {
-    private static final Logger logger = LoggerFactory.getLogger(Context.class);
     private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
     private final Settings settings;
     private final GraphManager graphManager;
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
-    private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
     private final long requestTimeout;
     private final String materializeProperties;
     private final RequestContentType requestContentType;
@@ -145,18 +138,6 @@ public class Context {
         return materializeProperties;
     }
 
-    public boolean isFinalResponseWritten() {
-        return this.finalResponseWritten.get();
-    }
-
-    public RequestContentType getRequestContentType() {
-        return requestContentType;
-    }
-
-    public Object getGremlinArgument() {
-        return gremlinArgument;
-    }
-
     public ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
@@ -206,80 +187,6 @@ public class Context {
      * Signal that the server has started processing the response.
      */
     public void setStartedResponse() { startedResponse.set(true); }
-
-    /**
-     * Writes a default timeout error response message to the underlying channel.
-     */
-    public void sendTimeoutResponse() {
-        sendTimeoutResponse(String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", requestMessage));
-    }
-
-    /**
-     * Writes a specific timeout error response message to the underlying channel.
-     */
-    public void sendTimeoutResponse(final String message) {
-        logger.warn(message);
-        writeAndFlush(ResponseMessage.build(requestMessage)
-                .code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                .statusMessage(message)
-                .statusAttributeException(new InterruptedException()).create());
-    }
-
-    /**
-     * Writes a response message to the underlying channel while ensuring that at most one
-     * {@link ResponseStatusCode#isFinalResponse() final} response is written.
-     * <p>Note: this method should be used instead of writing to the channel directly when multiple threads
-     * are expected to produce response messages concurrently.</p>
-     * <p>Attempts to write more than one final response message will be ignored.</p>
-     * @see #writeAndFlush(ResponseStatusCode, Object)
-     */
-    public void writeAndFlush(final ResponseMessage message) {
-        writeAndFlush(message.getStatus().getCode(), message);
-    }
-
-    /**
-     * Writes a response message to the underlying channel while ensuring that at most one
-     * {@link ResponseStatusCode#isFinalResponse() final} response is written.
-     * <p>The caller must make sure that the provided response status code matches the content of the message.</p>
-     * <p>Note: this method should be used instead of writing to the channel directly when multiple threads
-     * are expected to produce response messages concurrently.</p>
-     * <p>Attempts to write more than one final response message will be ignored.</p>
-     * @see #writeAndFlush(ResponseMessage)
-     */
-    public void writeAndFlush(final ResponseStatusCode code, final Object responseMessage) {
-        writeAndMaybeFlush(code, responseMessage, true);
-    }
-
-    public void write(final ResponseMessage message) {
-        this.write(message.getStatus().getCode(), message);
-    }
-
-    public void write(final ResponseStatusCode code, final Object responseMessage) {
-        writeAndMaybeFlush(code, responseMessage, false);
-    }
-
-    /**
-     * Flushes messages to the underlying transport.
-     */
-    public void flush() {
-        this.getChannelHandlerContext().flush();
-    }
-
-    private void writeAndMaybeFlush(final ResponseStatusCode code, final Object responseMessage, final boolean flush) {
-        final boolean messageIsFinal = code.isFinalResponse();
-        if (finalResponseWritten.compareAndSet(false, messageIsFinal)) {
-            this.getChannelHandlerContext().write(responseMessage);
-            if (flush) this.getChannelHandlerContext().flush();
-        } else {
-            if (responseMessage instanceof Frame) {
-                ((Frame) responseMessage).tryRelease();
-            }
-
-            final String logMessage = String.format("Another final response message was already written for request %s, ignoring response code: %s",
-                    this.getRequestMessage().getRequestId(), code);
-            logger.warn(logMessage);
-        }
-    }
 
     private RequestContentType determineRequestContents() {
         if (gremlinArgument instanceof Bytecode)
