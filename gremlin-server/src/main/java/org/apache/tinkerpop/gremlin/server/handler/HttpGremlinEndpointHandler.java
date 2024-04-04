@@ -630,7 +630,16 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
-            sendTrailingHeaders(nettyContext, ResponseStatusCode.NO_CONTENT, "NO_CONTENT");
+            ByteBuf chunk = null;
+            try {
+                chunk = makeChunk(context, msg, serializer, new ArrayList<>(), false);
+                nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
+            } catch (Exception ex) {
+                // Bytebuf is a countable release - if it does not get written downstream
+                // it needs to be released here
+                if (chunk != null) chunk.release();
+            }
+            sendTrailingHeaders(nettyContext, ResponseStatusCode.SUCCESS, "OK");
             return;
         }
 
