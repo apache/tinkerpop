@@ -31,18 +31,19 @@ import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
 
 /**
- * Converts {@link RequestMessage} to a {@code HttpRequest}.
+ * Converts {@link RequestMessageV4} to a {@code HttpRequest}.
  */
 @ChannelHandler.Sharable
-public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessageV4> {
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final UnaryOperator<FullHttpRequest> interceptor;
@@ -61,7 +62,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     }
 
     @Override
-    protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
+    protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessageV4 requestMessage, final List<Object> objects) throws Exception {
         final String mimeType = serializer.mimeTypesSupported()[0];
         // only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests
         if (requestMessage.getArg("gremlin") instanceof Bytecode &&
@@ -73,7 +74,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
         }
 
         try {
-            final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+            final ByteBuf buffer = ((MessageTextSerializerV4)serializer).serializeRequestMessageV4(requestMessage, channelHandlerContext.alloc());
             final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
