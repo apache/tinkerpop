@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -61,8 +61,8 @@ final class Connection {
     private final String creatingThread;
     private final String createdTimestamp;
 
-    public static final int MAX_IN_PROCESS = 4;
-    public static final int MIN_IN_PROCESS = 1;
+    public static final int MAX_IN_PROCESS = 1;
+    public static final int MIN_IN_PROCESS = 0;
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
@@ -209,7 +209,7 @@ final class Connection {
         return future;
     }
 
-    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
+    public ChannelPromise write(final RequestMessageV4 requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
         // dont allow the same request id to be used as one that is already in the queue
         if (pending.containsKey(requestMessage.getRequestId()))
             throw new IllegalStateException(String.format("There is already a request pending with an id of: %s", requestMessage.getRequestId()));
@@ -310,10 +310,11 @@ final class Connection {
             // the session close message was removed in 3.5.0 after deprecation at 3.3.11. That removal was perhaps
             // a bit hasty as session semantics may still require this message in certain cases. Until we can look
             // at this in more detail, it seems best to bring back the old functionality to the driver.
-            if (client instanceof Client.SessionedClient) {
+            // TODO: commented due to not supporting sessions with HTTP.
+            /*if (client instanceof Client.SessionedClient) {
                 final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
-                final RequestMessage closeMessage = client.buildMessage(
-                        RequestMessage.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
+                final RequestMessageV4 closeMessage = client.buildMessage(
+                        RequestMessageV4.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
 
                 final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
 
@@ -337,7 +338,7 @@ final class Connection {
                             ((Client.SessionedClient) client).getSessionId());
                     logger.warn(msg, ex);
                 }
-            }
+            }*/
 
             // take a defensive posture here in the event the channelizer didn't get initialized somehow and a
             // close() on the Connection is still called

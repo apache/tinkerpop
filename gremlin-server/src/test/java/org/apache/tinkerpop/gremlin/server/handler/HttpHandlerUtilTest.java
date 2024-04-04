@@ -189,7 +189,7 @@ public class HttpHandlerUtilTest {
         final String gremlin = "g.V(x)";
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"language\":  \"gremlin-groovy\"}",
+                        "\" \"language\":  \"gremlin-groovy\"}",
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
@@ -200,7 +200,7 @@ public class HttpHandlerUtilTest {
 
         try {
             HttpHandlerUtil.getRequestMessageV4FromHttpRequest(httpRequest);
-            fail("Expected an error because of incorrect UUID format.");
+            fail("Expected an error because of bad JSON request.");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("body could not be parsed"));
         }

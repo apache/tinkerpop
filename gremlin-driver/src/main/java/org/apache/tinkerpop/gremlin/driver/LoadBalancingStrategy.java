@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,13 +41,13 @@ public interface LoadBalancingStrategy extends Host.Listener {
     public void initialize(final Cluster cluster, final Collection<Host> hosts);
 
     /**
-     * Provide an ordered list of hosts to send the given {@link RequestMessage} to.
+     * Provide an ordered list of hosts to send the given {@link RequestMessageV4} to.
      */
-    public Iterator<Host> select(final RequestMessage msg);
+    public Iterator<Host> select(final RequestMessageV4 msg);
 
     /**
      * A simple round-robin strategy that simply selects the next host in the {@link Cluster} to send the
-     * {@link RequestMessage} to.
+     * {@link RequestMessageV4} to.
      */
     public static class RoundRobin implements LoadBalancingStrategy {
 
@@ -61,7 +61,7 @@ public interface LoadBalancingStrategy extends Host.Listener {
         }
 
         @Override
-        public Iterator<Host> select(final RequestMessage msg) {
+        public Iterator<Host> select(final RequestMessageV4 msg) {
             final List<Host> hosts = new ArrayList<>();
 
             // a host could be marked as dead in which case we dont need to send messages to it - just skip it for
