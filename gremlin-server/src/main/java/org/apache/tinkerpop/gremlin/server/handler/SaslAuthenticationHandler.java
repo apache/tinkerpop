@@ -41,13 +41,12 @@ import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A SASL authentication handler that allows the {@link Authenticator} to be plugged into it. This handler is meant
- * to be used with protocols that process a {@link RequestMessage} such as the {@link WebSocketChannelizer}
+ * to be used with protocols that process a {@link RequestMessage}
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

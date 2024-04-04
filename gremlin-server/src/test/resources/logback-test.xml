@@ -20,8 +20,6 @@ limitations under the License.
             <pattern>[%p] %C - %m%n</pattern>
         </encoder>
     </appender>
-    <logger name="org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor" level="ERROR"/>
-    <logger name="org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor" level="ERROR"/>
     <logger name="org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest" level="INFO"/>
     <logger name="audit.org.apache.tinkerpop.gremlin.server" level="INFO"/>
     <logger name="org.apache.tinkerpop.gremlin.server.AbstractChannelizer" level="ERROR"/>

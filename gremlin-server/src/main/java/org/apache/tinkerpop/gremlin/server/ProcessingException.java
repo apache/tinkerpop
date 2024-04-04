@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.op;
+package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class OpProcessorException extends Exception {
+public class ProcessingException extends Exception {
     private final ResponseMessage responseMessage;
 
-    public OpProcessorException(final String message, final ResponseMessage responseMessage) {
+    public ProcessingException(final String message, final ResponseMessage responseMessage) {
         super(message);
         this.responseMessage = responseMessage;
     }

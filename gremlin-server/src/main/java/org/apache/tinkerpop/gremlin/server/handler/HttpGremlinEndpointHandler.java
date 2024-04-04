@@ -52,7 +52,7 @@ import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.server.ProcessingException;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
 import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
@@ -285,7 +285,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             case Tokens.OPS_INVALID:
                                 final String msgInvalid =
                                         String.format("Message could not be parsed. Check the format of the request. [%s]", requestMessage);
-                                throw new OpProcessorException(msgInvalid,
+                                throw new ProcessingException(msgInvalid,
                                         ResponseMessage.build(requestMessage)
                                                 .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
                                                 .statusMessage(msgInvalid)
@@ -293,13 +293,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             default:
                                 final String msgDefault =
                                         String.format("Message with op code [%s] is not recognized.", requestMessage.getOp());
-                                throw new OpProcessorException(msgDefault,
+                                throw new ProcessingException(msgDefault,
                                         ResponseMessage.build(requestMessage)
                                                 .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST)
                                                 .statusMessage(msgDefault)
                                                 .create());
                         }
-                    } catch (OpProcessorException ope) {
+                    } catch (ProcessingException ope) {
                         logger.warn(ope.getMessage(), ope);
                         writeError(requestCtx, ope.getResponseMessage(), serializer.getValue1());
                     }
@@ -363,30 +363,30 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void iterateScriptEvalResult(final Context context, MessageSerializer<?> serializer, final RequestMessage message)
-            throws OpProcessorException, InterruptedException, ScriptException {
+            throws ProcessingException, InterruptedException, ScriptException {
         if (!message.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_EVAL, Tokens.ARGS_GREMLIN);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (message.optionalArgs(Tokens.ARGS_BINDINGS).isPresent()) {
             final Map bindings = (Map) message.getArgs().get(Tokens.ARGS_BINDINGS);
             if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
                 final String msg = String.format("The [%s] message is using one or more invalid binding keys - they must be of type String and cannot be null", Tokens.OPS_EVAL);
-                throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new ProcessingException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
             if (!badBindings.isEmpty()) {
                 final String msg = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.", Tokens.OPS_EVAL, badBindings);
-                throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new ProcessingException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             // ignore control bindings that get passed in with the "#jsr223" prefix - those aren't used in compilation
             if (IteratorUtils.count(IteratorUtils.filter(bindings.keySet().iterator(), k -> !k.toString().startsWith("#jsr223"))) > settings.maxParameters) {
                 final String msg = String.format("The [%s] message contains %s bindings which is more than is allowed by the server %s configuration",
                         Tokens.OPS_EVAL, bindings.size(), settings.maxParameters);
-                throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+                throw new ProcessingException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
         }
 
@@ -400,36 +400,36 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         handleIterator(context, IteratorUtils.asIterator(result), serializer);
     }
 
-    private static Traversal.Admin<?, ?> translateBytecodeToTraversal(Context ctx) throws OpProcessorException {
+    private static Traversal.Admin<?,?> translateBytecodeToTraversal(Context ctx) throws ProcessingException {
         final RequestMessage requestMsg = ctx.getRequestMessage();
 
         if (!requestMsg.optionalArgs(Tokens.ARGS_GREMLIN).isPresent()) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
-            throw new OpProcessorException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (!(requestMsg.optionalArgs(Tokens.ARGS_GREMLIN).get() instanceof Bytecode)) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument that is of type %s.",
                     Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN, Bytecode.class.getSimpleName());
-            throw new OpProcessorException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         final Optional<Map<String, String>> aliases = requestMsg.optionalArgs(Tokens.ARGS_ALIASES);
         if (!aliases.isPresent()) {
             final String msg = String.format("A message with [%s] op code requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES);
-            throw new OpProcessorException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (aliases.get().size() != 1 || !aliases.get().containsKey(Tokens.VAL_TRAVERSAL_SOURCE_ALIAS)) {
             final String msg = String.format("A message with [%s] op code requires the [%s] argument to be a Map containing one alias assignment named '%s'.",
                     Tokens.OPS_BYTECODE, Tokens.ARGS_ALIASES, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
-            throw new OpProcessorException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         final String traversalSourceBindingForAlias = aliases.get().values().iterator().next();
         if (!ctx.getGraphManager().getTraversalSourceNames().contains(traversalSourceBindingForAlias)) {
             final String msg = String.format("The traversal source [%s] for alias [%s] is not configured on the server.", traversalSourceBindingForAlias, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
-            throw new OpProcessorException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
+            throw new ProcessingException(msg, ResponseMessage.build(requestMsg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         final String traversalSourceName = aliases.get().entrySet().iterator().next().getValue();
@@ -443,13 +443,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return ctx.getGremlinExecutor().eval(bytecode, EMPTY_BINDINGS, lambdaLanguage.get(), traversalSourceName);
         } catch (ScriptException ex) {
             logger.error("Traversal contains a lambda that cannot be compiled", ex);
-            throw new OpProcessorException("Traversal contains a lambda that cannot be compiled",
+            throw new ProcessingException("Traversal contains a lambda that cannot be compiled",
                     ResponseMessage.build(requestMsg).code(ResponseStatusCode.SERVER_ERROR_EVALUATION)
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
         } catch (Exception ex) {
             logger.error("Could not deserialize the Traversal instance", ex);
-            throw new OpProcessorException("Could not deserialize the Traversal instance",
+            throw new ProcessingException("Could not deserialize the Traversal instance",
                     ResponseMessage.build(requestMsg).code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION)
                             .statusMessage(ex.getMessage())
                             .statusAttributeException(ex).create());
@@ -465,7 +465,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private Bindings mergeBindingsFromRequest(final Context ctx, final Bindings bindings) throws OpProcessorException {
+    private Bindings mergeBindingsFromRequest(final Context ctx, final Bindings bindings) throws ProcessingException {
         // alias any global bindings to a different variable.
         final RequestMessage msg = ctx.getRequestMessage();
         if (msg.getArgs().containsKey(Tokens.ARGS_ALIASES)) {
@@ -495,7 +495,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 if (!found) {
                     final String error = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                             aliasKv.getKey(), aliasKv.getValue(), aliasKv.getValue());
-                    throw new OpProcessorException(error, ResponseMessage.build(msg)
+                    throw new ProcessingException(error, ResponseMessage.build(msg)
                             .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                 }
             }
