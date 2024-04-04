@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleHttpClient;
 
 import java.net.URI;
 
@@ -29,8 +29,8 @@ import java.net.URI;
 public final class TestClientFactory {
 
     public static final int PORT = 45940;
-    public static final URI WEBSOCKET_URI = URI.create("ws://localhost:" + PORT + "/gremlin");
-    public static final URI SSL_WEBSOCKET_URI = URI.create("wss://localhost:" + PORT + "/gremlin");
+    public static final URI HTTP_URI = URI.create("http://localhost:" + PORT + "/gremlin");
+    public static final URI SSL_HTTP_URI = URI.create("https://localhost:" + PORT + "/gremlin");
     public static final String HTTP = "http://localhost:" + PORT;
     public static final String RESOURCE_PATH = "conf/remote-objects.yaml";
 
@@ -46,12 +46,12 @@ public final class TestClientFactory {
         return build().create();
     }
 
-    public static WebSocketClient createWebSocketClient() {
-        return new WebSocketClient(WEBSOCKET_URI);
+    public static SimpleHttpClient createSimpleHttpClient() {
+        return new SimpleHttpClient(HTTP_URI);
     }
 
-    public static WebSocketClient createSSLWebSocketClient() {
-        return new WebSocketClient(SSL_WEBSOCKET_URI);
+    public static SimpleHttpClient createSSLSimpleHttpClient() {
+        return new SimpleHttpClient(SSL_HTTP_URI);
     }
 
     public static String createURLString() {

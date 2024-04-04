@@ -20,11 +20,11 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -81,11 +81,11 @@ public abstract class Client {
     }
 
     /**
-     * Makes any initial changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
+     * Makes any initial changes to the builder and returns the constructed {@link RequestMessageV4}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
      * will simply return the {@code builder} passed in by the caller.
      */
-    public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
+    public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
         return builder;
     }
 
@@ -97,7 +97,7 @@ public abstract class Client {
     /**
      * Chooses a {@link Connection} to write the message to.
      */
-    protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
+    protected abstract Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException;
 
     /**
      * Asynchronous close of the {@code Client}.
@@ -352,26 +352,25 @@ public abstract class Client {
 
         // need to call buildMessage() right away to get client specific configurations, that way request specific
         // ones can override as needed
-        final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_EVAL))
-                .add(Tokens.ARGS_GREMLIN, gremlin)
-                .add(Tokens.ARGS_BATCH_SIZE, batchSize);
+        final RequestMessageV4.Builder request = buildMessage(RequestMessageV4.build(gremlin))
+                .addChunkSize(batchSize);
 
         // apply settings if they were made available
-        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
-        options.getParameters().ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, params));
-        options.getAliases().ifPresent(aliases -> request.addArg(Tokens.ARGS_ALIASES, aliases));
+//        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
+        options.getParameters().ifPresent(params -> request.addBindings(params));
+        options.getAliases().ifPresent(aliases -> {if (aliases.get("g") != null) request.addG(aliases.get("g")); });
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
-        options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
-        options.getLanguage().ifPresent(lang -> request.addArg(Tokens.ARGS_LANGUAGE, lang));
-        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
+//        options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
+        options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
+//        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
         return submitAsync(request.create());
     }
 
     /**
-     * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
+     * A low-level method that allows the submission of a manually constructed {@link RequestMessageV4}.
      */
-    public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+    public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
         if (isClosing()) throw new IllegalStateException("Client is closed");
 
         if (!initialized)
@@ -497,20 +496,20 @@ public abstract class Client {
          * from that host's connection pool.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        protected Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts;
-            if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
-                // looking at this code about putting the Host on the RequestMessage in light of 3.5.4, not sure
-                // this is being used as intended here. server side usage is to place the channel.remoteAddress
-                // in this token in the status metadata for the response. can't remember why it is being used this
-                // way here exactly. created TINKERPOP-2821 to examine this more carefully to clean this up in a
-                // future version.
-                final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
-                msg.getArgs().remove(Tokens.ARGS_HOST);
-                possibleHosts = IteratorUtils.of(host);
-            } else {
+//            if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
+//                // looking at this code about putting the Host on the RequestMessage in light of 3.5.4, not sure
+//                // this is being used as intended here. server side usage is to place the channel.remoteAddress
+//                // in this token in the status metadata for the response. can't remember why it is being used this
+//                // way here exactly. created TINKERPOP-2821 to examine this more carefully to clean this up in a
+//                // future version.
+//                final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
+//                msg.getArgs().remove(Tokens.ARGS_HOST);
+//                possibleHosts = IteratorUtils.of(host);
+//            } else {
                 possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
-            }
+//            }
 
             // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
             // going straight to a fast NoHostAvailableException as was the case in versions 3.5.4 and earlier
@@ -652,16 +651,14 @@ public abstract class Client {
             try {
                 // need to call buildMessage() right away to get client specific configurations, that way request specific
                 // ones can override as needed
-                final RequestMessage.Builder request = buildMessage(RequestMessage.build(Tokens.OPS_BYTECODE)
-                        .processor("traversal")
-                        .addArg(Tokens.ARGS_GREMLIN, bytecode));
+                final RequestMessageV4.Builder request = buildMessage(RequestMessageV4.build(bytecode));
 
                 // apply settings if they were made available
-                options.getBatchSize().ifPresent(batchSize -> request.add(Tokens.ARGS_BATCH_SIZE, batchSize));
-                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
+                options.getBatchSize().ifPresent(batchSize -> request.addChunkSize(batchSize));
+//                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
                 options.getOverrideRequestId().ifPresent(request::overrideRequestId);
-                options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
-                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
+//                options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
+//                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
                 return submitAsync(request.create());
             } catch (RuntimeException re) {
@@ -672,18 +669,20 @@ public abstract class Client {
         }
 
         @Override
-        public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
-            final RequestMessage.Builder builder = RequestMessage.from(msg);
+        public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
+            final RequestMessageV4.Builder builder = RequestMessageV4.from(msg);
 
             // only add aliases which aren't already present. if they are present then they represent request level
             // overrides which should be mucked with
-            if (!aliases.isEmpty()) {
-                final Map original = (Map) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
-                aliases.forEach((k, v) -> {
-                    if (!original.containsKey(k))
-                        builder.addArg(Tokens.ARGS_ALIASES, aliases);
-                });
-            }
+            // TODO: replaced this with ARGS_G as we don't allow a map of aliases anymore.
+//            if (!aliases.isEmpty()) {
+//                final Map original = (Map) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
+//                aliases.forEach((k, v) -> {
+//                    if (!original.containsKey(k))
+//                        builder.addArg(Tokens.ARGS_ALIASES, aliases);
+//                });
+//            }
+            builder.addG(aliases.get("g"));
 
             return super.submitAsync(builder.create());
         }
@@ -704,10 +703,11 @@ public abstract class Client {
         }
 
         @Override
-        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
+        public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-            if (!aliases.isEmpty())
-                builder.addArg(Tokens.ARGS_ALIASES, aliases);
+//            TODO: aliases not supported. replace with ARG_G.
+//            if (!aliases.isEmpty())
+//                builder.addArg(Tokens.ARGS_ALIASES, aliases);
 
             return client.buildMessage(builder);
         }
@@ -726,7 +726,7 @@ public abstract class Client {
          * Delegates to the underlying {@link Client.ClusteredClient}.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        protected Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             return client.chooseConnection(msg);
         }
@@ -783,13 +783,14 @@ public abstract class Client {
         }
 
         /**
-         * Adds the {@link Tokens#ARGS_SESSION} value to every {@link RequestMessage}.
+         * Adds the {@link Tokens#ARGS_SESSION} value to every {@link RequestMessageV4}.
          */
         @Override
-        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
-            builder.processor("session");
-            builder.addArg(Tokens.ARGS_SESSION, sessionId);
-            builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
+        public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
+//            TODO: replace this with new Transaction API later.
+//            builder.processor("session");
+//            builder.addArg(Tokens.ARGS_SESSION, sessionId);
+//            builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
             return builder;
         }
 
@@ -797,7 +798,7 @@ public abstract class Client {
          * Since the session is bound to a single host, simply borrow a connection from that pool.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+        protected Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException {
             return connectionPool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
         }
 

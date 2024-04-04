@@ -23,7 +23,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 
@@ -45,16 +45,16 @@ public abstract class AbstractClient implements SimpleClient {
         group = new NioEventLoopGroup(1, threadFactory);
     }
 
-    public abstract void writeAndFlush(final RequestMessage requestMessage) throws Exception;
+    public abstract void writeAndFlush(final RequestMessageV4 requestMessage) throws Exception;
 
     @Override
-    public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
+    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
         callbackResponseHandler.callback = callback;
         writeAndFlush(requestMessage);
     }
 
     @Override
-    public List<ResponseMessage> submit(final RequestMessage requestMessage) throws Exception {
+    public List<ResponseMessage> submit(final RequestMessageV4 requestMessage) throws Exception {
         // this is just a test client to force certain behaviors of the server. hanging tests are a pain to deal with
         // especially in travis as it's not always clear where the hang is. a few reasonable timeouts might help
         // make debugging easier when we look at logs
@@ -62,7 +62,7 @@ public abstract class AbstractClient implements SimpleClient {
     }
 
     @Override
-    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception {
+    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
         final List<ResponseMessage> results = new ArrayList<>();
         final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
