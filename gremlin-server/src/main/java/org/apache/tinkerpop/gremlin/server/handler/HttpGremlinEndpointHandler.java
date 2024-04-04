@@ -81,7 +81,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -113,6 +112,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHING;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.NOT_STARTED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.STREAMING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTrailingHeaders;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeError;
@@ -230,7 +230,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             ReferenceCountUtil.release(msg);
 
             final RequestState requestState = serializer.getValue1() instanceof MessageChunkSerializer
-                    ? RequestState.NOT_STARTED
+                    ? NOT_STARTED
                     : CHUNKING_NOT_SUPPORTED;
 
             final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
@@ -735,24 +735,6 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private Optional<Throwable> determineIfSpecialException(final Throwable ex) {
         return Stream.of(ExceptionUtils.getThrowables(ex)).
                 filter(i -> i instanceof TemporaryException || i instanceof Failure).findFirst();
-    }
-
-    /**
-     * Generates response status meta-data to put on a {@link ResponseMessage}.
-     *
-     * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
-     *             this method
-     */
-    private Map<String, Object> generateStatusAttributes(final ChannelHandlerContext ctx, final RequestMessage msg,
-                                                         final ResponseStatusCode code, final Iterator itty,
-                                                         final Settings settings) {
-        // only return server metadata on the last message
-        if (itty.hasNext()) return Collections.emptyMap();
-
-        final Map<String, Object> metaData = new HashMap<>();
-        metaData.put(Tokens.ARGS_HOST, String.valueOf(ctx.channel().remoteAddress()));
-
-        return metaData;
     }
 
     private static ByteBuf makeChunk(final Context ctx, final RequestMessage msg,
