@@ -98,6 +98,10 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         return service != null ? service : (service = getServiceRegistry().get(serviceName, isStart, staticParams));
     }
 
+    public String getServiceName() {
+        return serviceName;
+    }
+
     @Override
     protected Traverser.Admin<E> processNextStart() {
         if (isStart && first) {
@@ -192,7 +196,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         this.iterator = EmptyCloseableIterator.instance();
     }
 
-    protected Map getMergedParams() {
+    public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
             return Collections.unmodifiableMap(this.staticParams);
