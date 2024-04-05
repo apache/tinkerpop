@@ -30,7 +30,7 @@ for early testing purposes only.
 data-flow language that enables users to succinctly express complex traversals on (or queries of) their application's
 property graph.
 
-Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.20. One
+Gremlin-Go implements Gremlin within the Go language and can be used on any Go runtime greater than v1.21. One
 important difference between Go and Java is that the functions are capitalized, as is required to export functions is Go. 
 
 Gremlin-Go is designed to connect to a "server" that is hosting a TinkerPop-enabled graph system. That "server"

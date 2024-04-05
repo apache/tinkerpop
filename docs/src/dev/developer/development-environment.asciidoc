@@ -335,7 +335,7 @@ See the <<release-environment,Release Environment>> section for more information
 [[go-environment]]
 === Go Environment
 
-The build optionally requires link:https://go.dev/dl/[Go] (>=1.20) to work with the `gremlin-go` module. Creating an
+The build optionally requires link:https://go.dev/dl/[Go] (>=1.21) to work with the `gremlin-go` module. Creating an
 empty `.glv` file will enable running of tests inside of Maven. If `.glv` file does not exist, TinkerPop
 will still build with Maven, but Go projects will be skipped.
 
