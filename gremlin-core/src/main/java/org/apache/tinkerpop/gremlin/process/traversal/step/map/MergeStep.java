@@ -70,7 +70,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     private Parameters parameters = new Parameters();
 
-    private boolean usesPartitionStrategy;
+    protected boolean usesPartitionStrategy;
 
     public MergeStep(final Traversal.Admin traversal, final boolean isStart) {
         this(traversal, isStart, new IdentityTraversal<>());
@@ -180,6 +180,10 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    public boolean isUsingPartitionStrategy() {
+        return usesPartitionStrategy;
     }
 
     @Override
