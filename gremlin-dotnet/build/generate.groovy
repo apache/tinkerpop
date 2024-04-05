@@ -17,15 +17,15 @@
  * under the License.
  */
 
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
-import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator
+
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
-import org.codehaus.groovy.control.customizers.CompilationCustomizer
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
+import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
+import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
 
 import javax.script.SimpleBindings
 import java.nio.file.Paths
@@ -127,7 +127,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
     // at runtime. using this approach for now as these are the only such situations encountered so far. a better
     // solution may become necessary as testing of nulls expands.
-    def staticTranslate = [g_withoutStrategiesXCountStrategyX_V_count: "               {\"g_withoutStrategiesXCountStrategyX_V_count\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(CountStrategy)).V().Count()}}, "]
+    def staticTranslate = [g_withoutStrategiesXCountStrategyX_V_count: "               {\"g_withoutStrategiesXCountStrategyX_V_count\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(CountStrategy)).V().Count()}}, ",
+                           g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX: "               {\"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(LazyBarrierStrategy)).V().As(\"label\").Aggregate(Scope.Local,\"x\").Select<object>(\"x\").Select<object>(\"label\")}}, "
+    ]
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
     gremlins.each { k,v ->
