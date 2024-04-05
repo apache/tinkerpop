@@ -38,6 +38,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Prevented mid-traversal `mergeE()` and `mergeV()` from operating on an incoming `Traverser` that contains an `Element`.
 * Improved performance of the application of `FilterRankingStrategy` for large traversals with deeply nested traversals by improving the cache operation.
 * Updated aliased client to pass along options via `with()` when submitting traversals.
+* Upgraded `gremlin-go` to Go 1.21.
+* Upgraded `gremlin-javascript` and `gremlint` to Node 18.17.0.
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
