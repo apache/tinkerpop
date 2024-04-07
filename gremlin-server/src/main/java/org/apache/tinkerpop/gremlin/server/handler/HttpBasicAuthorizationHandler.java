@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,16 +59,8 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-        if (msg instanceof FullHttpMessage){
-            final FullHttpMessage request = (FullHttpMessage) msg;
-            final boolean keepAlive = HttpUtil.isKeepAlive(request);
-            final RequestMessage requestMessage;
-            try {
-                requestMessage = HttpHandlerUtil.getRequestMessageFromHttpRequest((FullHttpRequest) request);
-            } catch (IllegalArgumentException iae) {
-                HttpHandlerUtil.sendError(ctx, BAD_REQUEST, iae.getMessage(), keepAlive);
-                return;
-            }
+        if (msg instanceof RequestMessageV4) {
+            final RequestMessageV4 requestMessage = (RequestMessageV4) msg;
 
             try {
                 user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -76,26 +69,20 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 }
 
                 authorizer.authorize(user, requestMessage);
-                ctx.fireChannelRead(request);
+                ctx.fireChannelRead(msg);
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
-                final String script;
-                try {
-                    script = HttpHandlerUtil.getRequestMessageFromHttpRequest((FullHttpRequest) request).getArgOrDefault(Tokens.ARGS_GREMLIN, "");
-                } catch (IllegalArgumentException iae) {
-                    HttpHandlerUtil.sendError(ctx, BAD_REQUEST, requestMessage.getRequestId(), iae.getMessage(), keepAlive);
-                    return;
-                }
+                final String script = requestMessage.getGremlin().toString();
                 auditLogger.info("User {} with address {} attempted an unauthorized http request: {}",
                     user.getName(), address, script);
                 final String message = String.format("No authorization for script [%s] - check permissions.", script);
-                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, requestMessage.getRequestId(), message, keepAlive);
+                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, message);
                 ReferenceCountUtil.release(msg);
             } catch (Exception ex) {
                 final String message = String.format(
                         "%s is not ready to handle requests - unknown error", authorizer.getClass().getSimpleName());
-                HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, requestMessage.getRequestId(), message, keepAlive);
+                HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, message);
                 ReferenceCountUtil.release(msg);
             }
         } else {

@@ -21,40 +21,22 @@ package org.apache.tinkerpop.gremlin.server;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.util.CharsetUtil;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpVersion;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.EofSensorInputStream;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.io.ChunkedInputStream;
-import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV2;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
@@ -67,23 +49,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import javax.script.SimpleBindings;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
@@ -99,8 +73,6 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringRegularExpression.matchesRegex;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -134,51 +106,53 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 useTinkerTransactionGraph(settings);
                 settings.strictTransactionManagement = true;
                 break;
-            case "should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson":
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsV1 = new Settings.SerializerSettings();
-                serializerSettingsV1.className = GraphSONUntypedMessageSerializerV1.class.getName();
-                settings.serializers.add(serializerSettingsV1);
-                break;
+//            TODO: remove when consensus reached on old serializer support.
+//            case "should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson":
+//                settings.serializers.clear();
+//                final Settings.SerializerSettings serializerSettingsV1 = new Settings.SerializerSettings();
+//                serializerSettingsV1.className = GraphSONUntypedMessageSerializerV1.class.getName();
+//                settings.serializers.add(serializerSettingsV1);
+//                break;
             case "should200OnPOSTWithGraphSON4d0AcceptHeaderDefaultResultToJson":
                 settings.serializers.clear();
                 final Settings.SerializerSettings serializerSettingsV4 = new Settings.SerializerSettings();
                 serializerSettingsV4.className = GraphSONUntypedMessageSerializerV4.class.getName();
                 settings.serializers.add(serializerSettingsV4);
                 break;
-            case "should200OnPOSTWithGraphSON2d0AcceptHeaderDefaultResultToJson":
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsV2 = new Settings.SerializerSettings();
-                serializerSettingsV2.className = GraphSONMessageSerializerV2.class.getName();
-                settings.serializers.add(serializerSettingsV2);
-                break;
-            case "should200OnPOSTWithGraphSON3d0AcceptHeaderDefaultResultToJson":
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsV3 = new Settings.SerializerSettings();
-                serializerSettingsV3.className = GraphSONMessageSerializerV3.class.getName();
-                settings.serializers.add(serializerSettingsV3);
-                break;
-            case "should200OnPOSTWithAnyGraphSONAcceptHeaderDefaultResultToJson":
-                settings.serializers.clear();
-                final Settings.SerializerSettings serializerSettingsUntypedV1 = new Settings.SerializerSettings();
-                serializerSettingsUntypedV1.className = GraphSONUntypedMessageSerializerV1.class.getName();
-                settings.serializers.add(serializerSettingsUntypedV1);
-                final Settings.SerializerSettings serializerSettingsTypedV1 = new Settings.SerializerSettings();
-                serializerSettingsTypedV1.className = GraphSONMessageSerializerV1.class.getName();
-                settings.serializers.add(serializerSettingsTypedV1);
-                final Settings.SerializerSettings serializerSettingsUntypedV2 = new Settings.SerializerSettings();
-                serializerSettingsUntypedV2.className = GraphSONUntypedMessageSerializerV2.class.getName();
-                settings.serializers.add(serializerSettingsUntypedV2);
-                final Settings.SerializerSettings serializerSettingsTypedV2 = new Settings.SerializerSettings();
-                serializerSettingsTypedV2.className = GraphSONMessageSerializerV2.class.getName();
-                settings.serializers.add(serializerSettingsTypedV2);
-                final Settings.SerializerSettings serializerSettingsUntypedV3 = new Settings.SerializerSettings();
-                serializerSettingsUntypedV3.className = GraphSONUntypedMessageSerializerV3.class.getName();
-                settings.serializers.add(serializerSettingsUntypedV3);
-                final Settings.SerializerSettings serializerSettingsTypedV3 = new Settings.SerializerSettings();
-                serializerSettingsTypedV3.className = GraphSONMessageSerializerV3.class.getName();
-                settings.serializers.add(serializerSettingsTypedV3);
-                break;
+//            TODO: remove when consensus reached on old serializer support.
+//            case "should200OnPOSTWithGraphSON2d0AcceptHeaderDefaultResultToJson":
+//                settings.serializers.clear();
+//                final Settings.SerializerSettings serializerSettingsV2 = new Settings.SerializerSettings();
+//                serializerSettingsV2.className = GraphSONMessageSerializerV2.class.getName();
+//                settings.serializers.add(serializerSettingsV2);
+//                break;
+//            case "should200OnPOSTWithGraphSON3d0AcceptHeaderDefaultResultToJson":
+//                settings.serializers.clear();
+//                final Settings.SerializerSettings serializerSettingsV3 = new Settings.SerializerSettings();
+//                serializerSettingsV3.className = GraphSONMessageSerializerV3.class.getName();
+//                settings.serializers.add(serializerSettingsV3);
+//                break;
+//            case "should200OnPOSTWithAnyGraphSONAcceptHeaderDefaultResultToJson":
+//                settings.serializers.clear();
+//                final Settings.SerializerSettings serializerSettingsUntypedV1 = new Settings.SerializerSettings();
+//                serializerSettingsUntypedV1.className = GraphSONUntypedMessageSerializerV1.class.getName();
+//                settings.serializers.add(serializerSettingsUntypedV1);
+//                final Settings.SerializerSettings serializerSettingsTypedV1 = new Settings.SerializerSettings();
+//                serializerSettingsTypedV1.className = GraphSONMessageSerializerV1.class.getName();
+//                settings.serializers.add(serializerSettingsTypedV1);
+//                final Settings.SerializerSettings serializerSettingsUntypedV2 = new Settings.SerializerSettings();
+//                serializerSettingsUntypedV2.className = GraphSONUntypedMessageSerializerV2.class.getName();
+//                settings.serializers.add(serializerSettingsUntypedV2);
+//                final Settings.SerializerSettings serializerSettingsTypedV2 = new Settings.SerializerSettings();
+//                serializerSettingsTypedV2.className = GraphSONMessageSerializerV2.class.getName();
+//                settings.serializers.add(serializerSettingsTypedV2);
+//                final Settings.SerializerSettings serializerSettingsUntypedV3 = new Settings.SerializerSettings();
+//                serializerSettingsUntypedV3.className = GraphSONUntypedMessageSerializerV3.class.getName();
+//                settings.serializers.add(serializerSettingsUntypedV3);
+//                final Settings.SerializerSettings serializerSettingsTypedV3 = new Settings.SerializerSettings();
+//                serializerSettingsTypedV3.className = GraphSONMessageSerializerV3.class.getName();
+//                settings.serializers.add(serializerSettingsTypedV3);
+//                break;
             case "should401OnPOSTWithNoAuthorizationHeader":
             case "should401OnGETWithBadAuthorizationHeader":
             case "should401OnPOSTWithBadAuthorizationHeader":
@@ -419,6 +393,71 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void shouldHaveSameVertexResultsWithGremlinLangOrGremlinGroovy() throws Exception {
+        String gremlinLangResult;
+        String gremlinGroovyResult;
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\",\"language\":\"gremlin-lang\",\"g\":\"gmodern\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            gremlinLangResult = node.get("result").get(GraphSONTokens.VALUEPROP).toString();
+        }
+
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\",\"language\":\"gremlin-groovy\",\"g\":\"gmodern\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            gremlinGroovyResult = node.get("result").get(GraphSONTokens.VALUEPROP).toString();
+        }
+
+        assertEquals(gremlinGroovyResult, gremlinLangResult);
+    }
+
+    @Test
+    public void shouldNotHaveBindingsAffectLaterQueries() throws Exception {
+        final String firstResult;
+        final String secondResult;
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            firstResult = node.get("result").get(GraphSONTokens.VALUEPROP).toString();
+        }
+
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\",\"g\":\"gmodern\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            EntityUtils.toString(response.getEntity());
+        }
+
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V()\"}", Consts.UTF_8));
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            secondResult = node.get("result").get(GraphSONTokens.VALUEPROP).toString();
+        }
+
+        assertEquals(firstResult, secondResult);
+    }
+
+    @Test
     public void should200OnPOSTWithGremlinQueryStringArgumentWithIteratorResult() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
@@ -433,48 +472,50 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
     }
 
-    @Test
-    public void should200OnPOSTWithGremlinQueryStringArgumentWithIteratorResultGraphBinaryToString() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"gclassic.V()\"}", Consts.UTF_8));
-        final String mime = SerTokens.MIME_GRAPHBINARY_V1 + "-stringd";
-        httppost.addHeader("Accept", mime);
+    //            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithGremlinQueryStringArgumentWithIteratorResultGraphBinaryToString() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+//        httppost.setEntity(new StringEntity("{\"gremlin\":\"gclassic.V()\"}", Consts.UTF_8));
+//        final String mime = SerTokens.MIME_GRAPHBINARY_V1 + "-stringd";
+//        httppost.addHeader("Accept", mime);
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(mime, response.getEntity().getContentType().getValue());
+//
+//            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
+//            final ResponseMessage msg = serializer.deserializeResponse(toByteBuf(response.getEntity()));
+//            final List<Object> data = (List<Object>) msg.getResult().getData();
+//            assertEquals(6, data.size());
+//            for (Object o : data) {
+//                assertThat(o, instanceOf(String.class));
+//                assertThat((String) o, matchesRegex("v\\[\\d\\]"));
+//            }
+//        }
+//    }
 
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(mime, response.getEntity().getContentType().getValue());
-
-            final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(TypeSerializerRegistry.INSTANCE);
-            final ResponseMessage msg = serializer.deserializeResponse(toByteBuf(response.getEntity()));
-            final List<Object> data = (List<Object>) msg.getResult().getData();
-            assertEquals(6, data.size());
-            for (Object o : data) {
-                assertThat(o, instanceOf(String.class));
-                assertThat((String) o, matchesRegex("v\\[\\d\\]"));
-            }
-        }
-    }
-
-    @Test
-    public void should200OnPOSTWithGremlinQueryStringArgumentWithIteratorResultTextPlain() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"gclassic.V()\"}", Consts.UTF_8));
-        final String mime = "text/plain";
-        httppost.addHeader("Accept", mime);
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(mime, response.getEntity().getContentType().getValue());
-            final String text = EntityUtils.toString(response.getEntity());
-            final String[] split = text.split(System.lineSeparator());
-            assertEquals(6, split.length);
-            for (String line : split) {
-                assertThat(line, matchesRegex("==>v\\[\\d\\]"));
-            }
-        }
-    }
+    //            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithGremlinQueryStringArgumentWithIteratorResultTextPlain() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+//        httppost.setEntity(new StringEntity("{\"gremlin\":\"gclassic.V()\"}", Consts.UTF_8));
+//        final String mime = "text/plain";
+//        httppost.addHeader("Accept", mime);
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(mime, response.getEntity().getContentType().getValue());
+//            final String text = EntityUtils.toString(response.getEntity());
+//            final String[] split = text.split(System.lineSeparator());
+//            assertEquals(6, split.length);
+//            for (String line : split) {
+//                assertThat(line, matchesRegex("==>v\\[\\d\\]"));
+//            }
+//        }
+//    }
 
     @Test
     public void should200OnPOSTWithGremlinJsonEndcodedBody() throws Exception {
@@ -830,20 +871,21 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
     }
 
-    @Test
-    public void should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-    }
+//            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithGraphSON1d0AcceptHeaderDefaultResultToJson() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+//        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
+//    }
 
     @Test
     public void should200OnPOSTWithGraphSON4d0AcceptHeaderDefaultResultToJson() throws Exception {
@@ -860,117 +902,121 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
     }
 
-    @Test
-    public void should200OnPOSTWithGraphSON2d0AcceptHeaderDefaultResultToJson() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+    //            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithGraphSON2d0AcceptHeaderDefaultResultToJson() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+//        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
+//    }
 
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-    }
+    //            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithGraphSON3d0AcceptHeaderDefaultResultToJson() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+//        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).asInt());
+//        }
+//    }
 
-    @Test
-    public void should200OnPOSTWithGraphSON3d0AcceptHeaderDefaultResultToJson() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+    //            TODO: remove when consensus reached on old serializer support.
+//    @Test
+//    public void should200OnPOSTWithAnyGraphSONAcceptHeaderDefaultResultToJson() throws Exception {
+//        final CloseableHttpClient httpclient = HttpClients.createDefault();
+//        final HttpPost httppost1 = new HttpPost(TestClientFactory.createURLString());
+//        httppost1.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost1.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_JSON);
+//        httppost1.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost1)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
 
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).asInt());
-        }
-    }
-
-    @Test
-    public void should200OnPOSTWithAnyGraphSONAcceptHeaderDefaultResultToJson() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost1 = new HttpPost(TestClientFactory.createURLString());
-        httppost1.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost1.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_JSON);
-        httppost1.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost1)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-
-        final HttpPost httppost1Untyped = new HttpPost(TestClientFactory.createURLString());
-        httppost1Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost1Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V1_UNTYPED);
-        httppost1Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost1Untyped)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_GRAPHSON_V1_UNTYPED, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-
-        final HttpPost httppost2 = new HttpPost(TestClientFactory.createURLString());
-        httppost2.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost2.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V2);
-        httppost2.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost2)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_GRAPHSON_V2, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).get(GraphSONTokens.VALUEPROP).asInt());
-        }
-
-        final HttpPost httppost2Untyped = new HttpPost(TestClientFactory.createURLString());
-        httppost2Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost2Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V2_UNTYPED);
-        httppost2Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost2Untyped)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_GRAPHSON_V2_UNTYPED, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-
-        final HttpPost httppost3 = new HttpPost(TestClientFactory.createURLString());
-        httppost3.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost3.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V3);
-        httppost3.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost3)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_GRAPHSON_V3, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).asInt());
-        }
-
-        final HttpPost httppost3Untyped = new HttpPost(TestClientFactory.createURLString());
-        httppost3Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
-        httppost3Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V3_UNTYPED);
-        httppost3Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost3Untyped)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_GRAPHSON_V3_UNTYPED, response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(0, node.get("result").get("data").get(0).asInt());
-        }
-    }
+        //            TODO: remove when consensus reached on old serializer support.
+//        final HttpPost httppost1Untyped = new HttpPost(TestClientFactory.createURLString());
+//        httppost1Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost1Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V1_UNTYPED);
+//        httppost1Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost1Untyped)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_GRAPHSON_V1_UNTYPED, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
+//
+//        final HttpPost httppost2 = new HttpPost(TestClientFactory.createURLString());
+//        httppost2.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost2.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V2);
+//        httppost2.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost2)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_GRAPHSON_V2, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).get(GraphSONTokens.VALUEPROP).asInt());
+//        }
+//
+//        final HttpPost httppost2Untyped = new HttpPost(TestClientFactory.createURLString());
+//        httppost2Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost2Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V2_UNTYPED);
+//        httppost2Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost2Untyped)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_GRAPHSON_V2_UNTYPED, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
+//
+//        final HttpPost httppost3 = new HttpPost(TestClientFactory.createURLString());
+//        httppost3.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost3.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V3);
+//        httppost3.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost3)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_GRAPHSON_V3, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).asInt());
+//        }
+//
+//        final HttpPost httppost3Untyped = new HttpPost(TestClientFactory.createURLString());
+//        httppost3Untyped.setHeader(HttpHeaders.CONTENT_TYPE, SerTokens.MIME_JSON);
+//        httppost3Untyped.setHeader(HttpHeaders.ACCEPT, SerTokens.MIME_GRAPHSON_V3_UNTYPED);
+//        httppost3Untyped.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+//
+//        try (final CloseableHttpResponse response = httpclient.execute(httppost3Untyped)) {
+//            assertEquals(200, response.getStatusLine().getStatusCode());
+//            assertEquals(SerTokens.MIME_GRAPHSON_V3_UNTYPED, response.getEntity().getContentType().getValue());
+//            final String json = EntityUtils.toString(response.getEntity());
+//            final JsonNode node = mapper.readTree(json);
+//            assertEquals(0, node.get("result").get("data").get(0).asInt());
+//        }
+//    }
 
     @Test
     public void should500WithResultThatCantBeSerialized() throws Exception {
@@ -1155,7 +1201,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals("some error", node.get("status").get("message").textValue());
-            assertEquals(500, node.get("status").get("code").intValue());
+            assertEquals(595, node.get("status").get("code").intValue());
 
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(2, footers.length);
@@ -1183,14 +1229,14 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
             assertEquals("some error", node.get("status").get("message").textValue());
-            assertEquals(500, node.get("status").get("code").intValue());
+            assertEquals(595, node.get("status").get("code").intValue());
 
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(2, footers.length);
             assertEquals("code", footers[0].getName());
-            assertEquals("500", footers[0].getValue());
+            assertEquals("595", footers[0].getValue());
             assertEquals("message", footers[1].getName());
-            assertEquals("some error", footers[1].getValue());
+            assertEquals("some+error", footers[1].getValue());
         }
     }
 
@@ -1316,7 +1362,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertTrue(node.get("status").get("message").asText().contains("A message with [bytecode] op code requires the [aliases] argument"));
+            assertTrue(node.get("status").get("message").asText().contains("A [bytecode] message requires a [g] argument"));
         }
     }
 
@@ -1334,6 +1380,28 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             final JsonNode node = mapper.readTree(EntityUtils.toString(response.getEntity()));
             assertTrue(node.get("status").get("message").asText().contains("Failed to interpret Gremlin query"));
+        }
+    }
+
+    @Test
+    public void should100onExpectContinueRequest() throws Exception {
+        final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
+        final ByteBuf serializedRequest = serializer.serializeRequestMessageV4(
+                RequestMessageV4.build("gmodern.V()").create(),
+                new UnpooledByteBufAllocator(false));
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.setConfig(RequestConfig.custom().setExpectContinueEnabled(true).build());
+        httppost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHSON_V4.getValue());
+        httppost.addHeader("Content-Type", Serializers.GRAPHSON_V4.getValue());
+        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get(GraphSONTokens.VALUEPROP).size());
         }
     }
 

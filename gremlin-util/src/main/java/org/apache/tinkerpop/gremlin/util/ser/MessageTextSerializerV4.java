@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
+import java.util.EnumSet;
+
 /**
  * An extension to the MessageTextSerializer interface that is used for serializing RequestMessageV4.
  */
@@ -41,4 +43,24 @@ public interface MessageTextSerializerV4<M> extends MessageTextSerializer<M> {
      * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessageV4}.
      */
     public RequestMessageV4 deserializeRequestMessageV4(final ByteBuf msg) throws SerializationException;
+
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
+
+    public enum MessageParts {
+        HEADER, DATA, FOOTER;
+
+        public static final EnumSet<MessageParts> ALL = EnumSet.of(HEADER, DATA, FOOTER);
+        public static final EnumSet<MessageParts> START = EnumSet.of(HEADER, DATA);
+        public static final EnumSet<MessageParts> CHUNK = EnumSet.of(DATA);
+        public static final EnumSet<MessageParts> END = EnumSet.of(DATA, FOOTER);
+        public static final EnumSet<MessageParts> ERROR = EnumSet.of(FOOTER);
+    }
 }
