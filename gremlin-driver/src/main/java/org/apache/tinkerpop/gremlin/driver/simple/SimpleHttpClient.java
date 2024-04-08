@@ -96,8 +96,6 @@ public class SimpleHttpClient extends AbstractClient {
                 sslCtx = null;
             }
 
-//            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
-//                    uri, WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE, 65536), 10000, false);
             final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -110,9 +108,6 @@ public class SimpleHttpClient extends AbstractClient {
                             p.addLast(
                                     new HttpClientCodec(),
                                     new HttpObjectAggregator(65536),
-//                                    wsHandler,
-//                                    new WebSocketGremlinRequestEncoder(true, serializer),
-//                                    new WebSocketGremlinResponseDecoder(serializer),
                                     new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
                                     new HttpGremlinResponseDecoder(serializer),
                                     callbackResponseHandler);
@@ -120,7 +115,6 @@ public class SimpleHttpClient extends AbstractClient {
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-//            wsHandler.handshakeFuture().get(30, TimeUnit.SECONDS);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

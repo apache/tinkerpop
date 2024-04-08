@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.authz;
 
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -249,9 +249,9 @@ public class AuthorizerTest {
         }
     }
 
-    private RequestMessage buildRequestMessage(final String traversalSource) {
+    private RequestMessageV4 buildRequestMessage(final String traversalSource) {
         final String script = String.format("1+1; %s.V().map{it.get()}", traversalSource);
-        return RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, script).create();
+        return RequestMessageV4.build(script).create();
     }
 
     private static class SubgraphTraversals implements Supplier<Bytecode> {

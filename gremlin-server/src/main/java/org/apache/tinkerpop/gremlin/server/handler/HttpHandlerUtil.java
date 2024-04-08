@@ -44,7 +44,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -56,6 +55,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,199 +83,37 @@ public class HttpHandlerUtil {
     private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
     private static final String ARGS_ALIASES_DOT = Tokens.ARGS_ALIASES + ".";
     /**
-     * This is just a generic mapper to interpret the JSON of a POSTed request.  It is not used for the serialization
-     * of the response.
+     * A generic mapper to return JSON errors in specific cases.
      */
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Convert a http request into a {@link RequestMessage}.
-     * There are 2 payload types options here.
-     * 1.
-     *     existing https://tinkerpop.apache.org/docs/current/reference/#connecting-via-http
-     *     intended to use with curl, postman, etc. by users
-     *     both GET and POST
-     *     Content-Type header can be empty or application/json
-     *     Accept header can be any, most useful can be application/json, text/plain, application/vnd.gremlin-v3.0+json and application/vnd.gremlin-v3.0+json;types=false
-     *     Request body example: { "gremlin": "g.V()" }
-     * 2.
-     *     experimental payload with serialized RequestMessage
-     *     intended for drivers/GLV's. Support both gremlin and bytecode queries.
-     *     only POST
-     *     Content-Type is defined by used serializer, expected type GraphSON application/vnd.gremlin-v3.0+json or GraphBinary application/vnd.graphbinary-v1.0. Untyped GraphSON is not supported, it can't deserialize bytecode
-     *     Accept header can be any.
-     *     Request body contains serialized RequestMessage
+     * Helper method to send errors back as JSON. Only to be used when the RequestMessage couldn't be parsed, because
+     * a proper serialized ResponseMessage should be sent in that case.
+     *
+     * @param ctx       The netty channel context.
+     * @param status    The HTTP error status code.
+     * @param message   The error message to contain the body.
      */
-    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request,
-                                                                  Map<String, MessageSerializer<?>> serializers) throws SerializationException {
-        final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
-
-        if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
-            final MessageSerializer<?> serializer = serializers.get(contentType);
-            if (!(serializer instanceof MessageTextSerializerV4)) {
-                throw new SerializationException("Server only supports V4 or later serializers.");
-            }
-
-            final MessageTextSerializerV4<?> serializerV4 = (MessageTextSerializerV4) serializer;
-
-            final ByteBuf buffer = request.content();
-
-            // additional validation for header
-            final int first = buffer.readByte();
-            // payload can be plain json or can start with additional header with content type.
-            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
-            if (first != 0x7b) {
-                final byte[] bytes = new byte[first];
-                buffer.readBytes(bytes);
-                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
-
-                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
-                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
-            } else {
-                buffer.resetReaderIndex();
-            }
-
-            try {
-                return serializerV4.deserializeRequestMessageV4(buffer).convertToV1();
-            } catch (Exception e) {
-                throw new SerializationException("Unable to deserialize request using: " + serializerV4.getClass().getSimpleName(), e);
-            }
-        }
-        return getRequestMessageFromHttpRequest(request);
-    }
-
-    /**
-     * Convert a http request into a {@link RequestMessage}.
-     */
-    public static RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
-        return getRequestMessageV4FromHttpRequest(request).convertToV1();
-    }
-
-    public static RequestMessageV4 getRequestMessageV4FromHttpRequest(final FullHttpRequest request) {
-        final JsonNode body;
-        try {
-            body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
-        } catch (IOException ioe) {
-            throw new IllegalArgumentException("body could not be parsed", ioe);
-        }
-
-        final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
-        if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
-
-        final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-        if (bindingsNode != null && !bindingsNode.isObject())
-            throw new IllegalArgumentException("bindings must be a Map");
-
-        final Map<String, Object> bindings = new HashMap<>();
-        if (bindingsNode != null)
-            bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
-
-        final JsonNode gNode = body.get(Tokens.ARGS_G);
-        final String g = (null == gNode) ? null : gNode.asText();
-
-        final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-        final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
-
-        final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
-        final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
-
-        final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
-        final Integer chunkSize = null == chunkSizeNode ? null : chunkSizeNode.asInt();
-
-        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
-                .addBindings(bindings).addLanguage(language);
-        if (null != g) builder.addG(g);
-        if (null != chunkSize) builder.addChunkSize(chunkSize);
-        return builder.create();
-    }
-
-    private static Object fromJsonNode(final JsonNode node) {
-        if (node.isNull())
-            return null;
-        else if (node.isObject()) {
-            final Map<String, Object> map = new HashMap<>();
-            final ObjectNode objectNode = (ObjectNode) node;
-            final Iterator<String> iterator = objectNode.fieldNames();
-            while (iterator.hasNext()) {
-                String key = iterator.next();
-                map.put(key, fromJsonNode(objectNode.get(key)));
-            }
-            return map;
-        } else if (node.isArray()) {
-            final ArrayNode arrayNode = (ArrayNode) node;
-            final ArrayList<Object> array = new ArrayList<>();
-            for (int i = 0; i < arrayNode.size(); i++) {
-                array.add(fromJsonNode(arrayNode.get(i)));
-            }
-            return array;
-        } else if (node.isFloatingPointNumber())
-            return node.asDouble();
-        else if (node.isIntegralNumber())
-            return node.asLong();
-        else if (node.isBoolean())
-            return node.asBoolean();
-        else
-            return node.asText();
-    }
-
-    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status,
-                          final String message, final boolean keepAlive) {
-        sendError(ctx, status, null, message, Optional.empty(), keepAlive);
-    }
-
-    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final UUID requestId,
-                          final String message, final boolean keepAlive) {
-        sendError(ctx, status, requestId, message, Optional.empty(), keepAlive);
-    }
-
-    static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final UUID requestId,
-                          final String message, final Optional<Throwable> t, final boolean keepAlive) {
-        if (t.isPresent())
-            logger.warn(String.format("Invalid request - responding with %s and %s", status, message), t.get());
-        else
-            logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
-
+    public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
+        logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
         errorMeter.mark();
+
         final ObjectNode node = mapper.createObjectNode();
         node.put("message", message);
-        if (t.isPresent()) {
-            // "Exception-Class" needs to go away - didn't realize it was named that way during review for some reason.
-            // replaced with the same method for exception reporting as is used with websocket/nio protocol
-            node.put("Exception-Class", t.get().getClass().getName());
-            final ArrayNode exceptionList = node.putArray(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS);
-            ExceptionUtils.getThrowableList(t.get()).forEach(throwable -> exceptionList.add(throwable.getClass().getName()));
-            node.put(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(t.get()));
-        }
-        if (requestId != null) {
-            node.put("requestId", requestId.toString());
-        }
 
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
-
-        sendAndCleanupConnection(ctx, keepAlive, response);
-    }
-
-    static void sendAndCleanupConnection(final ChannelHandlerContext ctx,
-                                         final boolean keepAlive,
-                                         final FullHttpResponse response) {
-        HttpUtil.setKeepAlive(response, keepAlive);
         HttpUtil.setContentLength(response, response.content().readableBytes());
-
-        final ChannelFuture flushPromise = ctx.writeAndFlush(response);
-
-        if (!keepAlive) {
-            // Close the connection as soon as the response is sent.
-            flushPromise.addListener(ChannelFutureListener.CLOSE);
-        }
+        ctx.writeAndFlush(response);
     }
 
     static void writeError(final Context context, ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
-                    ? ((MessageChunkSerializer) serializer).writeErrorFooter(responseMessage, ctx.alloc())
+                    ? ((MessageTextSerializerV4) serializer).writeErrorFooter(responseMessage, ctx.alloc())
                     : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
 
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
@@ -289,7 +128,13 @@ public class HttpHandlerUtil {
     static void sendTrailingHeaders(final ChannelHandlerContext ctx, final ResponseStatusCode statusCode, final String message) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
         defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.getValue());
-        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_MESSAGE, message);
+        try {
+            defaultLastHttpContent.trailingHeaders().add(
+                    SerTokens.TOKEN_MESSAGE, URLEncoder.encode(message, StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException uee) {
+            // This should never occur since we use UTF-8 so just log rather than handle.
+            logger.info(StandardCharsets.UTF_8.name() + " encoding not supported", uee);
+        }
         ctx.writeAndFlush(defaultLastHttpContent);
     }
 }

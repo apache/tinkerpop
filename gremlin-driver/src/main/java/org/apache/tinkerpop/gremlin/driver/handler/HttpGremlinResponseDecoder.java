@@ -23,7 +23,9 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -32,6 +34,7 @@ import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,10 +52,12 @@ public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<Fu
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final FullHttpResponse httpResponse, final List<Object> objects) throws Exception {
-        if (httpResponse.status() == HttpResponseStatus.OK) {
+        String type = httpResponse.headers().get(HttpHeaderNames.CONTENT_TYPE);
+        if (type != null && type != "application/json") {
             objects.add(serializer.deserializeResponse(httpResponse.content()));
         } else {
-            final JsonNode root = mapper.readTree(new ByteBufInputStream(httpResponse.content()));
+            String response = httpResponse.content().toString(StandardCharsets.UTF_8);
+            final JsonNode root = mapper.readTree(response);
             objects.add(ResponseMessage.build(UUID.fromString(root.get(Tokens.REQUEST_ID).asText()))
                         .code(ResponseStatusCode.SERVER_ERROR)
                         .statusMessage(root.get(SerTokens.TOKEN_MESSAGE).asText())
