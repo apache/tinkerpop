@@ -18,28 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
-import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
+import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,8 +145,7 @@ public interface Channelizer extends ChannelHandler {
             }
 
             configure(pipeline);
-            pipeline.addLast(PIPELINE_GREMLIN_SASL_HANDLER, new Handler.GremlinSaslAuthenticationHandler(cluster.authProperties()));
-            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
+            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending));
         }
     }
 
@@ -250,15 +250,15 @@ public interface Channelizer extends ChannelHandler {
     /**
      * Sends requests over the HTTP endpoint. Client functionality is governed by the limitations of the HTTP endpoint,
      * meaning that sessions are not available and as such {@code tx()} (i.e. transactions) are not available over this
-     * channelizer. Only sessionless requests are possible. Some driver configuration options may not be relevant when
-     * using HTTP, such as {@link Tokens#ARGS_BATCH_SIZE} since HTTP does not stream results back in that fashion.
+     * channelizer. Only sessionless requests are possible.
      */
     public final class HttpChannelizer extends AbstractChannelizer {
 
         private HttpClientCodec handler;
 
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
-        private HttpGremlinResponseDecoder gremlinResponseDecoder;
+        // private HttpGremlinResponseDecoder gremlinResponseDecoder;
+        private HttpGremlinResponseStreamDecoder gremlinResponseDecoder;
 
         @Override
         public void init(final Connection connection) {
@@ -269,7 +269,7 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", HttpChannelizer.class.getSimpleName()));
 
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
-            gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
+            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder((MessageChunkSerializer<?>) cluster.getSerializer());
         }
 
         @Override
@@ -296,7 +296,7 @@ public interface Channelizer extends ChannelHandler {
             handler = new HttpClientCodec();
 
             pipeline.addLast("http-codec", handler);
-            pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
+            // pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
             pipeline.addLast("gremlin-encoder", gremlinRequestEncoder);
             pipeline.addLast("gremlin-decoder", gremlinResponseDecoder);
         }

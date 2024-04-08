@@ -37,6 +37,7 @@ import java.util.UUID;
 
 /**
  * Converts {@code HttpResponse} to a {@link ResponseMessage}.
+ * Can be used for GraphSON
  */
 @ChannelHandler.Sharable
 public final class HttpGremlinResponseDecoder extends MessageToMessageDecoder<FullHttpResponse> {

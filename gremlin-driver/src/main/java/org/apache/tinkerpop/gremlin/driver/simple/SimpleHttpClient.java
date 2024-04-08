@@ -20,17 +20,13 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.HandshakeInterceptor;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDebugStreamDecoder;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,11 +35,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
-import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +92,7 @@ public class SimpleHttpClient extends AbstractClient {
 
 //            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
 //                    uri, WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE, 65536), 10000, false);
-            final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
+            final MessageChunkSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
@@ -109,12 +103,16 @@ public class SimpleHttpClient extends AbstractClient {
                             }
                             p.addLast(
                                     new HttpClientCodec(),
-                                    new HttpObjectAggregator(65536),
+                                    new HttpGremlinResponseStreamDecoder(serializer),
+//                                    new HttpObjectAggregator(65536),
+
 //                                    wsHandler,
 //                                    new WebSocketGremlinRequestEncoder(true, serializer),
 //                                    new WebSocketGremlinResponseDecoder(serializer),
                                     new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
-                                    new HttpGremlinResponseDecoder(serializer),
+                                    // new HttpGremlinResponseDecoder(serializer),
+                                    new HttpGremlinResponseDebugStreamDecoder(),
+
                                     callbackResponseHandler);
                         }
                     });
