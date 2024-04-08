@@ -50,25 +50,6 @@ public class RequestMessageSerializerV4 {
         }
 
         try {
-//            final UUID id = context.readValue(buffer, UUID.class, false);
-//            final String gremlinType = context.readValue(buffer, String.class, false);
-//
-//            final Object gremlin;
-//            if (gremlinType.equals(Tokens.OPS_EVAL)) {
-//                gremlin = context.readValue(buffer, String.class, false);
-//            } else if (gremlinType.equals(Tokens.OPS_BYTECODE)) {
-//                gremlin = context.readValue(buffer, Bytecode.class, false);
-//            } else {
-//                throw new SerializationException("Type " + gremlinType + " not supported for serialization.");
-//            }
-//
-//            final String lang = context.readValue(buffer, String.class, false);
-//            final Map<String, Object> bindings = context.readValue(buffer, Map.class, false);
-//            final String g = context.readValue(buffer, String.class, false);
-//
-//            final RequestMessageV4.Builder builder = RequestMessageV4.build(gremlin).overrideRequestId(id).addG(g).addLanguage(lang);
-//            bindings.forEach(builder::addBinding);
-
             final Map<String, Object> fields = context.readValue(buffer, Map.class, false);
             final String gremlinType = (String) fields.get("gremlinType");
 
@@ -108,19 +89,9 @@ public class RequestMessageSerializerV4 {
         try {
             // Version
             buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
-            // RequestId
-//            context.writeValue(value.getRequestId(), buffer, false);
-            // Gremlin type
-//            context.writeValue(value.getGremlinType(), buffer, false);
-            // Gremlin
-//            context.writeValue(value.getGremlin(), buffer, false);
-            // Language
-//            context.writeValue(value.getLanguage(), buffer, false);
-            // Bindings
-//            context.writeValue(value.getBindings(), buffer, false);
-            // G
-//            context.writeValue(value.getG(), buffer, false);
+            // Fields
             context.writeValue(value.getFields(), buffer, false);
+            // Gremlin
             context.writeValue(value.getGremlin(), buffer, false);
 
         } catch (IOException ex) {

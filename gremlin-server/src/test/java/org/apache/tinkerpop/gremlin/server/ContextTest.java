@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,9 +53,9 @@ public class ContextTest {
     public void shouldParseParametersFromScriptRequest()
     {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                .addArg(Tokens.ARGS_GREMLIN, "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
-                .create();
+        final RequestMessageV4 request =
+                RequestMessageV4.build("g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
+                    .create();
         final Settings settings = new Settings();
         final Context context = new Context(request, ctx, settings, null, null, null);
 
@@ -67,10 +67,9 @@ public class ContextTest {
     public void shouldSkipInvalidMaterializePropertiesParameterFromScriptRequest()
     {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                .addArg(Tokens.ARGS_GREMLIN,
-                        "g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
-                .create();
+        final RequestMessageV4 request =
+                RequestMessageV4.build("g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
+                    .create();
         final Settings settings = new Settings();
         final Context context = new Context(request, ctx, settings, null, null, null);
 
