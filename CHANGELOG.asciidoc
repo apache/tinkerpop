@@ -279,7 +279,7 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-7]]
-=== TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.6.7 (April 8, 2024)
 
 * Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
 * Fixed message requestId serialization in `gremlin-python`.
@@ -299,6 +299,26 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Upgraded `gremlin-go` to Go 1.21.
 * Upgraded `gremlin-javascript` and `gremlint` to Node 18.17.0.
 * Allowed public access for `serviceName` and `mergedParams` in `CallStep`, and checks on `PartitionStrategy` usage in `MergeStep`.
+
+==== Bugs
+
+* TINKERPOP-2359 onShutDown not being called when docker container stopped
+* TINKERPOP-2913 Ensure that if tx.commit() is called remotely it does not hang for graphs without transactions
+* TINKERPOP-3022 JavaTranslator failing for has(String, null)
+* TINKERPOP-3027 Pick.any should be any_()
+* TINKERPOP-3029 Gremlin.Net: Traversal enumeration fails on .NET 8
+* TINKERPOP-3031 Bad translation for g.tx()
+* TINKERPOP-3039 Java driver won't propagate with args when using aliased client directly
+* TINKERPOP-3045 EarlyLimitStrategy is too aggresive to promote Limit and thus causing incorrect results
+* TINKERPOP-3054 RequestId serialization broken in Python GLV
+* TINKERPOP-3056 mergeE is updating vertices in certain conditions
+
+==== Improvements
+
+* TINKERPOP-2995 Create Sample Applications in each GLV
+* TINKERPOP-3021 Publish ARM64 Gremlin Console Images
+* TINKERPOP-3030 Update to .NET 8
+* TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)
