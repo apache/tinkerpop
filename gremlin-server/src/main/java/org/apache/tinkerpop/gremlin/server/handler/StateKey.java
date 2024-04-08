@@ -18,11 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import io.netty.util.AttributeKey;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
+import org.javatuples.Pair;
 
 /**
  * Keys used in the various handlers to store state in the pipeline.
@@ -36,7 +37,7 @@ public final class StateKey {
     /**
      * The key for the current serializer requested by the client.
      */
-    public static final AttributeKey<MessageSerializer<?>> SERIALIZER = AttributeKey.valueOf("serializer");
+    public static final AttributeKey<Pair<String, MessageTextSerializerV4<?>>> SERIALIZER = AttributeKey.valueOf("serializer");
 
     /**
      * The key to indicate if the serializer should use its binary format.
