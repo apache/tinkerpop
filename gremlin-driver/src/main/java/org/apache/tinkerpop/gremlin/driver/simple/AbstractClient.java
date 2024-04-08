@@ -25,9 +25,12 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -48,7 +51,7 @@ public abstract class AbstractClient implements SimpleClient {
 
     @Override
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
-        callbackResponseHandler.callback.put(requestMessage.getRequestId(), callback);
+        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), callback);
         writeAndFlush(requestMessage);
     }
 
@@ -64,7 +67,7 @@ public abstract class AbstractClient implements SimpleClient {
     public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception {
         final List<ResponseMessage> results = new ArrayList<>();
         final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
-        callbackResponseHandler.callback.put(requestMessage.getRequestId(), response -> {
+        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), response -> {
             if (f.isDone())
                 throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
 
@@ -82,11 +85,11 @@ public abstract class AbstractClient implements SimpleClient {
     }
 
     static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        public Map<UUID, Consumer<ResponseMessage>> callback = new HashMap<>();
+        public Map<UUID, Consumer<ResponseMessage>> callbackByRequestId = new HashMap<>();
 
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            callback.get(response.getRequestId()).accept(response);
+            callbackByRequestId.get(response.getRequestId()).accept(response);
         }
     }
 }

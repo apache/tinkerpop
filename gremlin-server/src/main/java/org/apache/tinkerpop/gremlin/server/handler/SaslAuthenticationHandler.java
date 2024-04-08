@@ -108,16 +108,14 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                         authenticator.getClass().getSimpleName()), ex);
 
                 respondWithError(
-                    requestMessage,
-                    builder -> builder.statusMessage("Authenticator is not ready to handle requests").code(ResponseStatusCode.SERVER_ERROR),
-                    ctx);
+                        requestMessage,
+                        builder -> builder.statusMessage("Authenticator is not ready to handle requests").code(ResponseStatusCode.SERVER_ERROR),
+                        ctx);
             }
 
             return;
-        }
-
-        // If authentication negotiation is pending, store subsequent non-authentication requests for later processing
-        if (negotiator.get() != null && !requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION)) {
+        } else if (!requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION)) {
+            // If authentication negotiation is pending, store subsequent non-authentication requests for later processing
             deferredRequests.setIfAbsent(new ImmutablePair<>(LocalDateTime.now(), new ArrayList<>()));
             deferredRequests.get().getValue().add(requestMessage);
 
@@ -125,20 +123,20 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
             if (deferredDuration.compareTo(MAX_REQUEST_DEFERRABLE_DURATION) > 0) {
                 respondWithError(
-                    requestMessage,
-                    builder -> builder.statusMessage("Too many unauthenticated requests").code(ResponseStatusCode.TOO_MANY_REQUESTS),
-                    ctx);
+                        requestMessage,
+                        builder -> builder.statusMessage("Authentication did not finish in the allowed duration (" + MAX_REQUEST_DEFERRABLE_DURATION + "s).")
+                                    .code(ResponseStatusCode.UNAUTHORIZED),
+                        ctx);
                 return;
             }
 
             return;
-        }
-
-        if (!requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) || !requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
+        } else if (!requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
+            // This is an authentication request that is missing a "sasl" argument.
             respondWithError(
-                requestMessage,
-                builder -> builder.statusMessage("Failed to authenticate").code(ResponseStatusCode.UNAUTHORIZED),
-                ctx);
+                    requestMessage,
+                    builder -> builder.statusMessage("Failed to authenticate").code(ResponseStatusCode.UNAUTHORIZED),
+                    ctx);
             return;
         }
 
@@ -146,11 +144,11 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
         if (!(saslObject instanceof String)) {
             respondWithError(
-                requestMessage,
-                builder -> builder
-                    .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - base64 encoded String is expected")
-                    .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST),
-                ctx);
+                    requestMessage,
+                    builder -> builder
+                            .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - base64 encoded String is expected")
+                            .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST),
+                    ctx);
             return;
         }
 
@@ -191,9 +189,9 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
             }
         } catch (AuthenticationException ae) {
             respondWithError(
-                requestMessage,
-                builder -> builder.statusMessage(ae.getMessage()).code(ResponseStatusCode.UNAUTHORIZED),
-                ctx);
+                    requestMessage,
+                    builder -> builder.statusMessage(ae.getMessage()).code(ResponseStatusCode.UNAUTHORIZED),
+                    ctx);
         }
     }
 
@@ -211,11 +209,11 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
         if (deferredRequests.get() != null) {
             deferredRequests
-                .getAndSet(null).getValue().stream()
-                .map(ResponseMessage::build)
-                .map(buildResponse)
-                .map(ResponseMessage.Builder::create)
-                .forEach(ctx::write);
+                    .getAndSet(null).getValue().stream()
+                    .map(ResponseMessage::build)
+                    .map(buildResponse)
+                    .map(ResponseMessage.Builder::create)
+                    .forEach(ctx::write);
         }
 
         ctx.flush();

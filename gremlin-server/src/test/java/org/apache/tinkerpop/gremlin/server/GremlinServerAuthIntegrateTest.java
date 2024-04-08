@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -176,13 +179,13 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
             // First request will initiate the authentication handshake
             // Subsequent requests will be deferred
-            CompletableFuture<List<ResponseMessage>> future1 = client.submitAsync("");
-            CompletableFuture<List<ResponseMessage>> future2 = client.submitAsync("");
-            CompletableFuture<List<ResponseMessage>> future3 = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration1  = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration2  = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration3  = client.submitAsync("");
 
             // After the maximum allowed deferred request duration,
             // any non-authenticated request will invalidate all requests with 429 error
-            CompletableFuture<List<ResponseMessage>> future4 = CompletableFuture.runAsync(() -> {
+            CompletableFuture<List<ResponseMessage>> futureOfRequestSubmittedTooLate = CompletableFuture.runAsync(() -> {
                 try {
                     Thread.sleep(SaslAuthenticationHandler.MAX_REQUEST_DEFERRABLE_DURATION.plus(Duration.ofSeconds(1)).toMillis());
                 } catch (InterruptedException e) {
@@ -196,18 +199,40 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
                 }
             });
 
-            List<ResponseMessage> responses = new ArrayList<>();
+            assertEquals(2, futureOfRequestWithinAuthDuration1.get().size());
+            assertEquals(1, futureOfRequestWithinAuthDuration2.get().size());
+            assertEquals(1, futureOfRequestWithinAuthDuration3.get().size());
+            assertEquals(1, futureOfRequestSubmittedTooLate.get().size());
 
-            responses.addAll(future1.join());
-            responses.addAll(future2.join());
-            responses.addAll(future3.join());
-            responses.addAll(future4.join());
+            assertEquals(ResponseStatusCode.AUTHENTICATE, futureOfRequestWithinAuthDuration1.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration1.get().get(1).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration2.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration3.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestSubmittedTooLate.get().get(0).getStatus().getCode());
+        }
+    }
 
-            for (ResponseMessage response : responses) {
-                if (response.getStatus().getCode() != ResponseStatusCode.AUTHENTICATE) {
-                    assertEquals(ResponseStatusCode.TOO_MANY_REQUESTS, response.getStatus().getCode());
-                }
-            }
+    @Test
+    public void shouldFailAuthenticateWithIncorrectParallelRequests() throws Exception {
+        try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
+
+            CompletableFuture<List<ResponseMessage>> firstRequest = client.submitAsync("1");
+            CompletableFuture<List<ResponseMessage>> secondRequest  = client.submitAsync("2");
+            CompletableFuture<List<ResponseMessage>> thirdRequest  = client.submitAsync("3");
+
+            Thread.sleep(500);
+
+            // send some incorrect value for username password which should cause all requests to fail.
+            client.submitAsync(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, "someincorrectvalue").create());
+
+            assertEquals(2, firstRequest.get().size());
+            assertEquals(1, secondRequest.get().size());
+            assertEquals(1, thirdRequest.get().size());
+
+            assertEquals(ResponseStatusCode.AUTHENTICATE, firstRequest.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, firstRequest.get().get(1).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, secondRequest.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, thirdRequest.get().get(0).getStatus().getCode());
         }
     }
 
@@ -266,19 +291,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     private static void assertConnection(final Cluster cluster, final Client client) throws InterruptedException, ExecutionException {
         try {
-            CompletableFuture<List<Result>> future1 = client.submitAsync("1+1").thenCompose(ResultSet::all);
-            CompletableFuture<List<Result>> future2 = client.submitAsync("1+2").thenCompose(ResultSet::all);
-            CompletableFuture<List<Result>> future3 = client.submitAsync("1+3").thenCompose(ResultSet::all);
-            CompletableFuture<List<Result>> future4 = client.submitAsync("1+4").thenCompose(ResultSet::all);
-            CompletableFuture<List<Result>> future5 = client.submitAsync("1+5").thenCompose(ResultSet::all);
-            CompletableFuture<List<Result>> future6 = client.submitAsync("1+6").thenCompose(ResultSet::all);
-
-            assertEquals(2, future1.join().get(0).getInt());
-            assertEquals(3, future2.join().get(0).getInt());
-            assertEquals(4, future3.join().get(0).getInt());
-            assertEquals(5, future4.join().get(0).getInt());
-            assertEquals(6, future5.join().get(0).getInt());
-            assertEquals(7, future6.join().get(0).getInt());
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
