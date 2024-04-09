@@ -52,7 +52,7 @@ describe('DriverRemoteConnection', function () {
       });
 
       it('should be able to send multiple requests concurrently with valid credentials and parse the response', async function () {
-        connection = helper.getSecureConnectionWithPlainTextSaslAuthenticator(null, 'stephen', 'password');
+        connection = getSecureConnectionWithPlainTextSaslAuthenticator(null, 'stephen', 'password');
 
         const submissions = await Promise.all(
           Array.from({ length: 10 }).map(() => connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))),
