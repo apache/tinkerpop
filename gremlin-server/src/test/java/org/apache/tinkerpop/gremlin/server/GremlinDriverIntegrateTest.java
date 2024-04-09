@@ -22,6 +22,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -34,7 +35,6 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
@@ -126,7 +126,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void setupForEachTest() {
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
                 name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
+            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(GremlinResponseHandler.class);
             previousLogLevel = webSocketClientHandlerLogger.getLevel();
             webSocketClientHandlerLogger.setLevel(Level.DEBUG);
         }
@@ -138,7 +138,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void afterEachTest() {
         if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
                 name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(WebSocketClientHandler.class);
+            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(GremlinResponseHandler.class);
             webSocketClientHandlerLogger.setLevel(previousLogLevel);
         }
     }

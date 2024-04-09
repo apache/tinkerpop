@@ -124,6 +124,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
             if (ctx.channel().isActive()) ctx.close();
     }
 
+    // todo: solution is not decided
     private Map<String, Object> cleanStatusAttributes(final Map<String, Object> statusAttributes) {
         final Map<String, Object> m = new HashMap<>();
         statusAttributes.forEach((k, v) -> {

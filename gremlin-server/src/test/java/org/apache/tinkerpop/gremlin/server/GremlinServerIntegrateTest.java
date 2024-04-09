@@ -936,11 +936,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessageV4 request = RequestMessageV4.build("new String[100]").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
-            for (Iterator<ResponseMessage> it = responses.iterator(); it.hasNext(); ) {
-                final ResponseMessage msg = it.next();
-                final ResponseStatusCode expected = it.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
-                assertEquals(expected, msg.getStatus().getCode());
-            }
+
+            // first message have no status
+            assertNull(responses.get(0).getStatus());
+            // second one contains last piece of data
+            assertEquals(ResponseStatusCode.SUCCESS, responses.get(1).getStatus().getCode());
+            // last message with no data, but with trailing headers
+            assertEquals(ResponseStatusCode.NO_CONTENT, responses.get(2).getStatus().getCode());
         }
     }
 

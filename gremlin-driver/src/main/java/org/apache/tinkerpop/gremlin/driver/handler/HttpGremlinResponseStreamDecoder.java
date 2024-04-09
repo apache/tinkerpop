@@ -43,7 +43,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     private final MessageChunkSerializer<?> serializer;
 
     public HttpGremlinResponseStreamDecoder(MessageChunkSerializer<?> serializer) {
-
         this.serializer = serializer;
     }
 

@@ -46,9 +46,7 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * A simple, non-thread safe Gremlin Server client using HTTP. Typical use is for testing and demonstration.
  */
 public class SimpleHttpClient extends AbstractClient {
     private static final Logger logger = LoggerFactory.getLogger(SimpleHttpClient.class);
@@ -90,8 +88,6 @@ public class SimpleHttpClient extends AbstractClient {
                 sslCtx = null;
             }
 
-//            final WebSocketClientHandler wsHandler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
-//                    uri, WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE, 65536), 10000, false);
             final MessageChunkSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -104,21 +100,14 @@ public class SimpleHttpClient extends AbstractClient {
                             p.addLast(
                                     new HttpClientCodec(),
                                     new HttpGremlinResponseStreamDecoder(serializer),
-//                                    new HttpObjectAggregator(65536),
-
-//                                    wsHandler,
-//                                    new WebSocketGremlinRequestEncoder(true, serializer),
-//                                    new WebSocketGremlinResponseDecoder(serializer),
                                     new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
-                                    // new HttpGremlinResponseDecoder(serializer),
-                                    new HttpGremlinResponseDebugStreamDecoder(),
+                                    // new HttpGremlinResponseDebugStreamDecoder(),
 
                                     callbackResponseHandler);
                         }
                     });
 
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
-//            wsHandler.handshakeFuture().get(30, TimeUnit.SECONDS);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
