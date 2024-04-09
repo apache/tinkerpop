@@ -1361,7 +1361,7 @@ g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dat
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd()++[`dateAdd()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd(org.apache.tinkerpop.gremlin.process.traversal.DT,int)++[`dateAdd(DT,int)`]
 
 [[dateDiff-step]]
 === DateDiff Step
@@ -1378,7 +1378,8 @@ g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff()++[`dateDiff()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
 
 [[dedup-step]]
 === Dedup Step

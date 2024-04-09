@@ -1879,7 +1879,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Returns the difference between two {@link Date} in epoch time.
      *
      * @return the traversal with an appended {@link DateDiffStep}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - Concat Step</a>
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
