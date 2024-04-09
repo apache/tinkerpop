@@ -50,6 +50,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Deprecated `ltrim()` and `rTrim()` in favor of `l_trim()` and `r_trim` in Python.
 * Fixed bug in `onCreate` for `mergeV()` where use of the `Cardinality` functions was not properly handled.
+* Fixed multiple concurrent initially requests caused authentication to fail.
 
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (November 20, 2023)
