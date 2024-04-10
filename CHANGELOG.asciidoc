@@ -46,11 +46,41 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-2]]
-=== TinkerPop 3.7.2 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.2 (April 8, 2024)
+
+This release also includes changes from <<release-3-6-7, 3.6.7>>.
 
 * Deprecated `ltrim()` and `rTrim()` in favor of `l_trim()` and `r_trim` in Python.
 * Fixed bug in `onCreate` for `mergeV()` where use of the `Cardinality` functions was not properly handled.
 * Fixed multiple concurrent initially requests caused authentication to fail.
+
+==== Bugs
+
+* TINKERPOP-2132 Authentication when using multiple threads fails
+* TINKERPOP-2359 onShutDown not being called when docker container stopped
+* TINKERPOP-2913 Ensure that if tx.commit() is called remotely it does not hang for graphs without transactions
+* TINKERPOP-3012 Wrong hashCode implementation for DetachedVertexPropert
+* TINKERPOP-3022 JavaTranslator failing for has(String, null)
+* TINKERPOP-3025 l_trim() and r_trim() missing in python
+* TINKERPOP-3026 checkAdjacentVertices is misconfigured for python in SubgraphStrategy
+* TINKERPOP-3027 Pick.any should be any_()
+* TINKERPOP-3029 Gremlin.Net: Traversal enumeration fails on .NET 8
+* TINKERPOP-3031 Bad translation for g.tx()
+* TINKERPOP-3039 Java driver won't propagate with args when using aliased client directly
+* TINKERPOP-3049 onCreate for mergeV() doesn't handle Cardinality functions
+* TINKERPOP-3054 RequestId serialization broken in Python GLV
+* TINKERPOP-3056 mergeE is updating vertices in certain conditions
+* TINKERPOP-3061 Concurrent queries will break authentication on javascript driver
+
+==== Improvements
+
+* TINKERPOP-2456 Add missing tests for queries
+* TINKERPOP-2872 Inconsistency in comparing Elements in JavaScript tests
+* TINKERPOP-2995 Create Sample Applications in each GLV
+* TINKERPOP-3020 Incorrect tests
+* TINKERPOP-3021 Publish ARM64 Gremlin Console Images
+* TINKERPOP-3030 Update to .NET 8
+* TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (November 20, 2023)
