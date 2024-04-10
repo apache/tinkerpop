@@ -61,8 +61,6 @@ final class Connection {
     private final String creatingThread;
     private final String createdTimestamp;
 
-    public static final int MAX_IN_PROCESS = 1;
-    public static final int MIN_IN_PROCESS = 0;
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
@@ -84,8 +82,6 @@ final class Connection {
     public final AtomicBoolean isBeingReplaced = new AtomicBoolean(false);
     private final AtomicReference<Class<Channelizer>> channelizerClass = new AtomicReference<>(null);
 
-    private final int maxInProcess;
-
     private final String connectionLabel;
 
     private final Channelizer channelizer;
@@ -93,12 +89,11 @@ final class Connection {
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
     private final AtomicBoolean shutdownInitiated = new AtomicBoolean(false);
 
-    public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
+    public Connection(final URI uri, final ConnectionPool pool) throws ConnectionException {
         this.uri = uri;
         this.cluster = pool.getCluster();
         this.client = pool.getClient();
         this.pool = pool;
-        this.maxInProcess = maxInProcess;
         this.creatingThread = Thread.currentThread().getName();
         this.createdTimestamp = Instant.now().toString();
         connectionLabel = "Connection{host=" + pool.host + "}";
@@ -142,16 +137,6 @@ final class Connection {
         } catch (Exception ex) {
             throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);
         }
-    }
-
-    /**
-     * A connection can only have so many things in process happening on it at once, where "in process" refers to
-     * the maximum number of in-process requests less the number of pending responses.
-     */
-    public int availableInProcess() {
-        // no need for a negative available amount - not sure that the pending size can ever exceed maximum, but
-        // better to avoid the negatives that would ensue if it did
-        return Math.max(0, maxInProcess - pending.size());
     }
 
     /**

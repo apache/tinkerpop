@@ -1367,8 +1367,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxInProcessPerConnection(64)
-                .minInProcessPerConnection(32)
                 .maxConnectionPoolSize(16)
                 .minConnectionPoolSize(8).create();
         final Client client = cluster.connect();
@@ -1805,10 +1803,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 .maxConnectionPoolSize(1)
                 .connectionSetupTimeoutMillis(100)
                 .maxWaitForConnection(150)
-                .minInProcessPerConnection(0)
-                .maxInProcessPerConnection(1)
-                .minSimultaneousUsagePerConnection(0)
-                .maxSimultaneousUsagePerConnection(1)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
