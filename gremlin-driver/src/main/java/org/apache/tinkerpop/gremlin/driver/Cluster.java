@@ -1036,7 +1036,7 @@ public final class Cluster {
         }
 
         public Cluster create() {
-            if (addresses.size() == 0) addContactPoint("localhost");
+            if (addresses.isEmpty()) addContactPoint("localhost");
             if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
             return new Cluster(this);
         }

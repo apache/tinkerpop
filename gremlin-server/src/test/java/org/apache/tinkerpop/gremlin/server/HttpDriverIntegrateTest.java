@@ -65,10 +65,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
 //    @Test
 //    public void shouldSubmitScriptWithGraphSON() throws Exception {
-//        final Cluster cluster = TestClientFactory.build()
-//                .channelizer(Channelizer.HttpChannelizer.class)
-//                .serializer(Serializers.GRAPHSON_V4)
-//                .create();
+//        final Cluster cluster = TestClientFactory.build().create();
 //        try {
 //            final Client client = cluster.connect();
 //            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
@@ -81,10 +78,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldSubmitScriptWithGraphBinary() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect();
             // default chunk size is 64
@@ -115,10 +109,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
 //    @Test
 //    public void shouldGetErrorForBytecodeWithUntypedGraphSON() throws Exception {
-//        final Cluster cluster = TestClientFactory.build()
-//                .channelizer(Channelizer.HttpChannelizer.class)
-//                .serializer(Serializers.GRAPHSON_V4_UNTYPED)
-//                .create();
+//        final Cluster cluster = TestClientFactory.build().create();
 //        try {
 //            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
 //            g.inject("2").toList();
@@ -133,10 +124,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldSubmitBytecodeWithGraphBinary() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
             final String result = g.inject("2").toList().get(0);
@@ -149,11 +137,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
-    public void shouldFailToUseSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V1)
-                .create();
+    public void shouldFailToUseSession() {
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect("shouldFailToUseSession");
             client.submit("1+1").all().get();
@@ -167,11 +152,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
-    public void shouldFailToUseTx() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V1)
-                .create();
+    public void shouldFailToUseTx() {
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
             final Transaction tx = g.tx();
@@ -189,10 +171,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     // !!!
     @Test
     public void shouldDeserializeErrorWithGraphBinary() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
             g.V().next();
@@ -206,10 +185,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
 //    @Test
 //    public void shouldDeserializeErrorWithGraphSON() throws Exception {
-//        final Cluster cluster = TestClientFactory.build()
-//                .channelizer(Channelizer.HttpChannelizer.class)
-//                .serializer(Serializers.GRAPHSON_V4)
-//                .create();
+//        final Cluster cluster = TestClientFactory.build().create();
 //        try {
 //            final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "doesNotExist"));
 //            g.V().next();
@@ -223,10 +199,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect();
 
@@ -252,11 +225,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     // not supported on server side now
     @Test
-    public void shouldProcessTraversalInterruption() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+    public void shouldProcessTraversalInterruption() {
+        final Cluster cluster = TestClientFactory.build().create();
 
         try {
             final Client client = cluster.connect();
@@ -272,11 +242,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     // not supported on server side now
     @Test
-    public void shouldProcessEvalInterruption() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+    public void shouldProcessEvalInterruption() {
+        final Cluster cluster = TestClientFactory.build().create();
 
         try {
             final Client client = cluster.connect();
@@ -292,10 +259,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldFailWithBadClientSideSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -321,10 +285,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldFailWithScriptExecutionException() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -354,10 +315,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect();
 
@@ -379,10 +337,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldWaitForAllResultsToArrive() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect();
 
@@ -403,10 +358,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldStream() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -425,10 +377,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldIterate() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -452,10 +401,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldGetSomeThenSomeMore() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -485,10 +431,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldGetOneThenSomeThenSomeMore() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -520,10 +463,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldCloseWithServerDown() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         try {
             cluster.connect().init();
 
@@ -535,10 +475,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldFailWithBadServerSideSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
         try {
 
@@ -563,10 +500,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldNotThrowNoSuchElementException() {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -579,10 +513,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldEvalInGremlinLang() {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
@@ -595,10 +526,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
     @Test
     public void shouldEvalInGremlinLangWithParameters() throws Exception {
-        final Cluster cluster = TestClientFactory.build()
-                .channelizer(Channelizer.HttpChannelizer.class)
-                .serializer(Serializers.GRAPHBINARY_V4)
-                .create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
