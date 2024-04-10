@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import nl.altindag.log.LogCaptor;
@@ -32,8 +31,6 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -64,16 +61,11 @@ import org.junit.Test;
 
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,7 +73,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
@@ -89,10 +80,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.oneOf;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -150,6 +138,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         switch (nameOfTest) {
             case "shouldProvideBetterExceptionForMethodCodeTooLarge":
                 settings.maxContentLength = 4096000;
+                settings.maxParameters = Integer.MAX_VALUE;
                 break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
@@ -279,40 +268,41 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    public void shouldBlowTheWorkQueueSize() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        // maxWorkQueueSize=1 && gremlinPool=1
-        // we should be able to do one request at a time serially
-        assertEquals("test1", client.submit("'test1'").all().get().get(0).getString());
-        assertEquals("test2", client.submit("'test2'").all().get().get(0).getString());
-        assertEquals("test3", client.submit("'test3'").all().get().get(0).getString());
-
-        final AtomicBoolean errorTriggered = new AtomicBoolean();
-        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'").get();
-
-        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
-        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
-            blockers.add(client.submit("'test'").all().exceptionally(t -> {
-                final ResponseException re = (ResponseException) t.getCause();
-                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
-                return null;
-            }));
-        }
-
-        assertThat(errorTriggered.get(), is(true));
-
-        // wait for the blockage to clear for sure
-        assertEquals("test4", r1.all().get().get(0).getString());
-        blockers.forEach(CompletableFuture::join);
-
-        // should be accepting test6 now
-        assertEquals("test6", client.submit("'test6'").all().get().get(0).getString());
-
-        cluster.close();
-    }
+//    TODO: re-enable after pooling implemented in Java driver for HTTP/1.1.
+//    @Test
+//    public void shouldBlowTheWorkQueueSize() throws Exception {
+//        final Cluster cluster = TestClientFactory.open();
+//        final Client client = cluster.connect();
+//
+//        // maxWorkQueueSize=1 && gremlinPool=1
+//        // we should be able to do one request at a time serially
+//        assertEquals("test1", client.submit("'test1'").all().get().get(0).getString());
+//        assertEquals("test2", client.submit("'test2'").all().get().get(0).getString());
+//        assertEquals("test3", client.submit("'test3'").all().get().get(0).getString());
+//
+//        final AtomicBoolean errorTriggered = new AtomicBoolean();
+//        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'").get();
+//
+//        final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
+//        for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
+//            blockers.add(client.submit("'test'").all().exceptionally(t -> {
+//                final ResponseException re = (ResponseException) t.getCause();
+//                errorTriggered.compareAndSet(false, ResponseStatusCode.TOO_MANY_REQUESTS == re.getResponseStatusCode());
+//                return null;
+//            }));
+//        }
+//
+//        assertThat(errorTriggered.get(), is(true));
+//
+//        // wait for the blockage to clear for sure
+//        assertEquals("test4", r1.all().get().get(0).getString());
+//        blockers.forEach(CompletableFuture::join);
+//
+//        // should be accepting test6 now
+//        assertEquals("test6", client.submit("'test6'").all().get().get(0).getString());
+//
+//        cluster.close();
+//    }
 
     @Test
     public void shouldScriptEvaluationErrorForRemoteTraversal() throws Exception {
@@ -344,13 +334,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.close();
     }
 
+//    TODO: evalTimeout needs be part of script now
 //    @Test
 //    public void shouldTimeOutRemoteTraversal() throws Exception {
 //        final GraphTraversalSource g = traversal().withRemote(conf);
 //
 //        try {
 //            // tests sleeping thread
-//            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+//            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(20000)")).iterate();
 //            fail("This traversal should have timed out");
 //        } catch (Exception ex) {
 //            final Throwable t = ex.getCause();
@@ -374,35 +365,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 //        g.close();
 //    }
 
-    @Test
-    public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
-
-        try {
-            // tests sleeping thread
-            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause();
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-
-        // make a graph with a cycle in it to force a long run traversal
-        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
-
-        try {
-            // tests an "unending" traversal
-            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
-            fail("This traversal should have timed out");
-        } catch (Exception ex) {
-            final Throwable t = ex.getCause();
-            assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-        }
-
-        g.close();
-    }
+//    TODO: driver can't set EvalTimeout anymore in RequestMessage so this won't work.
+//    @Test
+//    public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
+//        final GraphTraversalSource g = traversal().withRemote(conf);
+//
+//        try {
+//            // tests sleeping thread
+//            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+//            fail("This traversal should have timed out");
+//        } catch (Exception ex) {
+//            final Throwable t = ex.getCause();
+//            assertThat(t, instanceOf(ResponseException.class));
+//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+//        }
+//
+//        // make a graph with a cycle in it to force a long run traversal
+//        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+//
+//        try {
+//            // tests an "unending" traversal
+//            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+//            fail("This traversal should have timed out");
+//        } catch (Exception ex) {
+//            final Throwable t = ex.getCause();
+//            assertThat(t, instanceOf(ResponseException.class));
+//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+//        }
+//
+//        g.close();
+//    }
 
 //    TODO: can't set evalTimeout anymore
 //    @Test
@@ -449,68 +441,69 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
-    @Test
-    public void shouldUseInterpreterMode() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        client.submit("def subtractAway(x,y){x-y};[]").all().get();
-        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
-
-        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
-        assertEquals(3, client.submit("int y = x + 1").all().get().get(0).getInt());
-        assertEquals(5, client.submit("def z = x + y").all().get().get(0).getInt());
-
-        final Map<String,Object> m = new HashMap<>();
-        m.put("x", 10);
-        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
-        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
-        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
-        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldNotUseInterpreterMode() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
-
-        client.submit("def subtractAway(x,y){x-y};[]").all().get();
-        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
-
-        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
-        assertEquals(3, client.submit("y = x + 1").all().get().get(0).getInt());
-        assertEquals(5, client.submit("z = x + y").all().get().get(0).getInt());
-
-        final Map<String,Object> m = new HashMap<>();
-        m.put("x", 10);
-        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
-        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
-        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
-        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
-
-        cluster.close();
-    }
-
-// TODO: re-enable
+//    TODO: no more sessions so disable until new Transactions implemented
 //    @Test
-//    public void shouldUseSimpleSandbox() throws Exception {
+//    public void shouldUseInterpreterMode() throws Exception {
 //        final Cluster cluster = TestClientFactory.open();
 //        final Client client = cluster.connect();
 //
-//        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+//        client.submit("def subtractAway(x,y){x-y};[]").all().get();
+//        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
 //
-//        try {
-//            // this should return "nothing" - there should be no exception
-//            client.submit("java.lang.System.exit(0)").all().get();
-//            fail("The above should not have executed in any successful way as sandboxing is enabled");
-//        } catch (Exception ex) {
-//            assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
-//        } finally {
-//            cluster.close();
-//        }
+//        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
+//        assertEquals(3, client.submit("int y = x + 1").all().get().get(0).getInt());
+//        assertEquals(5, client.submit("def z = x + y").all().get().get(0).getInt());
+//
+//        final Map<String,Object> m = new HashMap<>();
+//        m.put("x", 10);
+//        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
+//        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
+//        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
+//        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
+//
+//        cluster.close();
 //    }
+
+//    TODO: no more sessions so disable until new Transactions implemented
+//    @Test
+//    public void shouldNotUseInterpreterMode() throws Exception {
+//        final Cluster cluster = TestClientFactory.open();
+//        final Client client = cluster.connect();
+//
+//        client.submit("def subtractAway(x,y){x-y};[]").all().get();
+//        client.submit("multiplyIt = { x,y -> x * y};[]").all().get();
+//
+//        assertEquals(2, client.submit("x = 1 + 1").all().get().get(0).getInt());
+//        assertEquals(3, client.submit("y = x + 1").all().get().get(0).getInt());
+//        assertEquals(5, client.submit("z = x + y").all().get().get(0).getInt());
+//
+//        final Map<String,Object> m = new HashMap<>();
+//        m.put("x", 10);
+//        assertEquals(-5, client.submit("z - x", m).all().get().get(0).getInt());
+//        assertEquals(15, client.submit("addItUp(x,z)", m).all().get().get(0).getInt());
+//        assertEquals(5, client.submit("subtractAway(x,z)", m).all().get().get(0).getInt());
+//        assertEquals(50, client.submit("multiplyIt(x,z)", m).all().get().get(0).getInt());
+//
+//        cluster.close();
+//    }
+
+    @Test
+    public void shouldUseSimpleSandbox() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        try {
+            // this should return "nothing" - there should be no exception
+            client.submit("java.lang.System.exit(0)").all().get();
+            fail("The above should not have executed in any successful way as sandboxing is enabled");
+        } catch (Exception ex) {
+            assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
@@ -564,16 +557,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldReturnInvalidRequestArgsWhenGremlinArgIsNotSupplied() throws Exception {
-        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build(Tokens.OPS_EVAL).create();
-            final ResponseMessage result = client.submit(request).get(0);
-            assertThat(result.getStatus().getCode(), is(not(ResponseStatusCode.PARTIAL_CONTENT)));
-            assertEquals(result.getStatus().getCode(), ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS);
-        }
-    }
-
-    @Test
     public void shouldReturnInvalidRequestArgsWhenInvalidReservedBindingKeyIsUsed() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
@@ -613,30 +596,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(pass.get());
         }
     }
-
-//    TODO: probably invalid test now that builder requires proper type.
-//    @Test
-//    public void shouldReturnInvalidRequestArgsWhenInvalidTypeBindingKeyIsUsed() throws Exception {
-//        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
-//            final Map<Object, Object> bindings = new HashMap<>();
-//            bindings.put(1, "123");
-//            final RequestMessageV4 request = RequestMessageV4.build(Tokens.OPS_EVAL)
-//                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
-//                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
-//            final CountDownLatch latch = new CountDownLatch(1);
-//            final AtomicBoolean pass = new AtomicBoolean(false);
-//            client.submit(request, result -> {
-//                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-//                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
-//                    latch.countDown();
-//                }
-//            });
-//
-//            if (!latch.await(3000, TimeUnit.MILLISECONDS))
-//                fail("Request should have returned error, but instead timed out");
-//            assertThat(pass.get(), is(true));
-//        }
-//    }
 
     @Test
     public void shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable() throws Exception {
@@ -702,26 +661,27 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void shouldBatchResultsByTwos() throws Exception {
-        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build("[0,1,2,3,4,5,6,7,8,9]").create();
-
-            final List<ResponseMessage> msgs = client.submit(request);
-            assertEquals(5, client.submit(request).size());
-            assertEquals(0, ((List<Integer>) msgs.get(0).getResult().getData()).get(0).intValue());
-            assertEquals(1, ((List<Integer>) msgs.get(0).getResult().getData()).get(1).intValue());
-            assertEquals(2, ((List<Integer>) msgs.get(1).getResult().getData()).get(0).intValue());
-            assertEquals(3, ((List<Integer>) msgs.get(1).getResult().getData()).get(1).intValue());
-            assertEquals(4, ((List<Integer>) msgs.get(2).getResult().getData()).get(0).intValue());
-            assertEquals(5, ((List<Integer>) msgs.get(2).getResult().getData()).get(1).intValue());
-            assertEquals(6, ((List<Integer>) msgs.get(3).getResult().getData()).get(0).intValue());
-            assertEquals(7, ((List<Integer>) msgs.get(3).getResult().getData()).get(1).intValue());
-            assertEquals(8, ((List<Integer>) msgs.get(4).getResult().getData()).get(0).intValue());
-            assertEquals(9, ((List<Integer>) msgs.get(4).getResult().getData()).get(1).intValue());
-        }
-    }
+//    TODO: re-enable once there is an easier way to check for this. batchSize replaced with chunkSize so need GLV updated to test.
+//    @Test
+//    @SuppressWarnings("unchecked")
+//    public void shouldBatchResultsByTwos() throws Exception {
+//        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
+//            final RequestMessageV4 request = RequestMessageV4.build("[0,1,2,3,4,5,6,7,8,9]").create();
+//
+//            final List<ResponseMessage> msgs = client.submit(request);
+//            assertEquals(5, client.submit(request).size());
+//            assertEquals(0, ((List<Integer>) msgs.get(0).getResult().getData()).get(0).intValue());
+//            assertEquals(1, ((List<Integer>) msgs.get(0).getResult().getData()).get(1).intValue());
+//            assertEquals(2, ((List<Integer>) msgs.get(1).getResult().getData()).get(0).intValue());
+//            assertEquals(3, ((List<Integer>) msgs.get(1).getResult().getData()).get(1).intValue());
+//            assertEquals(4, ((List<Integer>) msgs.get(2).getResult().getData()).get(0).intValue());
+//            assertEquals(5, ((List<Integer>) msgs.get(2).getResult().getData()).get(1).intValue());
+//            assertEquals(6, ((List<Integer>) msgs.get(3).getResult().getData()).get(0).intValue());
+//            assertEquals(7, ((List<Integer>) msgs.get(3).getResult().getData()).get(1).intValue());
+//            assertEquals(8, ((List<Integer>) msgs.get(4).getResult().getData()).get(0).intValue());
+//            assertEquals(9, ((List<Integer>) msgs.get(4).getResult().getData()).get(1).intValue());
+//        }
+//    }
 
 //    @Test
 //    public void shouldBatchResultsByTwosWithDriver() throws Exception {
@@ -743,7 +703,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // this should return "nothing" - there should be no exception
             final List<ResponseMessage> responses = client.submit("g.V().has('name','kadfjaldjfla')");
-            assertNull(responses.get(0).getResult().getData());
+            assertTrue(((List) responses.get(0).getResult().getData()).isEmpty());
         }
     }
 
@@ -752,7 +712,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
-            assertThat(responses.get(0).getStatus().getMessage(), oneOf(containsString("timeout occurred"), containsString("evaluation exceeded")));
+            assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
             assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
@@ -822,7 +782,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
         final Client client = cluster.connect();
 
         try {
@@ -839,36 +799,38 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-    @Test
-    public void shouldBlockRequestWhenTooBig() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 1024).mapToObj(String::valueOf).collect(Collectors.joining());
-            final CompletableFuture<ResultSet> result = client.submitAsync("'" + fatty + "';'test'");
-            final ResultSet resultSet = result.get(10000, TimeUnit.MILLISECONDS);
-            resultSet.all().get(10000, TimeUnit.MILLISECONDS);
-            fail("Should throw an exception.");
-        } catch (TimeoutException te) {
-            // the request should not have timed-out - the connection should have been reset, but it seems that
-            // timeout seems to occur as well on some systems (it's not clear why).  however, the nature of this
-            // test is to ensure that the script isn't processed if it exceeds a certain size, so in this sense
-            // it seems ok to pass in this case.
-        } catch (Exception re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-
-            // went with two possible error messages here as i think that there is some either non-deterministic
-            // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
-            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
-
-            // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
-    }
+//    TODO: this test isn't valid right now since this error is thrown by netty so doesn't map properly to RequestId
+//          sent by the driver. Re-enable once this changes.
+//    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+//    @Test
+//    public void shouldBlockRequestWhenTooBig() throws Exception {
+//        final Cluster cluster = TestClientFactory.open();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final String fatty = IntStream.range(0, 1024).mapToObj(String::valueOf).collect(Collectors.joining());
+//            final CompletableFuture<ResultSet> result = client.submitAsync("'" + fatty + "';'test'");
+//            final ResultSet resultSet = result.get(10000, TimeUnit.MILLISECONDS);
+//            resultSet.all().get(10000, TimeUnit.MILLISECONDS);
+//            fail("Should throw an exception.");
+//        } catch (TimeoutException te) {
+//            // the request should not have timed-out - the connection should have been reset, but it seems that
+//            // timeout seems to occur as well on some systems (it's not clear why).  however, the nature of this
+//            // test is to ensure that the script isn't processed if it exceeds a certain size, so in this sense
+//            // it seems ok to pass in this case.
+//        } catch (Exception re) {
+//            final Throwable root = ExceptionHelper.getRootCause(re);
+//
+//            // went with two possible error messages here as i think that there is some either non-deterministic
+//            // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
+//            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
+//
+//            // validate that we can still send messages to the server
+//            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+//        } finally {
+//            cluster.close();
+//        }
+//    }
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {

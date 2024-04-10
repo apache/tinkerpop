@@ -168,7 +168,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
-    // !!!
     @Test
     public void shouldDeserializeErrorWithGraphBinary() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();

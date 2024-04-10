@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializerV4<ObjectMapper>, MessageChunkSerializer<ObjectMapper> {
+public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializerV4<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV4.class);
 
     public AbstractGraphSONMessageSerializerV4() {

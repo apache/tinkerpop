@@ -29,7 +29,7 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.MessageChunkSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.util.List;
@@ -40,9 +40,9 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     // todo: move out
     public static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
 
-    private final MessageChunkSerializer<?> serializer;
+    private final MessageTextSerializerV4<?> serializer;
 
-    public HttpGremlinResponseStreamDecoder(MessageChunkSerializer<?> serializer) {
+    public HttpGremlinResponseStreamDecoder(MessageTextSerializerV4<?> serializer) {
         this.serializer = serializer;
     }
 

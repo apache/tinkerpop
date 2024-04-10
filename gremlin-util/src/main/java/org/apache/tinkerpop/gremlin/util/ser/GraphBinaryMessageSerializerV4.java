@@ -42,7 +42,7 @@ import java.util.UUID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSerializerV1
-    implements MessageChunkSerializer<GraphBinaryMapper>, MessageTextSerializerV4<GraphBinaryMapper> {
+    implements MessageTextSerializerV4<GraphBinaryMapper> {
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
