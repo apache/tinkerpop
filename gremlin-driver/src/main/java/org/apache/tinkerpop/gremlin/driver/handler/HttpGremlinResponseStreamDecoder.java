@@ -50,13 +50,15 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     protected void decode(ChannelHandlerContext ctx, DefaultHttpObject msg, List<Object> out) throws Exception {
         final Attribute<Boolean> isFirstChunk = ((AttributeMap) ctx).attr(IS_FIRST_CHUNK);
 
+        System.out.println("HttpGremlinResponseStreamDecoder start");
+
         if (msg instanceof DefaultHttpResponse) {
             isFirstChunk.set(true);
         }
 
         if (msg instanceof DefaultHttpContent) {
             try {
-                if (ctx.attr(IS_FIRST_CHUNK).get()) {
+                if (isFirstChunk.get()) {
                     System.out.println("first chunk");
                 } else {
                     System.out.println("not first chunk");
@@ -87,5 +89,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                 throw new RuntimeException(e);
             }
         }
+
+        System.out.println("----------------------------");
     }
 }

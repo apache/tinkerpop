@@ -106,6 +106,8 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
             pending.remove(requestId).markComplete(response.getStatus().getAttributes());
         }
+
+        System.out.println("----------------------------");
     }
 
     @Override

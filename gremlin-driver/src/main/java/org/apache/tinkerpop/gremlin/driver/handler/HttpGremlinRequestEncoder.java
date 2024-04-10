@@ -94,6 +94,8 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
             objects.add(interceptor.apply(request));
+
+            System.out.println("----------------------------");
         } catch (Exception ex) {
             throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
