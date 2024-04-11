@@ -25,13 +25,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import static org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.NO_CONTENT;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -66,13 +67,14 @@ public abstract class AbstractClient implements SimpleClient {
         final List<ResponseMessage> results = new ArrayList<>();
         final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
-            if (f.isDone())
+            // message with trailers
+            if (f.isDone() && response.getStatus().getCode() != NO_CONTENT)
                 throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
 
             results.add(response);
 
             // check if the current message is terminating - if it is then we can mark complete
-            if (response.getStatus().getCode().isFinalResponse()) {
+            if (response.getStatus() != null && response.getStatus().getCode().isFinalResponse()) {
                 f.complete(results);
             }
         };
