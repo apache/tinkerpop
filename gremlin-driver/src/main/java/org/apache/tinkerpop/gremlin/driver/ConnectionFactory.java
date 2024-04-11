@@ -31,7 +31,7 @@ interface ConnectionFactory {
      * Create a connection for the specified {@link ConnectionPool}.
      */
     public default Connection create(final ConnectionPool pool) throws ConnectionException {
-        return new Connection(pool.host.getHostUri(), pool, pool.settings().maxInProcessPerConnection);
+        return new Connection(pool.host.getHostUri(), pool);
     }
 
     /**
