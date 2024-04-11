@@ -25,7 +25,7 @@ limitations under the License.
     <logger name="org.apache.tinkerpop.gremlin.server.AbstractChannelizer" level="ERROR"/>
     <!-- this logger is noisy and we don't assert anything and the error is already tracked on the server so we can
          trim the logs a bit with this. -->
-    <logger name="org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler" level="OFF"/>
+    <logger name="org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler" level="OFF"/>
     <root level="WARN">
         <appender-ref ref="stdout"/>
     </root>

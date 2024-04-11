@@ -20,17 +20,12 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.HandshakeInterceptor;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,11 +34,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
-import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +45,7 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A simple, non-thread safe Gremlin Server client using websockets.  Typical use is for testing and demonstration.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * A simple, non-thread safe Gremlin Server client using HTTP. Typical use is for testing and demonstration.
  */
 public class SimpleHttpClient extends AbstractClient {
     private static final Logger logger = LoggerFactory.getLogger(SimpleHttpClient.class);
@@ -96,7 +87,7 @@ public class SimpleHttpClient extends AbstractClient {
                 sslCtx = null;
             }
 
-            final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
+            final MessageTextSerializerV4<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
@@ -107,9 +98,11 @@ public class SimpleHttpClient extends AbstractClient {
                             }
                             p.addLast(
                                     new HttpClientCodec(),
-                                    new HttpObjectAggregator(65536),
+                                    // new HttpObjectAggregator(65536),
+                                    new HttpGremlinResponseStreamDecoder(serializer),
                                     new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
-                                    new HttpGremlinResponseDecoder(serializer),
+                                    // new HttpGremlinResponseDebugStreamDecoder(),
+
                                     callbackResponseHandler);
                         }
                     });

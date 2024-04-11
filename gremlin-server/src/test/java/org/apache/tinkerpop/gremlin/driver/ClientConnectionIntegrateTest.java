@@ -188,12 +188,9 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void overLimitOperationsShouldDelegateToSingleNewConnection() throws InterruptedException {
         final int operations = 6;
-        final int usagePerConnection = 3;
         final Cluster cluster = TestClientFactory.build()
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(operations)
-                .minSimultaneousUsagePerConnection(1)
-                .maxSimultaneousUsagePerConnection(usagePerConnection)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -226,7 +223,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
 
             assertEquals(2, connectionBorrowCount.size());
             for (int finalBorrowCount : connectionBorrowCount.values()) {
-                assertEquals(usagePerConnection, finalBorrowCount);
+                assertEquals(1, finalBorrowCount);
             }
 
         } finally {

@@ -96,10 +96,6 @@ public class SettingsTest {
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
-        assertEquals(300, settings.connectionPool.minSimultaneousUsagePerConnection);
-        assertEquals(400, settings.connectionPool.maxSimultaneousUsagePerConnection);
-        assertEquals(500, settings.connectionPool.maxInProcessPerConnection);
-        assertEquals(600, settings.connectionPool.minInProcessPerConnection);
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
         assertEquals(800, settings.connectionPool.maxContentLength);
         assertEquals(900, settings.connectionPool.reconnectInterval);
