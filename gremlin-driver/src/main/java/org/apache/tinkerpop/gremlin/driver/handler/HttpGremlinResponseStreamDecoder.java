@@ -20,11 +20,11 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpObject;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
@@ -52,11 +52,11 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
         System.out.println("HttpGremlinResponseStreamDecoder start");
 
-        if (msg instanceof DefaultHttpResponse) {
+        if (msg instanceof HttpResponse) {
             isFirstChunk.set(true);
         }
 
-        if (msg instanceof DefaultHttpContent) {
+        if (msg instanceof HttpContent) {
             try {
                 if (isFirstChunk.get()) {
                     System.out.println("first chunk");
@@ -64,14 +64,14 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     System.out.println("not first chunk");
                 }
 
-                final ResponseMessage chunk = serializer.readChunk(((DefaultHttpContent) msg).content(), isFirstChunk.get());
+                final ResponseMessage chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());
 
                 if (chunk.getResult().getData() != null) {
                     System.out.println("payload size: " + ((List) chunk.getResult().getData()).size());
                 }
 
-                if (msg instanceof DefaultLastHttpContent) {
-                    final HttpHeaders trailingHeaders = ((DefaultLastHttpContent) msg).trailingHeaders();
+                if (msg instanceof LastHttpContent) {
+                    final HttpHeaders trailingHeaders = ((LastHttpContent) msg).trailingHeaders();
 
                     System.out.println("final chunk, trailing headers:");
                     System.out.println(trailingHeaders);

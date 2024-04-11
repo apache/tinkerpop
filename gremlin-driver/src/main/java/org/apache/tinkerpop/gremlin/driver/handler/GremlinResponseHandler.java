@@ -70,9 +70,9 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         final ResponseStatusCode statusCode = response.getStatus() == null ? ResponseStatusCode.PARTIAL_CONTENT : response.getStatus().getCode();
         final ResultQueue queue = pending.get(requestId);
-        System.out.println("Handler.GremlinResponseHandler get requestId: " + requestId);
+        System.out.println("GremlinResponseHandler get requestId: " + requestId);
         if (response.getResult().getData() != null) {
-            System.out.println("Handler.GremlinResponseHandler payload size: " + ((List) response.getResult().getData()).size());
+            System.out.println("GremlinResponseHandler payload size: " + ((List) response.getResult().getData()).size());
         }
 
         if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
