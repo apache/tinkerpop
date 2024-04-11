@@ -397,10 +397,6 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxConnectionPoolSize(5)
                 .maxWaitForConnection(15000) // large value ensures that request will eventually find a connection.
                 .connectionSetupTimeoutMillis(1000)
-                .minInProcessPerConnection(0)
-                .maxInProcessPerConnection(1)
-                .minSimultaneousUsagePerConnection(0)
-                .maxSimultaneousUsagePerConnection(1)
                 .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
@@ -430,10 +426,6 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxConnectionPoolSize(5)
                 .maxWaitForConnection(250) // small value ensures that requests will return TimeoutException.
                 .connectionSetupTimeoutMillis(100)
-                .minInProcessPerConnection(0)
-                .maxInProcessPerConnection(1)
-                .minSimultaneousUsagePerConnection(0)
-                .maxSimultaneousUsagePerConnection(1)
                 .serializer(Serializers.GRAPHSON_V2)
                 .create();
 

@@ -174,7 +174,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         final List<Object> result = new ArrayList<>();
         while (buffer.readableBytes() != 0) {
             final Object obj = reader.read(buffer);
-            if (obj.equals(Marker.END_OF_STREAM)) {
+            if (Marker.END_OF_STREAM.equals(obj)) {
                 break;
             }
             result.add(obj);

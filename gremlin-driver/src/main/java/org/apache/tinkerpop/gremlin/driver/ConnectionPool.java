@@ -52,8 +52,6 @@ final class ConnectionPool {
 
     public static final int MIN_POOL_SIZE = 2;
     public static final int MAX_POOL_SIZE = 8;
-    public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 0;
-    public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 1;
     // A small buffer in millis used for comparing if a connection was created within a certain amount of time.
     private static final int CONNECTION_SETUP_TIME_DELTA = 25;
 
@@ -65,9 +63,6 @@ final class ConnectionPool {
     private final Set<Connection> bin = new CopyOnWriteArraySet<>();
     private final int minPoolSize;
     private final int maxPoolSize;
-    private final int minSimultaneousUsagePerConnection;
-    private final int maxSimultaneousUsagePerConnection;
-    private final int minInProcess;
     private final String poolLabel;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
@@ -115,9 +110,6 @@ final class ConnectionPool {
         final Settings.ConnectionPoolSettings settings = settings();
         this.minPoolSize = overrideMinPoolSize.orElse(settings.minSize);
         this.maxPoolSize = overrideMaxPoolSize.orElse(settings.maxSize);
-        this.minSimultaneousUsagePerConnection = settings.minSimultaneousUsagePerConnection;
-        this.maxSimultaneousUsagePerConnection = settings.maxSimultaneousUsagePerConnection;
-        this.minInProcess = settings.minInProcessPerConnection;
 
         this.connections = new CopyOnWriteArrayList<>();
         this.open = new AtomicInteger();
@@ -223,22 +215,14 @@ final class ConnectionPool {
                 return;
             }
 
-            // destroy a connection that exceeds the minimum pool size - it does not have the right to live if it
-            // isn't busy. replace a connection that has a low available in process count which likely means that
-            // it's backing up with requests that might never have returned. consider the maxPoolSize in this condition
-            // because if it is equal to 1 (which it is for a session) then there is no need to replace the connection
-            // as it will be responsible for every single request. if neither of these scenarios are met then let the
-            // world know the connection is available.
             final int poolSize = connections.size();
-            final int availableInProcess = connection.availableInProcess();
-            if (poolSize > minPoolSize && borrowed <= minSimultaneousUsagePerConnection) {
+            if (poolSize > minPoolSize ) {
                 if (logger.isDebugEnabled())
-                    logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
-                            host, poolSize, minPoolSize, borrowed, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
+                    logger.debug("destroy {}",connection.getConnectionInfo());
                 destroyConnection(connection);
-            } else if (availableInProcess < minInProcess && maxPoolSize > 1) {
+            } else if (maxPoolSize > 1) {
                 if (logger.isDebugEnabled())
-                    logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
+                    logger.debug("replace {}", connection.getConnectionInfo());
                 replaceConnection(connection);
             } else
                 announceAvailableConnection();
@@ -565,11 +549,12 @@ final class ConnectionPool {
      * pool.
      */
     private synchronized Connection getLeastUsedValidConnection() {
+        // todo: just take first unused
         int minInFlight = Integer.MAX_VALUE;
         Connection leastBusy = null;
         for (Connection connection : connections) {
             final int inFlight = connection.borrowed.get();
-            if (!connection.isDead() && inFlight < minInFlight && inFlight < maxSimultaneousUsagePerConnection) {
+            if (!connection.isDead() && inFlight < minInFlight && inFlight < 1) {
                 minInFlight = inFlight;
                 leastBusy = connection;
             }
@@ -577,7 +562,7 @@ final class ConnectionPool {
 
         if (leastBusy != null) {
             // Increment borrow count and consider making a new connection if least used connection hits usage maximum
-            if (leastBusy.borrowed.incrementAndGet() >= maxSimultaneousUsagePerConnection
+            if (leastBusy.borrowed.incrementAndGet() > 0
                     && connections.size() < maxPoolSize) {
                 if (logger.isDebugEnabled())
                     logger.debug("Least used {} on {} reached maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
