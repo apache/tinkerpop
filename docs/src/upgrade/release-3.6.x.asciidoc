@@ -21,6 +21,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Tinkerheart*
 
+== TinkerPop 3.6.8
+
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.8/CHANGELOG.asciidoc#release-3-6-8[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+=== Upgrading for Providers
+
+
 == TinkerPop 3.6.7
 
 *Release Date: April 8, 2024*
@@ -46,8 +58,6 @@ Older platforms than .NET 8 are not affected as `IEnumerable.Current` returned `
 Gremlin.Net driver expected.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3029[TINKERPOP-3029]
-
-=== Upgrading for Providers
 
 
 == TinkerPop 3.6.6
