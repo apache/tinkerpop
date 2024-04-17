@@ -328,9 +328,6 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
 
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
-            jsonGenerator.writeStringField(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId().toString() : null);
-            // todo: write tx id
-
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
             jsonGenerator.writeObject(Collections.emptyList());
 
@@ -372,6 +369,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
             jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
             jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
+            jsonGenerator.writeStringField(SerTokens.TOKEN_EXCEPTION, responseMessage.getStatus().getException());
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
@@ -386,9 +384,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         @Override
         public ResponseMessage createObject(final Map<String, Object> data) {
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
-            return ResponseMessage.build(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()))
+            return ResponseMessage.build()
                     .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(String.valueOf(status.get(SerTokens.TOKEN_MESSAGE)))
+                    .exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)))
                     .result(data.get(SerTokens.TOKEN_RESULT))
                     .create();
         }
