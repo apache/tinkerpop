@@ -360,7 +360,7 @@ public abstract class Client {
 //        options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
         options.getParameters().ifPresent(params -> request.addBindings(params));
         options.getAliases().ifPresent(aliases -> {if (aliases.get("g") != null) request.addG(aliases.get("g")); });
-        options.getOverrideRequestId().ifPresent(request::overrideRequestId);
+//        options.getOverrideRequestId().ifPresent(request::overrideRequestId);
 //        options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
 //        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
@@ -657,7 +657,7 @@ public abstract class Client {
                 // apply settings if they were made available
                 options.getBatchSize().ifPresent(batchSize -> request.addChunkSize(batchSize));
 //                options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
-                options.getOverrideRequestId().ifPresent(request::overrideRequestId);
+//                options.getOverrideRequestId().ifPresent(request::overrideRequestId);
 //                options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
 //                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 

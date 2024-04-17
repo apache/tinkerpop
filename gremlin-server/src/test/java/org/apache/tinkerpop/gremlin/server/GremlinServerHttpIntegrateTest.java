@@ -70,12 +70,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringRegularExpression.matchesRegex;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -229,6 +231,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(405, response.getStatusLine().getStatusCode());
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
         }
     }
 
@@ -241,18 +244,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
-        }
-    }
-
-    @Test
-    public void should400OnPOSTWithNonUUIDRequestId() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"2-1\", \"requestId\":\"nonsense\"}", Consts.UTF_8));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(400, response.getStatusLine().getStatusCode());
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
         }
     }
 
@@ -865,6 +857,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode()); // Temporarily 200 OK.
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals("Division by zero", node.get("status").get("message").asText());
@@ -1196,6 +1189,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
             assertTrue(response.getEntity().isChunked());
 
             final String json = EntityUtils.toString(response.getEntity());
@@ -1223,6 +1217,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
             assertTrue(response.getEntity().isChunked());
 
             final String json = EntityUtils.toString(response.getEntity());
@@ -1380,6 +1375,22 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             final JsonNode node = mapper.readTree(EntityUtils.toString(response.getEntity()));
             assertTrue(node.get("status").get("message").asText().contains("Failed to interpret Gremlin query"));
+        }
+    }
+
+    @Test
+    public void shouldIgnoreRequestIdInPostRequest() throws Exception {
+        final UUID requestId = UUID.fromString("1e55c495-22d5-4a39-934a-a2744ba010ef");
+        final String body = "{ \"gremlin\": \"" + "g.V()" + "\", \"requestId\": \"" + requestId + "\", \"g\": \"gmodern" + "\", \"language\":  \"gremlin-lang\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
+            assertNotEquals(requestId, UUID.fromString(response.getLastHeader(REQUEST_ID_HEADER_NAME).getValue()));
         }
     }
 

@@ -286,9 +286,6 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         public RequestMessageV4 createObject(final Map<String, Object> data) {
             RequestMessageV4.Builder builder = RequestMessageV4.build(data.get(SerTokens.TOKEN_GREMLIN));
 
-            if (data.containsKey(SerTokens.TOKEN_REQUEST)) {
-                builder.overrideRequestId(UUID.fromString(data.get(SerTokens.TOKEN_REQUEST).toString()));
-            }
             if (data.containsKey(SerTokens.TOKEN_LANGUAGE)) {
                 builder.addLanguage(data.get(SerTokens.TOKEN_LANGUAGE).toString());
             }

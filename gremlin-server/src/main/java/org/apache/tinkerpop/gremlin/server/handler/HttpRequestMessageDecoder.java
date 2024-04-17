@@ -218,13 +218,10 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
         final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
 
-        final JsonNode requestIdNode = body.get(Tokens.REQUEST_ID);
-        final UUID requestId = null == requestIdNode ? UUID.randomUUID() : UUID.fromString(requestIdNode.asText());
-
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         final Integer chunkSize = null == chunkSizeNode ? null : chunkSizeNode.asInt();
 
-        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText()).overrideRequestId(requestId)
+        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText())
                 .addBindings(bindings).addLanguage(language);
         if (null != g) builder.addG(g);
         if (null != chunkSize) builder.addChunkSize(chunkSize);

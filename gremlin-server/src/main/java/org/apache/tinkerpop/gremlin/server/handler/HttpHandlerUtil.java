@@ -80,8 +80,7 @@ import static io.netty.handler.codec.http.LastHttpContent.EMPTY_LAST_CONTENT;
 public class HttpHandlerUtil {
     private static final Logger logger = LoggerFactory.getLogger(HttpHandlerUtil.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
-    private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
-    private static final String ARGS_ALIASES_DOT = Tokens.ARGS_ALIASES + ".";
+
     /**
      * A generic mapper to return JSON errors in specific cases.
      */
