@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.javatuples.Pair;
 
+import java.util.UUID;
+
 /**
  * Keys used in the various handlers to store state in the pipeline.
  *
@@ -53,6 +55,11 @@ public final class StateKey {
      * The key for the current request.
      */
     public static final AttributeKey<RequestMessage> REQUEST_MESSAGE = AttributeKey.valueOf("request");
+
+    /**
+     * The key for the current request ID.
+     */
+    public static final AttributeKey<UUID> REQUEST_ID = AttributeKey.valueOf("requestId");
 
     /**
      * The key for the current {@link AuthenticatedUser}.

@@ -72,9 +72,7 @@ public class HttpRequestMessageDecoderTest {
         final HttpRequestMessageDecoder requestMessageDecoder = new HttpRequestMessageDecoder(serializers);
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
 
-        final RequestMessageV4 request = RequestMessageV4.build("g.V()")
-                .overrideRequestId(UUID.randomUUID())
-                .create();
+        final RequestMessageV4 request = RequestMessageV4.build("g.V()").create();
 
         final ByteBuf buffer = graphSONSerializer.serializeRequestMessageV4(request, allocator);
 
@@ -98,9 +96,7 @@ public class HttpRequestMessageDecoderTest {
         final HttpRequestMessageDecoder requestMessageDecoder = new HttpRequestMessageDecoder(serializers);
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
 
-        final RequestMessageV4 request = RequestMessageV4.build("g.V()")
-                .overrideRequestId(UUID.randomUUID())
-                .create();
+        final RequestMessageV4 request = RequestMessageV4.build("g.V()").addLanguage("gremlin-lang").create();
 
         final ByteBuf buffer = graphBinarySerializer.serializeRequestMessageV4(request, allocator);
 
