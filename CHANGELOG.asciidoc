@@ -45,6 +45,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
+[[release-3-7-3]]
+=== TinkerPop 3.7.3 (NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-6-8, 3.6.8>>.
+
+
+
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
 
@@ -333,6 +340,10 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 == TinkerPop 3.6.0 (Tinkerheart)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
+
+[[release-3-6-8]]
+=== TinkerPop 3.6.8 (NOT OFFICIALLY RELEASED YET)
+
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
