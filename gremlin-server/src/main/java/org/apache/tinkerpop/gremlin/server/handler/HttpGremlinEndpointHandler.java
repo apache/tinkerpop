@@ -617,7 +617,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
             // for this state no need to build full ResponseMessage
             if (ctx.getRequestState() != STREAMING) {
-                final ResponseMessage.Builder builder = ResponseMessage.buildV4(msg.getRequestId()).result(aggregate);
+                final ResponseMessage.Builder builder = ResponseMessage.buildV4().result(aggregate);
 
                 // need to put status in last message
                 if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
@@ -639,7 +639,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     }
                     ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessage.buildV4(msg.getRequestId())
+                    return serializer.serializeResponseAsBinary(ResponseMessage.buildV4()
                             .result(aggregate)
                             .code(ResponseStatusCode.SUCCESS)
                             .statusMessage("OK")
