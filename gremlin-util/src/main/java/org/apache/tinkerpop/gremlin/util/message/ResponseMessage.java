@@ -111,10 +111,6 @@ public final class ResponseMessage {
         return new Builder(requestMessage);
     }
 
-    public static Builder build(final RequestMessageV4 requestMessage) {
-        return new Builder(requestMessage);
-    }
-
     public static Builder build(final UUID requestId) {
         return new Builder(requestId);
     }

@@ -31,13 +31,6 @@ import static org.junit.Assert.fail;
 
 public class RequestMessageV4Test {
     @Test
-    public void shouldOverrideRequest() {
-        final UUID request = UUID.randomUUID();
-        final RequestMessageV4 msg = RequestMessageV4.build("x").overrideRequestId(request).create();
-        assertEquals(request, msg.getRequestId());
-    }
-
-    @Test
     public void shouldSetScriptGremlin() {
         final String script = "g.V().both()";
         final RequestMessageV4 msg = RequestMessageV4.build(script).create();
@@ -93,17 +86,15 @@ public class RequestMessageV4Test {
     @Test
     public void shouldGetFields() {
         final String g = "gmodern";
-        final UUID rId = UUID.randomUUID();
         final String lang = "lang";
         final String query = "g.V()";
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("b", "c");
         bindings.put("g", "gmodern");
 
-        final RequestMessageV4 msg = RequestMessageV4.build(query).addG(g).addBindings(bindings).addLanguage(lang).overrideRequestId(rId).create();
+        final RequestMessageV4 msg = RequestMessageV4.build(query).addG(g).addBindings(bindings).addLanguage(lang).create();
         final Map<String, Object> fields = msg.getFields();
         assertEquals(g, fields.get(Tokens.ARGS_G));
-        assertEquals(rId, fields.get(Tokens.REQUEST_ID));
         assertEquals(lang, fields.get(Tokens.ARGS_LANGUAGE));
         assertEquals(bindings, fields.get(Tokens.ARGS_BINDINGS));
         assertEquals(query, msg.getGremlin());

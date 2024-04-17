@@ -55,8 +55,7 @@ public final class Tokens {
     public static final String ARGS_BINDINGS = "bindings";
 
     /**
-     * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
-     * the remote system.
+     * @Deprecated
      */
     public static final String ARGS_ALIASES = "aliases";
 
