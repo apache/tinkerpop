@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -26,12 +27,21 @@ import java.util.Map;
 public final class ResponseStatus {
     private final ResponseStatusCode code;
     private final String message;
+    private final String exception;
     private final Map<String, Object> attributes;
 
     public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String, Object> attributes) {
         this.code = code;
         this.message = message;
         this.attributes = attributes;
+        this.exception = null;
+    }
+
+    public ResponseStatus(final ResponseStatusCode code, final String message, final String exception) {
+        this.code = code;
+        this.message = message;
+        this.exception = exception;
+        this.attributes = Collections.emptyMap();
     }
 
     /**
@@ -49,6 +59,13 @@ public final class ResponseStatus {
     }
 
     /**
+     * Gets the exception in case of error.
+     */
+    public String getException() {
+        return exception;
+    }
+
+    /**
      * Gets the meta-data related to the response.  If meta-data is returned it is to be considered specific to the
      * "op" that is executed.  Not all "op" implementations will return meta-data.
      */
@@ -61,7 +78,7 @@ public final class ResponseStatus {
         return "ResponseStatus{" +
                 "code=" + code +
                 ", message='" + message + '\'' +
-                ", attributes=" + attributes +
+                ", exception=" + exception +
                 '}';
     }
 }
