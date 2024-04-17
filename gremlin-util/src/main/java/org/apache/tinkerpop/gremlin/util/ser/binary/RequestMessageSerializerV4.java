@@ -63,9 +63,6 @@ public class RequestMessageSerializerV4 {
             }
 
             final RequestMessageV4.Builder builder = RequestMessageV4.build(gremlin);
-            if (fields.containsKey(SerTokens.TOKEN_REQUEST)) {
-                builder.overrideRequestId(UUID.fromString(fields.get(SerTokens.TOKEN_REQUEST).toString()));
-            }
             if (fields.containsKey(SerTokens.TOKEN_LANGUAGE)) {
                 builder.addLanguage(fields.get(SerTokens.TOKEN_LANGUAGE).toString());
             }
