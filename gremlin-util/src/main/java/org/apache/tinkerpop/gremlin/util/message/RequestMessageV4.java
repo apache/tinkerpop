@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * The model for a request message in the HTTP body that is sent to the server.
+ * The model for a request message in the HTTP body that is sent to the server beginning in 4.0.0.
  */
 public final class RequestMessageV4 {
     /**
@@ -150,16 +150,6 @@ public final class RequestMessageV4 {
         private Builder(final Object gremlin) {
             this.gremlin = gremlin;
             this.fields.put(Tokens.REQUEST_ID, UUID.randomUUID());
-        }
-
-        /**
-         * Override the request identifier with a specified one, otherwise the {@link Builder} will randomly generate
-         * a {@link UUID}.
-         */
-        public Builder overrideRequestId(final UUID requestId) {
-            Objects.requireNonNull(requestId, "requestId argument cannot be null.");
-            this.fields.put(Tokens.REQUEST_ID, requestId);
-            return this;
         }
 
         public Builder addLanguage(final String language) {
