@@ -420,7 +420,11 @@ public class GroovyTranslatorTests
             { _g.V().Has("runways", P.Inside(3, 5)), "g.V().has('runways', P.inside([3, 5]))" },
             { _g.V("44").OutE().ElementMap<object>(), "g.V('44').outE().elementMap()" },
             { _g.V("44").ValueMap<object, object>().By(__.Unfold<object>()), "g.V('44').valueMap().by(__.unfold())" },
-
+            {
+                _g.V().Property(new Dictionary<string, object> { { "name", "test" }, { "age", 30 } }),
+                "g.V().property(['name': 'test', 'age': 30])"
+            },
+            
             // TODO: Support WithOptions
             {
                 _g.V("44").ValueMap<object, object>().With(WithOptions.Tokens, WithOptions.Labels),
@@ -454,7 +458,8 @@ public class GroovyTranslatorTests
                 "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), edges: __.hasLabel('route'))).V().count()"
             },
             {
-                _g.WithStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.Has("region", "US-TX"), checkAdjacentVertices: true)).V()
+                _g.WithStrategies(new ReadOnlyStrategy(),
+                        new SubgraphStrategy(vertices: __.Has("region", "US-TX"), checkAdjacentVertices: true)).V()
                     .Count(),
                 "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), checkAdjacentVertices: true)).V().count()"
             },
