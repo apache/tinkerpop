@@ -19,8 +19,9 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -31,25 +32,26 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @SuppressWarnings("unchecked")
-public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3Test {
+public class GraphSONMessageSerializerV4Test {
 
+    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
     private final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void shouldSerializeChunkedResponseMessage() throws SerializationException, JsonProcessingException {
-        final UUID id = UUID.randomUUID();
-        final ResponseMessage header = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessage footer = ResponseMessage.buildV4(id)
+        final ResponseMessage footer = ResponseMessage.buildV4()
                 .result(Arrays.asList("footer", 3))
                 .code(ResponseStatusCode.SUCCESS)
                 .statusMessage("OK")
@@ -75,7 +77,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
         // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
-        assertEquals(id, deserialized.getRequestId());
+        assertNull(deserialized.getRequestId());
         assertEquals(200, deserialized.getStatus().getCode().getValue());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
@@ -83,8 +85,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
     @Test
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
-        final UUID id = UUID.randomUUID();
-        final ResponseMessage header = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4()
                 .code(ResponseStatusCode.SUCCESS)
                 .statusMessage("OK")
                 .create();
@@ -101,7 +102,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         bb0.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
-        assertEquals(id, deserialized.getRequestId());
+        assertNull(deserialized.getRequestId());
         assertEquals(200, deserialized.getStatus().getCode().getValue());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -109,8 +110,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithEmptyData() throws SerializationException, JsonProcessingException {
-        final UUID id = UUID.randomUUID();
-        final ResponseMessage header = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4()
                 .result(new ArrayList<>())
                 .code(ResponseStatusCode.SUCCESS)
                 .statusMessage("OK")
@@ -128,7 +128,7 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         bb0.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
-        assertEquals(id, deserialized.getRequestId());
+        assertNull(deserialized.getRequestId());
         assertEquals(200, deserialized.getStatus().getCode().getValue());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -136,12 +136,11 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithError() throws SerializationException, JsonProcessingException {
-        final UUID id = UUID.randomUUID();
-        final ResponseMessage header = ResponseMessage.buildV4(id)
+        final ResponseMessage header = ResponseMessage.buildV4()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessage footer = ResponseMessage.buildV4(id)
+        final ResponseMessage footer = ResponseMessage.buildV4()
                 .result(Arrays.asList("footer", 3))
                 .code(ResponseStatusCode.SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
@@ -166,20 +165,9 @@ public class GraphSONMessageSerializerV4Test extends GraphSONMessageSerializerV3
 
         bbCombined.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
-        assertEquals(id, deserialized.getRequestId());
+        assertNull(deserialized.getRequestId());
         assertEquals(500, deserialized.getStatus().getCode().getValue());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
-    }
-
-    @Override
-    protected ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
-        return serializer.deserializeResponse(bb);
-    }
-
-    @Override
-    protected ResponseMessage convert(final Object toSerialize) throws SerializationException {
-        return convert(toSerialize, this.serializer);
     }
 }

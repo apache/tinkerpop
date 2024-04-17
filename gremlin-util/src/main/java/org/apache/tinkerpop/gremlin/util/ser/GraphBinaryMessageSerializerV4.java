@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializerV4;
-import org.javatuples.Pair;
+import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -129,11 +129,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
             if (parts.contains(MessageParts.HEADER)) {
                 // Version
                 buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
-
-                // Nullable request id
-                writer.writeValue(responseMessage.getRequestId(), buffer, true);
-                // Nullable tx id, todo: add real value when ready
-                writer.writeValue((UUID)null, buffer, true);
             }
 
             if (parts.contains(MessageParts.DATA)) {
@@ -156,6 +151,8 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
                 writer.writeValue(status.getCode().getValue(), buffer, false);
                 // Nullable status message
                 writer.writeValue(status.getMessage(), buffer, true);
+                // Nullable exception
+                writer.writeValue(status.getException(), buffer, true);
             }
         } catch (IOException e) {
             throw new SerializationException(e);
@@ -182,9 +179,12 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         return result;
     }
 
-    private Pair<ResponseStatusCode, String> readFooter(final Buffer buffer) throws IOException {
-        return Pair.with(ResponseStatusCode.getFromValue(reader.readValue(buffer, Integer.class, false)),
-                reader.readValue(buffer, String.class, true));
+    private Triplet<ResponseStatusCode, String, String> readFooter(final Buffer buffer) throws IOException {
+        final ResponseStatusCode statusCode = ResponseStatusCode.getFromValue(reader.readValue(buffer, Integer.class, false));
+        final String message = reader.readValue(buffer, String.class, true);
+        final String exception = reader.readValue(buffer, String.class, true);
+
+        return Triplet.with(statusCode, message, exception);
     }
 
     @Override
@@ -194,11 +194,9 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         try {
             // empty input buffer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessage.buildV4(null).
+                return ResponseMessage.buildV4().
                         code(ResponseStatusCode.NO_CONTENT).result(Collections.emptyList()).create();
             }
-
-            UUID requestId = null;
 
             if (isFirstChunk) {
                 final int version = buffer.readByte() & 0xff;
@@ -208,26 +206,23 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
                     // Or the buffer offsets are wrong
                     throw new SerializationException("The most significant bit should be set according to the format");
                 }
-
-                requestId = reader.readValue(buffer, UUID.class, true);
-                // todo: handle tx id
-                reader.readValue(buffer, UUID.class, true);
             }
 
             final List<Object> result = readPayload(buffer);
 
             // no footer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessage.buildV4(requestId)
+                return ResponseMessage.buildV4()
                         .result(result)
                         .create();
             }
 
-            final Pair<ResponseStatusCode, String> footer = readFooter(buffer);
-            return ResponseMessage.buildV4(requestId)
+            final Triplet<ResponseStatusCode, String, String> footer = readFooter(buffer);
+            return ResponseMessage.buildV4()
                     .result(result)
                     .code(footer.getValue0())
                     .statusMessage(footer.getValue1())
+                    .exception(footer.getValue2())
                     .create();
 
         } catch (IOException ex) {

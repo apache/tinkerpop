@@ -30,6 +30,7 @@ public final class SerTokens {
     public static final String TOKEN_DATA = "data";
     public static final String TOKEN_META = "meta";
     public static final String TOKEN_CODE = "code";
+    public static final String TOKEN_EXCEPTION = "exception";
     public static final String TOKEN_REQUEST = "requestId";
     public static final String TOKEN_MESSAGE = "message";
     public static final String TOKEN_PROCESSOR = "processor";
