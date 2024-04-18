@@ -30,11 +30,17 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.EofSensorInputStream;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.io.ChunkedInputStream;
+import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
@@ -70,7 +76,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_ALL;
+import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -78,7 +89,10 @@ import static org.hamcrest.core.StringRegularExpression.matchesRegex;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -1058,7 +1072,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         firstPost.setEntity(new StringEntity("{\"gremlin\":\"g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate()\"}", Consts.UTF_8));
         // Add a shorter timeout to the second query to ensure that its timeout is less than the first query's running time.
         final HttpPost secondPost = new HttpPost(TestClientFactory.createURLString());
-        secondPost.setEntity(new StringEntity("{\"gremlin\":\"g.with('evaluationTimeout',1000).V().repeat(__.out()).until(__.outE().count().is(0)).iterate()\"}", Consts.UTF_8));
+        secondPost.setEntity(new StringEntity("{\"gremlin\":\"g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate()\"}", Consts.UTF_8));
 
         final Callable<Integer> firstQueryWrapper = () -> {
             try (final CloseableHttpResponse response = firstClient.execute(firstPost)) {
@@ -1413,6 +1427,58 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get(GraphSONTokens.VALUEPROP).size());
+        }
+    }
+
+    @Test
+    public void shouldAcceptTimeoutInRequestBody() throws Exception {
+        final String body = "{ \"gremlin\": \"" + "Thread.sleep(5000)" + "\",\"language\":\"gremlin-groovy\",\"" + ARGS_EVAL_TIMEOUT + "\":\"100\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+
+            final String json = EntityUtils.toString(response.getEntity());
+            assertTrue(json.contains("timeout occurred"));
+        }
+    }
+
+    @Test
+    public void shouldAcceptMaterializePropertiesAllInRequestBody() throws Exception {
+        final String body = "{ \"gremlin\": \"" + "gmodern.V().limit(1)" + "\",\"language\":\"gremlin-groovy\",\""
+                + ARGS_MATERIALIZE_PROPERTIES + "\":\"" + MATERIALIZE_PROPERTIES_ALL + "\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertNotNull(node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
+        }
+    }
+
+    @Test
+    public void shouldAcceptMaterializePropertiesTokensInRequestBody() throws Exception {
+        final String body = "{ \"gremlin\": \"" + "gmodern.V().limit(1)" + "\",\"language\":\"gremlin-groovy\",\""
+                + ARGS_MATERIALIZE_PROPERTIES + "\":\"" + MATERIALIZE_PROPERTIES_TOKENS + "\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertNull(node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
         }
     }
 

@@ -200,13 +200,15 @@ public class Context {
     private long determineTimeout() {
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        // evaluationTimeout RequestMessage argument was removed starting in 4.0.
+        final Long timeoutMs = requestMessage.getField(Tokens.ARGS_EVAL_TIMEOUT);
+        final long seto = (null != timeoutMs) ? timeoutMs : settings.getEvaluationTimeout();
+
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
         // options then allow that value to override what's provided on the lifecycle
         final Optional<Long> timeoutDefinedInScript = requestContentType == RequestContentType.SCRIPT ?
                 GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
 
-        return timeoutDefinedInScript.orElse(settings.getEvaluationTimeout());
+        return timeoutDefinedInScript.orElse(seto);
     }
 
     private String determineMaterializeProperties() {
@@ -219,8 +221,11 @@ public class Context {
                         : Tokens.MATERIALIZE_PROPERTIES_ALL;
         }
 
+        final String materializeProperties = requestMessage.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL
-        return Tokens.MATERIALIZE_PROPERTIES_ALL;
+        return Tokens.MATERIALIZE_PROPERTIES_TOKENS.equals(materializeProperties)
+                ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                : Tokens.MATERIALIZE_PROPERTIES_ALL;
     }
 
     public void handleDetachment(final List<Object> aggregate) {
