@@ -51,7 +51,7 @@ public final class RequestOptions {
     private final UUID overrideRequestId;
     private final String userAgent;
     private final String language;
-//    private final String materializeProperties;
+    private final String materializeProperties;
 
     private RequestOptions(final Builder builder) {
         this.aliases = builder.aliases;
@@ -61,7 +61,7 @@ public final class RequestOptions {
         this.overrideRequestId = builder.overrideRequestId;
         this.userAgent = builder.userAgent;
         this.language = builder.language;
-//        this.materializeProperties = builder.materializeProperties;
+        this.materializeProperties = builder.materializeProperties;
     }
 
     public Optional<UUID> getOverrideRequestId() {
@@ -92,7 +92,7 @@ public final class RequestOptions {
         return Optional.ofNullable(language);
     }
 
-//    public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
+    public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
     public static Builder build() {
         return new Builder();

@@ -79,9 +79,11 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPl
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -175,10 +177,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable":
                 settings.maxParameters = 1;
                 break;
-//                TODO: evalTimeout needs be part of script now
-//            case "shouldTimeOutRemoteTraversal":
-//                settings.evaluationTimeout = 500;
-//                break;
+            case "shouldTimeOutRemoteTraversal":
+                settings.evaluationTimeout = 500;
+                break;
             case "shouldBlowTheWorkQueueSize":
                 settings.gremlinPool = 1;
                 settings.maxWorkQueueSize = 1;
@@ -337,102 +338,99 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.close();
     }
 
-//    TODO: evalTimeout needs be part of script now
-//    @Test
-//    public void shouldTimeOutRemoteTraversal() throws Exception {
-//        final GraphTraversalSource g = traversal().withRemote(conf);
-//
-//        try {
-//            // tests sleeping thread
-//            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(20000)")).iterate();
-//            fail("This traversal should have timed out");
-//        } catch (Exception ex) {
-//            final Throwable t = ex.getCause();
-//            assertThat(t, instanceOf(ResponseException.class));
-//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-//        }
-//
-//        // make a graph with a cycle in it to force a long run traversal
-//        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
-//
-//        try {
-//            // tests an "unending" traversal
-//            g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
-//            fail("This traversal should have timed out");
-//        } catch (Exception ex) {
-//            final Throwable t = ex.getCause();
-//            assertThat(t, instanceOf(ResponseException.class));
-//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-//        }
-//
-//        g.close();
-//    }
+    @Test
+    public void shouldTimeOutRemoteTraversal() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
 
-//    TODO: driver can't set EvalTimeout anymore in RequestMessage so this won't work.
-//    @Test
-//    public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
-//        final GraphTraversalSource g = traversal().withRemote(conf);
-//
-//        try {
-//            // tests sleeping thread
-//            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
-//            fail("This traversal should have timed out");
-//        } catch (Exception ex) {
-//            final Throwable t = ex.getCause();
-//            assertThat(t, instanceOf(ResponseException.class));
-//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-//        }
-//
-//        // make a graph with a cycle in it to force a long run traversal
-//        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
-//
-//        try {
-//            // tests an "unending" traversal
-//            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
-//            fail("This traversal should have timed out");
-//        } catch (Exception ex) {
-//            final Throwable t = ex.getCause();
-//            assertThat(t, instanceOf(ResponseException.class));
-//            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-//        }
-//
-//        g.close();
-//    }
+        try {
+            // tests sleeping thread
+            g.inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
 
-//    TODO: can't set evalTimeout anymore
-//    @Test
-//    public void shouldProduceProperExceptionOnTimeout() throws Exception {
-//        final Cluster cluster = TestClientFactory.open();
-//        final Client client = cluster.connect(name.getMethodName());
-//
-//        boolean success = false;
-//        // Run a short test script a few times with progressively longer timeouts.
-//        // Each submissions should either succeed or fail with a timeout.
-//        // Note: the range of timeouts is intended to cover the case when the script finishes at about the
-//        // same time when the timeout occurs. In this situation either a timeout response or a successful
-//        // response is acceptable, however no other processing errors should occur.
-//        // Note: the timeout of 30 ms is generally sufficient for running a simple groovy script, so using longer
-//        // timeouts are not likely to results in a success/timeout response collision, which is the purpose
-//        // of this test.
-//        // Note: this test may have a false negative result, but a failure  would indicate a real problem.
-//        for(int i = 0; i < 30; i++) {
-//            int timeout = 1 + i;
-//            overrideEvaluationTimeout(timeout);
-//
-//            try {
-//                client.submit("x = 1 + 1").all().get().get(0).getInt();
-//                success = true;
-//            } catch (Exception ex) {
-//                final Throwable t = ex.getCause();
-//                assertThat("Unexpected exception with script evaluation timeout: " + timeout, t, instanceOf(ResponseException.class));
-//                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
-//            }
-//        }
-//
-//        assertTrue("Some script submissions should succeed", success);
-//
-//        cluster.close();
-//    }
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        g.close();
+    }
+
+    @Test
+    public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
+        final GraphTraversalSource g = traversal().withRemote(conf);
+
+        try {
+            // tests sleeping thread
+            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        // make a graph with a cycle in it to force a long run traversal
+        graphGetter.get().traversal().addV("person").as("p").addE("self").to("p").iterate();
+
+        try {
+            // tests an "unending" traversal
+            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            fail("This traversal should have timed out");
+        } catch (Exception ex) {
+            final Throwable t = ex.getCause();
+            assertThat(t, instanceOf(ResponseException.class));
+            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+        }
+
+        g.close();
+    }
+
+    @Test
+    public void shouldProduceProperExceptionOnTimeout() throws Exception {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        boolean success = false;
+        // Run a short test script a few times with progressively longer timeouts.
+        // Each submissions should either succeed or fail with a timeout.
+        // Note: the range of timeouts is intended to cover the case when the script finishes at about the
+        // same time when the timeout occurs. In this situation either a timeout response or a successful
+        // response is acceptable, however no other processing errors should occur.
+        // Note: the timeout of 30 ms is generally sufficient for running a simple groovy script, so using longer
+        // timeouts are not likely to results in a success/timeout response collision, which is the purpose
+        // of this test.
+        // Note: this test may have a false negative result, but a failure  would indicate a real problem.
+        for(int i = 0; i < 30; i++) {
+            int timeout = 1 + i;
+            overrideEvaluationTimeout(timeout);
+
+            try {
+                client.submit("x = 1 + 1").all().get().get(0).getInt();
+                success = true;
+            } catch (Exception ex) {
+                final Throwable t = ex.getCause();
+                assertThat("Unexpected exception with script evaluation timeout: " + timeout, t, instanceOf(ResponseException.class));
+                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            }
+        }
+
+        assertTrue("Some script submissions should succeed", success);
+
+        cluster.close();
+    }
 
     @Test
     public void shouldUseBaseScript() throws Exception {
@@ -722,22 +720,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    // TODO: evalTimeout no longer set in RequestMessage
-//    @Test
-//    @SuppressWarnings("unchecked")
-//    public void shouldReceiveFailureTimeOutOnEvalUsingOverride() throws Exception {
-//        try (SimpleClient client = TestClientFactory.createWebSocketClient()) {
-//            final RequestMessageV4 msg = RequestMessageV4.build("eval")
-//                    .addArg(Tokens.ARGS_EVAL_TIMEOUT, 100L)
-//                    .addArg(Tokens.ARGS_GREMLIN, "Thread.sleep(3000);'some-stuff-that-should not return'")
-//                    .create();
-//            final List<ResponseMessage> responses = client.submit(msg);
-//            assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("100 ms")));
-//
-//            // validate that we can still send messages to the server
-//            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
-//        }
-//    }
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldReceiveFailureTimeOutOnEvalUsingOverride() throws Exception {
+        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
+            final RequestMessageV4 msg = RequestMessageV4.build("Thread.sleep(3000);'some-stuff-that-should not return'")
+                    .addTimeoutMillis(100L)
+                    .create();
+            final List<ResponseMessage> responses = client.submit(msg);
+            assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("100 ms")));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+        }
+    }
 
     @Test
     public void shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop() throws Exception {
