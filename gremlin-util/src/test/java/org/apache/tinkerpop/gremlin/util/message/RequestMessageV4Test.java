@@ -84,6 +84,32 @@ public class RequestMessageV4Test {
     }
 
     @Test
+    public void shouldSetTimeout() {
+        final long timeout = 101L;
+        final RequestMessageV4 msg = RequestMessageV4.build("g").addTimeoutMillis(timeout).create();
+        assertEquals(timeout, (long) msg.getField(Tokens.ARGS_EVAL_TIMEOUT));
+    }
+
+    @Test
+    public void shouldSetMaterializeProperties() {
+        final RequestMessageV4 msgWithAll = RequestMessageV4.build("g").addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_ALL).create();
+        assertEquals(Tokens.MATERIALIZE_PROPERTIES_ALL, msgWithAll.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
+
+        final RequestMessageV4 msgWithTokens = RequestMessageV4.build("g").addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_TOKENS).create();
+        assertEquals(Tokens.MATERIALIZE_PROPERTIES_TOKENS, msgWithTokens.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
+    }
+
+    @Test
+    public void shouldErrorSettingMaterializePropertiesWithInvalidValue() {
+        try {
+            final RequestMessageV4 msgWithTokens = RequestMessageV4.build("g").addMaterializeProperties("notToken").create();
+            fail("RequestMessage shouldn't accept notToken for materializeProperties.");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("materializeProperties argument must be either token or all"));
+        }
+    }
+
+    @Test
     public void shouldGetFields() {
         final String g = "gmodern";
         final String lang = "lang";

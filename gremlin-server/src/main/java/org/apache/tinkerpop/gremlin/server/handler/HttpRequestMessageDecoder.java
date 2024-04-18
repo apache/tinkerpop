@@ -204,6 +204,8 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
         if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
 
+        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText());
+
         final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
         if (bindingsNode != null && !bindingsNode.isObject())
             throw new IllegalArgumentException("bindings must be a Map");
@@ -211,20 +213,23 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final Map<String, Object> bindings = new HashMap<>();
         if (bindingsNode != null)
             bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
+        builder.addBindings(bindings);
 
         final JsonNode gNode = body.get(Tokens.ARGS_G);
-        final String g = (null == gNode) ? null : gNode.asText();
+        if (null != gNode) builder.addG(gNode.asText());
 
         final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-        final String language = null == languageNode ? "gremlin-groovy" : languageNode.asText();
+        builder.addLanguage((null == languageNode) ? "gremlin-groovy" : languageNode.asText());
 
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
-        final Integer chunkSize = null == chunkSizeNode ? null : chunkSizeNode.asInt();
+        if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());
 
-        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText())
-                .addBindings(bindings).addLanguage(language);
-        if (null != g) builder.addG(g);
-        if (null != chunkSize) builder.addChunkSize(chunkSize);
+        final JsonNode timeoutMsNode = body.get(Tokens.ARGS_EVAL_TIMEOUT);
+        if (null != timeoutMsNode) builder.addTimeoutMillis(timeoutMsNode.asLong());
+
+        final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
+        if (null != matPropsNode) builder.addMaterializeProperties(matPropsNode.asText());
+
         return builder.create();
     }
 
