@@ -181,6 +181,24 @@ public final class RequestMessageV4 {
             return this;
         }
 
+        public Builder addMaterializeProperties(final String materializeProps) {
+            Objects.requireNonNull(materializeProps, "materializeProps argument cannot be null.");
+            if (!materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS) && !materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+                throw new IllegalArgumentException("materializeProperties argument must be either token or all.");
+            }
+
+            this.fields.put(Tokens.ARGS_MATERIALIZE_PROPERTIES, materializeProps);
+            return this;
+        }
+
+        public Builder addTimeoutMillis(final long timeout) {
+            Objects.requireNonNull(timeout, "timeout argument cannot be null.");
+            if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
+
+            this.fields.put(Tokens.ARGS_EVAL_TIMEOUT, timeout);
+            return this;
+        }
+
         /**
          * Create the request message given the settings provided to the {@link Builder}.
          */
