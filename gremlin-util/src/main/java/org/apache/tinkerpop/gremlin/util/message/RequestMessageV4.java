@@ -49,12 +49,6 @@ public final class RequestMessageV4 {
             throw new IllegalArgumentException("gremlin argument for RequestMessage must be either String or Bytecode");
         }
 
-        Object requestId = fields.get(Tokens.REQUEST_ID);
-        if (null == requestId) throw new IllegalArgumentException("RequestMessage requires a requestId");
-        if (!(requestId instanceof UUID)) {
-            throw new IllegalArgumentException("requestId argument for RequestMessage must be a UUID");
-        }
-
         this.gremlin = gremlin;
         this.fields = fields;
 
@@ -149,7 +143,6 @@ public final class RequestMessageV4 {
 
         private Builder(final Object gremlin) {
             this.gremlin = gremlin;
-            this.fields.put(Tokens.REQUEST_ID, UUID.randomUUID());
         }
 
         public Builder addLanguage(final String language) {
