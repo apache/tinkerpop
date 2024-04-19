@@ -152,4 +152,10 @@ public class RequestMessageV4Test {
         final RequestMessageV4 msg = RequestMessageV4.build(query).create();
         assertTrue(null == msg.getField(Tokens.ARGS_GREMLIN));
     }
+
+    @Test
+    public void shouldNotContainRequestId() {
+        final RequestMessageV4 msg = RequestMessageV4.build("g.V()").create();
+        assertTrue(null == msg.getField(Tokens.REQUEST_ID));
+    }
 }

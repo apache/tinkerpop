@@ -368,6 +368,5 @@ public class HttpRequestMessageDecoderTest {
         assertEquals("gmodern", decodedRequest.getField(Tokens.ARGS_G));
         assertEquals("1", ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).get("x"));
         assertEquals(1, ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).size());
-        assertEquals(rid, decodedRequest.getField(Tokens.REQUEST_ID));
     }
 }
