@@ -224,7 +224,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());
 
-        final JsonNode timeoutMsNode = body.get(Tokens.ARGS_EVAL_TIMEOUT);
+        final JsonNode timeoutMsNode = body.get(Tokens.TIMEOUT_MS);
         if (null != timeoutMsNode) builder.addTimeoutMillis(timeoutMsNode.asLong());
 
         final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
