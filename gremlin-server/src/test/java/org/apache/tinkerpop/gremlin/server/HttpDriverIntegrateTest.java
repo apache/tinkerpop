@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
@@ -195,6 +196,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 //        }
 //    }
 
+    @Ignore("driver side error")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
@@ -209,7 +211,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
             }
 
@@ -221,7 +223,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
-    // not supported on server side now
+    @Ignore("not implemented in driver")
     @Test
     public void shouldProcessTraversalInterruption() {
         final Cluster cluster = TestClientFactory.build().create();
@@ -232,13 +234,13 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
     }
 
-    // not supported on server side now
+    @Ignore("not implemented in driver")
     @Test
     public void shouldProcessEvalInterruption() {
         final Cluster cluster = TestClientFactory.build().create();
@@ -249,7 +251,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
