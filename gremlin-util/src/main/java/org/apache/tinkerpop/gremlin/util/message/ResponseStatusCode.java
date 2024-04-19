@@ -60,6 +60,14 @@ public enum ResponseStatusCode {
     PARTIAL_CONTENT(206),
 
     /**
+     * The server cannot or will not process the request due to an apparent client error (e.g., malformed request
+     * syntax, size too large, invalid request message framing, or deceptive request routing).
+     *
+     * @since 4.0.0
+     */
+    BAD_REQUEST(400),
+
+    /**
      * Code 401: The server could not authenticate the request or the client requested a resource it did not have
      * access to.
      *
@@ -81,6 +89,13 @@ public enum ResponseStatusCode {
      * @since 3.0.1-incubating
      */
     AUTHENTICATE(407),
+
+    /**
+     * The request is larger than the server is willing or able to process.
+     *
+     * @since 4.0.0
+     */
+    PAYLOAD_TOO_LARGE(413),
 
     /**
      * Code 429: Indicates that too many requests have been sent in a given amount of time.
