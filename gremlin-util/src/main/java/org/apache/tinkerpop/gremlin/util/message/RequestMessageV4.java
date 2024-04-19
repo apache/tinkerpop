@@ -188,7 +188,7 @@ public final class RequestMessageV4 {
             Objects.requireNonNull(timeout, "timeout argument cannot be null.");
             if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
 
-            this.fields.put(Tokens.ARGS_EVAL_TIMEOUT, timeout);
+            this.fields.put(Tokens.TIMEOUT_MS, timeout);
             return this;
         }
 

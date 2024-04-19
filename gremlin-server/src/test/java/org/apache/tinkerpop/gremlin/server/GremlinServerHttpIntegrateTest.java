@@ -78,10 +78,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
 import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_ALL;
 import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
+import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -1432,7 +1432,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAcceptTimeoutInRequestBody() throws Exception {
-        final String body = "{ \"gremlin\": \"" + "Thread.sleep(5000)" + "\",\"language\":\"gremlin-groovy\",\"" + ARGS_EVAL_TIMEOUT + "\":\"100\"}";
+        final String body = "{ \"gremlin\": \"" + "Thread.sleep(5000)" + "\",\"language\":\"gremlin-groovy\",\"" + TIMEOUT_MS + "\":\"100\"}";
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
