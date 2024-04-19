@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
@@ -32,7 +31,6 @@ import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.Test;
 
 import java.awt.*;
@@ -46,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringEndsWith.endsWith;
@@ -262,7 +261,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-
             final ResultSet results = client.submit("java.awt.Color.RED");
 
             try {
@@ -271,7 +269,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -296,12 +294,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
-
-                final ResponseException rex = (ResponseException) inner;
-                // todo: not implemented
-//                assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
-//                assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-//                assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
+                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -486,6 +479,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
+                assertThat(inner.getMessage(), startsWith("Error during serialization"));
                 assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
