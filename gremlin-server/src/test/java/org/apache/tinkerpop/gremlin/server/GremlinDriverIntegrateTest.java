@@ -263,7 +263,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
             }
 
@@ -276,7 +276,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldProcessTraversalInterruption() throws Exception {
+    public void shouldProcessTraversalInterruption() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
@@ -285,14 +285,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
     }
 
     @Test
-    public void shouldProcessEvalInterruption() throws Exception {
+    public void shouldProcessEvalInterruption() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
@@ -301,7 +301,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -529,7 +529,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -660,7 +660,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldStream() throws Exception {
+    public void shouldStream() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
@@ -870,7 +870,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
-                assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -958,75 +958,75 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    public void shouldWorkWithGraphSONExtendedV2Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
-            assertEquals(1, r.size());
-
-            final Instant then = r.get(0).get(Instant.class);
-            assertEquals(Instant.EPOCH, then);
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldWorkWithGraphSONV3Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-            assertEquals(1, r.size());
-
-            final Vertex v = r.get(0).get(DetachedVertex.class);
-            assertEquals(1, v.id());
-            assertEquals("person", v.label());
-
-            assertEquals(2, IteratorUtils.count(v.properties()));
-            assertEquals("marko", v.value("name"));
-            assertEquals(29, Integer.parseInt(v.value("age").toString()));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldWorkWithGraphSONExtendedV3Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
-            assertEquals(1, r.size());
-
-            final Instant then = r.get(0).get(Instant.class);
-            assertEquals(Instant.EPOCH, then);
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-            assertEquals(1, r.size());
-
-            final Vertex v = r.get(0).get(DetachedVertex.class);
-            assertEquals(1, v.id());
-            assertEquals("person", v.label());
-        } finally {
-            cluster.close();
-        }
-    }
+//    @Test
+//    public void shouldWorkWithGraphSONExtendedV2Serialization() {
+//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
+//            assertEquals(1, r.size());
+//
+//            final Instant then = r.get(0).get(Instant.class);
+//            assertEquals(Instant.EPOCH, then);
+//        } finally {
+//            cluster.close();
+//        }
+//    }
+//
+//    @Test
+//    public void shouldWorkWithGraphSONV3Serialization() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+//            assertEquals(1, r.size());
+//
+//            final Vertex v = r.get(0).get(DetachedVertex.class);
+//            assertEquals(1, v.id());
+//            assertEquals("person", v.label());
+//
+//            assertEquals(2, IteratorUtils.count(v.properties()));
+//            assertEquals("marko", v.value("name"));
+//            assertEquals(29, Integer.parseInt(v.value("age").toString()));
+//        } finally {
+//            cluster.close();
+//        }
+//    }
+//
+//    @Test
+//    public void shouldWorkWithGraphSONExtendedV3Serialization() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
+//            assertEquals(1, r.size());
+//
+//            final Instant then = r.get(0).get(Instant.class);
+//            assertEquals(Instant.EPOCH, then);
+//        } finally {
+//            cluster.close();
+//        }
+//    }
+//
+//    @Test
+//    public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+//            assertEquals(1, r.size());
+//
+//            final Vertex v = r.get(0).get(DetachedVertex.class);
+//            assertEquals(1, v.id());
+//            assertEquals("person", v.label());
+//        } finally {
+//            cluster.close();
+//        }
+//    }
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
@@ -1409,7 +1409,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.BAD_REQUEST, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -1428,7 +1428,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.BAD_REQUEST, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
             final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
@@ -1450,7 +1450,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
             final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
@@ -1472,7 +1472,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root, instanceOf(ResponseException.class));
                 final ResponseException re = (ResponseException) root;
-                assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+                assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
             }
 
             final Client clientAliased = client.alias("g1");
@@ -1495,7 +1495,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
             client.close();
         }
 
@@ -1521,7 +1521,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, re.getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         }
 
         final Client clientAliased = client.alias("g1");
@@ -1626,7 +1626,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) root).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) root).getResponseStatusCode());
             assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
         }
     }

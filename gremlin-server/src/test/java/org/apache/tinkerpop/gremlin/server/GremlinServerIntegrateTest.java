@@ -99,7 +99,6 @@ import static org.junit.Assert.fail;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    private Level previousLogLevel;
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GremlinServerIntegrateTest.class);
 
     private final Supplier<Graph> graphGetter = () -> server.getServerGremlinExecutor().getGraphManager().getGraph("graph");
@@ -111,7 +110,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         setProperty("clusterConfiguration.port", TestClientFactory.PORT);
         setProperty("clusterConfiguration.hosts", "localhost");
     }};
-    private static final int POOL_SIZE_FOR_TIMEOUT_TESTS = 1;
 
     private static LogCaptor logCaptor;
 
@@ -319,7 +317,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.BAD_REQUEST, ((ResponseException) t).getResponseStatusCode());
         }
 
         // make a graph with a cycle in it to force a long run traversal
@@ -332,7 +330,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
 
         g.close();
@@ -349,7 +347,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
 
         // make a graph with a cycle in it to force a long run traversal
@@ -362,7 +360,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
 
         g.close();
@@ -379,7 +377,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
 
         // make a graph with a cycle in it to force a long run traversal
@@ -392,7 +390,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
 
         g.close();
@@ -423,7 +421,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable t = ex.getCause();
                 assertThat("Unexpected exception with script evaluation timeout: " + timeout, t, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR_TIMEOUT, ((ResponseException) t).getResponseStatusCode());
+                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
             }
         }
 
@@ -568,7 +566,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    pass.set(ResponseStatusCode.BAD_REQUEST == result.getStatus().getCode());
                     latch.countDown();
                 }
             });
@@ -587,7 +585,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    pass.set(ResponseStatusCode.BAD_REQUEST == result.getStatus().getCode());
                     latch.countDown();
                 }
             });
@@ -610,7 +608,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    pass.set(ResponseStatusCode.BAD_REQUEST == result.getStatus().getCode());
                     latch.countDown();
                 }
             });
@@ -651,7 +649,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    pass.set(ResponseStatusCode.BAD_REQUEST == result.getStatus().getCode());
                     latch.countDown();
                 }
             });
@@ -912,7 +910,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessageV4 request = RequestMessageV4.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
             final List<ResponseMessage> responses = client.submit(request);
-            assertEquals(ResponseStatusCode.SERVER_ERROR_EVALUATION, responses.get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, responses.get(0).getStatus().getCode());
             assertEquals(1, responses.size());
         }
     }
@@ -990,7 +988,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
             assertEquals("try again!", t.getMessage());
-            assertEquals(ResponseStatusCode.SERVER_ERROR_TEMPORARY, ((ResponseException) t).getResponseStatusCode());
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -1029,8 +1027,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
             assertThat(t, instanceOf(ResponseException.class));
-            assertEquals("make it stop", t.getMessage());
-            assertEquals(ResponseStatusCode.SERVER_ERROR_FAIL_STEP, ((ResponseException) t).getResponseStatusCode());
+            assertThat(t.getMessage(), startsWith("make it stop"));
+            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
     }
 

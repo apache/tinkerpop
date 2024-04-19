@@ -366,7 +366,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
             jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
             jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-            jsonGenerator.writeStringField(SerTokens.TOKEN_EXCEPTION, responseMessage.getStatus().getException());
+            if (responseMessage.getStatus().getCode() != ResponseStatusCode.SUCCESS &&
+                    responseMessage.getStatus().getException() != null) {
+                jsonGenerator.writeStringField(SerTokens.TOKEN_EXCEPTION, responseMessage.getStatus().getException());
+            }
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
