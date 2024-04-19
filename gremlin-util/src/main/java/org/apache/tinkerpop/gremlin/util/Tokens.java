@@ -43,6 +43,11 @@ public final class Tokens {
     public static final String REQUEST_ID = "requestId";
 
     /**
+     * The key for the per request server-side timeout in milliseconds.
+     */
+    public static final String TIMEOUT_MS = "timeoutMs";
+
+    /**
      * Argument name that allows definition of the number of iterations each {@link ResponseMessage} should contain -
      * overrides the @{code resultIterationBatchSize} server setting.
      */

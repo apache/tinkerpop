@@ -180,7 +180,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        Long timeoutMs = requestMessage.getField(Tokens.ARGS_EVAL_TIMEOUT);
+        Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
