@@ -18,20 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProcessingException extends Exception {
-    private final ResponseMessage responseMessage;
+    private final GremlinError error;
 
-    public ProcessingException(final String message, final ResponseMessage responseMessage) {
-        super(message);
-        this.responseMessage = responseMessage;
+    public ProcessingException(final GremlinError error) {
+        super(error.getMessage());
+        this.error = error;
     }
 
-    public ResponseMessage getResponseMessage() {
-        return this.responseMessage;
+    public GremlinError getError() {
+        return this.error;
     }
 }

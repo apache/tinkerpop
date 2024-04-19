@@ -31,6 +31,6 @@ public class ResponseStatusCodeTest {
         assertFalse(ResponseStatusCode.AUTHENTICATE.isFinalResponse());
         assertFalse(ResponseStatusCode.PARTIAL_CONTENT.isFinalResponse());
         assertTrue(ResponseStatusCode.SUCCESS.isFinalResponse());
-        assertTrue(ResponseStatusCode.SERVER_ERROR_TIMEOUT.isFinalResponse());
+        assertTrue(ResponseStatusCode.SERVER_ERROR.isFinalResponse());
     }
 }
