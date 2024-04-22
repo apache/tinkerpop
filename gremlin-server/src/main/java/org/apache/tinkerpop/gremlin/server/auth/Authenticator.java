@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.server.Channelizer;
 
 import java.net.InetAddress;
 import java.util.Map;
@@ -77,8 +77,8 @@ public interface Authenticator {
          * finished. If so, an {@link AuthenticatedUser} is obtained by calling {@link #getAuthenticatedUser()} and
          * that user associated with the active connection. If the negotiation is not yet complete,
          * the byte[] is returned to the client as a further challenge in an
-         * {@link ResponseMessage} with {@link ResponseStatusCode#AUTHENTICATE}. This continues until the negotiation
-         * does complete or an error is encountered.
+         * {@link ResponseMessage} with {@link HttpResponseStatus#PROXY_AUTHENTICATION_REQUIRED}. This continues until
+         * the negotiation does complete or an error is encountered.
          */
         public byte[] evaluateResponse(final byte[] clientResponse) throws AuthenticationException;
 

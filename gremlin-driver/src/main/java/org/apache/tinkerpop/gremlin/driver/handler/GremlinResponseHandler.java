@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -28,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +68,14 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
         final UUID requestId = ((AttributeMap) channelHandlerContext).attr(REQUEST_ID).get();
 
-        final ResponseStatusCode statusCode = response.getStatus() == null ? ResponseStatusCode.PARTIAL_CONTENT : response.getStatus().getCode();
+        final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
         final ResultQueue queue = pending.get(requestId);
         System.out.println("GremlinResponseHandler get requestId: " + requestId);
         if (response.getResult().getData() != null) {
             System.out.println("GremlinResponseHandler payload size: " + ((List) response.getResult().getData()).size());
         }
 
-        if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
+        if (statusCode == HttpResponseStatus.OK || statusCode == HttpResponseStatus.PARTIAL_CONTENT) {
             final Object data = response.getResult().getData();
 
             // this is a "result" from the server which is either the result of a script or a
@@ -90,7 +90,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
             }
         } else {
             // this is a "success" but represents no results otherwise it is an error
-            if (statusCode != ResponseStatusCode.NO_CONTENT) {
+            if (statusCode != HttpResponseStatus.NO_CONTENT) {
                 final Map<String, Object> attributes = response.getStatus().getAttributes();
                 final String stackTrace = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) ?
                         (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
@@ -103,7 +103,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         // todo:
         // as this is a non-PARTIAL_CONTENT code - the stream is done.
-        if (statusCode != ResponseStatusCode.PARTIAL_CONTENT) {
+        if (statusCode != HttpResponseStatus.PARTIAL_CONTENT) {
             pending.remove(requestId).markComplete(response.getStatus().getAttributes());
         }
 

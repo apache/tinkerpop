@@ -19,11 +19,11 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
@@ -49,7 +49,7 @@ public class ResponseMessageSerializer {
 
         try {
             return ResponseMessage.build(context.readValue(buffer, UUID.class, true))
-                    .code(ResponseStatusCode.getFromValue(context.readValue(buffer, Integer.class, false)))
+                    .code(HttpResponseStatus.valueOf(context.readValue(buffer, Integer.class, false)))
                     .statusMessage(context.readValue(buffer, String.class, true))
                     .statusAttributes(context.readValue(buffer, Map.class, false))
                     .responseMetaData(context.readValue(buffer, Map.class, false))
@@ -73,7 +73,7 @@ public class ResponseMessageSerializer {
             // Nullable request id
             context.writeValue(value.getRequestId(), buffer, true);
             // Status code
-            context.writeValue(status.getCode().getValue(), buffer, false);
+            context.writeValue(status.getCode().code(), buffer, false);
             // Nullable status message
             context.writeValue(status.getMessage(), buffer, true);
             // Status attributes

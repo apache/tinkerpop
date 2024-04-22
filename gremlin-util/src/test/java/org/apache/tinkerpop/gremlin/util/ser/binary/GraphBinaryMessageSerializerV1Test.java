@@ -20,12 +20,12 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
@@ -118,7 +118,7 @@ public class GraphBinaryMessageSerializerV1Test {
     @Test
     public void shouldSerializeAndDeserializeResponse() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("Found")
                 .statusAttribute("k1", 1)
                 .result("This is a fine message with a string")
@@ -132,7 +132,7 @@ public class GraphBinaryMessageSerializerV1Test {
     @Test
     public void shouldSerializeAndDeserializeResponseOverText() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("Found")
                 .statusAttribute("k1", 1)
                 .result("This is a fine message with a string")
@@ -146,7 +146,7 @@ public class GraphBinaryMessageSerializerV1Test {
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutStatusMessage() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusAttribute("k1", 1)
                 .result(123.3)
                 .create();
@@ -159,7 +159,7 @@ public class GraphBinaryMessageSerializerV1Test {
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutStatusAttributes() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .result(123.3)
                 .create();
 
@@ -171,7 +171,7 @@ public class GraphBinaryMessageSerializerV1Test {
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutResult() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SERVER_ERROR)
+                .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("Something happened on the server")
                 .create();
 
