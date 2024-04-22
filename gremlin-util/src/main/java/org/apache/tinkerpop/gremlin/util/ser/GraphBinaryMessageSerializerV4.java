@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -28,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializerV4;
 import org.javatuples.Triplet;
 
@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -148,7 +147,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
                 // we don't know how much data we have, so need a special object
                 writer.write(Marker.END_OF_STREAM, buffer);
                 // Status code
-                writer.writeValue(status.getCode().getValue(), buffer, false);
+                writer.writeValue(status.getCode().code(), buffer, false);
                 // Nullable status message
                 writer.writeValue(status.getMessage(), buffer, true);
                 // Nullable exception
@@ -179,8 +178,8 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
         return result;
     }
 
-    private Triplet<ResponseStatusCode, String, String> readFooter(final Buffer buffer) throws IOException {
-        final ResponseStatusCode statusCode = ResponseStatusCode.getFromValue(reader.readValue(buffer, Integer.class, false));
+    private Triplet<HttpResponseStatus, String, String> readFooter(final Buffer buffer) throws IOException {
+        final HttpResponseStatus statusCode = HttpResponseStatus.valueOf(reader.readValue(buffer, Integer.class, false));
         final String message = reader.readValue(buffer, String.class, true);
         final String exception = reader.readValue(buffer, String.class, true);
 
@@ -195,7 +194,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
             // empty input buffer
             if (buffer.readableBytes() == 0) {
                 return ResponseMessage.buildV4().
-                        code(ResponseStatusCode.NO_CONTENT).result(Collections.emptyList()).create();
+                        code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
             }
 
             if (isFirstChunk) {
@@ -217,7 +216,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
                         .create();
             }
 
-            final Triplet<ResponseStatusCode, String, String> footer = readFooter(buffer);
+            final Triplet<HttpResponseStatus, String, String> footer = readFooter(buffer);
             return ResponseMessage.buildV4()
                     .result(result)
                     .code(footer.getValue0())

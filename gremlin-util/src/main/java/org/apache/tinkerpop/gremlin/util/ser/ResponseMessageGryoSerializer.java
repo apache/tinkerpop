@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class ResponseMessageGryoSerializer implements SerializerShim<ResponseMes
         kryo.writeObjectOrNull(output, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null, UUID.class);
 
         // status
-        output.writeShort((short) responseMessage.getStatus().getCode().getValue());
+        output.writeShort((short) responseMessage.getStatus().getCode().code());
         output.writeString(responseMessage.getStatus().getMessage());
         kryo.writeClassAndObject(output, responseMessage.getStatus().getAttributes());
 
@@ -57,7 +57,7 @@ public class ResponseMessageGryoSerializer implements SerializerShim<ResponseMes
         final Map<String,Object> metaAttributes = (Map<String,Object>) kryo.readClassAndObject(input);
 
         return ResponseMessage.build(requestId)
-                .code(ResponseStatusCode.getFromValue(status))
+                .code(HttpResponseStatus.valueOf(status))
                 .statusMessage(statusMsg)
                 .statusAttributes(statusAttributes)
                 .result(result)

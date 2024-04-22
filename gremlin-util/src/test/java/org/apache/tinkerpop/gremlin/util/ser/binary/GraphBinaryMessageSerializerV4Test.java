@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class GraphBinaryMessageSerializerV4Test {
     @Test
     public void shouldSerializeAndDeserializeResponseInSingleChunk() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .result(Arrays.asList(1, "test"))
                 .create();
@@ -77,7 +77,7 @@ public class GraphBinaryMessageSerializerV4Test {
     public void shouldSerializeAndDeserializeResponseInFooterChunk() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build()
                 .result(Arrays.asList(1, "test"))
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
@@ -89,7 +89,7 @@ public class GraphBinaryMessageSerializerV4Test {
     @Test
     public void shouldSerializeAndDeserializeErrorResponseWithEmptyData() throws SerializationException {
         final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
-                .code(ResponseStatusCode.FORBIDDEN)
+                .code(HttpResponseStatus.FORBIDDEN)
                 .statusMessage("FORBIDDEN")
                 .create();
 
@@ -111,7 +111,7 @@ public class GraphBinaryMessageSerializerV4Test {
         final List footerData = Arrays.asList(0xFF, "footer");
         final ResponseMessage footer = ResponseMessage.build()
                 .result(footerData)
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
@@ -147,7 +147,7 @@ public class GraphBinaryMessageSerializerV4Test {
         final List footerData = Arrays.asList(0xFF, "footer");
         final ResponseMessage footer = ResponseMessage.build()
                 .result(footerData)
-                .code(ResponseStatusCode.SERVER_ERROR)
+                .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
                 .exception("fire in data center")
                 .create();

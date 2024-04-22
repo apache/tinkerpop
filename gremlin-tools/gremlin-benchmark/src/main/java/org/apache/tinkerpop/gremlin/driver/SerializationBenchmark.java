@@ -21,17 +21,17 @@ package org.apache.tinkerpop.gremlin.driver;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Warmup;
 
@@ -103,7 +103,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     private static final UUID id = UUID.randomUUID();
 
     private static final ResponseMessage response = ResponseMessage
-            .build(UUID.randomUUID()).code(ResponseStatusCode.SUCCESS).result(new ReferenceVertex(1, "person"))
+            .build(UUID.randomUUID()).code(HttpResponseStatus.OK).result(new ReferenceVertex(1, "person"))
             .create();
 
     private static final Bytecode bytecode = new Bytecode();
