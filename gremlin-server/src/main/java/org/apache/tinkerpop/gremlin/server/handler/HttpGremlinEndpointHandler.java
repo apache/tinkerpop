@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
@@ -46,9 +47,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedE
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.ProcessingException;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.ProcessingException;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
@@ -62,7 +63,6 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
@@ -436,7 +436,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // it needs to be released here
                 if (chunk != null) chunk.release();
             }
-            sendTrailingHeaders(nettyContext, ResponseStatusCode.SUCCESS, "OK");
+            sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
             return;
         }
 
@@ -517,7 +517,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
 
                     if (!hasMore) {
-                        sendTrailingHeaders(nettyContext, ResponseStatusCode.SUCCESS, "OK");
+                        sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
                     }
                 }
             } else {
@@ -563,7 +563,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                 // need to put status in last message
                 if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                    builder.code(ResponseStatusCode.SUCCESS).statusMessage("OK");
+                    builder.code(HttpResponseStatus.OK).statusMessage("OK");
                 }
 
                 responseMessage = builder.create();
@@ -583,7 +583,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                     return serializer.serializeResponseAsBinary(ResponseMessage.buildV4()
                             .result(aggregate)
-                            .code(ResponseStatusCode.SUCCESS)
+                            .code(HttpResponseStatus.OK)
                             .statusMessage("OK")
                             .create(), nettyContext.alloc());
 

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -30,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -211,7 +211,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
             }
 
@@ -234,7 +234,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -251,7 +251,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -271,7 +271,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -296,7 +296,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
-                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -482,7 +482,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertThat(inner.getMessage(), startsWith("Error during serialization"));
-                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens

@@ -20,36 +20,36 @@ package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
-import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
-import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,9 +59,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
+import java.awt.*;
 import java.net.ConnectException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +83,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -98,7 +98,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -263,7 +262,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
             }
 
@@ -285,7 +284,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -301,7 +300,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -529,7 +528,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -870,7 +869,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
-                assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -1409,7 +1408,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.BAD_REQUEST, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
         } finally {
             cluster.close();
         }
@@ -1428,7 +1427,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.BAD_REQUEST, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
             final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
@@ -1450,7 +1449,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
             final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
@@ -1472,7 +1471,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root, instanceOf(ResponseException.class));
                 final ResponseException re = (ResponseException) root;
-                assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
             }
 
             final Client clientAliased = client.alias("g1");
@@ -1495,7 +1494,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
             client.close();
         }
 
@@ -1521,7 +1520,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
         }
 
         final Client clientAliased = client.alias("g1");
@@ -1626,7 +1625,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
-            assertEquals(ResponseStatusCode.SERVER_ERROR, ((ResponseException) root).getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) root).getResponseStatusCode());
             assertThat(root.getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("250 ms")));
         }
     }

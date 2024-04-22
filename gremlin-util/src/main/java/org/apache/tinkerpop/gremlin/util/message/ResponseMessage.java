@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -122,7 +123,7 @@ public final class ResponseMessage {
     public final static class Builder {
 
         private final UUID requestId;
-        private ResponseStatusCode code = null;
+        private HttpResponseStatus code = null;
         private Object result = null;
         private String statusMessage = null;
         private String exception = null;
@@ -145,7 +146,7 @@ public final class ResponseMessage {
             this.requestId = requestId;
         }
 
-        public Builder code(final ResponseStatusCode code) {
+        public Builder code(final HttpResponseStatus code) {
             this.code = code;
             return this;
         }

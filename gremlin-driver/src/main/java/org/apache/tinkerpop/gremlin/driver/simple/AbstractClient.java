@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -31,8 +32,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import static org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.NO_CONTENT;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -68,13 +67,14 @@ public abstract class AbstractClient implements SimpleClient {
         final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
             // message with trailers
-            if (f.isDone() && response.getStatus().getCode() != NO_CONTENT)
+            if (f.isDone() && response.getStatus().getCode() != HttpResponseStatus.NO_CONTENT)
                 throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
 
             results.add(response);
 
             // check if the current message is terminating - if it is then we can mark complete
-            if (response.getStatus() != null && response.getStatus().getCode().isFinalResponse()) {
+            if (response.getStatus() != null && response.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT
+                    && response.getStatus().getCode() != HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED) {
                 f.complete(results);
             }
         };
