@@ -18,21 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 
 import javax.security.sasl.SaslException;
 import java.io.File;
@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -172,9 +171,9 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (inner.isPresent()) {
                 final ResponseException responseException = inner.get();
                 // todo: use exception type to handle error properly
-                if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR) {
+                if (responseException.getResponseStatusCode() == HttpResponseStatus.INTERNAL_SERVER_ERROR) {
                     throw new RemoteException(String.format("%s - try increasing the timeout with the :remote command", responseException.getMessage()));
-                } else if (responseException.getResponseStatusCode() == ResponseStatusCode.SERVER_ERROR)
+                } else if (responseException.getResponseStatusCode() == HttpResponseStatus.INTERNAL_SERVER_ERROR)
                     throw new RemoteException(String.format(
                             "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()),
                             responseException.getRemoteStackTrace().orElse(null));

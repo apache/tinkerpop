@@ -19,9 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -35,6 +33,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -389,7 +389,7 @@ public class GraphSONUntypedMessageSerializerV1Test {
 
         final ResponseMessage response = ResponseMessage.build(id)
                 .responseMetaData(metaData)
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .result("some-result")
                 .statusAttributes(attributes)
                 .statusMessage("worked")
@@ -404,7 +404,7 @@ public class GraphSONUntypedMessageSerializerV1Test {
         assertEquals("some-result", deserialized.getResult().getData());
         assertEquals("that", deserialized.getStatus().getAttributes().get("test"));
         assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
-        assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
+        assertEquals(HttpResponseStatus.OK.code(), deserialized.getStatus().getCode().code());
         assertEquals("worked", deserialized.getStatus().getMessage());
     }
 
@@ -418,7 +418,7 @@ public class GraphSONUntypedMessageSerializerV1Test {
 
         final ResponseMessage response = ResponseMessage.build(id)
                 .responseMetaData(metaData)
-                .code(ResponseStatusCode.SERVER_ERROR)
+                .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .result("some-result")
                 .statusAttributes(attributes)
                 // explicitly pass the null value

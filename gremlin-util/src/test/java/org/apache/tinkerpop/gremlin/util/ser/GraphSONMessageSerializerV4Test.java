@@ -21,9 +21,9 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -53,7 +53,7 @@ public class GraphSONMessageSerializerV4Test {
 
         final ResponseMessage footer = ResponseMessage.buildV4()
                 .result(Arrays.asList("footer", 3))
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
@@ -78,7 +78,7 @@ public class GraphSONMessageSerializerV4Test {
         bbCombined.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
         assertNull(deserialized.getRequestId());
-        assertEquals(200, deserialized.getStatus().getCode().getValue());
+        assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
     }
@@ -86,7 +86,7 @@ public class GraphSONMessageSerializerV4Test {
     @Test
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
         final ResponseMessage header = ResponseMessage.buildV4()
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
@@ -103,7 +103,7 @@ public class GraphSONMessageSerializerV4Test {
         bb0.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
         assertNull(deserialized.getRequestId());
-        assertEquals(200, deserialized.getStatus().getCode().getValue());
+        assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
     }
@@ -112,7 +112,7 @@ public class GraphSONMessageSerializerV4Test {
     public void shouldSerializeChunkedResponseMessageWithEmptyData() throws SerializationException, JsonProcessingException {
         final ResponseMessage header = ResponseMessage.buildV4()
                 .result(new ArrayList<>())
-                .code(ResponseStatusCode.SUCCESS)
+                .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
@@ -129,7 +129,7 @@ public class GraphSONMessageSerializerV4Test {
         bb0.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
         assertNull(deserialized.getRequestId());
-        assertEquals(200, deserialized.getStatus().getCode().getValue());
+        assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
     }
@@ -142,7 +142,7 @@ public class GraphSONMessageSerializerV4Test {
 
         final ResponseMessage footer = ResponseMessage.buildV4()
                 .result(Arrays.asList("footer", 3))
-                .code(ResponseStatusCode.SERVER_ERROR)
+                .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
                 .create();
 
@@ -166,7 +166,7 @@ public class GraphSONMessageSerializerV4Test {
         bbCombined.resetReaderIndex();
         final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
         assertNull(deserialized.getRequestId());
-        assertEquals(500, deserialized.getStatus().getCode().getValue());
+        assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
     }

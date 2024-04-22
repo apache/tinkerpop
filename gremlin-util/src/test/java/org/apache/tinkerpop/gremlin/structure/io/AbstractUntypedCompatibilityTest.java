@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -26,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -52,9 +52,9 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertNotSame(fromStatic, recycled);
         assertEquals(fromStatic, recycled);
         assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(ResponseStatusCode.AUTHENTICATE.getValue(), ((Map) fromStatic.get("status")).get("code"));
+        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) fromStatic.get("status")).get("code"));
         assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(ResponseStatusCode.AUTHENTICATE.getValue(), ((Map) recycled.get("status")).get("code"));
+        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) recycled.get("status")).get("code"));
     }
 
     @Test
@@ -316,7 +316,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertNotSame(fromStatic, recycled);
         assertEquals(fromStatic, recycled);
         assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getStatus().getCode().getValue(), ((Map) fromStatic.get("status")).get("code"));
+        assertEquals(resource.getStatus().getCode().code(), ((Map) fromStatic.get("status")).get("code"));
         assertEquals(resource.getStatus().getMessage(), ((Map) fromStatic.get("status")).get("message"));
         assertEquals(resource.getStatus().getAttributes(), ((Map) fromStatic.get("status")).get("attributes"));
         assertEquals(resource.getResult().getMeta(), ((Map) fromStatic.get("result")).get("meta"));

@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
@@ -35,7 +36,6 @@ import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
@@ -79,7 +79,8 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
         if (requestMessage.getField("gremlin") instanceof Bytecode &&
                 !mimeType.equals(SerTokens.MIME_GRAPHSON_V3) &&
                 !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V1)) {
-            throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
+            // todo: correct status code !!!
+            throw new ResponseException(HttpResponseStatus.INTERNAL_SERVER_ERROR, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
                     requestMessage, serializer.getClass().getName()));
         }
@@ -97,7 +98,8 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
             System.out.println("----------------------------");
         } catch (Exception ex) {
-            throw new ResponseException(ResponseStatusCode.REQUEST_ERROR_SERIALIZATION, String.format(
+            // todo: correct status code !!!
+            throw new ResponseException(HttpResponseStatus.INTERNAL_SERVER_ERROR, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
                     requestMessage, ex));
         }

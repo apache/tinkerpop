@@ -18,20 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
@@ -174,8 +173,8 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 System.out.println(result.getStatus());
-                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() &&
+                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
+                    pass.set(HttpResponseStatus.OK == result.getStatus().getCode() &&
                             (((int) ((List) result.getResult().getData()).get(0) == 246)));
                 }
                 latch.countDown();

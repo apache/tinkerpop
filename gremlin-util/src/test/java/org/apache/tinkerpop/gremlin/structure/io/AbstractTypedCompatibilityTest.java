@@ -978,14 +978,14 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     private static void assertResponseMessage(final ResponseMessage resource, final ResponseMessage fromStatic,
                                               final ResponseMessage recycled) {
         assertEquals(resource.getRequestId(), recycled.getRequestId());
-        assertEquals(resource.getStatus().getCode().getValue(), recycled.getStatus().getCode().getValue());
+        assertEquals(resource.getStatus().getCode().code(), recycled.getStatus().getCode().code());
         assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
         assertEquals(resource.getStatus().getAttributes(), recycled.getStatus().getAttributes());
         assertEquals(resource.getResult().getData(), recycled.getResult().getData());
         assertEquals(resource.getResult().getMeta(), recycled.getResult().getMeta());
         assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
         assertEquals(resource.getRequestId(), fromStatic.getRequestId());
-        assertEquals(resource.getStatus().getCode().getValue(), fromStatic.getStatus().getCode().getValue());
+        assertEquals(resource.getStatus().getCode().code(), fromStatic.getStatus().getCode().code());
         assertEquals(resource.getStatus().getMessage(), fromStatic.getStatus().getMessage());
         assertEquals(resource.getStatus().getAttributes(), fromStatic.getStatus().getAttributes());
         assertEquals(resource.getResult().getData(), fromStatic.getResult().getData());

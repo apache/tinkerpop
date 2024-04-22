@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -25,19 +27,19 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ResponseStatus {
-    private final ResponseStatusCode code;
+    private final HttpResponseStatus code;
     private final String message;
     private final String exception;
     private final Map<String, Object> attributes;
 
-    public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String, Object> attributes) {
+    public ResponseStatus(final HttpResponseStatus code, final String message, final Map<String, Object> attributes) {
         this.code = code;
         this.message = message;
         this.attributes = attributes;
         this.exception = null;
     }
 
-    public ResponseStatus(final ResponseStatusCode code, final String message, final String exception) {
+    public ResponseStatus(final HttpResponseStatus code, final String message, final String exception) {
         this.code = code;
         this.message = message;
         this.exception = exception;
@@ -45,9 +47,9 @@ public final class ResponseStatus {
     }
 
     /**
-     * Gets the {@link ResponseStatusCode} that describes how the server responded to the request.
+     * Gets the {@link HttpResponseStatus} that describes how the server responded to the request.
      */
-    public ResponseStatusCode getCode() {
+    public HttpResponseStatus getCode() {
         return code;
     }
 
