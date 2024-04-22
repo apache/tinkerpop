@@ -21,7 +21,20 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.Attribute;
+import io.netty.util.AttributeMap;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
+import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -29,20 +42,6 @@ import java.net.SocketAddress;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.netty.util.AttributeMap;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.Settings;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
-import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A SASL authentication handler that allows the {@link Authenticator} to be plugged into it. This handler is meant
@@ -77,7 +76,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     negotiator.set(authenticator.newSaslNegotiator(getRemoteInetAddress(ctx)));
                     request.set(requestMessage);
                     final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
-                            .code(ResponseStatusCode.AUTHENTICATE).create();
+                            .code(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED).create();
                     ctx.writeAndFlush(authenticate);
                 } catch (Exception ex) {
                     // newSaslNegotiator can cause troubles - if we don't catch and respond nicely the driver seems
@@ -88,7 +87,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
 
                     final ResponseMessage error = ResponseMessage.build(requestMessage)
                             .statusMessage("Authenticator is not ready to handle requests")
-                            .code(ResponseStatusCode.SERVER_ERROR).create();
+                            .code(HttpResponseStatus.INTERNAL_SERVER_ERROR).create();
                     ctx.writeAndFlush(error);
                 }
             } else {
@@ -102,7 +101,7 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                     } else {
                         final ResponseMessage error = ResponseMessage.build(request.get())
                                 .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + " - base64 encoded String is expected")
-                                .code(ResponseStatusCode.BAD_REQUEST).create();
+                                .code(HttpResponseStatus.BAD_REQUEST).create();
                         ctx.writeAndFlush(error);
                         return;
                     }
@@ -131,19 +130,19 @@ public class SaslAuthenticationHandler extends AbstractAuthenticationHandler {
                             metadata.put(Tokens.ARGS_SASL, BASE64_ENCODER.encodeToString(saslMessage));
                             final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
                                     .statusAttributes(metadata)
-                                    .code(ResponseStatusCode.AUTHENTICATE).create();
+                                    .code(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED).create();
                             ctx.writeAndFlush(authenticate);
                         }
                     } catch (AuthenticationException ae) {
                         final ResponseMessage error = ResponseMessage.build(request.get())
                                 .statusMessage(ae.getMessage())
-                                .code(ResponseStatusCode.UNAUTHORIZED).create();
+                                .code(HttpResponseStatus.UNAUTHORIZED).create();
                         ctx.writeAndFlush(error);
                     }
                 } else {
                     final ResponseMessage error = ResponseMessage.build(requestMessage)
                             .statusMessage("Failed to authenticate")
-                            .code(ResponseStatusCode.UNAUTHORIZED).create();
+                            .code(HttpResponseStatus.UNAUTHORIZED).create();
                     ctx.writeAndFlush(error);
                 }
             }

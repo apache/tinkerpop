@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -114,9 +113,9 @@ public class HttpHandlerUtil {
         writeError(context, responseMessage, serializer);
     }
 
-    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final ResponseStatusCode statusCode, final String message) {
+    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String message) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
-        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.getValue());
+        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());
         try {
             defaultLastHttpContent.trailingHeaders().add(
                     SerTokens.TOKEN_MESSAGE, URLEncoder.encode(message, StandardCharsets.UTF_8.name()));

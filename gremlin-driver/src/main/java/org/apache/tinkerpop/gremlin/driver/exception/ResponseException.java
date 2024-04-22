@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.exception;
 
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,21 +29,21 @@ import java.util.Optional;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseException extends Exception {
-    private final ResponseStatusCode responseStatusCode;
+    private final HttpResponseStatus responseStatusCode;
     private final String remoteStackTrace;
     private final List<String> remoteExceptionHierarchy;
     private final Map<String,Object> attributes;
 
-    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage) {
+    public ResponseException(final HttpResponseStatus responseStatusCode, final String serverMessage) {
         this(responseStatusCode, serverMessage, null, null);
     }
 
-    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage,
+    public ResponseException(final HttpResponseStatus responseStatusCode, final String serverMessage,
                              final List<String> remoteExceptionHierarchy, final String remoteStackTrace) {
         this(responseStatusCode, serverMessage, remoteExceptionHierarchy, remoteStackTrace, null);
     }
 
-    public ResponseException(final ResponseStatusCode responseStatusCode, final String serverMessage,
+    public ResponseException(final HttpResponseStatus responseStatusCode, final String serverMessage,
                              final List<String> remoteExceptionHierarchy, final String remoteStackTrace,
                              final Map<String,Object> statusAttributes) {
         super(serverMessage);
@@ -53,7 +53,7 @@ public class ResponseException extends Exception {
         this.attributes = statusAttributes != null ? Collections.unmodifiableMap(statusAttributes) : null;
     }
 
-    public ResponseStatusCode getResponseStatusCode() {
+    public HttpResponseStatus getResponseStatusCode() {
         return responseStatusCode;
     }
 
