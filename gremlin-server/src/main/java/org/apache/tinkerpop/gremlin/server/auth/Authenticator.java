@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.server.auth;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
 import java.net.InetAddress;
 import java.util.Map;
@@ -72,12 +72,12 @@ public interface Authenticator {
          * Evaluates the client response data and generates a byte[] reply which may be a further challenge or purely
          * informational in the case that the negotiation is completed on this round.
          *
-         * This method is called each time a {@link RequestMessage} with an "op" code of "authenticate" is received
+         * This method is called each time a {@link RequestMessageV4} with an "op" code of "authenticate" is received
          * from a client. After it is called, {@link #isComplete()} is checked to determine whether the negotiation has
          * finished. If so, an {@link AuthenticatedUser} is obtained by calling {@link #getAuthenticatedUser()} and
          * that user associated with the active connection. If the negotiation is not yet complete,
          * the byte[] is returned to the client as a further challenge in an
-         * {@link ResponseMessage} with {@link HttpResponseStatus#PROXY_AUTHENTICATION_REQUIRED}. This continues until
+         * {@link ResponseMessageV4} with {@link HttpResponseStatus#PROXY_AUTHENTICATION_REQUIRED}. This continues until
          * the negotiation does complete or an error is encountered.
          */
         public byte[] evaluateResponse(final byte[] clientResponse) throws AuthenticationException;

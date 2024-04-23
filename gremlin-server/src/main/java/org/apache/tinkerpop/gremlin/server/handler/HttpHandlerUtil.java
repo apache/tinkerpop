@@ -33,9 +33,8 @@ import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -87,11 +86,11 @@ public class HttpHandlerUtil {
         ctx.writeAndFlush(response);
     }
 
-    static void writeError(final Context context, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+    static void writeError(final Context context, final ResponseMessageV4 responseMessage, final MessageSerializerV4<?> serializer) {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
-                    ? ((MessageTextSerializerV4) serializer).writeErrorFooter(responseMessage, ctx.alloc())
+                    ? serializer.writeErrorFooter(responseMessage, ctx.alloc())
                     : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
 
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
@@ -103,8 +102,8 @@ public class HttpHandlerUtil {
         }
     }
 
-    static void writeError(final Context context, final GremlinError error, final MessageSerializer<?> serializer) {
-        final ResponseMessage responseMessage = ResponseMessage.buildV4()
+    static void writeError(final Context context, final GremlinError error, final MessageSerializerV4<?> serializer) {
+        final ResponseMessageV4 responseMessage = ResponseMessageV4.build()
                 .code(error.getCode())
                 .statusMessage(error.getMessage())
                 .exception(error.getException())

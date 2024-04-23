@@ -37,6 +37,8 @@ public final class RequestMessageV4 {
      */
     public static final RequestMessageV4 INVALID = new RequestMessageV4();
 
+    private static final String REQUEST_ID = "requestId";
+
     private String gremlinType; // Type information needed to help deserialize "gremlin" into either String/Bytecode.
 
     private Object gremlin; // Should be either a String or Bytecode type.

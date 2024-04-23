@@ -35,7 +35,7 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ctx.attr(StateKey.REQUEST_ID).set(UUID.randomUUID());
+        ctx.channel().attr(StateKey.REQUEST_ID).set(UUID.randomUUID());
         ctx.fireChannelRead(msg);
     }
 
@@ -43,7 +43,7 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
-            response.headers().add(REQUEST_ID_HEADER_NAME, ctx.attr(StateKey.REQUEST_ID).get());
+            response.headers().add(REQUEST_ID_HEADER_NAME, ctx.channel().attr(StateKey.REQUEST_ID).get());
         }
         ctx.write(msg, promise);
     }

@@ -22,17 +22,21 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,75 +46,84 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV2 implements MessageTextSerializerV4<ObjectMapper> {
+public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessageSerializerV4<ObjectMapper> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV4.class);
 
+    protected ObjectMapper mapper;
+
     public AbstractGraphSONMessageSerializerV4() {
-        super();
+        final GraphSONMapper.Builder builder = configureBuilder(initBuilder());
+        mapper = builder.create().createMapper();
     }
 
     public AbstractGraphSONMessageSerializerV4(GraphSONMapper.Builder mapperBuilder) {
-        super(mapperBuilder);
+        this.mapper = configureBuilder(mapperBuilder).create().createMapper();
+    }
+
+    abstract GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder);
+
+    @Override
+    public ObjectMapper getMapper() {
+        return this.mapper;
     }
 
     @Override
-    public abstract String[] mimeTypesSupported();
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
+        final GraphSONMapper.Builder initialBuilder = initBuilder();
+        addIoRegistries(config, initialBuilder);
+        applyMaxTokenLimits(initialBuilder, config);
+        mapper = configureBuilder(initialBuilder).create().createMapper();
+    }
+
+    private GraphSONMapper.Builder initBuilder() {
+        final GraphSONMapper.Builder b = GraphSONMapper.build();
+        return b.addCustomModule(GraphSONXModuleV3.build()).version(GraphSONVersion.V4_0);
+    }
+
+    private GraphSONMapper.Builder applyMaxTokenLimits(final GraphSONMapper.Builder builder, final Map<String, Object> config) {
+        if (config != null) {
+            if (config.containsKey("maxNumberLength")) {
+                builder.maxNumberLength((int) config.get("maxNumberLength"));
+            }
+            if (config.containsKey("maxStringLength")) {
+                builder.maxStringLength((int) config.get("maxStringLength"));
+            }
+            if (config.containsKey("maxNestingDepth")) {
+                builder.maxNestingDepth((int) config.get("maxNestingDepth"));
+            }
+        }
+        return builder;
+    }
 
     @Override
-    abstract byte[] obtainHeader();
+    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+        return writeHeader(responseMessage, allocator);
+    }
 
     @Override
-    public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
+    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
         try {
-            return mapper.readValue(msg, ResponseMessage.class);
+            final byte[] payload = new byte[msg.readableBytes()];
+            msg.readBytes(payload);
+            return mapper.readValue(payload, ResponseMessageV4.class);
         } catch (Exception ex) {
             logger.warn(String.format("Response [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
-    @Override
-    public RequestMessage deserializeRequest(final String msg) throws SerializationException {
-        try {
-            return mapper.readValue(msg, RequestMessage.class);
-        } catch (Exception ex) {
-            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
-            throw new SerializationException(ex);
-        }
-    }
-
-    @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        try {
-            return mapper.writeValueAsString(requestMessage);
-        } catch (Exception ex) {
-            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage.toString(), AbstractGraphSONMessageSerializerV4.class.getName()), ex);
-            throw new SerializationException(ex);
-        }
-    }
-
-    @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        return writeHeader(responseMessage, allocator);
-    }
-
-    @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        throw new UnsupportedOperationException("Response serialization as String is not supported");
-    }
-
     protected boolean isTyped() { return true; };
     @Override
-    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeHeader(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
             boolean writeFullMessage = responseMessage.getStatus() != null;
 
-            final byte[] header = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageHeader(responseMessage, isTyped()));
+            final byte[] header = mapper.writeValueAsBytes(new ResponseMessageV4.ResponseMessageHeader(responseMessage, isTyped()));
             final byte[] data = getChunk(true, responseMessage.getResult().getData());
 
             final byte[] footer = writeFullMessage
-                    ? mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()))
+                    ? mapper.writeValueAsBytes(new ResponseMessageV4.ResponseMessageFooter(responseMessage, isTyped()))
                     : new byte[0];
             // skip closing }
             final int headerLen = header.length - (isTyped() ? 3 : 2);
@@ -126,7 +139,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, AbstractGraphSONMessageSerializerV2.class.getName()), ex);
+            logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
@@ -171,10 +184,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
     }
 
     @Override
-    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
+            final byte[] footer = mapper.writeValueAsBytes(new ResponseMessageV4.ResponseMessageFooter(responseMessage, isTyped()));
             final byte[] data = getChunk(false, responseMessage.getResult().getData());
             // skip opening {
             encodedMessage = allocator.buffer(footer.length - 2 + data.length).
@@ -190,10 +203,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
     }
 
     @Override
-    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeErrorFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
+            final byte[] footer = mapper.writeValueAsBytes(new ResponseMessageV4.ResponseMessageFooter(responseMessage, isTyped()));
             // skip opening {
             encodedMessage = allocator.buffer(footer.length - 2).
                     writeBytes(footer, 1, footer.length - 1);
@@ -208,39 +221,53 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
     }
 
     @Override
-    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) {
+    public ResponseMessageV4 readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) {
         throw new UnsupportedOperationException("Reading for streaming GraphSON is not supported");
     }
 
     @Override
-    public ByteBuf serializeRequestMessageV4(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeRequestAsBinary(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final byte[] header = obtainHeader();
             final byte[] payload = mapper.writeValueAsBytes(requestMessage);
 
-            encodedMessage = allocator.buffer(header.length + payload.length);
-            encodedMessage.writeBytes(header);
+            encodedMessage = allocator.buffer(payload.length);
             encodedMessage.writeBytes(payload);
 
             return encodedMessage;
         } catch (Exception ex) {
             if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
 
-            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGraphSONMessageSerializerV2.class.getName()), ex);
+            logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
     @Override
-    public RequestMessageV4 deserializeRequestMessageV4(ByteBuf msg) throws SerializationException {
+    public RequestMessageV4 deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             return mapper.readValue(payload, RequestMessageV4.class);
         } catch (Exception ex) {
-            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV2.class.getName()), ex);
+            logger.warn(String.format("Request [%s] could not be deserialized by %s.", msg, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
+        }
+    }
+
+    public final static class GremlinServerModuleV4 extends SimpleModule {
+        public GremlinServerModuleV4() {
+            super("graphsonV4-gremlin-server");
+
+            // SERIALIZERS
+            addSerializer(ResponseMessageV4.class, new ResponseMessageSerializerV4());
+            addSerializer(ResponseMessageV4.ResponseMessageHeader.class, new ResponseMessageHeaderSerializer());
+            addSerializer(ResponseMessageV4.ResponseMessageFooter.class, new ResponseMessageFooterSerializer());
+            addSerializer(RequestMessageV4.class, new GraphSONMessageSerializerV4.RequestMessageV4Serializer());
+
+            // DESERIALIZERS
+            addDeserializer(ResponseMessageV4.class, new ResponseMessageV4Deserializer());
+            addDeserializer(RequestMessageV4.class, new RequestMessageV4Deserializer());
         }
     }
 
@@ -294,33 +321,92 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
             if (data.containsKey(SerTokens.TOKEN_BINDINGS)) {
                 builder.addBindings((Map<String, Object>) data.get(SerTokens.TOKEN_BINDINGS));
             }
+            if (data.containsKey(Tokens.TIMEOUT_MS)) {
+                builder.addTimeoutMillis((long) data.get(Tokens.TIMEOUT_MS));
+            }
+            if (data.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
+                builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
+            }
+            if (data.containsKey(Tokens.ARGS_BATCH_SIZE)) {
+                builder.addChunkSize((int) data.get(Tokens.ARGS_BATCH_SIZE));
+            }
 
             return builder.create();
         }
     }
 
-    public final static class ResponseMessageHeaderSerializer extends StdSerializer<ResponseMessage.ResponseMessageHeader> {
-        public ResponseMessageHeaderSerializer() {
-            super(ResponseMessage.ResponseMessageHeader.class);
+    public final static class ResponseMessageSerializerV4 extends StdSerializer<ResponseMessageV4> {
+        public ResponseMessageSerializerV4() {
+            super(ResponseMessageV4.class);
         }
 
         @Override
-        public void serialize(final ResponseMessage.ResponseMessageHeader responseMessage, final JsonGenerator jsonGenerator,
+        public void serialize(final ResponseMessageV4 responseMessage, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException {
             ser(responseMessage, jsonGenerator, serializerProvider, null);
         }
 
         @Override
-        public void serializeWithType(final ResponseMessage.ResponseMessageHeader responseMessage, final JsonGenerator jsonGenerator,
+        public void serializeWithType(final ResponseMessageV4 responseMessage, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider,
                                       final TypeSerializer typeSerializer) throws IOException {
             ser(responseMessage, jsonGenerator, serializerProvider, typeSerializer);
         }
 
-        public void ser(final ResponseMessage.ResponseMessageHeader responseMessageHeader, final JsonGenerator jsonGenerator,
+        public void ser(final ResponseMessageV4 responseMessage, final JsonGenerator jsonGenerator,
                         final SerializerProvider serializerProvider,
                         final TypeSerializer typeSerializer) throws IOException {
-            final ResponseMessage responseMessage = responseMessageHeader.getResponseMessage();
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+
+            jsonGenerator.writeFieldName(SerTokens.TOKEN_STATUS);
+
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+            jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
+            jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().code());
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
+            GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
+
+            jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
+
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+
+            if (null == responseMessage.getResult().getData()) {
+                jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
+            } else {
+                jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
+                final Object result = responseMessage.getResult().getData();
+                serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
+            }
+
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
+            GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
+
+            GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
+        }
+    }
+
+    public final static class ResponseMessageHeaderSerializer extends StdSerializer<ResponseMessageV4.ResponseMessageHeader> {
+        public ResponseMessageHeaderSerializer() {
+            super(ResponseMessageV4.ResponseMessageHeader.class);
+        }
+
+        @Override
+        public void serialize(final ResponseMessageV4.ResponseMessageHeader responseMessage, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            ser(responseMessage, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final ResponseMessageV4.ResponseMessageHeader responseMessage, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final TypeSerializer typeSerializer) throws IOException {
+            ser(responseMessage, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        public void ser(final ResponseMessageV4.ResponseMessageHeader responseMessageHeader, final JsonGenerator jsonGenerator,
+                        final SerializerProvider serializerProvider,
+                        final TypeSerializer typeSerializer) throws IOException {
+            final ResponseMessageV4 responseMessage = responseMessageHeader.getResponseMessage();
 
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
@@ -332,28 +418,28 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         }
     }
 
-    public final static class ResponseMessageFooterSerializer extends StdSerializer<ResponseMessage.ResponseMessageFooter> {
+    public final static class ResponseMessageFooterSerializer extends StdSerializer<ResponseMessageV4.ResponseMessageFooter> {
         public ResponseMessageFooterSerializer() {
-            super(ResponseMessage.ResponseMessageFooter.class);
+            super(ResponseMessageV4.ResponseMessageFooter.class);
         }
 
         @Override
-        public void serialize(final ResponseMessage.ResponseMessageFooter responseMessage, final JsonGenerator jsonGenerator,
+        public void serialize(final ResponseMessageV4.ResponseMessageFooter responseMessage, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException {
             ser(responseMessage, jsonGenerator, serializerProvider, null);
         }
 
         @Override
-        public void serializeWithType(final ResponseMessage.ResponseMessageFooter responseMessage, final JsonGenerator jsonGenerator,
+        public void serializeWithType(final ResponseMessageV4.ResponseMessageFooter responseMessage, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider,
                                       final TypeSerializer typeSerializer) throws IOException {
             ser(responseMessage, jsonGenerator, serializerProvider, typeSerializer);
         }
 
-        public void ser(final ResponseMessage.ResponseMessageFooter responseMessageFooter, final JsonGenerator jsonGenerator,
+        public void ser(final ResponseMessageV4.ResponseMessageFooter responseMessageFooter, final JsonGenerator jsonGenerator,
                         final SerializerProvider serializerProvider,
                         final TypeSerializer typeSerializer) throws IOException {
-            final ResponseMessage responseMessage = responseMessageFooter.getResponseMessage();
+            final ResponseMessageV4 responseMessage = responseMessageFooter.getResponseMessage();
 
             // todo: find a way to get rid off
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
@@ -375,15 +461,15 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractGraphS
         }
     }
 
-    public final static class ResponseMessageV4Deserializer extends AbstractObjectDeserializer<ResponseMessage> {
+    public final static class ResponseMessageV4Deserializer extends AbstractObjectDeserializer<ResponseMessageV4> {
         public ResponseMessageV4Deserializer() {
-            super(ResponseMessage.class);
+            super(ResponseMessageV4.class);
         }
 
         @Override
-        public ResponseMessage createObject(final Map<String, Object> data) {
+        public ResponseMessageV4 createObject(final Map<String, Object> data) {
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
-            return ResponseMessage.build()
+            return ResponseMessageV4.build()
                     .code(HttpResponseStatus.valueOf((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(String.valueOf(status.get(SerTokens.TOKEN_MESSAGE)))
                     .exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)))

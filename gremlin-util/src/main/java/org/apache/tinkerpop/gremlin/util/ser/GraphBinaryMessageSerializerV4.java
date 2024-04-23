@@ -20,59 +20,163 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
 import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.binary.ResponseMessageSerializerV4;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSerializerV1
-    implements MessageTextSerializerV4<GraphBinaryMapper> {
+public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<GraphBinaryMapper> {
+    public static final String TOKEN_CUSTOM = "custom";
+    public static final String TOKEN_BUILDER = "builder";
+
+    private GraphBinaryReader reader;
+    private GraphBinaryWriter writer;
+    private RequestMessageSerializerV4 requestSerializer;
+    private ResponseMessageSerializerV4 responseSerializer;
+    private GraphBinaryMapper mapper;
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
-    private final byte[] header = MIME_TYPE.getBytes(UTF_8);
-    private final RequestMessageSerializerV4 requestSerializerV4;
 
+    /**
+     * Creates a new instance of the message serializer using the default type serializers.
+     */
     public GraphBinaryMessageSerializerV4() {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry) {
-        super(registry);
-        requestSerializerV4 = new RequestMessageSerializerV4();
+        reader = new GraphBinaryReader(registry);
+        writer = new GraphBinaryWriter(registry);
+        mapper = new GraphBinaryMapper(writer, reader);
+
+        requestSerializer = new RequestMessageSerializerV4();
+        responseSerializer = new ResponseMessageSerializerV4();
+    }
+
+    public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry.Builder builder) {
+        this(builder.create());
     }
 
     @Override
-    protected String obtainMimeType() {
-        return MIME_TYPE;
+    public GraphBinaryMapper getMapper() {
+        return mapper;
     }
 
     @Override
-    protected String obtainStringdMimeType() {
-        return ""; // stringd not currently supported.
+    public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
+        final String builderClassName = (String) config.get(TOKEN_BUILDER);
+        final TypeSerializerRegistry.Builder builder;
+
+        if (builderClassName != null) {
+            try {
+                final Class<?> clazz = Class.forName(builderClassName);
+                final Constructor<?> ctor = clazz.getConstructor();
+                builder = (TypeSerializerRegistry.Builder) ctor.newInstance();
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        } else {
+            builder = TypeSerializerRegistry.build();
+        }
+
+        final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);
+        classNameList.forEach(className -> {
+            try {
+                final Class<?> clazz = Class.forName(className);
+                try {
+                    final Method instanceMethod = tryInstanceMethod(clazz);
+                    final IoRegistry ioreg = (IoRegistry) instanceMethod.invoke(null);
+                    final List<Pair<Class, CustomTypeSerializer>> classSerializers = ioreg.find(GraphBinaryIo.class, CustomTypeSerializer.class);
+                    for (Pair<Class,CustomTypeSerializer> cs : classSerializers) {
+                        builder.addCustomType(cs.getValue0(), cs.getValue1());
+                    }
+                } catch (Exception methodex) {
+                    throw new IllegalStateException(String.format("Could not instantiate IoRegistry from an instance() method on %s", className), methodex);
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
+
+        addCustomClasses(config, builder);
+
+        final TypeSerializerRegistry registry = builder.create();
+        reader = new GraphBinaryReader(registry);
+        writer = new GraphBinaryWriter(registry);
+
+        requestSerializer = new RequestMessageSerializerV4();
+        responseSerializer = new ResponseMessageSerializerV4();
     }
 
     @Override
-    public ByteBuf serializeRequestMessageV4(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
-        final ByteBuf buffer = allocator.buffer().writeByte(header.length).writeBytes(header);
+    public String[] mimeTypesSupported() {
+        return new String[] {/*serializeToString ? obtainStringdMimeType() : obtainMimeType()*/MIME_TYPE};
+    }
+
+    private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
+        final List<String> classNameList = getListStringFromConfig(TOKEN_CUSTOM, config);
+
+        classNameList.forEach(serializerDefinition -> {
+            final String className;
+            final String serializerName;
+            if (serializerDefinition.contains(";")) {
+                final String[] split = serializerDefinition.split(";");
+                if (split.length != 2)
+                    throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
+
+                className = split[0];
+                serializerName = split[1];
+            } else {
+                throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
+            }
+
+            try {
+                final Class clazz = Class.forName(className);
+                final Class serializerClazz = Class.forName(serializerName);
+                final CustomTypeSerializer serializer = (CustomTypeSerializer) serializerClazz.newInstance();
+                builder.addCustomType(clazz, serializer);
+            } catch (Exception ex) {
+                throw new IllegalStateException("CustomTypeSerializer could not be instantiated", ex);
+            }
+        });
+    }
+
+    @Override
+    public ByteBuf serializeRequestAsBinary(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
+        final ByteBuf buffer = allocator.buffer();
 
         try {
-            requestSerializerV4.writeValue(requestMessage, buffer, writer);
+            requestSerializer.writeValue(requestMessage, buffer, writer);
         } catch (Exception ex) {
             buffer.release();
             throw ex;
@@ -82,23 +186,18 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     }
 
     @Override
-    public RequestMessageV4 deserializeRequestMessageV4(ByteBuf msg) throws SerializationException {
-        return requestSerializerV4.readValue(msg, reader);
+    public RequestMessageV4 deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
+        return requestSerializer.readValue(msg, reader);
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return writeHeader(responseMessage, allocator);
-    }
-
-    @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        throw new UnsupportedOperationException("Response serialization as String is not supported");
     }
 
     //////////////// chunked write
     @Override
-    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeHeader(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         final EnumSet<MessageParts> parts = responseMessage.getStatus() != null ? MessageParts.ALL : MessageParts.START;
 
         return write(responseMessage, null, allocator, parts);
@@ -110,16 +209,16 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     }
 
     @Override
-    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return write(responseMessage, null, allocator, MessageParts.END);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeErrorFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return write(responseMessage, null, allocator, MessageParts.ERROR);
     }
 
-    private ByteBuf write(final ResponseMessage responseMessage, final Object aggregate,
+    private ByteBuf write(final ResponseMessageV4 responseMessage, final Object aggregate,
                           final ByteBufAllocator allocator, final EnumSet<MessageParts> parts) throws SerializationException {
         final ByteBuf byteBuf = allocator.buffer();
         final Buffer buffer = bufferFactory.create(byteBuf);
@@ -142,7 +241,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
             }
 
             if (parts.contains(MessageParts.FOOTER)) {
-                final ResponseStatus status = responseMessage.getStatus();
+                final ResponseStatusV4 status = responseMessage.getStatus();
 
                 // we don't know how much data we have, so need a special object
                 writer.write(Marker.END_OF_STREAM, buffer);
@@ -162,7 +261,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     //////////////// read message methods
 
     @Override
-    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
+    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
         return readChunk(msg, true);
     }
 
@@ -187,13 +286,13 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
     }
 
     @Override
-    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
+    public ResponseMessageV4 readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
         final Buffer buffer = bufferFactory.create(byteBuf);
 
         try {
             // empty input buffer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessage.buildV4().
+                return ResponseMessageV4.build().
                         code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
             }
 
@@ -211,13 +310,13 @@ public class GraphBinaryMessageSerializerV4 extends AbstractGraphBinaryMessageSe
 
             // no footer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessage.buildV4()
+                return ResponseMessageV4.build()
                         .result(result)
                         .create();
             }
 
             final Triplet<HttpResponseStatus, String, String> footer = readFooter(buffer);
-            return ResponseMessage.buildV4()
+            return ResponseMessageV4.build()
                     .result(result)
                     .code(footer.getValue0())
                     .statusMessage(footer.getValue1())
