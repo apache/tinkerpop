@@ -70,10 +70,15 @@ public final class RequestMessageV4 {
     private RequestMessageV4() { }
 
     /**
-     * The id of the current request and is used to track the message within Gremlin Server and in its response.  This
-     * value should be unique per request made.
+     * The id of the current request.
+     * used only in GLV, not transmitted to the server.
      */
     public UUID getRequestId() {
+        if (!fields.containsKey(Tokens.REQUEST_ID)) {
+            // just assign random DI for now. It will not be send to server.
+            fields.put(Tokens.REQUEST_ID, UUID.randomUUID());
+        }
+
         return getField(Tokens.REQUEST_ID);
     }
 

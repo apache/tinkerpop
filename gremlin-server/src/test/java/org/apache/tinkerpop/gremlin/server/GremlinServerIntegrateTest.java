@@ -306,7 +306,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldScriptEvaluationErrorForRemoteTraversal() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().with(conf);
 
         try {
             // tests bad lambda
@@ -336,7 +336,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldTimeOutRemoteTraversal() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().with(conf);
 
         try {
             // tests sleeping thread
@@ -366,7 +366,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
-        final GraphTraversalSource g = traversal().withRemote(conf);
+        final GraphTraversalSource g = traversal().with(conf);
 
         try {
             // tests sleeping thread
@@ -503,7 +503,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
+    public void shouldRespectHighWaterMarkSettingAndSucceed() {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
         // itself up - this is a tricky tests to get passing on all environments so this assumption will deny the
         // test for most cases
@@ -775,24 +775,26 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
-    public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
-        final Client client = cluster.connect();
+    // GraphSON does not support deserialization of streaming data
 
-        try {
-            client.submit("class C { def C getC(){return this}}; new C()").all().join();
-            fail("Should throw an exception.");
-        } catch (RuntimeException re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-            assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
-
-            // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
-    }
+//    @Test
+//    public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
+//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
+//        final Client client = cluster.connect();
+//
+//        try {
+//            client.submit("class C { def C getC(){return this}}; new C()").all().join();
+//            fail("Should throw an exception.");
+//        } catch (RuntimeException re) {
+//            final Throwable root = ExceptionHelper.getRootCause(re);
+//            assertThat(root.getMessage(), CoreMatchers.startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
+//
+//            // validate that we can still send messages to the server
+//            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+//        } finally {
+//            cluster.close();
+//        }
+//    }
 
 //    TODO: this test isn't valid right now since this error is thrown by netty so doesn't map properly to RequestId
 //          sent by the driver. Re-enable once this changes.
