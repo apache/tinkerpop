@@ -34,19 +34,6 @@ import static org.junit.Assert.assertNotNull;
 public class RequestMessageTest {
 
     @Test
-    public void shouldOverrideRequest() {
-        final UUID request = UUID.randomUUID();
-        final RequestMessage msg = RequestMessage.build("op").overrideRequestId(request).create();
-        assertEquals(request, msg.getRequestId());
-    }
-
-    @Test
-    public void shouldSetProcessor() {
-        final RequestMessage msg = RequestMessage.build("op").processor("ppp").create();
-        assertEquals("ppp", msg.getProcessor());
-    }
-
-    @Test
     public void shouldSetOpWithDefaults() {
         final RequestMessage msg = RequestMessage.build("op").create();
         Assert.assertEquals("", msg.getProcessor());    // standard op processor

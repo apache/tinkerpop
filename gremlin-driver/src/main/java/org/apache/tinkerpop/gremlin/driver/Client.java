@@ -784,7 +784,7 @@ public abstract class Client {
         }
 
         /**
-         * Adds the {@link Tokens#ARGS_SESSION} value to every {@link RequestMessageV4}.
+         * todo.
          */
         @Override
         public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
