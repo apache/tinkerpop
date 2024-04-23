@@ -87,9 +87,6 @@ public final class Tokens {
      * request to execute on the server.
      */
     public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
-    public static final String ARGS_HOST = "host";
-    public static final String ARGS_SESSION = "session";
-    public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
     /**
      * The name of the argument that allows to control the serialization of properties on the server.
      */
@@ -116,12 +113,6 @@ public final class Tokens {
     public static final String ARGS_USER_AGENT = "userAgent";
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
-
-    /**
-     * The value of this key holds a string representation of the data held by a {@link Failure} as produced by
-     * {@link Failure#format()}.
-     */
-    public static final String STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE = "failStepMessage";
 
     /**
      * Refers to the hierarchy of exception names for a particular exception thrown on the server.
