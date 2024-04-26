@@ -108,7 +108,7 @@ public interface Channelizer extends ChannelHandler {
         }
 
         @Override
-        protected void initChannel(final SocketChannel socketChannel) throws Exception {
+        protected void initChannel(final SocketChannel socketChannel) {
             final ChannelPipeline pipeline = socketChannel.pipeline();
             final Optional<SslContext> sslCtx;
             if (supportsSsl()) {

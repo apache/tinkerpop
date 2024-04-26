@@ -43,6 +43,8 @@ public final class RequestMessageV4 {
 
     private Map<String, Object> fields;
 
+    private UUID requestId;
+
     private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
         if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
         if (!(gremlin instanceof Bytecode || gremlin instanceof String)) {
@@ -62,6 +64,8 @@ public final class RequestMessageV4 {
         }
 
         this.fields.put("gremlinType", gremlinType);
+
+        requestId = UUID.randomUUID();
     }
 
     /**
@@ -71,15 +75,10 @@ public final class RequestMessageV4 {
 
     /**
      * The id of the current request.
-     * used only in GLV, not transmitted to the server.
+     * Used only in GLV, not transmitted to the server.
      */
     public UUID getRequestId() {
-        if (!fields.containsKey(Tokens.REQUEST_ID)) {
-            // just assign random DI for now. It will not be send to server.
-            fields.put(Tokens.REQUEST_ID, UUID.randomUUID());
-        }
-
-        return getField(Tokens.REQUEST_ID);
+        return requestId;
     }
 
     public <T> Optional<T> optionalField(final String key) {
