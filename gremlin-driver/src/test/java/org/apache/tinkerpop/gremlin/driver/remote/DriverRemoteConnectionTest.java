@@ -41,7 +41,6 @@ public class DriverRemoteConnectionTest {
                 g.with("x").
                         with("y", 100).
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
-                        with(Tokens.REQUEST_ID, requestId).
                         with(Tokens.ARGS_EVAL_TIMEOUT, 100000L).
                         with(Tokens.ARGS_USER_AGENT, "test").
                         V().asAdmin().getBytecode());
