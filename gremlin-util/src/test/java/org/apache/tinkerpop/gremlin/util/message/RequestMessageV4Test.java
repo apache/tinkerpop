@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -156,6 +157,6 @@ public class RequestMessageV4Test {
     @Test
     public void shouldNotContainRequestId() {
         final RequestMessageV4 msg = RequestMessageV4.build("g.V()").create();
-        assertTrue(null == msg.getField(Tokens.REQUEST_ID));
+        assertNull(msg.getField("requestId"));
     }
 }
