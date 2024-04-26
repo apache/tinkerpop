@@ -38,11 +38,6 @@ public final class Tokens {
     public static final String OPS_CLOSE = "close";
 
     /**
-     * The key for the unique identifier of the request.
-     */
-    public static final String REQUEST_ID = "requestId";
-
-    /**
      * The key for the per request server-side timeout in milliseconds.
      */
     public static final String TIMEOUT_MS = "timeoutMs";
