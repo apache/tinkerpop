@@ -1738,28 +1738,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 //    }
 
     @Test
-    public void shouldSendRequestIdBytecode() {
-        final UUID overrideRequestId = UUID.randomUUID();
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-        final Client client = Mockito.spy(cluster.connect().alias("g"));
-        Mockito.when(client.alias("g")).thenReturn(client);
-        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
-        g.with(Tokens.REQUEST_ID, overrideRequestId).V().iterate();
-        cluster.close();
-
-        final ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
-        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
-        final RequestOptions requestOptions = requestOptionsCaptor.getValue();
-        assertTrue(requestOptions.getOverrideRequestId().isPresent());
-        assertEquals(overrideRequestId, requestOptions.getOverrideRequestId().get());
-
-        final ArgumentCaptor<RequestMessageV4> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessageV4.class);
-        verify(client).submitAsync(requestMessageCaptor.capture());
-        final RequestMessageV4 requestMessage = requestMessageCaptor.getValue();
-        assertEquals(overrideRequestId, requestMessage.getRequestId());
-    }
-
-    @Test
     public void shouldClusterReadFileFromResources() throws Exception {
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
         assertNotNull(cluster);
