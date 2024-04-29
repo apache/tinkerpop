@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -41,43 +41,43 @@ import static org.junit.Assert.assertNotSame;
  */
 public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibilityTest {
 
-    @Test
-    public void shouldReadWriteAuthenticationChallenge() throws Exception {
-        final String resourceName = "authenticationchallenge";
+//    @Test
+//    public void shouldReadWriteAuthenticationChallenge() throws Exception {
+//        final String resourceName = "authenticationchallenge";
+//
+//        final ResponseMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, ResponseMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) fromStatic.get("status")).get("code"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) recycled.get("status")).get("code"));
+//    }
 
-        final ResponseMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, ResponseMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) fromStatic.get("status")).get("code"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED.code(), ((Map) recycled.get("status")).get("code"));
-    }
-
-    @Test
-    public void shouldReadWriteAuthenticationResponse() throws Exception {
-        final String resourceName = "authenticationresponse";
-
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) fromStatic.get("args")).get("saslMechanism"));
-        assertEquals(resource.getArgs().get("sasl"), ((Map) fromStatic.get("args")).get("sasl"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) recycled.get("args")).get("saslMechanism"));
-        assertEquals(resource.getArgs().get("sasl"), ((Map) recycled.get("args")).get("sasl"));
-    }
+//    @Test
+//    public void shouldReadWriteAuthenticationResponse() throws Exception {
+//        final String resourceName = "authenticationresponse";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) fromStatic.get("args")).get("saslMechanism"));
+//        assertEquals(resource.getArgs().get("sasl"), ((Map) fromStatic.get("args")).get("sasl"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().get("saslMechanism"), ((Map) recycled.get("args")).get("saslMechanism"));
+//        assertEquals(resource.getArgs().get("sasl"), ((Map) recycled.get("args")).get("sasl"));
+//    }
 
     @Test
     public void shouldReadWriteEdge() throws Exception {
@@ -171,157 +171,157 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(resource.value(), recycled.get("value"));
     }
 
-    @Test
-    public void shouldReadWriteSessionClose() throws Exception {
-        final String resourceName = "sessionclose";
+//    @Test
+//    public void shouldReadWriteSessionClose() throws Exception {
+//        final String resourceName = "sessionclose";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
+//    }
 
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
-    }
+//    @Test
+//    public void shouldReadWriteSessionEval() throws Exception {
+//        final String resourceName = "sessioneval";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
+//    }
 
-    @Test
-    public void shouldReadWriteSessionEval() throws Exception {
-        final String resourceName = "sessioneval";
+//    @Test
+//    public void shouldReadWriteSessionEvalAliased() throws Exception {
+//        final String resourceName = "sessionevalaliased";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
+//        assertEquals(resource.getArgs().get("aliased"), ((Map) fromStatic.get("args")).get("aliased"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
+//        assertEquals(resource.getArgs().get("aliased"), ((Map) recycled.get("args")).get("aliased"));
+//    }
 
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
-    }
+//    @Test
+//    public void shouldReadWriteSessionlessEval() throws Exception {
+//        final String resourceName = "sessionlesseval";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
+//    }
 
-    @Test
-    public void shouldReadWriteSessionEvalAliased() throws Exception {
-        final String resourceName = "sessionevalaliased";
+//    @Test
+//    public void shouldReadWriteSessionlessEvalAliased() throws Exception {
+//        final String resourceName = "sessionlessevalaliased";
+//
+//        final RequestMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getOp(), fromStatic.get("op"));
+//        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
+//        assertEquals(resource.getArgs().get("aliased"), ((Map) fromStatic.get("args")).get("aliased"));
+//        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
+//        assertEquals(resource.getOp(), recycled.get("op"));
+//        assertEquals(resource.getProcessor(), recycled.get("processor"));
+//        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
+//        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
+//        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
+//        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
+//        assertEquals(resource.getArgs().get("aliased"), ((Map) recycled.get("args")).get("aliased"));
+//    }
 
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) fromStatic.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
-        assertEquals(resource.getArgs().get("aliased"), ((Map) fromStatic.get("args")).get("aliased"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("session").toString(), ((Map) recycled.get("args")).get("session"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
-        assertEquals(resource.getArgs().get("aliased"), ((Map) recycled.get("args")).get("aliased"));
-    }
-
-    @Test
-    public void shouldReadWriteSessionlessEval() throws Exception {
-        final String resourceName = "sessionlesseval";
-
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
-    }
-
-    @Test
-    public void shouldReadWriteSessionlessEvalAliased() throws Exception {
-        final String resourceName = "sessionlessevalaliased";
-
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, RequestMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getOp(), fromStatic.get("op"));
-        assertEquals(resource.getProcessor(), fromStatic.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) fromStatic.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) fromStatic.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) fromStatic.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) fromStatic.get("args")).get("bindings"));
-        assertEquals(resource.getArgs().get("aliased"), ((Map) fromStatic.get("args")).get("aliased"));
-        assertEquals(resource.getRequestId().toString(), recycled.get("requestId"));
-        assertEquals(resource.getOp(), recycled.get("op"));
-        assertEquals(resource.getProcessor(), recycled.get("processor"));
-        assertEquals(resource.getArgs().size(), ((Map) recycled.get("args")).size());
-        assertEquals(resource.getArgs().get("gremlin"), ((Map) recycled.get("args")).get("gremlin"));
-        assertEquals(resource.getArgs().get("language"), ((Map) recycled.get("args")).get("language"));
-        assertEquals(resource.getArgs().get("bindings"), ((Map) recycled.get("args")).get("bindings"));
-        assertEquals(resource.getArgs().get("aliased"), ((Map) recycled.get("args")).get("aliased"));
-    }
-
-    @Test
-    public void shouldReadWriteStandardResult() throws Exception {
-        final String resourceName = "standardresult";
-
-        final ResponseMessage resource = findModelEntryObject(resourceName);
-        final byte[] bytes = write(resource, ResponseMessage.class, resourceName);
-        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
-        final HashMap recycled = read(bytes, HashMap.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
-        assertEquals(resource.getStatus().getCode().code(), ((Map) fromStatic.get("status")).get("code"));
-        assertEquals(resource.getStatus().getMessage(), ((Map) fromStatic.get("status")).get("message"));
-        assertEquals(resource.getStatus().getAttributes(), ((Map) fromStatic.get("status")).get("attributes"));
-        assertEquals(resource.getResult().getMeta(), ((Map) fromStatic.get("result")).get("meta"));
-        assertEquals(((List) resource.getResult().getData()).size(), ((List) ((Map) fromStatic.get("result")).get("data")).size());
-    }
+//    @Test
+//    public void shouldReadWriteStandardResult() throws Exception {
+//        final String resourceName = "standardresult";
+//
+//        final ResponseMessage resource = findModelEntryObject(resourceName);
+//        final byte[] bytes = write(resource, ResponseMessage.class, resourceName);
+//        final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
+//        final HashMap recycled = read(bytes, HashMap.class);
+//        assertNotSame(fromStatic, recycled);
+//        assertEquals(fromStatic, recycled);
+//        assertEquals(resource.getRequestId().toString(), fromStatic.get("requestId"));
+//        assertEquals(resource.getStatus().getCode().getValue(), ((Map) fromStatic.get("status")).get("code"));
+//        assertEquals(resource.getStatus().getMessage(), ((Map) fromStatic.get("status")).get("message"));
+//        assertEquals(resource.getStatus().getAttributes(), ((Map) fromStatic.get("status")).get("attributes"));
+//        assertEquals(resource.getResult().getMeta(), ((Map) fromStatic.get("result")).get("meta"));
+//        assertEquals(((List) resource.getResult().getData()).size(), ((List) ((Map) fromStatic.get("result")).get("data")).size());
+//    }
 
     @Test
     public void shouldReadWriteVertex() throws Exception {

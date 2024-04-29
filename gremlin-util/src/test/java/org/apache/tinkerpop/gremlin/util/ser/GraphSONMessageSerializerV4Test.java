@@ -23,35 +23,54 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.junit.Test;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 @SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV4Test {
 
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
+    private final ResponseMessageV4.Builder responseMessageBuilder = ResponseMessageV4.build();
     private final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void shouldSerializeChunkedResponseMessage() throws SerializationException, JsonProcessingException {
-        final ResponseMessage header = ResponseMessage.buildV4()
+        final ResponseMessageV4 header = ResponseMessageV4.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessage footer = ResponseMessage.buildV4()
+        final ResponseMessageV4 footer = ResponseMessageV4.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -76,8 +95,7 @@ public class GraphSONMessageSerializerV4Test {
 
         // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
-        assertNull(deserialized.getRequestId());
+        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
@@ -85,7 +103,7 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
-        final ResponseMessage header = ResponseMessage.buildV4()
+        final ResponseMessageV4 header = ResponseMessageV4.build()
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
@@ -101,8 +119,7 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
-        assertNull(deserialized.getRequestId());
+        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -110,7 +127,7 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithEmptyData() throws SerializationException, JsonProcessingException {
-        final ResponseMessage header = ResponseMessage.buildV4()
+        final ResponseMessageV4 header = ResponseMessageV4.build()
                 .result(new ArrayList<>())
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -127,8 +144,7 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeResponse(bb0);
-        assertNull(deserialized.getRequestId());
+        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -136,11 +152,11 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithError() throws SerializationException, JsonProcessingException {
-        final ResponseMessage header = ResponseMessage.buildV4()
+        final ResponseMessageV4 header = ResponseMessageV4.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessage footer = ResponseMessage.buildV4()
+        final ResponseMessageV4 footer = ResponseMessageV4.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
@@ -164,10 +180,97 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(500, node.get("status").get("code").asInt());
 
         bbCombined.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeResponse(bbCombined);
-        assertNull(deserialized.getRequestId());
+        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
+    }
+
+    @Test
+    public void shouldConfigureIoRegistry() throws Exception {
+        final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(AbstractMessageSerializerV4.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+        }};
+
+        serializer.configure(config, null);
+
+        final ResponseMessageV4 toSerialize = ResponseMessageV4.build().result(Collections.singletonList(Color.RED)).code(HttpResponseStatus.OK).create();
+        final ByteBuf buffer = serializer.serializeResponseAsBinary(toSerialize, allocator);
+        ResponseResult results = serializer.deserializeBinaryResponse(buffer).getResult();
+
+        assertEquals(Color.RED, ((List) results.getData()).get(0));
+    }
+
+    public static class ColorIoRegistry extends AbstractIoRegistry {
+        public ColorIoRegistry() {
+            register(GraphSONIo.class, null, new ColorSimpleModule());
+        }
+    }
+
+    public static class ColorSimpleModule extends TinkerPopJacksonModule {
+        public ColorSimpleModule() {
+            super("color-fun");
+            addSerializer(Color.class, new ColorSerializer());
+            addDeserializer(Color.class, new ColorDeserializer());
+        }
+
+        @Override
+        public Map<Class, String> getTypeDefinitions() {
+            return new HashMap<Class, String>(){{
+                put(Color.class, "color");
+            }};
+        }
+
+        @Override
+        public String getTypeNamespace() {
+            return "java";
+        }
+    }
+
+    public static class ColorSerializer extends StdSerializer<Color> {
+        public ColorSerializer() {
+            super(Color.class);
+        }
+
+        @Override
+        public void serialize(final Color value, final JsonGenerator gen,
+                              final SerializerProvider serializerProvider) throws IOException {
+            gen.writeString(value.toString());
+        }
+
+        @Override
+        public void serializeWithType(final Color value, final JsonGenerator gen,
+                                      final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, gen);
+            gen.writeString(value.toString());
+            typeSer.writeTypeSuffixForScalar(value, gen);
+        }
+    }
+
+    public static class ColorDeserializer extends StdDeserializer<Color> {
+        public ColorDeserializer() {
+            super(Color.class);
+        }
+
+        @Override
+        public Color deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final String colorString = jsonParser.getText();
+            return colorString.contains("r=255") ? Color.RED : null;
+        }
+    }
+
+    @Test
+    public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
+        GraphSONMapper.Builder builder = GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV3.build());
+        GraphSONMessageSerializerV4 graphSONMessageSerializerV4 = new GraphSONMessageSerializerV4(builder);
+
+        ResponseMessageV4 rm = convert("hello", graphSONMessageSerializerV4);
+        assertEquals(rm.getResult().getData(), "hello");
+    }
+
+    private ResponseMessageV4 convert(final Object toSerialize, MessageSerializerV4<?> serializer) throws SerializationException {
+        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        return serializer.deserializeBinaryResponse(bb);
     }
 }

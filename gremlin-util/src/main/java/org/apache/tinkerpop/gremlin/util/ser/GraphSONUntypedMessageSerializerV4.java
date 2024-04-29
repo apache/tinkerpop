@@ -30,15 +30,6 @@ import java.nio.ByteBuffer;
 public final class GraphSONUntypedMessageSerializerV4 extends AbstractGraphSONMessageSerializerV4 {
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V4_UNTYPED;
 
-    private static byte[] header;
-
-    static {
-        final ByteBuffer buffer = ByteBuffer.allocate(MIME_TYPE.length() + 1);
-        buffer.put((byte) MIME_TYPE.length());
-        buffer.put(MIME_TYPE.getBytes());
-        header = buffer.array();
-    }
-
     /**
      * Creates a default GraphSONMessageSerializer.
      *
@@ -69,12 +60,7 @@ public final class GraphSONUntypedMessageSerializerV4 extends AbstractGraphSONMe
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.typeInfo(TypeInfo.NO_TYPES).addCustomModule(new GraphSONMessageSerializerV4.GremlinServerModuleV4());
-    }
-
-    @Override
-    byte[] obtainHeader() {
-        return header;
+        return builder.typeInfo(TypeInfo.NO_TYPES).addCustomModule(new GremlinServerModuleV4());
     }
 
     @Override

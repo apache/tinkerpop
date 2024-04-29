@@ -68,6 +68,7 @@ public class GraphSONMapperTest {
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0).addCustomModule(GraphSONXModuleV2.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
                 {"v2-default", GraphSONMapper.build().version(GraphSONVersion.V2_0).addDefaultXModule(true).typeInfo(TypeInfo.NO_TYPES).create().createMapper()}, // alternate construction of v2
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0).addCustomModule(GraphSONXModuleV3.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
+                {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV3.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
         });
     }
 
@@ -87,7 +88,7 @@ public class GraphSONMapperTest {
         // v2 untyped seems to serialize the VertexProperty label. not changing that since it's already been
         // introduced a long while back. v3 dips back to v1 style - since it has never existed prior to 3.7.0
         // we can make this change
-        if (version.startsWith("v1") || version.startsWith("v3"))
+        if (version.startsWith("v1") || version.startsWith("v3") || version.startsWith("v4"))
             assertEquals("{\"id\":123,\"label\":\"person\",\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\"}],\"age\":[{\"id\":1,\"value\":\"31\"}]}}", json);
         else if (version.startsWith("v2"))
             assertEquals("{\"id\":123,\"label\":\"person\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"label\":\"name\"}],\"age\":[{\"id\":1,\"value\":\"31\",\"label\":\"age\"}]}}", json);
@@ -105,7 +106,7 @@ public class GraphSONMapperTest {
         // v2 untyped seems to serialize the VertexProperty label. not changing that since it's already been
         // introduced a long while back. v3 dips back to v1 style - since it has never existed prior to 3.7.0
         // we can make this change
-        if (version.startsWith("v1") || version.startsWith("v3"))
+        if (version.startsWith("v1") || version.startsWith("v3") || version.startsWith("v4"))
             assertEquals("{\"id\":123,\"label\":\"knows\",\"type\":\"edge\",\"inVLabel\":\"person\",\"outVLabel\":\"person\",\"inV\":2,\"outV\":1,\"properties\":{\"weight\":0.5}}", json);
         else if (version.startsWith("v2"))
             assertEquals("{\"id\":123,\"label\":\"knows\",\"inVLabel\":\"person\",\"outVLabel\":\"person\",\"inV\":2,\"outV\":1,\"properties\":{\"weight\":{\"key\":\"weight\",\"value\":0.5}}}", json);
@@ -149,7 +150,7 @@ public class GraphSONMapperTest {
                 extend("alice", new HashSet<>(Collections.singletonList("c")));
         final String json = mapper.writeValueAsString(p);
 
-        if (version.startsWith("v1") || version.startsWith("v3"))
+        if (version.startsWith("v1") || version.startsWith("v3") || version.startsWith("v4"))
             assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":\"person\",\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\"}],\"age\":[{\"id\":1,\"value\":\"31\"}]}},123,\"alice\"]}", json);
         else
             assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":\"person\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"label\":\"name\"}],\"age\":[{\"id\":1,\"value\":\"31\",\"label\":\"age\"}]}},123,\"alice\"]}", json);

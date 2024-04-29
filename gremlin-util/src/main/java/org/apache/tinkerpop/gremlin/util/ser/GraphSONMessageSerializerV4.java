@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 
 import java.nio.ByteBuffer;
@@ -31,33 +31,7 @@ import java.nio.ByteBuffer;
  * Serialize results to JSON with version 4.0.x schema and the extended module.
  */
 public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSerializerV4 {
-
-    public final static class GremlinServerModuleV4 extends SimpleModule {
-        public GremlinServerModuleV4() {
-            super("graphsonV4-gremlin-server");
-
-            // SERIALIZERS
-            addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
-            addSerializer(ResponseMessage.ResponseMessageHeader.class, new ResponseMessageHeaderSerializer());
-            addSerializer(ResponseMessage.ResponseMessageFooter.class, new ResponseMessageFooterSerializer());
-            addSerializer(RequestMessageV4.class, new GraphSONMessageSerializerV4.RequestMessageV4Serializer());
-
-            // DESERIALIZERS
-            addDeserializer(ResponseMessage.class, new ResponseMessageV4Deserializer());
-            addDeserializer(RequestMessageV4.class, new GraphSONMessageSerializerV4.RequestMessageV4Deserializer());
-        }
-    }
-
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V4;
-
-    private static byte[] header;
-
-    static {
-        final ByteBuffer buffer = ByteBuffer.allocate(MIME_TYPE.length() + 1);
-        buffer.put((byte) MIME_TYPE.length());
-        buffer.put(MIME_TYPE.getBytes());
-        header = buffer.array();
-    }
 
     /**
      * Creates a default GraphSONMessageSerializer.
@@ -91,10 +65,5 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         // override the 2.0 in AbstractGraphSONMessageSerializerV2
         return builder.version(GraphSONVersion.V4_0).addCustomModule(new GremlinServerModuleV4());
-    }
-
-    @Override
-    byte[] obtainHeader() {
-        return header;
     }
 }

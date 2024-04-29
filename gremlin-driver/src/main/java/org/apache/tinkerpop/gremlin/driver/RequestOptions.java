@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -159,7 +159,7 @@ public final class RequestOptions {
         /**
          * The per client request override for the client and server configured {@code resultIterationBatchSize}. If
          * this value is not set, then the configuration for the {@link Cluster} is used unless the
-         * {@link RequestMessage} is configured completely by the user.
+         * {@link RequestMessageV4} is configured completely by the user.
          */
         public Builder batchSize(final int batchSize) {
             this.batchSize = batchSize;

@@ -34,9 +34,8 @@ import io.netty.util.AttributeMap;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
 import java.util.List;
@@ -51,18 +50,18 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     //todo: move
     public static final AttributeKey<UUID> REQUEST_ID = AttributeKey.valueOf("requestId");
-    private final MessageSerializer<?> serializer;
+    private final MessageSerializerV4<?> serializer;
     private final boolean userAgentEnabled;
     private final UnaryOperator<FullHttpRequest> interceptor;
 
     @Deprecated
-    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
+    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
         this.serializer = serializer;
         this.interceptor = interceptor;
         this.userAgentEnabled = true;
     }
 
-    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final UnaryOperator<FullHttpRequest> interceptor, boolean userAgentEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final UnaryOperator<FullHttpRequest> interceptor, boolean userAgentEnabled) {
         this.serializer = serializer;
         this.interceptor = interceptor;
         this.userAgentEnabled = userAgentEnabled;
@@ -86,7 +85,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
         }
 
         try {
-            final ByteBuf buffer = ((MessageTextSerializerV4)serializer).serializeRequestMessageV4(requestMessage, channelHandlerContext.alloc());
+            final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
             final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());

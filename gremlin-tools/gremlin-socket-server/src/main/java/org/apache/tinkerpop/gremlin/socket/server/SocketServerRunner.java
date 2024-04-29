@@ -31,10 +31,11 @@ public class SocketServerRunner {
     public static void main(final String[] args) throws InterruptedException, IOException {
         final SocketServerSettings settings = SocketServerSettings.read(FileSystems.getDefault().getPath("conf", "test-ws-gremlin.yaml"));
         final SimpleSocketServer server = new SimpleSocketServer(settings);
-        final Channel channel = server.start(new TestWSGremlinInitializer(settings));
-        while(channel.isOpen()) {
-            Thread.sleep(1000);
-        }
+        // TODO: add HTTP version of socketserver
+//        final Channel channel = server.start(new TestWSGremlinInitializer(settings));
+//        while(channel.isOpen()) {
+//            Thread.sleep(1000);
+//        }
     }
 
 }

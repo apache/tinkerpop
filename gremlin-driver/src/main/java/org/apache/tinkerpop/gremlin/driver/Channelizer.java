@@ -29,7 +29,7 @@ import io.netty.handler.ssl.SslHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -154,7 +154,7 @@ public interface Channelizer extends ChannelHandler {
                 throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", HttpChannelizer.class.getSimpleName()));
 
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
-            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder((MessageTextSerializerV4<?>) cluster.getSerializer());
+            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder((MessageSerializerV4<?>) cluster.getSerializer());
         }
 
         @Override

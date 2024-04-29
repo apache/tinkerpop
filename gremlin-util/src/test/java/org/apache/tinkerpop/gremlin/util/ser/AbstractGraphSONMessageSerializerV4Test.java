@@ -27,12 +27,11 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class AbstractGraphSONMessageSerializerV2Test {
+public class AbstractGraphSONMessageSerializerV4Test {
     @Test
     public void shouldApplyMaxTokenLengthsOnConfigure() {
         // Initialize bare-bones AbstractGraphSONMessageSerializerV2
-        final AbstractGraphSONMessageSerializerV2 serializer = new AbstractGraphSONMessageSerializerV2() {
-            @Override byte[] obtainHeader() { return new byte[0]; }
+        final AbstractGraphSONMessageSerializerV4 serializer = new AbstractGraphSONMessageSerializerV4() {
             @Override GraphSONMapper.Builder configureBuilder(GraphSONMapper.Builder builder) { return builder;}
             @Override public String[] mimeTypesSupported() {return new String[0]; }
         };

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.ietf.jgss.GSSException;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,8 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -165,7 +164,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateWithPlainTextOverDefaultJSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
@@ -173,8 +172,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void shouldAuthenticateWithPlainTextOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
+    public void shouldAuthenticateWithPlainTextOverGraphSONV4Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
@@ -183,7 +182,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverDefaultJsonSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 
@@ -199,8 +198,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
+    public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV4Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 

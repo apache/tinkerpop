@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.structure.io.AbstractUntypedCompatibilityTes
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,21 +41,21 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
     private static final ObjectMapper mapperV1 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV1.instance()).
             typeInfo(TypeInfo.NO_TYPES).
-            addCustomModule(new AbstractGraphSONMessageSerializerV1.GremlinServerModule()).
+//            addCustomModule(new AbstractGraphSONMessageSerializerV1.GremlinServerModule()).
             version(GraphSONVersion.V1_0).create().createMapper();
 
     private static final ObjectMapper mapperV2 = GraphSONMapper.build().
                     addRegistry(TinkerIoRegistryV2.instance()).
                     typeInfo(TypeInfo.NO_TYPES).
                     addCustomModule(GraphSONXModuleV2.build()).
-                    addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
+//                    addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
                     version(GraphSONVersion.V2_0).create().createMapper();
 
     private static final ObjectMapper mapperV3 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3.instance()).
             typeInfo(TypeInfo.NO_TYPES).
             addCustomModule(GraphSONXModuleV3.build()).
-            addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
+//            addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
 
     private static final String testCaseDataPath = root.getPath() + File.separator + "test-case-data" + File.separator

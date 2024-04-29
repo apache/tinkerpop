@@ -48,8 +48,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -696,7 +696,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldNotThrowNoSuchElementException() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // this should return "nothing" - there should be no exception
-            final List<ResponseMessage> responses = client.submit("g.V().has('name','kadfjaldjfla')");
+            final List<ResponseMessageV4> responses = client.submit("g.V().has('name','kadfjaldjfla')");
             assertTrue(((List) responses.get(0).getResult().getData()).isEmpty());
         }
     }
@@ -705,7 +705,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
+            final List<ResponseMessageV4> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
             assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
@@ -720,7 +720,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessageV4 msg = RequestMessageV4.build("Thread.sleep(3000);'some-stuff-that-should not return'")
                     .addTimeoutMillis(100L)
                     .create();
-            final List<ResponseMessage> responses = client.submit(msg);
+            final List<ResponseMessageV4> responses = client.submit(msg);
             assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("100 ms")));
 
             // validate that we can still send messages to the server
@@ -733,7 +733,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // timeout configured for 1 second so the timed interrupt should trigger prior to the
             // evaluationTimeout which is at 30 seconds by default
-            final List<ResponseMessage> responses = client.submit("while(true){}");
+            final List<ResponseMessageV4> responses = client.submit("while(true){}");
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
@@ -880,7 +880,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldNotHavePartialContentWithOneResult() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessageV4 request = RequestMessageV4.build("10").create();
-            final List<ResponseMessage> responses = client.submit(request);
+            final List<ResponseMessageV4> responses = client.submit(request);
             assertEquals(1, responses.size());
             assertEquals(HttpResponseStatus.OK, responses.get(0).getStatus().getCode());
         }
@@ -890,7 +890,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessageV4 request = RequestMessageV4.build("new String[100]").create();
-            final List<ResponseMessage> responses = client.submit(request);
+            final List<ResponseMessageV4> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
 
             // first message have no status
@@ -906,7 +906,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldFailWithBadScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessageV4 request = RequestMessageV4.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
-            final List<ResponseMessage> responses = client.submit(request);
+            final List<ResponseMessageV4> responses = client.submit(request);
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, responses.get(0).getStatus().getCode());
             assertEquals(1, responses.size());
         }

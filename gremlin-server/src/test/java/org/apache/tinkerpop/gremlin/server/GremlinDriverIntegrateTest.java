@@ -44,12 +44,9 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -61,6 +58,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.net.ConnectException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -250,7 +248,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
         try {
             final Client client = cluster.connect().alias("g");
 
@@ -881,64 +879,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldSerializeToStringWhenRequestedGraphBinaryV1() throws Exception {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("serializeResultToString", true);
-        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
-        serializer.configure(m, null);
-
-        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
-        final Client client = cluster.connect();
-
-        final ResultSet resultSet = client.submit("TinkerFactory.createClassic()");
-        final List<Result> results = resultSet.all().join();
-        assertEquals(1, results.size());
-        assertEquals("tinkergraph[vertices:6 edges:6]", results.get(0).getString());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldWorkWithGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-            assertEquals(1, r.size());
-
-            final Map<String, Object> m = r.get(0).get(Map.class);
-            assertEquals(4, m.size());
-            assertEquals(1, m.get("id"));
-            assertEquals("person", m.get("label"));
-            assertEquals("vertex", m.get("type"));
-
-            final Map<String, Object> properties = (Map<String, Object>) m.get("properties");
-            assertEquals(2, properties.size());
-
-            final List<Object> names = (List<Object>) properties.get("name");
-            assertEquals(1, names.size());
-
-            final Map<String, Object> nameProperties = (Map<String, Object>) names.get(0);
-            assertEquals(2, nameProperties.size());
-            assertEquals(0, nameProperties.get("id"));
-            assertEquals("marko", nameProperties.get("value"));
-
-            final List<Object> ages = (List<Object>) properties.get("age");
-            assertEquals(1, ages.size());
-
-            final Map<String, Object> ageProperties = (Map<String, Object>) ages.get(0);
-            assertEquals(2, ageProperties.size());
-            assertEquals(1, ageProperties.get("id"));
-            assertEquals(29, ageProperties.get("value"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldWorkWithGraphSONV2Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
+    public void shouldWorkWithGraphSONV4Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
         final Client client = cluster.connect();
 
         try {
@@ -957,75 +899,38 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-//    @Test
-//    public void shouldWorkWithGraphSONExtendedV2Serialization() {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V2).create();
-//        final Client client = cluster.connect();
-//
-//        try {
-//            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
-//            assertEquals(1, r.size());
-//
-//            final Instant then = r.get(0).get(Instant.class);
-//            assertEquals(Instant.EPOCH, then);
-//        } finally {
-//            cluster.close();
-//        }
-//    }
-//
-//    @Test
-//    public void shouldWorkWithGraphSONV3Serialization() throws Exception {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-//        final Client client = cluster.connect();
-//
-//        try {
-//            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-//            assertEquals(1, r.size());
-//
-//            final Vertex v = r.get(0).get(DetachedVertex.class);
-//            assertEquals(1, v.id());
-//            assertEquals("person", v.label());
-//
-//            assertEquals(2, IteratorUtils.count(v.properties()));
-//            assertEquals("marko", v.value("name"));
-//            assertEquals(29, Integer.parseInt(v.value("age").toString()));
-//        } finally {
-//            cluster.close();
-//        }
-//    }
-//
-//    @Test
-//    public void shouldWorkWithGraphSONExtendedV3Serialization() throws Exception {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-//        final Client client = cluster.connect();
-//
-//        try {
-//            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
-//            assertEquals(1, r.size());
-//
-//            final Instant then = r.get(0).get(Instant.class);
-//            assertEquals(Instant.EPOCH, then);
-//        } finally {
-//            cluster.close();
-//        }
-//    }
-//
-//    @Test
-//    public void shouldWorkWithGraphBinaryV1Serialization() throws Exception {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
-//        final Client client = cluster.connect();
-//
-//        try {
-//            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-//            assertEquals(1, r.size());
-//
-//            final Vertex v = r.get(0).get(DetachedVertex.class);
-//            assertEquals(1, v.id());
-//            assertEquals("person", v.label());
-//        } finally {
-//            cluster.close();
-//        }
-//    }
+    @Test
+    public void shouldWorkWithGraphSONExtendedV4Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
+            assertEquals(1, r.size());
+
+            final Instant then = r.get(0).get(Instant.class);
+            assertEquals(Instant.EPOCH, then);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphBinaryV4Serialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            assertEquals(1, r.size());
+
+            final Vertex v = r.get(0).get(DetachedVertex.class);
+            assertEquals(1, v.id());
+            assertEquals("person", v.label());
+        } finally {
+            cluster.close();
+        }
+    }
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
@@ -1461,7 +1366,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
         try {
             try {
@@ -1484,7 +1389,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -1510,7 +1415,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {

@@ -21,24 +21,23 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
-public class GraphSONMessageSerializerV3RoundTripTest extends AbstractRoundTripTest {
-
-    private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
-    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
+public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripTest {
+    private final ResponseMessageV4.Builder responseMessageBuilder = ResponseMessageV4.build();
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
+    public final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
     private static final List<String> skippedTests
             = Arrays.asList("ReferenceVertex", "ReferenceVertexProperty", "ReferenceProperty", "Graph");
@@ -49,9 +48,10 @@ public class GraphSONMessageSerializerV3RoundTripTest extends AbstractRoundTripT
         if (skippedTests.contains(name)) return;
 
         for (int i = 0; i < 5; i++) {
-
-            final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(value).create(), allocator);
-            final Object result = serializer.deserializeResponse(bb).getResult().getData();
+            // GraphSONv4 assumes that results are always in a list.
+            final ByteBuf bb = serializer.serializeResponseAsBinary(
+                    responseMessageBuilder.result(Collections.singletonList(value)).code(HttpResponseStatus.OK).create(), allocator);
+            final Object result = ((List) serializer.deserializeBinaryResponse(bb).getResult().getData()).get(0);
 
             Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
         }

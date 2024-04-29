@@ -24,10 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
+// TODO: revisit this class, these methods aren't called anymore
 public class ProviderGraphManagerHelper extends DefaultGraphManager {
 
   private Map<String, Map<String, Object>> beforeQueryStartTracking;
@@ -44,20 +45,20 @@ public class ProviderGraphManagerHelper extends DefaultGraphManager {
   }
  
   @Override
-  public void beforeQueryStart(final RequestMessage msg) {
-    final Map<String, Object> args = msg.getArgs();
+  public void beforeQueryStart(final RequestMessageV4 msg) {
+    final Map<String, Object> args = msg.getFields();
     final String requestID = msg.getRequestId().toString();
     this.beforeQueryStartTracking.put(requestID, args);
   }
 
   @Override
-  public void onQuerySuccess(final RequestMessage msg) {
+  public void onQuerySuccess(final RequestMessageV4 msg) {
     final String requestID = msg.getRequestId().toString();
     this.onQuerySuccessCount.add(requestID);
   }
 
   @Override
-  public void onQueryError(final RequestMessage msg, final Throwable e) {
+  public void onQueryError(final RequestMessageV4 msg, final Throwable e) {
     final String requestID = msg.getRequestId().toString();
     this.onQueryErrorCount.add(requestID);
   }
