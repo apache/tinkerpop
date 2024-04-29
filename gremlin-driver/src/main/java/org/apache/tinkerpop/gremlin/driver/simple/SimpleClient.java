@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver.simple;
 
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
 import java.io.Closeable;
 import java.util.List;
@@ -32,21 +31,21 @@ import java.util.function.Consumer;
  */
 public interface SimpleClient extends Closeable {
 
-    public default void submit(final String gremlin, final Consumer<ResponseMessage> callback) throws Exception {
+    public default void submit(final String gremlin, final Consumer<ResponseMessageV4> callback) throws Exception {
         submit(RequestMessageV4.build(gremlin).create(), callback);
     }
 
-    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessage> callback) throws Exception;
+    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessageV4> callback) throws Exception;
 
-    public default List<ResponseMessage> submit(final String gremlin) throws Exception {
+    public default List<ResponseMessageV4> submit(final String gremlin) throws Exception {
         return submit(RequestMessageV4.build(gremlin).create());
     }
 
-    public List<ResponseMessage> submit(final RequestMessageV4 requestMessage) throws Exception;
+    public List<ResponseMessageV4> submit(final RequestMessageV4 requestMessage) throws Exception;
 
-    public default CompletableFuture<List<ResponseMessage>> submitAsync(final String gremlin) throws Exception {
+    public default CompletableFuture<List<ResponseMessageV4>> submitAsync(final String gremlin) throws Exception {
         return submitAsync(RequestMessageV4.build(gremlin).create());
     }
 
-    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessageV4 requestMessage) throws Exception;
+    public CompletableFuture<List<ResponseMessageV4>> submitAsync(final RequestMessageV4 requestMessage) throws Exception;
 }

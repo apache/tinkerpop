@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphSONRemoteGraphProvider() {
-        super(createClusterBuilder(Serializers.GRAPHSON_V3).create());
+        super(createClusterBuilder(SerializersV4.GRAPHSON_V4).create());
     }
 }

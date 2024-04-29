@@ -35,21 +35,18 @@ import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -64,24 +61,21 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     HttpResponseStatus.class,
                     Host.class,
                     LoadBalancingStrategy.class,
-                    MessageSerializer.class,
+                    MessageSerializerV4.class,
                     Result.class,
                     ResultSet.class,
                     Tokens.class,
                     ConnectionException.class,
                     ResponseException.class,
-                    RequestMessage.class,
-                    ResponseMessage.class,
+                    RequestMessageV4.class,
+                    ResponseMessageV4.class,
                     ResponseResult.class,
-                    ResponseStatus.class,
-                    GraphSONMessageSerializerV1.class,
-                    GraphSONUntypedMessageSerializerV1.class,
-                    GraphSONMessageSerializerV2.class,
-                    GraphSONMessageSerializerV3.class,
-                    GraphBinaryMessageSerializerV1.class,
-                    MessageTextSerializer.class,
+                    ResponseStatusV4.class,
+                    GraphSONMessageSerializerV4.class,
+                    GraphSONUntypedMessageSerializerV4.class,
+                    GraphBinaryMessageSerializerV4.class,
                     SerializationException.class,
-                    Serializers.class,
+                    SerializersV4.class,
                     SerTokens.class,
                     DriverRemoteConnection.class,
                     DriverRemoteTraversal.class).create();

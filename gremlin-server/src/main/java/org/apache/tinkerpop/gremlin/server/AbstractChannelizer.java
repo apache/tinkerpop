@@ -23,11 +23,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
@@ -37,6 +32,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ import java.util.stream.Stream;
  * Gremlin scripts).
  * <p/>
  * Implementers need only worry about determining how incoming data is converted to a
- * {@link RequestMessage} and outgoing data is converted from a  {@link ResponseMessage} to whatever expected format is
+ * {@link RequestMessageV4} and outgoing data is converted from a  {@link ResponseMessageV4} to whatever expected format is
  * needed by the pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -78,11 +78,8 @@ import java.util.stream.Stream;
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
     protected static final List<Settings.SerializerSettings> DEFAULT_SERIALIZERS = Arrays.asList(
-            new Settings.SerializerSettings(GraphSONMessageSerializerV2.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), new HashMap<String,Object>(){{
-                put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
-            }})
+            new Settings.SerializerSettings(GraphSONMessageSerializerV4.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV4.class.getName(), Collections.emptyMap())
     );
 
     protected Settings settings;
@@ -107,7 +104,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected static final String PIPELINE_HTTP_REQUEST_DECODER = "http-request-decoder";
     protected static final String GREMLIN_ENDPOINT = "/gremlin";
 
-    protected final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
+    protected final Map<String, MessageSerializerV4<?>> serializers = new HashMap<>();
 
     protected Authenticator authenticator;
     protected Authorizer authorizer;
@@ -210,15 +207,15 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         serializerSettings.stream().map(config -> {
             try {
                 final Class clazz = Class.forName(config.className);
-                if (!MessageSerializer.class.isAssignableFrom(clazz)) {
-                    logger.warn("The {} serialization class does not implement {} - it will not be available.", config.className, MessageSerializer.class.getCanonicalName());
-                    return Optional.<MessageSerializer>empty();
+                if (!MessageSerializerV4.class.isAssignableFrom(clazz)) {
+                    logger.warn("The {} serialization class does not implement {} - it will not be available.", config.className, MessageSerializerV4.class.getCanonicalName());
+                    return Optional.<MessageSerializerV4>empty();
                 }
 
                 if (clazz.getAnnotation(Deprecated.class) != null)
                     logger.warn("The {} serialization class is deprecated.", config.className);
 
-                final MessageSerializer<?> serializer = (MessageSerializer) clazz.newInstance();
+                final MessageSerializerV4<?> serializer = (MessageSerializerV4) clazz.newInstance();
                 final Map<String, Graph> graphsDefinedAtStartup = new HashMap<>();
                 for (String graphName : settings.graphs.keySet()) {
                     graphsDefinedAtStartup.put(graphName, graphManager.getGraph(graphName));
@@ -230,16 +227,16 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {
                 logger.warn("Could not find configured serializer class - {} - it will not be available", config.className);
-                return Optional.<MessageSerializer>empty();
+                return Optional.<MessageSerializerV4>empty();
             } catch (Exception ex) {
                 logger.warn("Could not instantiate configured serializer class - {} - it will not be available. {}", config.className, ex.getMessage());
-                return Optional.<MessageSerializer>empty();
+                return Optional.<MessageSerializerV4>empty();
             }
         }).filter(Optional::isPresent).map(Optional::get).flatMap(serializer ->
                         Stream.of(serializer.mimeTypesSupported()).map(mimeType -> Pair.with(mimeType, serializer))
         ).forEach(pair -> {
             final String mimeType = pair.getValue0();
-            final MessageSerializer<?> serializer = pair.getValue1();
+            final MessageSerializerV4<?> serializer = pair.getValue1();
             if (serializers.containsKey(mimeType))
                 logger.info("{} already has {} configured - it will not be replaced by {}, change order of serialization configuration if this is not desired.",
                         mimeType, serializers.get(mimeType).getClass().getName(), serializer.getClass().getName());

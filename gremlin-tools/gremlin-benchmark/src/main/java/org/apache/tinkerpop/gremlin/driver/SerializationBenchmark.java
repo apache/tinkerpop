@@ -27,10 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Warmup;
@@ -102,18 +102,17 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final UUID id = UUID.randomUUID();
 
-    private static final ResponseMessage response = ResponseMessage
-            .build(UUID.randomUUID()).code(HttpResponseStatus.OK).result(new ReferenceVertex(1, "person"))
+    private static final ResponseMessageV4 response = ResponseMessageV4
+            .build().code(HttpResponseStatus.OK).result(new ReferenceVertex(1, "person"))
             .create();
 
     private static final Bytecode bytecode = new Bytecode();
-    private static final RequestMessage request = RequestMessage
-            .build(Tokens.OPS_BYTECODE).processor("traversal").overrideRequestId(UUID.randomUUID())
-            .add(Tokens.ARGS_GREMLIN, bytecode)
+    private static final RequestMessageV4 request = RequestMessageV4
+            .build(bytecode)
             .create();
 
-    private static final GraphBinaryMessageSerializerV1 binarySerializer = new GraphBinaryMessageSerializerV1();
-    private static final GraphSONMessageSerializerV3 graphsonSerializer = new GraphSONMessageSerializerV3();
+    private static final GraphBinaryMessageSerializerV4 binarySerializer = new GraphBinaryMessageSerializerV4();
+    private static final GraphSONMessageSerializerV4 graphsonSerializer = new GraphSONMessageSerializerV4();
 
     static {
         bytecode.addStep("V");
@@ -123,28 +122,28 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public RequestMessage testReadMessage1Binary() throws SerializationException {
+    public RequestMessageV4 testReadMessage1Binary() throws SerializationException {
         RequestMessageBinaryBuffer1.readerIndex(0);
 
-        return binarySerializer.deserializeRequest(RequestMessageBinaryBuffer1);
+        return binarySerializer.deserializeBinaryRequest(RequestMessageBinaryBuffer1);
     }
 
     @Benchmark
-    public RequestMessage testReadMessage2Binary() throws SerializationException {
+    public RequestMessageV4 testReadMessage2Binary() throws SerializationException {
         RequestMessageBinaryBuffer2.readerIndex(0);
-        return binarySerializer.deserializeRequest(RequestMessageBinaryBuffer2);
+        return binarySerializer.deserializeBinaryRequest(RequestMessageBinaryBuffer2);
     }
 
     @Benchmark
-    public RequestMessage testReadMessage1GraphSON() throws SerializationException {
+    public RequestMessageV4 testReadMessage1GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer1.readerIndex(0);
-        return graphsonSerializer.deserializeRequest(RequestMessageGraphSONBuffer1);
+        return graphsonSerializer.deserializeBinaryRequest(RequestMessageGraphSONBuffer1);
     }
 
     @Benchmark
-    public RequestMessage testReadMessage2GraphSON() throws SerializationException {
+    public RequestMessageV4 testReadMessage2GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer2.readerIndex(0);
-        return graphsonSerializer.deserializeRequest(RequestMessageGraphSONBuffer2);
+        return graphsonSerializer.deserializeBinaryRequest(RequestMessageGraphSONBuffer2);
     }
 
     @Benchmark
@@ -172,7 +171,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public RequestMessage testInstanceCreation() {
-        return RequestMessage.build("a").overrideRequestId(id).processor("b").create();
+    public RequestMessageV4 testInstanceCreation() {
+        return RequestMessageV4.build("a").addLanguage("gremlin-groovy").addG("g").create();
     }
 }

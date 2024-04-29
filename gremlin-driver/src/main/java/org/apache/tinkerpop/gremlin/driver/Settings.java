@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -378,7 +378,7 @@ final class Settings {
 
     public static class SerializerSettings {
         /**
-         * The fully qualified class name of the {@link MessageSerializer} that will be used to communicate with the
+         * The fully qualified class name of the {@link MessageSerializerV4} that will be used to communicate with the
          * server. Note that the serializer configured on the client should be supported by the server configuration.
          * By default the setting is configured to {@link GraphBinaryMessageSerializerV4}.
          */
@@ -389,9 +389,9 @@ final class Settings {
          */
         public Map<String, Object> config = null;
 
-        public MessageSerializer<?> create() throws Exception {
+        public MessageSerializerV4<?> create() throws Exception {
             final Class<?> clazz = Class.forName(className);
-            final MessageSerializer<?> serializer = (MessageSerializer<?>) clazz.newInstance();
+            final MessageSerializerV4<?> serializer = (MessageSerializerV4<?>) clazz.newInstance();
             Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;
         }

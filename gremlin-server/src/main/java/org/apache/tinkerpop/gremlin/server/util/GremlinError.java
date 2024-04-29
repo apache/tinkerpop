@@ -163,7 +163,7 @@ public class GremlinError {
     public static GremlinError failStep(final Failure failure) {
         // todo: double check message
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                failure.getMessage() + ". " + failure.format(), "ServerFailStepException");
+                failure.getMessage(), "ServerFailStepException");
     }
 
     public static GremlinError general(final Throwable t) {

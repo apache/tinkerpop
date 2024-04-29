@@ -108,8 +108,9 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
         }
     }
 
-    @Override
-    public void shouldReadWriteAuthenticationChallenge() throws Exception {
-        super.shouldReadWriteAuthenticationChallenge();
-    }
+//    TODO: revisit
+//    @Override
+//    public void shouldReadWriteAuthenticationChallenge() throws Exception {
+//        super.shouldReadWriteAuthenticationChallenge();
+//    }
 }

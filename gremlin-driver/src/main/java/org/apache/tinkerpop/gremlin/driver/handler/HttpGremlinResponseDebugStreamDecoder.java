@@ -21,19 +21,19 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
 import java.util.List;
 
 /**
- * Converts {@code HttpResponse} to a {@link ResponseMessage}.
+ * Converts {@code HttpResponse} to a {@link ResponseMessageV4}.
  */
 @ChannelHandler.Sharable
-public final class HttpGremlinResponseDebugStreamDecoder extends MessageToMessageDecoder<ResponseMessage> {
+public final class HttpGremlinResponseDebugStreamDecoder extends MessageToMessageDecoder<ResponseMessageV4> {
     public HttpGremlinResponseDebugStreamDecoder() {}
 
     @Override
-    protected void decode(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response, final List<Object> objects) throws Exception {
+    protected void decode(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response, final List<Object> objects) throws Exception {
         System.out.println("HttpGremlinResponseStreamDecoder: ");
         System.out.println(response.getResult());
     }
