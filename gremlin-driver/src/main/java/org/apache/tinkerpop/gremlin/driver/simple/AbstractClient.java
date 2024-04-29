@@ -25,7 +25,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +48,13 @@ public abstract class AbstractClient implements SimpleClient {
     public abstract void writeAndFlush(final RequestMessageV4 requestMessage) throws Exception;
 
     @Override
-    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
+    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessageV4> callback) throws Exception {
         callbackResponseHandler.callback = callback;
         writeAndFlush(requestMessage);
     }
 
     @Override
-    public List<ResponseMessage> submit(final RequestMessageV4 requestMessage) throws Exception {
+    public List<ResponseMessageV4> submit(final RequestMessageV4 requestMessage) throws Exception {
         // this is just a test client to force certain behaviors of the server. hanging tests are a pain to deal with
         // especially in travis as it's not always clear where the hang is. a few reasonable timeouts might help
         // make debugging easier when we look at logs
@@ -62,9 +62,9 @@ public abstract class AbstractClient implements SimpleClient {
     }
 
     @Override
-    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
-        final List<ResponseMessage> results = new ArrayList<>();
-        final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
+    public CompletableFuture<List<ResponseMessageV4>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
+        final List<ResponseMessageV4> results = new ArrayList<>();
+        final CompletableFuture<List<ResponseMessageV4>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
             // message with trailers
             if (f.isDone() && response.getStatus().getCode() != HttpResponseStatus.NO_CONTENT)
@@ -84,11 +84,11 @@ public abstract class AbstractClient implements SimpleClient {
         return f;
     }
 
-    static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        public Consumer<ResponseMessage> callback;
+    static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessageV4> {
+        public Consumer<ResponseMessageV4> callback;
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
+        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) throws Exception {
             callback.accept(response);
         }
     }

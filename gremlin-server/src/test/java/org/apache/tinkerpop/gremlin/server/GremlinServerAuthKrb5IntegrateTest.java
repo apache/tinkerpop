@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.ietf.jgss.GSSException;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -204,10 +204,10 @@ public class GremlinServerAuthKrb5IntegrateTest extends AbstractGremlinServerInt
 
     @Test
     public void shouldAuthenticateWithSerializeResultToStringGraphBinaryV1() throws Exception {
-        assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV1());
+        assertAuthViaToStringWithSpecifiedSerializer(new GraphBinaryMessageSerializerV4());
     }
 
-    public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializer<?> serializer) throws InterruptedException, ExecutionException {
+    public void assertAuthViaToStringWithSpecifiedSerializer(final MessageSerializerV4<?> serializer) throws InterruptedException, ExecutionException {
         final Map<String,Object> config = new HashMap<>();
         config.put("serializeResultToString", true);
         serializer.configure(config, null);

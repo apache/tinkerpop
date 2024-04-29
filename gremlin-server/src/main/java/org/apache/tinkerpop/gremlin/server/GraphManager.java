@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import javax.script.Bindings;
 import java.util.Map;
@@ -130,9 +130,9 @@ public interface GraphManager {
      * This method will be called before a script or query is processed by the
      * gremlin-server.
      *
-     * @param msg the {@link RequestMessage} received by the gremlin-server.
+     * @param msg the {@link RequestMessageV4} received by the gremlin-server.
      */
-    default void beforeQueryStart(final RequestMessage msg) {
+    default void beforeQueryStart(final RequestMessageV4 msg) {
 
     }
 
@@ -140,19 +140,19 @@ public interface GraphManager {
      * This method will be called before a script or query is processed by the
      * gremlin-server.
      *
-     * @param msg the {@link RequestMessage} received by the gremlin-server.
+     * @param msg the {@link RequestMessageV4} received by the gremlin-server.
      * @param error the exception encountered during processing from the gremlin-server.
      */
-    default void onQueryError(final RequestMessage msg, final Throwable error) {
+    default void onQueryError(final RequestMessageV4 msg, final Throwable error) {
 
     }
 
     /**
      * When a script or query successfully completes this method will be called.
      *
-     * @param msg the {@link RequestMessage} received by the gremlin-server.
+     * @param msg the {@link RequestMessageV4} received by the gremlin-server.
      */
-    default void onQuerySuccess(final RequestMessage msg) {
+    default void onQuerySuccess(final RequestMessageV4 msg) {
 
     }
 }

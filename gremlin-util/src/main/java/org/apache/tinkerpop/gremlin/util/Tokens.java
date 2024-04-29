@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -38,12 +37,7 @@ public final class Tokens {
     public static final String OPS_CLOSE = "close";
 
     /**
-     * The key for the per request server-side timeout in milliseconds.
-     */
-    public static final String TIMEOUT_MS = "timeoutMs";
-
-    /**
-     * Argument name that allows definition of the number of iterations each {@link ResponseMessage} should contain -
+     * Argument name that allows definition of the number of iterations each HTTP chunk should contain -
      * overrides the @{code resultIterationBatchSize} server setting.
      */
     public static final String ARGS_BATCH_SIZE = "batchSize";
@@ -59,13 +53,13 @@ public final class Tokens {
      */
     public static final String ARGS_ALIASES = "aliases";
 
+    public static final String ARGS_FORCE = "force";
+
     /**
      * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
      * the remote system.
      */
     public static final String ARGS_G = "g";
-
-    public static final String ARGS_FORCE = "force";
 
     /**
      * Argument name that corresponds to the Gremlin to evaluate.
@@ -100,6 +94,11 @@ public final class Tokens {
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
     public static final String ARGS_SASL = "sasl";
     public static final String ARGS_SASL_MECHANISM = "saslMechanism";
+
+    /**
+     * The key for the per request server-side timeout in milliseconds.
+     */
+    public static final String TIMEOUT_MS = "timeoutMs";
 
     /**
      * A value that is a custom string that the user can pass to a server that might accept it for purpose of
