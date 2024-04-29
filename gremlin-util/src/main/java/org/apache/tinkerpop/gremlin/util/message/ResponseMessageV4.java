@@ -26,32 +26,21 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ResponseMessage {
-
-    /**
-     * The current request that generated this response.
-     */
-    private final UUID requestId;
-    private final ResponseStatus responseStatus;
+public final class ResponseMessageV4 {
+    private final ResponseStatusV4 responseStatus;
     private final ResponseResult responseResult;
 
-    private ResponseMessage(final UUID requestId, final ResponseStatus responseStatus,
+    private ResponseMessageV4(final ResponseStatusV4 responseStatus,
                             final ResponseResult responseResult) {
-        this.requestId = requestId;
         this.responseResult = responseResult;
         this.responseStatus = responseStatus;
     }
 
-    public UUID getRequestId() {
-        return requestId;
-    }
-
-    public ResponseStatus getStatus() {
+    public ResponseStatusV4 getStatus() {
         return responseStatus;
     }
 
@@ -62,22 +51,21 @@ public final class ResponseMessage {
     @Override
     public String toString() {
         return "ResponseMessage{" +
-                "requestId=" + requestId +
                 ", status=" + responseStatus +
                 ", result=" + responseResult +
                 '}';
     }
 
     public static class ResponseMessageHeader {
-        private final ResponseMessage responseMessage;
+        private final ResponseMessageV4 responseMessage;
         private final boolean typed;
 
-        public ResponseMessageHeader(final ResponseMessage responseMessage, final boolean typed) {
+        public ResponseMessageHeader(final ResponseMessageV4 responseMessage, final boolean typed) {
             this.responseMessage = responseMessage;
             this.typed = typed;
         }
 
-        public ResponseMessage getResponseMessage() {
+        public ResponseMessageV4 getResponseMessage() {
             return responseMessage;
         }
 
@@ -87,15 +75,15 @@ public final class ResponseMessage {
     }
 
     public static class ResponseMessageFooter {
-        private final ResponseMessage responseMessage;
+        private final ResponseMessageV4 responseMessage;
         private final boolean typed;
 
-        public ResponseMessageFooter(final ResponseMessage responseMessage, final boolean typed) {
+        public ResponseMessageFooter(final ResponseMessageV4 responseMessage, final boolean typed) {
             this.responseMessage = responseMessage;
             this.typed = typed;
         }
 
-        public ResponseMessage getResponseMessage() {
+        public ResponseMessageV4 getResponseMessage() {
             return responseMessage;
         }
 
@@ -108,43 +96,15 @@ public final class ResponseMessage {
         return new Builder();
     }
 
-    public static Builder build(final RequestMessage requestMessage) {
-        return new Builder(requestMessage);
-    }
-
-    public static Builder build(final UUID requestId) {
-        return new Builder(requestId);
-    }
-
-    public static Builder buildV4() {
-        return new Builder();
-    }
-
     public final static class Builder {
-
-        private final UUID requestId;
         private HttpResponseStatus code = null;
-        private Object result = null;
+        private Object result = Collections.emptyList();
         private String statusMessage = null;
         private String exception = null;
         private Map<String, Object> attributes = Collections.emptyMap();
         private Map<String, Object> metaData = Collections.emptyMap();
 
-        private Builder() {
-            requestId = null;
-        }
-
-        private Builder(final RequestMessage requestMessage) {
-            this.requestId = requestMessage.getRequestId();
-        }
-
-        private Builder(final RequestMessageV4 requestMessage) {
-            this.requestId = requestMessage.getRequestId();
-        }
-
-        private Builder(final UUID requestId) {
-            this.requestId = requestId;
-        }
+        private Builder() { }
 
         public Builder code(final HttpResponseStatus code) {
             this.code = code;
@@ -190,14 +150,14 @@ public final class ResponseMessage {
             return this;
         }
 
-        public ResponseMessage create() {
+        public ResponseMessageV4 create() {
             final ResponseResult responseResult = new ResponseResult(result, metaData);
             // skip null values
             if (code == null && statusMessage == null) {
-                return new ResponseMessage(requestId, null, responseResult);
+                return new ResponseMessageV4(null, responseResult);
             }
-            final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, exception);
-            return new ResponseMessage(requestId, responseStatus, responseResult);
+            final ResponseStatusV4 responseStatus = new ResponseStatusV4(code, statusMessage, exception);
+            return new ResponseMessageV4(responseStatus, responseResult);
         }
     }
 }

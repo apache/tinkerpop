@@ -79,6 +79,9 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
                         .addCustomModule(GraphSONXModuleV3.build())
+                        .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
+                {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0)
+                        .addCustomModule(GraphSONXModuleV3.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
@@ -92,7 +95,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBoolean() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final boolean b = true;
         assertEquals(b, serializeDeserialize(mapper, b, Boolean.class));
@@ -100,7 +103,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleString() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final String s = "simple";
         assertEquals(s, serializeDeserialize(mapper, s, String.class));
@@ -117,7 +120,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBulkSet() throws Exception {
-        // only supported on V3
+        // only supported on V3/V4
         assumeThat(version, not(anyOf(startsWith("v1"), startsWith("v2"))));
 
         final BulkSet<String> bs = new BulkSet<>();
@@ -143,7 +146,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleMap() throws Exception {
-        assumeThat(version, startsWith("v3"));
+        assumeThat(version, either(startsWith("v3")).or(startsWith("v4")));
 
         final Map<Object,Object> o = new LinkedHashMap<>();
         o.put("string key", "string value");
@@ -158,7 +161,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleList() throws Exception {
-        assumeThat(version, startsWith("v3"));
+        assumeThat(version, either(startsWith("v3")).or(startsWith("v4")));
 
         final List<Object> o = new ArrayList<>();
         o.add("test");
@@ -175,7 +178,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleSet() throws Exception {
-        assumeThat(version, startsWith("v3"));
+        assumeThat(version, either(startsWith("v3")).or(startsWith("v4")));
 
         final Set<Object> o = new LinkedHashSet<>();
         o.add("test");
@@ -193,7 +196,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBiFunctionLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.biFunction("x,y -> 'test'");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -201,7 +204,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleComparatorLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.comparator("x,y -> x <=> y");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -209,7 +212,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleConsumerLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.consumer("x -> x");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -217,7 +220,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleFunctionLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.function("x -> x");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -225,7 +228,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePredicateLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.predicate("x -> true");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -233,7 +236,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleSupplierLambda() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Lambda o = (Lambda) Lambda.supplier("'test'");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -241,7 +244,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBytecodeBinding() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Bytecode.Binding<String> o = new Bytecode.Binding<>("test", "testing");
         assertEquals(o, serializeDeserialize(mapper, o, Bytecode.Binding.class));
@@ -249,7 +252,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleTraverser() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final Traverser<String> o = new DefaultRemoteTraverser<>("test", 100);
         assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
@@ -335,7 +338,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBigInteger() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
         
         final BigInteger o = new BigInteger("123456789987654321123456789987654321");
         assertEquals(o, serializeDeserialize(mapper, o, BigInteger.class));
@@ -343,7 +346,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldReadBigIntegerAsString() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final BigInteger o = new BigInteger("123456789987654321123456789987654321");
         assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
@@ -351,7 +354,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldReadBigIntegerAsNumber() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         // this was the original GraphSON 2.0/3.0 format published for BigInteger but jackson is flexible enough to
         // do it as a string. the string approach is probably better for most language variants so while this tests
@@ -363,7 +366,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBigDecimal() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
         assertEquals(o, serializeDeserialize(mapper, o, BigDecimal.class));
@@ -371,7 +374,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValue() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = P.within(1,2,3,null);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -379,7 +382,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePSingleValue() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = P.within(1);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -387,7 +390,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValueAsList() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = P.within(Arrays.asList(1,2,3,null));
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -395,7 +398,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValueAsSet() throws Exception  {
-        assumeThat(version, startsWith("v3"));
+        assumeThat(version, either(startsWith("v3")).or(startsWith("v4")));
 
         final P o = P.within(new HashSet<>(Arrays.asList(1,2,3)));
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -403,7 +406,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePBetween() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = P.between(1, 100);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -413,7 +416,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldReadPWithJsonArray() throws Exception {
         // for some reason v3 is forgiving about the naked json array - leaving this here for backward compatibility,
         // but should be a g:List (i think)
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = P.within(Arrays.asList(1,2,3));
         assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}", Object.class));
@@ -429,7 +432,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldReadBigDecimalAsString() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
         assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
@@ -437,7 +440,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldReadBigDecimalAsNumber() throws Exception {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         // this was the original GraphSON 2.0/3.0 format published for BigDecimal but jackson is flexible enough to
         // do it as a string. the string approach is probably better for most language variants so while this tests
@@ -449,7 +452,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePExt() throws Exception  {
-        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+        assumeThat(version, not(startsWith("v1")));
 
         final P o = PExt.mix("bah");
         assertEquals(o, serializeDeserialize(mapper, o, P.class));

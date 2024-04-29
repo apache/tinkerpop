@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Base {@link MessageSerializer} that serializers can implement to get some helper methods around configuring a
+ * Base {@link MessageSerializerV4} that serializers can implement to get some helper methods around configuring a
  * {@link Mapper.Builder}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractMessageSerializer<M> implements MessageSerializer<M> {
+public abstract class AbstractMessageSerializerV4<M> implements MessageSerializerV4<M> {
     public static final String TOKEN_IO_REGISTRIES = "ioRegistries";
 
     /**
