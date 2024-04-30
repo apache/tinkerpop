@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -71,6 +70,15 @@ public class RequestMessageSerializerV4 {
             }
             if (fields.containsKey(SerTokens.TOKEN_BINDINGS)) {
                 builder.addBindings((Map<String, Object>) fields.get(SerTokens.TOKEN_BINDINGS));
+            }
+            if (fields.containsKey(Tokens.TIMEOUT_MS)) {
+                builder.addTimeoutMillis((long) fields.get(Tokens.TIMEOUT_MS));
+            }
+            if (fields.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
+                builder.addMaterializeProperties(fields.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
+            }
+            if (fields.containsKey(Tokens.ARGS_BATCH_SIZE)) {
+                builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
             }
 
             return builder.create();

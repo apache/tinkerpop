@@ -38,10 +38,10 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -72,18 +72,18 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        final MessageSerializer<GraphBinaryMapper> graphBinaryMessageSerializerV4 = new GraphBinaryMessageSerializerV4();
+        final MessageSerializerV4<GraphBinaryMapper> graphBinaryMessageSerializerV4 = new GraphBinaryMessageSerializerV4();
 
         return Arrays.asList(new Object[][]{
-                {Serializers.GRAPHBINARY_V1, graphBinaryMessageSerializerV4}
+                {SerializersV4.GRAPHBINARY_V4, graphBinaryMessageSerializerV4}
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public Serializers name;
+    public SerializersV4 name;
 
     @Parameterized.Parameter(value = 1)
-    public MessageSerializer<?> messageSerializer;
+    public MessageSerializerV4<?> messageSerializer;
 
     @Before
     public void beforeTest() {

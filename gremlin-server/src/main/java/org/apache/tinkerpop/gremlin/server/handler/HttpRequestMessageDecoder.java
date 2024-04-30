@@ -22,12 +22,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -49,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,9 +69,9 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     /**
      * Serializer for {@code text/plain} which is a serializer exclusive to HTTP.
      */
-    private final TextPlainMessageSerializer textPlainSerializer = new TextPlainMessageSerializer();
+    private final TextPlainMessageSerializerV4 textPlainSerializer = new TextPlainMessageSerializerV4();
 
-    private final Map<String, MessageSerializer<?>> serializers;
+    private final Map<String, MessageSerializerV4<?>> serializers;
 
     /**
      * A generic mapper to decode an application/json request.
@@ -82,14 +79,14 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     private final ObjectMapper mapper = new ObjectMapper();
 
 
-    public HttpRequestMessageDecoder(final Map<String, MessageSerializer<?>> serializers) {
+    public HttpRequestMessageDecoder(final Map<String, MessageSerializerV4<?>> serializers) {
         this.serializers = serializers;
     }
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final FullHttpRequest req, final List<Object> objects) throws Exception {
         final String acceptMime = Optional.ofNullable(req.headers().get(HttpHeaderNames.ACCEPT)).orElse("application/json");
-        final Pair<String, MessageSerializer<?>> serializer = chooseSerializer(acceptMime);
+        final Pair<String, MessageSerializerV4<?>> serializer = chooseSerializer(acceptMime);
 
         if (req.method() != POST) {
             sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
@@ -110,11 +107,11 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         }
 
         // checked in getRequestMessageFromHttpRequest
-        ctx.attr(StateKey.SERIALIZER).set(Pair.with(serializer.getValue0(), (MessageTextSerializerV4) serializer.getValue1()));
+        ctx.channel().attr(StateKey.SERIALIZER).set(Pair.with(serializer.getValue0(), serializer.getValue1()));
         objects.add(requestMessage);
     }
 
-    private Pair<String, MessageSerializer<?>> chooseSerializer(final String mimeType) {
+    private Pair<String, MessageSerializerV4<?>> chooseSerializer(final String mimeType) {
         final List<Pair<String, Double>> ordered = Stream.of(mimeType.split(",")).map(mediaType -> {
             // parse out each mediaType with its params - keeping it simple and just looking for "quality".  if
             // that value isn't there, default it to 1.0.  not really validating here so users better get their
@@ -138,7 +135,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     }
 
     /**
-     * Convert a http request into a {@link RequestMessage}.
+     * Convert a http request into a {@link RequestMessageV4}.
      * There are 2 payload types options here.
      * 1.
      *     existing https://tinkerpop.apache.org/docs/current/reference/#connecting-via-http
@@ -156,38 +153,17 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
      *     Request body contains serialized RequestMessage
      */
     public RequestMessageV4 getRequestMessageFromHttpRequest(final FullHttpRequest request,
-                                                                    Map<String, MessageSerializer<?>> serializers) throws SerializationException {
+                                                                    Map<String, MessageSerializerV4<?>> serializers) throws SerializationException {
         final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
-        if (request.method() == POST && contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
-            final MessageSerializer<?> serializer = serializers.get(contentType);
-            if (!(serializer instanceof MessageTextSerializerV4)) {
-                throw new SerializationException("Server only supports V4 or later serializers.");
-            }
-
-            final MessageTextSerializerV4<?> serializerV4 = (MessageTextSerializerV4) serializer;
-
+        if (contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
+            final MessageSerializerV4<?> serializer = serializers.get(contentType);
             final ByteBuf buffer = request.content();
 
-            // additional validation for header
-            final int first = buffer.readByte();
-            // payload can be plain json or can start with additional header with content type.
-            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
-            if (first != 0x7b) {
-                final byte[] bytes = new byte[first];
-                buffer.readBytes(bytes);
-                final String mimeType = new String(bytes, StandardCharsets.UTF_8);
-
-                if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
-                    throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
-            } else {
-                buffer.resetReaderIndex();
-            }
-
             try {
-                return serializerV4.deserializeRequestMessageV4(buffer);
+                return serializer.deserializeBinaryRequest(buffer);
             } catch (Exception e) {
-                throw new SerializationException("Unable to deserialize request using: " + serializerV4.getClass().getSimpleName(), e);
+                throw new SerializationException("Unable to deserialize request using: " + serializer.getClass().getSimpleName(), e);
             }
         }
         return getRequestMessageV4FromHttpRequest(request);

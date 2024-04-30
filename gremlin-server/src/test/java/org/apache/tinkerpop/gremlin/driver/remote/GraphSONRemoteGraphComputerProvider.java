@@ -20,9 +20,9 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -146,6 +146,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
     public GraphSONRemoteGraphComputerProvider() {
-        super(createClusterBuilder(Serializers.GRAPHSON_V3).create(), true);
+        super(createClusterBuilder(SerializersV4.GRAPHSON_V4).create(), true);
     }
 }

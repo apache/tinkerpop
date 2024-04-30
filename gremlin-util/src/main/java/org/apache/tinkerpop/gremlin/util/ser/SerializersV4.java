@@ -18,49 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 
 /**
  * An enum of the default serializers.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public enum Serializers {
+public enum SerializersV4 {
 
     /**
-     * GraphSON 3.0.
+     * GraphSON 4.0.
      */
     GRAPHSON(SerTokens.MIME_JSON),
-
-    /**
-     * GraphSON 1.0 with types.
-     */
-    GRAPHSON_V1(SerTokens.MIME_GRAPHSON_V1),
-
-    /**
-     * GraphSON 1.0 without types.
-     */
-    GRAPHSON_V1_UNTYPED(SerTokens.MIME_GRAPHSON_V1_UNTYPED),
-
-    /**
-     * GraphSON 2.0 with types.
-     */
-    GRAPHSON_V2(SerTokens.MIME_GRAPHSON_V2),
-
-    /**
-     * GraphSON 2.0 without types.
-     */
-    GRAPHSON_V2_UNTYPED(SerTokens.MIME_GRAPHSON_V2_UNTYPED),
-
-    /**
-     * GraphSON 3.0 with types.
-     */
-    GRAPHSON_V3(SerTokens.MIME_GRAPHSON_V3),
-
-    /**
-     * GraphSON 3.0 without types.
-     */
-    GRAPHSON_V3_UNTYPED(SerTokens.MIME_GRAPHSON_V3_UNTYPED),
 
     /**
      * GraphSON 4.0 with types.
@@ -73,18 +43,13 @@ public enum Serializers {
     GRAPHSON_V4_UNTYPED(SerTokens.MIME_GRAPHSON_V4_UNTYPED),
 
     /**
-     * GraphBinary 1.0.
-     */
-    GRAPHBINARY_V1(SerTokens.MIME_GRAPHBINARY_V1),
-
-    /**
      * GraphBinary 4.0.
      */
     GRAPHBINARY_V4(SerTokens.MIME_GRAPHBINARY_V4);
 
     private String value;
 
-    Serializers(final String mimeType) {
+    SerializersV4(final String mimeType) {
         this.value = mimeType;
     }
 
@@ -92,29 +57,15 @@ public enum Serializers {
         return value;
     }
 
-    public MessageSerializer<?> simpleInstance() {
+    public MessageSerializerV4<?> simpleInstance() {
         switch (value) {
             case SerTokens.MIME_JSON:
             case SerTokens.MIME_GRAPHSON_V4:
                 return new GraphSONMessageSerializerV4();
-            case SerTokens.MIME_GRAPHSON_V3:
-                return new GraphSONMessageSerializerV3();
-            case SerTokens.MIME_GRAPHSON_V1:
-                return new GraphSONMessageSerializerV1();
-            case SerTokens.MIME_GRAPHSON_V1_UNTYPED:
-                return new GraphSONUntypedMessageSerializerV1();
-            case SerTokens.MIME_GRAPHSON_V2:
-                return new GraphSONMessageSerializerV2();
-            case SerTokens.MIME_GRAPHSON_V2_UNTYPED:
-                return new GraphSONUntypedMessageSerializerV2();
-            case SerTokens.MIME_GRAPHSON_V3_UNTYPED:
-                return new GraphSONUntypedMessageSerializerV3();
             case SerTokens.MIME_GRAPHSON_V4_UNTYPED:
                 return new GraphSONUntypedMessageSerializerV4();
             case SerTokens.MIME_GRAPHBINARY_V4:
                 return new GraphBinaryMessageSerializerV4();
-            case SerTokens.MIME_GRAPHBINARY_V1:
-                return new GraphBinaryMessageSerializerV1();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
         }

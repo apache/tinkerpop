@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.ResultQueue;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +39,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
- * as the {@link ResponseMessage} objects are deserialized.
+ * as the {@link ResponseMessageV4} objects are deserialized.
  */
-public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessageV4> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
     private final AtomicReference<ResultQueue> pending;
 
@@ -62,7 +62,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     }
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) throws Exception {
         final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
         final ResultQueue queue = pending.get();
         if (response.getResult().getData() != null) {

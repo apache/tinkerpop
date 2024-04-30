@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
@@ -36,6 +35,7 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -323,7 +323,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         return g;
     }
 
-    public static Cluster.Builder createClusterBuilder(final Serializers serializer) {
+    public static Cluster.Builder createClusterBuilder(final SerializersV4 serializer) {
         // match the content length in the server yaml
         return TestClientFactory.build().maxContentLength(1000000).serializer(serializer);
     }

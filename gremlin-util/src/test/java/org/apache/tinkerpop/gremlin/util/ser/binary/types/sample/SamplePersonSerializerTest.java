@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.util.ser.binary.types.sample;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
@@ -38,11 +38,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
-import static org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
-import static org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1.TOKEN_CUSTOM;
+import static org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializerV4.TOKEN_IO_REGISTRIES;
+import static org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4.TOKEN_CUSTOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SamplePersonSerializerTest {
@@ -52,14 +51,14 @@ public class SamplePersonSerializerTest {
 
     @Test
     public void shouldCustomSerializationWithPerson() throws IOException {
-        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1(
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4(
                 TypeSerializerRegistry.build().addCustomType(SamplePerson.class, new SamplePersonSerializer()).create());
         assertPerson(serializer);
     }
 
     @Test
     public void shouldSerializePersonViaIoRegistry() throws IOException {
-        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
         final Map<String,Object> config = new HashMap<>();
         config.put(TOKEN_IO_REGISTRIES, Collections.singletonList(CustomIoRegistry.class.getName()));
         serializer.configure(config, Collections.emptyMap());
@@ -69,7 +68,7 @@ public class SamplePersonSerializerTest {
 
     @Test
     public void shouldSerializePersonViaCustom() throws IOException {
-        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
         final Map<String,Object> config = new HashMap<>();
         config.put(TOKEN_CUSTOM, Collections.singletonList(String.format("%s;%s",
                 SamplePerson.class.getCanonicalName(), SamplePersonSerializer.class.getCanonicalName())));
@@ -98,14 +97,14 @@ public class SamplePersonSerializerTest {
         }
     }
 
-    private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws IOException {
+    private void assertPerson(final GraphBinaryMessageSerializerV4 serializer) throws IOException {
         final Date birthDate = Date.from(LocalDateTime.of(2010, 4, 29, 5, 30).toInstant(ZoneOffset.UTC));
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
         final ByteBuf serialized = serializer.serializeResponseAsBinary(
-                ResponseMessage.build(UUID.randomUUID()).result(person).create(), allocator);
+                ResponseMessageV4.build().result(person).create(), allocator);
 
-        final ResponseMessage deserialized = serializer.deserializeResponse(serialized);
+        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(serialized);
 
         final SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
         assertThat(actual, reflectionEquals(person));

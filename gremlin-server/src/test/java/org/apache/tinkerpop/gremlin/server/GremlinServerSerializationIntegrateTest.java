@@ -28,10 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,21 +46,20 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    private AbstractMessageSerializer serializer;
+    private AbstractMessageSerializerV4 serializer;
     private Cluster cluster = null;
     private Client client = null;
     private GraphTraversalSource g = null;
 
-    public GremlinServerSerializationIntegrateTest(AbstractMessageSerializer serializer) {
+    public GremlinServerSerializationIntegrateTest(AbstractMessageSerializerV4 serializer) {
         this.serializer = serializer;
     }
 
     @Parameterized.Parameters
     public static Collection serializers() {
         return Arrays.asList(new Object[][]{
-                {new GraphBinaryMessageSerializerV1()},
-                {new GraphSONMessageSerializerV3()},
-                {new GraphSONMessageSerializerV2()}
+                {new GraphBinaryMessageSerializerV4()},
+                {new GraphSONMessageSerializerV4()}
         });
     }
 

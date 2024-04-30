@@ -58,12 +58,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -153,13 +152,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     /**
      * Serializers for the response.
      */
-    private final Map<String, MessageSerializer<?>> serializers;
+    private final Map<String, MessageSerializerV4<?>> serializers;
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
     private final Settings settings;
 
-    public HttpGremlinEndpointHandler(final Map<String, MessageSerializer<?>> serializers,
+    public HttpGremlinEndpointHandler(final Map<String, MessageSerializerV4<?>> serializers,
                                       final GremlinExecutor gremlinExecutor,
                                       final GraphManager graphManager,
                                       final Settings settings) {
@@ -171,7 +170,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RequestMessageV4 requestMessage) {
-        Pair<String, MessageTextSerializerV4<?>> serializer = ctx.attr(StateKey.SERIALIZER).get();
+        Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
         final RequestState requestState = NOT_STARTED;
 
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
@@ -302,7 +301,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return GremlinError.general(t);
     }
 
-    private void iterateScriptEvalResult(final Context context, MessageTextSerializerV4<?> serializer, final RequestMessageV4 message)
+    private void iterateScriptEvalResult(final Context context, MessageSerializerV4<?> serializer, final RequestMessageV4 message)
             throws ProcessingException, InterruptedException, ScriptException {
         if (message.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
             final Map bindings = (Map) message.getFields().get(Tokens.ARGS_BINDINGS);
@@ -409,7 +408,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return bindings;
     }
 
-    private void iterateTraversal(final Context context, MessageTextSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
+    private void iterateTraversal(final Context context, MessageSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
             throws InterruptedException {
         final RequestMessageV4 msg = context.getRequestMessage();
         logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
@@ -419,7 +418,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         handleIterator(context, new TraverserIterator(traversal), serializer);
     }
 
-    private void handleIterator(final Context context, final Iterator itty, final MessageTextSerializerV4<?> serializer) throws InterruptedException {
+    private void handleIterator(final Context context, final Iterator itty, final MessageSerializerV4<?> serializer) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessageV4 msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -544,7 +543,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     private static ByteBuf makeChunk(final Context ctx, final RequestMessageV4 msg,
-                                     final MessageTextSerializerV4<?> serializer, final List<Object> aggregate,
+                                     final MessageSerializerV4<?> serializer, final List<Object> aggregate,
                                      final boolean hasMore) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
@@ -555,11 +554,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 ctx.setRequestState(FINISHING);
             }
 
-            ResponseMessage responseMessage = null;
+            ResponseMessageV4 responseMessage = null;
 
             // for this state no need to build full ResponseMessage
             if (ctx.getRequestState() != STREAMING) {
-                final ResponseMessage.Builder builder = ResponseMessage.buildV4().result(aggregate);
+                final ResponseMessageV4.Builder builder = ResponseMessageV4.build().result(aggregate);
 
                 // need to put status in last message
                 if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
@@ -581,7 +580,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     }
                     ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessage.buildV4()
+                    return serializer.serializeResponseAsBinary(ResponseMessageV4.build()
                             .result(aggregate)
                             .code(HttpResponseStatus.OK)
                             .statusMessage("OK")
