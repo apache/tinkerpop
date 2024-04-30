@@ -32,8 +32,7 @@ import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDeco
 import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
@@ -76,7 +75,7 @@ public interface Channelizer extends ChannelHandler {
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
-        private ConcurrentMap<UUID, ResultQueue> pending;
+        private AtomicReference<ResultQueue> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
         public static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
@@ -148,10 +147,6 @@ public interface Channelizer extends ChannelHandler {
         @Override
         public void init(final Connection connection) {
             super.init(connection);
-
-            // server does not support sessions so this channerlizer can't support the SessionedClient
-            if (connection.getClient() instanceof Client.SessionedClient)
-                throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", HttpChannelizer.class.getSimpleName()));
 
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
             gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder((MessageTextSerializerV4<?>) cluster.getSerializer());

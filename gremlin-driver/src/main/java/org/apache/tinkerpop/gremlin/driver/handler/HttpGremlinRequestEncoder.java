@@ -28,9 +28,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
-import io.netty.util.AttributeMap;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -40,7 +37,6 @@ import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 /**
@@ -49,8 +45,6 @@ import java.util.function.UnaryOperator;
 @ChannelHandler.Sharable
 public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessageV4> {
 
-    //todo: move
-    public static final AttributeKey<UUID> REQUEST_ID = AttributeKey.valueOf("requestId");
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final UnaryOperator<FullHttpRequest> interceptor;
@@ -70,10 +64,6 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessageV4 requestMessage, final List<Object> objects) throws Exception {
-        final Attribute<UUID> requestIdAttribute = ((AttributeMap) channelHandlerContext).attr(REQUEST_ID);
-        requestIdAttribute.set(requestMessage.getRequestId());
-        System.out.println("HttpGremlinRequestEncoder set requestId: " + requestIdAttribute.get());
-
         final String mimeType = serializer.mimeTypesSupported()[0];
         // only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests
         if (requestMessage.getField("gremlin") instanceof Bytecode &&

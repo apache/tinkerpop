@@ -35,7 +35,7 @@ public class HostTest {
         final InetSocketAddress addy = new InetSocketAddress("localhost", 8182);
         final Host host = new Host(addy, Cluster.open());
         final URI webSocketUri = host.getHostUri();
-        assertEquals("ws://localhost:8182/gremlin", webSocketUri.toString());
+        assertEquals("http://localhost:8182/gremlin", webSocketUri.toString());
     }
 
     @Test
@@ -43,7 +43,7 @@ public class HostTest {
         final InetSocketAddress addy = new InetSocketAddress("localhost", 8183);
         final Host host = new Host(addy, Cluster.build().port(8183).path("/argh").create());
         final URI webSocketUri = host.getHostUri();
-        assertEquals("ws://localhost:8183/argh", webSocketUri.toString());
+        assertEquals("http://localhost:8183/argh", webSocketUri.toString());
     }
 
 }

@@ -28,7 +28,6 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
@@ -92,23 +91,7 @@ public final class Cluster {
     }
 
     /**
-     * Creates a {@link Client.ClusteredClient} instance to this {@code Cluster}, meaning requests will be routed to
-     * one or more servers (depending on the cluster configuration), where each request represents the entirety of a
-     * transaction.  A commit or rollback (in case of error) is automatically executed at the end of the request.
-     * <p/>
-     * Note that calling this method does not imply that a connection is made to the server itself at this point.
-     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
-     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
-     * submitted or can be directly initialized via {@link Client#init()}.
-     */
-    public <T extends Client> T connect() {
-        final Client client = new Client.ClusteredClient(this, Client.Settings.build().create());
-        manager.trackClient(client);
-        return (T) client;
-    }
-
-    /**
-     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
      * single request.  The transactions are managed by the user and must be committed or rolled-back manually.
@@ -121,11 +104,11 @@ public final class Cluster {
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
     public <T extends Client> T connect(final String sessionId) {
-        return connect(sessionId, false);
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
-     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
      * single request.  If {@code manageTransactions} is set to {@code false} then transactions are managed by the
@@ -141,19 +124,14 @@ public final class Cluster {
      * @param manageTransactions enables auto-transactions when set to true
      */
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
-        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
-                .manageTransactions(manageTransactions)
-                .sessionId(sessionId).create();
-        final Client.Settings settings = Client.Settings.build().useSession(sessionSettings).create();
-        return connect(settings);
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
      * Creates a new {@link Client} based on the settings provided.
      */
-    public <T extends Client> T connect(final Client.Settings settings) {
-        final Client client = settings.getSession().isPresent() ? new Client.SessionedClient(this, settings) :
-                new Client.ClusteredClient(this, settings);
+    public <T extends Client> T connect() {
+        final Client client = new Client.ClusteredClient(this);
         manager.trackClient(client);
         return (T) client;
     }

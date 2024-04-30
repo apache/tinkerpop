@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -31,17 +30,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -50,32 +44,28 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class Connection {
+    public static final int MAX_WAIT_FOR_CONNECTION = 16000;
+    public static final int MAX_WAIT_FOR_CLOSE = 3000;
+    public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
+    public static final int RECONNECT_INTERVAL = 1000;
+    public static final int RESULT_ITERATION_BATCH_SIZE = 64;
+    public static final long KEEP_ALIVE_INTERVAL = 180000;
+    public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     private final Channel channel;
     private final URI uri;
-    private final ConcurrentMap<UUID, ResultQueue> pending = new ConcurrentHashMap<>();
+    private final AtomicReference<ResultQueue> pending = new AtomicReference<>();
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
     private final String creatingThread;
     private final String createdTimestamp;
 
-    public static final int MAX_WAIT_FOR_CONNECTION = 16000;
-    public static final int MAX_WAIT_FOR_CLOSE = 3000;
-    public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
-
-    public static final int RECONNECT_INTERVAL = 1000;
-    public static final int RESULT_ITERATION_BATCH_SIZE = 64;
-    public static final long KEEP_ALIVE_INTERVAL = 180000;
-    public final static long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
-
     /**
-     * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
-     * times it has been taken and is decremented when it is returned.  This number is one indication as to how
-     * busy a particular {@code Connection} is.
+     * Is a {@code Connection} borrowed from the pool.
      */
-    public final AtomicInteger borrowed = new AtomicInteger(0);
+    private final AtomicBoolean isBorrowed = new AtomicBoolean(false);
     /**
      * This boolean guards the replace of the connection and ensures that it only occurs once.
      */
@@ -149,6 +139,10 @@ final class Connection {
         return (channel != null && !channel.isActive());
     }
 
+    public AtomicBoolean isBorrowed() {
+        return isBorrowed;
+    }
+
     boolean isClosing() {
         return closeFuture.get() != null;
     }
@@ -165,7 +159,7 @@ final class Connection {
         return client;
     }
 
-    ConcurrentMap<UUID, ResultQueue> getPending() {
+    AtomicReference<ResultQueue> getPending() {
         return pending;
     }
 
@@ -195,10 +189,6 @@ final class Connection {
     }
 
     public ChannelPromise write(final RequestMessageV4 requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
-        // dont allow the same request id to be used as one that is already in the queue
-        if (pending.containsKey(requestMessage.getRequestId()))
-            throw new IllegalStateException(String.format("There is already a request pending with an id of: %s", requestMessage.getRequestId()));
-
         // once there is a completed write, then create a traverser for the result set and complete
         // the promise so that the client knows that that it can start checking for results.
         final Connection thisConnection = this;
@@ -238,7 +228,8 @@ final class Connection {
                         }, cluster.executor());
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
-                        pending.put(requestMessage.getRequestId(), handler);
+                        // pending.put(requestMessage.getRequestId(), handler);
+                        pending.set(handler);
 
                         // resultQueueSetup should only be completed by a worker since the application code might have sync
                         // completion stages attached to it which and we do not want the event loop threads to process those
@@ -270,7 +261,7 @@ final class Connection {
     }
 
     private boolean isOkToClose() {
-        return pending.isEmpty() || (channel != null && !channel.isOpen()) || !pool.host.isAvailable();
+        return pending.get() == null || (channel != null && !channel.isOpen()) || !pool.host.isAvailable();
     }
 
     /**
@@ -379,9 +370,9 @@ final class Connection {
     public String getConnectionInfo(final boolean showHost) {
         return showHost ?
                 String.format("Connection{channel=%s host=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
-                        getChannelId(), pool.host.toString(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread) :
+                        getChannelId(), pool.host.toString(), isDead(), this.isBorrowed().get(), getPending().get() == null ? 0 : 1, this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread) :
                 String.format("Connection{channel=%s isDead=%s borrowed=%s pending=%s markedReplaced=%s closing=%s created=%s thread=%s}",
-                        getChannelId(), isDead(), this.borrowed.get(), getPending().size(), this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread);
+                        getChannelId(), isDead(), this.isBorrowed().get(), getPending().get() == null ? 0 : 1, this.isBeingReplaced, isClosing(), createdTimestamp, creatingThread);
     }
 
     /**

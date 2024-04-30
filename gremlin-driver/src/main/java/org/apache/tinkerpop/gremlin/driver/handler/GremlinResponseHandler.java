@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.AttributeMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
@@ -36,10 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-
-import static org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder.REQUEST_ID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
@@ -47,9 +43,9 @@ import static org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEnco
  */
 public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
-    private final ConcurrentMap<UUID, ResultQueue> pending;
+    private final AtomicReference<ResultQueue> pending;
 
-    public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
+    public GremlinResponseHandler(final AtomicReference<ResultQueue> pending) {
         this.pending = pending;
     }
 
@@ -59,18 +55,16 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // should fire off a close message which will properly release the driver.
         super.channelInactive(ctx);
 
-        // the channel isn't going to get anymore results as it is closed so release all pending requests
-        pending.values().forEach(val -> val.markError(new IllegalStateException("Connection to server is no longer active")));
-        pending.clear();
+        final ResultQueue current = pending.getAndSet(null);
+        if (current != null) {
+            current.markError(new IllegalStateException("Connection to server is no longer active"));
+        }
     }
 
     @Override
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-        final UUID requestId = ((AttributeMap) channelHandlerContext).attr(REQUEST_ID).get();
-
         final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
-        final ResultQueue queue = pending.get(requestId);
-        System.out.println("GremlinResponseHandler get requestId: " + requestId);
+        final ResultQueue queue = pending.get();
         if (response.getResult().getData() != null) {
             System.out.println("GremlinResponseHandler payload size: " + ((List) response.getResult().getData()).size());
         }
@@ -104,7 +98,10 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // todo:
         // as this is a non-PARTIAL_CONTENT code - the stream is done.
         if (statusCode != HttpResponseStatus.PARTIAL_CONTENT) {
-            pending.remove(requestId).markComplete(response.getStatus().getAttributes());
+            final ResultQueue current = pending.getAndSet(null);
+            if (current != null) {
+                current.markComplete(response.getStatus().getAttributes());
+            }
         }
 
         System.out.println("----------------------------");
@@ -117,9 +114,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // there are that many failures someone would take notice and hopefully stop the client.
         logger.error("Could not process the response", cause);
 
-        // the channel took an error because of something pretty bad so release all the futures out there
-        pending.values().forEach(val -> val.markError(cause));
-        pending.clear();
+        pending.getAndSet(null).markError(cause);
 
         // serialization exceptions should not close the channel - that's worth a retry
         if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
