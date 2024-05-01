@@ -141,6 +141,16 @@ limitations under the License.
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="up --build --abort-on-container-exit gremlin-python-package"/>
                                         </exec>
+                                        <exec executable="docker-compose" failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
+                                            <arg line="down"/>
+                                        </exec>
+                                        <exec executable="docker" failonerror="true">
+                                            <env key="PYTHONPATH" value=""/>
+                                            <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
+                                            <arg line="image prune --filter label=maintainer=dev@tinkerpop.apache.org -f"/>
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
