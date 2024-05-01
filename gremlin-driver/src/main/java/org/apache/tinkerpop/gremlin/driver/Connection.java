@@ -155,10 +155,6 @@ final class Connection {
         return cluster;
     }
 
-    Client getClient() {
-        return client;
-    }
-
     AtomicReference<ResultQueue> getPending() {
         return pending;
     }

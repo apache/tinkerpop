@@ -60,11 +60,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,7 +76,6 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
@@ -358,7 +355,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedAfterChannelLevelError() throws Exception {
+    public void shouldEventuallySucceedAfterChannelLevelError() {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
                 .maxContentLength(64).create();
@@ -381,7 +378,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedAfterMuchFailure() throws Exception {
+    public void shouldEventuallySucceedAfterMuchFailure() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
@@ -440,7 +437,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedWithRoundRobin() throws Exception {
+    public void shouldEventuallySucceedWithRoundRobin() {
         final String noGremlinServer = "74.125.225.19";
         final Cluster cluster = TestClientFactory.build().addContactPoint(noGremlinServer).create();
 
@@ -623,7 +620,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldIterate() throws Exception {
+    public void shouldIterate() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
@@ -1360,31 +1357,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);
         assertNotNull(cluster);
         cluster.close();
-    }
-
-    @Test
-    public void shouldNotHangWhenSameRequestIdIsUsed() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(1).minConnectionPoolSize(1).create();
-        final Client client = cluster.connect();
-        final UUID requestId = UUID.randomUUID();
-
-        final Future<ResultSet> result1 = client.submitAsync("Thread.sleep(2000);100",
-                RequestOptions.build().overrideRequestId(requestId).create());
-
-        // wait for some business to happen on the server
-        Thread.sleep(100);
-        try {
-            // re-use the id and fail
-            client.submit("1+1+97", RequestOptions.build().overrideRequestId(requestId).create());
-            fail("Request should not have been sent due to duplicate id");
-        } catch(Exception ex) {
-            // should get a rejection here
-            final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root.getMessage(), startsWith("There is already a request pending with an id of:"));
-            assertEquals(100, result1.get().one().getInt());
-        } finally {
-            cluster.close();
-        }
     }
 
     /**

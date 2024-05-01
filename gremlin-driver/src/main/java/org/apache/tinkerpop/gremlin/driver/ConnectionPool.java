@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -50,7 +49,7 @@ final class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     public static final int MIN_POOL_SIZE = 2;
-    public static final int MAX_POOL_SIZE = 8;
+    public static final int MAX_POOL_SIZE = 16;
     // A small buffer in millis used for comparing if a connection was created within a certain amount of time.
     private static final int CONNECTION_SETUP_TIME_DELTA = 25;
 
@@ -77,7 +76,7 @@ final class ConnectionPool {
     /**
      * The result of a connection attempt. A null value for failureCause means that the connection attempt was successful.
      */
-    public class ConnectionResult {
+    public static class ConnectionResult {
         private long timeOfConnectionAttempt;
         private Throwable failureCause;
 
@@ -146,12 +145,7 @@ final class ConnectionPool {
                     " Successful connections=" + this.connections.size() +
                     ". Closing the connection pool.";
 
-            Throwable cause;
-            Throwable result = ce;
-
-            if (null != (cause = result.getCause())) {
-                result = cause;
-            }
+            final Throwable result = ce.getCause() == null ? ce : ce.getCause();
 
             throw new CompletionException(errMsg, result);
         }
@@ -182,10 +176,10 @@ final class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
-        // Get the least used valid connection
-        final Connection leastUsedConn = getAvailableConnection();
+        // Get valid connection
+        final Connection availableConnection = getAvailableConnection();
 
-        if (null == leastUsedConn) {
+        if (null == availableConnection) {
             if (isClosed())
                 throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
             logger.debug("Pool was initialized but a connection could not be selected earlier - waiting for connection on {}", host);
@@ -193,8 +187,8 @@ final class ConnectionPool {
         }
 
         if (logger.isDebugEnabled())
-            logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
-        return leastUsedConn;
+            logger.debug("Return least used {} on {}", availableConnection.getConnectionInfo(), host);
+        return availableConnection;
     }
 
     public void returnConnection(final Connection connection) throws ConnectionException {
@@ -400,9 +394,8 @@ final class ConnectionPool {
         if (connection.isDead() || !connection.isBorrowed().get()) {
             if (bin.remove(connection)) {
                 final CompletableFuture<Void> closeFuture = connection.closeAsync();
-                closeFuture.whenComplete((v, t) -> {
-                    logger.debug("Destroyed {}{}{}", connection.getConnectionInfo(), System.lineSeparator(), this.getPoolInfo());
-                });
+                closeFuture.whenComplete((v, t) ->
+                        logger.debug("Destroyed {}{}{}", connection.getConnectionInfo(), System.lineSeparator(), this.getPoolInfo()));
             }
         }
     }
@@ -456,7 +449,7 @@ final class ConnectionPool {
         // user if the pool was running at maximum.
         final String timeoutErrorMessage = String.format(
                 "Timed-out (%s %s) waiting for connection on %s. %s%s%s",
-                timeout, unit, host, cause.toString(), System.lineSeparator(), this.getPoolInfo());
+                timeout, unit, host, cause, System.lineSeparator(), this.getPoolInfo());
 
         logger.error(timeoutErrorMessage);
 
@@ -548,13 +541,13 @@ final class ConnectionPool {
      * pool.
      */
     private synchronized Connection getAvailableConnection() {
-        Connection leastBusy = null;
+        Connection available = null;
         int availableConnectionsCount = 0;
         for (Connection connection : connections) {
             if (!connection.isDead() && !connection.isBorrowed().get()) {
                 // try to borrow connection
-                if (leastBusy == null && connection.isBorrowed().compareAndSet(false, true)) {
-                    leastBusy = connection;
+                if (available == null && connection.isBorrowed().compareAndSet(false, true)) {
+                    available = connection;
                 }
                 availableConnectionsCount++;
             }
@@ -565,7 +558,7 @@ final class ConnectionPool {
             considerNewConnection();
         }
 
-        return leastBusy;
+        return available;
     }
 
     private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {
@@ -591,14 +584,6 @@ final class ConnectionPool {
         } finally {
             waitLock.unlock();
         }
-    }
-
-    /**
-     * Returns the set of Channel IDs maintained by the connection pool.
-     * Currently, only used for testing.
-     */
-    Set<String> getConnectionIDs() {
-        return connections.stream().map(Connection::getChannelId).collect(Collectors.toSet());
     }
 
     /**

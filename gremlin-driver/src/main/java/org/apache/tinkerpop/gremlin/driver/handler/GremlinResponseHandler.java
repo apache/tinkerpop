@@ -62,7 +62,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     }
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) {
         final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
         final ResultQueue queue = pending.get();
         if (response.getResult().getData() != null) {
@@ -108,7 +108,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     }
 
     @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         // if this happens enough times (like the client is unable to deserialize a response) the pending
         // messages queue will not clear.  wonder if there is some way to cope with that.  of course, if
         // there are that many failures someone would take notice and hopefully stop the client.

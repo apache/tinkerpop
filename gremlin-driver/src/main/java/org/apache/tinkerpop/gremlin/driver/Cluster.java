@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 public final class Cluster {
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
-    private Manager manager;
+    private final Manager manager;
 
     private Cluster(final Builder builder) {
         this.manager = new Manager(builder);
@@ -156,7 +156,7 @@ public final class Cluster {
 
     private static Builder getBuilderFromSettings(final Settings settings) {
         final List<String> addresses = settings.hosts;
-        if (addresses.size() == 0)
+        if (addresses.isEmpty())
             throw new IllegalStateException("At least one value must be specified to the hosts setting");
 
         final Builder builder = new Builder(settings.hosts.get(0))
@@ -285,20 +285,6 @@ public final class Cluster {
      */
     public String getPath() {
         return manager.path;
-    }
-
-    /**
-     * Size of the pool for handling request/response operations.
-     */
-    public int getNioPoolSize() {
-        return manager.nioPoolSize;
-    }
-
-    /**
-     * Size of the pool for handling background work.
-     */
-    public int getWorkerPoolSize() {
-        return manager.workerPoolSize;
     }
 
     /**
@@ -523,7 +509,7 @@ public final class Cluster {
     }
 
     public final static class Builder {
-        private List<InetAddress> addresses = new ArrayList<>();
+        private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
         private MessageSerializerV4<?> serializer = null;

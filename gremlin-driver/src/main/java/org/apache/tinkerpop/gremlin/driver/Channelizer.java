@@ -45,7 +45,7 @@ public interface Channelizer extends ChannelHandler {
     /**
      * Initializes the {@code Channelizer}. Called just after construction.
      */
-    public void init(final Connection connection);
+    void init(final Connection connection);
 
     /**
      * Called on {@link Connection#closeAsync()} to perform an {@code Channelizer} specific functions.  Note that the
@@ -53,19 +53,19 @@ public interface Channelizer extends ChannelHandler {
      * An implementation will typically use this method to send a {@code Channelizer} specific message to the
      * server to notify of shutdown coming from the client side.
      */
-    public void close(final Channel channel);
+    void close(final Channel channel);
 
     /**
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
-    public default void connected() {
+    default void connected() {
     }
 
     /**
      * Gets the scheme to use to construct the URL and by default uses HTTP.
      */
-    public default String getScheme(final boolean sslEnabled) {
+    default String getScheme(final boolean sslEnabled) {
         return sslEnabled ? "https" : "http";
     }
 
@@ -139,7 +139,7 @@ public interface Channelizer extends ChannelHandler {
      * meaning that sessions are not available and as such {@code tx()} (i.e. transactions) are not available over this
      * channelizer. Only sessionless requests are possible.
      */
-    public final class HttpChannelizer extends AbstractChannelizer {
+    final class HttpChannelizer extends AbstractChannelizer {
 
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
         private HttpGremlinResponseStreamDecoder gremlinResponseDecoder;
@@ -149,7 +149,7 @@ public interface Channelizer extends ChannelHandler {
             super.init(connection);
 
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
-            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder((MessageSerializerV4<?>) cluster.getSerializer());
+            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder(cluster.getSerializer());
         }
 
         @Override
