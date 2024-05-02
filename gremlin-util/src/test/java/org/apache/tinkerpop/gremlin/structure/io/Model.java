@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
@@ -159,44 +160,26 @@ public class Model {
         final Map<String,Object> requestBindings = new HashMap<>();
         requestBindings.put("x", 1);
 
-        final Map<String,Object> requestAliases = new HashMap<>();
-        requestAliases.put("g", "social");
+        RequestMessageV4 requestMessage = RequestMessageV4.build("social.V(x)").
+                addBindings(requestBindings).
+                addLanguage("gremlin-groovy").
+                addG("social").
+                addTimeoutMillis(100).
+                addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_ALL).create();
+        addRequestMessageEntry(requestMessage, "Standard Request", "The following `RequestMessageV4` is an example of a request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
-//        TODO: revisit
-//        RequestMessage requestMessage;
-//        requestMessage = RequestMessage.build("authentication").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create();
-//        addRequestMessageEntry(requestMessage, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.");
-//        requestMessage = RequestMessage.build("eval").processor("session").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "session", "unique-session-identifier").create();
-//        addRequestMessageEntry(requestMessage, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.");
-//        requestMessage = RequestMessage.build("eval").processor("session").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session","unique-session-identifier").create();
-//        addRequestMessageEntry(requestMessage, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
-//        requestMessage = RequestMessage.build("close").processor("session").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("session", "unique-session-identifier").create();
-//        addRequestMessageEntry(requestMessage, "Session Close", "The following `RequestMessage` is an example of a request to close a session.");
-//        requestMessage = RequestMessage.build("eval").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy").create();
-//        addRequestMessageEntry(requestMessage, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.");
-//        requestMessage = RequestMessage.build("eval").
-//                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-//                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
-//        addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
-//
-//        ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-//                code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.AUTHENTICATE).create();
-//        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).");
-//        responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-//                code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.SUCCESS).
-//                result(Collections.singletonList(graph.vertices().next())).create();
-//        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
-        
+        ResponseMessageV4 responseMessage;
+        responseMessage = ResponseMessageV4.build().
+                code(HttpResponseStatus.OK).
+                result(Collections.singletonList(graph.vertices().next())).create();
+        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
+        responseMessage = ResponseMessageV4.build().
+                code(HttpResponseStatus.INTERNAL_SERVER_ERROR).
+                statusMessage("some error").
+                exception("ServerFailStepException").
+                result(Collections.emptyList()).create();
+        addResponseMessageEntry(responseMessage, "Standard Exception Result", "The following `ResponseMessage` is a typical example of the typical unsuccessful response Gremlin Server will return when returning results from a script.");
+
         addExtendedEntry(new BigDecimal(new BigInteger("123456789987654321123456789987654321")), "BigDecimal", "");
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "");
         addExtendedEntry(new Byte("1"), "Byte", "");
