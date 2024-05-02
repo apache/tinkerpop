@@ -104,7 +104,8 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTr
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeError;
 
 /**
- * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
+ * Handler that processes RequestMessageV4. This handler will attempt to execute the query and stream the results back
+ * in HTTP chunks to the client.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -149,20 +150,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
     }
 
-    /**
-     * Serializers for the response.
-     */
-    private final Map<String, MessageSerializerV4<?>> serializers;
-
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
     private final Settings settings;
 
-    public HttpGremlinEndpointHandler(final Map<String, MessageSerializerV4<?>> serializers,
-                                      final GremlinExecutor gremlinExecutor,
+    public HttpGremlinEndpointHandler(final GremlinExecutor gremlinExecutor,
                                       final GraphManager graphManager,
                                       final Settings settings) {
-        this.serializers = serializers;
         this.gremlinExecutor = gremlinExecutor;
         this.graphManager = graphManager;
         this.settings = settings;
@@ -170,16 +164,15 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RequestMessageV4 requestMessage) {
-        Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
-        final RequestState requestState = NOT_STARTED;
+        final Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
 
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
-                gremlinExecutor.getScheduledExecutorService(), requestState);
+                gremlinExecutor.getScheduledExecutorService(), NOT_STARTED);
 
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
+        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -593,7 +586,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     return serializer.writeFooter(responseMessage, nettyContext.alloc());
             }
 
-            // todo: just throw?
             return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
 
         } catch (Exception ex) {

@@ -26,13 +26,16 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.Set;
 
+/**
+ * Exception utility class that generates exceptions in the form expected in a {@code ResponseStatusV4} for different
+ * issues that the server can encounter.
+ */
 public class GremlinError {
     private final HttpResponseStatus code;
     private final String message;
     private final String exception;
 
     private GremlinError(HttpResponseStatus code, String message, String exception) {
-
         this.code = code;
         this.message = message;
         this.exception = exception;

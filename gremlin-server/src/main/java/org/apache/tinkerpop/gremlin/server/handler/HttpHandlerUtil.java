@@ -86,6 +86,14 @@ public class HttpHandlerUtil {
         ctx.writeAndFlush(response);
     }
 
+    /**
+     * Writes and flushes a {@link ResponseMessageV4} that contains an error back to the client. Can be used to send
+     * errors while streaming or when no response chunk has been sent. This serves as the end of a response.
+     *
+     * @param context           The netty context.
+     * @param responseMessage   The response to send back.
+     * @param serializer        The serializer to use to serialize the error response.
+     */
     static void writeError(final Context context, final ResponseMessageV4 responseMessage, final MessageSerializerV4<?> serializer) {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
@@ -102,6 +110,14 @@ public class HttpHandlerUtil {
         }
     }
 
+    /**
+     * Writes a {@link GremlinError} into the status object of a {@link ResponseMessageV4} and then flushes it. Used to
+     * send specific errors back to the client. This serves as the end of a response.
+     *
+     * @param context       The netty context.
+     * @param error         The GremlinError used to populate the status.
+     * @param serializer    The serializer to use to serialize the error response.
+     */
     static void writeError(final Context context, final GremlinError error, final MessageSerializerV4<?> serializer) {
         final ResponseMessageV4 responseMessage = ResponseMessageV4.build()
                 .code(error.getCode())
@@ -112,6 +128,14 @@ public class HttpHandlerUtil {
         writeError(context, responseMessage, serializer);
     }
 
+    /**
+     * Adds trailing headers specified in the arguments to a {@link DefaultLastHttpContent} and then flushes it. This
+     * serves as the end of a response.
+     *
+     * @param ctx           The netty context.
+     * @param statusCode    The status code to include in the trailers.
+     * @param message       The message to include in the trailers.
+     */
     static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String message) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
         defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());

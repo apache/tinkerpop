@@ -21,11 +21,6 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
-
-import java.nio.ByteBuffer;
 
 /**
  * Serialize results to JSON with version 4.0.x schema and the extended module.
@@ -37,7 +32,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
      * Creates a default GraphSONMessageSerializer.
      * <p>
      * By default this will internally instantiate a {@link GraphSONMapper} and register
-     * a {@link GremlinServerModule} and {@link GraphSONXModuleV3} to the mapper.
+     * a {@link GremlinServerModuleV4} and {@link GraphSONXModuleV3} to the mapper.
      *
      * @see #GraphSONMessageSerializerV4(GraphSONMapper.Builder)
      */
@@ -49,7 +44,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
      * Create a GraphSONMessageSerializer with a provided {@link GraphSONMapper.Builder}.
      *
      * Note that to make this mapper usable in the context of request messages and responses,
-     * this method will automatically register a {@link GremlinServerModule} to the provided
+     * this method will automatically register a {@link GremlinServerModuleV4} to the provided
      * mapper.
      */
     public GraphSONMessageSerializerV4(final GraphSONMapper.Builder mapperBuilder) {
@@ -63,7 +58,6 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        // override the 2.0 in AbstractGraphSONMessageSerializerV2
         return builder.version(GraphSONVersion.V4_0).addCustomModule(new GremlinServerModuleV4());
     }
 }

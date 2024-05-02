@@ -112,7 +112,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
         }
     }
 
-    protected boolean isTyped() { return true; };
+    protected boolean isTyped() { return true; }
     @Override
     public ByteBuf writeHeader(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
@@ -304,13 +304,13 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
     }
 
     public final static class RequestMessageV4Deserializer extends AbstractObjectDeserializer<RequestMessageV4> {
-        protected RequestMessageV4Deserializer() {
+        private RequestMessageV4Deserializer() {
             super(RequestMessageV4.class);
         }
 
         @Override
         public RequestMessageV4 createObject(final Map<String, Object> data) {
-            RequestMessageV4.Builder builder = RequestMessageV4.build(data.get(SerTokens.TOKEN_GREMLIN));
+            final RequestMessageV4.Builder builder = RequestMessageV4.build(data.get(SerTokens.TOKEN_GREMLIN));
 
             if (data.containsKey(SerTokens.TOKEN_LANGUAGE)) {
                 builder.addLanguage(data.get(SerTokens.TOKEN_LANGUAGE).toString());
@@ -322,8 +322,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                 builder.addBindings((Map<String, Object>) data.get(SerTokens.TOKEN_BINDINGS));
             }
             if (data.containsKey(Tokens.TIMEOUT_MS)) {
-                // Can be int for untyped JSON and long for GraphSON.
-                builder.addTimeoutMillis(Long.valueOf(data.get(Tokens.TIMEOUT_MS).toString()));
+                // Can be int for untyped JSON and long for typed GraphSON.
+                builder.addTimeoutMillis(Long.parseLong(data.get(Tokens.TIMEOUT_MS).toString()));
             }
             if (data.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
                 builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
@@ -364,7 +364,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
             jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
             jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().code());
-            String exception = responseMessage.getStatus().getException();
+            final String exception = responseMessage.getStatus().getException();
             if (exception != null && !exception.isEmpty()) {
                 jsonGenerator.writeStringField(SerTokens.TOKEN_EXCEPTION, responseMessage.getStatus().getException());
             }
