@@ -19,15 +19,16 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The model for a response message that is sent to the server beginning in 4.0.0. ResponseMessageV4 is designed to be
+ * streamed back the client in parts so depending on the state of the transfer, certain parts may be null at different
+ * times.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ResponseMessageV4 {
@@ -123,20 +124,6 @@ public final class ResponseMessageV4 {
 
         public Builder statusAttributes(final Map<String, Object> attributes) {
             this.attributes = attributes;
-            return this;
-        }
-
-        public Builder statusAttributeException(final Throwable ex) {
-            statusAttribute(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS, IteratorUtils.asList(
-                    IteratorUtils.map(ExceptionUtils.getThrowableList(ex), t -> t.getClass().getName())));
-            statusAttribute(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(ex));
-            return this;
-        }
-
-        public Builder statusAttribute(final String key, final Object value) {
-            if (this.attributes == Collections.EMPTY_MAP)
-                attributes = new HashMap<>();
-            attributes.put(key, value);
             return this;
         }
 

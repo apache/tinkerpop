@@ -35,13 +35,9 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import org.javatuples.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,7 +59,6 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendEr
  */
 @ChannelHandler.Sharable
 public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpRequest> {
-    private static final Logger logger = LoggerFactory.getLogger(HttpRequestMessageDecoder.class);
     private static final Pattern pattern = Pattern.compile("(.*);q=(.*)");
 
     /**
