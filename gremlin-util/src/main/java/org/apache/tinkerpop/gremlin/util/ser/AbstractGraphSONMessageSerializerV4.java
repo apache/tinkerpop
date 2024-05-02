@@ -322,7 +322,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                 builder.addBindings((Map<String, Object>) data.get(SerTokens.TOKEN_BINDINGS));
             }
             if (data.containsKey(Tokens.TIMEOUT_MS)) {
-                builder.addTimeoutMillis((long) data.get(Tokens.TIMEOUT_MS));
+                // Can be int for untyped JSON and long for GraphSON.
+                builder.addTimeoutMillis(Long.valueOf(data.get(Tokens.TIMEOUT_MS).toString()));
             }
             if (data.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
                 builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
@@ -363,23 +364,19 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
             jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
             jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().code());
-            jsonGenerator.writeObjectField(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
+            String exception = responseMessage.getStatus().getException();
+            if (exception != null && !exception.isEmpty()) {
+                jsonGenerator.writeStringField(SerTokens.TOKEN_EXCEPTION, responseMessage.getStatus().getException());
+            }
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
-
-            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
-
-            if (null == responseMessage.getResult().getData()) {
-                jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
-            } else {
-                jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
-                final Object result = responseMessage.getResult().getData();
+            final Object result = responseMessage.getResult().getData();
+            if (result != null) {
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
+            } else {
+                serializerProvider.findTypedValueSerializer(List.class, true, null).serialize(Collections.emptyList(), jsonGenerator, serializerProvider);
             }
-
-            jsonGenerator.writeObjectField(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-            GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
         }
@@ -469,12 +466,16 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
         @Override
         public ResponseMessageV4 createObject(final Map<String, Object> data) {
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
-            return ResponseMessageV4.build()
+            ResponseMessageV4.Builder response = ResponseMessageV4.build()
                     .code(HttpResponseStatus.valueOf((Integer) status.get(SerTokens.TOKEN_CODE)))
                     .statusMessage(String.valueOf(status.get(SerTokens.TOKEN_MESSAGE)))
-                    .exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)))
-                    .result(data.get(SerTokens.TOKEN_RESULT))
-                    .create();
+                    .result(data.get(SerTokens.TOKEN_RESULT));
+
+            if (null != status.get(SerTokens.TOKEN_EXCEPTION)) {
+                response.exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)));
+            }
+
+            return response.create();
         }
     }
 }
