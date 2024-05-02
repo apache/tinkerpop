@@ -98,11 +98,9 @@ public class SimpleHttpClient extends AbstractClient {
                             }
                             p.addLast(
                                     new HttpClientCodec(),
-                                    // new HttpObjectAggregator(65536),
                                     new HttpGremlinResponseStreamDecoder(serializer),
                                     new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
                                     // new HttpGremlinResponseDebugStreamDecoder(),
-
                                     callbackResponseHandler);
                         }
                     });

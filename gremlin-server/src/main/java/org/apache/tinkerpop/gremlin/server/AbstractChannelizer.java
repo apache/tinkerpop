@@ -70,7 +70,7 @@ import java.util.stream.Stream;
  * Gremlin scripts).
  * <p/>
  * Implementers need only worry about determining how incoming data is converted to a
- * {@link RequestMessageV4} and outgoing data is converted from a  {@link ResponseMessageV4} to whatever expected format is
+ * {@link RequestMessageV4} and outgoing data is converted from a {@link ResponseMessageV4} to whatever expected format is
  * needed by the pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -95,12 +95,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public static final String PIPELINE_REQUEST_HANDLER = "request-handler";
     public static final String PIPELINE_HTTP_RESPONSE_ENCODER = "http-response-encoder";
     public static final String PIPELINE_HTTP_AGGREGATOR = "http-aggregator";
-    public static final String PIPELINE_WEBSOCKET_SERVER_COMPRESSION = "web-socket-server-compression-handler";
     public static final String PIPELINE_HTTP_USER_AGENT_HANDLER = "http-user-agent-handler";
 
     protected static final String PIPELINE_SSL = "ssl";
-    protected static final String PIPELINE_OP_SELECTOR = "op-selector";
-    protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
     protected static final String PIPELINE_HTTP_REQUEST_DECODER = "http-request-decoder";
     protected static final String GREMLIN_ENDPOINT = "/gremlin";
 
