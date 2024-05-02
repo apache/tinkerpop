@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Model;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV4;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,14 +44,18 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
             addRegistry(TinkerIoRegistryV2.instance()).
             typeInfo(TypeInfo.PARTIAL_TYPES).
             addCustomModule(GraphSONXModuleV2.build()).
-//            addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
             version(GraphSONVersion.V2_0).create().createMapper();
 
     private static ObjectMapper mapperV3 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3.instance()).
             addCustomModule(GraphSONXModuleV3.build()).
-//            addCustomModule(new GraphSONMessageSerializerV3.GremlinServerModule()).
             version(GraphSONVersion.V3_0).create().createMapper();
+
+    private static ObjectMapper mapperV4 = GraphSONMapper.build().
+            addRegistry(TinkerIoRegistryV3.instance()).
+            addCustomModule(GraphSONXModuleV3.build()).
+            addCustomModule(new AbstractGraphSONMessageSerializerV4.GremlinServerModuleV4()).
+        version(GraphSONVersion.V4_0).create().createMapper();
 
     private static final String testCaseDataPath = root.getPath() + File.separator + "test-case-data" + File.separator
         + "io" + File.separator + "graphson";
@@ -64,6 +69,7 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
         return Arrays.asList(new Object[][]{
                 {"v2", mapperV2 },
                 {"v3", mapperV3 },
+                {"v4", mapperV4 },
         });
     }
 
