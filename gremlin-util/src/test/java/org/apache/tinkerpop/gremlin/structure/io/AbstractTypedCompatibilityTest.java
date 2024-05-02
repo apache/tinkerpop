@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -43,6 +45,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -83,38 +87,6 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibilityTest {
-
-//    @Test
-//    public void shouldReadWriteAuthenticationChallenge() throws Exception {
-//        final String resourceName = "authenticationchallenge";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final ResponseMessage resource = findModelEntryObject(resourceName);
-//        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
-//        final ResponseMessage recycled = read(write(fromStatic, ResponseMessage.class, resourceName), ResponseMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertResponseMessage(resource, fromStatic, recycled);
-//    }
-
-//    @Test
-//    public void shouldReadWriteAuthenticationResponse() throws Exception {
-//        final String resourceName = "authenticationresponse";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("saslMechanism"), recycled.getArgs().get("saslMechanism"));
-//        assertEquals(resource.getArgs().get("sasl"), recycled.getArgs().get("sasl"));
-//        assertEquals(resource.getArgs().get("saslMechanism"), fromStatic.getArgs().get("saslMechanism"));
-//        assertEquals(resource.getArgs().get("sasl"), fromStatic.getArgs().get("sasl"));
-//    }
 
     @Test
     public void shouldReadWriteBarrier() throws Exception {
@@ -645,110 +617,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-//    @Test
-//    public void shouldReadWriteSessionClose() throws Exception {
-//        final String resourceName = "sessionclose";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
-//        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
-//    }
-
-//    @Test
-//    public void shouldReadWriteSessionEval() throws Exception {
-//        final String resourceName = "sessioneval";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
-//        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
-//        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
-//        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
-//    }
-
-//    @Test
-//    public void shouldReadWriteSessionEvalAliased() throws Exception {
-//        final String resourceName = "sessionevalaliased";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("session"), recycled.getArgs().get("session"));
-//        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) recycled.getArgs().get("aliases")).get("g"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
-//        assertEquals(resource.getArgs().get("session"), fromStatic.getArgs().get("session"));
-//        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) fromStatic.getArgs().get("aliases")).get("g"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
-//    }
-
-//    @Test
-//    public void shouldReadWriteSessionlessEval() throws Exception {
-//        final String resourceName = "sessionlesseval";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
-//        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
-//    }
-
-//    @Test
-//    public void shouldReadWriteSessionlessEvalAliased() throws Exception {
-//        final String resourceName = "sessionlessevalaliased";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final RequestMessage resource = findModelEntryObject(resourceName);
-//        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-//        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertRequestMessage(resource, fromStatic, recycled);
-//        assertEquals(resource.getArgs().get("language"), recycled.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), recycled.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) recycled.getArgs().get("aliases")).get("g"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) recycled.getArgs().get("bindings")).get("x"));
-//        assertEquals(resource.getArgs().get("language"), fromStatic.getArgs().get("language"));
-//        assertEquals(resource.getArgs().get("gremlin"), fromStatic.getArgs().get("gremlin"));
-//        assertEquals(((Map) resource.getArgs().get("aliases")).get("g"), ((Map) fromStatic.getArgs().get("aliases")).get("g"));
-//        assertEquals(((Map) resource.getArgs().get("bindings")).get("x"), ((Map) fromStatic.getArgs().get("bindings")).get("x"));
-//    }
-
     @Test
     public void shouldReadWriteSet() throws Exception {
         final String resourceName = "set";
@@ -776,19 +644,64 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-//    @Test
-//    public void shouldReadWriteStandardResult() throws Exception {
-//        final String resourceName = "standardresult";
-//
-//        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-//                is(this.getClass().equals(GraphBinaryCompatibilityTest.class)));
-//
-//        final ResponseMessage resource = findModelEntryObject(resourceName);
-//        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
-//        final ResponseMessage recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessage.class);
-//        assertNotSame(fromStatic, recycled);
-//        assertResponseMessage(resource, fromStatic, recycled);
-//    }
+    @Test
+    public void shouldReadWriteStandardRequestMessage() throws Exception {
+        final String resourceName = "standardrequest";
+
+        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
+                this.getClass().equals(GraphBinaryCompatibilityTest.class),
+                is(false));
+        assumeThat("RequestMessageV4 was supported starting in GraphSONv4",
+                getCompatibility(),
+                is("v4"));
+
+        final RequestMessageV4 resource = findModelEntryObject(resourceName);
+        final RequestMessageV4 fromStatic = read(readFromResource(resourceName), RequestMessageV4.class);
+        final RequestMessageV4 recycled = read(write(fromStatic, RequestMessageV4.class, resourceName), RequestMessageV4.class);
+        assertNotSame(fromStatic, recycled);
+        assertRequestMessage(resource, fromStatic, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteStandardExceptionResult() throws Exception {
+        final String resourceName = "standardexceptionresult";
+
+        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
+                this.getClass().equals(GraphBinaryCompatibilityTest.class),
+                is(false));
+        assumeThat("ResponseMessageV4 was supported starting in GraphSONv4",
+                getCompatibility(),
+                is("v4"));
+
+        final GraphSONMessageSerializerV4 gsSerializer = new GraphSONMessageSerializerV4();
+        final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
+        final ResponseMessageV4 resource = read(resourceInBytes.array(), ResponseMessageV4.class);
+        final ResponseMessageV4 fromStatic = read(readFromResource(resourceName), ResponseMessageV4.class);
+        final ResponseMessageV4 recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessageV4.class);
+        assertNotSame(fromStatic, recycled);
+        assertResponseMessage(resource, fromStatic, recycled);
+        resourceInBytes.release();
+    }
+
+    @Test
+    public void shouldReadWriteStandardResult() throws Exception {
+        final String resourceName = "standardresult";
+
+        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
+                this.getClass().equals(GraphBinaryCompatibilityTest.class),
+                is(false));
+        assumeThat("ResponseMessageV4 was supported starting in GraphSONv4",
+                getCompatibility(),
+                is("v4"));
+
+        final GraphSONMessageSerializerV4 gsSerializer = new GraphSONMessageSerializerV4();
+        final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
+        final ResponseMessageV4 resource = read(resourceInBytes.array(), ResponseMessageV4.class);
+        final ResponseMessageV4 fromStatic = read(readFromResource(resourceName), ResponseMessageV4.class);
+        final ResponseMessageV4 recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessageV4.class);
+        assertNotSame(fromStatic, recycled);
+        assertResponseMessage(resource, fromStatic, recycled);
+    }
 
     @Test
     public void shouldReadWriteT() throws Exception {
@@ -974,34 +887,4 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, fromStatic);
         assertEquals(resource, recycled);
     }
-
-//    private static void assertResponseMessage(final ResponseMessage resource, final ResponseMessage fromStatic,
-//                                              final ResponseMessage recycled) {
-//        assertEquals(resource.getRequestId(), recycled.getRequestId());
-//        assertEquals(resource.getStatus().getCode().getValue(), recycled.getStatus().getCode().getValue());
-//        assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
-//        assertEquals(resource.getStatus().getAttributes(), recycled.getStatus().getAttributes());
-//        assertEquals(resource.getResult().getData(), recycled.getResult().getData());
-//        assertEquals(resource.getResult().getMeta(), recycled.getResult().getMeta());
-//        assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
-//        assertEquals(resource.getRequestId(), fromStatic.getRequestId());
-//        assertEquals(resource.getStatus().getCode().getValue(), fromStatic.getStatus().getCode().getValue());
-//        assertEquals(resource.getStatus().getMessage(), fromStatic.getStatus().getMessage());
-//        assertEquals(resource.getStatus().getAttributes(), fromStatic.getStatus().getAttributes());
-//        assertEquals(resource.getResult().getData(), fromStatic.getResult().getData());
-//        assertEquals(resource.getResult().getMeta(), fromStatic.getResult().getMeta());
-//        assertEquals(resource.getStatus().getMessage(), fromStatic.getStatus().getMessage());
-//    }
-
-//    private static void assertRequestMessage(final RequestMessage resource, final RequestMessage fromStatic,
-//                                             final RequestMessage recycled) {
-//        assertEquals(resource.getRequestId(), recycled.getRequestId());
-//        assertEquals(resource.getOp(), recycled.getOp());
-//        assertEquals(resource.getProcessor(), recycled.getProcessor());
-//        assertEquals(resource.getArgs(), recycled.getArgs());
-//        assertEquals(resource.getRequestId(), fromStatic.getRequestId());
-//        assertEquals(resource.getOp(), fromStatic.getOp());
-//        assertEquals(resource.getProcessor(), fromStatic.getProcessor());
-//        assertEquals(resource.getArgs(), fromStatic.getArgs());
-//    }
 }

@@ -1,0 +1,10 @@
+{
+    "gremlin": "social.V(x)",
+    "materializeProperties": "all",
+    "timeoutMs": 100,
+    "g": "social",
+    "bindings": {
+        "x": 1
+    },
+    "language": "gremlin-groovy"
+}
