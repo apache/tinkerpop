@@ -27,9 +27,8 @@ import java.net.InetAddress;
 import java.util.Map;
 
 /**
- * Provides methods related to authentication of a request.  Implementations should provide a SASL based
- * authentication method, but a handler can choose to use the {@link #authenticate(Map)} method directly if
- * required for protocols that don't easily support SASL.
+ * Provides methods related to authentication of a request.  A handler should use the {@link #authenticate(Map)}
+ * method directly. SASL isn't currently supported but the interface remains available for custom server implementations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -65,6 +64,9 @@ public interface Authenticator {
      * Performs the actual SASL negotiation for a single authentication attempt.
      * SASL is stateful, so a new instance should be used for each attempt.
      * Non-trivial implementations may delegate to an instance of {@link javax.security.sasl.SaslServer}
+     *
+     * NOTE: This interface is no longer used by default in the Gremlin Server. It remains here for use with custom
+     *       server implementations.
      */
     public interface SaslNegotiator
     {

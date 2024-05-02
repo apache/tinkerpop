@@ -1607,41 +1607,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
-//    TODO: should probably remove and deprecate this old user-agent.
-//    @Test
-//    public void shouldSendUserAgent() throws Exception {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-//        final Client client = Mockito.spy(cluster.connect().alias("g"));
-//        client.submit("", RequestOptions.build().userAgent("test").create()).all().get();
-//        cluster.close();
-//
-//        final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
-//        verify(client).submitAsync(requestMessageCaptor.capture());
-//        final RequestMessage requestMessage = requestMessageCaptor.getValue();
-//        assertEquals("test", requestMessage.getArgs().get(Tokens.ARGS_USER_AGENT));
-//    }
-
-//    TODO: should probably remove and deprecate this old user-agent.
-//    @Test
-//    public void shouldSendUserAgentBytecode() {
-//        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
-//        final Client client = Mockito.spy(cluster.connect().alias("g"));
-//        Mockito.when(client.alias("g")).thenReturn(client);
-//        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client));
-//        g.with(Tokens.ARGS_USER_AGENT, "test").V().iterate();
-//        cluster.close();
-//
-//        final ArgumentCaptor<RequestOptions> requestOptionsCaptor = ArgumentCaptor.forClass(RequestOptions.class);
-//        verify(client).submitAsync(Mockito.any(Bytecode.class), requestOptionsCaptor.capture());
-//        final RequestOptions requestOptions = requestOptionsCaptor.getValue();
-//        assertEquals("test", requestOptions.getUserAgent().get());
-//
-//        final ArgumentCaptor<RequestMessage> requestMessageCaptor = ArgumentCaptor.forClass(RequestMessage.class);
-//        verify(client).submitAsync(requestMessageCaptor.capture());
-//        final RequestMessage requestMessage = requestMessageCaptor.getValue();
-//        assertEquals("test", requestMessage.getArgs().getOrDefault(Tokens.ARGS_USER_AGENT, null));
-//    }
-
     @Test
     public void shouldClusterReadFileFromResources() throws Exception {
         final Cluster cluster = Cluster.open(TestClientFactory.RESOURCE_PATH);

@@ -37,14 +37,9 @@ public final class RequestMessageV4 {
      */
     public static final RequestMessageV4 INVALID = new RequestMessageV4();
 
-    private static final String REQUEST_ID = "requestId";
-
     private String gremlinType; // Type information needed to help deserialize "gremlin" into either String/Bytecode.
-
     private Object gremlin; // Should be either a String or Bytecode type.
-
     private Map<String, Object> fields;
-
     private UUID requestId;
 
     private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
@@ -143,9 +138,9 @@ public final class RequestMessageV4 {
     public static final class Builder {
         private final Object gremlin; // Should be either a String or Bytecode type.
 
-        private Map<String, Object> bindings = new HashMap<>();
+        private final Map<String, Object> bindings = new HashMap<>();
 
-        private Map<String, Object> fields = new HashMap<>();
+        private final Map<String, Object> fields = new HashMap<>(); // Only allow certain items to be added to prevent breaking changes.
 
         private Builder(final Object gremlin) {
             this.gremlin = gremlin;
@@ -175,7 +170,6 @@ public final class RequestMessageV4 {
         }
 
         public Builder addChunkSize(final int chunkSize) {
-            Objects.requireNonNull(chunkSize, "chunkSize argument cannot be null.");
             this.fields.put(Tokens.ARGS_BATCH_SIZE, chunkSize);
             return this;
         }
@@ -191,7 +185,6 @@ public final class RequestMessageV4 {
         }
 
         public Builder addTimeoutMillis(final long timeout) {
-            Objects.requireNonNull(timeout, "timeout argument cannot be null.");
             if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
 
             this.fields.put(Tokens.TIMEOUT_MS, timeout);

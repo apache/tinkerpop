@@ -52,16 +52,14 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
-
     private HttpRequestCheckingHandler httpRequestCheckingHandler = new HttpRequestCheckingHandler();
     private HttpRequestMessageDecoder httpRequestMessageDecoder = new HttpRequestMessageDecoder(serializers);
-
     private HttpRequestIdHandler httpRequestIdHandler = new HttpRequestIdHandler();
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings);
+        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(gremlinExecutor, graphManager, settings);
     }
 
     @Override
