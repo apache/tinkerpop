@@ -42,10 +42,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -104,7 +100,7 @@ public class HttpHandlerUtil {
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
             ctx.writeAndFlush(new DefaultHttpContent(ByteBuf));
 
-            sendTrailingHeaders(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getMessage());
+            sendTrailingHeaders(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
         } catch (SerializationException se) {
             logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
         }
@@ -134,18 +130,15 @@ public class HttpHandlerUtil {
      *
      * @param ctx           The netty context.
      * @param statusCode    The status code to include in the trailers.
-     * @param message       The message to include in the trailers.
+     * @param exceptionType The type of exception to include in the trailers. Leave blank or null if no error occurred.
      */
-    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String message) {
+    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String exceptionType) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
         defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());
-        try {
-            defaultLastHttpContent.trailingHeaders().add(
-                    SerTokens.TOKEN_MESSAGE, URLEncoder.encode(message, StandardCharsets.UTF_8.name()));
-        } catch (UnsupportedEncodingException uee) {
-            // This should never occur since we use UTF-8 so just log rather than handle.
-            logger.info(StandardCharsets.UTF_8.name() + " encoding not supported", uee);
+        if (exceptionType != null && !exceptionType.isEmpty()) {
+            defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_EXCEPTION, exceptionType);
         }
+
         ctx.writeAndFlush(defaultLastHttpContent);
     }
 }

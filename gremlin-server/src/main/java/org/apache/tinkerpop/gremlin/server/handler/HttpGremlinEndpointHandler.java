@@ -428,7 +428,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // it needs to be released here
                 if (chunk != null) chunk.release();
             }
-            sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
+            sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "");
             return;
         }
 
@@ -509,7 +509,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
 
                     if (!hasMore) {
-                        sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
+                        sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "");
                     }
                 }
             } else {
