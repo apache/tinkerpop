@@ -928,11 +928,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("new chunk", node.get("result").get(GraphSONTokens.VALUEPROP).get(16).textValue());
 
             final Header[] footers = getTrailingHeaders(response);
-            assertEquals(2, footers.length);
+            assertEquals(1, footers.length);
             assertEquals("code", footers[0].getName());
             assertEquals("200", footers[0].getValue());
-            assertEquals("message", footers[1].getName());
-            assertEquals("OK", footers[1].getValue());
         }
     }
 
@@ -957,11 +955,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(17, ((List)responseMessage.getResult().getData()).size());
 
             final Header[] footers = getTrailingHeaders(response);
-            assertEquals(2, footers.length);
+            assertEquals(1, footers.length);
             assertEquals("code", footers[0].getName());
             assertEquals("200", footers[0].getValue());
-            assertEquals("message", footers[1].getName());
-            assertEquals("OK", footers[1].getValue());
         }
     }
 
@@ -986,11 +982,9 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(0, ((List)responseMessage.getResult().getData()).size());
 
             final Header[] footers = getTrailingHeaders(response);
-            assertEquals(2, footers.length);
+            assertEquals(1, footers.length);
             assertEquals("code", footers[0].getName());
             assertEquals("200", footers[0].getValue());
-            assertEquals("message", footers[1].getName());
-            assertEquals("OK", footers[1].getValue());
         }
     }
 
@@ -1090,8 +1084,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(2, footers.length);
             assertEquals("code", footers[0].getName());
             assertEquals("500", footers[0].getValue());
-            assertEquals("message", footers[1].getName());
-            assertThat(footers[1].getValue(), startsWith("some+error"));
+            assertEquals("exception", footers[1].getName());
+            assertThat(footers[1].getValue(), is("ServerFailStepException"));
         }
     }
 
@@ -1119,8 +1113,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(2, footers.length);
             assertEquals("code", footers[0].getName());
             assertEquals("500", footers[0].getValue());
-            assertEquals("message", footers[1].getName());
-            Assert.assertThat(footers[1].getValue(), startsWith("some+error"));
+            assertEquals("exception", footers[1].getName());
+            Assert.assertThat(footers[1].getValue(), is("ServerFailStepException"));
         }
     }
 
