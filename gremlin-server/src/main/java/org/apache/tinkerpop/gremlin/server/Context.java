@@ -83,7 +83,7 @@ public class Context {
                    final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
         this(requestMessage, ctx, settings, graphManager, gremlinExecutor, scheduledExecutorService,
-                HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED);
+                HttpGremlinEndpointHandler.RequestState.NOT_STARTED);
     }
 
     public Context(final RequestMessageV4 requestMessage, final ChannelHandlerContext ctx,

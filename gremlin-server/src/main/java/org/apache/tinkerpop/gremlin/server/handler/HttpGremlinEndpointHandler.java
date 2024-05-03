@@ -95,7 +95,6 @@ import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.NOT_STARTED;
@@ -554,15 +553,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 final ResponseMessageV4.Builder builder = ResponseMessageV4.build().result(aggregate);
 
                 // need to put status in last message
-                if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
+                if (ctx.getRequestState() == FINISHING) {
                     builder.code(HttpResponseStatus.OK).statusMessage("OK");
                 }
 
                 responseMessage = builder.create();
-            }
-
-            if (ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
             }
 
             switch (ctx.getRequestState()) {
@@ -596,7 +591,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     public enum RequestState {
-        CHUNKING_NOT_SUPPORTED,
         NOT_STARTED,
         STREAMING,
         // last portion of data
