@@ -47,7 +47,6 @@ public class DriverRemoteConnectionTest {
         assertEquals(requestId, options.getOverrideRequestId().get());
         assertEquals(1000, options.getBatchSize().get().intValue());
         assertEquals(100000L, options.getTimeout().get().longValue());
-        assertEquals("test", options.getUserAgent().get());
     }
 
     @Test

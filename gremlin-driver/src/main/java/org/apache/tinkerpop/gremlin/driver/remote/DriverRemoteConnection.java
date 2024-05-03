@@ -40,7 +40,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
 
 
@@ -255,8 +254,6 @@ public class DriverRemoteConnection implements RemoteConnection {
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
-            if (options.containsKey(ARGS_USER_AGENT))
-                builder.userAgent((String) options.get(ARGS_USER_AGENT));
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
         }
