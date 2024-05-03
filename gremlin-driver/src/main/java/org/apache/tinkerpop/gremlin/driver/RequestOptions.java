@@ -32,7 +32,6 @@ import java.util.UUID;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -48,7 +47,6 @@ public final class RequestOptions {
     private final Integer batchSize;
     private final Long timeout;
     private final UUID overrideRequestId;
-    private final String userAgent;
     private final String language;
     private final String materializeProperties;
 
@@ -58,7 +56,6 @@ public final class RequestOptions {
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
         this.overrideRequestId = builder.overrideRequestId;
-        this.userAgent = builder.userAgent;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
     }
@@ -83,10 +80,6 @@ public final class RequestOptions {
         return Optional.ofNullable(timeout);
     }
 
-    public Optional<String> getUserAgent() {
-        return Optional.ofNullable(userAgent);
-    }
-
     public Optional<String> getLanguage() {
         return Optional.ofNullable(language);
     }
@@ -107,8 +100,6 @@ public final class RequestOptions {
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
-            if (options.containsKey(ARGS_USER_AGENT))
-                builder.userAgent((String) options.get(ARGS_USER_AGENT));
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
         }
@@ -121,7 +112,6 @@ public final class RequestOptions {
         private Integer batchSize = null;
         private Long timeout = null;
         private UUID overrideRequestId = null;
-        private String userAgent = null;
         private String materializeProperties = null;
         private String language = null;
         private boolean maintainStateAfterException = false;
@@ -172,14 +162,6 @@ public final class RequestOptions {
          */
         public Builder timeout(final long timeout) {
             this.timeout = timeout;
-            return this;
-        }
-
-        /**
-         * Sets the userAgent identifier to be sent on the request.
-         */
-        public Builder userAgent(final String userAgent) {
-            this.userAgent = userAgent;
             return this;
         }
 

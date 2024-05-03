@@ -360,7 +360,6 @@ public abstract class Client {
         options.getTimeout().ifPresent(timeout -> request.addTimeoutMillis(timeout));
         options.getParameters().ifPresent(params -> request.addBindings(params));
         options.getAliases().ifPresent(aliases -> {if (aliases.get("g") != null) request.addG(aliases.get("g")); });
-//        options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
 
