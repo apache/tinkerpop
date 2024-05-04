@@ -56,7 +56,6 @@ public class GraphBinaryMessageSerializerV4Test {
     public void shouldSerializeAndDeserializeResponseInSingleChunk() throws SerializationException {
         final ResponseMessageV4 response = ResponseMessageV4.build()
                 .code(HttpResponseStatus.OK)
-                .statusMessage("OK")
                 .result(Arrays.asList(1, "test"))
                 .create();
 
