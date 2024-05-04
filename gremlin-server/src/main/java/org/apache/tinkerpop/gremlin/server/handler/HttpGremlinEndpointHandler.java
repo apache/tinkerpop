@@ -554,7 +554,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                 // need to put status in last message
                 if (ctx.getRequestState() == FINISHING) {
-                    builder.code(HttpResponseStatus.OK).statusMessage("OK");
+                    builder.code(HttpResponseStatus.OK);
                 }
 
                 responseMessage = builder.create();
@@ -571,7 +571,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     return serializer.serializeResponseAsBinary(ResponseMessageV4.build()
                             .result(aggregate)
                             .code(HttpResponseStatus.OK)
-                            .statusMessage("OK")
                             .create(), nettyContext.alloc());
 
                 case STREAMING:

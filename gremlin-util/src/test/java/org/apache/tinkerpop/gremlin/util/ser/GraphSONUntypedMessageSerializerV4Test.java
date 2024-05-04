@@ -52,7 +52,6 @@ public class GraphSONUntypedMessageSerializerV4Test {
         final ResponseMessageV4 footer = ResponseMessageV4.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.OK)
-                .statusMessage("OK")
                 .create();
 
         final ByteBuf bb0 = serializer.writeHeader(header, allocator);
@@ -69,14 +68,14 @@ public class GraphSONUntypedMessageSerializerV4Test {
         assertEquals("header", node.get("result").get(0).textValue());
         assertEquals("footer", node.get("result").get(6).textValue());
         assertEquals(8, node.get("result").size());
-        assertEquals("OK", node.get("status").get("message").asText());
+        assertNull(node.get("status").get("message"));
         assertEquals(200, node.get("status").get("code").asInt());
 
         // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(200, deserialized.getStatus().getCode().code());
-        assertEquals("OK", deserialized.getStatus().getMessage());
+        assertEquals(null, deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
     }
 
@@ -84,7 +83,6 @@ public class GraphSONUntypedMessageSerializerV4Test {
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
         final ResponseMessageV4 header = ResponseMessageV4.build()
                 .code(HttpResponseStatus.OK)
-                .statusMessage("OK")
                 .create();
 
         final ByteBuf bb0 = serializer.writeHeader(header, allocator);
@@ -94,13 +92,13 @@ public class GraphSONUntypedMessageSerializerV4Test {
         final JsonNode node = mapper.readTree(json);
 
         assertEquals(0, node.get("result").size());
-        assertEquals("OK", node.get("status").get("message").asText());
+        assertNull(node.get("status").get("message"));
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
-        assertEquals("OK", deserialized.getStatus().getMessage());
+        assertEquals(null, deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
     }
 
