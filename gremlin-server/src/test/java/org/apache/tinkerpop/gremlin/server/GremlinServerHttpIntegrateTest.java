@@ -1351,6 +1351,28 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
     }
 
+    @Test
+    public void shouldNotContainStatusMessageOrExceptionWith200() throws Exception {
+        final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
+        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
+                RequestMessageV4.build("1+1").create(),
+                new UnpooledByteBufAllocator(false));
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader(HttpHeaders.ACCEPT, SerializersV4.GRAPHSON_V4.getValue());
+        httppost.addHeader("Content-Type", SerializersV4.GRAPHSON_V4.getValue());
+        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertNull(node.get("status").get("message"));
+            assertNull(node.get("status").get("exception"));
+        }
+    }
+
     private static ByteBuf toByteBuf(final HttpEntity httpEntity) throws IOException {
         final byte[] asArray = EntityUtils.toByteArray(httpEntity);
         return Unpooled.wrappedBuffer(asArray);

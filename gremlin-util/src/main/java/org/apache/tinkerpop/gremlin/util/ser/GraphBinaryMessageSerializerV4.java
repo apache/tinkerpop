@@ -134,7 +134,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[] {/*serializeToString ? obtainStringdMimeType() : obtainMimeType()*/MIME_TYPE};
+        return new String[] {MIME_TYPE};
     }
 
     private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
