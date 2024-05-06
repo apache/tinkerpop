@@ -153,7 +153,6 @@ public class ProfilingApplication {
         final int maxWaitForConnection = Integer.parseInt(options.getOrDefault("maxWaitForConnection", "3000").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
         final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
-        final String channelizer = options.getOrDefault("channelizer", Channelizer.HttpChannelizer.class.getName()).toString();
         final String serializer = options.getOrDefault("serializer", SerializersV4.GRAPHBINARY_V4.name()).toString();
 
         final boolean exercise = Boolean.parseBoolean(options.getOrDefault("exercise", "false").toString());
@@ -163,7 +162,6 @@ public class ProfilingApplication {
                 .minConnectionPoolSize(minConnectionPoolSize)
                 .maxConnectionPoolSize(maxConnectionPoolSize)
                 .nioPoolSize(nioPoolSize)
-                .channelizer(channelizer)
                 .maxWaitForConnection(maxWaitForConnection)
                 .serializer(SerializersV4.valueOf(serializer))
                 .workerPoolSize(workerPoolSize).create();

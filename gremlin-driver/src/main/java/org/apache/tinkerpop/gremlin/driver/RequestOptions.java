@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -38,7 +37,6 @@ public final class RequestOptions {
     private final Map<String, Object> parameters;
     private final Integer batchSize;
     private final Long timeout;
-    private final UUID overrideRequestId;
     private final String language;
     private final String materializeProperties;
 
@@ -47,13 +45,8 @@ public final class RequestOptions {
         this.parameters = builder.parameters;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
-        this.overrideRequestId = builder.overrideRequestId;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
-    }
-
-    public Optional<UUID> getOverrideRequestId() {
-        return Optional.ofNullable(overrideRequestId);
     }
 
     public Optional<Map<String, String>> getAliases() {
@@ -87,10 +80,8 @@ public final class RequestOptions {
         private Map<String, Object> parameters = null;
         private Integer batchSize = null;
         private Long timeout = null;
-        private UUID overrideRequestId = null;
         private String materializeProperties = null;
         private String language = null;
-        private boolean maintainStateAfterException = false;
 
         /**
          * The aliases to set on the request.
@@ -111,14 +102,6 @@ public final class RequestOptions {
                 parameters = new HashMap<>();
 
             parameters.put(name, value);
-            return this;
-        }
-
-        /**
-         * Overrides the identifier to be sent on the request.
-         */
-        public Builder overrideRequestId(final UUID overrideRequestId) {
-            this.overrideRequestId = overrideRequestId;
             return this;
         }
 
@@ -160,6 +143,5 @@ public final class RequestOptions {
         public RequestOptions create() {
             return new RequestOptions(this);
         }
-
     }
 }
