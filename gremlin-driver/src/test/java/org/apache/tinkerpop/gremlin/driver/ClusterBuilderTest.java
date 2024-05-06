@@ -56,8 +56,7 @@ public class ClusterBuilderTest {
                 {"nioPoolSizeNeg1", Cluster.build().nioPoolSize(-1), "nioPoolSize must be greater than zero"},
                 {"connectionSetupTimeoutMillis0", Cluster.build().connectionSetupTimeoutMillis(0), "connectionSetupTimeoutMillis must be greater than zero"},
                 {"workerPoolSize0", Cluster.build().workerPoolSize(0), "workerPoolSize must be greater than zero"},
-                {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"},
-                {"channelizer", Cluster.build().channelizer("MissingChannelizer"), "The channelizer specified [MissingChannelizer] could not be instantiated - it should be the fully qualified classname of a Channelizer implementation available on the classpath"}});
+                {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"}});
     }
 
     @Parameterized.Parameter(value = 0)

@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.DefaultHttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
@@ -53,6 +54,17 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         System.out.println("HttpGremlinResponseStreamDecoder start");
 
         if (msg instanceof HttpResponse) {
+            if (((HttpResponse) msg).status() != HttpResponseStatus.OK && ((HttpResponse) msg).status() != HttpResponseStatus.NO_CONTENT) {
+                System.out.println("Error: " + ((HttpResponse) msg).status());
+
+                final ResponseMessageV4 response = ResponseMessageV4.build()
+                        .code(((HttpResponse) msg).status())
+                        .create();
+
+                out.add(response);
+                return;
+            }
+
             isFirstChunk.set(true);
         }
 
@@ -62,6 +74,13 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     System.out.println("first chunk");
                 } else {
                     System.out.println("not first chunk");
+                }
+
+                System.out.println("payload size in bytes: " + ((HttpContent) msg).content().readableBytes());
+                System.out.println(((HttpContent) msg).content());
+
+                if (((HttpContent) msg).content().readableBytes() < 300) {
+                    System.out.println("---");
                 }
 
                 final ResponseMessageV4 chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());

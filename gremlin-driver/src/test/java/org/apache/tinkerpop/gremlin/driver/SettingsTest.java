@@ -76,10 +76,6 @@ public class SettingsTest {
         assertEquals(8000, settings.port);
         assertEquals(16, settings.nioPoolSize);
         assertEquals(32, settings.workerPoolSize);
-        assertEquals("user1", settings.username);
-        assertEquals("password1", settings.password);
-        assertEquals("JaasIt", settings.jaasEntry);
-        assertEquals("protocol0", settings.protocol);
         assertEquals(Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"), settings.hosts);
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
@@ -101,7 +97,6 @@ public class SettingsTest {
         assertEquals(900, settings.connectionPool.reconnectInterval);
         assertEquals(15000, settings.connectionPool.connectionSetupTimeoutMillis);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
-        assertEquals("channelizer0", settings.connectionPool.channelizer);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
 }

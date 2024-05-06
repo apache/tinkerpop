@@ -29,8 +29,4 @@ import java.util.function.UnaryOperator;
  */
 public interface RequestInterceptor extends UnaryOperator<FullHttpRequest> {
 
-    /**
-     * The default implementation of a {@link RequestInterceptor} and behaves as a no-op.
-     */
-    public static final RequestInterceptor NO_OP = o -> o;
 }

@@ -24,8 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
-import java.util.UUID;
-
 import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 import static org.junit.Assert.assertEquals;
 
@@ -37,7 +35,6 @@ public class DriverRemoteConnectionTest {
 
     @Test
     public void shouldBuildRequestOptions() {
-        final UUID requestId = UUID.fromString("34a9f45f-8854-4d33-8b40-92a8171ee495");
         final RequestOptions options = getRequestOptions(
                 g.with("x").
                         with("y", 100).
@@ -45,7 +42,6 @@ public class DriverRemoteConnectionTest {
                         with(Tokens.ARGS_EVAL_TIMEOUT, 100000L).
                         with(Tokens.ARGS_USER_AGENT, "test").
                         V().asAdmin().getBytecode());
-        assertEquals(requestId, options.getOverrideRequestId().get());
         assertEquals(1000, options.getBatchSize().get().intValue());
         assertEquals(100000L, options.getTimeout().get().longValue());
     }
