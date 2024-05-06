@@ -46,18 +46,11 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     private final MessageSerializerV4<?> serializer;
     private final boolean userAgentEnabled;
-    private final UnaryOperator<FullHttpRequest> interceptor;
+    private final List<UnaryOperator<FullHttpRequest>> interceptors;
 
-    @Deprecated
-    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final UnaryOperator<FullHttpRequest> interceptor) {
+    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final List<UnaryOperator<FullHttpRequest>> interceptors, boolean userAgentEnabled) {
         this.serializer = serializer;
-        this.interceptor = interceptor;
-        this.userAgentEnabled = true;
-    }
-
-    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final UnaryOperator<FullHttpRequest> interceptor, boolean userAgentEnabled) {
-        this.serializer = serializer;
-        this.interceptor = interceptor;
+        this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
     }
 
@@ -76,14 +69,18 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
         try {
             final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
-            final FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
+            FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
-            objects.add(interceptor.apply(request));
+
+            for (final UnaryOperator<FullHttpRequest> interceptor: interceptors ) {
+                request = interceptor.apply(request);
+            }
+            objects.add(request);
 
             System.out.println("----------------------------");
         } catch (Exception ex) {

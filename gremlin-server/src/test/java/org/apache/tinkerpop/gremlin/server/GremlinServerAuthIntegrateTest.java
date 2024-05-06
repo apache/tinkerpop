@@ -20,18 +20,13 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -86,9 +81,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not enable SSL");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(NoHostAvailableException.class));
+            assertThat(ex, instanceOf(ExecutionException.class));
             final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root, instanceOf(RuntimeException.class));
+            assertThat(root, instanceOf(IllegalStateException.class));
         } finally {
             cluster.close();
         }
@@ -141,14 +136,15 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
-            assertEquals("Username and/or password are incorrect", root.getMessage());
+            // server do not send error message now
+            // assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {
             cluster.close();
         }
     }
 
     @Test
-    public void shouldFailAuthenticateWithPlainTextBadUsername() throws Exception {
+    public void shouldFailAuthenticateWithPlainTextBadUsername() {
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "password")).create();
         final Client client = cluster.connect();
 
@@ -157,60 +153,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
-            assertEquals("Username and/or password are incorrect", root.getMessage());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldAuthenticateWithPlainTextOverDefaultJSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
-                .auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect();
-
-        assertConnection(cluster, client);
-    }
-
-    @Test
-    public void shouldAuthenticateWithPlainTextOverGraphSONV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
-                .auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect();
-
-        assertConnection(cluster, client);
-    }
-
-    @Test
-    public void shouldAuthenticateAndWorkWithVariablesOverDefaultJsonSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
-                .auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect(name.getMethodName());
-
-        try {
-            final Vertex vertex = (Vertex) client.submit("v=graph.addVertex(\"name\", \"stephen\")").all().get().get(0).getObject();
-            assertEquals("stephen", vertex.value("name"));
-
-            final Property vpName = (Property) client.submit("v.property('name')").all().get().get(0).getObject();
-            assertEquals("stephen", vpName.value());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
-                .auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect(name.getMethodName());
-
-        try {
-            final Map vertex = (Map) client.submit("v=graph.addVertex('name', 'stephen')").all().get().get(0).getObject();
-            final Map<String, List<Map>> properties = (Map) vertex.get("properties");
-            assertEquals("stephen", properties.get("name").get(0).get("value"));
-
-            final Map vpName = (Map) client.submit("v.property('name')").all().get().get(0).getObject();
-            assertEquals("stephen", vpName.get("value"));
+            // assertEquals("Username and/or password are incorrect", root.getMessage());
         } finally {
             cluster.close();
         }

@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -98,10 +99,8 @@ public class SimpleHttpClient extends AbstractClient {
                             }
                             p.addLast(
                                     new HttpClientCodec(),
-                                    // new HttpObjectAggregator(65536),
                                     new HttpGremlinResponseStreamDecoder(serializer),
-                                    new HttpGremlinRequestEncoder(serializer, RequestInterceptor.NO_OP, false),
-                                    // new HttpGremlinResponseDebugStreamDecoder(),
+                                    new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false),
 
                                     callbackResponseHandler);
                         }

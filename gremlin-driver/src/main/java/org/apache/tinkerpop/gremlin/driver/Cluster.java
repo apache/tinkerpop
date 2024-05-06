@@ -361,7 +361,7 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    UnaryOperator<FullHttpRequest> getRequestInterceptor() {
+    List<UnaryOperator<FullHttpRequest>> getRequestInterceptor() {
         return manager.interceptor;
     }
 
@@ -489,7 +489,7 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private UnaryOperator<FullHttpRequest> interceptor = RequestInterceptor.NO_OP;
+        private List<UnaryOperator<FullHttpRequest>> interceptors = new ArrayList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
 
@@ -735,12 +735,12 @@ public final class Cluster {
          * to its being sent to the server. For websockets the interceptor is only called on the handshake.
          */
         public Builder requestInterceptor(final RequestInterceptor interceptor) {
-            this.interceptor = interceptor;
+            interceptors.add(interceptor);
             return this;
         }
 
         public Builder auth(final Auth auth) {
-            this.interceptor = auth;
+            interceptors.add(auth);
             return this;
         }
 
@@ -842,7 +842,7 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessageV4.Builder> validationRequest;
-        private final UnaryOperator<FullHttpRequest> interceptor;
+        private final List<UnaryOperator<FullHttpRequest>> interceptor;
 
         /**
          * Thread pool for requests.
@@ -874,7 +874,7 @@ public final class Cluster {
 
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.contactPoints = builder.getContactPoints();
-            this.interceptor = builder.interceptor;
+            this.interceptor = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
