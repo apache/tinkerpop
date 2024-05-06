@@ -228,7 +228,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             channelizer.resetChannelHandlerContext();
             assertNull(getUserAgentIfAvailable());
             final Cluster cluster = TestClientFactory.build()
-                    .channelizer(org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.class)
                     .enableUserAgentOnConnect(true)
                     .create();
             final Client client = cluster.connect();
