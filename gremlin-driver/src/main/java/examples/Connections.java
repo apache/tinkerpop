@@ -76,8 +76,6 @@ public class Connections {
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
         Cluster cluster = Cluster.build("localhost").
-            channelizer(Channelizer.HttpChannelizer.class).
-            keepAliveInterval(180000).
             maxConnectionPoolSize(8).
             path("/gremlin").
             port(8182).

@@ -44,7 +44,7 @@ public final class ResultQueue {
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
-    private Object aggregatedResult = null;
+    private final Object aggregatedResult = null;
 
     private final AtomicReference<Throwable> error = new AtomicReference<>();
 

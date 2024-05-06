@@ -30,12 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
 import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 
 /**
@@ -74,7 +70,7 @@ public class DriverRemoteConnection implements RemoteConnection {
                 cluster = conf.containsKey(GREMLIN_REMOTE_DRIVER_CLUSTERFILE) ?
                         Cluster.open(conf.getString(GREMLIN_REMOTE_DRIVER_CLUSTERFILE)) : Cluster.open(conf.subset("clusterConfiguration"));
 
-            client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
+            client = cluster.connect().alias(remoteTraversalSourceName);
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
@@ -87,7 +83,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     private DriverRemoteConnection(final Cluster cluster, final boolean tryCloseCluster, final String remoteTraversalSourceName) {
-        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
+        client = cluster.connect().alias(remoteTraversalSourceName);
         this.remoteTraversalSourceName = remoteTraversalSourceName;
         this.tryCloseCluster = tryCloseCluster;
         attachElements = false;
@@ -102,7 +98,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
         attachElements = conf.containsKey(GREMLIN_REMOTE + "attachment");
 
-        client = cluster.connect(Client.Settings.build().create()).alias(remoteTraversalSourceName);
+        client = cluster.connect().alias(remoteTraversalSourceName);
         tryCloseCluster = false;
         tryCloseClient = true;
         this.conf = Optional.of(conf);
@@ -231,10 +227,7 @@ public class DriverRemoteConnection implements RemoteConnection {
      * If the connection is bound to a session, then get the session identifier from it.
      */
     Optional<String> getSessionId() {
-        if (client instanceof Client.SessionedClient) {
-            Client.SessionedClient c = (Client.SessionedClient) client;
-            return Optional.of(c.getSessionId());
-        }
+        // todo: not implemented
 
         return Optional.empty();
     }
@@ -257,8 +250,9 @@ public class DriverRemoteConnection implements RemoteConnection {
      */
     @Override
     public Transaction tx() {
+        // todo: not implemented
         final DriverRemoteConnection session = new DriverRemoteConnection(
-                client.getCluster().connect(UUID.randomUUID().toString()), remoteTraversalSourceName, true);
+                client.getCluster().connect(), remoteTraversalSourceName, true);
         return new DriverRemoteTransaction(session);
     }
 
