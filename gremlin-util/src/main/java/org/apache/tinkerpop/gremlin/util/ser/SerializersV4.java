@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 
 /**
- * An enum of the default serializers.
+ * An enum of the default serializers available starting in v4.0.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

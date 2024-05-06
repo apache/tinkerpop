@@ -110,7 +110,6 @@ public class MessageSerializerV4Test {
     public void shouldSerializeAndDeserializeResponseWithoutStatusMessage() throws SerializationException {
         final ResponseMessageV4 response = ResponseMessageV4.build()
                 .code(HttpResponseStatus.OK)
-                .statusAttribute("k1", 1)
                 .result(Collections.singletonList(123.3))
                 .create();
 

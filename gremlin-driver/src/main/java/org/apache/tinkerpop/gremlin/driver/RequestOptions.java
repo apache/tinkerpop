@@ -37,7 +37,6 @@ public final class RequestOptions {
     private final Map<String, Object> parameters;
     private final Integer batchSize;
     private final Long timeout;
-    private final String userAgent;
     private final String language;
     private final String materializeProperties;
 
@@ -46,7 +45,6 @@ public final class RequestOptions {
         this.parameters = builder.parameters;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
-        this.userAgent = builder.userAgent;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
     }
@@ -67,10 +65,6 @@ public final class RequestOptions {
         return Optional.ofNullable(timeout);
     }
 
-    public Optional<String> getUserAgent() {
-        return Optional.ofNullable(userAgent);
-    }
-
     public Optional<String> getLanguage() {
         return Optional.ofNullable(language);
     }
@@ -86,7 +80,6 @@ public final class RequestOptions {
         private Map<String, Object> parameters = null;
         private Integer batchSize = null;
         private Long timeout = null;
-        private String userAgent = null;
         private String materializeProperties = null;
         private String language = null;
 
@@ -128,14 +121,6 @@ public final class RequestOptions {
          */
         public Builder timeout(final long timeout) {
             this.timeout = timeout;
-            return this;
-        }
-
-        /**
-         * Sets the userAgent identifier to be sent on the request.
-         */
-        public Builder userAgent(final String userAgent) {
-            this.userAgent = userAgent;
             return this;
         }
 

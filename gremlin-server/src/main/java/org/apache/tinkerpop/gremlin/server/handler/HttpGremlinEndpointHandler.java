@@ -95,7 +95,6 @@ import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.CHUNKING_NOT_SUPPORTED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.FINISHING;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler.RequestState.NOT_STARTED;
@@ -104,7 +103,8 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTr
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeError;
 
 /**
- * Handler that processes HTTP requests to the HTTP Gremlin endpoint.
+ * Handler that processes RequestMessageV4. This handler will attempt to execute the query and stream the results back
+ * in HTTP chunks to the client.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -149,20 +149,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
     }
 
-    /**
-     * Serializers for the response.
-     */
-    private final Map<String, MessageSerializerV4<?>> serializers;
-
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
     private final Settings settings;
 
-    public HttpGremlinEndpointHandler(final Map<String, MessageSerializerV4<?>> serializers,
-                                      final GremlinExecutor gremlinExecutor,
+    public HttpGremlinEndpointHandler(final GremlinExecutor gremlinExecutor,
                                       final GraphManager graphManager,
                                       final Settings settings) {
-        this.serializers = serializers;
         this.gremlinExecutor = gremlinExecutor;
         this.graphManager = graphManager;
         this.settings = settings;
@@ -170,16 +163,15 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RequestMessageV4 requestMessage) {
-        Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
-        final RequestState requestState = NOT_STARTED;
+        final Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
 
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
-                gremlinExecutor.getScheduledExecutorService(), requestState);
+                gremlinExecutor.getScheduledExecutorService(), NOT_STARTED);
 
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
+        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -435,7 +427,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // it needs to be released here
                 if (chunk != null) chunk.release();
             }
-            sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
+            sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "");
             return;
         }
 
@@ -516,7 +508,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
 
                     if (!hasMore) {
-                        sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "OK");
+                        sendTrailingHeaders(nettyContext, HttpResponseStatus.OK, "");
                     }
                 }
             } else {
@@ -561,15 +553,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 final ResponseMessageV4.Builder builder = ResponseMessageV4.build().result(aggregate);
 
                 // need to put status in last message
-                if (ctx.getRequestState() == FINISHING || ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                    builder.code(HttpResponseStatus.OK).statusMessage("OK");
+                if (ctx.getRequestState() == FINISHING) {
+                    builder.code(HttpResponseStatus.OK);
                 }
 
                 responseMessage = builder.create();
-            }
-
-            if (ctx.getRequestState() == CHUNKING_NOT_SUPPORTED) {
-                return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
             }
 
             switch (ctx.getRequestState()) {
@@ -583,7 +571,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     return serializer.serializeResponseAsBinary(ResponseMessageV4.build()
                             .result(aggregate)
                             .code(HttpResponseStatus.OK)
-                            .statusMessage("OK")
                             .create(), nettyContext.alloc());
 
                 case STREAMING:
@@ -593,7 +580,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     return serializer.writeFooter(responseMessage, nettyContext.alloc());
             }
 
-            // todo: just throw?
             return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
 
         } catch (Exception ex) {
@@ -604,7 +590,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     public enum RequestState {
-        CHUNKING_NOT_SUPPORTED,
         NOT_STARTED,
         STREAMING,
         // last portion of data

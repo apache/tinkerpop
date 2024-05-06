@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -44,15 +43,10 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<GraphBinaryMapper> {
     public static final String TOKEN_CUSTOM = "custom";
@@ -140,7 +134,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[] {/*serializeToString ? obtainStringdMimeType() : obtainMimeType()*/MIME_TYPE};
+        return new String[] {MIME_TYPE};
     }
 
     private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
