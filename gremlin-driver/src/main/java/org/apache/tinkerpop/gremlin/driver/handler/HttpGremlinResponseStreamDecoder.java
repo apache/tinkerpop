@@ -64,6 +64,13 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     System.out.println("not first chunk");
                 }
 
+                System.out.println("payload size in bytes: " + ((HttpContent) msg).content().readableBytes());
+                System.out.println(((HttpContent) msg).content());
+
+                if (((HttpContent) msg).content().readableBytes() < 300) {
+                    System.out.println("---");
+                }
+
                 final ResponseMessageV4 chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());
 
                 if (chunk.getResult().getData() != null) {

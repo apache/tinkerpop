@@ -81,26 +81,6 @@ final class Settings {
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
     /**
-     * The username to submit on requests that require authentication.
-     */
-    public String username = null;
-
-    /**
-     * The password to submit on requests that require authentication.
-     */
-    public String password = null;
-
-    /**
-     * The JAAS to submit on requests that require authentication.
-     */
-    public String jaasEntry = null;
-
-    /**
-     * The JAAS protocol to submit on requests that require authentication.
-     */
-    public String protocol = null;
-
-    /**
      * Toggles if user agent should be sent in web socket handshakes.
      */
     public boolean enableUserAgentOnConnect = true;
@@ -139,18 +119,6 @@ final class Settings {
         if (conf.containsKey("workerPoolSize"))
             settings.workerPoolSize = conf.getInt("workerPoolSize");
 
-        if (conf.containsKey("username"))
-            settings.username = conf.getString("username");
-
-        if (conf.containsKey("password"))
-            settings.password = conf.getString("password");
-
-        if (conf.containsKey("jaasEntry"))
-            settings.jaasEntry = conf.getString("jaasEntry");
-
-        if (conf.containsKey("protocol"))
-            settings.protocol = conf.getString("protocol");
-
         if (conf.containsKey("enableUserAgentOnConnect"))
             settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
 
@@ -176,9 +144,6 @@ final class Settings {
         final Configuration connectionPoolConf = conf.subset("connectionPool");
         if (IteratorUtils.count(connectionPoolConf.getKeys()) > 0) {
             final ConnectionPoolSettings cpSettings = new ConnectionPoolSettings();
-
-            if (connectionPoolConf.containsKey("channelizer"))
-                cpSettings.channelizer = connectionPoolConf.getString("channelizer");
 
             if (connectionPoolConf.containsKey("enableSsl"))
                 cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
@@ -232,9 +197,6 @@ final class Settings {
 
             if (connectionPoolConf.containsKey("resultIterationBatchSize"))
                 cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
-
-            if (connectionPoolConf.containsKey("keepAliveInterval"))
-                cpSettings.keepAliveInterval = connectionPoolConf.getLong("keepAliveInterval");
 
             if (connectionPoolConf.containsKey("validationRequest"))
                 cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
@@ -320,12 +282,6 @@ final class Settings {
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
 
         /**
-         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to
-         * zero to disable this feature.
-         */
-        public long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-
-        /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
          * is 3000.
          */
@@ -357,16 +313,9 @@ final class Settings {
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
 
         /**
-         * The constructor for the channel that connects to the server. This value should be the fully qualified
-         * class name of a Gremlin Driver {@link Channelizer} implementation.  By default this value is set to
-         * {@link Channelizer.HttpChannelizer}.
-         */
-        public String channelizer = Channelizer.HttpChannelizer.class.getName();
-
-        /**
          * A valid Gremlin script that can be used to test remote operations.
          */
-        public String validationRequest = "''";
+        public String validationRequest = "g.inject(0)";
 
         /**
          * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket

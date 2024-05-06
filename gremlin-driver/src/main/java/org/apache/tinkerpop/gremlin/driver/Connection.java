@@ -49,7 +49,6 @@ final class Connection {
     public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
-    public static final long KEEP_ALIVE_INTERVAL = 180000;
     public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
@@ -70,7 +69,6 @@ final class Connection {
      * This boolean guards the replace of the connection and ensures that it only occurs once.
      */
     public final AtomicBoolean isBeingReplaced = new AtomicBoolean(false);
-    private final AtomicReference<Class<Channelizer>> channelizerClass = new AtomicReference<>(null);
 
     private final String connectionLabel;
 
@@ -93,11 +91,7 @@ final class Connection {
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         try {
-            if (channelizerClass.get() == null) {
-                channelizerClass.compareAndSet(null, (Class<Channelizer>) Class.forName(cluster.connectionPoolSettings().channelizer));
-            }
-
-            channelizer = channelizerClass.get().newInstance();
+            channelizer = new Channelizer.HttpChannelizer();
             channelizer.init(this);
             b.channel(NioSocketChannel.class).handler(channelizer);
 
@@ -122,7 +116,7 @@ final class Connection {
                     thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
                 }
             });
-
+            System.out.println("Created new connection"); // !!!
             logger.info("Created new connection for {}", uri);
         } catch (Exception ex) {
             throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);

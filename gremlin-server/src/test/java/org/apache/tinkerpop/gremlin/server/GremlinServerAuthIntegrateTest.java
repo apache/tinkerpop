@@ -18,16 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
-import org.ietf.jgss.GSSException;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import static org.apache.tinkerpop.gremlin.driver.Auth.basic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -55,7 +56,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         authSettings.authenticator = SimpleAuthenticator.class.getName();
 
         // use a credentials graph with two users in it: stephen/password and marko/rainbow-dash
-        final Map<String,Object> authConfig = new HashMap<>();
+        final Map<String, Object> authConfig = new HashMap<>();
         authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
 
         authSettings.config = authConfig;
@@ -84,7 +85,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         try {
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not enable SSL");
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             assertThat(ex, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(RuntimeException.class));
@@ -95,7 +96,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateWithPlainText() throws Exception {
-        final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
+        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
         final Client client = cluster.connect();
 
         assertConnection(cluster, client);
@@ -105,21 +106,21 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     public void shouldAuthenticateOverSslWithPlainText() throws Exception {
         final Cluster cluster = TestClientFactory.build()
                 .enableSsl(true).sslSkipCertValidation(true)
-                .credentials("stephen", "password").create();
+                .auth(basic("stephen", "password")).create();
         final Client client = cluster.connect();
 
         assertConnection(cluster, client);
     }
 
     @Test
-    public void shouldFailAuthenticateWithPlainTextNoCredentials() throws Exception {
+    public void shouldFailAuthenticateWithPlainTextNoCredentials() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
         try {
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not provide credentials");
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
 
             // depending on the configuration of the system environment you might get either of these
@@ -130,14 +131,14 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void shouldFailAuthenticateWithPlainTextBadPassword() throws Exception {
-        final Cluster cluster = TestClientFactory.build().credentials("stephen", "bad").create();
+    public void shouldFailAuthenticateWithPlainTextBadPassword() {
+        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "bad")).create();
         final Client client = cluster.connect();
 
         try {
             client.submit("1+1").all().get();
             fail("This should not succeed as the client did not provide valid credentials");
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
             assertEquals("Username and/or password are incorrect", root.getMessage());
@@ -148,12 +149,12 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldFailAuthenticateWithPlainTextBadUsername() throws Exception {
-        final Cluster cluster = TestClientFactory.build().credentials("marko", "password").create();
+        final Cluster cluster = TestClientFactory.build().auth(basic("marko", "password")).create();
         final Client client = cluster.connect();
 
         try {
             client.submit("1+1").all().get();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
             assertEquals("Username and/or password are incorrect", root.getMessage());
@@ -165,7 +166,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldAuthenticateWithPlainTextOverDefaultJSONSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
-                .credentials("stephen", "password").create();
+                .auth(basic("stephen", "password")).create();
         final Client client = cluster.connect();
 
         assertConnection(cluster, client);
@@ -174,7 +175,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldAuthenticateWithPlainTextOverGraphSONV4Serialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
-                .credentials("stephen", "password").create();
+                .auth(basic("stephen", "password")).create();
         final Client client = cluster.connect();
 
         assertConnection(cluster, client);
@@ -183,14 +184,14 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverDefaultJsonSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON)
-                .credentials("stephen", "password").create();
+                .auth(basic("stephen", "password")).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
             final Vertex vertex = (Vertex) client.submit("v=graph.addVertex(\"name\", \"stephen\")").all().get().get(0).getObject();
             assertEquals("stephen", vertex.value("name"));
 
-            final Property vpName = (Property)client.submit("v.property('name')").all().get().get(0).getObject();
+            final Property vpName = (Property) client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.value());
         } finally {
             cluster.close();
@@ -200,7 +201,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV4Serialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4_UNTYPED)
-                .credentials("stephen", "password").create();
+                .auth(basic("stephen", "password")).create();
         final Client client = cluster.connect(name.getMethodName());
 
         try {
@@ -208,7 +209,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             final Map<String, List<Map>> properties = (Map) vertex.get("properties");
             assertEquals("stephen", properties.get("name").get(0).get("value"));
 
-            final Map vpName = (Map)client.submit("v.property('name')").all().get().get(0).getObject();
+            final Map vpName = (Map) client.submit("v.property('name')").all().get().get(0).getObject();
             assertEquals("stephen", vpName.get("value"));
         } finally {
             cluster.close();

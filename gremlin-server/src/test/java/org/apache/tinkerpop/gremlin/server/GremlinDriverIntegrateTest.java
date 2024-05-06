@@ -23,7 +23,6 @@ import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
@@ -191,7 +190,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger httpRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                channelizer(Channelizer.HttpChannelizer.class).
                 requestInterceptor(r -> {
                     httpRequests.incrementAndGet();
                     return r;
@@ -216,7 +214,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).maxConnectionPoolSize(1).
-                handshakeInterceptor(r -> {
+                requestInterceptor(r -> {
             websocketHandshakeRequests.incrementAndGet();
             return r;
         }).create();
@@ -291,14 +289,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Ignore("websockets test")
     @Test
     public void shouldKeepAliveForWebSockets() throws Exception {
         // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
         // complicate the assertion logic
         final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).
-                maxConnectionPoolSize(1).
-                keepAliveInterval(1002).create();
+                maxConnectionPoolSize(1).create();
         try {
             final Client client = cluster.connect();
 
@@ -323,14 +321,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Ignore("websockets test")
     @Test
     public void shouldKeepAliveForWebSocketsWithNoInFlightRequests() throws Exception {
         // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
         // complicate the assertion logic
         final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).
-                maxConnectionPoolSize(1).
-                keepAliveInterval(1002).create();
+                maxConnectionPoolSize(1).create();
         try {
             final Client client = cluster.connect();
 

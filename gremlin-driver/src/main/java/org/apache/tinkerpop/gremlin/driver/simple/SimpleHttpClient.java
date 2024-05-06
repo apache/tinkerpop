@@ -23,7 +23,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.apache.tinkerpop.gremlin.driver.HandshakeInterceptor;
+import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
@@ -100,7 +100,7 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpClientCodec(),
                                     // new HttpObjectAggregator(65536),
                                     new HttpGremlinResponseStreamDecoder(serializer),
-                                    new HttpGremlinRequestEncoder(serializer, HandshakeInterceptor.NO_OP, false),
+                                    new HttpGremlinRequestEncoder(serializer, RequestInterceptor.NO_OP, false),
                                     // new HttpGremlinResponseDebugStreamDecoder(),
 
                                     callbackResponseHandler);

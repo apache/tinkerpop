@@ -34,6 +34,14 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.netty.handler.codec.http.HttpClientCodec.DEFAULT_FAIL_ON_MISSING_RESPONSE;
+import static io.netty.handler.codec.http.HttpClientCodec.DEFAULT_PARSE_HTTP_AFTER_CONNECT_REQUEST;
+import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS;
+import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_INITIAL_BUFFER_SIZE;
+import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_MAX_HEADER_SIZE;
+import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_MAX_INITIAL_LINE_LENGTH;
+import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_VALIDATE_HEADERS;
+
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
  * used by the client to connect and send message to Gremlin Server.
@@ -172,7 +180,10 @@ public interface Channelizer extends ChannelHandler {
             if (!supportsSsl() && "https".equalsIgnoreCase(scheme))
                 throw new IllegalStateException("To use https scheme ensure that enableSsl is set to true in configuration");
 
-            final HttpClientCodec handler = new HttpClientCodec();
+            final HttpClientCodec handler = new HttpClientCodec(DEFAULT_MAX_INITIAL_LINE_LENGTH, DEFAULT_MAX_HEADER_SIZE,
+                    1024 * 1024, DEFAULT_FAIL_ON_MISSING_RESPONSE,
+                    DEFAULT_VALIDATE_HEADERS, DEFAULT_INITIAL_BUFFER_SIZE, DEFAULT_PARSE_HTTP_AFTER_CONNECT_REQUEST,
+                    DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS, false);
 
             pipeline.addLast(PIPELINE_HTTP_CODEC, handler);
             pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);

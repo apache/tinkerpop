@@ -323,7 +323,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
                     .exception(footer.getValue2())
                     .create();
 
-        } catch (IOException ex) {
+        } catch (IOException | IndexOutOfBoundsException ex) {
             throw new SerializationException(ex);
         }
     }

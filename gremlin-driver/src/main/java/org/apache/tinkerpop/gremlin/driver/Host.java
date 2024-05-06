@@ -48,8 +48,7 @@ public final class Host {
     Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl,
-                cluster.getChannelizer());
+        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl);
         hostLabel = String.format("Host{address=%s, hostUri=%s}", address, hostUri);
     }
 
@@ -112,13 +111,8 @@ public final class Host {
         makeAvailable();
     }
 
-    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl, final String channelizerClass) {
-        final Channelizer channelizer;
-        try {
-            channelizer = (Channelizer) Class.forName(channelizerClass).newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Invalid Channelizer instance: %s", channelizerClass));
-        }
+    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
+        final Channelizer channelizer = new Channelizer.HttpChannelizer();
 
         try {
             final String scheme = channelizer.getScheme(ssl);

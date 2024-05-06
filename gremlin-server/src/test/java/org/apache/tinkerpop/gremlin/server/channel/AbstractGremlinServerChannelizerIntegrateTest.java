@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.tinkerpop.gremlin.driver.AuthProperties;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
@@ -48,7 +47,6 @@ import java.util.Base64;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.apache.tinkerpop.gremlin.driver.AuthProperties.Property;
 
 abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
@@ -278,11 +276,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
 
         private void setWsClient(final String username, final String password) {
             if (username != null && password != null) {
-                final AuthProperties authProps = new AuthProperties()
-                                                .with(Property.USERNAME, username)
-                                                .with(Property.PASSWORD, password);
-
-                wsCluster = wsBuilder.enableSsl(secure).sslSkipCertValidation(true).authProperties(authProps).create();
                 wsClient = wsCluster.connect();
             } else {
                 wsCluster = wsBuilder.enableSsl(secure).sslSkipCertValidation(true).create();

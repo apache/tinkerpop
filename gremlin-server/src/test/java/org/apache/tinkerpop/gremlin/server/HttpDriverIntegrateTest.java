@@ -81,6 +81,21 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
+    public void shouldHandleObjectBiggerThen8kb() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final Client client = cluster.connect();
+            final List r = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]").all().get();
+            assertEquals(200000, ((Result) r.get(0)).getString().length());
+            assertEquals(100000, ((Result) r.get(1)).getString().length());
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldSubmitBytecodeWithGraphBinary() {
         final Cluster cluster = TestClientFactory.build().create();
         try {

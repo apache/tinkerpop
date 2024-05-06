@@ -163,7 +163,6 @@ public final class Cluster {
                 .port(settings.port)
                 .path(settings.path)
                 .enableSsl(settings.connectionPool.enableSsl)
-                .keepAliveInterval(settings.connectionPool.keepAliveInterval)
                 .keyStore(settings.connectionPool.keyStore)
                 .keyStorePassword(settings.connectionPool.keyStorePassword)
                 .keyStoreType(settings.connectionPool.keyStoreType)
@@ -177,7 +176,6 @@ public final class Cluster {
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
                 .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
-                .channelizer(settings.connectionPool.channelizer)
                 .maxContentLength(settings.connectionPool.maxContentLength)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
@@ -185,15 +183,6 @@ public final class Cluster {
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .validationRequest(settings.connectionPool.validationRequest);
-
-        if (settings.username != null && settings.password != null)
-            builder.credentials(settings.username, settings.password);
-
-        if (settings.jaasEntry != null)
-            builder.jaasEntry(settings.jaasEntry);
-
-        if (settings.protocol != null)
-            builder.protocol(settings.protocol);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -344,37 +333,6 @@ public final class Cluster {
     }
 
     /**
-     * Gets the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
-     */
-    public String getChannelizer() {
-        return manager.connectionPoolSettings.channelizer;
-    }
-
-    /**
-     * Gets time in milliseconds to wait between retries when attempting to reconnect to a dead host.
-     */
-    public int getReconnectInterval() {
-        return manager.connectionPoolSettings.reconnectInterval;
-    }
-
-    /**
-     * Gets time in milliseconds to wait after the last message is sent over a connection before sending a keep-alive
-     * message to the server.
-     */
-    public long getKeepAliveInterval() {
-        return manager.connectionPoolSettings.keepAliveInterval;
-    }
-
-    /**
-     * Gets time duration of time in milliseconds provided for connection setup to complete which includes WebSocket
-     * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not complete
-     * by then.
-     */
-    public long getConnectionSetupTimeout() {
-        return manager.connectionPoolSettings.connectionSetupTimeoutMillis;
-    }
-
-    /**
      * Specifies the load balancing strategy to use on the client side.
      */
     public Class<? extends LoadBalancingStrategy> getLoadBalancingStrategy() {
@@ -425,10 +383,6 @@ public final class Cluster {
 
     LoadBalancingStrategy loadBalancingStrategy() {
         return manager.loadBalancingStrategy;
-    }
-
-    AuthProperties authProperties() {
-        return manager.authProps;
     }
 
     RequestMessageV4.Builder validationRequest() {
@@ -522,8 +476,6 @@ public final class Cluster {
         private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
-        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-        private String channelizer = Channelizer.HttpChannelizer.class.getName();
         private boolean enableSsl = false;
         private String keyStore = null;
         private String keyStorePassword = null;
@@ -537,8 +489,7 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private UnaryOperator<FullHttpRequest> interceptor = HandshakeInterceptor.NO_OP;
-        private AuthProperties authProps = new AuthProperties();
+        private UnaryOperator<FullHttpRequest> interceptor = RequestInterceptor.NO_OP;
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
 
@@ -619,15 +570,6 @@ public final class Cluster {
          */
         public Builder sslContext(final SslContext sslContext) {
             this.sslContext = sslContext;
-            return this;
-        }
-
-        /**
-         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to
-         * zero to disable this feature.
-         */
-        public Builder keepAliveInterval(final long keepAliveInterval) {
-            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -762,21 +704,6 @@ public final class Cluster {
         }
 
         /**
-         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
-         */
-        public Builder channelizer(final String channelizerClass) {
-            this.channelizer = channelizerClass;
-            return this;
-        }
-
-        /**
-         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
-         */
-        public Builder channelizer(final Class channelizerClass) {
-            return channelizer(channelizerClass.getName());
-        }
-
-        /**
          * Specify a valid Gremlin script that can be used to test remote operations. This script should be designed
          * to return quickly with the least amount of overhead possible. By default, the script sends an empty string.
          * If the graph does not support that sort of script because it requires all scripts to include a reference
@@ -804,20 +731,7 @@ public final class Cluster {
         }
 
         /**
-         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
-         * to its being sent to the server.
-         * @deprecated As of release 3.6.6, replaced with {@link #requestInterceptor(RequestInterceptor)}.
-         */
-        @Deprecated
-        public Builder handshakeInterceptor(final HandshakeInterceptor interceptor) {
-            // when this deprecated method is removed, the interceptor can have its type promoted from
-            // UnaryOperator<FullHttpRequest> to RequestInterceptor
-            this.interceptor = interceptor;
-            return this;
-        }
-
-        /**
-         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
+         * Specifies an {@link RequestInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
          * to its being sent to the server. For websockets the interceptor is only called on the handshake.
          */
         public Builder requestInterceptor(final RequestInterceptor interceptor) {
@@ -825,36 +739,8 @@ public final class Cluster {
             return this;
         }
 
-        /**
-         * Specifies parameters for authentication to Gremlin Server.
-         */
-        public Builder authProperties(final AuthProperties authProps) {
-            this.authProps = authProps;
-            return this;
-        }
-
-        /**
-         * Sets the {@link AuthProperties.Property#USERNAME} and {@link AuthProperties.Property#PASSWORD} properties
-         * for authentication to Gremlin Server.
-         */
-        public Builder credentials(final String username, final String password) {
-            authProps = authProps.with(AuthProperties.Property.USERNAME, username).with(AuthProperties.Property.PASSWORD, password);
-            return this;
-        }
-
-        /**
-         * Sets the {@link AuthProperties.Property#PROTOCOL} properties for authentication to Gremlin Server.
-         */
-        public Builder protocol(final String protocol) {
-            this.authProps = authProps.with(AuthProperties.Property.PROTOCOL, protocol);
-            return this;
-        }
-
-        /**
-         * Sets the {@link AuthProperties.Property#JAAS_ENTRY} properties for authentication to Gremlin Server.
-         */
-        public Builder jaasEntry(final String jaasEntry) {
-            this.authProps = authProps.with(AuthProperties.Property.JAAS_ENTRY, jaasEntry);
+        public Builder auth(final Auth auth) {
+            this.interceptor = auth;
             return this;
         }
 
@@ -954,7 +840,6 @@ public final class Cluster {
         private final MessageSerializerV4<?> serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
-        private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessageV4.Builder> validationRequest;
         private final UnaryOperator<FullHttpRequest> interceptor;
@@ -988,7 +873,6 @@ public final class Cluster {
             validateBuilder(builder);
 
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
-            this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
             this.interceptor = builder.interceptor;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
@@ -1011,8 +895,6 @@ public final class Cluster {
             connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
             connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
-            connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
-            connectionPoolSettings.channelizer = builder.channelizer;
             connectionPoolSettings.validationRequest = builder.validationRequest;
             connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
 
@@ -1078,13 +960,6 @@ public final class Cluster {
 
             if (builder.connectionSetupTimeoutMillis < 1)
                 throw new IllegalArgumentException("connectionSetupTimeoutMillis must be greater than zero");
-
-            try {
-                Class.forName(builder.channelizer);
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("The channelizer specified [" + builder.channelizer +
-                        "] could not be instantiated - it should be the fully qualified classname of a Channelizer implementation available on the classpath", ex);
-            }
         }
 
         synchronized void init() {
