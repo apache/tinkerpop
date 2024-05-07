@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.DefaultHttpObject;
@@ -29,9 +30,12 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
+import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +44,10 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
     // todo: move out
     public static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
+    public static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
 
     private final MessageSerializerV4<?> serializer;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public HttpGremlinResponseStreamDecoder(MessageSerializerV4<?> serializer) {
         this.serializer = serializer;
@@ -50,18 +56,15 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     @Override
     protected void decode(ChannelHandlerContext ctx, DefaultHttpObject msg, List<Object> out) throws Exception {
         final Attribute<Boolean> isFirstChunk = ((AttributeMap) ctx).attr(IS_FIRST_CHUNK);
+        final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
 
         System.out.println("HttpGremlinResponseStreamDecoder start");
 
         if (msg instanceof HttpResponse) {
-            if (((HttpResponse) msg).status() != HttpResponseStatus.OK && ((HttpResponse) msg).status() != HttpResponseStatus.NO_CONTENT) {
+            responseStatus.set(((HttpResponse) msg).status());
+
+            if (isError(((HttpResponse) msg).status())) {
                 System.out.println("Error: " + ((HttpResponse) msg).status());
-
-                final ResponseMessageV4 response = ResponseMessageV4.build()
-                        .code(((HttpResponse) msg).status())
-                        .create();
-
-                out.add(response);
                 return;
             }
 
@@ -70,6 +73,19 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
         if (msg instanceof HttpContent) {
             try {
+                // with error status we can get json in response
+                // no more chunks expected
+                if (isError(responseStatus.get())) {
+                    final JsonNode node = mapper.readTree(((HttpContent) msg).content().toString(CharsetUtil.UTF_8));
+                    final String message = node.get("message").asText();
+                    final ResponseMessageV4 response = ResponseMessageV4.build()
+                            .code(responseStatus.get()).statusMessage(message)
+                            .create();
+
+                    out.add(response);
+                    return;
+                }
+
                 if (isFirstChunk.get()) {
                     System.out.println("first chunk");
                 } else {
@@ -78,10 +94,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
                 System.out.println("payload size in bytes: " + ((HttpContent) msg).content().readableBytes());
                 System.out.println(((HttpContent) msg).content());
-
-                if (((HttpContent) msg).content().readableBytes() < 300) {
-                    System.out.println("---");
-                }
 
                 final ResponseMessageV4 chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());
 
@@ -110,5 +122,9 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         }
 
         System.out.println("----------------------------");
+    }
+
+    private static boolean isError(final HttpResponseStatus status) {
+        return status != HttpResponseStatus.OK && status != HttpResponseStatus.NO_CONTENT;
     }
 }
