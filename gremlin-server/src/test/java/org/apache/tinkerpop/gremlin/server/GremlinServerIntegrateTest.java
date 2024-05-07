@@ -708,7 +708,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -723,7 +723,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(responses.get(0).getStatus().getMessage(), allOf(startsWith("Evaluation exceeded"), containsString("100 ms")));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -736,7 +736,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((List<Integer>) client.submit("1+1").get(0).getResult().getData()).get(0).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -744,7 +744,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldLoadInitScript() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            assertEquals(2, ((List<Integer>) client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0).intValue());
+            assertEquals(2, ((Integer) (client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 

@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -197,9 +197,9 @@ public class GraphSONMessageSerializerV4Test {
 
         final ResponseMessageV4 toSerialize = ResponseMessageV4.build().result(Collections.singletonList(Color.RED)).code(HttpResponseStatus.OK).create();
         final ByteBuf buffer = serializer.serializeResponseAsBinary(toSerialize, allocator);
-        ResponseResult results = serializer.deserializeBinaryResponse(buffer).getResult();
+        ResponseResultV4 results = serializer.deserializeBinaryResponse(buffer).getResult();
 
-        assertEquals(Color.RED, ((List) results.getData()).get(0));
+        assertEquals(Color.RED, results.getData().get(0));
     }
 
     public static class ColorIoRegistry extends AbstractIoRegistry {
@@ -266,11 +266,11 @@ public class GraphSONMessageSerializerV4Test {
         GraphSONMessageSerializerV4 graphSONMessageSerializerV4 = new GraphSONMessageSerializerV4(builder);
 
         ResponseMessageV4 rm = convert("hello", graphSONMessageSerializerV4);
-        assertEquals(rm.getResult().getData(), "hello");
+        assertEquals(rm.getResult().getData().get(0), "hello");
     }
 
     private ResponseMessageV4 convert(final Object toSerialize, MessageSerializerV4<?> serializer) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
+        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(Collections.singletonList(toSerialize)).create(), allocator);
         return serializer.deserializeBinaryResponse(bb);
     }
 }

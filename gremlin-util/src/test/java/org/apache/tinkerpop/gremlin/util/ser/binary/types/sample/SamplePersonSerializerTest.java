@@ -102,7 +102,7 @@ public class SamplePersonSerializerTest {
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
         final ByteBuf serialized = serializer.serializeResponseAsBinary(
-                ResponseMessageV4.build().result(person).create(), allocator);
+                ResponseMessageV4.build().result(Collections.singletonList(person)).create(), allocator);
 
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(serialized);
 

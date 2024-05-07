@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -63,7 +63,7 @@ public class ResponseMessageSerializerV4 {
         // Wrap netty's buffer
         final Buffer buffer = bufferFactory.create(byteBuf);
 
-        final ResponseResult result = value.getResult();
+        final ResponseResultV4 result = value.getResult();
         final ResponseStatusV4 status = value.getStatus();
 
         try {
