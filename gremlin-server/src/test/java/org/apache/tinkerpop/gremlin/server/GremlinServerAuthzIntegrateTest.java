@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
-import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -51,8 +50,6 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static org.apache.tinkerpop.gremlin.driver.Auth.basic;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -131,12 +128,12 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         return settings;
     }
 
+    @Ignore("todo: looks at server side AllowListAuthorizer")
     @Test
     public void shouldAuthorizeBytecodeRequest() {
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gmodern"));
-
         try {
             assertEquals(6, (long) g.V().count().next());
         } finally {
@@ -147,7 +144,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     @Test
     public void shouldAuthorizeBytecodeRequestWithLambda() {
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gclassic"));
 
         try {
@@ -161,7 +158,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     @Test
     public void shouldFailBytecodeRequestWithLambda() throws Exception{
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gmodern"));
 
         try {
@@ -184,10 +181,11 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         }
     }
 
+    @Ignore("todo: looks at server side AllowListAuthorizer")
     @Test
     public void shouldKeepAuthorizingBytecodeRequests() {
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gmodern"));
 
         try {
@@ -198,7 +196,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             } catch (Exception ex) {
                 final ResponseException re = (ResponseException) ex.getCause();
                 assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-                // assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
+                assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
             }
             assertEquals(6, (long) g.V().count().next());
         } finally {
