@@ -374,7 +374,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
-            final Object result = responseMessage.getResult().getData();
+            final List<Object> result = responseMessage.getResult().getData();
             if (result != null) {
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
             } else {
@@ -472,7 +472,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
             ResponseMessageV4.Builder response = ResponseMessageV4.build()
                     .code(HttpResponseStatus.valueOf((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .result(data.get(SerTokens.TOKEN_RESULT));
+                    .result((List) data.get(SerTokens.TOKEN_RESULT));
 
             if (null != status.get(SerTokens.TOKEN_EXCEPTION)) {
                 response.exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)));

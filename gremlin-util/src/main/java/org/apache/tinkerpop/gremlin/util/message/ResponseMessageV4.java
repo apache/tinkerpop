@@ -22,6 +22,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,10 +34,10 @@ import java.util.Map;
  */
 public final class ResponseMessageV4 {
     private final ResponseStatusV4 responseStatus;
-    private final ResponseResult responseResult;
+    private final ResponseResultV4 responseResult;
 
     private ResponseMessageV4(final ResponseStatusV4 responseStatus,
-                            final ResponseResult responseResult) {
+                            final ResponseResultV4 responseResult) {
         this.responseResult = responseResult;
         this.responseStatus = responseStatus;
     }
@@ -45,7 +46,7 @@ public final class ResponseMessageV4 {
         return responseStatus;
     }
 
-    public ResponseResult getResult() {
+    public ResponseResultV4 getResult() {
         return responseResult;
     }
 
@@ -99,7 +100,7 @@ public final class ResponseMessageV4 {
 
     public final static class Builder {
         private HttpResponseStatus code = null;
-        private Object result = Collections.emptyList();
+        private List<Object> result = Collections.emptyList();
         private String statusMessage = null;
         private String exception = null;
         private Map<String, Object> attributes = Collections.emptyMap();
@@ -127,7 +128,7 @@ public final class ResponseMessageV4 {
             return this;
         }
 
-        public Builder result(final Object result) {
+        public Builder result(final List<Object> result) {
             this.result = result;
             return this;
         }
@@ -138,7 +139,7 @@ public final class ResponseMessageV4 {
         }
 
         public ResponseMessageV4 create() {
-            final ResponseResult responseResult = new ResponseResult(result, metaData);
+            final ResponseResultV4 responseResult = new ResponseResultV4(result, metaData);
             // skip null values
             if (code == null && statusMessage == null) {
                 return new ResponseMessageV4(null, responseResult);
