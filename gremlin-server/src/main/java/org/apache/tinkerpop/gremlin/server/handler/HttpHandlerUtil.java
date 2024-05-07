@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -69,6 +71,20 @@ public class HttpHandlerUtil {
      * @param message The error message to contain the body.
      */
     public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
+        sendError(ctx, status, message, false);
+    }
+
+    /**
+     * Helper method to send errors back as JSON. Only to be used when the RequestMessage couldn't be parsed, because
+     * a proper serialized ResponseMessage should be sent in that case.
+     *
+     * @param ctx           The netty channel context.
+     * @param status        The HTTP error status code.
+     * @param message       The error message to contain the body.
+     * @param closeChannel  Close the netty channel after error message.
+     */
+    public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message,
+                                 final boolean closeChannel ) {
         logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
         errorMeter.mark();
 
@@ -79,7 +95,11 @@ public class HttpHandlerUtil {
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
         HttpUtil.setContentLength(response, response.content().readableBytes());
-        ctx.writeAndFlush(response);
+        if (closeChannel) {
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        } else {
+            ctx.writeAndFlush(response);
+        }
     }
 
     /**

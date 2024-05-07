@@ -18,10 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -29,6 +33,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +42,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_ADDRESS;
@@ -64,7 +70,7 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
             if (!request.headers().contains("Authorization")) {
-                sendError(ctx, msg);
+                sendError(ctx, msg, "Missing or incorrect credentials");
                 return;
             }
 
@@ -72,24 +78,21 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
             final String basic = "Basic ";
             final String authorizationHeader = request.headers().get("Authorization");
             if (!authorizationHeader.startsWith(basic)) {
-                sendError(ctx, msg);
+                sendError(ctx, msg, "Missing or incorrect credentials");
                 return;
             }
             byte[] decodedUserPass = null;
             try {
                 final String encodedUserPass = authorizationHeader.substring(basic.length());
                 decodedUserPass = decoder.decode(encodedUserPass);
-            } catch (IndexOutOfBoundsException iae) {
-                sendError(ctx, msg);
-                return;
-            } catch (IllegalArgumentException iae) {
-                sendError(ctx, msg);
+            } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
+                sendError(ctx, msg, ex);
                 return;
             }
             final String authorization = new String(decodedUserPass, Charset.forName("UTF-8"));
             final String[] split = authorization.split(":");
             if (split.length != 2) {
-                sendError(ctx, msg);
+                sendError(ctx, msg, "Missing or incorrect credentials");
                 return;
             }
 
@@ -112,14 +115,17 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
                             credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);
                 }
             } catch (AuthenticationException ae) {
-                sendError(ctx, msg);
+                sendError(ctx, msg, ae);
             }
         }
     }
 
-    private void sendError(final ChannelHandlerContext ctx, final Object msg) {
-        // Close the connection as soon as the error message is sent.
-        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED)).addListener(ChannelFutureListener.CLOSE);
+    private void sendError(final ChannelHandlerContext ctx, final Object msg, final Throwable t) {
+        sendError(ctx, msg, t.getMessage());
+    }
+
+    private void sendError(final ChannelHandlerContext ctx, final Object msg, final String message) {
+        HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, message, true);
         ReferenceCountUtil.release(msg);
     }
 }
