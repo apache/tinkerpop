@@ -36,6 +36,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -103,7 +104,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     private static final UUID id = UUID.randomUUID();
 
     private static final ResponseMessageV4 response = ResponseMessageV4
-            .build().code(HttpResponseStatus.OK).result(new ReferenceVertex(1, "person"))
+            .build().code(HttpResponseStatus.OK).result(Collections.singletonList(new ReferenceVertex(1, "person")))
             .create();
 
     private static final Bytecode bytecode = new Bytecode();

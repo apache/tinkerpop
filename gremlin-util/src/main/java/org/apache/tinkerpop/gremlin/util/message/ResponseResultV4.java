@@ -18,21 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Data model for the "result" portion of a {@link ResponseMessageV4}.
  */
-public final class ResponseResult {
-    private final Object data;
+public final class ResponseResultV4 {
+    private final List<Object> data;
     private final Map<String, Object> meta;
 
-    public ResponseResult(final Object data, final Map<String, Object> meta) {
+    public ResponseResultV4(final List<Object> data, final Map<String, Object> meta) {
         this.data = data;
         this.meta = meta;
     }
 
-    public Object getData() {
+    public List<Object> getData() {
         return data;
     }
 
