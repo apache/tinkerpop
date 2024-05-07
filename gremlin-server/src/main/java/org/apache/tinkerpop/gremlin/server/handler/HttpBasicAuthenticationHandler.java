@@ -18,9 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -32,16 +30,16 @@ import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_ADDRESS;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_PASSWORD;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphTokens.PROPERTY_USERNAME;
+import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendError;
 
 /**
  * Implements basic HTTP authentication for use with the {@link HttpGremlinEndpointHandler} and HTTP based API calls.
@@ -49,6 +47,7 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.Credenti
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandler {
+    private static final String INCORRECT_CREDENTIALS_MESSAGE = "Missing or incorrect credentials";
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
     private final Settings settings;
 
@@ -64,7 +63,8 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
             if (!request.headers().contains("Authorization")) {
-                sendError(ctx, msg);
+                sendError(ctx, UNAUTHORIZED, INCORRECT_CREDENTIALS_MESSAGE);
+                ReferenceCountUtil.release(msg);
                 return;
             }
 
@@ -72,24 +72,24 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
             final String basic = "Basic ";
             final String authorizationHeader = request.headers().get("Authorization");
             if (!authorizationHeader.startsWith(basic)) {
-                sendError(ctx, msg);
+                sendError(ctx, UNAUTHORIZED, INCORRECT_CREDENTIALS_MESSAGE);
+                ReferenceCountUtil.release(msg);
                 return;
             }
-            byte[] decodedUserPass = null;
+            byte[] decodedUserPass;
             try {
                 final String encodedUserPass = authorizationHeader.substring(basic.length());
                 decodedUserPass = decoder.decode(encodedUserPass);
-            } catch (IndexOutOfBoundsException iae) {
-                sendError(ctx, msg);
-                return;
-            } catch (IllegalArgumentException iae) {
-                sendError(ctx, msg);
+            } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
+                sendError(ctx, UNAUTHORIZED, ex.getMessage());
+                ReferenceCountUtil.release(msg);
                 return;
             }
-            final String authorization = new String(decodedUserPass, Charset.forName("UTF-8"));
+            final String authorization = new String(decodedUserPass, StandardCharsets.UTF_8);
             final String[] split = authorization.split(":");
             if (split.length != 2) {
-                sendError(ctx, msg);
+                sendError(ctx, UNAUTHORIZED, INCORRECT_CREDENTIALS_MESSAGE);
+                ReferenceCountUtil.release(msg);
                 return;
             }
 
@@ -112,14 +112,9 @@ public class HttpBasicAuthenticationHandler extends AbstractAuthenticationHandle
                             credentials.get(PROPERTY_USERNAME), address, authClassParts[authClassParts.length - 1]);
                 }
             } catch (AuthenticationException ae) {
-                sendError(ctx, msg);
+                sendError(ctx, UNAUTHORIZED, ae.getMessage());
+                ReferenceCountUtil.release(msg);
             }
         }
-    }
-
-    private void sendError(final ChannelHandlerContext ctx, final Object msg) {
-        // Close the connection as soon as the error message is sent.
-        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED)).addListener(ChannelFutureListener.CLOSE);
-        ReferenceCountUtil.release(msg);
     }
 }
