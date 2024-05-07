@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
@@ -69,7 +69,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     ResponseException.class,
                     RequestMessageV4.class,
                     ResponseMessageV4.class,
-                    ResponseResult.class,
+                    ResponseResultV4.class,
                     ResponseStatusV4.class,
                     GraphSONMessageSerializerV4.class,
                     GraphSONUntypedMessageSerializerV4.class,
