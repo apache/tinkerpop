@@ -30,11 +30,10 @@ import { TraversalStrategies } from '../process/traversal-strategy.js';
 export class Graph {
   /**
    * Returns the graph traversal source.
-   * @param {Function} [traversalSourceClass] The constructor to use for the {@code GraphTraversalSource} instance.
-   * @returns {GraphTraversalSource}
+   * @param TraversalSourceClass The constructor to use for the {@code GraphTraversalSource} instance.
    * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
    */
-  traversal(TraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource) {
+  traversal(TraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource): GraphTraversalSource {
     return new TraversalSourceClass(this, new TraversalStrategies());
   }
 
@@ -43,27 +42,32 @@ export class Graph {
   }
 }
 
-class Element {
+class Element<TLabel extends string = string, TId = any> {
   constructor(
-    readonly id: string,
-    readonly label: string,
+    readonly id: TId,
+    readonly label: TLabel,
   ) {}
 
   /**
    * Compares this instance to another and determines if they can be considered as equal.
-   * @param {Element} other
-   * @returns {boolean}
    */
-  equals(other: any) {
+  equals(other: any): boolean {
     return other instanceof Element && this.id === other.id;
   }
 }
 
-export class Vertex<T extends Record<string, any> = Record<string, any>> extends Element {
+export class Vertex<
+  TLabel extends string = string,
+  TProperties extends Record<string, any> = Record<string, any>,
+  TId = number,
+  TVertexProperties = {
+    [P in keyof TProperties]: P extends string ? VertexProperties<P, TProperties[P]> : never;
+  },
+> extends Element<TLabel, TId> {
   constructor(
-    id: string,
-    label: string,
-    readonly properties?: T,
+    id: TId,
+    label: TLabel,
+    readonly properties?: TVertexProperties,
   ) {
     super(id, label);
   }
@@ -73,20 +77,26 @@ export class Vertex<T extends Record<string, any> = Record<string, any>> extends
   }
 }
 
-export class Edge<T extends Record<string, any> = Record<string, any>> extends Element {
+export class Edge<
+  TOutVertex extends Vertex = Vertex,
+  TLabel extends string = string,
+  TInVertex extends Vertex = Vertex,
+  TProperties extends Record<string, any> = Record<string, any>,
+  TId = number,
+> extends Element<TLabel, TId> {
   constructor(
-    id: string,
-    readonly outV: Element,
-    label: string,
-    readonly inV: Element,
-    readonly properties: T = {} as T,
+    id: TId,
+    readonly outV: TOutVertex,
+    readonly label: TLabel,
+    readonly inV: TInVertex,
+    readonly properties: TProperties = {} as TProperties,
   ) {
     super(id, label);
     if (properties) {
       const keys = Object.keys(properties);
       for (let i = 0; i < keys.length; i++) {
         const k = keys[i];
-        this.properties[k as keyof T] = properties[k].value;
+        this.properties![k as keyof TProperties] = properties[k].value;
       }
     }
   }
@@ -99,14 +109,19 @@ export class Edge<T extends Record<string, any> = Record<string, any>> extends E
   }
 }
 
-export class VertexProperty<T1 = any, T2 = any> extends Element {
+export class VertexProperty<
+  TLabel extends string = string,
+  TValue = any,
+  TProperties extends Record<string, any> | null | undefined = Record<string, any>,
+  TId = any,
+> extends Element<TLabel, TId> {
   readonly key: string;
 
   constructor(
-    id: string,
-    label: string,
-    readonly value: T1,
-    readonly properties: T2,
+    id: TId,
+    label: TLabel,
+    readonly value: TValue,
+    readonly properties?: TProperties,
   ) {
     super(id, label);
     this.value = value;
@@ -118,6 +133,13 @@ export class VertexProperty<T1 = any, T2 = any> extends Element {
     return `vp[${this.label}->${summarize(this.value)}]`;
   }
 }
+
+export type VertexProperties<
+  TLabel extends string = string,
+  TValue = any,
+  TProperties extends Record<string, any> = Record<string, any>,
+  TId = any,
+> = [VertexProperty<TLabel, TValue, TProperties, TId>, ...Array<VertexProperty<TLabel, TValue, TProperties, TId>>];
 
 export class Property<T = any> {
   constructor(
@@ -134,13 +156,10 @@ export class Property<T = any> {
   }
 }
 
+/**
+ * Represents a walk through a graph as defined by a traversal.
+ */
 export class Path {
-  /**
-   * Represents a walk through a graph as defined by a traversal.
-   * @param {Array} labels
-   * @param {Array} objects
-   * @constructor
-   */
   constructor(
     readonly labels: string[],
     readonly objects: any[],
