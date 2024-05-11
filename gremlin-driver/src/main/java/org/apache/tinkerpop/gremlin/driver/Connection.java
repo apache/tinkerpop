@@ -129,9 +129,17 @@ final class Connection {
                 // close did not come from the client side. it means the server closed the channel for some reason.
                 // it's important to distinguish that difference in debugging
                 if (thisConnection.closeFuture.get() == null) {
+
+                    String poolInfo = "";
+                    try {
+                        poolInfo = thisConnection.pool.getPoolInfo(thisConnection);
+                    } catch (final Exception ex) {
+                        // Don't do anything if any exception was caught during the creation of poolInfo.
+                        // Yes swallow this exception
+                    }
                     logger.error(String.format(
                             "Server closed the Connection on channel %s - scheduling removal from %s",
-                            channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
+                            channel.id().asShortText(), poolInfo));
 
                     // delegate the task to scheduler thread and free up the event loop
                     thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));

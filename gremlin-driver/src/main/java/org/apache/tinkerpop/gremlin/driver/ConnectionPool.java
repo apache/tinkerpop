@@ -665,13 +665,22 @@ final class ConnectionPool {
                                    final List<Connection> connections) {
         final int connectionCount = connections.size();
         for (int ix = 0; ix < connectionCount; ix++) {
+            try {
             final Connection c = connections.get(ix);
-            if (c.equals(connectionToCallout))
+                if (c.equals(connectionToCallout)) {
                 sb.append("==> ");
-            else
+                }
+                else {
                 sb.append("> ");
-
+                }
             sb.append(c.getConnectionInfo(false));
+            } catch (final ArrayIndexOutOfBoundsException ex) {
+                // Connections object is a concurrent list being modified by multiple threads.
+                // Can not rely on the size of the list collected at the start of this method.
+                // So in case if the index being sought doesn't exists, then provide the poolInfo
+                // best effort basis.
+                break;
+            }
 
             if (ix < connectionCount - 1)
                 sb.append(System.lineSeparator());
