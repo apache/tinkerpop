@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -663,18 +664,19 @@ final class ConnectionPool {
 
     private void appendConnections(final StringBuilder sb, final Connection connectionToCallout,
                                    final List<Connection> connections) {
-        final int connectionCount = connections.size();
-        for (int ix = 0; ix < connectionCount; ix++) {
-            final Connection c = connections.get(ix);
-            if (c.equals(connectionToCallout))
+        final Iterator<Connection> it = connections.iterator();
+        while(it.hasNext()) {
+            final Connection c = it.next();
+            if (c.equals(connectionToCallout)) {
                 sb.append("==> ");
-            else
+            }
+            else {
                 sb.append("> ");
-
+            }
             sb.append(c.getConnectionInfo(false));
-
-            if (ix < connectionCount - 1)
+            if (it.hasNext()) {
                 sb.append(System.lineSeparator());
+            }
         }
     }
 
