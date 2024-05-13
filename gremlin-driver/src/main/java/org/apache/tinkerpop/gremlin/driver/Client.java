@@ -19,9 +19,6 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -29,11 +26,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,16 +102,7 @@ public abstract class Client {
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
      */
     public Client alias(final String graphOrTraversalSource) {
-        return alias(makeDefaultAliasMap(graphOrTraversalSource));
-    }
-
-    /**
-     * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
-     * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
-     * the created {@code Client}.
-     */
-    public Client alias(final Map<String, String> aliases) {
-        return new AliasClusteredClient(this, aliases);
+        return new AliasClusteredClient(this, graphOrTraversalSource);
     }
 
     /**
@@ -137,7 +127,7 @@ public abstract class Client {
      * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
     }
 
     /**
@@ -179,7 +169,7 @@ public abstract class Client {
      * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
     }
 
     /**
@@ -190,7 +180,7 @@ public abstract class Client {
      * @see #submitAsync(Bytecode)
      */
     public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a sessionless Client created with from the alias() method");
+        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
     }
 
     /**
@@ -296,32 +286,8 @@ public abstract class Client {
     @Deprecated
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
                                                     final Map<String, Object> parameters) {
-        Map<String, String> aliases = null;
-        if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty()) {
-            aliases = makeDefaultAliasMap(graphOrTraversalSource);
-        }
-
-        return submitAsync(gremlin, aliases, parameters);
-    }
-
-    /**
-     * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
-     * write of the request completes.
-     *
-     * @param gremlin    the gremlin script to execute
-     * @param parameters a map of parameters that will be bound to the script on execution
-     * @param aliases    aliases the specified global Gremlin Server variable some other name that then be used in the
-     *                   script where the key is the alias name and the value represents the global variable on the
-     *                   server
-     * @deprecated As of release 3.4.0, replaced by {@link #submitAsync(String, RequestOptions)}.
-     */
-    @Deprecated
-    public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, String> aliases,
-                                                    final Map<String, Object> parameters) {
         final RequestOptions.Builder options = RequestOptions.build();
-        if (aliases != null && !aliases.isEmpty()) {
-            aliases.forEach(options::addAlias);
-        }
+        options.addG(graphOrTraversalSource);
 
         if (parameters != null && !parameters.isEmpty()) {
             parameters.forEach(options::addParameter);
@@ -350,7 +316,7 @@ public abstract class Client {
         // apply settings if they were made available
         options.getTimeout().ifPresent(timeout -> request.addTimeoutMillis(timeout));
         options.getParameters().ifPresent(params -> request.addBindings(params));
-        options.getAliases().ifPresent(aliases -> {if (aliases.get("g") != null) request.addG(aliases.get("g")); });
+        options.getG().ifPresent(g -> request.addG(g));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
 
@@ -400,16 +366,9 @@ public abstract class Client {
         return cluster;
     }
 
-    protected Map<String, String> makeDefaultAliasMap(final String graphOrTraversalSource) {
-        final Map<String, String> aliases = new HashMap<>();
-        aliases.put("g", graphOrTraversalSource);
-        return aliases;
-    }
-
     /**
-     * A {@code Client} implementation that does not operate in a session.  Requests are sent to multiple servers
-     * given a {@link LoadBalancingStrategy}.  Transactions are automatically committed
-     * (or rolled-back on error) after each request.
+     * A {@code Client} implementation.  Requests are sent to multiple servers given a {@link LoadBalancingStrategy}.
+     * Transactions are automatically committed (or rolled-back on error) after each request.
      */
     public final static class ClusteredClient extends Client {
 
@@ -461,17 +420,7 @@ public abstract class Client {
          */
         @Override
         public Client alias(final String graphOrTraversalSource) {
-            final Map<String, String> aliases = new HashMap<>();
-            aliases.put("g", graphOrTraversalSource);
-            return alias(aliases);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Client alias(final Map<String, String> aliases) {
-            return new AliasClusteredClient(this, aliases);
+            return new AliasClusteredClient(this, graphOrTraversalSource);
         }
 
         /**
@@ -550,7 +499,7 @@ public abstract class Client {
             return closing.get();
         }
 
-        private Consumer<Host> initializeConnectionSetupForHost = host -> {
+        private final Consumer<Host> initializeConnectionSetupForHost = host -> {
             try {
                 // hosts that don't initialize connection pools will come up as a dead host.
                 hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this));
@@ -603,13 +552,13 @@ public abstract class Client {
      */
     public static class AliasClusteredClient extends Client {
         private final Client client;
-        private final Map<String, String> aliases = new HashMap<>();
+        private final String graphOrTraversalSource;
         final CompletableFuture<Void> close = new CompletableFuture<>();
 
-        AliasClusteredClient(final Client client, final Map<String, String> aliases) {
+        AliasClusteredClient(final Client client, final String graphOrTraversalSource) {
             super(client.cluster);
             this.client = client;
-            this.aliases.putAll(aliases);
+            this.graphOrTraversalSource = graphOrTraversalSource;
         }
 
         @Override
@@ -642,17 +591,7 @@ public abstract class Client {
         public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
             final RequestMessageV4.Builder builder = RequestMessageV4.from(msg);
 
-            // only add aliases which aren't already present. if they are present then they represent request level
-            // overrides which should be mucked with
-            // TODO: replaced this with ARGS_G as we don't allow a map of aliases anymore.
-//            if (!aliases.isEmpty()) {
-//                final Map original = (Map) msg.getArgs().getOrDefault(Tokens.ARGS_ALIASES, Collections.emptyMap());
-//                aliases.forEach((k, v) -> {
-//                    if (!original.containsKey(k))
-//                        builder.addArg(Tokens.ARGS_ALIASES, aliases);
-//                });
-//            }
-            builder.addG(aliases.get("g"));
+            builder.addG(graphOrTraversalSource);
 
             return super.submitAsync(builder.create());
         }
@@ -675,9 +614,7 @@ public abstract class Client {
         @Override
         public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-//            TODO: aliases not supported. replace with ARG_G.
-//            if (!aliases.isEmpty())
-//                builder.addArg(Tokens.ARGS_ALIASES, aliases);
+            builder.addG(graphOrTraversalSource);
 
             return client.buildMessage(builder);
         }
@@ -720,9 +657,9 @@ public abstract class Client {
          * {@inheritDoc}
          */
         @Override
-        public Client alias(final Map<String, String> aliases) {
+        public Client alias(final String graphOrTraversalSource) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-            return new AliasClusteredClient(client, aliases);
+            return new AliasClusteredClient(client, graphOrTraversalSource);
         }
     }
 }

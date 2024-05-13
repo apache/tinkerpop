@@ -273,39 +273,6 @@ final class Connection {
         // guess). that seems to put the executor thread in a monitor state that it doesn't recover from. since all
         // the code in here is behind shutdownInitiated the synchronized doesn't seem necessary
         if (shutdownInitiated.compareAndSet(false, true)) {
-            // the session close message was removed in 3.5.0 after deprecation at 3.3.11. That removal was perhaps
-            // a bit hasty as session semantics may still require this message in certain cases. Until we can look
-            // at this in more detail, it seems best to bring back the old functionality to the driver.
-            // TODO: commented due to not supporting sessions with HTTP.
-            /*if (client instanceof Client.SessionedClient) {
-                final boolean forceClose = client.getSettings().getSession().get().isForceClosed();
-                final RequestMessageV4 closeMessage = client.buildMessage(
-                        RequestMessageV4.build(Tokens.OPS_CLOSE).addArg(Tokens.ARGS_FORCE, forceClose)).create();
-
-                final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
-
-                // TINKERPOP-2822 should investigate this write more carefully to check for sensible behavior
-                // in the event the Channel was not created but we try to send the close message
-                write(closeMessage, closed);
-
-                try {
-                    // make sure we get a response here to validate that things closed as expected.  on error, we'll let
-                    // the server try to clean up on its own.  the primary error here should probably be related to
-                    // protocol issues which should not be something a user has to fuss with.
-                    closed.join().all().get(cluster.getMaxWaitForClose(), TimeUnit.MILLISECONDS);
-                } catch (TimeoutException ex) {
-                    final String msg = String.format(
-                            "Timeout while trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
-                            ((Client.SessionedClient) client).getSessionId());
-                    logger.warn(msg, ex);
-                } catch (Exception ex) {
-                    final String msg = String.format(
-                            "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or expiration.",
-                            ((Client.SessionedClient) client).getSessionId());
-                    logger.warn(msg, ex);
-                }
-            }*/
-
             // take a defensive posture here in the event the channelizer didn't get initialized somehow and a
             // close() on the Connection is still called
             if (channelizer != null)
