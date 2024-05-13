@@ -50,6 +50,21 @@ limitations under the License.
             <artifactId>logback-classic</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.12.720</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- TinkerGraph is an optional dependency that is only required if doing deserialization of Graph instances -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -95,11 +110,6 @@ limitations under the License.
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-core</artifactId>
-			<version>1.12.241</version>
         </dependency>
     </dependencies>
 
