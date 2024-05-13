@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -73,11 +74,12 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
+            request.headers().add(HttpHeaderNames.HOST, ((InetSocketAddress) channelHandlerContext.channel().remoteAddress()).getAddress().getHostAddress());
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
 
-            for (final UnaryOperator<FullHttpRequest> interceptor: interceptors ) {
+            for (final UnaryOperator<FullHttpRequest> interceptor : interceptors) {
                 request = interceptor.apply(request);
             }
             objects.add(request);
