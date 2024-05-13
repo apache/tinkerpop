@@ -89,6 +89,9 @@ final class Connection {
         if (cluster.isClosing())
             throw new IllegalStateException("Cannot open a connection with the cluster after close() is called");
 
+        if (client.isClosing())
+            throw new IllegalStateException("Cannot open a connection with the client after close() is called");
+
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         try {
             channelizer = new Channelizer.HttpChannelizer();
