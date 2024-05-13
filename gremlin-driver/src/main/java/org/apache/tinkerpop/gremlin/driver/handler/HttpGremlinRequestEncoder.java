@@ -86,8 +86,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
             System.out.println("----------------------------");
         } catch (Exception ex) {
-            // todo: correct status code !!!
-            throw new ResponseException(HttpResponseStatus.INTERNAL_SERVER_ERROR, String.format(
+            throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
                     requestMessage, ex));
         }

@@ -153,24 +153,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
-//    @Test
-//    public void shouldFailToUseTx() {
-//        final Cluster cluster = TestClientFactory.build().create();
-//        try {
-//            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-//            final Transaction tx = g.tx();
-//            final GraphTraversalSource gtx = tx.begin();
-//            gtx.inject("1").toList();
-//            fail("Can't use tx() with HTTP");
-//        } catch (Exception ex) {
-//            final Throwable t = ExceptionUtils.getRootCause(ex);
-//            // assertEquals("Cannot use sessions or tx() with HttpChannelizer", t.getMessage());
-//            assertEquals("not implemented", t.getMessage());
-//        } finally {
-//            cluster.close();
-//        }
-//    }
-
     @Test
     public void shouldDeserializeErrorWithGraphBinary() {
         final Cluster cluster = TestClientFactory.build().create();
@@ -185,7 +167,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
-    @Ignore("driver side error")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
