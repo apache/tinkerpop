@@ -91,8 +91,8 @@ public class Sigv4 implements Auth {
             if (!sessionToken.isEmpty()) {
                 fullHttpRequest.headers().add(X_AMZ_SECURITY_TOKEN, sessionToken);
             }
-        } catch (final Throwable t) {
-            throw new RuntimeException(t);
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
         }
         return fullHttpRequest;
     }
@@ -100,8 +100,7 @@ public class Sigv4 implements Auth {
     private SignableRequest<?> toSignableRequest(final FullHttpRequest request)
             throws Exception {
 
-        // make sure the request is not null and contains the minimal required set of information
-        checkNotNull(request, "The request must not be null");
+        // make sure the request contains the minimal required set of information
         checkNotNull(request.uri(), "The request URI must not be null");
         checkNotNull(request.method(), "The request method must not be null");
 
@@ -123,9 +122,7 @@ public class Sigv4 implements Auth {
 
         // convert the parameters to the internal API format
         final URI uri = URI.create(request.uri());
-
-        final String queryStr = uri.getQuery();
-        final Map<String, List<String>> parametersInternal = new HashMap<>(extractParametersFromQueryString(queryStr));
+        final Map<String, List<String>> parametersInternal = extractParametersFromQueryString(uri.getQuery());
 
         // carry over the entity (or an empty entity, if no entity is provided)
         final InputStream content;
@@ -135,16 +132,12 @@ public class Sigv4 implements Auth {
             if (contentBuffer != null && contentBuffer.isReadable()) {
                 hasContent = true;
                 contentBuffer.retain();
-                byte[] bytes = new byte[contentBuffer.readableBytes()];
+                final byte[] bytes = new byte[contentBuffer.readableBytes()];
                 contentBuffer.getBytes(contentBuffer.readerIndex(), bytes);
                 content = new ByteArrayInputStream(bytes);
             } else {
                 content = new StringEntity("").getContent();
             }
-        } catch (UnsupportedEncodingException e) {
-            throw new Exception("Encoding of the input string failed", e);
-        } catch (IOException e) {
-            throw new Exception("IOException while accessing entity content", e);
         } finally {
             if (hasContent) {
                 contentBuffer.release();
@@ -155,7 +148,7 @@ public class Sigv4 implements Auth {
             // try to extract hostname from the uri since hostname was not provided in the header.
             final String authority = uri.getAuthority();
             if (authority == null) {
-                throw new Exception("Unable to identify host information,"
+                throw new IllegalArgumentException("Unable to identify host information,"
                         + " either hostname should be provided in the uri or should be passed as a header");
             }
 
@@ -173,36 +166,37 @@ public class Sigv4 implements Auth {
                 content);
     }
 
-    private Map<String, List<String>> extractParametersFromQueryString(final String queryStr) {
+    private HashMap<String, List<String>> extractParametersFromQueryString(final String queryStr) {
 
-        final Map<String, List<String>> parameters = new HashMap<>();
+        final HashMap<String, List<String>> parameters = new HashMap<>();
+
+        if (queryStr == null) {
+            return parameters;
+        }
 
         // convert the parameters to the internal API format
-        if (queryStr != null) {
-            for (final String queryParam : queryStr.split("&")) {
+        for (final String queryParam : queryStr.split("&")) {
 
-                if (!queryParam.isEmpty()) {
+            if (!queryParam.isEmpty()) {
+                final String[] keyValuePair = queryParam.split("=", 2);
 
-                    final String[] keyValuePair = queryParam.split("=", 2);
+                // parameters are encoded in the HTTP request, we need to decode them here
+                final String key = SdkHttpUtils.urlDecode(keyValuePair[0]);
+                final String value;
 
-                    // parameters are encoded in the HTTP request, we need to decode them here
-                    final String key = SdkHttpUtils.urlDecode(keyValuePair[0]);
-                    final String value;
-
-                    if (keyValuePair.length == 2) {
-                        value = SdkHttpUtils.urlDecode(keyValuePair[1]);
-                    } else {
-                        value = "";
-                    }
-
-                    // insert the parameter key into the map, if not yet present
-                    if (!parameters.containsKey(key)) {
-                        parameters.put(key, new ArrayList<>());
-                    }
-
-                    // append the parameter value to the list for the given key
-                    parameters.get(key).add(value);
+                if (keyValuePair.length == 2) {
+                    value = SdkHttpUtils.urlDecode(keyValuePair[1]);
+                } else {
+                    value = "";
                 }
+
+                // insert the parameter key into the map, if not yet present
+                if (!parameters.containsKey(key)) {
+                    parameters.put(key, new ArrayList<>());
+                }
+
+                // append the parameter value to the list for the given key
+                parameters.get(key).add(value);
             }
         }
 
@@ -215,13 +209,7 @@ public class Sigv4 implements Auth {
             final String resourcePath,
             final Map<String, String> httpHeaders,
             final Map<String, List<String>> httpParameters,
-            final InputStream httpContent) throws Exception {
-
-        checkNotNull(httpMethodName, "Http method name must not be null");
-        checkNotNull(httpEndpointUri, "Http endpoint URI must not be null");
-        checkNotNull(httpHeaders, "Http headers must not be null");
-        checkNotNull(httpParameters, "Http parameters must not be null");
-        checkNotNull(httpContent, "Http content name must not be null");
+            final InputStream httpContent) {
 
         // create the HTTP AWS SDK Signable Request and carry over information
         final DefaultRequest<?> awsRequest = new DefaultRequest<>(NEPTUNE_SERVICE_NAME);
@@ -235,9 +223,9 @@ public class Sigv4 implements Auth {
         return awsRequest;
     }
 
-    private void checkNotNull(final Object obj, final String errMsg) throws Exception {
+    private void checkNotNull(final Object obj, final String errMsg) {
         if (obj == null) {
-            throw new Exception(errMsg);
+            throw new IllegalArgumentException(errMsg);
         }
     }
 }
