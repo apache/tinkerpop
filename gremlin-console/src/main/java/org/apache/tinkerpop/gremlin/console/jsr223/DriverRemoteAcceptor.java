@@ -211,21 +211,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             // TODO: console-specific user agent that isn't the one sent from gremlin-driver.
 
             final ResultSet rs = this.currentClient.submit(gremlin, options.create());
-            final List<Result> results = rs.all().get();
-            final Map<String, Object> statusAttributes = rs.statusAttributes().getNow(null);
 
-            // Check for and print warnings
-            if (null != statusAttributes && statusAttributes.containsKey(Tokens.STATUS_ATTRIBUTE_WARNINGS)) {
-                final Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
-                if (warningAttributeObject instanceof List) {
-                    for (Object warningListItem : (List<?>) warningAttributeObject)
-                        shellEnvironment.errPrintln(String.valueOf(warningListItem));
-                } else {
-                    shellEnvironment.errPrintln(String.valueOf(warningAttributeObject));
-                }
-            }
-
-            return results;
+            return rs.all().get();
         } catch (Exception e) {
             // handle security error as-is and unwrapped
             final Optional<Throwable> throwable = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();

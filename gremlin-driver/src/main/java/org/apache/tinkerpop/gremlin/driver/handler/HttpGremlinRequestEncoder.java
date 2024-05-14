@@ -62,8 +62,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
         if (requestMessage.getField("gremlin") instanceof Bytecode &&
                 !mimeType.equals(SerTokens.MIME_GRAPHSON_V4) &&
                 !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V4)) {
-            // todo: correct status code !!!
-            throw new ResponseException(HttpResponseStatus.INTERNAL_SERVER_ERROR, String.format(
+            throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
                     requestMessage, serializer.getClass().getName()));
         }
