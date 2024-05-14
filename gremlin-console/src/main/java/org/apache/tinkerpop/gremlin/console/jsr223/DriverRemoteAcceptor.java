@@ -173,10 +173,9 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
                     throw new RemoteException(String.format("%s - try increasing the timeout with the :remote command", responseException.getMessage()));
                 } else if (responseException.getResponseStatusCode() == HttpResponseStatus.INTERNAL_SERVER_ERROR)
                     throw new RemoteException(String.format(
-                            "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()),
-                            responseException.getRemoteStackTrace().orElse(null));
+                            "Server could not serialize the result requested. Server error - %s. Note that the class must be serializable by the client and server for proper operation.", responseException.getMessage()));
                 else
-                    throw new RemoteException(responseException.getMessage(), responseException.getRemoteStackTrace().orElse(null));
+                    throw new RemoteException(responseException.getMessage());
             } else if (ex.getCause() != null) {
                 final Throwable rootCause = ExceptionUtils.getRootCause(ex);
                 if (rootCause instanceof TimeoutException)

@@ -25,16 +25,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -85,17 +82,11 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         } else {
             // this is a "success" but represents no results otherwise it is an error
             if (statusCode != HttpResponseStatus.NO_CONTENT) {
-                final Map<String, Object> attributes = response.getStatus().getAttributes();
-                final String stackTrace = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) ?
-                        (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
-                final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
-                        (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
                 queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                        exceptions, stackTrace, cleanStatusAttributes(attributes)));
+                        response.getStatus().getException()));
             }
         }
 
-        // todo:
         // as this is a non-PARTIAL_CONTENT code - the stream is done.
         if (statusCode != HttpResponseStatus.PARTIAL_CONTENT) {
             final ResultQueue current = pending.getAndSet(null);
@@ -119,15 +110,5 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // serialization exceptions should not close the channel - that's worth a retry
         if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
             if (ctx.channel().isActive()) ctx.close();
-    }
-
-    // todo: solution is not decided
-    private Map<String, Object> cleanStatusAttributes(final Map<String, Object> statusAttributes) {
-        final Map<String, Object> m = new HashMap<>();
-        statusAttributes.forEach((k, v) -> {
-            if (!k.equals(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) && !k.equals(Tokens.STATUS_ATTRIBUTE_STACK_TRACE))
-                m.put(k, v);
-        });
-        return m;
     }
 }

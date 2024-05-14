@@ -71,12 +71,9 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -476,9 +473,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
 
                 final ResponseException rex = (ResponseException) inner;
-                assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
-                assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-                assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
+                assertEquals("java.lang.ArithmeticException", rex.getRemoteException());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
