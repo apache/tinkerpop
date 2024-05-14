@@ -202,7 +202,10 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
     private List<Result> send(final String gremlin) throws SaslException {
         try {
             final RequestOptions.Builder options = RequestOptions.build();
-            aliases.forEach(options::addAlias);
+            if (aliases.containsKey("g")) {
+                options.addG(aliases.get("g"));
+            }
+
             if (timeout > NO_TIMEOUT)
                 options.timeout(timeout);
 
@@ -216,7 +219,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             if (null != statusAttributes && statusAttributes.containsKey(Tokens.STATUS_ATTRIBUTE_WARNINGS)) {
                 final Object warningAttributeObject = statusAttributes.get(Tokens.STATUS_ATTRIBUTE_WARNINGS);
                 if (warningAttributeObject instanceof List) {
-                    for (Object warningListItem : (List<?>)warningAttributeObject)
+                    for (Object warningListItem : (List<?>) warningAttributeObject)
                         shellEnvironment.errPrintln(String.valueOf(warningListItem));
                 } else {
                     shellEnvironment.errPrintln(String.valueOf(warningAttributeObject));
@@ -226,7 +229,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             return results;
         } catch (Exception e) {
             // handle security error as-is and unwrapped
-            final Optional<Throwable> throwable  = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();
+            final Optional<Throwable> throwable = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();
             if (throwable.isPresent())
                 throw (SaslException) throwable.get();
 
