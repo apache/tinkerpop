@@ -92,7 +92,7 @@ public class Sigv4 implements Auth {
                 fullHttpRequest.headers().add(X_AMZ_SECURITY_TOKEN, sessionToken);
             }
         } catch (final Throwable t) {
-            throw new RuntimeException(t.getMessage());
+            throw new RuntimeException(t);
         }
         return fullHttpRequest;
     }
