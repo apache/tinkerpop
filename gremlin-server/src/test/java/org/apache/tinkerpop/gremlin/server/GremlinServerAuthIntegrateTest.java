@@ -29,14 +29,13 @@ import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.tinkerpop.gremlin.driver.Auth.basic;
-import static org.apache.tinkerpop.gremlin.driver.Auth.sigv4;
+import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
+import static org.apache.tinkerpop.gremlin.driver.auth.Auth.sigv4;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;

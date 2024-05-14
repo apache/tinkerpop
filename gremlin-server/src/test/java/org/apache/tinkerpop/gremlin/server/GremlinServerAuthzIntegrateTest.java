@@ -49,7 +49,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static org.apache.tinkerpop.gremlin.driver.Auth.basic;
+import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
