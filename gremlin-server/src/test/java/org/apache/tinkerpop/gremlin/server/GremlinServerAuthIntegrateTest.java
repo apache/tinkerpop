@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import io.netty.handler.codec.http.FullHttpRequest;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
@@ -29,13 +32,20 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.tinkerpop.gremlin.driver.Auth.basic;
+import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
+import static org.apache.tinkerpop.gremlin.driver.auth.Auth.sigv4;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -59,6 +69,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
+            case "shouldPassSigv4ToServer":
+                settings.authentication = new Settings.AuthenticationSettings();
+                break;
             case "shouldAuthenticateOverSslWithPlainText":
             case "shouldFailIfSslEnabledOnServerButNotClient":
                 final Settings.SslSettings sslConfig = new Settings.SslSettings();
@@ -70,6 +83,34 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldPassSigv4ToServer() throws Exception {
+        final AWSCredentialsProvider credentialsProvider = mock(AWSCredentialsProvider.class);
+        final AWSCredentials credentials = mock(AWSCredentials.class);
+        when(credentialsProvider.getCredentials()).thenReturn(credentials);
+        when(credentials.getAWSAccessKeyId()).thenReturn("I am AWSAccessKeyId");
+        when(credentials.getAWSSecretKey()).thenReturn("I am AWSSecretKey");
+
+        final AtomicReference<FullHttpRequest> fullHttpRequest = new AtomicReference<>();
+        final Cluster cluster = TestClientFactory.build()
+                .auth(sigv4("us-west2", credentialsProvider))
+                .requestInterceptor(r -> {
+                    fullHttpRequest.set(r);
+                    return r;
+                })
+                .create();
+        final Client client = cluster.connect();
+        client.submit("1+1").all().get();
+
+        assertNotNull(fullHttpRequest.get().headers().get("X-Amz-Date"));
+        assertThat(fullHttpRequest.get().headers().get("Authorization"),
+                startsWith("AWS4-HMAC-SHA256 Credential=I am AWSAccessKeyId"));
+        assertThat(fullHttpRequest.get().headers().get("Authorization"),
+                containsString("/us-west2/neptune-db/aws4_request, SignedHeaders=accept;content-length;content-type;host;user-agent;x-amz-date, Signature="));
+
+        cluster.close();
     }
 
     @Test
@@ -102,7 +143,10 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Cluster cluster = TestClientFactory.build()
                 .enableSsl(true).sslSkipCertValidation(true)
                 .auth(basic("stephen", "password")).create();
+
         final Client client = cluster.connect();
+
+        client.submit("1+1").all().get();
 
         assertConnection(cluster, client);
     }
