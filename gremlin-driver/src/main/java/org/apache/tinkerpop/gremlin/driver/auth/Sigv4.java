@@ -36,7 +36,6 @@ import org.apache.http.entity.StringEntity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +66,7 @@ public class Sigv4 implements Auth {
     }
 
     @Override
-    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest) {
+    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest)  throws Exception  {
         try {
             // Convert Http request into an AWS SDK signable request
             final SignableRequest<?> awsSignableRequest = toSignableRequest(fullHttpRequest);
@@ -92,13 +91,12 @@ public class Sigv4 implements Auth {
                 fullHttpRequest.headers().add(X_AMZ_SECURITY_TOKEN, sessionToken);
             }
         } catch (final Exception ex) {
-            throw new RuntimeException(ex);
+            throw new SigV4Exception(ex);
         }
         return fullHttpRequest;
     }
 
-    private SignableRequest<?> toSignableRequest(final FullHttpRequest request)
-            throws Exception {
+    private SignableRequest<?> toSignableRequest(final FullHttpRequest request) throws IOException {
 
         // make sure the request contains the minimal required set of information
         checkNotNull(request.uri(), "The request URI must not be null");
@@ -226,6 +224,12 @@ public class Sigv4 implements Auth {
     private void checkNotNull(final Object obj, final String errMsg) {
         if (obj == null) {
             throw new IllegalArgumentException(errMsg);
+        }
+    }
+
+    public static class SigV4Exception extends Exception {
+        public SigV4Exception(Exception cause) {
+                super(cause);
         }
     }
 }

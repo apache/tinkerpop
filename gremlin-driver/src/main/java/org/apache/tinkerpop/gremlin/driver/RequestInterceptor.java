@@ -20,13 +20,11 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 
-import java.util.function.UnaryOperator;
-
 /**
  * This function is called a {@code FullHttpRequest} constructed and allow it to be modified as needed before it is
  * sent to the server. Implementations are supplied to {@link Cluster.Builder#requestInterceptor(RequestInterceptor)}.
  * When this method is called is dependent on the {@link Channelizer} implementation.
  */
-public interface RequestInterceptor extends UnaryOperator<FullHttpRequest> {
-
+public interface RequestInterceptor {
+    FullHttpRequest apply(final FullHttpRequest fullHttpRequest) throws Exception;
 }

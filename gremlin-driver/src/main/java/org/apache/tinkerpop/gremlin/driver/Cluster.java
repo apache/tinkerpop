@@ -18,28 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.nio.NioEventLoopGroup;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,7 +67,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -362,7 +359,7 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    List<UnaryOperator<FullHttpRequest>> getRequestInterceptor() {
+    List<RequestInterceptor> getRequestInterceptor() {
         return manager.interceptor;
     }
 
@@ -490,7 +487,7 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private List<UnaryOperator<FullHttpRequest>> interceptors = new ArrayList<>();
+        private List<RequestInterceptor> interceptors = new ArrayList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
 
@@ -843,7 +840,7 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessageV4.Builder> validationRequest;
-        private final List<UnaryOperator<FullHttpRequest>> interceptor;
+        private final List<RequestInterceptor> interceptor;
 
         /**
          * Thread pool for requests.

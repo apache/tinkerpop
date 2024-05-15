@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -37,7 +38,6 @@ import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 /**
  * Converts {@link RequestMessageV4} to a {@code HttpRequest}.
@@ -47,9 +47,9 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     private final MessageSerializerV4<?> serializer;
     private final boolean userAgentEnabled;
-    private final List<UnaryOperator<FullHttpRequest>> interceptors;
+    private final List<RequestInterceptor> interceptors;
 
-    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final List<UnaryOperator<FullHttpRequest>> interceptors, boolean userAgentEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
@@ -78,7 +78,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
 
-            for (final UnaryOperator<FullHttpRequest> interceptor : interceptors) {
+            for (final RequestInterceptor interceptor : interceptors) {
                 request = interceptor.apply(request);
             }
             objects.add(request);
