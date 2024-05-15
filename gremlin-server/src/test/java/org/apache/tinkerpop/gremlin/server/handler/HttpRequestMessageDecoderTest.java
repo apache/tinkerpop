@@ -88,7 +88,7 @@ public class HttpRequestMessageDecoderTest {
         assertNull(testChannel.readInbound());
 
         ByteBuf out = testChannel.readOutbound();
-        assertTrue(out.toString(CharsetUtil.UTF_8).contains("Mime type mismatch"));
+        assertTrue(out.toString(CharsetUtil.UTF_8).contains("Unable to deserialize request using"));
     }
 
     @Test
@@ -120,10 +120,8 @@ public class HttpRequestMessageDecoderTest {
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
 
         final String gremlin = "g.V().hasLabel('person')";
-        final UUID requestId = UUID.randomUUID();
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"requestId\": \"" + requestId +
                         "\", \"language\":  \"gremlin-groovy\"}",
                 CharsetUtil.UTF_8);
 
@@ -138,7 +136,6 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
         assertEquals(gremlin, decodedRequestMessage.getGremlin());
-        assertEquals(requestId, decodedRequestMessage.getRequestId());
         assertEquals("gremlin-groovy", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
     }
 
@@ -148,10 +145,8 @@ public class HttpRequestMessageDecoderTest {
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
 
         final String gremlin = "g.V(x)";
-        final UUID requestId = UUID.fromString("1e55c495-22d5-4a39-934a-a2744ba010ef");
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"requestId\": \"" + requestId +
                         "\", \"bindings\":{\"x\":\"2\"}" +
                         ", \"language\":  \"gremlin-groovy\"}",
                 CharsetUtil.UTF_8);
@@ -167,37 +162,8 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
         assertEquals(gremlin, decodedRequestMessage.getGremlin());
-        assertEquals(requestId, decodedRequestMessage.getRequestId());
         assertEquals("gremlin-groovy", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
         assertEquals("2", ((Map)decodedRequestMessage.getField(Tokens.ARGS_BINDINGS)).get("x"));
-    }
-
-    @Test
-    public void shouldErrorOnBadRequestWithInvalidUuid() throws SerializationException {
-        final HttpRequestMessageDecoder requestMessageDecoder = new HttpRequestMessageDecoder(serializers);
-        final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
-
-        final String gremlin = "g.V(x)";
-        final String requestId = "notaUUID";
-        final ByteBuf buffer = allocator.buffer();
-        buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"requestId\": \"" + requestId +
-                        "\", \"language\":  \"gremlin-groovy\"}",
-                CharsetUtil.UTF_8);
-
-        final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
-
-        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
-                buffer, headers, new DefaultHttpHeaders());
-
-        testChannel.writeInbound(httpRequest);
-        testChannel.finish();
-
-        assertNull(testChannel.readInbound());
-
-        ByteBuf out = testChannel.readOutbound();
-        assertTrue(out.toString(CharsetUtil.UTF_8).contains("Invalid UUID string"));
     }
 
     @Test
@@ -232,12 +198,10 @@ public class HttpRequestMessageDecoderTest {
         final EmbeddedChannel testChannel = new EmbeddedChannel(new HttpServerCodec(), new HttpObjectAggregator(Integer.MAX_VALUE), requestMessageDecoder);
 
         final String gremlin = "g.V(x)";
-        final UUID requestId = UUID.randomUUID();
         final ByteBuf buffer = allocator.buffer();
-        // requestId contains a typo here as requetId
+        // language contains a typo here as lnguage
         buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"requetId\": \"" + requestId +
-                        "\", \"language\":  \"gremlin-groovy\"}",
+                        "\", \"lnguage\":  \"abc\"}",
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
@@ -250,7 +214,7 @@ public class HttpRequestMessageDecoderTest {
         testChannel.finish();
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
-        assertNotEquals(requestId, decodedRequestMessage.getRequestId());
+        assertNotEquals("abc", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
     }
 
     @Test

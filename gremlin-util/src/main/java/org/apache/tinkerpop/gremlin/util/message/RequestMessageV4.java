@@ -40,7 +40,6 @@ public final class RequestMessageV4 {
     private String gremlinType; // Type information needed to help deserialize "gremlin" into either String/Bytecode.
     private Object gremlin; // Should be either a String or Bytecode type.
     private Map<String, Object> fields;
-    private UUID requestId;
 
     private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
         if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
@@ -61,22 +60,12 @@ public final class RequestMessageV4 {
         }
 
         this.fields.put("gremlinType", gremlinType);
-
-        requestId = UUID.randomUUID();
     }
 
     /**
      * Empty constructor for serialization.
      */
     private RequestMessageV4() { }
-
-    /**
-     * The id of the current request.
-     * Used only in GLV, not transmitted to the server.
-     */
-    public UUID getRequestId() {
-        return requestId;
-    }
 
     public <T> Optional<T> optionalField(final String key) {
         final Object o = fields.get(key);

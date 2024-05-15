@@ -81,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
@@ -402,8 +403,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     private void iterateTraversal(final Context context, MessageSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
             throws InterruptedException {
-        final RequestMessageV4 msg = context.getRequestMessage();
-        logger.debug("Traversal request {} for in thread {}", msg.getRequestId(), Thread.currentThread().getName());
+        final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
+        logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
 
         // compile the traversal - without it getEndStep() has nothing in it
         traversal.applyStrategies();
@@ -583,7 +584,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
 
         } catch (Exception ex) {
-            logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
+            final UUID requestId = ctx.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
+            logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, requestId, ex);
             writeError(ctx, GremlinError.serialization(ex), serializer);
             throw ex;
         }
