@@ -57,13 +57,10 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         final Attribute<Boolean> isFirstChunk = ((AttributeMap) ctx).attr(IS_FIRST_CHUNK);
         final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
 
-        System.out.println("HttpGremlinResponseStreamDecoder start");
-
         if (msg instanceof HttpResponse) {
             responseStatus.set(((HttpResponse) msg).status());
 
             if (isError(((HttpResponse) msg).status())) {
-                System.out.println("Error: " + ((HttpResponse) msg).status());
                 return;
             }
 
@@ -85,26 +82,10 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     return;
                 }
 
-                if (isFirstChunk.get()) {
-                    System.out.println("first chunk");
-                } else {
-                    System.out.println("not first chunk");
-                }
-
-                System.out.println("payload size in bytes: " + ((HttpContent) msg).content().readableBytes());
-                System.out.println(((HttpContent) msg).content());
-
                 final ResponseMessageV4 chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());
-
-                if (chunk.getResult().getData() != null) {
-                    System.out.println("payload size: " + ((List) chunk.getResult().getData()).size());
-                }
 
                 if (msg instanceof LastHttpContent) {
                     final HttpHeaders trailingHeaders = ((LastHttpContent) msg).trailingHeaders();
-
-                    System.out.println("final chunk, trailing headers:");
-                    System.out.println(trailingHeaders);
 
                     if (!Objects.equals(trailingHeaders.get("code"), "200")) {
                         throw new Exception(trailingHeaders.get("message"));
@@ -115,12 +96,9 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
                 out.add(chunk);
             } catch (SerializationException e) {
-                System.out.println("Ex: " + e.getMessage());
                 throw new RuntimeException(e);
             }
         }
-
-        System.out.println("----------------------------");
     }
 
     private static boolean isError(final HttpResponseStatus status) {
