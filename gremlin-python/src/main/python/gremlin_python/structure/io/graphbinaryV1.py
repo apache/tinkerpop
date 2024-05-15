@@ -164,18 +164,27 @@ class GraphBinaryWriter(object):
             to_extend.extend(NULL_BYTES)
             return
 
-        try:
-            t = type(obj)
-            return self.serializers[t].dictify(obj, self, to_extend)
-        except KeyError:
-            for key, serializer in self.serializers.items():
-                if isinstance(obj, key):
-                    return serializer.dictify(obj, self, to_extend)
+        t = type(obj)
+        if t in self._serializer_cache:
+            serializer = self._serializer_cache[t]
+        else:
+            serializer = self.serializers.get(t)
+            if serializer is None:
+                for key, s in self.serializers.items():
+                    if isinstance(obj, key):
+                        serializer = s
+                        break
+                else:
+                    serializer = None
+            self._serializer_cache[t] = serializer
 
+        if serializer:
+            return serializer.dictify(obj, self, to_extend)
+        
         if isinstance(obj, dict):
-            return dict((self.to_dict(k, to_extend), self.to_dict(v, to_extend)) for k, v in obj.items())
+            return {self.to_dict(k, to_extend): self.to_dict(v, to_extend) for k, v in obj.items()}
         elif isinstance(obj, set):
-            return set([self.to_dict(o, to_extend) for o in obj])
+            return {self.to_dict(o, to_extend) for o in obj}
         elif isinstance(obj, list):
             return [self.to_dict(o, to_extend) for o in obj]
         else:
