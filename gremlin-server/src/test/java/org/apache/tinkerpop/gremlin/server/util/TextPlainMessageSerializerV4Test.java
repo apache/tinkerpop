@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
@@ -36,6 +37,7 @@ public class TextPlainMessageSerializerV4Test {
     public void shouldProducePlainText() throws Exception {
         final Map<String, Object> m = new HashMap<>();
         final ResponseMessageV4 msg = ResponseMessageV4.build().
+                code(HttpResponseStatus.OK).
                 result(Arrays.asList(1, new DetachedVertex(100, "person", m), java.awt.Color.RED)).create();
 
         final TextPlainMessageSerializerV4 messageSerializer = new TextPlainMessageSerializerV4();
