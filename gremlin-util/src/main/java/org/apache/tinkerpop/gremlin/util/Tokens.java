@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -47,13 +46,6 @@ public final class Tokens {
      * the Gremlin request sent to the server.
      */
     public static final String ARGS_BINDINGS = "bindings";
-
-    /**
-     * @Deprecated
-     */
-    public static final String ARGS_ALIASES = "aliases";
-
-    public static final String ARGS_FORCE = "force";
 
     /**
      * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
@@ -107,30 +99,4 @@ public final class Tokens {
     public static final String ARGS_USER_AGENT = "userAgent";
 
     public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
-
-    /**
-     * Refers to the hierarchy of exception names for a particular exception thrown on the server.
-     */
-    public static final String STATUS_ATTRIBUTE_EXCEPTIONS = "exceptions";
-
-    /**
-     * Refers to the stacktrace for an exception thrown on the server
-     */
-    public static final String STATUS_ATTRIBUTE_STACK_TRACE = "stackTrace";
-
-    /**
-     * A {@link ResultSet#statusAttributes()} key for user-facing warnings.
-     * <p>
-     * Implementations that set this key should consider using one of
-     * these two recommended value types:
-     * <ul>
-     *     <li>A {@code List} implementation containing
-     *     references for which {@code String#valueOf(Object)} produces
-     *     a meaningful return value.  For example, a list of strings.</li>
-     *     <li>Otherwise, any single non-list object for which
-     *     {@code String#valueOf(Object)} produces a meaningful return value.
-     *     For example, a string.</li>
-     * </ul>
-     */
-    public static final String STATUS_ATTRIBUTE_WARNINGS = "warnings";
 }
