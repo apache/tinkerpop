@@ -16,35 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver;
+package org.apache.tinkerpop.gremlin.driver.auth;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 
 import java.util.Base64;
 
-public abstract class Auth implements RequestInterceptor {
+public class Basic implements Auth {
 
-    public static Auth basic(final String username, final String password) {
-        return new Basic(username, password);
+    private final String username;
+    private final String password;
+
+    public Basic(final String username, final String password) {
+        this.username = username;
+        this.password = password;
     }
 
-    public static class Basic extends Auth {
-
-        private final String username;
-        private final String password;
-
-        private Basic(final String username, final String password ) {
-            this.username = username;
-            this.password = password;
-        }
-
-        @Override
-        public FullHttpRequest apply(FullHttpRequest fullHttpRequest) {
-            final String valueToEncode = username + ":" + password;
-            fullHttpRequest.headers().add(HttpHeaderNames.AUTHORIZATION,
-                    "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes()));
-            return fullHttpRequest;
-        }
+    @Override
+    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest) {
+        final String valueToEncode = username + ":" + password;
+        fullHttpRequest.headers().add(HttpHeaderNames.AUTHORIZATION,
+                "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes()));
+        return fullHttpRequest;
     }
 }

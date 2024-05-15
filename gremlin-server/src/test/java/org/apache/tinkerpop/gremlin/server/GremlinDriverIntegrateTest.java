@@ -71,12 +71,9 @@ import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -210,27 +207,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldInterceptRequestsWithHandshake() throws Exception {
         final int requestsToMake = 32;
-        final AtomicInteger websocketHandshakeRequests = new AtomicInteger(0);
+        final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).maxConnectionPoolSize(1).
                 requestInterceptor(r -> {
-            websocketHandshakeRequests.incrementAndGet();
+            handshakeRequests.incrementAndGet();
             return r;
         }).create();
 
         try {
             final Client client = cluster.connect();
             for (int ix = 0; ix < requestsToMake; ix++) {
-                assertEquals(ix + 1, client.submit(ix + "+1").all().get().get(0).getInt());
+                final List<Result> result = client.submit(ix + "+1").all().get();
+                assertEquals(ix + 1, result.get(0).getInt());
             }
         } finally {
             cluster.close();
         }
 
-        assertEquals(1, websocketHandshakeRequests.get());
+        assertEquals(requestsToMake, handshakeRequests.get());
     }
 
+    @Ignore("Reading for streaming GraphSON is not supported")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
@@ -284,69 +283,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("websockets test")
-    @Test
-    public void shouldKeepAliveForWebSockets() throws Exception {
-        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
-        // complicate the assertion logic
-        final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).
-                maxConnectionPoolSize(1).create();
-        try {
-            final Client client = cluster.connect();
-
-            // fire up lots of requests so as to schedule/deschedule lots of ping jobs
-            for (int ix = 0; ix < 500; ix++) {
-                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            }
-
-            // don't send any messages for a bit so that the driver pings in the background
-            Thread.sleep(3000);
-
-            // make sure no bonus messages sorta fire off once we get back to sending requests
-            for (int ix = 0; ix < 500; ix++) {
-                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            }
-
-            // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            final long messages = logCaptor.getLogs().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
-            assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("websockets test")
-    @Test
-    public void shouldKeepAliveForWebSocketsWithNoInFlightRequests() throws Exception {
-        // keep the connection pool size at 1 to remove the possibility of lots of connections trying to ping which will
-        // complicate the assertion logic
-        final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).
-                maxConnectionPoolSize(1).create();
-        try {
-            final Client client = cluster.connect();
-
-            // forcefully initialize the client to mimic a scenario when client has some active connection with no
-            // in flight requests on them.
-            client.init();
-
-            // don't send any messages for a bit so that the driver pings in the background
-            Thread.sleep(3000);
-
-            // make sure no bonus messages sorta fire off once we get back to sending requests
-            for (int ix = 0; ix < 500; ix++) {
-                assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            }
-
-            // there really shouldn't be more than 3 of these sent. should definitely be at least one though
-            final long messages = logCaptor.getLogs().stream().filter(m -> m.contains("Sending ping frame to the server")).count();
-            assertThat(messages, allOf(greaterThan(0L), lessThanOrEqualTo(3L)));
         } finally {
             cluster.close();
         }
@@ -537,9 +473,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
 
                 final ResponseException rex = (ResponseException) inner;
-                assertEquals("java.lang.ArithmeticException", rex.getRemoteExceptionHierarchy().get().get(0));
-                assertEquals(1, rex.getRemoteExceptionHierarchy().get().size());
-                assertThat(rex.getRemoteStackTrace().get(), containsString("Division by zero"));
+                assertEquals("java.lang.ArithmeticException", rex.getRemoteException());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
