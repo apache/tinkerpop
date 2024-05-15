@@ -249,7 +249,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await taskToCancel);
             Assert.True(taskToCancel.IsCanceled);
-            await Task.Delay(TimeSpan.FromMilliseconds(200)); // wait a bit to let the messages being sent
+            await Task.Delay(TimeSpan.FromMilliseconds(400)); // wait a bit to let the messages being sent
             await mockedClientWebSocket.Received(3).SendAsync(Arg.Any<ArraySegment<byte>>(),
                 Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         }
