@@ -66,7 +66,7 @@ public class Sigv4 implements Auth {
     }
 
     @Override
-    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest)  throws Exception  {
+    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest) {
         try {
             // Convert Http request into an AWS SDK signable request
             final SignableRequest<?> awsSignableRequest = toSignableRequest(fullHttpRequest);
@@ -91,7 +91,7 @@ public class Sigv4 implements Auth {
                 fullHttpRequest.headers().add(X_AMZ_SECURITY_TOKEN, sessionToken);
             }
         } catch (final Exception ex) {
-            throw new SigV4Exception(ex);
+            throw new AuthenticationException(ex);
         }
         return fullHttpRequest;
     }
@@ -224,12 +224,6 @@ public class Sigv4 implements Auth {
     private void checkNotNull(final Object obj, final String errMsg) {
         if (obj == null) {
             throw new IllegalArgumentException(errMsg);
-        }
-    }
-
-    public static class SigV4Exception extends Exception {
-        public SigV4Exception(Exception cause) {
-                super(cause);
         }
     }
 }

@@ -33,4 +33,10 @@ public interface Auth extends RequestInterceptor {
     static Auth sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider, final String serviceName) {
         return new Sigv4(regionName, awsCredentialsProvider, serviceName);
     }
+
+    public class AuthenticationException extends RuntimeException {
+        public AuthenticationException(Exception cause) {
+            super(cause);
+        }
+    }
 }

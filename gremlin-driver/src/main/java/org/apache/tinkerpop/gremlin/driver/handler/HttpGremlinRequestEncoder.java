@@ -30,11 +30,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
+import org.apache.tinkerpop.gremlin.driver.auth.Auth;
+import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -84,9 +87,13 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             objects.add(request);
 
             System.out.println("----------------------------");
-        } catch (Exception ex) {
+        } catch (SerializationException ex) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
+                    requestMessage, ex));
+        } catch (AuthenticationException ex) {
+            throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
+                    "An error occurred during authentication [%s] - it could not be sent to the server - Reason: %s",
                     requestMessage, ex));
         }
     }
