@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -44,49 +43,49 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) {
         return (responseMessage.getStatus().getCode() == HttpResponseStatus.OK)
-                ? convertStringData((List<Object>) responseMessage.getResult().getData(), false, allocator)
+                ? convertStringData(responseMessage.getResult().getData(), false, allocator)
                 : convertErrorString(responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
-    public ByteBuf writeHeader(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) throws SerializationException {
-        return convertStringData((List<Object>) responseMessage.getResult().getData(), false, allocator);
+    public ByteBuf writeHeader(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
+        return convertStringData(responseMessage.getResult().getData(), false, allocator);
     }
 
     @Override
-    public ByteBuf writeChunk(Object aggregate, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeChunk(Object aggregate, ByteBufAllocator allocator) {
         return convertStringData((List<Object>) aggregate, true, allocator);
     }
 
     @Override
-    public ByteBuf writeFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) throws SerializationException {
-        return convertStringData((List<Object>) responseMessage.getResult().getData(), true, allocator);
+    public ByteBuf writeFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
+        return convertStringData(responseMessage.getResult().getData(), true, allocator);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeErrorFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
         return convertErrorString(System.lineSeparator() + responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
-    public ResponseMessageV4 readChunk(ByteBuf byteBuf, boolean isFirstChunk) throws SerializationException {
+    public ResponseMessageV4 readChunk(ByteBuf byteBuf, boolean isFirstChunk) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(final RequestMessageV4 requestMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeRequestAsBinary(final RequestMessageV4 requestMessage, final ByteBufAllocator allocator) {
         throw new UnsupportedOperationException("text/plain does not produce binary");
     }
 
     @Override
-    public RequestMessageV4 deserializeBinaryRequest(final ByteBuf msg) throws SerializationException {
+    public RequestMessageV4 deserializeBinaryRequest(final ByteBuf msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
+    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
@@ -95,7 +94,7 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
         return new String[] { "text/plain" };
     }
 
-    private ByteBuf convertStringData(final List<Object> data, final boolean addStartingSeparator, final ByteBufAllocator allocator) throws SerializationException {
+    private ByteBuf convertStringData(final List<Object> data, final boolean addStartingSeparator, final ByteBufAllocator allocator) {
         final StringBuilder sb = new StringBuilder();
 
         if (addStartingSeparator) sb.append(System.lineSeparator());
@@ -113,7 +112,7 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
         return encodedMessage;
     }
 
-    private ByteBuf convertErrorString(final String error, final ByteBufAllocator allocator) throws SerializationException {
+    private ByteBuf convertErrorString(final String error, final ByteBufAllocator allocator) {
         final ByteBuf encodedMessage = allocator.buffer(error.length());
         encodedMessage.writeCharSequence(error, CharsetUtil.UTF_8);
         return encodedMessage;
