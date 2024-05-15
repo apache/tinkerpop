@@ -119,7 +119,7 @@ class DataType(Enum):
 NULL_BYTES = [DataType.null.value, 0x01]
 
 
-def _make_packer(format_string):
+def _make_packer(format_string: str) -> tuple[callable, callable]:
     packer = struct.Struct(format_string)
     pack = packer.pack
     unpack = lambda s: packer.unpack(s)[0]
