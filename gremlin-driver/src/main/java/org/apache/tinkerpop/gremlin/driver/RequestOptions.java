@@ -41,7 +41,7 @@ public final class RequestOptions {
 
     public static final RequestOptions EMPTY = RequestOptions.build().create();
 
-    private final Map<String,String> aliases;
+    private final String graphOrTraversalSource;
     private final Map<String, Object> parameters;
     private final Integer batchSize;
     private final Long timeout;
@@ -49,7 +49,7 @@ public final class RequestOptions {
     private final String materializeProperties;
 
     private RequestOptions(final Builder builder) {
-        this.aliases = builder.aliases;
+        this.graphOrTraversalSource = builder.graphOrTraversalSource;
         this.parameters = builder.parameters;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
@@ -57,8 +57,8 @@ public final class RequestOptions {
         this.materializeProperties = builder.materializeProperties;
     }
 
-    public Optional<Map<String, String>> getAliases() {
-        return Optional.ofNullable(aliases);
+    public Optional<String> getG() {
+        return Optional.ofNullable(graphOrTraversalSource);
     }
 
     public Optional<Map<String, Object>> getParameters() {
@@ -100,7 +100,7 @@ public final class RequestOptions {
     }
 
     public static final class Builder {
-        private Map<String,String> aliases = null;
+        private String graphOrTraversalSource = null;
         private Map<String, Object> parameters = null;
         private Integer batchSize = null;
         private Long timeout = null;
@@ -110,11 +110,8 @@ public final class RequestOptions {
         /**
          * The aliases to set on the request.
          */
-        public Builder addAlias(final String aliasName, final String actualName) {
-            if (null == aliases)
-                aliases = new HashMap<>();
-
-            aliases.put(aliasName, actualName);
+        public Builder addG(final String graphOrTraversalSource) {
+            this.graphOrTraversalSource = graphOrTraversalSource;
             return this;
         }
 
