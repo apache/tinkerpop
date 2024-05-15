@@ -61,7 +61,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessageV4 requestMessage, final List<Object> objects) throws Exception {
         final String mimeType = serializer.mimeTypesSupported()[0];
-        // only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests
+        // only GraphSON4 and GraphBinary4 recommended for serialization of Bytecode requests
         if (requestMessage.getField("gremlin") instanceof Bytecode &&
                 !mimeType.equals(SerTokens.MIME_GRAPHSON_V4) &&
                 !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V4)) {
@@ -85,8 +85,6 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                 request = interceptor.apply(request);
             }
             objects.add(request);
-
-            System.out.println("----------------------------");
         } catch (SerializationException ex) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",

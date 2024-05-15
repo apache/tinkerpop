@@ -62,23 +62,11 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) {
         final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
         final ResultQueue queue = pending.get();
-        if (response.getResult().getData() != null) {
-            System.out.println("GremlinResponseHandler payload size: " + ((List) response.getResult().getData()).size());
-        }
 
         if (statusCode == HttpResponseStatus.OK || statusCode == HttpResponseStatus.PARTIAL_CONTENT) {
-            final Object data = response.getResult().getData();
-
-            // this is a "result" from the server which is either the result of a script or a
-            // serialized traversal
-            if (data instanceof List) {
-                // unrolls the collection into individual results to be handled by the queue.
-                final List<Object> listToUnroll = (List<Object>) data;
-                listToUnroll.forEach(item -> queue.add(new Result(item)));
-            } else {
-                // since this is not a list it can just be added to the queue
-                queue.add(new Result(response.getResult().getData()));
-            }
+            final List<Object> data = response.getResult().getData();
+            // unrolls the collection into individual results to be handled by the queue.
+            data.forEach(item -> queue.add(new Result(item)));
         } else {
             // this is a "success" but represents no results otherwise it is an error
             if (statusCode != HttpResponseStatus.NO_CONTENT) {
@@ -94,8 +82,6 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
                 current.markComplete(response.getStatus().getAttributes());
             }
         }
-
-        System.out.println("----------------------------");
     }
 
     @Override
