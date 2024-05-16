@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server.util;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.Set;
@@ -71,25 +71,25 @@ public class GremlinError {
     // script errors
     public static GremlinError binding() {
         final String message = String.format("The [%s] message is using one or more invalid binding keys - they must be of type String and cannot be null",
-                Tokens.OPS_EVAL);
+                TokensV4.OPS_EVAL);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     public static GremlinError binding(final Set<String> badBindings) {
         final String message = String.format("The [%s] message supplies one or more invalid parameters key of [%s] - these are reserved names.",
-                Tokens.OPS_EVAL, badBindings);
+                TokensV4.OPS_EVAL, badBindings);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     public static GremlinError binding(final int bindingsCount, final int allowedSize) {
         final String message = String.format("The [%s] message contains %s bindings which is more than is allowed by the server %s configuration",
-                Tokens.OPS_EVAL, bindingsCount, allowedSize);
+                TokensV4.OPS_EVAL, bindingsCount, allowedSize);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     public static GremlinError binding(final String aliased) {
         final String message = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
-                Tokens.ARGS_G, aliased, aliased);
+                TokensV4.ARGS_G, aliased, aliased);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
@@ -97,18 +97,18 @@ public class GremlinError {
 
     public static GremlinError gremlinType() {
         final String message = String.format("A [%s] message requires a gremlin argument that is of type %s.",
-                Tokens.OPS_BYTECODE, Tokens.ARGS_GREMLIN);
+                TokensV4.OPS_BYTECODE, TokensV4.ARGS_GREMLIN);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     public static GremlinError traversalSource() {
-        final String message = String.format("A [%s] message requires a [%s] argument.", Tokens.OPS_BYTECODE, Tokens.ARGS_G);
+        final String message = String.format("A [%s] message requires a [%s] argument.", TokensV4.OPS_BYTECODE, TokensV4.ARGS_G);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     public static GremlinError traversalSource(final String traversalSourceName ) {
         final String message = String.format("The traversal source [%s] for alias [%s] is not configured on the server.",
-                traversalSourceName, Tokens.VAL_TRAVERSAL_SOURCE_ALIAS);
+                traversalSourceName, TokensV4.ARGS_G);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 

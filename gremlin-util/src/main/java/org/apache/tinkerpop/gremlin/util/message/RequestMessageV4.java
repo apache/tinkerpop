@@ -19,14 +19,13 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * The model for a request message in the HTTP body that is sent to the server beginning in 4.0.0.
@@ -51,12 +50,12 @@ public final class RequestMessageV4 {
         this.fields = fields;
 
         if (gremlin instanceof String) {
-            gremlinType = Tokens.OPS_EVAL;
-            this.fields.putIfAbsent(Tokens.ARGS_LANGUAGE, "gremlin-groovy");
+            gremlinType = TokensV4.OPS_EVAL;
+            this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
         } else if (gremlin instanceof Bytecode) {
-            gremlinType = Tokens.OPS_BYTECODE;
+            gremlinType = TokensV4.OPS_BYTECODE;
         } else {
-            gremlinType = Tokens.OPS_INVALID;
+            gremlinType = TokensV4.OPS_INVALID;
         }
 
         this.fields.put("gremlinType", gremlinType);
@@ -137,7 +136,7 @@ public final class RequestMessageV4 {
 
         public Builder addLanguage(final String language) {
             Objects.requireNonNull(language, "language argument cannot be null.");
-            this.fields.put(Tokens.ARGS_LANGUAGE, language);
+            this.fields.put(TokensV4.ARGS_LANGUAGE, language);
             return this;
         }
 
@@ -154,29 +153,29 @@ public final class RequestMessageV4 {
 
         public Builder addG(final String g) {
             Objects.requireNonNull(g, "g argument cannot be null.");
-            this.fields.put(Tokens.ARGS_G, g);
+            this.fields.put(TokensV4.ARGS_G, g);
             return this;
         }
 
         public Builder addChunkSize(final int chunkSize) {
-            this.fields.put(Tokens.ARGS_BATCH_SIZE, chunkSize);
+            this.fields.put(TokensV4.ARGS_BATCH_SIZE, chunkSize);
             return this;
         }
 
         public Builder addMaterializeProperties(final String materializeProps) {
             Objects.requireNonNull(materializeProps, "materializeProps argument cannot be null.");
-            if (!materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS) && !materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+            if (!materializeProps.equals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS) && !materializeProps.equals(TokensV4.MATERIALIZE_PROPERTIES_ALL)) {
                 throw new IllegalArgumentException("materializeProperties argument must be either token or all.");
             }
 
-            this.fields.put(Tokens.ARGS_MATERIALIZE_PROPERTIES, materializeProps);
+            this.fields.put(TokensV4.ARGS_MATERIALIZE_PROPERTIES, materializeProps);
             return this;
         }
 
         public Builder addTimeoutMillis(final long timeout) {
             if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
 
-            this.fields.put(Tokens.TIMEOUT_MS, timeout);
+            this.fields.put(TokensV4.TIMEOUT_MS, timeout);
             return this;
         }
 
@@ -184,7 +183,7 @@ public final class RequestMessageV4 {
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessageV4 create() {
-            this.fields.put(Tokens.ARGS_BINDINGS, bindings);
+            this.fields.put(TokensV4.ARGS_BINDINGS, bindings);
             return new RequestMessageV4(gremlin, fields);
         }
     }

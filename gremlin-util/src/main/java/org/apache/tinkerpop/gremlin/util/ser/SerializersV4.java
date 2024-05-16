@@ -30,22 +30,22 @@ public enum SerializersV4 {
     /**
      * GraphSON 4.0.
      */
-    GRAPHSON(SerTokens.MIME_JSON),
+    GRAPHSON(SerTokensV4.MIME_JSON),
 
     /**
      * GraphSON 4.0 with types.
      */
-    GRAPHSON_V4(SerTokens.MIME_GRAPHSON_V4),
+    GRAPHSON_V4(SerTokensV4.MIME_GRAPHSON_V4),
 
     /**
      * GraphSON 4.0 without types.
      */
-    GRAPHSON_V4_UNTYPED(SerTokens.MIME_GRAPHSON_V4_UNTYPED),
+    GRAPHSON_V4_UNTYPED(SerTokensV4.MIME_GRAPHSON_V4_UNTYPED),
 
     /**
      * GraphBinary 4.0.
      */
-    GRAPHBINARY_V4(SerTokens.MIME_GRAPHBINARY_V4);
+    GRAPHBINARY_V4(SerTokensV4.MIME_GRAPHBINARY_V4);
 
     private String value;
 
@@ -59,12 +59,12 @@ public enum SerializersV4 {
 
     public MessageSerializerV4<?> simpleInstance() {
         switch (value) {
-            case SerTokens.MIME_JSON:
-            case SerTokens.MIME_GRAPHSON_V4:
+            case SerTokensV4.MIME_JSON:
+            case SerTokensV4.MIME_GRAPHSON_V4:
                 return new GraphSONMessageSerializerV4();
-            case SerTokens.MIME_GRAPHSON_V4_UNTYPED:
+            case SerTokensV4.MIME_GRAPHSON_V4_UNTYPED:
                 return new GraphSONUntypedMessageSerializerV4();
-            case SerTokens.MIME_GRAPHBINARY_V4:
+            case SerTokensV4.MIME_GRAPHBINARY_V4:
                 return new GraphBinaryMessageSerializerV4();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);
