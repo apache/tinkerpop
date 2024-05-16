@@ -32,11 +32,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.junit.Test;
@@ -77,7 +77,7 @@ public class HttpRequestMessageDecoderTest {
         final ByteBuf buffer = graphSONSerializer.serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_GRAPHBINARY_V4);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
                 buffer, headers, new DefaultHttpHeaders());
@@ -101,7 +101,7 @@ public class HttpRequestMessageDecoderTest {
         final ByteBuf buffer = graphBinarySerializer.serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_GRAPHBINARY_V4);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
                 buffer, headers, new DefaultHttpHeaders());
@@ -126,7 +126,7 @@ public class HttpRequestMessageDecoderTest {
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
                 buffer, headers, new DefaultHttpHeaders());
@@ -136,7 +136,7 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
         assertEquals(gremlin, decodedRequestMessage.getGremlin());
-        assertEquals("gremlin-groovy", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
+        assertEquals("gremlin-groovy", decodedRequestMessage.getField(TokensV4.ARGS_LANGUAGE));
     }
 
     @Test
@@ -152,7 +152,7 @@ public class HttpRequestMessageDecoderTest {
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -162,8 +162,8 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
         assertEquals(gremlin, decodedRequestMessage.getGremlin());
-        assertEquals("gremlin-groovy", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
-        assertEquals("2", ((Map)decodedRequestMessage.getField(Tokens.ARGS_BINDINGS)).get("x"));
+        assertEquals("gremlin-groovy", decodedRequestMessage.getField(TokensV4.ARGS_LANGUAGE));
+        assertEquals("2", ((Map)decodedRequestMessage.getField(TokensV4.ARGS_BINDINGS)).get("x"));
     }
 
     @Test
@@ -178,7 +178,7 @@ public class HttpRequestMessageDecoderTest {
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -205,7 +205,7 @@ public class HttpRequestMessageDecoderTest {
                 CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -214,7 +214,7 @@ public class HttpRequestMessageDecoderTest {
         testChannel.finish();
 
         final RequestMessageV4 decodedRequestMessage = testChannel.readInbound();
-        assertNotEquals("abc", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
+        assertNotEquals("abc", decodedRequestMessage.getField(TokensV4.ARGS_LANGUAGE));
     }
 
     @Test
@@ -226,7 +226,7 @@ public class HttpRequestMessageDecoderTest {
         buffer.writeCharSequence("{ }", CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -293,7 +293,7 @@ public class HttpRequestMessageDecoderTest {
         buffer.writeCharSequence("{\"gremlin\":\"g.V()\",\"nonfield\":\"shouldntgetadded\"}", CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -315,10 +315,10 @@ public class HttpRequestMessageDecoderTest {
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{\"gremlin\":\"g.V().limit(2)\",\"batchSize\":\"10\",\"language\":\"gremlin-lang\"," +
                 "\"g\":\"gmodern\",\"bindings\":{\"x\":\"1\"},\"timeoutMs\":\"12\"," +
-                "\"materializeProperties\":\"" + Tokens.MATERIALIZE_PROPERTIES_TOKENS + "\"}", CharsetUtil.UTF_8);
+                "\"materializeProperties\":\"" + TokensV4.MATERIALIZE_PROPERTIES_TOKENS + "\"}", CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokensV4.MIME_JSON);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "",
                 buffer, headers, new DefaultHttpHeaders());
@@ -328,12 +328,12 @@ public class HttpRequestMessageDecoderTest {
 
         RequestMessageV4 decodedRequest = testChannel.readInbound();
         assertEquals("g.V().limit(2)", decodedRequest.getGremlin());
-        assertEquals(10, (int) decodedRequest.getField(Tokens.ARGS_BATCH_SIZE));
-        assertEquals("gremlin-lang", decodedRequest.getField(Tokens.ARGS_LANGUAGE));
-        assertEquals("gmodern", decodedRequest.getField(Tokens.ARGS_G));
-        assertEquals("1", ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).get("x"));
-        assertEquals(1, ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).size());
-        assertEquals(12, (long) decodedRequest.getField(Tokens.TIMEOUT_MS));
-        assertEquals(Tokens.MATERIALIZE_PROPERTIES_TOKENS, decodedRequest.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
+        assertEquals(10, (int) decodedRequest.getField(TokensV4.ARGS_BATCH_SIZE));
+        assertEquals("gremlin-lang", decodedRequest.getField(TokensV4.ARGS_LANGUAGE));
+        assertEquals("gmodern", decodedRequest.getField(TokensV4.ARGS_G));
+        assertEquals("1", ((Map) decodedRequest.getField(TokensV4.ARGS_BINDINGS)).get("x"));
+        assertEquals(1, ((Map) decodedRequest.getField(TokensV4.ARGS_BINDINGS)).size());
+        assertEquals(12, (long) decodedRequest.getField(TokensV4.TIMEOUT_MS));
+        assertEquals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS, decodedRequest.getField(TokensV4.ARGS_MATERIALIZE_PROPERTIES));
     }
 }

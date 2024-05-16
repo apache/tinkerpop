@@ -36,7 +36,7 @@ import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
@@ -44,7 +44,7 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
@@ -64,7 +64,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     MessageSerializerV4.class,
                     Result.class,
                     ResultSet.class,
-                    Tokens.class,
+                    TokensV4.class,
                     ConnectionException.class,
                     ResponseException.class,
                     RequestMessageV4.class,
@@ -76,7 +76,7 @@ public class DriverGremlinPlugin extends AbstractGremlinPlugin {
                     GraphBinaryMessageSerializerV4.class,
                     SerializationException.class,
                     SerializersV4.class,
-                    SerTokens.class,
+                    SerTokensV4.class,
                     DriverRemoteConnection.class,
                     DriverRemoteTraversal.class).create();
 

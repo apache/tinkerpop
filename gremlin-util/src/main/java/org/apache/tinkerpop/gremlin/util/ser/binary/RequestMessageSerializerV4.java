@@ -20,10 +20,10 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 
 public class RequestMessageSerializerV4 {
     private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
@@ -53,32 +52,32 @@ public class RequestMessageSerializerV4 {
             final String gremlinType = (String) fields.get("gremlinType");
 
             final Object gremlin;
-            if (gremlinType.equals(Tokens.OPS_EVAL)) {
+            if (gremlinType.equals(TokensV4.OPS_EVAL)) {
                 gremlin = context.readValue(buffer, String.class, false);
-            } else if (gremlinType.equals(Tokens.OPS_BYTECODE)) {
+            } else if (gremlinType.equals(TokensV4.OPS_BYTECODE)) {
                 gremlin = context.readValue(buffer, Bytecode.class, false);
             } else {
                 throw new SerializationException("Type " + gremlinType + " not supported for serialization.");
             }
 
             final RequestMessageV4.Builder builder = RequestMessageV4.build(gremlin);
-            if (fields.containsKey(SerTokens.TOKEN_LANGUAGE)) {
-                builder.addLanguage(fields.get(SerTokens.TOKEN_LANGUAGE).toString());
+            if (fields.containsKey(SerTokensV4.TOKEN_LANGUAGE)) {
+                builder.addLanguage(fields.get(SerTokensV4.TOKEN_LANGUAGE).toString());
             }
-            if (fields.containsKey(SerTokens.TOKEN_G)) {
-                builder.addG(fields.get(SerTokens.TOKEN_G).toString());
+            if (fields.containsKey(SerTokensV4.TOKEN_G)) {
+                builder.addG(fields.get(SerTokensV4.TOKEN_G).toString());
             }
-            if (fields.containsKey(SerTokens.TOKEN_BINDINGS)) {
-                builder.addBindings((Map<String, Object>) fields.get(SerTokens.TOKEN_BINDINGS));
+            if (fields.containsKey(SerTokensV4.TOKEN_BINDINGS)) {
+                builder.addBindings((Map<String, Object>) fields.get(SerTokensV4.TOKEN_BINDINGS));
             }
-            if (fields.containsKey(Tokens.TIMEOUT_MS)) {
-                builder.addTimeoutMillis((long) fields.get(Tokens.TIMEOUT_MS));
+            if (fields.containsKey(TokensV4.TIMEOUT_MS)) {
+                builder.addTimeoutMillis((long) fields.get(TokensV4.TIMEOUT_MS));
             }
-            if (fields.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
-                builder.addMaterializeProperties(fields.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
+            if (fields.containsKey(TokensV4.ARGS_MATERIALIZE_PROPERTIES)) {
+                builder.addMaterializeProperties(fields.get(TokensV4.ARGS_MATERIALIZE_PROPERTIES).toString());
             }
-            if (fields.containsKey(Tokens.ARGS_BATCH_SIZE)) {
-                builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
+            if (fields.containsKey(TokensV4.ARGS_BATCH_SIZE)) {
+                builder.addChunkSize((int) fields.get(TokensV4.ARGS_BATCH_SIZE));
             }
 
             return builder.create();

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -147,7 +148,7 @@ public class AllowListAuthorizer implements Authorizer {
      * {@link AuthorizationException} if this is not the case.
      *
      * @param user {@link AuthenticatedUser} that needs authorization.
-     * @param msg {@link RequestMessageV4} in which the {@link org.apache.tinkerpop.gremlin.util.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
+     * @param msg {@link RequestMessageV4} in which the {@link TokensV4}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
      */
     public void authorize(final AuthenticatedUser user, final RequestMessageV4 msg) throws AuthorizationException {
         if (!usernamesSandbox.contains(user.getName())) {

@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -72,7 +72,7 @@ public class MessageSerializerV4Test {
         aliases.put("g","g");
 
         final RequestMessageV4 request = RequestMessageV4.build(t.getBytecode())
-                .addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                .addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
                 .addTimeoutMillis(500)
                 .addG("g1")
                 .addLanguage("some-lang")

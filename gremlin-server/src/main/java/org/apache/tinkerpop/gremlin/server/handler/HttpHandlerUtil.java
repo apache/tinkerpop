@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import com.codahale.metrics.Meter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
@@ -36,7 +35,7 @@ import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -137,9 +135,9 @@ public class HttpHandlerUtil {
      */
     static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String exceptionType) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
-        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());
+        defaultLastHttpContent.trailingHeaders().add(SerTokensV4.TOKEN_CODE, statusCode.code());
         if (exceptionType != null && !exceptionType.isEmpty()) {
-            defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_EXCEPTION, exceptionType);
+            defaultLastHttpContent.trailingHeaders().add(SerTokensV4.TOKEN_EXCEPTION, exceptionType);
         }
 
         ctx.writeAndFlush(defaultLastHttpContent);

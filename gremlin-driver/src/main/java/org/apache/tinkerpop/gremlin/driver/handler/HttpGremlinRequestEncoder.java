@@ -30,13 +30,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
-import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.net.InetSocketAddress;
@@ -63,8 +62,8 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
         final String mimeType = serializer.mimeTypesSupported()[0];
         // only GraphSON4 and GraphBinary4 recommended for serialization of Bytecode requests
         if (requestMessage.getField("gremlin") instanceof Bytecode &&
-                !mimeType.equals(SerTokens.MIME_GRAPHSON_V4) &&
-                !mimeType.equals(SerTokens.MIME_GRAPHBINARY_V4)) {
+                !mimeType.equals(SerTokensV4.MIME_GRAPHSON_V4) &&
+                !mimeType.equals(SerTokensV4.MIME_GRAPHBINARY_V4)) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
                     requestMessage, serializer.getClass().getName()));

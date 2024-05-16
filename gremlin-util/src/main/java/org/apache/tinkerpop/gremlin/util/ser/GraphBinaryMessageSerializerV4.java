@@ -59,7 +59,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     private GraphBinaryMapper mapper;
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
+    private static final String MIME_TYPE = SerTokensV4.MIME_GRAPHBINARY_V4;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.

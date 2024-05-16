@@ -28,9 +28,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
 
 /**
  * Options that can be supplied on a per request basis.

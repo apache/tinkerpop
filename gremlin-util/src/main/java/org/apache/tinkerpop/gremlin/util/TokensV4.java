@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class Tokens {
-    private Tokens() {}
+public final class TokensV4 {
+    private TokensV4() {}
 
     public static final String OPS_BYTECODE = "bytecode";
     public static final String OPS_EVAL = "eval";
@@ -93,6 +93,4 @@ public final class Tokens {
      * identifying the kind of client it came from.
      */
     public static final String ARGS_USER_AGENT = "userAgent";
-
-    public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
 }
