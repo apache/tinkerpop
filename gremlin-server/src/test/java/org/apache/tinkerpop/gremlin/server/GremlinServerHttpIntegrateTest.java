@@ -38,13 +38,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.io.ChunkedInputStream;
 import org.apache.http.util.EntityUtils;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
@@ -52,11 +49,10 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -64,7 +60,6 @@ import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -77,10 +72,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.REQUEST_ID_HEADER_NAME;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
-import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_ALL;
-import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MS;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.MATERIALIZE_PROPERTIES_ALL;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.MATERIALIZE_PROPERTIES_TOKENS;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.TIMEOUT_MS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringRegularExpression.matchesRegex;
@@ -820,7 +815,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+            assertEquals(SerTokensV4.MIME_JSON, response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get(0).asInt());
@@ -835,7 +830,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode()); // Temporarily 200
-            assertEquals(SerTokens.MIME_JSON, response.getEntity().getContentType().getValue());
+            assertEquals(SerTokensV4.MIME_JSON, response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertThat(node.get("status").get("message").asText(), startsWith("Error during serialization: Could not find a type identifier for the class"));

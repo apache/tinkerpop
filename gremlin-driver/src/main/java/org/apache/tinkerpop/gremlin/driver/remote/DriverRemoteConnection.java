@@ -37,10 +37,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
 
 
 /**

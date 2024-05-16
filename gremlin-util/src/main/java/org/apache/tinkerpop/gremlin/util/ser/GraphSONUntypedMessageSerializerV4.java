@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
  * Serialize results to JSON with version 4 schema and the extended module without embedded types.
   */
 public final class GraphSONUntypedMessageSerializerV4 extends AbstractGraphSONMessageSerializerV4 {
-    private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V4_UNTYPED;
+    private static final String MIME_TYPE = SerTokensV4.MIME_GRAPHSON_V4_UNTYPED;
 
     /**
      * Creates a default GraphSONMessageSerializer.
@@ -53,7 +53,7 @@ public final class GraphSONUntypedMessageSerializerV4 extends AbstractGraphSONMe
 
     @Override
     public String[] mimeTypesSupported() {
-        return new String[]{MIME_TYPE, SerTokens.MIME_JSON};
+        return new String[]{MIME_TYPE, SerTokensV4.MIME_JSON};
     }
 
     @Override

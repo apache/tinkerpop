@@ -59,7 +59,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
@@ -172,7 +172,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
+        final Long timeoutMs = requestMessage.getField(TokensV4.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -180,8 +180,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
-                        requestMessage.getFieldOrDefault(Tokens.ARGS_GREMLIN, ""),
-                        requestMessage.getFieldOrDefault(Tokens.ARGS_BINDINGS, Collections.emptyMap()),
+                        requestMessage.getFieldOrDefault(TokensV4.ARGS_GREMLIN, ""),
+                        requestMessage.getFieldOrDefault(TokensV4.ARGS_BINDINGS, Collections.emptyMap()),
                         Thread.currentThread().getName());
                 if (settings.enableAuditLog) {
                     AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -191,7 +191,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     String address = ctx.channel().remoteAddress().toString();
                     if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     auditLogger.info("User {} with address {} requested: {}", user.getName(), address,
-                            requestMessage.getFieldOrDefault(Tokens.ARGS_GREMLIN, ""));
+                            requestMessage.getFieldOrDefault(TokensV4.ARGS_GREMLIN, ""));
                 }
 
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
@@ -203,13 +203,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                 switch (requestMessage.getGremlinType()) {
                     case "":
-                    case Tokens.OPS_EVAL:
+                    case TokensV4.OPS_EVAL:
                         iterateScriptEvalResult(requestCtx, serializer.getValue1(), requestMessage);
                         break;
-                    case Tokens.OPS_BYTECODE:
+                    case TokensV4.OPS_BYTECODE:
                         iterateTraversal(requestCtx, serializer.getValue1(), translateBytecodeToTraversal(requestCtx));
                         break;
-                    case Tokens.OPS_INVALID:
+                    case TokensV4.OPS_INVALID:
                         throw new ProcessingException(GremlinError.invalidGremlinType(requestMessage));
                     default:
                         throw new ProcessingException(GremlinError.unknownGremlinType(requestMessage));
@@ -296,8 +296,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     private void iterateScriptEvalResult(final Context context, MessageSerializerV4<?> serializer, final RequestMessageV4 message)
             throws ProcessingException, InterruptedException, ScriptException {
-        if (message.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
-            final Map bindings = (Map) message.getFields().get(Tokens.ARGS_BINDINGS);
+        if (message.optionalField(TokensV4.ARGS_BINDINGS).isPresent()) {
+            final Map bindings = (Map) message.getFields().get(TokensV4.ARGS_BINDINGS);
             if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
                 throw new ProcessingException(GremlinError.binding());
             }
@@ -314,7 +314,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final Map<String, Object> args = message.getFields();
-        final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-groovy";
+        final String language = args.containsKey(TokensV4.ARGS_LANGUAGE) ? (String) args.get(TokensV4.ARGS_LANGUAGE) : "gremlin-groovy";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
@@ -329,7 +329,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             throw new ProcessingException(GremlinError.gremlinType());
         }
 
-        final Optional<String> alias = requestMsg.optionalField(Tokens.ARGS_G);
+        final Optional<String> alias = requestMsg.optionalField(TokensV4.ARGS_G);
         if (!alias.isPresent()) {
             throw new ProcessingException(GremlinError.traversalSource());
         }
@@ -368,14 +368,14 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private Bindings mergeBindingsFromRequest(final Context ctx, final Bindings bindings) throws ProcessingException {
         // alias any global bindings to a different variable.
         final RequestMessageV4 msg = ctx.getRequestMessage();
-        if (msg.getFields().containsKey(Tokens.ARGS_G)) {
-            final String aliased = msg.getField(Tokens.ARGS_G);
+        if (msg.getFields().containsKey(TokensV4.ARGS_G)) {
+            final String aliased = msg.getField(TokensV4.ARGS_G);
             boolean found = false;
 
             // first check if the alias refers to a Graph instance
             final Graph graph = ctx.getGraphManager().getGraph(aliased);
             if (null != graph) {
-                bindings.put(Tokens.ARGS_G, graph);
+                bindings.put(TokensV4.ARGS_G, graph);
                 found = true;
             }
 
@@ -384,7 +384,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             if (!found) {
                 final TraversalSource ts = ctx.getGraphManager().getTraversalSource(aliased);
                 if (null != ts) {
-                    bindings.put(Tokens.ARGS_G, ts);
+                    bindings.put(TokensV4.ARGS_G, ts);
                     found = true;
                 }
             }
@@ -397,7 +397,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         // add any bindings to override any other supplied
-        Optional.ofNullable((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+        Optional.ofNullable((Map<String, Object>) msg.getFields().get(TokensV4.ARGS_BINDINGS)).ifPresent(bindings::putAll);
         return bindings;
     }
 
@@ -433,7 +433,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         // the batch size can be overridden by the request
-        final int resultIterationBatchSize = (Integer) msg.optionalField(Tokens.ARGS_BATCH_SIZE)
+        final int resultIterationBatchSize = (Integer) msg.optionalField(TokensV4.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
 

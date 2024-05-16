@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -55,7 +54,7 @@ public class RequestMessageV4Test {
         bindings.put("a", "b");
         bindings.put("g", "gmodern");
         final RequestMessageV4 msg = RequestMessageV4.build("gremlin").addBindings(bindings).create();
-        assertEquals(bindings, msg.getField(Tokens.ARGS_BINDINGS));
+        assertEquals(bindings, msg.getField(TokensV4.ARGS_BINDINGS));
     }
 
     @Test
@@ -67,37 +66,37 @@ public class RequestMessageV4Test {
                 .addBinding("a", "b")
                 .addBinding("g", "gmodern")
                 .create();
-        assertEquals(bindings, msg.getField(Tokens.ARGS_BINDINGS));
+        assertEquals(bindings, msg.getField(TokensV4.ARGS_BINDINGS));
     }
 
     @Test
     public void shouldSetLanguage() {
         final String language = "fake-lang";
         final RequestMessageV4 msg = RequestMessageV4.build("g").addLanguage(language).create();
-        assertEquals(language, msg.getField(Tokens.ARGS_LANGUAGE));
+        assertEquals(language, msg.getField(TokensV4.ARGS_LANGUAGE));
     }
 
     @Test
     public void shouldSetG() {
         final String g = "gmodern";
         final RequestMessageV4 msg = RequestMessageV4.build("g").addG(g).create();
-        assertEquals(g, msg.getField(Tokens.ARGS_G));
+        assertEquals(g, msg.getField(TokensV4.ARGS_G));
     }
 
     @Test
     public void shouldSetTimeout() {
         final long timeout = 101L;
         final RequestMessageV4 msg = RequestMessageV4.build("g").addTimeoutMillis(timeout).create();
-        assertEquals(timeout, (long) msg.getField(Tokens.TIMEOUT_MS));
+        assertEquals(timeout, (long) msg.getField(TokensV4.TIMEOUT_MS));
     }
 
     @Test
     public void shouldSetMaterializeProperties() {
-        final RequestMessageV4 msgWithAll = RequestMessageV4.build("g").addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_ALL).create();
-        assertEquals(Tokens.MATERIALIZE_PROPERTIES_ALL, msgWithAll.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
+        final RequestMessageV4 msgWithAll = RequestMessageV4.build("g").addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_ALL).create();
+        assertEquals(TokensV4.MATERIALIZE_PROPERTIES_ALL, msgWithAll.getField(TokensV4.ARGS_MATERIALIZE_PROPERTIES));
 
-        final RequestMessageV4 msgWithTokens = RequestMessageV4.build("g").addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_TOKENS).create();
-        assertEquals(Tokens.MATERIALIZE_PROPERTIES_TOKENS, msgWithTokens.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
+        final RequestMessageV4 msgWithTokens = RequestMessageV4.build("g").addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_TOKENS).create();
+        assertEquals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS, msgWithTokens.getField(TokensV4.ARGS_MATERIALIZE_PROPERTIES));
     }
 
     @Test
@@ -121,9 +120,9 @@ public class RequestMessageV4Test {
 
         final RequestMessageV4 msg = RequestMessageV4.build(query).addG(g).addBindings(bindings).addLanguage(lang).create();
         final Map<String, Object> fields = msg.getFields();
-        assertEquals(g, fields.get(Tokens.ARGS_G));
-        assertEquals(lang, fields.get(Tokens.ARGS_LANGUAGE));
-        assertEquals(bindings, fields.get(Tokens.ARGS_BINDINGS));
+        assertEquals(g, fields.get(TokensV4.ARGS_G));
+        assertEquals(lang, fields.get(TokensV4.ARGS_LANGUAGE));
+        assertEquals(bindings, fields.get(TokensV4.ARGS_BINDINGS));
         assertEquals(query, msg.getGremlin());
     }
 
@@ -131,27 +130,27 @@ public class RequestMessageV4Test {
     public void shouldGetGAsArg() {
         final String g = "gmodern";
         final RequestMessageV4 msg = RequestMessageV4.build("g").addG(g).create();
-        assertEquals(g, msg.getField(Tokens.ARGS_G));
+        assertEquals(g, msg.getField(TokensV4.ARGS_G));
     }
 
     @Test
     public void shouldGetGAsArgOrDefault() {
         final RequestMessageV4 msg = RequestMessageV4.build("g").create();
-        assertEquals("b", msg.getFieldOrDefault(Tokens.ARGS_G, "b"));
+        assertEquals("b", msg.getFieldOrDefault(TokensV4.ARGS_G, "b"));
     }
 
     @Test
     public void shouldGetGAsArgAsOptional() {
         final String g = "gmodern";
         final RequestMessageV4 msg = RequestMessageV4.build("g").addG(g).create();
-        assertEquals(g, msg.optionalField(Tokens.ARGS_G).get());
+        assertEquals(g, msg.optionalField(TokensV4.ARGS_G).get());
     }
 
     @Test
     public void shouldNotBeAbleToGetGremlinQueryFromArgs() {
         final String query = "gmodern";
         final RequestMessageV4 msg = RequestMessageV4.build(query).create();
-        assertTrue(null == msg.getField(Tokens.ARGS_GREMLIN));
+        assertTrue(null == msg.getField(TokensV4.ARGS_GREMLIN));
     }
 
     @Test

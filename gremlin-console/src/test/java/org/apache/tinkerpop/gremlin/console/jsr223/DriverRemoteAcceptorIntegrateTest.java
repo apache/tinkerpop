@@ -22,7 +22,7 @@ import org.apache.groovy.groovysh.Groovysh;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -138,7 +138,7 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     public void shouldConnectAndSubmitWithTimeout() throws Exception {
         assertThat(acceptor.connect(Collections.singletonList(Storage.toPath(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp")))).toString(), startsWith("Configured "));
         try {
-            acceptor.submit(Collections.singletonList(String.format("g.with(%s, 10).inject(0).sideEffect{Thread.sleep(10000)}", Tokens.ARGS_EVAL_TIMEOUT)));
+            acceptor.submit(Collections.singletonList(String.format("g.with(%s, 10).inject(0).sideEffect{Thread.sleep(10000)}", TokensV4.ARGS_EVAL_TIMEOUT)));
             fail("Request should have timed out");
         } catch (RemoteException re) {
             assertThat(re.getMessage(), containsString("evaluationTimeout"));
