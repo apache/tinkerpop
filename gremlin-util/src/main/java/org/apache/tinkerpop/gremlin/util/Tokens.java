@@ -29,11 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public final class Tokens {
     private Tokens() {}
 
-    public static final String OPS_AUTHENTICATION = "authentication";
     public static final String OPS_BYTECODE = "bytecode";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_INVALID = "invalid";
-    public static final String OPS_CLOSE = "close";
 
     /**
      * Argument name that allows definition of the number of iterations each HTTP chunk should contain -
@@ -84,8 +82,6 @@ public final class Tokens {
      * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
      */
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
-    public static final String ARGS_SASL = "sasl";
-    public static final String ARGS_SASL_MECHANISM = "saslMechanism";
 
     /**
      * The key for the per request server-side timeout in milliseconds.
