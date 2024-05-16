@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.junit.Test;
 
 import java.math.BigDecimal;

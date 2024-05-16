@@ -41,7 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
@@ -165,7 +165,7 @@ public class Model {
                 addLanguage("gremlin-groovy").
                 addG("social").
                 addTimeoutMillis(100).
-                addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_ALL).create();
+                addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_ALL).create();
         addRequestMessageEntry(requestMessage, "Standard Request", "The following `RequestMessageV4` is an example of a request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
         ResponseMessageV4 responseMessage;

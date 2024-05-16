@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.junit.AfterClass;
 import org.junit.Before;
