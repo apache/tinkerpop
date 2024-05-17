@@ -29,8 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -100,11 +100,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
             this.first = false;
             final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
             final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(generator.generate(false, (Step) this, 1L)));
-            if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
-                this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-            }
+            EventUtil.registerVertexCreation(callbackRegistry, getTraversal(), vertex);
             return generator.generate(vertex, this, 1L);
         } else
             throw FastNoSuchElementException.instance();
