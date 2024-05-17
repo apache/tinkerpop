@@ -31,13 +31,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var id = reader.ToObject(graphsonObject.GetProperty("id"));
-            var label = graphsonObject.GetProperty("label").GetString();
+            string label = graphsonObject.GetProperty("label").GetString()!;
             var value = reader.ToObject(graphsonObject.GetProperty("value"));
             var vertex = graphsonObject.TryGetProperty("vertex", out var vertexProperty)
                 ? new Vertex(reader.ToObject(vertexProperty))
                 : null;
 
-            dynamic?[]? properties = null;
+            Property[]? properties = null;
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {
