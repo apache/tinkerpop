@@ -1773,10 +1773,10 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the property step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<S, E> Property(IDictionary value)
+        public GraphTraversal<TStart, TEnd> Property(IDictionary value)
         {
             Bytecode.AddStep("property", value);
-            return Wrap<S, E>(this);
+            return Wrap<TStart, TEnd>(this);
         }
 
         /// <summary>
