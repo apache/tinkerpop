@@ -35,19 +35,23 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class NoOpBarrierStep<S> extends AbstractStep<S, S> implements LocalBarrier<S> {
+public class NoOpBarrierStep<S> extends AbstractStep<S, S> implements LocalBarrier<S> {
 
-    private int maxBarrierSize;
-    private TraverserSet<S> barrier;
+    protected int maxBarrierSize;
+    protected TraverserSet<S> barrier;
 
     public NoOpBarrierStep(final Traversal.Admin traversal) {
         this(traversal, Integer.MAX_VALUE);
     }
 
     public NoOpBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
+        this(traversal, maxBarrierSize, (TraverserSet<S>) traversal.getTraverserSetSupplier().get());
+    }
+
+    public NoOpBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize, TraverserSet<S> barrier) {
         super(traversal);
         this.maxBarrierSize = maxBarrierSize;
-        this.barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
+        this.barrier = barrier;
     }
 
     @Override
