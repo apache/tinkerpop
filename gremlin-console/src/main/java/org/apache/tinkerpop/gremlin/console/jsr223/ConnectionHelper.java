@@ -16,28 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.commands
+package org.apache.tinkerpop.gremlin.console.jsr223;
 
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
-import org.apache.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 
-/**
- * Submit a script to a Gremlin Server instance.
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-class SubmitCommand extends CommandSupport {
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-    private final Mediator mediator
-
-    public SubmitCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":submit", ":>")
-        this.mediator = mediator
+public class ConnectionHelper {
+    private ConnectionHelper() {
     }
 
-    @Override
-    def Object execute(final List<String> arguments) {
-        if (mediator.remotes.size() == 0) return "No remotes are configured.  Use :remote command."
-        return mediator.currentRemote().submit(arguments)
+    public static Object connect(final String host) {
+        return connect(host, "g");
+    }
+
+    public static Object connect(final String host, final String g) {
+        return connect(host, 8182, g);
+    }
+
+    public static Object connect(final String host, final int port, final String g) {
+        return traversal().with(DriverRemoteConnection.using(Cluster.build(host).port(port).create(), g));
     }
 }
