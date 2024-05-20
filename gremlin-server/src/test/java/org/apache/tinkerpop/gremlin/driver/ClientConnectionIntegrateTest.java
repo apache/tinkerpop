@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.CorruptedFrameException;
+import io.netty.handler.codec.TooLongFrameException;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -110,7 +111,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
 
                 fail("Should throw an exception.");
             } catch (Exception re) {
-                assertThat(re.getCause() instanceof CorruptedFrameException, is(true));
+                assertThat(re.getCause() instanceof TooLongFrameException, is(true));
             }
 
             // without this wait this test is failing randomly on docker/travis with ConcurrentModificationException
@@ -183,7 +184,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
-    public void overLimitOperationsShouldDelegateToSingleNewConnection() throws InterruptedException {
+    public void overLimitOperationsShouldCreateNewHttpConnectionPerRequestAsNeeded() throws InterruptedException {
         final int operations = 6;
         final Cluster cluster = TestClientFactory.build()
                 .minConnectionPoolSize(1)
@@ -218,7 +219,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 }
             });
 
-            assertEquals(2, connectionBorrowCount.size());
+            assertEquals(operations, connectionBorrowCount.size());
             for (int finalBorrowCount : connectionBorrowCount.values()) {
                 assertEquals(1, finalBorrowCount);
             }
