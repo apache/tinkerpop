@@ -20,14 +20,17 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,12 +41,17 @@ public class RemoteGremlinPlugin extends AbstractGremlinPlugin {
     private static final ImportCustomizer imports = DefaultImportCustomizer.build()
             .addClassImports(Cluster.class,
                     Client.class,
-                    DriverRemoteConnection.class)
-            .addMethodImports(
-                    Stream.of(ConnectionHelper.class.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).collect(Collectors.toList()))
+                    DriverRemoteConnection.class,
+                    Auth.class)
+            .addMethodImports(allStaticMethods(ConnectionHelper.class))
+            .addMethodImports(allStaticMethods(Auth.class))
             .create();
 
     public RemoteGremlinPlugin() {
         super(NAME, new HashSet<>(Collections.singletonList("gremlin-groovy")), imports);
+    }
+
+    private static List<Method> allStaticMethods(final Class<?> clazz) {
+        return Stream.of(clazz.getMethods()).filter(m -> Modifier.isStatic(m.getModifiers())).collect(Collectors.toList());
     }
 }

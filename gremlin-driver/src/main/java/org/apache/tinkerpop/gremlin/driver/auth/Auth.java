@@ -26,6 +26,10 @@ public interface Auth extends RequestInterceptor {
         return new Basic(username, password);
     }
 
+    static Auth sigv4(final String regionName) {
+        return new Sigv4(regionName);
+    }
+
     static Auth sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider) {
         return new Sigv4(regionName, awsCredentialsProvider);
     }
