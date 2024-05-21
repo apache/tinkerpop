@@ -29,7 +29,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            var key = graphsonObject.GetProperty("key").GetString();
+            string key = graphsonObject.GetProperty("key").GetString()!;
             var value = reader.ToObject(graphsonObject.GetProperty("value"));
             var element = graphsonObject.TryGetProperty("element", out var elementProperty)
                 ? reader.ToObject(elementProperty)
