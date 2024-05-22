@@ -18,36 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
-import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.auth.Auth;
-import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class ConnectionHelper {
-    private static final String DEFAULT_G = "g";
-    private static final int DEFAULT_PORT = 8182;
-
     private ConnectionHelper() {
     }
 
-    public static Object connect(final String host) {
-        return connect(host, DEFAULT_G);
-    }
-
-    public static Object connect(final String host, final String g) {
-        return connect(host, DEFAULT_PORT, g);
-    }
-
-    public static Object connect(final String host, final Auth auth) {
-        return connect(host, DEFAULT_PORT, DEFAULT_G, auth);
-    }
-
-    public static Object connect(final String host, final int port, final String g) {
-        return traversal().with(DriverRemoteConnection.using(Cluster.build(host).port(port).create(), g));
-    }
-
-    public static Object connect(final String host, final int port, final String g, final Auth auth) {
-        return traversal().with(DriverRemoteConnection.using(Cluster.build(host).port(port).auth(auth).create(), g));
+    public static Object connect(final String fileName) throws Exception {
+        return traversal().with(fileName);
     }
 }

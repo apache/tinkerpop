@@ -41,10 +41,10 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class Settings {
+public final class Settings {
 
     /**
-     * The port of the Gremlin Server to connect to which defaults to {@code 8192}. The same port will be applied for
+     * The port of the Gremlin Server to connect to which defaults to {@code 8182}. The same port will be applied for
      * all {@link #hosts}.
      */
     public int port = 8182;
@@ -69,6 +69,11 @@ final class Settings {
      * Settings for connections and connection pool.
      */
     public ConnectionPoolSettings connectionPool = new ConnectionPoolSettings();
+
+    /**
+     * Settings for authentication.
+     */
+    public AuthSettings auth = new AuthSettings();
 
     /**
      * The size of the thread pool defaulted to the number of available processors.
@@ -205,6 +210,22 @@ final class Settings {
                 cpSettings.connectionSetupTimeoutMillis = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
 
             settings.connectionPool = cpSettings;
+        }
+
+        final Configuration authConf = conf.subset("auth");
+        if (IteratorUtils.count(authConf.getKeys()) > 0) {
+            final AuthSettings authSettings = new AuthSettings();
+
+            if (authConf.containsKey("type"))
+                authSettings.type = authConf.getString("type");
+
+            if (authConf.containsKey("username"))
+                authSettings.username = authConf.getString("username");
+
+            if (authConf.containsKey("password"))
+                authSettings.password = authConf.getString("password");
+
+            settings.auth = authSettings;
         }
 
         return settings;
@@ -344,5 +365,25 @@ final class Settings {
             Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;
         }
+    }
+
+    public static class AuthSettings {
+        /**
+         * Type of Auth to submit on requests that require authentication.
+         */
+        public String type = null;
+        /**
+         * The username to submit on requests that require authentication.
+         */
+        public String username = null;
+        /**
+         * The password to submit on requests that require authentication.
+         */
+        public String password = null;
+
+        /**
+         * The region setting for sigv4 authentication.
+         */
+        public String region = null;
     }
 }

@@ -20,8 +20,12 @@ package org.apache.tinkerpop.gremlin.driver.auth;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
+import org.apache.tinkerpop.gremlin.driver.Settings;
 
 public interface Auth extends RequestInterceptor {
+    String AUTH_BASIC = "basic";
+    String AUTH_SIGV4 = "sigv4";
+
     static Auth basic(final String username, final String password) {
         return new Basic(username, password);
     }
@@ -38,7 +42,17 @@ public interface Auth extends RequestInterceptor {
         return new Sigv4(regionName, awsCredentialsProvider, serviceName);
     }
 
-    public class AuthenticationException extends RuntimeException {
+    static Auth from(Settings.AuthSettings settings) {
+        if (settings.type.equals(AUTH_BASIC)) {
+            return basic(settings.username, settings.password);
+        }
+        if (settings.type.equals(AUTH_SIGV4)) {
+            return sigv4(settings.region);
+        }
+        throw new IllegalArgumentException("Unknown auth type: " + settings.type);
+    }
+
+    class AuthenticationException extends RuntimeException {
         public AuthenticationException(Exception cause) {
             super(cause);
         }

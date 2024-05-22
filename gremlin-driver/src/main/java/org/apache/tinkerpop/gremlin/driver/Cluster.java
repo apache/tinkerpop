@@ -182,6 +182,10 @@ public final class Cluster {
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .validationRequest(settings.connectionPool.validationRequest);
 
+        if (settings.auth.type != null) {
+            builder.auth(Auth.from(settings.auth));
+        }
+
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
             addresses.stream().skip(1).forEach(builder::addContactPoint);
