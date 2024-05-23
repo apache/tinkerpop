@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.jsr223;
 
+import org.apache.tinkerpop.gremlin.console.ConnectionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
@@ -25,6 +26,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.jsr223.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -43,6 +45,7 @@ public class RemoteGremlinPlugin extends AbstractGremlinPlugin {
                     Client.class,
                     DriverRemoteConnection.class,
                     Auth.class)
+            .addMethodImports(allStaticMethods(AnonymousTraversalSource.class))
             .addMethodImports(allStaticMethods(ConnectionHelper.class))
             .addMethodImports(allStaticMethods(Auth.class))
             .create();

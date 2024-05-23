@@ -76,7 +76,6 @@ class Mediator {
     }
 
     def void close() {
-        // say buy
+        // do cleanup if needed
     }
-
 }

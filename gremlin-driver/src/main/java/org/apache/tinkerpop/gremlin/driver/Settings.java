@@ -371,7 +371,7 @@ public final class Settings {
         /**
          * Type of Auth to submit on requests that require authentication.
          */
-        public String type = null;
+        public String type = "";
         /**
          * The username to submit on requests that require authentication.
          */

@@ -26,7 +26,12 @@ import org.apache.groovy.groovysh.ExitNotification
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.groovy.groovysh.InteractiveShellRunner
 import org.apache.groovy.groovysh.commands.SetCommand
-import org.apache.tinkerpop.gremlin.console.commands.*
+import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
+import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
+import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
+import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
+import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
+import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin

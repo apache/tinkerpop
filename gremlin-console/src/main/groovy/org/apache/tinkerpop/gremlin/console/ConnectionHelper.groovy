@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.jsr223;
+package org.apache.tinkerpop.gremlin.console
 
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
 
-public class ConnectionHelper {
+class ConnectionHelper {
     private ConnectionHelper() {
     }
 
-    public static Object connect(final String fileName) throws Exception {
-        return traversal().with(fileName);
+    static Object connect(final String fileName) throws Exception {
+        return traversal().with(fileName)
     }
 }

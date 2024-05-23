@@ -182,7 +182,7 @@ public final class Cluster {
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .validationRequest(settings.connectionPool.validationRequest);
 
-        if (settings.auth.type != null) {
+        if (!settings.auth.type.isEmpty()) {
             builder.auth(Auth.from(settings.auth));
         }
 

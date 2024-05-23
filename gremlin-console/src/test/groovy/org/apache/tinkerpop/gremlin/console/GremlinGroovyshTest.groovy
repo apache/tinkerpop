@@ -18,8 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
+import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.jsr223.AbstractGremlinServerIntegrationTest
+import org.apache.tinkerpop.gremlin.console.jsr223.RemoteGremlinPlugin
+import org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin
 import org.apache.tinkerpop.gremlin.structure.io.Storage
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import org.apache.tinkerpop.gremlin.util.TestSupport
 import org.codehaus.groovy.tools.shell.IO
 import org.junit.Test
@@ -33,6 +37,7 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
     private ByteArrayOutputStream out
     private ByteArrayOutputStream err
     private GremlinGroovysh shell
+    private File propertiesFile
 
     @Override
     void setUp() {
@@ -41,38 +46,59 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
         err = new ByteArrayOutputStream()
         testio = new IO(new ByteArrayInputStream(), out, err)
         shell = new GremlinGroovysh(new Mediator(null), testio)
+
+        prepareConfigFiles()
     }
 
     @Test
     void shouldGetResultFromRemote() {
-        final File configFile = TestSupport.generateTempFileFromResource(AbstractGremlinServerIntegrationTest.class, "remote.yaml", "")
-        final File file = File.createTempFile("remote-graph", ".properties")
+        shell.execute("import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal")
+        shell.execute("g = traversal().with('" + Storage.toPath(propertiesFile) + "')")
+        out.reset()
+        shell.execute("g.V().count().next()")
 
-        try {
-            // create temporary config file
-            Files.deleteIfExists(file.toPath())
-            Files.createFile(file.toPath())
-            try (PrintStream out = new PrintStream(new FileOutputStream(file.toPath().toString()))) {
-                out.print("gremlin.remote.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection\n")
-                out.print("gremlin.remote.driver.clusterFile=" + Storage.toPath(configFile))
-                out.print("\ngremlin.remote.driver.sourceName=g\n")
-            }
+        // 6 vertices in modern graph
+        assertTrue(out.toString().endsWith("6\r\n"))
+    }
 
-            shell.execute("import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal")
-            shell.execute("g = traversal().with('" + Storage.toPath(file) + "')")
-            out.reset()
-            shell.execute("g.V().count().next()")
+    @Test
+    void shouldUseRemotePlugin() {
+        final RemoteGremlinPlugin plugin = new RemoteGremlinPlugin();
+        final PluggedIn pluggedIn = new PluggedIn(plugin, shell, testio, false)
+        pluggedIn.activate()
 
-            // 6 vertices in modern graph
-            assertTrue(out.toString().endsWith("6\r\n"))
-        } finally {
-            Files.deleteIfExists(file.toPath())
-        }
+        shell.execute("g = traversal().with('" + Storage.toPath(propertiesFile) + "')")
+        out.reset()
+        shell.execute("g.V().count().next()")
+
+        // 6 vertices in modern graph
+        assertTrue(out.toString().endsWith("6\r\n"))
+
+        shell.execute("g1 = connect('" + Storage.toPath(propertiesFile) + "')")
+        out.reset()
+        shell.execute("g1.V(1).values('age').next()")
+
+        assertTrue(out.toString().endsWith("29\r\n"))
     }
 
     @Override
     void tearDown() {
         super.tearDown()
         shell.execute(":purge preferences") // for test cases where persistent preferences (interpreterMode) are set.
+
+        Files.deleteIfExists(propertiesFile.toPath())
+    }
+
+    void prepareConfigFiles() {
+        final File configFile = TestSupport.generateTempFileFromResource(AbstractGremlinServerIntegrationTest.class, "remote.yaml", "")
+        propertiesFile = File.createTempFile("remote-graph", ".properties")
+
+        Files.deleteIfExists(propertiesFile.toPath())
+        Files.createFile(propertiesFile.toPath())
+        try (PrintStream out = new PrintStream(new FileOutputStream(propertiesFile.toPath().toString()))) {
+            out.print("gremlin.remote.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection\n")
+            out.print("gremlin.remote.driver.clusterFile=" + Storage.toPath(configFile))
+            out.print("\ngremlin.remote.driver.sourceName=g\n")
+        }
     }
 }
