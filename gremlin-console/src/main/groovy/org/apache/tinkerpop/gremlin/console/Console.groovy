@@ -22,7 +22,6 @@ import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
-
 import org.apache.groovy.groovysh.ExitNotification
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.groovy.groovysh.InteractiveShellRunner
@@ -32,14 +31,11 @@ import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
-import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
-import org.apache.tinkerpop.gremlin.console.commands.SubmitCommand
 import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
-import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Failure
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement
@@ -53,7 +49,6 @@ import org.codehaus.groovy.tools.shell.IO
 import org.fusesource.jansi.Ansi
 import sun.misc.Signal
 import sun.misc.SignalHandler
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -108,12 +103,10 @@ class Console {
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
         groovy.register(new PluginCommand(groovy, mediator))
-        groovy.register(new RemoteCommand(groovy, mediator))
-        groovy.register(new SubmitCommand(groovy, mediator))
         groovy.register(new BytecodeCommand(groovy, mediator))
         groovy.register(new ClsCommand(groovy, mediator))
 
-        // hide output temporarily while imports execute
+        // hide output temporarily while imports execute:pin list
         showShellEvaluationOutput(false)
 
         org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
@@ -145,6 +138,7 @@ class Console {
                 def pluggedIn = new PluggedIn((GremlinPlugin) plugin, groovy, io, false)
 
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
+                pluggedIn.activate()
             }
         }
 
@@ -388,12 +382,7 @@ class Console {
                         io.err.print(line.trim())
                         io.err.println()
                         if (line.trim().equals("y") || line.trim().equals("Y")) {
-                            if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
-                                io.err.print(err.remoteStackTrace.get())
-                                io.err.flush()
-                            } else {
-                                e.printStackTrace(io.err)
-                            }
+                            e.printStackTrace(io.err)
                         }
                     } else {
                         e.printStackTrace(io.err)
