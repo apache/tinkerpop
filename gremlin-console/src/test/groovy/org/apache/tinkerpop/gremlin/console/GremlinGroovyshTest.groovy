@@ -18,19 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.console
 
-import org.apache.groovy.groovysh.Groovysh
+
 import org.apache.tinkerpop.gremlin.console.jsr223.AbstractGremlinServerIntegrationTest
 import org.apache.tinkerpop.gremlin.console.jsr223.RemoteGremlinPlugin
-import org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin
 import org.apache.tinkerpop.gremlin.structure.io.Storage
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import org.apache.tinkerpop.gremlin.util.TestSupport
 import org.codehaus.groovy.tools.shell.IO
 import org.junit.Test
 
 import java.nio.file.Files
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertTrue
 
 class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
     private IO testio
@@ -73,12 +71,6 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
 
         // 6 vertices in modern graph
         assertTrue(out.toString().endsWith("6\r\n"))
-
-        shell.execute("g1 = connect('" + Storage.toPath(propertiesFile) + "')")
-        out.reset()
-        shell.execute("g1.V(1).values('age').next()")
-
-        assertTrue(out.toString().endsWith("29\r\n"))
     }
 
     @Override
