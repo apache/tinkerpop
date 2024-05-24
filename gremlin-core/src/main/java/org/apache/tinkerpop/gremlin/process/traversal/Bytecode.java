@@ -54,10 +54,40 @@ public class Bytecode implements Cloneable, Serializable {
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
 
+    private final StringBuilder gremlin = new StringBuilder();
+
     public Bytecode() {}
 
     public Bytecode(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+        addToGremlin(sourceName, arguments);
+    }
+
+    private void addToGremlin(final String name, final Object... arguments) {
+        gremlin.append(".").append(name).append('(');
+
+        final Object[] flattenedArguments = flattenArguments(arguments);
+        for (int i = 0; i < flattenedArguments.length; i++) {
+            if (i != 0) {
+                gremlin.append(',');
+            }
+            gremlin.append(argAsString(flattenedArguments[i]));
+        }
+
+        gremlin.append(')');
+    }
+
+    private String argAsString(final Object arg) {
+        if (arg instanceof String)
+            return "\"" + arg + "\"";
+        if (arg instanceof Integer)
+            return arg.toString();
+
+        return null;
+    }
+
+    public String getGremlin(final String g) {
+        return g + gremlin;
     }
 
     /**
@@ -82,6 +112,8 @@ public class Bytecode implements Cloneable, Serializable {
         } else
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         Bindings.clear();
+
+        addToGremlin(sourceName, arguments);
     }
 
     /**
@@ -92,6 +124,8 @@ public class Bytecode implements Cloneable, Serializable {
      */
     public void addStep(final String stepName, final Object... arguments) {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
+
+        addToGremlin(stepName, arguments);
     }
 
     /**
