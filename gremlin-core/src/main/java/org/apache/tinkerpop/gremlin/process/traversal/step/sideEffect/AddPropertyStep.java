@@ -115,9 +115,8 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
                 && optEventStrategy.isPresent();
         final EventStrategy es = optEventStrategy.orElse(null);
 
-        // find property to remove
-        // only need to capture the removedProperty if eventing is configured
-        Property removedProperty = eventingIsConfigured ?
+        // find property to remove. only need to capture the removedProperty if eventing is configured
+        final Property removedProperty = eventingIsConfigured ?
                 captureRemovedProperty(element, key, value, es) :
                 VertexProperty.empty();
 
@@ -142,7 +141,8 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         }
     }
 
-    private Property captureRemovedProperty(Element element, String key, Object value, EventStrategy es){
+    private Property captureRemovedProperty(final Element element, final String key, final Object value,
+                                            final EventStrategy es){
         Property removedProperty = VertexProperty.empty();
 
         if (element instanceof Vertex) {

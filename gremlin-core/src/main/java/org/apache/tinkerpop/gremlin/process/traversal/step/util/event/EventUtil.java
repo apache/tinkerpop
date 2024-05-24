@@ -27,13 +27,22 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-public class EventUtil {
+/**
+ * Logic for registering events with the {@link EventStrategy} and the callback registry. Extracting this logic allows
+ * providers to reuse these utilities more readily.
+ */
+public final class EventUtil {
 
-    public static void registerVertexPropertyChange(CallbackRegistry<Event> callbackRegistry,
-                                                    Traversal.Admin<Object, Object> traversal,
-                                                    Vertex vertex,
-                                                    String key,
-                                                    Object value){
+    private EventUtil() {}
+
+    /**
+     * Register a vertex property change event with the callback registry.
+     */
+    public static void registerVertexPropertyChange(final CallbackRegistry<Event> callbackRegistry,
+                                                    final Traversal.Admin<Object, Object> traversal,
+                                                    final Vertex vertex,
+                                                    final String key,
+                                                    final Object value){
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Property<?> p = vertex.property(key);
@@ -43,11 +52,14 @@ public class EventUtil {
         }
     }
 
-    public static void registerEdgePropertyChange(CallbackRegistry<Event> callbackRegistry,
-                                                  Traversal.Admin<Object, Object> traversal,
-                                                  Edge edge,
-                                                  String key,
-                                                  Object value){
+    /**
+     * Register an edge property change event with the callback registry.
+     */
+    public static void registerEdgePropertyChange(final CallbackRegistry<Event> callbackRegistry,
+                                                  final Traversal.Admin<Object, Object> traversal,
+                                                  final Edge edge,
+                                                  final String key,
+                                                  final Object value){
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Property<?> p = edge.property(key);
@@ -58,55 +70,78 @@ public class EventUtil {
         }
     }
 
-    public static void registerEdgeCreation(CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry,
-                                            Traversal.Admin<Object, Object> traversal,
-                                            Edge addedEdge){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerEdgeCreation(final CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry,
+                                            final Traversal.Admin<Object, Object> traversal,
+                                            final Edge addedEdge){
         if (hasAnyCallbacks(callbackRegistry)) {
             final Event.EdgeAddedEvent vae = createEdgeAddedEvent(traversal, addedEdge);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
     }
 
-    public static void registerEdgeCreationWithGenericEventRegistry(CallbackRegistry<Event> callbackRegistry,
-                                                                    Traversal.Admin<Object, Object> traversal,
-                                                                    Edge addedEdge){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerEdgeCreationWithGenericEventRegistry(final CallbackRegistry<Event> callbackRegistry,
+                                                                    final Traversal.Admin<Object, Object> traversal,
+                                                                    final Edge addedEdge){
         if (hasAnyCallbacks(callbackRegistry)) {
             final Event.EdgeAddedEvent vae = createEdgeAddedEvent(traversal, addedEdge);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
     }
 
-    private static Event.EdgeAddedEvent createEdgeAddedEvent(Traversal.Admin<Object, Object> traversal, Edge addedEdge){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    private static Event.EdgeAddedEvent createEdgeAddedEvent(final Traversal.Admin<Object, Object> traversal,
+                                                             final Edge addedEdge){
         final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
         return new Event.EdgeAddedEvent(eventStrategy.detach(addedEdge));
     }
 
-    public static void registerVertexCreation(CallbackRegistry<Event.VertexAddedEvent> callbackRegistry,
-                                              Traversal.Admin<Object, Object> traversal,
-                                              Vertex addedVertex){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerVertexCreation(final CallbackRegistry<Event.VertexAddedEvent> callbackRegistry,
+                                              final Traversal.Admin<Object, Object> traversal,
+                                              final Vertex addedVertex){
         if (hasAnyCallbacks(callbackRegistry)) {
             final Event.VertexAddedEvent vae = createVertexAddedEvent(traversal, addedVertex);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
     }
 
-    public static void registerVertexCreationWithGenericEventRegistry(CallbackRegistry<Event> callbackRegistry,
-                                                                      Traversal.Admin<Object, Object> traversal,
-                                                                      Vertex addedVertex){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerVertexCreationWithGenericEventRegistry(final CallbackRegistry<Event> callbackRegistry,
+                                                                      final Traversal.Admin<Object, Object> traversal,
+                                                                      final Vertex addedVertex){
         if (hasAnyCallbacks(callbackRegistry)) {
             final Event.VertexAddedEvent vae = createVertexAddedEvent(traversal, addedVertex);
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
     }
 
-    private static Event.VertexAddedEvent createVertexAddedEvent(Traversal.Admin<Object, Object> traversal, Vertex addedVertex){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    private static Event.VertexAddedEvent createVertexAddedEvent(final Traversal.Admin<Object, Object> traversal,
+                                                                 final Vertex addedVertex){
         final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
         return new Event.VertexAddedEvent(eventStrategy.detach(addedVertex));
     }
 
-    public static void registerElementRemoval(CallbackRegistry<Event> callbackRegistry,
-                                              Traversal.Admin<Object, Object> traversal,
-                                              Element elementForRemoval){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerElementRemoval(final CallbackRegistry<Event> callbackRegistry,
+                                              final Traversal.Admin<Object, Object> traversal,
+                                              final Element elementForRemoval){
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Event removeEvent;
@@ -123,9 +158,12 @@ public class EventUtil {
         }
     }
 
-    public static void registerPropertyRemoval(CallbackRegistry<Event> callbackRegistry,
-                                               Traversal.Admin<Object, Object> traversal,
-                                               Property elementForRemoval){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerPropertyRemoval(final CallbackRegistry<Event> callbackRegistry,
+                                               final Traversal.Admin<Object, Object> traversal,
+                                               final Property elementForRemoval){
         if (hasAnyCallbacks(callbackRegistry)) {
             final EventStrategy eventStrategy = forceGetEventStrategy(traversal);
             final Event.ElementPropertyEvent removeEvent;
@@ -140,12 +178,15 @@ public class EventUtil {
         }
     }
 
-    public static void registerPropertyChange(CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry,
-                                              EventStrategy es,
-                                              Element affectedElement,
-                                              Property removedProperty,
-                                              Object value,
-                                              Object[] vertexPropertyKeyValues){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static void registerPropertyChange(final CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry,
+                                              final EventStrategy es,
+                                              final Element affectedElement,
+                                              final Property removedProperty,
+                                              final Object value,
+                                              final Object[] vertexPropertyKeyValues){
         final Event.ElementPropertyChangedEvent event;
         if (affectedElement instanceof Vertex) {
             event = new Event.VertexPropertyChangedEvent(es.detach((Vertex) affectedElement), removedProperty, value, vertexPropertyKeyValues);
@@ -161,11 +202,17 @@ public class EventUtil {
         }
     }
 
-    public static boolean hasAnyCallbacks(CallbackRegistry<? extends Event> callbackRegistry){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static boolean hasAnyCallbacks(final CallbackRegistry<? extends Event> callbackRegistry){
         return callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty();
     }
 
-    public static EventStrategy forceGetEventStrategy(Traversal.Admin<Object, Object> traversal){
+    /**
+     * Register a vertex property addition event with the callback registry.
+     */
+    public static EventStrategy forceGetEventStrategy(final Traversal.Admin<Object, Object> traversal){
         return traversal.getStrategies().getStrategy(EventStrategy.class).get();
     }
 }
