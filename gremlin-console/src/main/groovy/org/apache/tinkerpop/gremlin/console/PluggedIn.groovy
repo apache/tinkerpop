@@ -23,11 +23,8 @@ import org.apache.tinkerpop.gremlin.jsr223.BindingsCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
-import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer
 import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment
-import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 import org.codehaus.groovy.tools.shell.IO
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -79,15 +76,6 @@ class PluggedIn {
 
     void deactivate() {
         this.activated = false
-    }
-
-    Optional<RemoteAcceptor> remoteAcceptor() {
-        // find a consoleCustomizer if available
-        if (!plugin.getCustomizers("gremlin-groovy").isPresent() || !plugin.getCustomizers("gremlin-groovy").get().any{ it instanceof ConsoleCustomizer })
-            return Optional.empty()
-
-        ConsoleCustomizer customizer = (ConsoleCustomizer) plugin.getCustomizers("gremlin-groovy").get().find{ it instanceof ConsoleCustomizer }
-        return Optional.of(customizer.getRemoteAcceptor(new GroovyGremlinShellEnvironment()))
     }
 
     public class GroovyGremlinShellEnvironment implements GremlinShellEnvironment {

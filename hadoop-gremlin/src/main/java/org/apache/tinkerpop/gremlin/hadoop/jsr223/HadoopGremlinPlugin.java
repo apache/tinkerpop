@@ -55,14 +55,10 @@ import org.apache.tinkerpop.gremlin.jsr223.Customizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.LazyBindingsCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.console.ConsoleCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.console.GremlinShellEnvironment;
-import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -133,7 +129,7 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
     private static final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
 
     public HadoopGremlinPlugin() {
-        super(NAME, appliesTo, imports, bindings, new HadoopConsoleCustomizer());
+        super(NAME, appliesTo, imports, bindings);
     }
 
     @Override
@@ -153,12 +149,5 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     public static HadoopGremlinPlugin instance() {
         return plugin;
-    }
-
-    private static class HadoopConsoleCustomizer implements ConsoleCustomizer {
-        @Override
-        public RemoteAcceptor getRemoteAcceptor(final GremlinShellEnvironment environment) {
-            return new HadoopRemoteAcceptor(environment);
-        }
     }
 }

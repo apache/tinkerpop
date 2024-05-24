@@ -134,7 +134,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      */
     public T with(final String configFile) throws Exception {
         final Configurations configs = new Configurations();
-        return with(configs.properties((configFile)));
+        return with(configs.properties(configFile));
     }
 
     /**

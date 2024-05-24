@@ -24,6 +24,7 @@ import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.util.SdkHttpUtils;
 import com.amazonaws.util.StringUtils;
@@ -52,6 +53,11 @@ public class Sigv4 implements Auth {
     static final String NEPTUNE_SERVICE_NAME = "neptune-db";
     private final AWSCredentialsProvider awsCredentialsProvider;
     private final AWS4Signer aws4Signer;
+
+
+    public Sigv4(final String regionName) {
+        this(regionName, new DefaultAWSCredentialsProviderChain(), NEPTUNE_SERVICE_NAME);
+    }
 
     public Sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider) {
         this(regionName, awsCredentialsProvider, NEPTUNE_SERVICE_NAME);
