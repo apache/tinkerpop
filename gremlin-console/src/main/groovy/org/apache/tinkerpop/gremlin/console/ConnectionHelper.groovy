@@ -16,28 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.console.commands
+package org.apache.tinkerpop.gremlin.console
 
-import org.apache.groovy.groovysh.CommandSupport
-import org.apache.groovy.groovysh.Groovysh
-import org.apache.tinkerpop.gremlin.console.Mediator
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
 
-/**
- * Submit a script to a Gremlin Server instance.
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-class SubmitCommand extends CommandSupport {
-
-    private final Mediator mediator
-
-    public SubmitCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":submit", ":>")
-        this.mediator = mediator
+class ConnectionHelper {
+    private ConnectionHelper() {
     }
 
-    @Override
-    def Object execute(final List<String> arguments) {
-        if (mediator.remotes.size() == 0) return "No remotes are configured.  Use :remote command."
-        return mediator.currentRemote().submit(arguments)
+    static Object connect(final String fileName) throws Exception {
+        return traversal().with(fileName)
     }
 }

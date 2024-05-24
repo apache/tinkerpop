@@ -39,10 +39,9 @@ public class SettingsTest {
         conf.setProperty("port", 8000);
         conf.setProperty("nioPoolSize", 16);
         conf.setProperty("workerPoolSize", 32);
-        conf.setProperty("username", "user1");
-        conf.setProperty("password", "password1");
-        conf.setProperty("jaasEntry", "JaasIt");
-        conf.setProperty("protocol", "protocol0");
+        conf.setProperty("auth.type", "basic");
+        conf.setProperty("auth.username", "user1");
+        conf.setProperty("auth.password", "password1");
         conf.setProperty("hosts", Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"));
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
@@ -76,6 +75,9 @@ public class SettingsTest {
         assertEquals(8000, settings.port);
         assertEquals(16, settings.nioPoolSize);
         assertEquals(32, settings.workerPoolSize);
+        assertEquals("basic", settings.auth.type);
+        assertEquals("user1", settings.auth.username);
+        assertEquals("password1", settings.auth.password);
         assertEquals(Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"), settings.hosts);
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));

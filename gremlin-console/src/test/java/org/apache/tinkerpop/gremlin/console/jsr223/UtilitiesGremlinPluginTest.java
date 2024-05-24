@@ -43,7 +43,7 @@ public class UtilitiesGremlinPluginTest {
     private final IO io = new IO(inputStream, outputStream, errorStream);
 
     @Test
-    public void shouldFailWithoutUtilitiesPlugin() throws Exception {
+    public void shouldFailWithoutUtilitiesPlugin() {
         final Groovysh groovysh = new Groovysh();
         try {
             groovysh.execute("describeGraph(g.class)");
@@ -53,7 +53,7 @@ public class UtilitiesGremlinPluginTest {
     }
 
     @Test
-    public void shouldPluginUtilities() throws Exception {
+    public void shouldPluginUtilities() {
         final UtilitiesGremlinPlugin plugin = new UtilitiesGremlinPlugin();
 
         final Groovysh groovysh = new Groovysh();

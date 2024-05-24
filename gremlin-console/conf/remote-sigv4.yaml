@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#  http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,10 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+##############################################################
+# This configuration is meant to have Gremlin Server with
+# sigv4 authentication.
+##############################################################
 
-gremlin.neo4j.directory=/tmp/neo4j
-gremlin.neo4j.conf.dbms.auto_index.nodes.enabled=true
-#gremlin.neo4j.conf.dbms.auto_index.nodes.keys=
-gremlin.neo4j.conf.dbms.auto_index.relationships.enabled=true
-#gremlin.neo4j.conf.dbms.auto_index.relationships.keys=
+hosts: [localhost]
+port: 8182
+auth: {
+  type: sigv4,
+  region: us-west1 }
+connectionPool: {
+  enableSsl: true,
+  sslEnabledProtocols: [TLSv1.2] }
+serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}
