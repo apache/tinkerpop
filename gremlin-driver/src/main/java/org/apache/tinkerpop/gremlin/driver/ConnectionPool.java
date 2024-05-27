@@ -208,17 +208,16 @@ final class ConnectionPool {
                 return;
             }
 
+            // Destroy any extra connections that exceeded the maximum pool size. Idle connections will be removed
+            // based on their idle timeout so that isn't handled here.
             final int poolSize = connections.size();
-            if (poolSize > minPoolSize) {
+            if (poolSize > maxPoolSize) {
                 if (logger.isDebugEnabled())
                     logger.debug("destroy {}", connection.getConnectionInfo());
                 destroyConnection(connection);
-            } else if (maxPoolSize > 1) {
-                if (logger.isDebugEnabled())
-                    logger.debug("replace {}", connection.getConnectionInfo());
-                replaceConnection(connection);
-            } else
+            } else {
                 announceAvailableConnection();
+            }
         }
     }
 

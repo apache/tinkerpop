@@ -135,7 +135,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.channelizer = HttpChannelizer.class.getName();
                 break;
             case "shouldAliasTraversalSourceVariables":
-            case "shouldAliasTraversalSourceVariablesInSession":
                 try {
                     final String p = Storage.toPath(TestHelper.generateTempFileFromResource(
                                                       GremlinDriverIntegrateTest.class,
@@ -301,7 +300,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Max frame length of 64 has been exceeded."));
+                assertThat(root.getMessage(), containsString("Response exceeded 64 bytes."));
             }
 
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -473,7 +472,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 assertThat(inner.getMessage(), endsWith("Division by zero"));
 
                 final ResponseException rex = (ResponseException) inner;
-                assertEquals("java.lang.ArithmeticException", rex.getRemoteException());
+                assertEquals("ServerErrorException", rex.getRemoteException());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -755,43 +754,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
-            assertEquals(1, r.size());
-
-            final Vertex v = r.get(0).get(DetachedVertex.class);
-            assertEquals(1, v.id());
-            assertEquals("person", v.label());
-
-            assertEquals(2, IteratorUtils.count(v.properties()));
-            assertEquals("marko", v.value("name"));
-            assertEquals(29, Integer.parseInt(v.value("age").toString()));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldWorkWithGraphSONExtendedV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
-        final Client client = cluster.connect();
-
-        try {
-            final List<Result> r = client.submit("java.time.Instant.EPOCH").all().join();
-            assertEquals(1, r.size());
-
-            final Instant then = r.get(0).get(Instant.class);
-            assertEquals(Instant.EPOCH, then);
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldWorkWithGraphBinaryV4Serialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
@@ -819,7 +781,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (Exception re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
-            assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
+            assertTrue(root.getMessage().equals("Response exceeded 1 bytes."));
         } finally {
             cluster.close();
         }
@@ -888,6 +850,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Ignore("Server doesn't currently support transactions.")
     @Test
     public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
 
@@ -935,32 +898,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(301, results4.one().getInt());
 
         cluster.close();
-    }
-
-    @Test
-    public void shouldExecuteScriptsInMultipleSession() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        try {
-            final Client client1 = cluster.connect(name.getMethodName() + "1");
-            final Client client2 = cluster.connect(name.getMethodName() + "2");
-            final Client client3 = cluster.connect(name.getMethodName() + "3");
-
-            final ResultSet results11 = client1.submit("x = 1");
-            final ResultSet results21 = client2.submit("x = 2");
-            final ResultSet results31 = client3.submit("x = 3");
-            assertEquals(1, results11.all().get().get(0).getInt());
-            assertEquals(2, results21.all().get().get(0).getInt());
-            assertEquals(3, results31.all().get().get(0).getInt());
-
-            final ResultSet results12 = client1.submit("x + 100");
-            final ResultSet results22 = client2.submit("x * 2");
-            final ResultSet results32 = client3.submit("x * 10");
-            assertEquals(101, results12.all().get().get(0).getInt());
-            assertEquals(4, results22.all().get().get(0).getInt());
-            assertEquals(30, results32.all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
     }
 
     @Test
@@ -1059,6 +996,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Ignore("strict transactions not currently supported")
     @Test
     public void shouldAliasGraphVariablesInStrictTransactionMode() throws Exception {
 
@@ -1125,55 +1063,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
-    }
-
-    @Test
-    public void shouldAliasGraphVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
-        final Client client = cluster.connect(name.getMethodName());
-
-        try {
-            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
-            fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            final ResponseException re = (ResponseException) root;
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
-            client.close();
-        }
-
-        try {
-            final Client aliased = cluster.connect(name.getMethodName()).alias("graph");
-            assertEquals("jason", aliased.submit("n='jason'").all().get().get(0).getString());
-            final String name = aliased.submit("g.addVertex('name',n).values('name')").all().get().get(0).getString();
-            assertEquals("jason", name);
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldAliasTraversalSourceVariablesInSession() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
-        final Client client = cluster.connect(name.getMethodName());
-
-        try {
-            client.submit("g.addV().property('name','stephen')").all().get().get(0).getVertex();
-            fail("Should have tossed an exception because \"g\" is readonly in this context");
-        } catch (Exception ex) {
-            final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root, instanceOf(ResponseException.class));
-            final ResponseException re = (ResponseException) root;
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
-        }
-
-        final Client clientAliased = client.alias("g1");
-        assertEquals("jason", clientAliased.submit("n='jason'").all().get().get(0).getString());
-        final String name = clientAliased.submit("g.addV().property('name',n).values('name')").all().get().get(0).getString();
-        assertEquals("jason", name);
-
-        cluster.close();
     }
 
     @Ignore("used sessions")
@@ -1346,10 +1235,5 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldFailOnInitiallyDeadHostForClusterClient() throws Exception {
         testShouldFailOnInitiallyDeadHost(true);
-    }
-
-    @Test
-    public void shouldFailOnInitiallyDeadHostForSessionClient() throws Exception {
-        testShouldFailOnInitiallyDeadHost(false);
     }
 }

@@ -91,7 +91,8 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // there are that many failures someone would take notice and hopefully stop the client.
         logger.error("Could not process the response", cause);
 
-        pending.getAndSet(null).markError(cause);
+        final ResultQueue pendingQueue = pending.getAndSet(null);
+        if (pendingQueue != null) pendingQueue.markError(cause);
 
         // serialization exceptions should not close the channel - that's worth a retry
         if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))

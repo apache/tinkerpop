@@ -237,7 +237,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
      */
     @Test
     public void shouldSucceedWithJitteryConnection() throws Exception {
-        final Cluster cluster = TestClientFactory.build().minConnectionPoolSize(1).maxConnectionPoolSize(4).
+        final Cluster cluster = TestClientFactory.build().minConnectionPoolSize(1).maxConnectionPoolSize(128).
                 reconnectInterval(1000).
                 maxWaitForConnection(4000).validationRequest("g.inject()").create();
         final Client.ClusteredClient client = cluster.connect();

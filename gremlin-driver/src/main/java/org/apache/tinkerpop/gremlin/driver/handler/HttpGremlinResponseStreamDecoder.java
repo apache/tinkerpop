@@ -62,6 +62,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
 
         if (msg instanceof HttpResponse) {
+            ctx.channel().attr(BYTES_READ).set(0);
             responseStatus.set(((HttpResponse) msg).status());
 
             if (isError(((HttpResponse) msg).status())) {
@@ -69,7 +70,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
             }
 
             isFirstChunk.set(true);
-            ctx.channel().attr(BYTES_READ).set(0);
         }
 
         if (msg instanceof HttpContent) {
@@ -77,7 +77,14 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
             Attribute<Integer> bytesRead = ctx.channel().attr(BYTES_READ);
             bytesRead.set(bytesRead.get() + content.readableBytes());
             if (bytesRead.get() > maxContentLength) {
-                ctx.fireExceptionCaught(new TooLongFrameException("Response exceeded " + maxContentLength + " bytes."));
+                throw new TooLongFrameException("Response exceeded " + maxContentLength + " bytes.");
+            }
+
+            if (msg instanceof LastHttpContent && content.readableBytes() == 0 && bytesRead.get() != 0) {
+                // If this last content contains no bytes and there were bytes read previously, it means that this is the
+                // trailing headers. Trailing headers aren't used in the driver and shouldn't be passed on.
+                content.release();
+                return;
             }
 
             try {
@@ -96,14 +103,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
                 final ResponseMessageV4 chunk = serializer.readChunk(content, isFirstChunk.get());
 
-                if (msg instanceof LastHttpContent) {
-                    final HttpHeaders trailingHeaders = ((LastHttpContent) msg).trailingHeaders();
-
-                    if (!Objects.equals(trailingHeaders.get("code"), "200")) {
-                        throw new Exception(trailingHeaders.get("message"));
-                    }
-                }
-
                 isFirstChunk.set(false);
 
                 out.add(chunk);
@@ -114,6 +113,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     }
 
     private static boolean isError(final HttpResponseStatus status) {
-        return status != HttpResponseStatus.OK && status != HttpResponseStatus.NO_CONTENT;
+        return status != HttpResponseStatus.OK;
     }
 }

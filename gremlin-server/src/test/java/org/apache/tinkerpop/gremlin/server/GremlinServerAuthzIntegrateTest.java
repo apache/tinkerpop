@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
+import org.apache.http.Consts;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -50,6 +52,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -128,7 +132,6 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         return settings;
     }
 
-    @Ignore("todo: looks at server side AllowListAuthorizer")
     @Test
     public void shouldAuthorizeBytecodeRequest() {
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
@@ -167,21 +170,20 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            // assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
 
             // wait for logger to flush - (don't think there is a way to detect this)
             stopServer();
             Thread.sleep(1000);
 
-//            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-//                    "User stephen with address .+? attempted an unauthorized request for bytecode operation: " +
-//                    "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]")), is(true));
+            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                    "User stephen with address .+? attempted an unauthorized http request: " +
+                    "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]")), is(true));
         } finally {
             cluster.close();
         }
     }
 
-    @Ignore("todo: looks at server side AllowListAuthorizer")
     @Test
     public void shouldKeepAuthorizingBytecodeRequests() {
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
@@ -229,14 +231,14 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            // assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
 
             // wait for logger to flush - (don't think there is a way to detect this)
             stopServer();
             Thread.sleep(1000);
 
-//            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-//                    "User stephen with address .+? attempted an unauthorized request for eval operation: 1\\+1")), is(true));
+            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                    "User stephen with address .+? attempted an unauthorized http request: 1\\+1")), is(true));
         } finally {
             cluster.close();
         }
@@ -253,7 +255,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            // assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
         } finally {
             cluster.close();
         }
@@ -270,7 +272,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            // assertEquals("Failed to authorize: User not authorized for bytecode requests on [gclassic].", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for bytecode requests on [gclassic].", re.getMessage());
         } finally {
             cluster.close();
         }
@@ -287,76 +289,78 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            // assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
         } finally {
             cluster.close();
         }
     }
 
-    @Ignore("HttpGet is not supported")
     @Test
     public void shouldAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=2-1"));
-        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+        final HttpPost httpPost = new HttpPost(TestClientFactory.createURLString());
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"2-1\"}", Consts.UTF_8));
+        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
 
-        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(1, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals(1, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 
-    @Ignore("HttpGet is not supported")
     @Test
     public void shouldFailAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=3-1"));
-        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
+        final HttpPost httpPost = new HttpPost(TestClientFactory.createURLString());
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"3-1\"}", Consts.UTF_8));
+        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
-        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
         }
         // wait for logger to flush - (don't think there is a way to detect this)
         stopServer();
         Thread.sleep(1000);
 
-//        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-//                "User stephen with address .+? attempted an unauthorized http request: 3-1")), is(true));
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "User stephen with address .+? attempted an unauthorized http request: 3-1")), is(true));
     }
 
-    @Ignore("HttpGet is not supported")
     @Test
     public void shouldKeepAuthorizingWithHttpTransport() throws Exception {
-        HttpGet httpget;
+        HttpPost httpPost;
         final CloseableHttpClient httpclient = HttpClients.createDefault();
 
-        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=4-1"));
-        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+        httpPost = new HttpPost(TestClientFactory.createURLString());
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"4-1\"}", Consts.UTF_8));
+        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(3, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals(3, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
 
-        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=5-1"));
-        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+        httpPost = new HttpPost(TestClientFactory.createURLString());
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"5-1\"}", Consts.UTF_8));
+        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
         }
 
-        httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=6-1"));
-        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+        httpPost = new HttpPost(TestClientFactory.createURLString());
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"6-1\"}", Consts.UTF_8));
+        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
+        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals(5, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals(5, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 }
