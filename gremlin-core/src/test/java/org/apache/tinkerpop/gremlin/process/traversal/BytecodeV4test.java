@@ -19,18 +19,54 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.javatuples.Pair;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class BytecodeV4test {
 
+    @Parameterized.Parameter(value = 0)
+    public Traversal original;
+
+    @Parameterized.Parameter(value = 1)
+    public String expected;
+
     @Test
-    public void shouldWork() {
-        assertEquals("g.V().count()",
-                EmptyGraph.instance().traversal().V().count().asAdmin().getBytecode().getGremlin("g"));
-        assertEquals("g.addV(\"test\")",
-                EmptyGraph.instance().traversal().addV("test").asAdmin().getBytecode().getGremlin("g"));
+    public void doTest() {
+        final Pair<String, Map<String, Object>> gremlin = original.asAdmin().getBytecode().getGremlin("g");
+        assertEquals(expected, gremlin.getValue0());
+    }
+
+    @Before
+    public void setUp() {
+
+    }
+
+    private static GraphTraversalSource newG() {
+        return traversal().with(EmptyGraph.instance());
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> generateTestParameters() {
+        return Arrays.asList(new Object[][]{
+                {newG().V().count(), "g.V().count()"},
+                {newG().addV("test"), "g.addV(\"test\")"},
+                {newG().V(1).out("knows").values("name"), "g.V(1).out(\"knows\").values(\"name\")"},
+        });
     }
 }

@@ -93,12 +93,26 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
-    public void shouldSubmitBytecodeWithGraphBinary() {
+    public void shouldSubmitTraversalWithGraphBinary() {
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
             final String result = g.inject("2").toList().get(0);
             assertEquals("2", result);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSubmitGremlinWithUnsupportedType() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final long result = g.inject(5L).toList().get(0);
+            assertEquals(5L, result);
         } catch (Exception ex) {
             throw ex;
         } finally {

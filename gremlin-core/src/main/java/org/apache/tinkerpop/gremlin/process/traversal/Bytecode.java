@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -55,6 +56,8 @@ public class Bytecode implements Cloneable, Serializable {
     private List<Instruction> stepInstructions = new ArrayList<>();
 
     private final StringBuilder gremlin = new StringBuilder();
+    private final Map<String, Object> parameters = new HashMap<>();
+    private int paramCount = 0;
 
     public Bytecode() {}
 
@@ -79,15 +82,17 @@ public class Bytecode implements Cloneable, Serializable {
 
     private String argAsString(final Object arg) {
         if (arg instanceof String)
-            return "\"" + arg + "\"";
+            return "\"" + arg + "\""; // todo: escaping
         if (arg instanceof Integer)
             return arg.toString();
 
-        return null;
+        final String paramName = "_" + paramCount++;
+        parameters.put(paramName, arg);
+        return paramName;
     }
 
-    public String getGremlin(final String g) {
-        return g + gremlin;
+    public Pair<String, Map<String, Object>> getGremlin(final String g) {
+        return Pair.with(g + gremlin, parameters);
     }
 
     /**
@@ -180,7 +185,7 @@ public class Bytecode implements Cloneable, Serializable {
         return this.sourceInstructions.isEmpty() && this.stepInstructions.isEmpty();
     }
 
-    private static final void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
+    private static void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
         if (argument instanceof Binding)
             bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
         else if (argument instanceof Map) {

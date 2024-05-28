@@ -88,7 +88,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     final HttpHeaders trailingHeaders = ((LastHttpContent) msg).trailingHeaders();
 
                     if (!Objects.equals(trailingHeaders.get("code"), "200")) {
-                        throw new Exception(trailingHeaders.get("message"));
+                        throw new Exception(trailingHeaders.contains("message") ? trailingHeaders.get("message") : "Server error");
                     }
                 }
 

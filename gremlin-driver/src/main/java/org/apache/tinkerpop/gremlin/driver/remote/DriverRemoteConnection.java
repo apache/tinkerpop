@@ -31,7 +31,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -225,7 +227,9 @@ public class DriverRemoteConnection implements RemoteConnection {
     @Override
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
         try {
-            return client.submitAsync(bytecode, getRequestOptions(bytecode)).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
+            final Pair<String, Map<String, Object>> gremlin = bytecode.getGremlin(remoteTraversalSourceName);
+            return client.submitAsync(gremlin.getValue0(), gremlin.getValue1())
+                    .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
