@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import static org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler.REQUEST_SENT;
+
 /**
  * Converts {@link RequestMessageV4} to a {@code HttpRequest}.
  */
@@ -84,6 +86,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                 request = interceptor.apply(request);
             }
             objects.add(request);
+            channelHandlerContext.channel().attr(REQUEST_SENT).set(true);
         } catch (SerializationException ex) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",

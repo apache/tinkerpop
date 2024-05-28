@@ -99,7 +99,7 @@ public class SimpleHttpClient extends AbstractClient {
                             }
                             p.addLast(
                                     new HttpClientCodec(),
-                                    new HttpGremlinResponseStreamDecoder(serializer),
+                                    new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
                                     new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false),
 
                                     callbackResponseHandler);
