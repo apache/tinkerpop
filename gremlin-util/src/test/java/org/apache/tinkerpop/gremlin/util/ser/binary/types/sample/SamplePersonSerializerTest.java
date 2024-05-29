@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser.binary.types.sample;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -102,11 +103,11 @@ public class SamplePersonSerializerTest {
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
         final ByteBuf serialized = serializer.serializeResponseAsBinary(
-                ResponseMessageV4.build().result(Collections.singletonList(person)).create(), allocator);
+                ResponseMessageV4.build().result(Collections.singletonList(person)).code(HttpResponseStatus.OK).create(), allocator);
 
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(serialized);
 
-        final SamplePerson actual = (SamplePerson) deserialized.getResult().getData();
+        final SamplePerson actual = (SamplePerson) deserialized.getResult().getData().get(0);
         assertThat(actual, reflectionEquals(person));
     }
 

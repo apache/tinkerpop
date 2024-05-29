@@ -42,7 +42,7 @@ public class GraphBinaryMessageSerializerV4Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
 
-    private static class SampleTypeSerializerRegistryBuilder extends TypeSerializerRegistry.Builder {
+    public static class SampleTypeSerializerRegistryBuilder extends TypeSerializerRegistry.Builder {
         public static AtomicInteger createCounter = new AtomicInteger();
 
         @Override
