@@ -270,7 +270,8 @@ public class GraphSONMessageSerializerV4Test {
     }
 
     private ResponseMessageV4 convert(final Object toSerialize, MessageSerializerV4<?> serializer) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(Collections.singletonList(toSerialize)).create(), allocator);
+        final ByteBuf bb = serializer.serializeResponseAsBinary(
+                responseMessageBuilder.result(Collections.singletonList(toSerialize)).code(HttpResponseStatus.OK).create(), allocator);
         return serializer.deserializeBinaryResponse(bb);
     }
 }
