@@ -46,6 +46,14 @@ public final class DisjunctStep<S, E> extends ScalarMapStep<S, Set<?>> implement
         }
     }
 
+    public Traversal.Admin<S,E> getValueTraversal() {
+        return this.valueTraversal;
+    }
+
+    public Object getParameterItems() {
+        return this.parameterItems;
+    }
+
     @Override
     public String getStepName() { return "disjunct"; }
 

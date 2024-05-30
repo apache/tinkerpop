@@ -48,6 +48,14 @@ public final class IntersectStep<S, E> extends ScalarMapStep<S, Set<?>> implemen
         }
     }
 
+    public Traversal.Admin<S,E> getValueTraversal() {
+        return this.valueTraversal;
+    }
+
+    public Object getParameterItems() {
+        return this.parameterItems;
+    }
+
     @Override
     public String getStepName() { return "intersect"; }
 
