@@ -22,7 +22,7 @@ async-timeout==4.0.3
 attrs==23.2.0
 charset-normalizer==3.3.2
 frozenlist==1.4.1
-idna==3.6
+idna==3.7
 isodate==0.6.1
 multidict==6.0.5
 six==1.16.0
