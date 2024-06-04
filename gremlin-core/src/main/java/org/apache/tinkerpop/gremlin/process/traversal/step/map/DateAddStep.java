@@ -99,4 +99,12 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
     public String toString() {
         return StringFactory.stepString(this);
     }
+
+    public DT getDateToken() {
+        return this.dateToken;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
 }
