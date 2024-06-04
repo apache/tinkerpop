@@ -22,13 +22,18 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
@@ -61,17 +66,29 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-
-                authorizer.authorize(user, requestMessage);
-                ctx.fireChannelRead(msg);
+                switch (requestMessage.getGremlinType()) {
+                    case TokensV4.OPS_BYTECODE:
+                        final Bytecode bytecode = (Bytecode) requestMessage.getGremlin();
+                        final Map<String, String> aliases = new HashMap<>();
+                        aliases.put(TokensV4.ARGS_G, requestMessage.getField(TokensV4.ARGS_G));
+                        final Bytecode restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
+                        final RequestMessageV4 restrictedMsg = RequestMessageV4.from(requestMessage, restrictedBytecode).create();
+                        ctx.fireChannelRead(restrictedMsg);
+                        break;
+                    case TokensV4.OPS_EVAL:
+                        authorizer.authorize(user, requestMessage);
+                        ctx.fireChannelRead(requestMessage);
+                        break;
+                    default:
+                        throw new AuthorizationException("This AuthorizationHandler only handles requests with OPS_BYTECODE or OPS_EVAL.");
+                }
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                 final String script = requestMessage.getGremlin().toString();
                 auditLogger.info("User {} with address {} attempted an unauthorized http request: {}",
                     user.getName(), address, script);
-                final String message = String.format("No authorization for script [%s] - check permissions.", script);
-                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, message);
+                HttpHandlerUtil.sendError(ctx, UNAUTHORIZED, "Failed to authorize: " + ex.getMessage());
                 ReferenceCountUtil.release(msg);
             } catch (Exception ex) {
                 final String message = String.format(

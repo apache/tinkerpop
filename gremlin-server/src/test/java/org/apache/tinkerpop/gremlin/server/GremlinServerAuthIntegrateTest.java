@@ -124,7 +124,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         } catch (Exception ex) {
             assertThat(ex, instanceOf(ExecutionException.class));
             final Throwable root = ExceptionHelper.getRootCause(ex);
-            assertThat(root, instanceOf(IllegalStateException.class));
+            assertThat(root.getMessage(), containsString("The server may be expecting SSL to be enabled"));
         } finally {
             cluster.close();
         }

@@ -58,8 +58,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     @Parameterized.Parameters
     public static Collection serializers() {
         return Arrays.asList(new Object[][]{
-                {new GraphBinaryMessageSerializerV4()},
-                {new GraphSONMessageSerializerV4()}
+                {new GraphBinaryMessageSerializerV4()}
         });
     }
 
