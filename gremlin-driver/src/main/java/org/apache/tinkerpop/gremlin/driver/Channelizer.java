@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -29,6 +31,7 @@ import io.netty.handler.ssl.SslHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 
 import java.util.Optional;
@@ -92,6 +95,8 @@ public interface Channelizer extends ChannelHandler {
         protected static final String PIPELINE_HTTP_ENCODER = "gremlin-encoder";
         protected static final String PIPELINE_HTTP_DECODER = "gremlin-decoder";
 
+        private static final SslCheckHandler sslCheckHandler = new SslCheckHandler();
+
         public boolean supportsSsl() {
             return cluster.connectionPoolSettings().enableSsl;
         }
@@ -135,6 +140,8 @@ public interface Channelizer extends ChannelHandler {
                 // will instead be capped by connectionSetupTimeoutMillis.
                 sslHandler.setHandshakeTimeoutMillis(0);
                 pipeline.addLast(PIPELINE_SSL_HANDLER, sslHandler);
+            } else {
+                pipeline.addLast(PIPELINE_SSL_HANDLER, sslCheckHandler);
             }
 
             configure(pipeline);
@@ -157,7 +164,7 @@ public interface Channelizer extends ChannelHandler {
             super.init(connection);
 
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled());
-            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder(cluster.getSerializer());
+            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder(cluster.getSerializer(), cluster.getMaxContentLength());
         }
 
         @Override

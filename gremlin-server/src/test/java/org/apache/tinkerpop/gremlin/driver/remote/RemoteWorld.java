@@ -168,16 +168,4 @@ public abstract class RemoteWorld implements World {
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
         public GraphBinaryRemoteComputerWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static class GraphSONRemoteWorld extends RemoteWorld {
-        public GraphSONRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHSON_V4)); }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static class GraphSONRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphSONRemoteComputerWorld() { super(createTestCluster(SerializersV4.GRAPHSON_V4)); }
-    }
 }
