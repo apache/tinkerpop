@@ -191,7 +191,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     String address = ctx.channel().remoteAddress().toString();
                     if (address.startsWith("/") && address.length() > 1) address = address.substring(1);
                     auditLogger.info("User {} with address {} requested: {}", user.getName(), address,
-                            requestMessage.getFieldOrDefault(TokensV4.ARGS_GREMLIN, ""));
+                            requestMessage.getGremlin());
                 }
 
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any

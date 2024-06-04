@@ -67,7 +67,7 @@ public abstract class AbstractClient implements SimpleClient {
         final CompletableFuture<List<ResponseMessageV4>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
             // message with trailers
-            if (f.isDone() && response.getStatus().getCode() != HttpResponseStatus.NO_CONTENT)
+            if (f.isDone())
                 throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
 
             results.add(response);
