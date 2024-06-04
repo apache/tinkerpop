@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -44,12 +45,15 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
     private static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
     private static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
+    private static final AttributeKey<Integer> BYTES_READ = AttributeKey.valueOf("bytesRead");
 
     private final MessageSerializerV4<?> serializer;
+    private final int maxContentLength;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public HttpGremlinResponseStreamDecoder(MessageSerializerV4<?> serializer) {
+    public HttpGremlinResponseStreamDecoder(final MessageSerializerV4<?> serializer, final int maxContentLength) {
         this.serializer = serializer;
+        this.maxContentLength = maxContentLength;
     }
 
     @Override
@@ -58,6 +62,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
 
         if (msg instanceof HttpResponse) {
+            ctx.channel().attr(BYTES_READ).set(0);
             responseStatus.set(((HttpResponse) msg).status());
 
             if (isError(((HttpResponse) msg).status())) {
@@ -68,11 +73,25 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         }
 
         if (msg instanceof HttpContent) {
+            ByteBuf content = ((HttpContent) msg).content();
+            Attribute<Integer> bytesRead = ctx.channel().attr(BYTES_READ);
+            bytesRead.set(bytesRead.get() + content.readableBytes());
+            if (bytesRead.get() > maxContentLength) {
+                throw new TooLongFrameException("Response exceeded " + maxContentLength + " bytes.");
+            }
+
+            if (msg instanceof LastHttpContent && content.readableBytes() == 0 && bytesRead.get() != 0) {
+                // If this last content contains no bytes and there were bytes read previously, it means that this is the
+                // trailing headers. Trailing headers aren't used in the driver and shouldn't be passed on.
+                content.release();
+                return;
+            }
+
             try {
                 // with error status we can get json in response
                 // no more chunks expected
                 if (isError(responseStatus.get())) {
-                    final JsonNode node = mapper.readTree(((HttpContent) msg).content().toString(CharsetUtil.UTF_8));
+                    final JsonNode node = mapper.readTree(content.toString(CharsetUtil.UTF_8));
                     final String message = node.get("message").asText();
                     final ResponseMessageV4 response = ResponseMessageV4.build()
                             .code(responseStatus.get()).statusMessage(message)
@@ -82,15 +101,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     return;
                 }
 
-                final ResponseMessageV4 chunk = serializer.readChunk(((HttpContent) msg).content(), isFirstChunk.get());
-
-                if (msg instanceof LastHttpContent) {
-                    final HttpHeaders trailingHeaders = ((LastHttpContent) msg).trailingHeaders();
-
-                    if (!Objects.equals(trailingHeaders.get("code"), "200")) {
-                        throw new Exception(trailingHeaders.get("message"));
-                    }
-                }
+                final ResponseMessageV4 chunk = serializer.readChunk(content, isFirstChunk.get());
 
                 isFirstChunk.set(false);
 
@@ -102,6 +113,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     }
 
     private static boolean isError(final HttpResponseStatus status) {
-        return status != HttpResponseStatus.OK && status != HttpResponseStatus.NO_CONTENT;
+        return status != HttpResponseStatus.OK;
     }
 }

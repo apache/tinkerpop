@@ -286,8 +286,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         try {
             // empty input buffer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessageV4.build().
-                        code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
+                return ResponseMessageV4.build().result(Collections.emptyList()).create();
             }
 
             if (isFirstChunk) {

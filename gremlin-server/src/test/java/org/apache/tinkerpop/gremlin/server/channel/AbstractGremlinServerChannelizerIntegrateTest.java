@@ -54,11 +54,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     private final Base64.Encoder encoder = Base64.getUrlEncoder();
 
     protected static final String HTTP = "http";
-    protected static final String WS = "ws";
     protected static final String HTTPS = "https";
-    protected static final String WSS = "wss";
-    protected static final String WS_AND_HTTP = "wsAndHttp";
-    protected static final String WSS_AND_HTTPS = "wssAndHttps";
 
     public abstract String getProtocol();
     public abstract String getSecureProtocol();
@@ -174,9 +170,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
 
     public class CombinedTestClient {
         private CloseableHttpClient httpClient = null;
-        private Cluster wsCluster = null;
-        private Cluster.Builder wsBuilder = null;
-        private Client wsClient = null;
         private boolean secure = false;
 
 
@@ -188,22 +181,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                 case HTTPS:
                     httpClient = createSslHttpClient();
                     secure = true;
-                    break;
-                case WS:
-                    this.wsBuilder = TestClientFactory.build();
-                    break;
-                case WSS:
-                    this.wsBuilder = TestClientFactory.build();
-                    secure = true;
-                    break;
-                case WS_AND_HTTP:
-                    httpClient = HttpClients.createDefault();
-                    this.wsBuilder = TestClientFactory.build();
-                    break;
-                case WSS_AND_HTTPS:
-                    httpClient = createSslHttpClient();
-                    secure = true;
-                    this.wsBuilder = TestClientFactory.build();
                     break;
             }
         }
@@ -234,9 +211,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
             if (httpClient != null) {
                 httpClient.close();
             }
-            if (wsCluster != null) {
-                wsCluster.close();
-            }
         }
 
         public void sendAndAssertUnauthorized(final String gremlin, final String username, final String password) throws Exception {
@@ -244,15 +218,6 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                 final HttpPost httpPost = createPost(gremlin, username, password);
                 try (final CloseableHttpResponse response = httpClient.execute(httpPost)) {
                     assertEquals(401, response.getStatusLine().getStatusCode());
-                }
-            }
-            if (wsBuilder != null) {
-                setWsClient(username, password);
-                try {
-                    wsClient.submit(gremlin).all().get();
-                    fail("Should not authorize on incorrect auth creds");
-                } catch(Exception e) {
-                    assertEquals("Username and/or password are incorrect", e.getCause().getMessage());
                 }
             }
         }
@@ -265,21 +230,8 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     assertEquals("application/json", response.getEntity().getContentType().getValue());
                     final String json = EntityUtils.toString(response.getEntity());
                     final JsonNode node = mapper.readTree(json);
-                    assertEquals(result, node.get("result").get("data").get("@value").get(0).get("@value").intValue());
+                    assertEquals(result, node.get("result").get("@value").get(0).get("@value").intValue());
                 }
-            }
-            if (wsBuilder != null) {
-                setWsClient(username, password);
-                assertEquals(result, wsClient.submit(gremlin).all().get().get(0).getInt());
-            }
-        }
-
-        private void setWsClient(final String username, final String password) {
-            if (username != null && password != null) {
-                wsClient = wsCluster.connect();
-            } else {
-                wsCluster = wsBuilder.enableSsl(secure).sslSkipCertValidation(true).create();
-                wsClient = wsCluster.connect();
             }
         }
 
