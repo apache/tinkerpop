@@ -53,6 +53,14 @@ public final class SubstringLocalStep<S, E> extends StringLocalStep<S, E> {
         this(traversal, startIndex, null);
     }
 
+    public Integer getStart() {
+        return this.start;
+    }
+
+    public Integer getEnd() {
+        return this.end;
+    }
+
     @Override
     protected E applyStringOperation(String item) {
         final int newStart = processStringIndex(item.length(), this.start);
