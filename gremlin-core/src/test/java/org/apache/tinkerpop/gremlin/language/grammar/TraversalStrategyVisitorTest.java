@@ -60,6 +60,8 @@ public class TraversalStrategyVisitorTest {
                 {"ReadOnlyStrategy", ReadOnlyStrategy.instance()},
                 {"new SeedStrategy(seed: 999999)", new SeedStrategy(999999)},
                 {"SeedStrategy(seed: 999999)", new SeedStrategy(999999)},
+                {"new SeedStrategy(seed: 999999)", SeedStrategy.build().seed(999999).create()},
+                {"SeedStrategy(seed: 999999)", SeedStrategy.build().seed(999999).create()},
                 {"new PartitionStrategy(partitionKey: 'k', includeMetaProperties: true)", PartitionStrategy.build().partitionKey("k").includeMetaProperties(true).create()},
                 {"new PartitionStrategy(partitionKey: 'k', writePartition: 'p', readPartitions: ['p','x','y'])", PartitionStrategy.build().partitionKey("k").writePartition("p").readPartitions("p", "x", "y").create()},
                 {"ProductiveByStrategy", ProductiveByStrategy.instance()},

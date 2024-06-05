@@ -101,7 +101,7 @@ public class GolangTranslatorTest {
         assertEquals("g.WithStrategies(gremlingo.ReadOnlyStrategy(), gremlingo.SubgraphStrategy(gremlingo.SubgraphStrategyConfig{CheckAdjacentVertices: false, Vertices: gremlingo.T__.HasLabel(\"person\")}), gremlingo.SeedStrategy(gremlingo.SeedStrategyConfig{Seed: 999999})).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
-                                new SeedStrategy(999999)).
+                                SeedStrategy.build().seed(999999).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 

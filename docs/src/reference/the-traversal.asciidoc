@@ -5840,7 +5840,7 @@ With `SeedStrategy` in place, however, the same order is applied each time:
 
 [gremlin-groovy,modern]
 ----
-seedStrategy = new SeedStrategy(999998L)
+seedStrategy = SeedStrategy.build().seed(999998L).create()
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
