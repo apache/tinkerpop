@@ -52,6 +52,14 @@ public final class SubstringGlobalStep<S, E> extends ScalarMapStep<S, E> {
         this(traversal, startIndex, null);
     }
 
+    public Integer getStart() {
+        return this.start;
+    }
+
+    public Integer getEnd() {
+        return this.end;
+    }
+
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
