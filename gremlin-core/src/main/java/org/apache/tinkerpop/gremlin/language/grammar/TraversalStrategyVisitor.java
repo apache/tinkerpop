@@ -60,7 +60,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
             else if (strategyName.equals(SubgraphStrategy.class.getSimpleName()))
                 return getSubgraphStrategy(ctx.traversalStrategyArgs_SubgraphStrategy());
             else if (strategyName.equals(SeedStrategy.class.getSimpleName()))
-                return new SeedStrategy(antlr.argumentVisitor.parseNumber(ctx.integerArgument()).longValue());
+                return SeedStrategy.build().seed(antlr.argumentVisitor.parseNumber(ctx.integerArgument()).longValue()).create();
             else if (strategyName.equals(ProductiveByStrategy.class.getSimpleName()))
                 return getProductiveByStrategy(ctx.traversalStrategyArgs_ProductiveByStrategy());
         }

@@ -63,7 +63,7 @@ public class JavascriptTranslatorTest {
                         "new SeedStrategy({seed:999999})).V().has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
-                        new SeedStrategy(999999)).
+                        SeedStrategy.build().seed(999999).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 
