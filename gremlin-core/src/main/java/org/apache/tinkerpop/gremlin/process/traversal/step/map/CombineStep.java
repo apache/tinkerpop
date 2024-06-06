@@ -68,6 +68,10 @@ public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implement
         return (null == valueTraversal) ? Collections.emptyList() : Collections.singletonList(valueTraversal);
     }
 
+    public Object getParameterItems() {
+        return parameterItems;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() { return this.getSelfAndChildRequirements(); }
 
