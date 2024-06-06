@@ -51,6 +51,23 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SparkTest extends AbstractSparkTest {
+    @Test
+    public void testCustomizedSparkAppName() {
+	final String appName = "SparkAppNameTest";
+	final org.apache.spark.SparkConf sparkConfiguration = new org.apache.spark.SparkConf();
+	sparkConfiguration.set("spark.app.name", appName);
+	sparkConfiguration.set("spark.master", "local[4]");
+	final org.apache.spark.SparkContext sparkContext = Spark.create(sparkConfiguration);
+	assertEquals(appName, sparkContext.getConf().get("spark.app.name"));
+    }
+
+    @Test
+    public void testDefaultSparkAppName() {
+	final org.apache.spark.SparkConf sparkConfiguration = new org.apache.spark.SparkConf();
+	sparkConfiguration.set("spark.master", "local[4]");
+	final org.apache.spark.SparkContext sparkContext = Spark.create(sparkConfiguration);
+	assertEquals(Spark.DEFAULT_APP_NAME, sparkContext.getConf().get("spark.app.name"));
+    }
 
     @Test
     public void testSparkRDDPersistence() throws Exception {
