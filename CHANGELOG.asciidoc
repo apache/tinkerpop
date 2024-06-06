@@ -53,6 +53,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Refactored mutation events registration by moving reusable code from relevant steps to `EventUtil`
 * Open `NoOpBarrierStep` for extensibility (removed `final` keyword)
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
+* Allow specifying a customized Spark app name
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
