@@ -653,6 +653,25 @@ var WithOptions = withOptions{
 	Map:     1,
 }
 
+type io struct {
+	Graphson string
+	Gryo     string
+	Graphml  string
+	Reader   string
+	Writer   string
+	Registry string
+}
+
+// IO holds configuration options to be passed to the GraphTraversal.io.
+var IO = io{
+	Graphson: "graphson",
+	Gryo:     "gryo",
+	Graphml:  "graphml",
+	Reader:   "~tinkerpop.io.reader",
+	Writer:   "~tinkerpop.io.writer",
+	Registry: "~tinkerpop.io.registry",
+}
+
 // Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables
 // the ability to capture explicit metrics for multiple distinct operations. Annotations are used to store
 // miscellaneous notes that might be useful to a developer when examining results, such as index coverage

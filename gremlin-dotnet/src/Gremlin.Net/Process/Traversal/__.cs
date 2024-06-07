@@ -1241,6 +1241,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the property step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Property(IDictionary<object, object> map)
+        {
+            return new GraphTraversal<object, object>().Property(map);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the propertyMap step to that traversal.
         /// </summary>
         public static GraphTraversal<object, IDictionary<string, E2>> PropertyMap<E2>(params string?[] propertyKeys)
