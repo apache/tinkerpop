@@ -77,7 +77,7 @@ public class NoOpTerminalVisitor extends GremlinAntlrToJava {
                 if (childCount == 1) {
                     // handle rootTraversal
                     return tvisitor.visitRootTraversal(
-                            (GremlinParser.RootTraversalContext)firstChild).asAdmin().getBytecode();
+                            (GremlinParser.RootTraversalContext)firstChild).asAdmin().getGremlincode();
                 } else {
                     // handle rootTraversal DOT traversalTerminalMethod
                     // could not keep all of these methods in one visitor due to the need of the terminal visitor to have a traversal,

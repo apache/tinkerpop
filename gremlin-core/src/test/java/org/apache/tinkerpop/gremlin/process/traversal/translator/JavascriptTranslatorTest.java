@@ -64,7 +64,7 @@ public class JavascriptTranslatorTest {
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         new SeedStrategy(999999)).
-                        V().has("name").asAdmin().getBytecode()).getScript());
+                        V().has("name").asAdmin().getGremlincode()).getScript());
     }
 
     @Test
@@ -72,7 +72,7 @@ public class JavascriptTranslatorTest {
         final String script = translator.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
-        }}).asAdmin().getBytecode()).getScript();
+        }}).asAdmin().getGremlincode()).getScript();
         assertEquals("g.V().id().is(new Map([[3,\"32\"],[[1, 2, 3.1],4]]))", script);
     }
 
@@ -134,13 +134,13 @@ public class JavascriptTranslatorTest {
 
     @Test
     public void shouldHaveNull() {
-        assertEquals("g.inject(null,null)", translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript());
-        assertEquals("g.V()", translator.translate(g.V().asAdmin().getBytecode()).getScript());
-        assertEquals("g.V(null)", translator.translate(g.V(null).asAdmin().getBytecode()).getScript());
-        assertEquals("g.V(null,null)", translator.translate(g.V(null, null).asAdmin().getBytecode()).getScript());
-        assertEquals("g.E()", translator.translate(g.E().asAdmin().getBytecode()).getScript());
-        assertEquals("g.E(null)", translator.translate(g.E(null).asAdmin().getBytecode()).getScript());
-        assertEquals("g.E(null,null)", translator.translate(g.E(null, null).asAdmin().getBytecode()).getScript());
+        assertEquals("g.inject(null,null)", translator.translate(g.inject(null, null).asAdmin().getGremlincode()).getScript());
+        assertEquals("g.V()", translator.translate(g.V().asAdmin().getGremlincode()).getScript());
+        assertEquals("g.V(null)", translator.translate(g.V(null).asAdmin().getGremlincode()).getScript());
+        assertEquals("g.V(null,null)", translator.translate(g.V(null, null).asAdmin().getGremlincode()).getScript());
+        assertEquals("g.E()", translator.translate(g.E().asAdmin().getGremlincode()).getScript());
+        assertEquals("g.E(null)", translator.translate(g.E(null).asAdmin().getGremlincode()).getScript());
+        assertEquals("g.E(null,null)", translator.translate(g.E(null, null).asAdmin().getGremlincode()).getScript());
     }
 
     @Test
@@ -150,7 +150,7 @@ public class JavascriptTranslatorTest {
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
-                .asAdmin().getBytecode()).getScript();
+                .asAdmin().getGremlincode()).getScript();
 
         assertEquals("g.addV(\"customer\")" +
                         ".property(\"customer_id\",501)" +
@@ -165,7 +165,7 @@ public class JavascriptTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final String script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode()).getScript();
+        final String script1 = translator.translate(g.inject(vertex1).asAdmin().getGremlincode()).getScript();
         assertEquals("g.inject(new Vertex(" +
                         "\"customer:10:foo bar \\$100#90\"," +
                         "\"customer\", null))",
@@ -174,7 +174,7 @@ public class JavascriptTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final String script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode()).getScript();
+        final String script2 = translator.translate(g.inject(vertex2).asAdmin().getGremlincode()).getScript();
         assertEquals("g.inject(new Vertex(" +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\"," +
                         "\"user\", null))",
@@ -185,7 +185,7 @@ public class JavascriptTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final String script3 = translator.translate(g.inject(edge).asAdmin().getBytecode()).getScript();
+        final String script3 = translator.translate(g.inject(edge).asAdmin().getGremlincode()).getScript();
         assertEquals("g.inject(" +
                         "new Edge(\"knows:30:foo bar \\$100:\\\\u0020\\\\u0024500#70\", " +
                         "new Vertex(\"customer:10:foo bar \\$100#90\",\"customer\", null)," +
@@ -196,7 +196,7 @@ public class JavascriptTranslatorTest {
 
         final String script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
-                        .asAdmin().getBytecode()).getScript();
+                        .asAdmin().getGremlincode()).getScript();
         assertEquals("g.addE(\"knows\")" +
                         ".from_(new Vertex(\"customer:10:foo bar \\$100#90\",\"customer\", null))" +
                         ".to(new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\",\"user\", null))" +
@@ -213,7 +213,7 @@ public class JavascriptTranslatorTest {
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
-        final String script = translator.translate(g.inject(objs).asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.inject(objs).asAdmin().getGremlincode()).getScript();
         assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
     }
 }

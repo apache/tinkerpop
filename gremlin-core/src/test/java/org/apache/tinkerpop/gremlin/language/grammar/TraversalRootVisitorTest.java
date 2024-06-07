@@ -47,8 +47,8 @@ public class TraversalRootVisitorTest {
     }
 
     private void compare(Object expected, Object actual) {
-        assertEquals(((DefaultGraphTraversal) expected).asAdmin().getBytecode(),
-                ((DefaultGraphTraversal) actual).asAdmin().getBytecode());
+        assertEquals(((DefaultGraphTraversal) expected).asAdmin().getGremlincode(),
+                ((DefaultGraphTraversal) actual).asAdmin().getGremlincode());
     }
 
     private Object eval(String query) {

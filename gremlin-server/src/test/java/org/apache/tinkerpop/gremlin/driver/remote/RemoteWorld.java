@@ -69,7 +69,7 @@ public abstract class RemoteWorld implements World {
 
         if (null == graphData) {
             try { // Clear data before run because tests are allowed to modify data for the empty graph.
-                client.submit("graph.clear();").all().get();
+                client.submit("g.V().drop();").all().get();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

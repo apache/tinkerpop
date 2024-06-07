@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 

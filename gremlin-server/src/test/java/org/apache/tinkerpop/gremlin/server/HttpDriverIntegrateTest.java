@@ -27,13 +27,19 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +50,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,12 +115,77 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
-    public void shouldSubmitGremlinWithUnsupportedType() {
+    public void playTest() {
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-            final long result = g.inject(5L).toList().get(0);
-            assertEquals(5L, result);
+
+            g.V().drop().iterate();
+
+            g.addV("person").property("name", "marko")
+                    .property(list, "age", 29)
+                    .property(list, "age", 31)
+                    .property(list, "age", 32)
+                    .iterate();
+
+            g.mergeV(asMap("name", "marko"))
+                    .option(Merge.onMatch, asMap("age", VertexProperty.Cardinality.list(33)))
+                    .iterate();
+
+            final List<Vertex> result = g.V().has("person", "name", "marko")
+                    .has("age", 33).toList();
+            assertEquals(1, result.size());
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSubmitGremlinWithCollectionAsArgument() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final List<?> result = g.inject(Arrays.asList("test", 2L, null)).toList().get(0);
+            assertThat(result, is(Arrays.asList("test", 2L, null)));
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSubmitGremlinWithMergeV() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            g.addV("person").property("name", "marko")
+                    .property(list, "age", 29)
+                    .property(list, "age", 31)
+                    .property(list, "age", 32)
+                    .iterate();
+
+            final long result = g.mergeV(CollectionUtil.asMap("name", "marko"))
+                    .option(Merge.onMatch, CollectionUtil.asMap("age", 33), VertexProperty.Cardinality.single)
+                    .count()
+                    .next();
+            assertEquals(1L, result);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldHandleInfinity() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final double result = g.inject(Double.POSITIVE_INFINITY).is(P.eq(Double.POSITIVE_INFINITY)).toList().get(0);
+            assertEquals(result, Double.POSITIVE_INFINITY, 0.01);
         } catch (Exception ex) {
             throw ex;
         } finally {
@@ -482,6 +555,22 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         try {
             // this should return "nothing" - there should be no exception
             assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSubmitTraversalInGremlinLang() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+
+            // this query doesn't work in gremlin-groovy
+            final Object result = g.with("language", "gremlin-lang").inject(null, null).toList().get(0);
+            assertNull(result);
+        } catch (Exception ex) {
+            throw ex;
         } finally {
             cluster.close();
         }

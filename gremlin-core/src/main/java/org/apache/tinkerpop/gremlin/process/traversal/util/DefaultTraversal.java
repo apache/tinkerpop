@@ -87,7 +87,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     public DefaultTraversal(final TraversalSource traversalSource, final DefaultTraversal.Admin<S,E> traversal) {
-        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getBytecode());
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getGremlincode());
         this.g = traversalSource;
         steps.addAll(traversal.getSteps());
     }
@@ -100,7 +100,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), bytecode);
     }
 
-    public Bytecode getBytecode() {
+    public Bytecode getGremlincode() {
         return this.bytecode;
     }
 

@@ -31,8 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -56,20 +54,20 @@ public class BytecodeTest {
         assertNotEquals(traversal1.hashCode(), traversal3.hashCode());
         assertNotEquals(traversal2.hashCode(), traversal3.hashCode());
         //
-        assertEquals(traversal1.getBytecode(), traversal2.getBytecode());
-        assertNotEquals(traversal1.getBytecode(), traversal3.getBytecode());
-        assertNotEquals(traversal2.getBytecode(), traversal3.getBytecode());
+        assertEquals(traversal1.getGremlincode(), traversal2.getGremlincode());
+        assertNotEquals(traversal1.getGremlincode(), traversal3.getGremlincode());
+        assertNotEquals(traversal2.getGremlincode(), traversal3.getGremlincode());
         //
-        assertEquals(traversal1.getBytecode().hashCode(), traversal2.getBytecode().hashCode());
-        assertNotEquals(traversal1.getBytecode().hashCode(), traversal3.getBytecode().hashCode());
-        assertNotEquals(traversal2.getBytecode().hashCode(), traversal3.getBytecode().hashCode());
+        assertEquals(traversal1.getGremlincode().hashCode(), traversal2.getGremlincode().hashCode());
+        assertNotEquals(traversal1.getGremlincode().hashCode(), traversal3.getGremlincode().hashCode());
+        assertNotEquals(traversal2.getGremlincode().hashCode(), traversal3.getGremlincode().hashCode());
 
     }
 
     @Test
     public void shouldCloneCorrectly() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Bytecode bytecode = g.V().out().asAdmin().getBytecode();
+        final Bytecode bytecode = g.V().out().asAdmin().getGremlincode();
         final Bytecode bytecodeClone = bytecode.clone();
         assertEquals(bytecode, bytecodeClone);
         assertEquals(bytecode.hashCode(), bytecodeClone.hashCode());
@@ -85,10 +83,10 @@ public class BytecodeTest {
         final Bindings b = Bindings.instance();
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
 
-        final Bytecode bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getBytecode();
-        final Bytecode bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getBytecode();
-        final Bytecode bytecode3 = g.V().out(b.of("b", "knows")).asAdmin().getBytecode();
-        final Bytecode bytecode4 = g.V().out(b.of("b", "knows")).asAdmin().getBytecode();
+        final Bytecode bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getGremlincode();
+        final Bytecode bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getGremlincode();
+        final Bytecode bytecode3 = g.V().out(b.of("b", "knows")).asAdmin().getGremlincode();
+        final Bytecode bytecode4 = g.V().out(b.of("b", "knows")).asAdmin().getGremlincode();
 
         assertNotEquals(bytecode1, bytecode2);
         assertNotEquals(bytecode1, bytecode3);
@@ -113,7 +111,7 @@ public class BytecodeTest {
                 where(__.out(b.of("b","knows")).
                         has("age",b.of("c",P.gt(32))).
                         map(__.values(b.of("d","name")))).
-                in(b.of("a", "created")).asAdmin().getBytecode();
+                in(b.of("a", "created")).asAdmin().getGremlincode();
         assertEquals(6, bytecode.getBindings().size());
         assertEquals("created", bytecode.getBindings().get("a"));
         assertEquals("knows", bytecode.getBindings().get("b"));
@@ -151,8 +149,8 @@ public class BytecodeTest {
         Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
         assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
         bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
-        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
-                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getBytecode());
+        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getGremlincode(),
+                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getGremlincode());
     }
 
     @Test

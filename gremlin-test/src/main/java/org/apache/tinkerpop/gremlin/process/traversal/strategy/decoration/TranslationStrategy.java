@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -32,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
@@ -74,11 +72,11 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.isRoot()) || traversal.getBytecode().isEmpty())
+        if (!(traversal.isRoot()) || traversal.getGremlincode().isEmpty())
             return;
 
         final Traversal.Admin<?, ?> translatedTraversal;
-        final Bytecode bytecode = removeTranslationStrategy(insertBindingsForTesting(traversal.getBytecode()));
+        final Bytecode bytecode = removeTranslationStrategy(insertBindingsForTesting(traversal.getGremlincode()));
 
         ////////////////
         if (this.translator instanceof Translator.StepTranslator) {
@@ -110,7 +108,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         // traversal. we might not do this sometimes in testing if lambdas are present but still want to use
         // TranslationStrategy
         if (assertBytecode)
-            assertEquals(removeTranslationStrategy(traversal.getBytecode()), translatedTraversal.getBytecode());
+            assertEquals(removeTranslationStrategy(traversal.getGremlincode()), translatedTraversal.getGremlincode());
     }
 
 

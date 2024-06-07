@@ -314,6 +314,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final Map<String, Object> args = message.getFields();
+        // !!!
         final String language = args.containsKey(TokensV4.ARGS_LANGUAGE) ? (String) args.get(TokensV4.ARGS_LANGUAGE) : "gremlin-groovy";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 
@@ -368,6 +369,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private Bindings mergeBindingsFromRequest(final Context ctx, final Bindings bindings) throws ProcessingException {
         // alias any global bindings to a different variable.
         final RequestMessageV4 msg = ctx.getRequestMessage();
+
+        // add any bindings to override any other supplied
+        Optional.ofNullable((Map<String, Object>) msg.getFields().get(TokensV4.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+
         if (msg.getFields().containsKey(TokensV4.ARGS_G)) {
             final String aliased = msg.getField(TokensV4.ARGS_G);
             boolean found = false;
@@ -396,8 +401,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             }
         }
 
-        // add any bindings to override any other supplied
-        Optional.ofNullable((Map<String, Object>) msg.getFields().get(TokensV4.ARGS_BINDINGS)).ifPresent(bindings::putAll);
         return bindings;
     }
 

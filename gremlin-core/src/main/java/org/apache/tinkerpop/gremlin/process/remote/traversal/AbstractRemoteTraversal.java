@@ -58,7 +58,7 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
     }
 
     @Override
-    public Bytecode getBytecode() {
+    public Bytecode getGremlincode() {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 

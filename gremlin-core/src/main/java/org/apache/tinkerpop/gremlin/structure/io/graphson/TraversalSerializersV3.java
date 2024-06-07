@@ -78,7 +78,7 @@ final class TraversalSerializersV3 {
         @Override
         public void serialize(final Traversal traversal, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            jsonGenerator.writeObject(traversal.asAdmin().getBytecode());
+            jsonGenerator.writeObject(traversal.asAdmin().getGremlincode());
         }
 
         @Override

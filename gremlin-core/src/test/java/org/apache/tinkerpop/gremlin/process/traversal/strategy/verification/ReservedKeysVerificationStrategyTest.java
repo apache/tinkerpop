@@ -93,7 +93,7 @@ public class ReservedKeysVerificationStrategyTest {
 
     @Test
     public void shouldIgnore() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ReservedKeysVerificationStrategy.build().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -104,7 +104,7 @@ public class ReservedKeysVerificationStrategyTest {
 
     @Test
     public void shouldOnlyThrow() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().throwException();
         if (repr.equals("__.addV().property(\"x\",\"xyz\",\"not-allowed\",\"xxx\")"))
@@ -127,7 +127,7 @@ public class ReservedKeysVerificationStrategyTest {
 
     @Test
     public void shouldOnlyLog() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().logWarning();
         if (repr.equals("__.addV().property(\"x\",\"xyz\",\"not-allowed\",\"xxx\")"))
@@ -144,7 +144,7 @@ public class ReservedKeysVerificationStrategyTest {
 
     @Test
     public void shouldThrowAndLog() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         final ReservedKeysVerificationStrategy.Builder builder = ReservedKeysVerificationStrategy.build().
                 throwException().logWarning();

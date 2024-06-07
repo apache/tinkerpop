@@ -20,9 +20,9 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;

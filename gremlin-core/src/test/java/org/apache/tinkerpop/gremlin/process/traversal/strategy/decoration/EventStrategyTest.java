@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -72,7 +71,7 @@ public class EventStrategyTest {
 
     @Test
     public void shouldEventOnMutatingSteps() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final MutationListener listener1 = new ConsoleMutationListener(EmptyGraph.instance());
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1).create();

@@ -105,7 +105,7 @@ public class GroovyTranslatorTest {
                 .sack(Lambda.biFunction("{ a,b -> a + b }"))
                 .asAdmin();
 
-        final String script = translator.translate(t.getBytecode()).getScript();
+        final String script = translator.translate(t.getGremlincode()).getScript();
         assertEquals(   "g.withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
                         ".V()" +
                         ".filter({it.get().label().equals('person')})" +

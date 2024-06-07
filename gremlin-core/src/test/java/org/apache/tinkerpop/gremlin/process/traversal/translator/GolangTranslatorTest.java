@@ -54,27 +54,27 @@ public class GolangTranslatorTest {
     @Test
     public void shouldTranslateOption() {
         final String gremlinAsGo = translator.translate(
-                g.V().has("person", "name", "marko").asAdmin().getBytecode()).getScript();
+                g.V().has("person", "name", "marko").asAdmin().getGremlincode()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
     public void shouldTranslateCardinality() {
         final String gremlinAsGo = translator.translate(
-                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
+                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getGremlincode()).getScript();
         assertEquals("g.AddV(\"person\").Property(gremlingo.Cardinality.List, \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
     public void shouldTranslateCardinalityValue() {
         assertEquals("g.Inject(gremlingo.CardinalityValue.Set(\"test\"))", translator.translate(
-                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getBytecode()).getScript());
+                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getGremlincode()).getScript());
     }
 
     @Test
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsGo = translator.translate(
-                g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getBytecode()).getScript();
+                g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getGremlincode()).getScript();
         final String escapedSeparator = StringEscapeUtils.escapeJava(System.lineSeparator());
         final String expected = "g.AddV().Property(\"text\", \"a" + escapedSeparator + StringEscapeUtils.escapeJava("\"and\"") + escapedSeparator + "b\")";
         assertEquals(expected, gremlinAsGo);
@@ -84,7 +84,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateChildTraversals() {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
-                        where(outE()).asAdmin().getBytecode()).getScript();
+                        where(outE()).asAdmin().getGremlincode()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE())", gremlinAsGo);
     }
 
@@ -92,7 +92,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateGoNamedSteps() {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
-                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getBytecode()).getScript();
+                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getGremlincode()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
@@ -102,7 +102,7 @@ public class GolangTranslatorTest {
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                                 new SeedStrategy(999999)).
-                        V().has("name").asAdmin().getBytecode()).getScript());
+                        V().has("name").asAdmin().getGremlincode()).getScript());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class GolangTranslatorTest {
                 .sideEffect(Lambda.consumer("x -> x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())    ", "gremlin-groovy"))
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
-                .asAdmin().getBytecode();
+                .asAdmin().getGremlincode();
         assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(1).V()." +
                         "Filter(&gremlingo.Lambda{Script:\"x -> x.get().label() == 'person'\", Language:\"\"})." +
                         "FlatMap(&gremlingo.Lambda{Script:\"it.get().vertices(Direction.OUT)\", Language:\"\"})." +
@@ -129,7 +129,7 @@ public class GolangTranslatorTest {
     @Test
     public void shouldTranslateArrayOfArray() {
         assertEquals("g.Inject([]interface{}{[]interface{}{1, 2}, []interface{}{3, 4}})",
-                translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getGremlincode()).getScript());
     }
 
     @Test

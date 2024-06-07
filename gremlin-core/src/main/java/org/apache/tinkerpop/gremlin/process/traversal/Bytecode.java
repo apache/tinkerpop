@@ -19,15 +19,24 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -35,18 +44,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy.STRATEGY;
+import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
 
 /**
- * When a {@link TraversalSource} is manipulated and then a {@link Traversal} is spawned and mutated, a language
- * agnostic representation of those mutations is recorded in a bytecode instance. Bytecode is simply a list
- * of ordered instructions where an instruction is a string operator and a (flattened) array of arguments.
- * Bytecode is used by {@link Translator} instances which are able to translate a traversal in one language to another
- * by analyzing the bytecode as opposed to the Java traversal object representation on heap.
- * <p>
- * Bytecode can be serialized between environments and machines by way of a GraphSON representation.
- * Thus, Gremlin-Python can create bytecode in Python and ship it to Gremlin-Java for evaluation in Java.
  *
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Bytecode implements Cloneable, Serializable {
 
@@ -55,11 +59,14 @@ public class Bytecode implements Cloneable, Serializable {
     private List<Instruction> sourceInstructions = new ArrayList<>();
     private List<Instruction> stepInstructions = new ArrayList<>();
 
-    private final StringBuilder gremlin = new StringBuilder();
-    private final Map<String, Object> parameters = new HashMap<>();
-    private int paramCount = 0;
+    private StringBuilder gremlin = new StringBuilder();
+    private Map<String, Object> parameters = new HashMap<>();
+    // private static final AtomicInteger paramCount = new AtomicInteger(0);
+    private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
+    private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
-    public Bytecode() {}
+    public Bytecode() {
+    }
 
     public Bytecode(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
@@ -67,9 +74,16 @@ public class Bytecode implements Cloneable, Serializable {
     }
 
     private void addToGremlin(final String name, final Object... arguments) {
+        final Object[] flattenedArguments = flattenArguments(arguments);
+
+        if (name.equals("CardinalityValueTraversal")) {
+            gremlin.append("Cardinality.").append(flattenedArguments[0])
+                    .append("(").append(flattenedArguments[1]).append(")");
+            return;
+        }
+
         gremlin.append(".").append(name).append('(');
 
-        final Object[] flattenedArguments = flattenArguments(arguments);
         for (int i = 0; i < flattenedArguments.length; i++) {
             if (i != 0) {
                 gremlin.append(',');
@@ -81,18 +95,161 @@ public class Bytecode implements Cloneable, Serializable {
     }
 
     private String argAsString(final Object arg) {
+        if (arg == null)
+            return "null";
+
         if (arg instanceof String)
-            return "\"" + arg + "\""; // todo: escaping
-        if (arg instanceof Integer)
+            return String.format("\"%s\"", StringEscapeUtils.escapeJava((String) arg));
+        if (arg instanceof Boolean)
             return arg.toString();
 
-        final String paramName = "_" + paramCount++;
+        if (arg instanceof Byte)
+            return String.format("%sB", arg);
+        if (arg instanceof Short)
+            return String.format("%sS", arg);
+        if (arg instanceof Integer)
+            return arg.toString();
+        if (arg instanceof Long)
+            return String.format("%sL", arg);
+        if (arg instanceof Float) {
+            if (NumberHelper.isNaN(arg))
+                return "NaN";
+            if (NumberHelper.isPositiveInfinity(arg))
+                return "+Infinity";
+            if (NumberHelper.isNegativeInfinity(arg))
+                return "-Infinity";
+
+            return String.format("%sF", arg);
+        }
+        if (arg instanceof Double) {
+            if (NumberHelper.isNaN(arg))
+                return "NaN";
+            if (NumberHelper.isPositiveInfinity(arg))
+                return "+Infinity";
+            if (NumberHelper.isNegativeInfinity(arg))
+                return "-Infinity";
+            return String.format("%sD", arg);
+        }
+
+        if (arg instanceof Date)
+            return String.format("datetime(\"%s\")", format(((Date) arg).toInstant()));
+
+        if (arg instanceof Enum) {
+            // special handling for enums with additional interfaces
+            if (arg instanceof T)
+                return String.format("T.%s", arg);
+            if (arg instanceof Order)
+                return String.format("Order.%s", arg);
+            if (arg instanceof Column)
+                return String.format("Column.%s", arg);
+            if (arg instanceof Operator)
+                return String.format("Operator.%s", arg);
+            if (arg instanceof SackFunctions.Barrier)
+                return String.format("Barrier.%s", arg);
+
+            return String.format("%s.%s", arg.getClass().getSimpleName(), arg);
+        }
+
+        if (arg instanceof Vertex)
+            return String.format("new ReferenceVertex(%s,\"%s\")", argAsString(((Vertex) arg).id()), ((Vertex) arg).label());
+
+        if (arg instanceof P) {
+            return predicateAsString((P<?>) arg);
+        }
+
+        if (arg instanceof Bytecode || arg instanceof DefaultTraversal) {
+            final Bytecode bytecode = arg instanceof Bytecode ? (Bytecode) arg : ((DefaultTraversal) arg).getGremlincode();
+
+            parameters.putAll(bytecode.getParameters());
+            return bytecode.getGremlin("__");
+        }
+
+        // special handling for MergeV when map argument can have cardinality traversal inside
+        if (arg instanceof Map) {
+            final Map<Object, Object> asMap = (Map) arg;
+            final AtomicBoolean containsTraversalValue = new AtomicBoolean(false);
+            asMap.forEach((key, value) -> {
+                if (value instanceof Bytecode || value instanceof DefaultTraversal) {
+                    containsTraversalValue.set(true);
+                }
+            });
+
+            if (containsTraversalValue.get()) {
+                return mapAsString(asMap);
+            }
+        }
+
+        // final String paramName = String.format("_%d", paramCount.getAndIncrement());
+        final String paramName = String.format("_%d", paramCount.get());
+        paramCount.set(paramCount.get() + 1);
         parameters.put(paramName, arg);
         return paramName;
     }
 
-    public Pair<String, Map<String, Object>> getGremlin(final String g) {
-        return Pair.with(g + gremlin, parameters);
+    // borrowed from Groovy translator
+    private String predicateAsString(final P<?> p) {
+        final StringBuilder sb = new StringBuilder();
+        if (p instanceof TextP) {
+            sb.append("TextP.").append(p.getPredicateName()).append("(");
+            sb.append(argAsString(p.getValue()));
+        } else if (p instanceof ConnectiveP) {
+            // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
+            // generated the way it was written which was P.and(P).and(P)
+            final List<P<?>> list = ((ConnectiveP) p).getPredicates();
+            final String connector = p.getPredicateName();
+            for (int i = 0; i < list.size(); i++) {
+                sb.append(argAsString(list.get(i)));
+
+                // for the first/last P there is no parent to close
+                if (i > 0 && i < list.size() - 1) sb.append(")");
+
+                // add teh connector for all but last P
+                if (i < list.size() - 1) {
+                    sb.append(".").append(connector).append("(");
+                }
+            }
+        } else {
+            sb.append("P.").append(p.getPredicateName()).append("(");
+            sb.append(argAsString(p.getValue()));
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    final String mapAsString(final Map<?, ?> map) {
+        final StringBuilder sb = new StringBuilder("[");
+        int size = map.size();
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            sb.append(argAsString(entry.getKey())).append(":").append(argAsString(entry.getValue()));
+            if (--size > 0) {
+                sb.append(',');
+            }
+        }
+
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public String getGremlin() {
+        return getGremlin("g");
+    }
+
+    // g for gts, __ for anonymous, any for gremlin-groovy
+    private String getGremlin(final String g) {
+        // special handling for CardinalityValueTraversal
+        if (gremlin.length() != 0 && gremlin.charAt(0) != '.') {
+            return gremlin.toString();
+        }
+        return g + gremlin;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
+
+    public void addG(final String g) {
+        parameters.put("g", g);
     }
 
     /**
@@ -118,6 +275,50 @@ public class Bytecode implements Cloneable, Serializable {
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         Bindings.clear();
 
+        if (sourceName.equals(TraversalSource.Symbols.withStrategies) && arguments.length != 0) {
+            final StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < arguments.length; i++) {
+                // special handling for OptionsStrategy
+                if (arguments[i] instanceof OptionsStrategy) {
+                    optionsStrategies.add((OptionsStrategy) arguments[i]);
+                    break;
+                }
+
+                final Configuration configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
+
+                if (configuration.isEmpty()) {
+                    sb.append(arguments[i].getClass().getSimpleName());
+                } else {
+                    sb.append("new ")
+                            .append(arguments[i].getClass().getSimpleName())
+                            .append("(");
+
+                    configuration.getKeys().forEachRemaining(key -> {
+                        if (!key.equals(STRATEGY)) {
+                            sb.append(key).append(":").append(argAsString(configuration.getProperty(key))).append(",");
+                        }
+                    });
+                    // remove last comma
+                    if (sb.lastIndexOf(",") == sb.length() - 1) {
+                        sb.setLength(sb.length() - 1);
+                    }
+
+                    sb.append(')');
+                }
+
+                if (i != arguments.length - 1)
+                    sb.append(',');
+            }
+
+            // possible to have empty strategies list to send
+            if (sb.length() != 0) {
+                gremlin.append('.').append(TraversalSource.Symbols.withStrategies).append('(').append(sb).append(')');
+            }
+            return;
+        }
+
+
+
         addToGremlin(sourceName, arguments);
     }
 
@@ -131,6 +332,10 @@ public class Bytecode implements Cloneable, Serializable {
         this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
 
         addToGremlin(stepName, arguments);
+    }
+
+    public List<OptionsStrategy> getOptionsStrategies() {
+        return optionsStrategies;
     }
 
     /**
@@ -227,6 +432,13 @@ public class Bytecode implements Cloneable, Serializable {
             final Bytecode clone = (Bytecode) super.clone();
             clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.stepInstructions = new ArrayList<>(this.stepInstructions);
+
+            clone.parameters = new HashMap<>(parameters);
+            clone.gremlin = new StringBuilder(gremlin.length());
+            clone.gremlin.append(gremlin);
+            // gremlincode cloned when new traversal created
+            // let's reset paramCount for easy testing. Will not work for prod usage
+            // paramCount.set(0);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -341,7 +553,7 @@ public class Bytecode implements Cloneable, Serializable {
                 throw new IllegalStateException(String.format(
                         "The child traversal of %s was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal", argument));
 
-            return ((Traversal) argument).asAdmin().getBytecode();
+            return ((Traversal) argument).asAdmin().getGremlincode();
         } else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
@@ -363,4 +575,7 @@ public class Bytecode implements Cloneable, Serializable {
         } else
             return argument;
     }
+
+    /////
+
 }

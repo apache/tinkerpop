@@ -87,7 +87,7 @@ public class LambdaRestrictionStrategyTest {
 
     @Test
     public void shouldBeVerifiedIllegal() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ProfileStrategy.instance());
         strategies.addStrategies(LambdaRestrictionStrategy.instance());

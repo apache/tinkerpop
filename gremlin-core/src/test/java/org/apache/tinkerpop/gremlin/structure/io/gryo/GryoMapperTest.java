@@ -351,7 +351,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldHandleBytecode() throws Exception {
-        final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
+        final Bytecode bytecode = __().out().outV().outE().asAdmin().getGremlincode();
         assertEquals(bytecode.toString(), serializeDeserialize(bytecode, Bytecode.class).toString());
     }
 

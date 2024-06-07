@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -78,7 +78,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
                     .property("name4", BigInteger.valueOf(33343455342245L))
                     .property("name5", "kjlkdnvlkdrnvldnvndlrkvnlhkjdkgkrtnlkndblknlknonboirnlkbnrtbonrobinokbnrklnbkrnblktengotrngotkrnglkt")
                     .property("name6", Instant.now())
-                    .asAdmin().getBytecode();
+                    .asAdmin().getGremlincode();
 
             writer.writeValue(bytecode1, bytecodeBuffer1, false);
             writer.writeValue(bytecode2, bytecodeBuffer2, false);

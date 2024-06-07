@@ -66,7 +66,7 @@ class BytecodeCommand extends ComplexCommandSupport {
             return "Argument does not resolve to a Traversal instance, was: " + traversal.class.simpleName
 
         mediator.showShellEvaluationOutput(true)
-        return mapper.writeValueAsString(traversal.asAdmin().bytecode)
+        return mapper.writeValueAsString(traversal.asAdmin().getGremlincode)
     }
 
     def Object do_translate = { List<String> arguments ->

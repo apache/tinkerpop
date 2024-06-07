@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

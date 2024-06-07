@@ -262,7 +262,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
-        this.asAdmin().getBytecode().addStep(Symbols.map, function);
+        this.asAdmin().getGremlincode().addStep(Symbols.map, function);
         return this.asAdmin().addStep(new LambdaMapStep<>(this.asAdmin(), function));
     }
 
@@ -275,7 +275,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> map(final Traversal<?, E2> mapTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.map, mapTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.map, mapTraversal);
         return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), mapTraversal));
     }
 
@@ -290,7 +290,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
-        this.asAdmin().getBytecode().addStep(Symbols.flatMap, function);
+        this.asAdmin().getGremlincode().addStep(Symbols.flatMap, function);
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
@@ -305,7 +305,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.flatMap, flatMapTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.flatMap, flatMapTraversal);
         return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
 
@@ -317,7 +317,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Object> id() {
-        this.asAdmin().getBytecode().addStep(Symbols.id);
+        this.asAdmin().getGremlincode().addStep(Symbols.id);
         return this.asAdmin().addStep(new IdStep<>(this.asAdmin()));
     }
 
@@ -329,7 +329,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, String> label() {
-        this.asAdmin().getBytecode().addStep(Symbols.label);
+        this.asAdmin().getGremlincode().addStep(Symbols.label);
         return this.asAdmin().addStep(new LabelStep<>(this.asAdmin()));
     }
 
@@ -340,7 +340,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> identity() {
-        this.asAdmin().getBytecode().addStep(Symbols.identity);
+        this.asAdmin().getGremlincode().addStep(Symbols.identity);
         return this.asAdmin().addStep(new IdentityStep<>(this.asAdmin()));
     }
 
@@ -352,7 +352,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
-        this.asAdmin().getBytecode().addStep(Symbols.constant, e);
+        this.asAdmin().getGremlincode().addStep(Symbols.constant, e);
         return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
     }
 
@@ -367,7 +367,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
         // a single null is [null]
         final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
-        this.asAdmin().getBytecode().addStep(Symbols.V, ids);
+        this.asAdmin().getGremlincode().addStep(Symbols.V, ids);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
     }
 
@@ -382,7 +382,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Edge> E(final Object... edgeIdsOrElements) {
         // a single null is [null]
         final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
-        this.asAdmin().getBytecode().addStep(Symbols.E, ids);
+        this.asAdmin().getGremlincode().addStep(Symbols.E, ids);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
     }
 
@@ -396,7 +396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.to, direction, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.to, direction, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, direction, edgeLabels));
     }
 
@@ -409,7 +409,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.out, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.out, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.OUT, edgeLabels));
     }
 
@@ -422,7 +422,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.in, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.in, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.IN, edgeLabels));
     }
 
@@ -435,7 +435,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.both, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.both, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.BOTH, edgeLabels));
     }
 
@@ -449,7 +449,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.toE, direction, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.toE, direction, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, direction, edgeLabels));
     }
 
@@ -462,7 +462,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.outE, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.outE, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.OUT, edgeLabels));
     }
 
@@ -475,7 +475,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.inE, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.inE, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.IN, edgeLabels));
     }
 
@@ -488,7 +488,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.bothE, edgeLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.bothE, edgeLabels);
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.BOTH, edgeLabels));
     }
 
@@ -501,7 +501,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
-        this.asAdmin().getBytecode().addStep(Symbols.toV, direction);
+        this.asAdmin().getGremlincode().addStep(Symbols.toV, direction);
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), direction));
     }
 
@@ -513,7 +513,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> inV() {
-        this.asAdmin().getBytecode().addStep(Symbols.inV);
+        this.asAdmin().getGremlincode().addStep(Symbols.inV);
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.IN));
     }
 
@@ -525,7 +525,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> outV() {
-        this.asAdmin().getBytecode().addStep(Symbols.outV);
+        this.asAdmin().getGremlincode().addStep(Symbols.outV);
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.OUT));
     }
 
@@ -537,7 +537,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> bothV() {
-        this.asAdmin().getBytecode().addStep(Symbols.bothV);
+        this.asAdmin().getGremlincode().addStep(Symbols.bothV);
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), Direction.BOTH));
     }
 
@@ -549,7 +549,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> otherV() {
-        this.asAdmin().getBytecode().addStep(Symbols.otherV);
+        this.asAdmin().getGremlincode().addStep(Symbols.otherV);
         return this.asAdmin().addStep(new EdgeOtherVertexStep(this.asAdmin()));
     }
 
@@ -561,7 +561,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> order() {
-        this.asAdmin().getBytecode().addStep(Symbols.order);
+        this.asAdmin().getGremlincode().addStep(Symbols.order);
         return this.asAdmin().addStep(new OrderGlobalStep<>(this.asAdmin()));
     }
 
@@ -574,7 +574,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> order(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.order, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.order, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new OrderGlobalStep<>(this.asAdmin()) : new OrderLocalStep<>(this.asAdmin()));
     }
 
@@ -589,7 +589,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.properties, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.properties, propertyKeys);
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.PROPERTY, propertyKeys));
     }
 
@@ -604,7 +604,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.values, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.values, propertyKeys);
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.VALUE, propertyKeys));
     }
 
@@ -619,7 +619,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.propertyMap, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.propertyMap, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), WithOptions.none, PropertyType.PROPERTY, propertyKeys));
     }
 
@@ -638,7 +638,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.4
      */
     public default <E2> GraphTraversal<S, Map<Object, E2>> elementMap(final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.elementMap, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.elementMap, propertyKeys);
         return this.asAdmin().addStep(new ElementMapStep<>(this.asAdmin(), propertyKeys));
     }
 
@@ -653,7 +653,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.valueMap, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.valueMap, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), WithOptions.none, PropertyType.VALUE, propertyKeys));
     }
 
@@ -672,7 +672,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default <E2> GraphTraversal<S, Map<Object, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.valueMap, includeTokens, propertyKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.valueMap, includeTokens, propertyKeys);
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), WithOptions.all, PropertyType.VALUE, propertyKeys));
     }
 
@@ -684,7 +684,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, String> key() {
-        this.asAdmin().getBytecode().addStep(Symbols.key);
+        this.asAdmin().getGremlincode().addStep(Symbols.key);
         return this.asAdmin().addStep(new PropertyKeyStep(this.asAdmin()));
     }
 
@@ -696,7 +696,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> value() {
-        this.asAdmin().getBytecode().addStep(Symbols.value);
+        this.asAdmin().getGremlincode().addStep(Symbols.value);
         return this.asAdmin().addStep(new PropertyValueStep<>(this.asAdmin()));
     }
 
@@ -708,7 +708,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Path> path() {
-        this.asAdmin().getBytecode().addStep(Symbols.path);
+        this.asAdmin().getGremlincode().addStep(Symbols.path);
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
@@ -722,7 +722,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.match, matchTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.match, matchTraversals);
         return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), ConnectiveStep.Connective.AND, matchTraversals));
     }
 
@@ -735,7 +735,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> sack() {
-        this.asAdmin().getBytecode().addStep(Symbols.sack);
+        this.asAdmin().getGremlincode().addStep(Symbols.sack);
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
@@ -748,7 +748,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Integer> loops() {
-        this.asAdmin().getBytecode().addStep(Symbols.loops);
+        this.asAdmin().getGremlincode().addStep(Symbols.loops);
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin(), null));
     }
 
@@ -761,7 +761,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S, Integer> loops(final String loopName) {
-        this.asAdmin().getBytecode().addStep(Symbols.loops, loopName);
+        this.asAdmin().getGremlincode().addStep(Symbols.loops, loopName);
         return this.asAdmin().addStep(new LoopsStep<>(this.asAdmin(), loopName));
     }
 
@@ -776,7 +776,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final String[] projectKeys = new String[otherProjectKeys.length + 1];
         projectKeys[0] = projectKey;
         System.arraycopy(otherProjectKeys, 0, projectKeys, 1, otherProjectKeys.length);
-        this.asAdmin().getBytecode().addStep(Symbols.project, projectKey, otherProjectKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.project, projectKey, otherProjectKeys);
         return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), projectKeys));
     }
 
@@ -797,7 +797,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getBytecode().addStep(Symbols.select, pop, selectKey1, selectKey2, otherSelectKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, pop, selectKey1, selectKey2, otherSelectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
     }
 
@@ -817,7 +817,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         selectKeys[0] = selectKey1;
         selectKeys[1] = selectKey2;
         System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
-        this.asAdmin().getBytecode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.last, selectKeys));
     }
 
@@ -831,7 +831,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, pop, selectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, pop, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectKey));
     }
 
@@ -846,7 +846,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, selectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, selectKey);
         return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), Pop.last, selectKey));
     }
 
@@ -860,7 +860,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.3
      */
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final Traversal<S, E2> keyTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, pop, keyTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, pop, keyTraversal);
         return this.asAdmin().addStep(new TraversalSelectStep<>(this.asAdmin(), pop, keyTraversal));
     }
 
@@ -875,7 +875,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.3
      */
     public default <E2> GraphTraversal<S, E2> select(final Traversal<S, E2> keyTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, keyTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, keyTraversal);
         return this.asAdmin().addStep(new TraversalSelectStep<>(this.asAdmin(), null, keyTraversal));
     }
 
@@ -888,7 +888,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        this.asAdmin().getBytecode().addStep(Symbols.select, column);
+        this.asAdmin().getGremlincode().addStep(Symbols.select, column);
         return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), new ColumnTraversal(column)));
     }
 
@@ -901,7 +901,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> unfold() {
-        this.asAdmin().getBytecode().addStep(Symbols.unfold);
+        this.asAdmin().getGremlincode().addStep(Symbols.unfold);
         return this.asAdmin().addStep(new UnfoldStep<>(this.asAdmin()));
     }
 
@@ -913,7 +913,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, List<E>> fold() {
-        this.asAdmin().getBytecode().addStep(Symbols.fold);
+        this.asAdmin().getGremlincode().addStep(Symbols.fold);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin()));
     }
 
@@ -928,7 +928,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> fold(final E2 seed, final BiFunction<E2, E, E2> foldFunction) {
-        this.asAdmin().getBytecode().addStep(Symbols.fold, seed, foldFunction);
+        this.asAdmin().getGremlincode().addStep(Symbols.fold, seed, foldFunction);
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction));
     }
 
@@ -941,7 +941,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Long> count() {
-        this.asAdmin().getBytecode().addStep(Symbols.count);
+        this.asAdmin().getGremlincode().addStep(Symbols.count);
         return this.asAdmin().addStep(new CountGlobalStep<>(this.asAdmin()));
     }
 
@@ -954,7 +954,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Long> count(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.count, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.count, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new CountGlobalStep<>(this.asAdmin()) : new CountLocalStep<>(this.asAdmin()));
     }
 
@@ -967,7 +967,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Number> GraphTraversal<S, E2> sum() {
-        this.asAdmin().getBytecode().addStep(Symbols.sum);
+        this.asAdmin().getGremlincode().addStep(Symbols.sum);
         return this.asAdmin().addStep(new SumGlobalStep<>(this.asAdmin()));
     }
 
@@ -980,7 +980,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.sum, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.sum, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep<>(this.asAdmin()));
     }
 
@@ -992,7 +992,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Comparable> GraphTraversal<S, E2> max() {
-        this.asAdmin().getBytecode().addStep(Symbols.max);
+        this.asAdmin().getGremlincode().addStep(Symbols.max);
         return this.asAdmin().addStep(new MaxGlobalStep<>(this.asAdmin()));
     }
 
@@ -1004,7 +1004,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Comparable> GraphTraversal<S, E2> max(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.max, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.max, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep<>(this.asAdmin()));
     }
 
@@ -1016,7 +1016,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Comparable> GraphTraversal<S, E2> min() {
-        this.asAdmin().getBytecode().addStep(Symbols.min);
+        this.asAdmin().getGremlincode().addStep(Symbols.min);
         return this.asAdmin().addStep(new MinGlobalStep<>(this.asAdmin()));
     }
 
@@ -1028,7 +1028,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Comparable> GraphTraversal<S, E2> min(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.min, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.min, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep<>(this.asAdmin()));
     }
 
@@ -1040,7 +1040,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Number> GraphTraversal<S, E2> mean() {
-        this.asAdmin().getBytecode().addStep(Symbols.mean);
+        this.asAdmin().getGremlincode().addStep(Symbols.mean);
         return this.asAdmin().addStep(new MeanGlobalStep<>(this.asAdmin()));
     }
 
@@ -1052,7 +1052,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.mean, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.mean, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
@@ -1065,7 +1065,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
-        this.asAdmin().getBytecode().addStep(Symbols.group);
+        this.asAdmin().getGremlincode().addStep(Symbols.group);
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
     }
 
@@ -1078,7 +1078,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
-        this.asAdmin().getBytecode().addStep(Symbols.groupCount);
+        this.asAdmin().getGremlincode().addStep(Symbols.groupCount);
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
@@ -1090,7 +1090,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Tree> tree() {
-        this.asAdmin().getBytecode().addStep(Symbols.tree);
+        this.asAdmin().getGremlincode().addStep(Symbols.tree);
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
     }
 
@@ -1104,7 +1104,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
-        this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabel);
+        this.asAdmin().getGremlincode().addStep(Symbols.addV, vertexLabel);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabel));
     }
 
@@ -1117,7 +1117,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
-        this.asAdmin().getBytecode().addStep(Symbols.addV, vertexLabelTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.addV, vertexLabelTraversal);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
     }
 
@@ -1129,7 +1129,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Vertex> addV() {
-        this.asAdmin().getBytecode().addStep(Symbols.addV);
+        this.asAdmin().getGremlincode().addStep(Symbols.addV);
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), (String) null));
     }
 
@@ -1142,7 +1142,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Vertex> mergeV() {
-        this.asAdmin().getBytecode().addStep(Symbols.mergeV);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeV);
         final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false);
         return this.asAdmin().addStep(step);
     }
@@ -1157,7 +1157,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Vertex> mergeV(final Map<Object, Object> searchCreate) {
-        this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeV, searchCreate);
         final MergeVertexStep<S> step = new MergeVertexStep<>(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
     }
@@ -1173,7 +1173,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *  @since 3.6.0
      */
     public default GraphTraversal<S, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
-        this.asAdmin().getBytecode().addStep(Symbols.mergeV, searchCreate);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeV, searchCreate);
         final MergeVertexStep<S> step = null == searchCreate ? new MergeVertexStep(this.asAdmin(), false, (Map) null) :
                 new MergeVertexStep(this.asAdmin(), false, searchCreate.asAdmin());
         return this.asAdmin().addStep(step);
@@ -1186,7 +1186,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Edge> mergeE() {
-        this.asAdmin().getBytecode().addStep(Symbols.mergeE);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeE);
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false);
         return this.asAdmin().addStep(step);
     }
@@ -1200,7 +1200,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final Map<Object, Object> searchCreate) {
         // get a construction time exception if the Map is bad
-        this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeE, searchCreate);
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
     }
@@ -1213,7 +1213,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
-        this.asAdmin().getBytecode().addStep(Symbols.mergeE, searchCreate);
+        this.asAdmin().getGremlincode().addStep(Symbols.mergeE, searchCreate);
 
         final MergeEdgeStep<S> step = null == searchCreate ? new MergeEdgeStep(this.asAdmin(), false,  (Map) null) :
                 new MergeEdgeStep(this.asAdmin(), false, searchCreate.asAdmin());
@@ -1229,7 +1229,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
-        this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabel);
+        this.asAdmin().getGremlincode().addStep(Symbols.addE, edgeLabel);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabel));
     }
 
@@ -1241,7 +1241,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.1
      */
     public default GraphTraversal<S, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.addE, edgeLabelTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.addE, edgeLabelTraversal);
         return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), null == edgeLabelTraversal ? null : edgeLabelTraversal.asAdmin()));
     }
 
@@ -1259,7 +1259,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.to, toStepLabel);
+        this.asAdmin().getGremlincode().addStep(Symbols.to, toStepLabel);
         ((FromToModulating) prev).addTo(toStepLabel);
         return this;
     }
@@ -1278,7 +1278,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.from, fromStepLabel);
+        this.asAdmin().getGremlincode().addStep(Symbols.from, fromStepLabel);
         ((FromToModulating) prev).addFrom(fromStepLabel);
         return this;
     }
@@ -1298,7 +1298,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
+        this.asAdmin().getGremlincode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(toVertex.asAdmin());
         return this;
     }
@@ -1318,7 +1318,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
+        this.asAdmin().getGremlincode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(fromVertex.asAdmin());
         return this;
     }
@@ -1338,7 +1338,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
+        this.asAdmin().getGremlincode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
         return this;
     }
@@ -1358,7 +1358,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
+        this.asAdmin().getGremlincode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
         return this;
     }
@@ -1371,7 +1371,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.1
      */
     public default GraphTraversal<S, Double> math(final String expression) {
-        this.asAdmin().getBytecode().addStep(Symbols.math, expression);
+        this.asAdmin().getGremlincode().addStep(Symbols.math, expression);
         return this.asAdmin().addStep(new MathStep<>(this.asAdmin(), expression));
     }
 
@@ -1383,7 +1383,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     default GraphTraversal<S, Element> element() {
-        this.asAdmin().getBytecode().addStep(Symbols.element);
+        this.asAdmin().getGremlincode().addStep(Symbols.element);
         return this.asAdmin().addStep(new ElementStep<>(this.asAdmin()));
     }
 
@@ -1396,7 +1396,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     default <E> GraphTraversal<S, E> call(final String service) {
-        this.asAdmin().getBytecode().addStep(Symbols.call, service);
+        this.asAdmin().getGremlincode().addStep(Symbols.call, service);
         final CallStep<S,E> call = new CallStep<>(this.asAdmin(), false, service);
         return this.asAdmin().addStep(call);
     }
@@ -1411,7 +1411,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     default <E> GraphTraversal<S, E> call(final String service, final Map params) {
-        this.asAdmin().getBytecode().addStep(Symbols.call, service, params);
+        this.asAdmin().getGremlincode().addStep(Symbols.call, service, params);
         final CallStep<S,E> call = new CallStep<>(this.asAdmin(), false, service, params);
         return this.asAdmin().addStep(call);
     }
@@ -1426,7 +1426,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     default <E> GraphTraversal<S, E> call(final String service, final Traversal<?, Map<?,?>> childTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.call, service, childTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.call, service, childTraversal);
         final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service) :
                 new CallStep(this.asAdmin(), false, service, new LinkedHashMap(), childTraversal.asAdmin());
         return this.asAdmin().addStep(step);
@@ -1445,7 +1445,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     default <E> GraphTraversal<S, E> call(final String service, final Map params, final Traversal<?, Map<?,?>> childTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.call, service, params, childTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.call, service, params, childTraversal);
         final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service, params) :
                 new CallStep(this.asAdmin(), false, service, params, childTraversal.asAdmin());
         return this.asAdmin().addStep(step);
@@ -1461,7 +1461,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> concat(final Traversal<?, String> concatTraversal, final Traversal<?, String>... otherConcatTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.concat, concatTraversal, otherConcatTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.concat, concatTraversal, otherConcatTraversals);
         return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatTraversal, otherConcatTraversals));
     }
 
@@ -1474,7 +1474,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.0
      */
     public default GraphTraversal<S, String> concat(final String... concatStrings) {
-        this.asAdmin().getBytecode().addStep(Symbols.concat, concatStrings);
+        this.asAdmin().getGremlincode().addStep(Symbols.concat, concatStrings);
         return this.asAdmin().addStep(new ConcatStep<>(this.asAdmin(), concatStrings));
     }
 
@@ -1486,7 +1486,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> asString() {
-        this.asAdmin().getBytecode().addStep(Symbols.asString);
+        this.asAdmin().getGremlincode().addStep(Symbols.asString);
         return this.asAdmin().addStep(new AsStringGlobalStep<>(this.asAdmin()));
     }
 
@@ -1499,7 +1499,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> asString(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.asString, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.asString, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new AsStringGlobalStep<>(this.asAdmin()) : new AsStringLocalStep<>(this.asAdmin()));
     }
 
@@ -1512,7 +1512,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Integer> length() {
-        this.asAdmin().getBytecode().addStep(Symbols.length);
+        this.asAdmin().getGremlincode().addStep(Symbols.length);
         return this.asAdmin().addStep(new LengthGlobalStep<>(this.asAdmin()));
     }
 
@@ -1526,7 +1526,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> length(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.length, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.length, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new LengthGlobalStep<>(this.asAdmin()) : new LengthLocalStep<>(this.asAdmin()));
     }
 
@@ -1539,7 +1539,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> toLower() {
-        this.asAdmin().getBytecode().addStep(Symbols.toLower);
+        this.asAdmin().getGremlincode().addStep(Symbols.toLower);
         return this.asAdmin().addStep(new ToLowerGlobalStep<>(this.asAdmin()));
     }
 
@@ -1553,7 +1553,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> toLower(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.toLower, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.toLower, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToLowerGlobalStep<>(this.asAdmin()) : new ToLowerLocalStep<>(this.asAdmin()));
     }
 
@@ -1566,7 +1566,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> toUpper() {
-        this.asAdmin().getBytecode().addStep(Symbols.toUpper);
+        this.asAdmin().getGremlincode().addStep(Symbols.toUpper);
         return this.asAdmin().addStep(new ToUpperGlobalStep<>(this.asAdmin()));
     }
 
@@ -1580,7 +1580,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> toUpper(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.toUpper, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.toUpper, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new ToUpperGlobalStep<>(this.asAdmin()) : new ToUpperLocalStep<>(this.asAdmin()));
     }
 
@@ -1594,7 +1594,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> trim() {
-        this.asAdmin().getBytecode().addStep(Symbols.trim);
+        this.asAdmin().getGremlincode().addStep(Symbols.trim);
         return this.asAdmin().addStep(new TrimGlobalStep<>(this.asAdmin()));
     }
 
@@ -1609,7 +1609,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> trim(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.trim, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.trim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new TrimGlobalStep<>(this.asAdmin()) : new TrimLocalStep<>(this.asAdmin()));
     }
 
@@ -1623,7 +1623,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> lTrim() {
-        this.asAdmin().getBytecode().addStep(Symbols.lTrim);
+        this.asAdmin().getGremlincode().addStep(Symbols.lTrim);
         return this.asAdmin().addStep(new LTrimGlobalStep<>(this.asAdmin()));
     }
 
@@ -1639,7 +1639,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> lTrim(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.lTrim, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.lTrim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new LTrimGlobalStep<>(this.asAdmin()) : new LTrimLocalStep<>(this.asAdmin()));
     }
 
@@ -1653,7 +1653,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> rTrim() {
-        this.asAdmin().getBytecode().addStep(Symbols.rTrim);
+        this.asAdmin().getGremlincode().addStep(Symbols.rTrim);
         return this.asAdmin().addStep(new RTrimGlobalStep<>(this.asAdmin()));
     }
 
@@ -1668,7 +1668,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> rTrim(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.rTrim, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.rTrim, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new RTrimGlobalStep<>(this.asAdmin()) : new RTrimLocalStep<>(this.asAdmin()));
     }
 
@@ -1680,7 +1680,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> reverse() {
-        this.asAdmin().getBytecode().addStep(Symbols.reverse);
+        this.asAdmin().getGremlincode().addStep(Symbols.reverse);
         return this.asAdmin().addStep(new ReverseStep<>(this.asAdmin()));
     }
 
@@ -1697,7 +1697,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> replace(final String oldChar, final String newChar) {
-        this.asAdmin().getBytecode().addStep(Symbols.replace, oldChar, newChar);
+        this.asAdmin().getGremlincode().addStep(Symbols.replace, oldChar, newChar);
         return this.asAdmin().addStep(new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar));
     }
 
@@ -1715,7 +1715,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> replace(final Scope scope, final String oldChar, final String newChar) {
-        this.asAdmin().getBytecode().addStep(Symbols.replace, scope, oldChar, newChar);
+        this.asAdmin().getGremlincode().addStep(Symbols.replace, scope, oldChar, newChar);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar) : new ReplaceLocalStep<>(this.asAdmin(), oldChar, newChar));
     }
@@ -1732,7 +1732,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, List<String>> split(final String separator) {
-        this.asAdmin().getBytecode().addStep(Symbols.split, separator);
+        this.asAdmin().getGremlincode().addStep(Symbols.split, separator);
         return this.asAdmin().addStep(new SplitGlobalStep<>(this.asAdmin(), separator));
     }
 
@@ -1749,7 +1749,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, List<E2>> split(final Scope scope, final String separator) {
-        this.asAdmin().getBytecode().addStep(Symbols.split, scope, separator);
+        this.asAdmin().getGremlincode().addStep(Symbols.split, scope, separator);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SplitGlobalStep<>(this.asAdmin(), separator) : new SplitLocalStep<>(this.asAdmin(), separator));
     }
@@ -1766,7 +1766,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> substring(final int startIndex) {
-        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex);
+        this.asAdmin().getGremlincode().addStep(Symbols.substring, startIndex);
         return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex));
     }
 
@@ -1783,7 +1783,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex) {
-        this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex);
+        this.asAdmin().getGremlincode().addStep(Symbols.substring, scope, startIndex);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SubstringGlobalStep<>(this.asAdmin(), startIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex));
     }
@@ -1803,7 +1803,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> substring(final int startIndex, final int endIndex) {
-        this.asAdmin().getBytecode().addStep(Symbols.substring, startIndex, endIndex);
+        this.asAdmin().getGremlincode().addStep(Symbols.substring, startIndex, endIndex);
         return this.asAdmin().addStep(new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex));
     }
 
@@ -1823,7 +1823,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> substring(final Scope scope, final int startIndex, final int endIndex) {
-        this.asAdmin().getBytecode().addStep(Symbols.substring, scope, startIndex, endIndex);
+        this.asAdmin().getGremlincode().addStep(Symbols.substring, scope, startIndex, endIndex);
         return this.asAdmin().addStep(scope.equals(Scope.global) ?
                 new SubstringGlobalStep<>(this.asAdmin(), startIndex, endIndex) : new SubstringLocalStep<>(this.asAdmin(), startIndex, endIndex));
     }
@@ -1836,7 +1836,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> format(final String format) {
-        this.asAdmin().getBytecode().addStep(Symbols.format, format);
+        this.asAdmin().getGremlincode().addStep(Symbols.format, format);
         return this.asAdmin().addStep(new FormatStep<>(this.asAdmin(), format));
     }
 
@@ -1848,7 +1848,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Date> asDate() {
-        this.asAdmin().getBytecode().addStep(Symbols.asDate);
+        this.asAdmin().getGremlincode().addStep(Symbols.asDate);
         return this.asAdmin().addStep(new AsDateStep<>(this.asAdmin()));
     }
 
@@ -1860,7 +1860,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Date> dateAdd(final DT dateToken, final int value) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateAdd, dateToken, value);
+        this.asAdmin().getGremlincode().addStep(Symbols.dateAdd, dateToken, value);
         return this.asAdmin().addStep(new DateAddStep<>(this.asAdmin(), dateToken, value));
     }
 
@@ -1872,7 +1872,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Date value) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
+        this.asAdmin().getGremlincode().addStep(Symbols.dateDiff, value);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
     }
 
@@ -1884,7 +1884,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, dateTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.dateDiff, dateTraversal);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }
 
@@ -1896,7 +1896,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Set<?>> difference(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.difference, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.difference, values);
         return this.asAdmin().addStep(new DifferenceStep<>(this.asAdmin(), values));
     }
 
@@ -1908,7 +1908,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Set<?>> disjunct(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.disjunct, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.disjunct, values);
         return this.asAdmin().addStep(new DisjunctStep<>(this.asAdmin(), values));
     }
 
@@ -1920,7 +1920,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, Set<?>> intersect(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.intersect, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.intersect, values);
         return this.asAdmin().addStep(new IntersectStep<>(this.asAdmin(), values));
     }
 
@@ -1932,7 +1932,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, String> conjoin(final String delimiter) {
-        this.asAdmin().getBytecode().addStep(Symbols.conjoin, delimiter);
+        this.asAdmin().getGremlincode().addStep(Symbols.conjoin, delimiter);
         return this.asAdmin().addStep(new ConjoinStep<>(this.asAdmin(), delimiter));
     }
 
@@ -1944,7 +1944,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> merge(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.merge, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.merge, values);
         return this.asAdmin().addStep(new TraversalMergeStep<>(this.asAdmin(), values));
     }
 
@@ -1956,7 +1956,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, List<?>> combine(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.combine, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.combine, values);
         return this.asAdmin().addStep(new CombineStep<>(this.asAdmin(), values));
     }
 
@@ -1968,7 +1968,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default GraphTraversal<S, List<List<?>>> product(final Object values) {
-        this.asAdmin().getBytecode().addStep(Symbols.product, values);
+        this.asAdmin().getGremlincode().addStep(Symbols.product, values);
         return this.asAdmin().addStep(new ProductStep<>(this.asAdmin(), values));
     }
 
@@ -1984,7 +1984,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> filter(final Predicate<Traverser<E>> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.filter, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.filter, predicate);
         return this.asAdmin().addStep(new LambdaFilterStep<>(this.asAdmin(), predicate));
     }
 
@@ -1998,7 +1998,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> filter(final Traversal<?, ?> filterTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.filter, filterTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.filter, filterTraversal);
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) filterTraversal));
     }
 
@@ -2023,7 +2023,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.or, orTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.or, orTraversals);
         return this.asAdmin().addStep(new OrStep(this.asAdmin(), orTraversals));
     }
 
@@ -2036,7 +2036,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.and, andTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.and, andTraversals);
         return this.asAdmin().addStep(new AndStep(this.asAdmin(), andTraversals));
     }
 
@@ -2051,7 +2051,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> inject(final E... injections) {
         // a single null is [null]
         final E[] s = null == injections ? (E[]) new Object[] { null } : injections;
-        this.asAdmin().getBytecode().addStep(Symbols.inject, s);
+        this.asAdmin().getGremlincode().addStep(Symbols.inject, s);
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), s));
     }
 
@@ -2065,7 +2065,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.dedup, scope, dedupLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.dedup, scope, dedupLabels);
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin(), dedupLabels) : new DedupLocalStep(this.asAdmin()));
     }
 
@@ -2078,7 +2078,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.dedup, dedupLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.dedup, dedupLabels);
         return this.asAdmin().addStep(new DedupGlobalStep<>(this.asAdmin(), dedupLabels));
     }
 
@@ -2094,7 +2094,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.where, startKey, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.where, startKey, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
@@ -2109,7 +2109,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> where(final P<String> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.where, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.where, predicate);
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.empty(), predicate));
     }
 
@@ -2124,7 +2124,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.where, whereTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.where, whereTraversal);
         return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
                 this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) whereTraversal)) :
                 this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
@@ -2145,7 +2145,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate)
             return has(propertyKey, (Object) null);
 
-        this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, propertyKey, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
@@ -2167,7 +2167,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate)
             return has(accessor, (Object) null);
 
-        this.asAdmin().getBytecode().addStep(Symbols.has, accessor, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, accessor, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), predicate));
     }
 
@@ -2186,7 +2186,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else if (value instanceof Traversal)
             return this.has(propertyKey, (Traversal) value);
         else {
-            this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, value);
+            this.asAdmin().getGremlincode().addStep(Symbols.has, propertyKey, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, P.eq(value)));
         }
     }
@@ -2209,7 +2209,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else if (value instanceof Traversal)
             return this.has(accessor, (Traversal) value);
         else {
-            this.asAdmin().getBytecode().addStep(Symbols.has, accessor, value);
+            this.asAdmin().getGremlincode().addStep(Symbols.has, accessor, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), P.eq(value)));
         }
     }
@@ -2225,7 +2225,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, label, propertyKey, predicate);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
@@ -2241,7 +2241,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
-        this.asAdmin().getBytecode().addStep(Symbols.has, label, propertyKey, value);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, label, propertyKey, value);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
     }
@@ -2265,7 +2265,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == propertyTraversal)
             return has(accessor, (Object) null);
 
-        this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, accessor, propertyTraversal);
         switch (accessor) {
             case id:
                 return this.asAdmin().addStep(
@@ -2298,7 +2298,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == propertyTraversal)
             return has(propertyKey, (Object) null);
 
-        this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, propertyTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, propertyKey, propertyTraversal);
         return this.asAdmin().addStep(
                 new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
                         new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey))));
@@ -2313,7 +2313,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final String propertyKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.has, propertyKey);
         return this.asAdmin().addStep(new TraversalFilterStep(this.asAdmin(), __.values(propertyKey)));
     }
 
@@ -2326,7 +2326,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> hasNot(final String propertyKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasNot, propertyKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.hasNot, propertyKey);
         return this.asAdmin().addStep(new NotStep(this.asAdmin(), __.values(propertyKey)));
     }
 
@@ -2340,7 +2340,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasLabel(final String label, final String... otherLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasLabel, label, otherLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.hasLabel, label, otherLabels);
 
         // groovy evaluation seems to do strange things with varargs given hasLabel(null, null). odd someone would
         // do this but the failure is ugly if not handled.
@@ -2366,7 +2366,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate) {
             return hasLabel((String) null);
         } else {
-            this.asAdmin().getBytecode().addStep(Symbols.hasLabel, predicate);
+            this.asAdmin().getGremlincode().addStep(Symbols.hasLabel, predicate);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), predicate));
         }
     }
@@ -2385,7 +2385,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.hasId((P) id);
         }
         else {
-            this.asAdmin().getBytecode().addStep(Symbols.hasId, id, otherIds);
+            this.asAdmin().getGremlincode().addStep(Symbols.hasId, id, otherIds);
 
             //using ArrayList given P.within() turns all arguments into lists
             final List<Object> ids = new ArrayList<>();
@@ -2429,7 +2429,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate)
             return hasId((Object) null);
 
-        this.asAdmin().getBytecode().addStep(Symbols.hasId, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.hasId, predicate);
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), predicate));
     }
 
@@ -2444,7 +2444,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.2
      */
     public default GraphTraversal<S, E> hasKey(final String label, final String... otherLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.hasKey, label, otherLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.hasKey, label, otherLabels);
 
         // groovy evaluation seems to do strange things with varargs given hasLabel(null, null). odd someone would
         // do this but the failure is ugly if not handled.
@@ -2471,7 +2471,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate) {
             return hasKey((String) null);
         } else {
-            this.asAdmin().getBytecode().addStep(Symbols.hasKey, predicate);
+            this.asAdmin().getGremlincode().addStep(Symbols.hasKey, predicate);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.key.getAccessor(), predicate));
         }
     }
@@ -2488,7 +2488,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (value instanceof P)
             return this.hasValue((P) value);
         else {
-            this.asAdmin().getBytecode().addStep(Symbols.hasValue, value, otherValues);
+            this.asAdmin().getGremlincode().addStep(Symbols.hasValue, value, otherValues);
             final List<Object> values = new ArrayList<>();
             if (value instanceof Object[]) {
                 Collections.addAll(values, (Object[]) value);
@@ -2525,7 +2525,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == predicate) {
             return hasValue((String) null);
         } else {
-            this.asAdmin().getBytecode().addStep(Symbols.hasValue, predicate);
+            this.asAdmin().getGremlincode().addStep(Symbols.hasValue, predicate);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
         }
     }
@@ -2539,7 +2539,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> is(final P<E> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.is, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.is, predicate);
         return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
 
@@ -2552,7 +2552,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> is(final Object value) {
-        this.asAdmin().getBytecode().addStep(Symbols.is, value);
+        this.asAdmin().getGremlincode().addStep(Symbols.is, value);
         return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), value instanceof P ? (P<E>) value : P.eq((E) value)));
     }
 
@@ -2565,7 +2565,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.not, notTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.not, notTraversal);
         return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E, ?>) notTraversal));
     }
 
@@ -2578,7 +2578,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> coin(final double probability) {
-        this.asAdmin().getBytecode().addStep(Symbols.coin, probability);
+        this.asAdmin().getGremlincode().addStep(Symbols.coin, probability);
         return this.asAdmin().addStep(new CoinStep<>(this.asAdmin(), probability));
     }
 
@@ -2593,7 +2593,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> range(final long low, final long high) {
-        this.asAdmin().getBytecode().addStep(Symbols.range, low, high);
+        this.asAdmin().getGremlincode().addStep(Symbols.range, low, high);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), low, high));
     }
 
@@ -2610,7 +2610,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
-        this.asAdmin().getBytecode().addStep(Symbols.range, scope, low, high);
+        this.asAdmin().getGremlincode().addStep(Symbols.range, scope, low, high);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new RangeGlobalStep<>(this.asAdmin(), low, high)
                 : new RangeLocalStep<>(this.asAdmin(), low, high));
@@ -2626,7 +2626,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> limit(final long limit) {
-        this.asAdmin().getBytecode().addStep(Symbols.limit, limit);
+        this.asAdmin().getGremlincode().addStep(Symbols.limit, limit);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), 0, limit));
     }
 
@@ -2641,7 +2641,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
-        this.asAdmin().getBytecode().addStep(Symbols.limit, scope, limit);
+        this.asAdmin().getGremlincode().addStep(Symbols.limit, scope, limit);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new RangeGlobalStep<>(this.asAdmin(), 0, limit)
                 : new RangeLocalStep<>(this.asAdmin(), 0, limit));
@@ -2656,7 +2656,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> tail() {
-        this.asAdmin().getBytecode().addStep(Symbols.tail);
+        this.asAdmin().getGremlincode().addStep(Symbols.tail);
         return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), 1));
     }
 
@@ -2670,7 +2670,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> tail(final long limit) {
-        this.asAdmin().getBytecode().addStep(Symbols.tail, limit);
+        this.asAdmin().getGremlincode().addStep(Symbols.tail, limit);
         return this.asAdmin().addStep(new TailGlobalStep<>(this.asAdmin(), limit));
     }
 
@@ -2684,7 +2684,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope) {
-        this.asAdmin().getBytecode().addStep(Symbols.tail, scope);
+        this.asAdmin().getGremlincode().addStep(Symbols.tail, scope);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new TailGlobalStep<>(this.asAdmin(), 1)
                 : new TailLocalStep<>(this.asAdmin(), 1));
@@ -2701,7 +2701,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
-        this.asAdmin().getBytecode().addStep(Symbols.tail, scope, limit);
+        this.asAdmin().getGremlincode().addStep(Symbols.tail, scope, limit);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new TailGlobalStep<>(this.asAdmin(), limit)
                 : new TailLocalStep<>(this.asAdmin(), limit));
@@ -2716,7 +2716,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.0
      */
     public default GraphTraversal<S, E> skip(final long skip) {
-        this.asAdmin().getBytecode().addStep(Symbols.skip, skip);
+        this.asAdmin().getGremlincode().addStep(Symbols.skip, skip);
         return this.asAdmin().addStep(new RangeGlobalStep<>(this.asAdmin(), skip, -1));
     }
 
@@ -2730,7 +2730,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.3.0
      */
     public default <E2> GraphTraversal<S, E2> skip(final Scope scope, final long skip) {
-        this.asAdmin().getBytecode().addStep(Symbols.skip, scope, skip);
+        this.asAdmin().getGremlincode().addStep(Symbols.skip, scope, skip);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new RangeGlobalStep<>(this.asAdmin(), skip, -1)
                 : new RangeLocalStep<>(this.asAdmin(), skip, -1));
@@ -2745,7 +2745,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
-        this.asAdmin().getBytecode().addStep(Symbols.timeLimit, timeLimit);
+        this.asAdmin().getGremlincode().addStep(Symbols.timeLimit, timeLimit);
         return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
     }
 
@@ -2757,7 +2757,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> simplePath() {
-        this.asAdmin().getBytecode().addStep(Symbols.simplePath);
+        this.asAdmin().getGremlincode().addStep(Symbols.simplePath);
         return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), true));
     }
 
@@ -2769,7 +2769,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> cyclicPath() {
-        this.asAdmin().getBytecode().addStep(Symbols.cyclicPath);
+        this.asAdmin().getGremlincode().addStep(Symbols.cyclicPath);
         return this.asAdmin().addStep(new PathFilterStep<E>(this.asAdmin(), false));
     }
 
@@ -2782,7 +2782,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> sample(final int amountToSample) {
-        this.asAdmin().getBytecode().addStep(Symbols.sample, amountToSample);
+        this.asAdmin().getGremlincode().addStep(Symbols.sample, amountToSample);
         return this.asAdmin().addStep(new SampleGlobalStep<>(this.asAdmin(), amountToSample));
     }
 
@@ -2796,7 +2796,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> sample(final Scope scope, final int amountToSample) {
-        this.asAdmin().getBytecode().addStep(Symbols.sample, scope, amountToSample);
+        this.asAdmin().getGremlincode().addStep(Symbols.sample, scope, amountToSample);
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new SampleGlobalStep<>(this.asAdmin(), amountToSample)
                 : new SampleLocalStep<>(this.asAdmin(), amountToSample));
@@ -2812,7 +2812,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> drop() {
-        this.asAdmin().getBytecode().addStep(Symbols.drop);
+        this.asAdmin().getGremlincode().addStep(Symbols.drop);
         return this.asAdmin().addStep(new DropStep<>(this.asAdmin()));
     }
 
@@ -2825,7 +2825,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <S2> GraphTraversal<S, E> all(final P<S2> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.all, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.all, predicate);
         return this.asAdmin().addStep(new AllStep<>(this.asAdmin(), predicate));
     }
 
@@ -2838,7 +2838,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.1
      */
     public default <S2> GraphTraversal<S, E> any(final P<S2> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.any, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.any, predicate);
         return this.asAdmin().addStep(new AnyStep<>(this.asAdmin(), predicate));
     }
 
@@ -2851,7 +2851,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 4.0.0
      */
     public default <S2> GraphTraversal<S, E> none(final P<S2> predicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.none, predicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.none, predicate);
         return this.asAdmin().addStep(new NoneStep<>(this.asAdmin(), predicate));
     }
 
@@ -2866,7 +2866,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
-        this.asAdmin().getBytecode().addStep(Symbols.sideEffect, consumer);
+        this.asAdmin().getGremlincode().addStep(Symbols.sideEffect, consumer);
         return this.asAdmin().addStep(new LambdaSideEffectStep<>(this.asAdmin(), consumer));
     }
 
@@ -2879,7 +2879,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.sideEffect, sideEffectTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.sideEffect, sideEffectTraversal);
         return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), (Traversal) sideEffectTraversal));
     }
 
@@ -2894,7 +2894,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {
-        this.asAdmin().getBytecode().addStep(Symbols.cap, sideEffectKey, sideEffectKeys);
+        this.asAdmin().getGremlincode().addStep(Symbols.cap, sideEffectKey, sideEffectKeys);
         return this.asAdmin().addStep(new SideEffectCapStep<>(this.asAdmin(), sideEffectKey, sideEffectKeys));
     }
 
@@ -2908,7 +2908,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> subgraph(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.subgraph, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.subgraph, sideEffectKey);
         return this.asAdmin().addStep(new SubgraphStep(this.asAdmin(), sideEffectKey));
     }
 
@@ -2922,7 +2922,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> aggregate(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.aggregate, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.aggregate, sideEffectKey);
         return this.asAdmin().addStep(new AggregateGlobalStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -2936,7 +2936,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.3
      */
     public default GraphTraversal<S, E> aggregate(final Scope scope, final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.aggregate, scope, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.aggregate, scope, sideEffectKey);
         return this.asAdmin().addStep(scope == Scope.global ?
                 new AggregateGlobalStep<>(this.asAdmin(), sideEffectKey) : new AggregateLocalStep<>(this.asAdmin(), sideEffectKey));
     }
@@ -2951,7 +2951,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> group(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.group, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.group, sideEffectKey);
         return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -2965,7 +2965,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.groupCount, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.groupCount, sideEffectKey);
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -2978,7 +2978,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, E> fail() {
-        this.asAdmin().getBytecode().addStep(Symbols.fail);
+        this.asAdmin().getGremlincode().addStep(Symbols.fail);
         return this.asAdmin().addStep(new FailStep<>(this.asAdmin()));
     }
 
@@ -2992,7 +2992,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default GraphTraversal<S, E> fail(final String message) {
-        this.asAdmin().getBytecode().addStep(Symbols.fail, message);
+        this.asAdmin().getGremlincode().addStep(Symbols.fail, message);
         return this.asAdmin().addStep(new FailStep<>(this.asAdmin(), message));
     }
 
@@ -3005,7 +3005,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.tree, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.tree, sideEffectKey);
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -3018,7 +3018,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
-        this.asAdmin().getBytecode().addStep(Symbols.sack, sackOperator);
+        this.asAdmin().getGremlincode().addStep(Symbols.sack, sackOperator);
         return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
     }
 
@@ -3033,7 +3033,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Symbols.store, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Symbols.store, sideEffectKey);
         return this.asAdmin().addStep(new AggregateLocalStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -3047,7 +3047,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> profile(final String sideEffectKey) {
-        this.asAdmin().getBytecode().addStep(Traversal.Symbols.profile, sideEffectKey);
+        this.asAdmin().getGremlincode().addStep(Traversal.Symbols.profile, sideEffectKey);
         return this.asAdmin().addStep(new ProfileSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
@@ -3089,9 +3089,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             throw new IllegalArgumentException("Value of T cannot be null");
 
         if (null == cardinality)
-            this.asAdmin().getBytecode().addStep(Symbols.property, key, value, keyValues);
+            this.asAdmin().getGremlincode().addStep(Symbols.property, key, value, keyValues);
         else
-            this.asAdmin().getBytecode().addStep(Symbols.property, cardinality, key, value, keyValues);
+            this.asAdmin().getGremlincode().addStep(Symbols.property, cardinality, key, value, keyValues);
 
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
         // the properties into that step to gain an optimization for those graphs that support such capabilities.
@@ -3243,7 +3243,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E2> branch(final Traversal<?, M> branchTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.branch, branchTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.branch, branchTraversal);
         final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
         branchStep.setBranchTraversal((Traversal.Admin<E, M>) branchTraversal);
         return this.asAdmin().addStep(branchStep);
@@ -3258,7 +3258,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E2> branch(final Function<Traverser<E>, M> function) {
-        this.asAdmin().getBytecode().addStep(Symbols.branch, function);
+        this.asAdmin().getGremlincode().addStep(Symbols.branch, function);
         final BranchStep<E, E2, M> branchStep = new BranchStep<>(this.asAdmin());
         branchStep.setBranchTraversal((Traversal.Admin<E, M>) __.map(function));
         return this.asAdmin().addStep(branchStep);
@@ -3275,7 +3275,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E2> choose(final Traversal<?, M> choiceTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, choiceTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, choiceTraversal);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) choiceTraversal));
     }
 
@@ -3292,7 +3292,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice, falseChoice);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, traversalPredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
@@ -3308,7 +3308,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
                                                      final Traversal<?, E2> trueChoice) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, traversalPredicate, trueChoice);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, traversalPredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
@@ -3323,7 +3323,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, choiceFunction);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, choiceFunction);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) __.map(new FunctionTraverser<>(choiceFunction))));
     }
 
@@ -3340,7 +3340,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
@@ -3356,7 +3356,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice) {
-        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
+        this.asAdmin().getGremlincode().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
@@ -3369,7 +3369,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> optional(final Traversal<?, E2> optionalTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.optional, optionalTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.optional, optionalTraversal);
         return this.asAdmin().addStep(new OptionalStep<>(this.asAdmin(), (Traversal.Admin<E2, E2>) optionalTraversal));
     }
 
@@ -3382,7 +3382,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> union(final Traversal<?, E2>... unionTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.union, unionTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.union, unionTraversals);
         return this.asAdmin().addStep(new UnionStep<>(this.asAdmin(), Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class)));
     }
 
@@ -3395,7 +3395,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> coalesce(final Traversal<?, E2>... coalesceTraversals) {
-        this.asAdmin().getBytecode().addStep(Symbols.coalesce, coalesceTraversals);
+        this.asAdmin().getGremlincode().addStep(Symbols.coalesce, coalesceTraversals);
         return this.asAdmin().addStep(new CoalesceStep<>(this.asAdmin(), Arrays.copyOf(coalesceTraversals, coalesceTraversals.length, Traversal.Admin[].class)));
     }
 
@@ -3408,7 +3408,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> repeat(final Traversal<?, E> repeatTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.repeat, repeatTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.repeat, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
@@ -3422,7 +3422,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S, E> repeat(final String loopName, final Traversal<?, E> repeatTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.repeat, loopName, repeatTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.repeat, loopName, repeatTraversal);
         return RepeatStep.addRepeatToTraversal(this, loopName, (Traversal.Admin<E, E>) repeatTraversal);
     }
 
@@ -3436,7 +3436,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> emit(final Traversal<?, ?> emitTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.emit, emitTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.emit, emitTraversal);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) emitTraversal);
     }
 
@@ -3449,7 +3449,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> emit(final Predicate<Traverser<E>> emitPredicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.emit, emitPredicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.emit, emitPredicate);
         return RepeatStep.addEmitToTraversal(this, (Traversal.Admin<E, ?>) __.filter(emitPredicate));
     }
 
@@ -3461,7 +3461,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> emit() {
-        this.asAdmin().getBytecode().addStep(Symbols.emit);
+        this.asAdmin().getGremlincode().addStep(Symbols.emit);
         return RepeatStep.addEmitToTraversal(this, TrueTraversal.instance());
     }
 
@@ -3474,7 +3474,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.until, untilTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.until, untilTraversal);
         return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) untilTraversal);
     }
 
@@ -3487,7 +3487,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> until(final Predicate<Traverser<E>> untilPredicate) {
-        this.asAdmin().getBytecode().addStep(Symbols.until, untilPredicate);
+        this.asAdmin().getGremlincode().addStep(Symbols.until, untilPredicate);
         return RepeatStep.addUntilToTraversal(this, (Traversal.Admin<E, ?>) __.filter(untilPredicate));
     }
 
@@ -3500,7 +3500,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> times(final int maxLoops) {
-        this.asAdmin().getBytecode().addStep(Symbols.times, maxLoops);
+        this.asAdmin().getGremlincode().addStep(Symbols.times, maxLoops);
         if (this.asAdmin().getEndStep() instanceof TimesModulating) {
             ((TimesModulating) this.asAdmin().getEndStep()).modulateTimes(maxLoops);
             return this;
@@ -3517,7 +3517,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.local, localTraversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.local, localTraversal);
         return this.asAdmin().addStep(new LocalStep<>(this.asAdmin(), localTraversal.asAdmin()));
     }
 
@@ -3531,7 +3531,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> pageRank() {
-        this.asAdmin().getBytecode().addStep(Symbols.pageRank);
+        this.asAdmin().getGremlincode().addStep(Symbols.pageRank);
         return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), 0.85d));
     }
 
@@ -3543,7 +3543,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> pageRank(final double alpha) {
-        this.asAdmin().getBytecode().addStep(Symbols.pageRank, alpha);
+        this.asAdmin().getGremlincode().addStep(Symbols.pageRank, alpha);
         return this.asAdmin().addStep((Step<E, E>) new PageRankVertexProgramStep(this.asAdmin(), alpha));
     }
 
@@ -3555,7 +3555,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> peerPressure() {
-        this.asAdmin().getBytecode().addStep(Symbols.peerPressure);
+        this.asAdmin().getGremlincode().addStep(Symbols.peerPressure);
         return this.asAdmin().addStep((Step<E, E>) new PeerPressureVertexProgramStep(this.asAdmin()));
     }
 
@@ -3567,7 +3567,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S, E> connectedComponent() {
-        this.asAdmin().getBytecode().addStep(Symbols.connectedComponent);
+        this.asAdmin().getGremlincode().addStep(Symbols.connectedComponent);
         return this.asAdmin().addStep((Step<E, E>) new ConnectedComponentVertexProgramStep(this.asAdmin()));
     }
 
@@ -3585,7 +3585,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             // HALTED_TRAVERSER stored in memory and stored as vertex properties); instead it just emits all vertices.
             this.identity();
         }
-        this.asAdmin().getBytecode().addStep(Symbols.shortestPath);
+        this.asAdmin().getGremlincode().addStep(Symbols.shortestPath);
         return (GraphTraversal<S, Path>) ((Traversal.Admin) this.asAdmin())
                 .addStep(new ShortestPathVertexProgramStep(this.asAdmin()));
     }
@@ -3613,7 +3613,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
-        this.asAdmin().getBytecode().addStep(Symbols.as, stepLabel, stepLabels);
+        this.asAdmin().getGremlincode().addStep(Symbols.as, stepLabel, stepLabels);
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
         final Step<?, E> endStep = this.asAdmin().getEndStep();
         endStep.addLabel(stepLabel);
@@ -3633,7 +3633,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> barrier() {
-        this.asAdmin().getBytecode().addStep(Symbols.barrier);
+        this.asAdmin().getGremlincode().addStep(Symbols.barrier);
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), Integer.MAX_VALUE));
     }
 
@@ -3647,7 +3647,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
-        this.asAdmin().getBytecode().addStep(Symbols.barrier, maxBarrierSize);
+        this.asAdmin().getGremlincode().addStep(Symbols.barrier, maxBarrierSize);
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), maxBarrierSize));
     }
 
@@ -3668,7 +3668,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default <E2> GraphTraversal<S, E2> index() {
-        this.asAdmin().getBytecode().addStep(Symbols.index);
+        this.asAdmin().getGremlincode().addStep(Symbols.index);
         return this.asAdmin().addStep(new IndexStep<>(this.asAdmin()));
     }
 
@@ -3683,7 +3683,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default GraphTraversal<S, E> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
-        this.asAdmin().getBytecode().addStep(Symbols.barrier, barrierConsumer);
+        this.asAdmin().getGremlincode().addStep(Symbols.barrier, barrierConsumer);
         return this.asAdmin().addStep(new LambdaCollectingBarrierStep<>(this.asAdmin(), (Consumer) barrierConsumer, Integer.MAX_VALUE));
     }
 
@@ -3700,7 +3700,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S,E> with(final String key) {
-        this.asAdmin().getBytecode().addStep(Symbols.with, key);
+        this.asAdmin().getGremlincode().addStep(Symbols.with, key);
         final Object[] configPair = { key, true };
         ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
         return this;
@@ -3717,7 +3717,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S,E> with(final String key, final Object value) {
-        this.asAdmin().getBytecode().addStep(Symbols.with, key, value);
+        this.asAdmin().getGremlincode().addStep(Symbols.with, key, value);
         final Object[] configPair = { key, value };
         ((Configuring) this.asAdmin().getEndStep()).configure(configPair);
         return this;
@@ -3734,7 +3734,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by() {
-        this.asAdmin().getBytecode().addStep(Symbols.by);
+        this.asAdmin().getGremlincode().addStep(Symbols.by);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy();
         return this;
     }
@@ -3749,7 +3749,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by(final Traversal<?, ?> traversal) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, traversal);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, traversal);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin());
         return this;
     }
@@ -3764,7 +3764,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by(final T token) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, token);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, token);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(token);
         return this;
     }
@@ -3779,7 +3779,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by(final String key) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, key);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, key);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key);
         return this;
     }
@@ -3794,7 +3794,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> function) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, function);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, function);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function);
         return this;
     }
@@ -3812,7 +3812,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <V> GraphTraversal<S, E> by(final Traversal<?, ?> traversal, final Comparator<V> comparator) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, traversal, comparator);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, traversal, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(traversal.asAdmin(), comparator);
         return this;
     }
@@ -3827,7 +3827,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, comparator);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(comparator);
         return this;
     }
@@ -3842,7 +3842,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> by(final Order order) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, order);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, order);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(order);
         return this;
     }
@@ -3858,7 +3858,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <V> GraphTraversal<S, E> by(final String key, final Comparator<V> comparator) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, key, comparator);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, key, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(key, comparator);
         return this;
     }
@@ -3874,7 +3874,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <U> GraphTraversal<S, E> by(final Function<U, Object> function, final Comparator comparator) {
-        this.asAdmin().getBytecode().addStep(Symbols.by, function, comparator);
+        this.asAdmin().getGremlincode().addStep(Symbols.by, function, comparator);
         ((ByModulating) this.asAdmin().getEndStep()).modulateBy(function, comparator);
         return this;
     }
@@ -3896,7 +3896,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E> option(final M token, final Traversal<?, E2> traversalOption) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, token, traversalOption);
+        this.asAdmin().getGremlincode().addStep(Symbols.option, token, traversalOption);
 
         // handle null similar to how option() with Map handles it, otherwise we get a NPE if this one gets used
         final Traversal.Admin<E,E2> t = null == traversalOption ?
@@ -3917,7 +3917,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final M token, final Map<Object, Object> m) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, token, m);
+        this.asAdmin().getGremlincode().addStep(Symbols.option, token, m);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
@@ -3934,7 +3934,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final Map<Object, Object> m, final VertexProperty.Cardinality cardinality) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, merge, m, cardinality);
+        this.asAdmin().getGremlincode().addStep(Symbols.option, merge, m, cardinality);
         // do explicit cardinality for every single pair in the map
         for (Object k : m.keySet()) {
             final Object o = m.get(k);
@@ -3954,7 +3954,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, E> option(final Traversal<?, E2> traversalOption) {
-        this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
+        this.asAdmin().getGremlincode().addStep(Symbols.option, traversalOption);
         ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addChildOption(Pick.any, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
         return this;
     }
@@ -3973,7 +3973,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S,E> read() {
-        this.asAdmin().getBytecode().addStep(Symbols.read);
+        this.asAdmin().getGremlincode().addStep(Symbols.read);
         ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.READING);
         return this;
     }
@@ -3988,7 +3988,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.4.0
      */
     public default GraphTraversal<S,E> write() {
-        this.asAdmin().getBytecode().addStep(Symbols.write);
+        this.asAdmin().getGremlincode().addStep(Symbols.write);
         ((ReadWriting) this.asAdmin().getEndStep()).setMode(ReadWriting.Mode.WRITING);
         return this;
     }

@@ -224,7 +224,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the updated traversal with respective {@link DiscardStep}.
      */
     public default Traversal<S, E> discard() {
-        this.asAdmin().getBytecode().addStep(Symbols.discard);
+        this.asAdmin().getGremlincode().addStep(Symbols.discard);
         return this.asAdmin().addStep(new DiscardStep<>(this.asAdmin()));
     }
 
@@ -234,7 +234,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
      * @return the updated traversal with respective {@link ProfileSideEffectStep}.
      */
     public default Traversal<S, TraversalMetrics> profile() {
-        this.asAdmin().getBytecode().addStep(Symbols.profile);
+        this.asAdmin().getGremlincode().addStep(Symbols.profile);
         return this.asAdmin()
                 .addStep(new ProfileSideEffectStep<>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY))
                 .addStep(new SideEffectCapStep<Object, TraversalMetrics>(this.asAdmin(), ProfileSideEffectStep.DEFAULT_METRICS_KEY));
@@ -328,7 +328,7 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          *
          * @return the byte code representation of the traversal
          */
-        public Bytecode getBytecode();
+        public Bytecode getGremlincode();
 
         /**
          * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal. Users should

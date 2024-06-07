@@ -43,7 +43,7 @@ public final class CardinalityValueTraversal extends AbstractLambdaTraversal {
     }
 
     @Override
-    public Bytecode getBytecode() {
+    public Bytecode getGremlincode() {
         return this.bytecode;
     }
 

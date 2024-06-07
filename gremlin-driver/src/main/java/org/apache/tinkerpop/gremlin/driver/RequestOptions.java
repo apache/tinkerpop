@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
+
 /**
  * Options that can be supplied on a per request basis.
  *
@@ -97,6 +100,14 @@ public final class RequestOptions {
         public Builder addParameter(final String name, final Object value) {
             if (null == parameters)
                 parameters = new HashMap<>();
+
+            if (name.equals(ARGS_G)) {
+                this.graphOrTraversalSource = (String) value;
+            }
+
+            if (name.equals(ARGS_LANGUAGE)) {
+                this.language = (String) value;
+            }
 
             parameters.put(name, value);
             return this;

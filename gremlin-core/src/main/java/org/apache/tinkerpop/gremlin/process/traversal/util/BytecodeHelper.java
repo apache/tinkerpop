@@ -399,25 +399,6 @@ public final class BytecodeHelper {
         }
     }
 
-    public static void detachElements(final Bytecode bytecode) {
-        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
-            final Object[] arguments = instruction.getArguments();
-            for (int i = 0; i < arguments.length; i++) {
-                if (arguments[i] instanceof Bytecode)
-                    detachElements((Bytecode) arguments[i]);
-                else if(arguments[i] instanceof List) {
-                    final List<Object> list = new ArrayList<>();
-                    for(final Object object : (List)arguments[i]) {
-                        list.add(DetachedFactory.detach(object, false));
-                    }
-                    arguments[i] = list;
-                }
-                else
-                    arguments[i] = DetachedFactory.detach(arguments[i], false);
-            }
-        }
-    }
-
     /**
      * Returns a list of {@link Step} which can be added to the traversal for the provided operator.
      * <p>

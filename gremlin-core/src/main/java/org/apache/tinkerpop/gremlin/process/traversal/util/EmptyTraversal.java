@@ -53,7 +53,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     }
 
-    public Bytecode getBytecode() {
+    public Bytecode getGremlincode() {
         return new Bytecode();
     }
 

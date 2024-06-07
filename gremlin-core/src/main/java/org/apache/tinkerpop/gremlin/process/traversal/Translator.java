@@ -68,7 +68,7 @@ public interface Translator<S, T> {
      * Translates a {@link Traversal} into the specified form
      */
     public default T translate(final Traversal<?,?> t) {
-        return translate(t.asAdmin().getBytecode());
+        return translate(t.asAdmin().getGremlincode());
     }
 
     /**
@@ -286,7 +286,7 @@ public interface Translator<S, T> {
                         return produceScript(getAnonymousTraversalPrefix(), bc);
                     }
                 } else if (object instanceof Traversal) {
-                    return convertToScript(((Traversal) object).asAdmin().getBytecode());
+                    return convertToScript(((Traversal) object).asAdmin().getGremlincode());
                 } else if (object instanceof String) {
                     final Object objectOrWrapper = withParameters ? object : getSyntax((String) object);
                     return script.getBoundKeyOrAssign(withParameters, objectOrWrapper);

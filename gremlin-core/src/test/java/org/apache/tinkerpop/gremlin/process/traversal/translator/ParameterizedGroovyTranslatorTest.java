@@ -74,7 +74,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals("g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(checkAdjacentVertices: _args_0, vertices: __.hasLabel(_args_1))).V().has(_args_2)",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create()).
-                        V().has("name").asAdmin().getBytecode()).getScript());
+                        V().has("name").asAdmin().getGremlincode()).getScript());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ParameterizedGroovyTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a <=> b"))
                 .sack(Lambda.biFunction("{ a,b -> a + b }"))
                 .asAdmin();
-        final Script script = translator.translate(t.getBytecode());
+        final Script script = translator.translate(t.getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(9, bindings.size());
@@ -120,7 +120,7 @@ public class ParameterizedGroovyTranslatorTest {
             add(3);
             add(4);
             add(5);
-        }})).asAdmin().getBytecode());
+        }})).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(5, bindings.size());
@@ -139,7 +139,7 @@ public class ParameterizedGroovyTranslatorTest {
             add(Arrays.asList(1, 2, 3.1d));
             add(3);
             add("3");
-        }}).asAdmin().getBytecode());
+        }}).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(5, bindings.size());
@@ -157,7 +157,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Script script = translator.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
-        }}).asAdmin().getBytecode());
+        }}).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(6, bindings.size());
@@ -173,7 +173,7 @@ public class ParameterizedGroovyTranslatorTest {
     @Test
     public void shouldHandleEmptyMaps() {
         final Function identity = new Lambda.OneArgLambda("it.get()", "gremlin-groovy");
-        final Script script = translator.translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getBytecode());
+        final Script script = translator.translate(g.inject(Collections.emptyMap()).map(identity).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
@@ -186,7 +186,7 @@ public class ParameterizedGroovyTranslatorTest {
         final ParameterizedSillyClass notSillyEnough = ParameterizedSillyClass.from("not silly enough", 100);
 
         // without type translation we get uglinesss
-        final Script parameterizedScriptBad = translator.translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+        final Script parameterizedScriptBad = translator.translate(g.inject(notSillyEnough).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         parameterizedScriptBad.getParameters().ifPresent(bindings::putAll);
         assertEquals(String.format("g.inject(%s)", "_args_0"), parameterizedScriptBad.getScript());
@@ -196,7 +196,7 @@ public class ParameterizedGroovyTranslatorTest {
 
         // with type translation we get valid gremlin
         final Script parameterizedScriptGood = GroovyTranslator.of("g", new ParameterizedSillyClassTranslatorCustomizer().createTypeTranslator()).
-                translate(g.inject(notSillyEnough).asAdmin().getBytecode());
+                translate(g.inject(notSillyEnough).asAdmin().getGremlincode());
         parameterizedScriptGood.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
         assertEquals(notSillyEnough.getX(), bindings.get("_args_0"));
@@ -217,7 +217,7 @@ public class ParameterizedGroovyTranslatorTest {
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
-                .asAdmin().getBytecode());
+                .asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script.getParameters().ifPresent(bindings::putAll);
         assertEquals(9, bindings.size());
@@ -238,7 +238,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final Script script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode());
+        final Script script1 = translator.translate(g.inject(vertex1).asAdmin().getGremlincode());
         final Bindings bindings = new SimpleBindings();
         script1.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
@@ -250,7 +250,7 @@ public class ParameterizedGroovyTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final Script script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode());
+        final Script script2 = translator.translate(g.inject(vertex2).asAdmin().getGremlincode());
         script2.getParameters().ifPresent(bindings::putAll);
         assertEquals(2, bindings.size());
         assertEquals(id2, bindings.get("_args_0"));
@@ -263,7 +263,7 @@ public class ParameterizedGroovyTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final Script script3 = translator.translate(g.inject(edge).asAdmin().getBytecode());
+        final Script script3 = translator.translate(g.inject(edge).asAdmin().getGremlincode());
         script3.getParameters().ifPresent(bindings::putAll);
         assertEquals(6, bindings.size());
         assertEquals(id3, bindings.get("_args_0"));
@@ -277,7 +277,7 @@ public class ParameterizedGroovyTranslatorTest {
 
         final Script script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
-                        .asAdmin().getBytecode());
+                        .asAdmin().getGremlincode());
         script4.getParameters().ifPresent(bindings::putAll);
         assertEquals(7, bindings.size());
         assertEquals("knows", bindings.get("_args_0"));
@@ -290,7 +290,7 @@ public class ParameterizedGroovyTranslatorTest {
         assertEquals("g.addE(_args_0).from(new ReferenceVertex(_args_1,_args_2)).to(new ReferenceVertex(_args_3,_args_4)).property(_args_5,_args_6)", script4.getScript());
         bindings.clear();
 
-        final Script script5 = translator.translate(g.V().has("age").asAdmin().getBytecode());
+        final Script script5 = translator.translate(g.V().has("age").asAdmin().getGremlincode());
         script5.getParameters().ifPresent(bindings::putAll);
         assertEquals(1, bindings.size());
         assertEquals("age", bindings.get("_args_0"));

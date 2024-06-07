@@ -207,12 +207,12 @@ public class GraphTraversalTest {
                 if (doTest) {
                     stepMethod.invoke(traversal, arguments);
                     // System.out.print(stepMethod.getName() + "---");
-                    final Bytecode.Instruction instruction = traversal.getBytecode().getStepInstructions().get(traversal.getBytecode().getStepInstructions().size() - 1);
+                    final Bytecode.Instruction instruction = traversal.getGremlincode().getStepInstructions().get(traversal.getGremlincode().getStepInstructions().size() - 1);
                     // System.out.println(instruction);
                     assertEquals(stepMethod.getName(), instruction.getOperator());
                     assertEquals(list.size(), instruction.getArguments().length);
                     for (int i = 0; i < list.size(); i++) {
-                        assertEquals(list.get(i) instanceof Traversal ? ((Traversal) list.get(i)).asAdmin().getBytecode() : list.get(i), instruction.getArguments()[i]);
+                        assertEquals(list.get(i) instanceof Traversal ? ((Traversal) list.get(i)).asAdmin().getGremlincode() : list.get(i), instruction.getArguments()[i]);
                     }
                 }
             }

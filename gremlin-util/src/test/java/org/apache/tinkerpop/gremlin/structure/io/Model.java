@@ -132,7 +132,7 @@ public class Model {
         bulkSet.add("josh", 2);
         addGraphProcessEntry(bulkSet, "BulkSet", "");
 
-        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
+        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getGremlincode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "");
         addGraphProcessEntry(Column.keys, "Column", "");
         addGraphProcessEntry(Direction.OUT, "Direction", "");

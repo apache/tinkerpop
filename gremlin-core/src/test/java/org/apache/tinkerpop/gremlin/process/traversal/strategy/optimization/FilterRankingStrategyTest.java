@@ -72,7 +72,7 @@ public class FilterRankingStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlincode()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(FilterRankingStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {

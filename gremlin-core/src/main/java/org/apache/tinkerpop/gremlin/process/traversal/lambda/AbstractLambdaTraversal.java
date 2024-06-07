@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGen
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -62,8 +61,8 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     }
 
     @Override
-    public Bytecode getBytecode() {
-        return null == this.bypassTraversal ? new Bytecode() : this.bypassTraversal.getBytecode();
+    public Bytecode getGremlincode() {
+        return null == this.bypassTraversal ? new Bytecode() : this.bypassTraversal.getGremlincode();
     }
 
 

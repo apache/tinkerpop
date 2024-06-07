@@ -46,7 +46,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_explain(final GremlinParser.TraversalTerminalMethod_explainContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("explain");
         return bc;
     }
@@ -58,7 +58,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_iterate(final GremlinParser.TraversalTerminalMethod_iterateContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("iterate");
         return bc;
     }
@@ -70,7 +70,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_hasNext(final GremlinParser.TraversalTerminalMethod_hasNextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("hasNext");
         return bc;
     }
@@ -82,7 +82,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_tryNext(final GremlinParser.TraversalTerminalMethod_tryNextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("tryNext");
         return bc;
     }
@@ -94,7 +94,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_next(final GremlinParser.TraversalTerminalMethod_nextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         if (ctx.getChildCount() == 3) {
             bc.addStep("next");
         } else {
@@ -113,7 +113,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toList(final GremlinParser.TraversalTerminalMethod_toListContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("toList");
         return bc;
     }
@@ -125,7 +125,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toSet(final GremlinParser.TraversalTerminalMethod_toSetContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("toSet");
         return bc;
     }
@@ -137,7 +137,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toBulkSet(final GremlinParser.TraversalTerminalMethod_toBulkSetContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final Bytecode bc = this.traversal.asAdmin().getGremlincode();
         bc.addStep("toBulkSet");
         return bc;
     }

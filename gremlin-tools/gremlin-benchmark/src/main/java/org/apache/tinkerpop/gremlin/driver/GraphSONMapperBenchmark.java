@@ -72,7 +72,7 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
                     .property("name4", BigInteger.valueOf(33343455342245L))
                     .property("name5", "kjlkdnvlkdrnvldnvndlrkvnlhkjdkgkrtnlkndblknlknonboirnlkbnrtbonrobinokbnrklnbkrnblktengotrngotkrnglkt")
                     .property("name6", Instant.now())
-                    .asAdmin().getBytecode();
+                    .asAdmin().getGremlincode();
 
 
             bytecodeBytes1 = mapper.writeValueAsBytes(bytecode1);

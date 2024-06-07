@@ -71,7 +71,7 @@ public class MessageSerializerV4Test {
         final Map<String, String> aliases = new HashMap<>();
         aliases.put("g","g");
 
-        final RequestMessageV4 request = RequestMessageV4.build(t.getBytecode())
+        final RequestMessageV4 request = RequestMessageV4.build(t.getGremlincode())
                 .addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
                 .addTimeoutMillis(500)
                 .addG("g1")

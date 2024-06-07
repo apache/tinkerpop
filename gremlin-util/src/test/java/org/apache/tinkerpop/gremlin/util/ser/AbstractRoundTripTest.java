@@ -261,7 +261,7 @@ public abstract class AbstractRoundTripTest {
                 }},
                 new Object[] {"TraversalStrategySubgraph", SubgraphStrategy.build().vertices(hasLabel("person")).create(), (Consumer<TraversalStrategyProxy>) strategy -> {
                     assertEquals(SubgraphStrategy.class, strategy.getStrategyClass());
-                    assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
+                    assertEquals(hasLabel("person").asAdmin().getGremlincode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},

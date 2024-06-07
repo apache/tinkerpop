@@ -1123,7 +1123,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should200OnPOSTWithValidGraphSONBytecodeRequest() throws Exception {
-        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getBytecode();
+        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlincode();
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
                 RequestMessageV4.build(bytecodeQuery).addG("gmodern").create(),
@@ -1148,7 +1148,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should200OnPOSTWithValidGraphBinaryBytecodeRequest() throws Exception {
-        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getBytecode();
+        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlincode();
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
 //        final Map<String, String> aliases = new HashMap<>();
 //        aliases.put("g", "gmodern");
@@ -1220,7 +1220,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void should400OnPOSTWithInvalidRequestArgsWhenAliasesNotSuppliedForBytecode() throws Exception {
-        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getBytecode();
+        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlincode();
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
                 RequestMessageV4.build(bytecodeQuery).create(), new UnpooledByteBufAllocator(false));
@@ -1241,7 +1241,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldErrorOnBytecodeGremlinFromApplicationJsonPostRequest() throws Exception {
-        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getBytecode();
+        final Bytecode bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlincode();
         final UUID requestId = UUID.fromString("1e55c495-22d5-4a39-934a-a2744ba010ef");
         final String body = "{ \"gremlin\": \"" + bytecodeQuery + "\", \"requestId\": \"" + requestId + "\", \"g\": \"gmodern" + "\", \"language\":  \"gremlin-lang\"}";
         final CloseableHttpClient httpclient = HttpClients.createDefault();

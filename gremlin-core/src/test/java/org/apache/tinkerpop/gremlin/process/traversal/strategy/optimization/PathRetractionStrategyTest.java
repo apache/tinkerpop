@@ -92,7 +92,7 @@ public class PathRetractionStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlincode()).getScript();
         for (final TraversalStrategies currentStrategies : this.strategies) {
             final Traversal.Admin<?, ?> currentTraversal = this.original.clone();
             currentTraversal.setStrategies(currentStrategies);
