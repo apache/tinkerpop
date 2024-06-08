@@ -45,6 +45,11 @@ public final class StateKey {
     public static final AttributeKey<UUID> REQUEST_ID = AttributeKey.valueOf("requestId");
 
     /**
+     * The key for whether a {@link io.netty.handler.codec.http.HttpResponse} has been sent for the current response.
+     */
+    public static final AttributeKey<Boolean> HTTP_RESPONSE_SENT = AttributeKey.valueOf("responseSent");
+
+    /**
      * The key for the current {@link AuthenticatedUser}.
      */
     public static final AttributeKey<AuthenticatedUser> AUTHENTICATED_USER = AttributeKey.valueOf("authenticatedUser");
