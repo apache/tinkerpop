@@ -24,6 +24,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpObject;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -34,7 +35,9 @@ import io.netty.util.AttributeMap;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
@@ -45,6 +48,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
     private static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
     private static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
+    private static final AttributeKey<String> RESPONSE_ENCODING = AttributeKey.valueOf("responseSerializer");
     private static final AttributeKey<Integer> BYTES_READ = AttributeKey.valueOf("bytesRead");
 
     private final MessageSerializerV4<?> serializer;
@@ -60,14 +64,14 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     protected void decode(ChannelHandlerContext ctx, DefaultHttpObject msg, List<Object> out) throws Exception {
         final Attribute<Boolean> isFirstChunk = ((AttributeMap) ctx).attr(IS_FIRST_CHUNK);
         final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
+        final Attribute<String> responseEncoding = ((AttributeMap) ctx).attr(RESPONSE_ENCODING);
 
         if (msg instanceof HttpResponse) {
             ctx.channel().attr(BYTES_READ).set(0);
-            responseStatus.set(((HttpResponse) msg).status());
 
-            if (isError(((HttpResponse) msg).status())) {
-                return;
-            }
+            final HttpResponse resp = (HttpResponse) msg;
+            responseStatus.set(resp.status());
+            responseEncoding.set(resp.headers().get(HttpHeaderNames.CONTENT_TYPE));
 
             isFirstChunk.set(true);
         }
@@ -88,9 +92,8 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
             }
 
             try {
-                // with error status we can get json in response
                 // no more chunks expected
-                if (isError(responseStatus.get())) {
+                if (isError(responseStatus.get()) && !SerTokensV4.MIME_GRAPHBINARY_V4.equals(responseEncoding.get())) {
                     final JsonNode node = mapper.readTree(content.toString(CharsetUtil.UTF_8));
                     final String message = node.get("message").asText();
                     final ResponseMessageV4 response = ResponseMessageV4.build()

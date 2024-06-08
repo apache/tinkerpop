@@ -164,6 +164,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RequestMessageV4 requestMessage) {
+        ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(false);
         final Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
 
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
@@ -200,6 +201,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 responseHeader.headers().set(TRANSFER_ENCODING, CHUNKED);
                 responseHeader.headers().set(HttpHeaderNames.CONTENT_TYPE, serializer.getValue0());
                 ctx.writeAndFlush(responseHeader);
+                ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(true);
 
                 switch (requestMessage.getGremlinType()) {
                     case "":
