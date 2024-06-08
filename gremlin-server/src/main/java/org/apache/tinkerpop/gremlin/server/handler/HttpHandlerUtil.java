@@ -24,8 +24,11 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.CharsetUtil;
@@ -44,6 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING;
+import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -99,6 +105,15 @@ public class HttpHandlerUtil {
                     : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
 
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
+
+            if (!ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).get()) {
+                final HttpResponse responseHeader = new DefaultHttpResponse(HTTP_1_1, responseMessage.getStatus().getCode());
+                responseHeader.headers().set(TRANSFER_ENCODING, CHUNKED); // Set this to make it "keep alive" eligible.
+                responseHeader.headers().set(HttpHeaderNames.CONTENT_TYPE, ctx.channel().attr(StateKey.SERIALIZER).get().getValue0());
+                ctx.writeAndFlush(responseHeader);
+                ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(true);
+            }
+
             ctx.writeAndFlush(new DefaultHttpContent(ByteBuf));
 
             sendTrailingHeaders(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
