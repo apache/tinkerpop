@@ -97,6 +97,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
 
     @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+        if (null == responseMessage.getStatus()) {
+            throw new SerializationException("ResponseStatusV4 can't be null when serializing a full ResponseMessageV4.");
+        }
+
         return writeHeader(responseMessage, allocator);
     }
 
