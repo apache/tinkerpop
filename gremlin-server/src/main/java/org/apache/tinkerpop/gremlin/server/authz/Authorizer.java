@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -44,12 +44,12 @@ public interface Authorizer {
      * the request.
      *
      * @param user {@link AuthenticatedUser} that needs authorization.
-     * @param bytecode The gremlin {@link Bytecode} request to authorize the user for.
+     * @param bytecode The gremlin {@link GremlinLang} request to authorize the user for.
      * @param aliases A {@link Map} with a single key/value pair that maps the name of the {@link TraversalSource} in the
-     *                {@link Bytecode} request to name of one configured in Gremlin Server.
-     * @return The original or modified {@link Bytecode} to be used for further processing.
+     *                {@link GremlinLang} request to name of one configured in Gremlin Server.
+     * @return The original or modified {@link GremlinLang} to be used for further processing.
      */
-    public Bytecode authorize(final AuthenticatedUser user, final Bytecode bytecode, final Map<String, String> aliases) throws AuthorizationException;
+    public GremlinLang authorize(final AuthenticatedUser user, final GremlinLang bytecode, final Map<String, String> aliases) throws AuthorizationException;
 
     /**
      * Checks whether a user is authorized to have a script request from a gremlin client answered and raises an

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Objects;
@@ -29,21 +29,21 @@ public final class CardinalityValueTraversal extends AbstractLambdaTraversal {
 
     private final Object value;
 
-    private final Bytecode bytecode;
+    private final GremlinLang bytecode;
 
     public CardinalityValueTraversal(final VertexProperty.Cardinality cardinality, final Object value) {
         this.cardinality = cardinality;
         this.value = value;
-        this.bytecode = new Bytecode(CardinalityValueTraversal.class.getSimpleName(), cardinality.name(), value);
+        this.bytecode = new GremlinLang(CardinalityValueTraversal.class.getSimpleName(), cardinality.name(), value);
     }
 
-    public static CardinalityValueTraversal from(final Bytecode.Instruction inst) {
+    public static CardinalityValueTraversal from(final GremlinLang.Instruction inst) {
         return new CardinalityValueTraversal(VertexProperty.Cardinality.valueOf(inst.getArguments()[0].toString()),
                 inst.getArguments()[1]);
     }
 
     @Override
-    public Bytecode getGremlincode() {
+    public GremlinLang getGremlinLang() {
         return this.bytecode;
     }
 

@@ -107,7 +107,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertEquals(2, traversal.asAdmin().getSideEffects().<BulkSet>get("x").size());
         assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("ripple"));
         assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("lop"));
-        assertEquals(Traversal.Symbols.discard, traversal.asAdmin().getGremlincode().getStepInstructions().get(traversal.asAdmin().getGremlincode().getStepInstructions().size()-1).getOperator());
+        assertEquals(Traversal.Symbols.discard, traversal.asAdmin().getGremlinLang().getStepInstructions().get(traversal.asAdmin().getGremlinLang().getStepInstructions().size()-1).getOperator());
     }
 
     @Test

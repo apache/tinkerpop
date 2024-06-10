@@ -71,7 +71,7 @@ public class StandardVerificationStrategyTest {
 
     @Test
     public void shouldBeVerified() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final Traversal copy = copyAndConfigureTraversal(traversal);
 
         if (legalTraversal) {

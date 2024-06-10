@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -224,15 +224,15 @@ public class AuthorizerTest {
         }
     }
 
-    private Bytecode bytecodeRequest(final String requestType) {
+    private GremlinLang bytecodeRequest(final String requestType) {
         final GraphTraversalSource g = TinkerGraph.open().traversal();
-        final Bytecode bytecode;
+        final GremlinLang bytecode;
 
         switch (requestType) {
-            case BYTECODE:           bytecode = g.V().asAdmin().getGremlincode(); break;
-            case BYTECODE_LAMBDA:    bytecode = g.V().map(Lambda.function("it.get()")).asAdmin().getGremlincode(); break;
-            case BYTECODE_MUTATE:    bytecode = g.withoutStrategies(ReadOnlyStrategy.class).V().addV().asAdmin().getGremlincode(); break;
-            case BYTECODE_OLAP:      bytecode = g.withoutStrategies(VertexProgramRestrictionStrategy.class).withComputer().V().asAdmin().getGremlincode(); break;
+            case BYTECODE:           bytecode = g.V().asAdmin().getGremlinLang(); break;
+            case BYTECODE_LAMBDA:    bytecode = g.V().map(Lambda.function("it.get()")).asAdmin().getGremlinLang(); break;
+            case BYTECODE_MUTATE:    bytecode = g.withoutStrategies(ReadOnlyStrategy.class).V().addV().asAdmin().getGremlinLang(); break;
+            case BYTECODE_OLAP:      bytecode = g.withoutStrategies(VertexProgramRestrictionStrategy.class).withComputer().V().asAdmin().getGremlinLang(); break;
             case BYTECODE_SUBGRAPH:  bytecode = subgraphTraversals.get(); break;
             default: throw new IllegalArgumentException();
         }
@@ -253,24 +253,24 @@ public class AuthorizerTest {
         return RequestMessageV4.build(script).create();
     }
 
-    private static class SubgraphTraversals implements Supplier<Bytecode> {
+    private static class SubgraphTraversals implements Supplier<GremlinLang> {
         final GraphTraversalSource g = TinkerGraph.open().traversal();
-        final Iterator<Bytecode> mutatingBytecodes = Arrays.asList(
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode(),
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode(),
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode(),
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode(),
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode(),
-                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlincode(),
-                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlincode()
+        final Iterator<GremlinLang> mutatingBytecodes = Arrays.asList(
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang(),
+                g.withoutStrategies(SubgraphStrategy.class).V().asAdmin().getGremlinLang(),
+                g.withStrategies(SubgraphStrategy.build().vertices(__.bothE()).create()).V().asAdmin().getGremlinLang()
         ).iterator();
 
-        public Bytecode get() {
+        public GremlinLang get() {
             return mutatingBytecodes.next();
         }
     }

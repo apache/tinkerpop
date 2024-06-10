@@ -49,12 +49,12 @@ public class JavaTranslatorBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public GraphTraversal.Admin<Vertex,Vertex> testTranslationShort() {
-        return translator.translate(g.V().asAdmin().getGremlincode());
+        return translator.translate(g.V().asAdmin().getGremlinLang());
     }
 
     @Benchmark
     public GraphTraversal.Admin<Vertex,Vertex> testTranslationMedium() {
-        return translator.translate(g.V().out().in("link").out().in("link").asAdmin().getGremlincode());
+        return translator.translate(g.V().out().in("link").out().in("link").asAdmin().getGremlinLang());
     }
 
     @Benchmark
@@ -64,13 +64,13 @@ public class JavaTranslatorBenchmark extends AbstractBenchmarkBase {
                 as("a").map(inE("followedBy").values("weight").mean()).as("b"),
                 as("a").inE("followedBy").as("c"),
                 as("c").filter(values("weight").where(P.gte("b"))).outV().as("d")).
-                <String>select("d").by("name").asAdmin().getGremlincode());
+                <String>select("d").by("name").asAdmin().getGremlinLang());
     }
 
     @Benchmark
     public GraphTraversal.Admin<Vertex,Vertex> testTranslationWithStrategy() {
         return translator.translate(g.withStrategies(ReadOnlyStrategy.instance())
                 .withStrategies(SubgraphStrategy.build().vertices(hasLabel("person")).create())
-                .V().out().in("link").out().in("link").asAdmin().getGremlincode());
+                .V().out().in("link").out().in("link").asAdmin().getGremlinLang());
     }
 }

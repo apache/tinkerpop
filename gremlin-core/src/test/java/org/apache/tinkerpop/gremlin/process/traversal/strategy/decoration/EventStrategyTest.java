@@ -71,7 +71,7 @@ public class EventStrategyTest {
 
     @Test
     public void shouldEventOnMutatingSteps() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final MutationListener listener1 = new ConsoleMutationListener(EmptyGraph.instance());
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1).create();

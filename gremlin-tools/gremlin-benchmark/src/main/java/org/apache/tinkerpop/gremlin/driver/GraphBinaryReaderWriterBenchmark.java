@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -56,11 +56,11 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
         public Buffer bytecodeBuffer1 = bufferFactory.create(allocator.buffer(2048));
         public Buffer bytecodeBuffer2 = bufferFactory.create(allocator.buffer(2048));
         public Buffer pBuffer1 = bufferFactory.create(allocator.buffer(2048));
-        public final Bytecode bytecode1 = new Bytecode();
+        public final GremlinLang bytecode1 = new GremlinLang();
 
         public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
 
-        public Bytecode bytecode2;
+        public GremlinLang bytecode2;
 
         @Setup(Level.Trial)
         public void doSetup() throws IOException {
@@ -78,7 +78,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
                     .property("name4", BigInteger.valueOf(33343455342245L))
                     .property("name5", "kjlkdnvlkdrnvldnvndlrkvnlhkjdkgkrtnlkndblknlknonboirnlkbnrtbonrobinokbnrklnbkrnblktengotrngotkrnglkt")
                     .property("name6", Instant.now())
-                    .asAdmin().getGremlincode();
+                    .asAdmin().getGremlinLang();
 
             writer.writeValue(bytecode1, bytecodeBuffer1, false);
             writer.writeValue(bytecode2, bytecodeBuffer2, false);
@@ -114,12 +114,12 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void readBytecode1(BenchmarkState state) throws IOException {
-        reader.readValue(state.bytecodeBuffer1, Bytecode.class, false);
+        reader.readValue(state.bytecodeBuffer1, GremlinLang.class, false);
     }
 
     @Benchmark
     public void readBytecode2(BenchmarkState state) throws IOException {
-        reader.readValue(state.bytecodeBuffer2, Bytecode.class, false);
+        reader.readValue(state.bytecodeBuffer2, GremlinLang.class, false);
     }
 
     @Benchmark

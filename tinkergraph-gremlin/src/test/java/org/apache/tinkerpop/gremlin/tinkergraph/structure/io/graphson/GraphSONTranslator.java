@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -71,11 +71,11 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
     }
 
     @Override
-    public T translate(final Bytecode bytecode) {
+    public T translate(final GremlinLang bytecode) {
         try {
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             this.writer.writeObject(outputStream, bytecode);
-            return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), Bytecode.class));
+            return this.wrappedTranslator.translate(this.reader.readObject(new ByteArrayInputStream(outputStream.toByteArray()), GremlinLang.class));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

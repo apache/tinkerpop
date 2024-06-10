@@ -78,7 +78,7 @@ public class InlineFilterStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(InlineFilterStrategy.instance());
 

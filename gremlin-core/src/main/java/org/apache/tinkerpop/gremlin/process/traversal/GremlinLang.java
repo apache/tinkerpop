@@ -53,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
 /**
  *
  */
-public class Bytecode implements Cloneable, Serializable {
+public class GremlinLang implements Cloneable, Serializable {
 
     private static final Object[] EMPTY_ARRAY = new Object[]{};
 
@@ -67,10 +67,10 @@ public class Bytecode implements Cloneable, Serializable {
     // private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
     private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
-    public Bytecode() {
+    public GremlinLang() {
     }
 
-    public Bytecode(final String sourceName, final Object... arguments) {
+    public GremlinLang(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         addToGremlin(sourceName, arguments);
     }
@@ -160,8 +160,8 @@ public class Bytecode implements Cloneable, Serializable {
             return predicateAsString((P<?>) arg);
         }
 
-        if (arg instanceof Bytecode || arg instanceof DefaultTraversal) {
-            final Bytecode bytecode = arg instanceof Bytecode ? (Bytecode) arg : ((DefaultTraversal) arg).getGremlincode();
+        if (arg instanceof GremlinLang || arg instanceof DefaultTraversal) {
+            final GremlinLang bytecode = arg instanceof GremlinLang ? (GremlinLang) arg : ((DefaultTraversal) arg).getGremlinLang();
 
             parameters.putAll(bytecode.getParameters());
             return bytecode.getGremlin("__");
@@ -172,7 +172,7 @@ public class Bytecode implements Cloneable, Serializable {
             final Map<Object, Object> asMap = (Map) arg;
             final AtomicBoolean containsTraversalValue = new AtomicBoolean(false);
             asMap.forEach((key, value) -> {
-                if (value instanceof Bytecode || value instanceof DefaultTraversal) {
+                if (value instanceof GremlinLang || value instanceof DefaultTraversal) {
                     containsTraversalValue.set(true);
                 }
             });
@@ -410,8 +410,8 @@ public class Bytecode implements Cloneable, Serializable {
             for (final Object item : (Collection) argument) {
                 addArgumentBinding(bindingsMap, item);
             }
-        } else if (argument instanceof Bytecode)
-            bindingsMap.putAll(((Bytecode) argument).getBindings());
+        } else if (argument instanceof GremlinLang)
+            bindingsMap.putAll(((GremlinLang) argument).getBindings());
     }
 
     @Override
@@ -423,7 +423,7 @@ public class Bytecode implements Cloneable, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final Bytecode bytecode = (Bytecode) o;
+        final GremlinLang bytecode = (GremlinLang) o;
         return Objects.equals(sourceInstructions, bytecode.sourceInstructions) &&
                 Objects.equals(stepInstructions, bytecode.stepInstructions);
     }
@@ -435,9 +435,9 @@ public class Bytecode implements Cloneable, Serializable {
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     @Override
-    public Bytecode clone() {
+    public GremlinLang clone() {
         try {
-            final Bytecode clone = (Bytecode) super.clone();
+            final GremlinLang clone = (GremlinLang) super.clone();
             clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
             clone.stepInstructions = new ArrayList<>(this.stepInstructions);
 
@@ -558,7 +558,7 @@ public class Bytecode implements Cloneable, Serializable {
                 throw new IllegalStateException(String.format(
                         "The child traversal of %s was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal", argument));
 
-            return ((Traversal) argument).asAdmin().getGremlincode();
+            return ((Traversal) argument).asAdmin().getGremlinLang();
         } else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {

@@ -93,7 +93,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldIgnore() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -104,7 +104,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldOnlyThrow() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -124,7 +124,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldOnlyLog() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -138,7 +138,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldThrowAndLog() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();

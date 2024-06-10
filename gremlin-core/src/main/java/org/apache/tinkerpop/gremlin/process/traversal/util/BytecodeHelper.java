@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -161,11 +161,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,7 +175,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Utility class for parsing {@link Bytecode}.
+ * Utility class for parsing {@link GremlinLang}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -343,22 +341,22 @@ public final class BytecodeHelper {
     }
 
     /**
-     * Parses {@link Bytecode} to find {@link TraversalStrategy} objects added in the source instructions.
+     * Parses {@link GremlinLang} to find {@link TraversalStrategy} objects added in the source instructions.
      */
-    public static <A extends TraversalStrategy> Iterator<A> findStrategies(final Bytecode bytecode, final Class<A> clazz) {
+    public static <A extends TraversalStrategy> Iterator<A> findStrategies(final GremlinLang bytecode, final Class<A> clazz) {
         return IteratorUtils.map(
                 IteratorUtils.filter(bytecode.getSourceInstructions().iterator(),
                         s -> s.getOperator().equals(TraversalSource.Symbols.withStrategies) && clazz.isAssignableFrom(s.getArguments()[0].getClass())),
                 os -> (A) os.getArguments()[0]);
     }
 
-    public static Bytecode filterInstructions(final Bytecode bytecode, final Predicate<Bytecode.Instruction> predicate) {
-        final Bytecode clone = new Bytecode();
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+    public static GremlinLang filterInstructions(final GremlinLang bytecode, final Predicate<GremlinLang.Instruction> predicate) {
+        final GremlinLang clone = new GremlinLang();
+        for (final GremlinLang.Instruction instruction : bytecode.getSourceInstructions()) {
             if (predicate.test(instruction))
                 clone.addSource(instruction.getOperator(), instruction.getArguments());
         }
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+        for (final GremlinLang.Instruction instruction : bytecode.getStepInstructions()) {
             if (predicate.test(instruction))
                 clone.addStep(instruction.getOperator(), instruction.getArguments());
         }
@@ -368,17 +366,17 @@ public final class BytecodeHelper {
     /**
      * Checks if the bytecode is one of the standard {@link GraphOp} options.
      */
-    public static boolean isGraphOperation(final Bytecode bytecode) {
+    public static boolean isGraphOperation(final GremlinLang bytecode) {
         return Stream.of(GraphOp.values()).anyMatch(op -> op.equals(bytecode));
     }
 
-    public static Optional<String> getLambdaLanguage(final Bytecode bytecode) {
-        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+    public static Optional<String> getLambdaLanguage(final GremlinLang bytecode) {
+        for (final GremlinLang.Instruction instruction : bytecode.getInstructions()) {
             for (Object object : instruction.getArguments()) {
                 if (object instanceof Lambda)
                     return Optional.of(((Lambda) object).getLambdaLanguage());
-                else if (object instanceof Bytecode) {
-                    final Optional<String> temp = BytecodeHelper.getLambdaLanguage((Bytecode) object);
+                else if (object instanceof GremlinLang) {
+                    final Optional<String> temp = BytecodeHelper.getLambdaLanguage((GremlinLang) object);
                     if (temp.isPresent())
                         return temp;
                 }
@@ -387,14 +385,14 @@ public final class BytecodeHelper {
         return Optional.empty();
     }
 
-    public static void removeBindings(final Bytecode bytecode) {
-        for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
+    public static void removeBindings(final GremlinLang bytecode) {
+        for (final GremlinLang.Instruction instruction : bytecode.getInstructions()) {
             final Object[] arguments = instruction.getArguments();
             for (int i = 0; i < arguments.length; i++) {
-                if (arguments[i] instanceof Bytecode.Binding)
-                    arguments[i] = ((Bytecode.Binding) arguments[i]).value();
-                else if (arguments[i] instanceof Bytecode)
-                    removeBindings((Bytecode) arguments[i]);
+                if (arguments[i] instanceof GremlinLang.Binding)
+                    arguments[i] = ((GremlinLang.Binding) arguments[i]).value();
+                else if (arguments[i] instanceof GremlinLang)
+                    removeBindings((GremlinLang) arguments[i]);
             }
         }
     }

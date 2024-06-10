@@ -25,10 +25,9 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -224,10 +223,10 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode gremlincode) throws RemoteConnectionException {
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
         try {
-            gremlincode.addG(remoteTraversalSourceName);
-            return client.submitAsync(gremlincode.getGremlin(), getRequestOptions(gremlincode))
+            gremlinLang.addG(remoteTraversalSourceName);
+            return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
                     .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
@@ -243,8 +242,8 @@ public class DriverRemoteConnection implements RemoteConnection {
         return Optional.empty();
     }
 
-    protected static RequestOptions getRequestOptions(final Bytecode bytecode) {
-        final Iterator<OptionsStrategy> itty = bytecode.getOptionsStrategies().iterator();
+    protected static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
+        final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
         final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
@@ -259,7 +258,7 @@ public class DriverRemoteConnection implements RemoteConnection {
                 builder.language((String) options.get(ARGS_LANGUAGE));
         }
 
-        final Map<String, Object> parameters = bytecode.getParameters();
+        final Map<String, Object> parameters = gremlinLang.getParameters();
         if (parameters != null && !parameters.isEmpty()) {
             parameters.forEach(builder::addParameter);
         }

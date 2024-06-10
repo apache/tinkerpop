@@ -100,7 +100,7 @@ public class SubgraphStrategyTest {
 
         @Test
         public void shouldSubgraph() {
-            final String repr = translator.translate(traversal.getGremlincode()).getScript();
+            final String repr = translator.translate(traversal.getGremlinLang()).getScript();
             final SubgraphStrategy strategy = SubgraphStrategy.build().edges(__.has("edge")).vertices(__.has("vertex")).create();
             strategy.apply(traversal);
 
@@ -120,7 +120,7 @@ public class SubgraphStrategyTest {
 
         @Test
         public void doTest() {
-            final String repr = translator.translate(original.getGremlincode()).getScript();
+            final String repr = translator.translate(original.getGremlinLang()).getScript();
             final TraversalStrategies originalStrategies = new DefaultTraversalStrategies();
             originalStrategies.addStrategies(SubgraphStrategy.build().
                     vertices(__.and(has("name", "marko"), has("age", 29))).

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Translates Gremlin {@link Bytecode} into a Golang string representation.
+ * Translates Gremlin {@link GremlinLang} into a Golang string representation.
  *
  * @author Simon Zhao (simonz@bitquilltech.com)
  */
@@ -95,7 +95,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
     }
 
     @Override
-    public Script translate(final Bytecode bytecode) {
+    public Script translate(final GremlinLang bytecode) {
         return typeTranslator.apply(traversalSource, bytecode);
     }
 
@@ -182,8 +182,8 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceCardinalityValue(final Bytecode o) {
-            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+        protected Script produceCardinalityValue(final GremlinLang o) {
+            final GremlinLang.Instruction inst = o.getSourceInstructions().get(0);
             final String card = inst.getArguments()[0].toString();
             script.append(GO_PACKAGE_NAME + "CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
             convertToScript(inst.getArguments()[1]);
@@ -301,10 +301,10 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceScript(final String traversalSource, final Bytecode o) {
+        protected Script produceScript(final String traversalSource, final GremlinLang o) {
             final String source = traversalSource.equals("__") ? GO_PACKAGE_NAME + "T__" : traversalSource;
             script.append(source);
-            for (final Bytecode.Instruction instruction : o.getInstructions()) {
+            for (final GremlinLang.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 final Object[] arguments = instruction.getArguments();
 

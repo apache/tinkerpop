@@ -69,7 +69,7 @@ public class PathProcessorStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final Traversal.Admin<?, ?> rootTraversal = new DefaultGraphTraversal<>();
         final TraversalParent parent = new TraversalVertexProgramStep(rootTraversal, this.original.asAdmin());
         rootTraversal.addStep(parent.asStep());

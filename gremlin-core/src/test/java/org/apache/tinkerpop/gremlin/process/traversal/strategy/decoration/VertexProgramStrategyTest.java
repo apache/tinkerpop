@@ -58,7 +58,7 @@ public class VertexProgramStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(new VertexProgramStrategy(Computer.compute()), ComputerVerificationStrategy.instance());
         original.asAdmin().setStrategies(strategies);

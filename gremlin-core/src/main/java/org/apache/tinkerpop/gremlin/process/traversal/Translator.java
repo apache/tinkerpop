@@ -35,7 +35,7 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 
 /**
- * A Translator will translate {@link Bytecode} into another representation. That representation may be a
+ * A Translator will translate {@link GremlinLang} into another representation. That representation may be a
  * Java instance via {@link StepTranslator} or a String script in some language via {@link ScriptTranslator}.
  * The parameterization of Translator is S (traversal source) and T (full translation).
  *
@@ -56,19 +56,19 @@ public interface Translator<S, T> {
     public S getTraversalSource();
 
     /**
-     * Translate {@link Bytecode} into a new representation. Typically, for language translations, the translation is
+     * Translate {@link GremlinLang} into a new representation. Typically, for language translations, the translation is
      * to a string representing the traversal in the respective scripting language.
      *
      * @param bytecode the bytecode representing traversal source and traversal manipulations.
      * @return the translated object
      */
-    public T translate(final Bytecode bytecode);
+    public T translate(final GremlinLang bytecode);
 
     /**
      * Translates a {@link Traversal} into the specified form
      */
     public default T translate(final Traversal<?,?> t) {
-        return translate(t.asAdmin().getGremlincode());
+        return translate(t.asAdmin().getGremlinLang());
     }
 
     /**
@@ -104,8 +104,8 @@ public interface Translator<S, T> {
             @Override
             public Script apply(final String traversalSource, final Object o) {
                 this.script.init();
-                if (o instanceof Bytecode) {
-                    return produceScript(traversalSource, (Bytecode) o);
+                if (o instanceof GremlinLang) {
+                    return produceScript(traversalSource, (GremlinLang) o);
                 } else {
                     return convertToScript(o);
                 }
@@ -222,9 +222,9 @@ public interface Translator<S, T> {
             protected abstract Script produceScript(final TraversalStrategyProxy<?> o);
 
             /**
-             * Take the {@link Bytecode} and writes the syntax directly to the member {@link #script} variable.
+             * Take the {@link GremlinLang} and writes the syntax directly to the member {@link #script} variable.
              */
-            protected abstract Script produceScript(final String traversalSource, final Bytecode o);
+            protected abstract Script produceScript(final String traversalSource, final GremlinLang o);
 
             /**
              * Take the {@link P} and writes the syntax directly to the member {@link #script} variable. This
@@ -233,9 +233,9 @@ public interface Translator<S, T> {
             protected abstract Script produceScript(final P<?> p);
 
             /**
-             * Take the {@link Bytecode} and write the syntax for it directly to the member {@link #script} variable.
+             * Take the {@link GremlinLang} and write the syntax for it directly to the member {@link #script} variable.
              */
-            protected abstract Script produceCardinalityValue(final Bytecode o);
+            protected abstract Script produceCardinalityValue(final GremlinLang o);
 
             /**
              *  For each operator argument, if withParameters set true, try parametrization as follows:
@@ -275,10 +275,10 @@ public interface Translator<S, T> {
              * @return String Repres
              */
             protected Script convertToScript(final Object object) {
-                if (object instanceof Bytecode.Binding) {
-                    return script.getBoundKeyOrAssign(withParameters, ((Bytecode.Binding) object).variable());
-                } else if (object instanceof Bytecode) {
-                    final Bytecode bc = (Bytecode) object;
+                if (object instanceof GremlinLang.Binding) {
+                    return script.getBoundKeyOrAssign(withParameters, ((GremlinLang.Binding) object).variable());
+                } else if (object instanceof GremlinLang) {
+                    final GremlinLang bc = (GremlinLang) object;
                     if (bc.getSourceInstructions().size() == 1 &&
                             bc.getSourceInstructions().get(0).getOperator().equals(CardinalityValueTraversal.class.getSimpleName())) {
                         return produceCardinalityValue(bc);
@@ -286,7 +286,7 @@ public interface Translator<S, T> {
                         return produceScript(getAnonymousTraversalPrefix(), bc);
                     }
                 } else if (object instanceof Traversal) {
-                    return convertToScript(((Traversal) object).asAdmin().getGremlincode());
+                    return convertToScript(((Traversal) object).asAdmin().getGremlinLang());
                 } else if (object instanceof String) {
                     final Object objectOrWrapper = withParameters ? object : getSyntax((String) object);
                     return script.getBoundKeyOrAssign(withParameters, objectOrWrapper);

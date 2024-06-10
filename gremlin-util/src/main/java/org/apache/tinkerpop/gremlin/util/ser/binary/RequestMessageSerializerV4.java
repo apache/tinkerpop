@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
@@ -55,7 +55,7 @@ public class RequestMessageSerializerV4 {
             if (gremlinType.equals(TokensV4.OPS_EVAL)) {
                 gremlin = context.readValue(buffer, String.class, false);
             } else if (gremlinType.equals(TokensV4.OPS_BYTECODE)) {
-                gremlin = context.readValue(buffer, Bytecode.class, false);
+                gremlin = context.readValue(buffer, GremlinLang.class, false);
             } else {
                 throw new SerializationException("Type " + gremlinType + " not supported for serialization.");
             }

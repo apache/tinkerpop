@@ -55,7 +55,7 @@ public class AdjacentToIncidentStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         applyAdjacentToIncidentStrategy(original);
         assertEquals(repr, optimized, original);
     }

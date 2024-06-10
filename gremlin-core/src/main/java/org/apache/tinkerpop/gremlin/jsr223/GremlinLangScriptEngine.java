@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -79,7 +79,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
      * Bytecode is evaluated by the {@link JavaTranslator}.
      */
     @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
+    public Traversal.Admin eval(final GremlinLang bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
         if (traversalSource.equals(HIDDEN_G))
             throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
 

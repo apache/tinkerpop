@@ -59,7 +59,7 @@ public class OrderLimitStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(traversal.getGremlincode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
         applyOrderLimitStrategyStrategy(traversal);
         assertEquals(repr, limit, TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).get().getLimit());

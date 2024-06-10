@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
@@ -108,7 +108,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
     }
 
     @Override
-    public Script translate(final Bytecode bytecode) {
+    public Script translate(final GremlinLang bytecode) {
         return typeTranslator.apply(traversalSource, bytecode);
     }
 
@@ -200,8 +200,8 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceCardinalityValue(final Bytecode o) {
-            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+        protected Script produceCardinalityValue(final GremlinLang o) {
+            final GremlinLang.Instruction inst = o.getSourceInstructions().get(0);
             final String card = inst.getArguments()[0].toString();
             script.append("CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
             convertToScript(inst.getArguments()[1]);
@@ -346,10 +346,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceScript(final String traversalSource, final Bytecode o) {
+        protected Script produceScript(final String traversalSource, final GremlinLang o) {
             script.append(traversalSource);
             int instructionPosition = 0;
-            for (final Bytecode.Instruction instruction : o.getInstructions()) {
+            for (final GremlinLang.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 // perhaps too many if/then conditions for specifying generics. doesnt' seem like there is a clear
                 // way to refactor this more nicely though.
@@ -397,7 +397,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         if (null == instArg) {
                             script.append("(IDictionary<object,object>) null");
                         } else {
-                            if (instArg instanceof Traversal || instArg instanceof Bytecode) {
+                            if (instArg instanceof Traversal || instArg instanceof GremlinLang) {
                                 script.append("(ITraversal) ");
                             } else {
                                 script.append("(IDictionary<object,object>) ");
@@ -422,7 +422,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         }
                         if (instArgs.length > 1) {
                             // [1] could be Map or Traversal
-                            if (instArgs[1] instanceof Traversal || instArgs[1] instanceof Bytecode) {
+                            if (instArgs[1] instanceof Traversal || instArgs[1] instanceof GremlinLang) {
                                 script.append("(ITraversal) ");
                             } else {
                                 script.append("(IDictionary<object,object>) ");
@@ -442,7 +442,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                         // trying to catch option(Merge,Traversal|Map)
                         convertToScript(instArgs[0]);
                         script.append(", ");
-                        if (instArgs[1] instanceof Traversal || instArgs[1] instanceof Bytecode) {
+                        if (instArgs[1] instanceof Traversal || instArgs[1] instanceof GremlinLang) {
                             script.append("(ITraversal) ");
                         } else {
                             script.append("(IDictionary<object,object>) ");

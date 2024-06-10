@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 
 import java.util.Collections;
@@ -42,7 +42,7 @@ public final class RequestMessageV4 {
 
     private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
         if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
-        if (!(gremlin instanceof Bytecode || gremlin instanceof String)) {
+        if (!(gremlin instanceof GremlinLang || gremlin instanceof String)) {
             throw new IllegalArgumentException("gremlin argument for RequestMessage must be either String or Bytecode");
         }
 
@@ -53,7 +53,7 @@ public final class RequestMessageV4 {
             gremlinType = TokensV4.OPS_EVAL;
             // default language is "gremlin-groovy" for now, will be replaced in following PR's
             this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
-        } else if (gremlin instanceof Bytecode) {
+        } else if (gremlin instanceof GremlinLang) {
             gremlinType = TokensV4.OPS_BYTECODE;
         } else {
             gremlinType = TokensV4.OPS_INVALID;

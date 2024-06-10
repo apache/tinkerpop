@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -325,7 +325,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     private static Traversal.Admin<?,?> translateBytecodeToTraversal(Context ctx) throws ProcessingException {
         final RequestMessageV4 requestMsg = ctx.getRequestMessage();
-        if (!(requestMsg.getGremlin() instanceof Bytecode)) {
+        if (!(requestMsg.getGremlin() instanceof GremlinLang)) {
             throw new ProcessingException(GremlinError.gremlinType());
         }
 
@@ -340,7 +340,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final TraversalSource g = ctx.getGraphManager().getTraversalSource(traversalSourceName);
-        final Bytecode bytecode = (Bytecode) requestMsg.getGremlin(); // type checked at start of method.
+        final GremlinLang bytecode = (GremlinLang) requestMsg.getGremlin(); // type checked at start of method.
         try {
             final Optional<String> lambdaLanguage = BytecodeHelper.getLambdaLanguage(bytecode);
             if (!lambdaLanguage.isPresent())

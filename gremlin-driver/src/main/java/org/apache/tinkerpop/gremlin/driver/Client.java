@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -519,7 +519,7 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-            final Bytecode gremlincode = traversal.asAdmin().getGremlincode();
+            final GremlinLang gremlincode = traversal.asAdmin().getGremlinLang();
             gremlincode.addG(graphOrTraversalSource);
             return submitAsync(gremlincode.getGremlin(), gremlincode.getParameters());
         }

@@ -74,7 +74,7 @@ public class IncidentToAdjacentStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(IncidentToAdjacentStrategy.instance());
         this.original.asAdmin().setStrategies(strategies);

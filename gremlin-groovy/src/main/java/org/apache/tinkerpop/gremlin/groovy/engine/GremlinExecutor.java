@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.jsr223.ConcurrentBindings;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
@@ -313,8 +313,8 @@ public class GremlinExecutor implements AutoCloseable {
                 if (gremlin instanceof String) {
                     o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) gremlin, bindings);
                 }
-                else if (gremlin instanceof Bytecode) {
-                    final Bytecode bytecode = (Bytecode) gremlin;
+                else if (gremlin instanceof GremlinLang) {
+                    final GremlinLang bytecode = (GremlinLang) gremlin;
                     final Traversal.Admin<?, ?> traversal = eval(
                             bytecode, bindings, BytecodeHelper.getLambdaLanguage(bytecode).orElse("gremlin-groovy"), "g");
 
@@ -395,7 +395,7 @@ public class GremlinExecutor implements AutoCloseable {
     /**
      * Evaluates bytecode with bindings for a specific language into a {@link Traversal}.
      */
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings boundVars, final String language, final String traversalSource) throws ScriptException {
+    public Traversal.Admin eval(final GremlinLang bytecode, final Bindings boundVars, final String language, final String traversalSource) throws ScriptException {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
         final Bindings bindings = new SimpleBindings();

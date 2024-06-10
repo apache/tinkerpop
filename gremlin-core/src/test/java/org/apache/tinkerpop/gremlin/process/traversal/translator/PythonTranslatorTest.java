@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
@@ -56,14 +56,14 @@ public class PythonTranslatorTest {
     @Test
     public void shouldTranslateOption() {
         final String gremlinAsPython = translator.translate(
-                g.V().has("person", "name", "marko").asAdmin().getGremlincode()).getScript();
+                g.V().has("person", "name", "marko").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().has('person','name','marko')", gremlinAsPython);
     }
 
     @Test
     public void shouldTranslateCardinality() {
         final String gremlinAsPython = translator.translate(
-                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getGremlincode()).getScript();
+                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.addV('person').property(Cardinality.list_,'name','marko')", gremlinAsPython);
     }
 
@@ -72,14 +72,14 @@ public class PythonTranslatorTest {
         final Map<Object, Object> m = new HashMap<>();
         m.put("name", VertexProperty.Cardinality.set("marko"));
         final String gremlinAsPython = translator.translate(
-                g.mergeV(new HashMap<>()).option(Merge.onMatch, m).asAdmin().getGremlincode()).getScript();
+                g.mergeV(new HashMap<>()).option(Merge.onMatch, m).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.merge_v({}).option(Merge.on_match,{'name':CardinalityValue.set_('marko')})", gremlinAsPython);
     }
 
     @Test
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsPython = translator.translate(
-                g.addV().property("text", "a"+ System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getGremlincode()).getScript();
+                g.addV().property("text", "a"+ System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.addV().property('text',\"\"\"a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b\"\"\")", gremlinAsPython);
     }
 
@@ -87,7 +87,7 @@ public class PythonTranslatorTest {
     public void shouldTranslateChildTraversals() {
         final String gremlinAsPython = translator.translate(
                 g.V().has("person", "name", "marko").
-                  where(outE()).asAdmin().getGremlincode()).getScript();
+                  where(outE()).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().has('person','name','marko').where(__.outE())", gremlinAsPython);
     }
 
@@ -95,7 +95,7 @@ public class PythonTranslatorTest {
     public void shouldTranslatePythonNamedSteps() {
         final String gremlinAsPython = translator.translate(
                 g.V().has("person", "name", "marko").
-                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getGremlincode()).getScript();
+                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().has('person','name','marko').where(__.outE().count().is_(2).and_(__.not_(__.inE().count().is_(3))))", gremlinAsPython);
     }
 
@@ -112,12 +112,12 @@ public class PythonTranslatorTest {
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         new SeedStrategy(999999)).
-                        V().has("name").asAdmin().getGremlincode()).getScript());
+                        V().has("name").asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
     public void shouldTranslateLambdas() {
-        final Bytecode bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
+        final GremlinLang bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("x -> x.get().label() == 'person'", "gremlin-groovy"))
                 .flatMap(Lambda.function("it.get().vertices(Direction.OUT)", "gremlin-groovy"))
@@ -125,14 +125,14 @@ public class PythonTranslatorTest {
                 .sideEffect(Lambda.consumer("x -> x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())    ", "gremlin-groovy"))
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
-                .asAdmin().getGremlincode();
+                .asAdmin().getGremlinLang();
         assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter_(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
                 translator.translate(bytecode).getScript());
     }
 
     @Test
     public void shouldTranslateWithSyntaxSugar() {
-      final String gremlinAsPython = translator.translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getGremlincode())
+      final String gremlinAsPython = translator.translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getGremlinLang())
           .getScript();
       assertEquals("g.V()[0:10].has('person','name','marko')[0:2].name", gremlinAsPython);
     }
@@ -140,7 +140,7 @@ public class PythonTranslatorTest {
     @Test
     public void shouldTranslateWithoutSyntaxSugar() {
       final String gremlinAsPython = noSugarTranslator
-          .translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getGremlincode())
+          .translate(g.V().range(0, 10).has("person", "name", "marko").limit(2).values("name").asAdmin().getGremlinLang())
           .getScript();
       assertEquals("g.V().range_(0,10).has('person','name','marko').limit(2).values('name')", gremlinAsPython);
     }
@@ -154,7 +154,7 @@ public class PythonTranslatorTest {
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
-        final String script = translator.translate(g.inject(objs).asAdmin().getGremlincode()).getScript();
+        final String script = translator.translate(g.inject(objs).asAdmin().getGremlinLang()).getScript();
         assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
     }
 }

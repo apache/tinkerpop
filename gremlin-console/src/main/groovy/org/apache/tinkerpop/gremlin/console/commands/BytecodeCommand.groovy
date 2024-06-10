@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.console.commands
 import org.apache.groovy.groovysh.ComplexCommandSupport
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.Mediator
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry
@@ -73,7 +73,7 @@ class BytecodeCommand extends ComplexCommandSupport {
         def g = arguments[0]
         def args = arguments.drop(1).join(" ")
         def graphson = args.startsWith("@") ? shell.interp.context.getVariable(args.substring(1)) : args
-        return GroovyTranslator.of(g).translate(mapper.readValue(graphson, Bytecode.class))
+        return GroovyTranslator.of(g).translate(mapper.readValue(graphson, GremlinLang.class))
     }
 
     def Object do_reset = { List<String> arguments ->

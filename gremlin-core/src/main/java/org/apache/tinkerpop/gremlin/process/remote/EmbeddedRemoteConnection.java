@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.remote;
 import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.EmbeddedRemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -54,12 +54,12 @@ public class EmbeddedRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
         // default implementation for backward compatibility to 3.2.4 - this method will probably just become
         // the new submit() in 3.3.x when the deprecation is removed
         final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
         try {
-            promise.complete(new EmbeddedRemoteTraversal(JavaTranslator.of(g).translate(bytecode)));
+            promise.complete(new EmbeddedRemoteTraversal(JavaTranslator.of(g).translate(gremlinLang)));
         } catch (Exception t) {
             promise.completeExceptionally(t);
         }

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
@@ -246,8 +246,8 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandleBytecodeBinding() throws Exception {
         assumeThat(version, not(startsWith("v1")));
 
-        final Bytecode.Binding<String> o = new Bytecode.Binding<>("test", "testing");
-        assertEquals(o, serializeDeserialize(mapper, o, Bytecode.Binding.class));
+        final GremlinLang.Binding<String> o = new GremlinLang.Binding<>("test", "testing");
+        assertEquals(o, serializeDeserialize(mapper, o, GremlinLang.Binding.class));
     }
 
     @Test

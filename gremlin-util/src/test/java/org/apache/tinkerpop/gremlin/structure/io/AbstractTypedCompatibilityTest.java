@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -129,9 +129,9 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     public void shouldReadWriteBinding() throws Exception {
         final String resourceName = "binding";
 
-        final Bytecode.Binding resource = findModelEntryObject(resourceName);
-        final Bytecode.Binding fromStatic = read(readFromResource(resourceName), Bytecode.Binding.class);
-        final Bytecode.Binding recycled = read(write(fromStatic, Bytecode.Binding.class, resourceName), Bytecode.Binding.class);
+        final GremlinLang.Binding resource = findModelEntryObject(resourceName);
+        final GremlinLang.Binding fromStatic = read(readFromResource(resourceName), GremlinLang.Binding.class);
+        final GremlinLang.Binding recycled = read(write(fromStatic, GremlinLang.Binding.class, resourceName), GremlinLang.Binding.class);
         assertNotSame(fromStatic, recycled);
         assertEquals(fromStatic, recycled);
         assertEquals(resource, fromStatic);
@@ -171,8 +171,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     public void shouldReadWriteBytecode() throws Exception {
         final String resourceName = "bytecode";
 
-        final Bytecode fromStatic = read(readFromResource(resourceName), Bytecode.class);
-        final Bytecode recycled = read(write(fromStatic, Bytecode.class, resourceName), Bytecode.class);
+        final GremlinLang fromStatic = read(readFromResource(resourceName), GremlinLang.class);
+        final GremlinLang recycled = read(write(fromStatic, GremlinLang.class, resourceName), GremlinLang.class);
         assertNotSame(fromStatic, recycled);
         assertEquals(fromStatic, recycled);
         // can't reasonably assert the bytecode against the original model as changes to strategies over time might

@@ -64,11 +64,11 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public Graph getGraph();
 
     /**
-     * Get the {@link Bytecode} associated with the current state of this traversal source.
+     * Get the {@link GremlinLang} associated with the current state of this traversal source.
      *
      * @return the traversal source byte code
      */
-    public Bytecode getBytecode();
+    public GremlinLang getGremlinLang();
 
     /////////////////////////////
 
@@ -130,7 +130,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default TraversalSource withStrategies(final TraversalStrategy... traversalStrategies) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(traversalStrategies);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withStrategies, traversalStrategies);
         for (final TraversalStrategy traversalStrategy : traversalStrategies) {
             if (traversalStrategy instanceof VertexProgramStrategy) {
                 ((VertexProgramStrategy) traversalStrategy).addGraphComputerStrategies(clone);
@@ -149,7 +149,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default TraversalSource withoutStrategies(final Class<? extends TraversalStrategy>... traversalStrategyClasses) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().removeStrategies(traversalStrategyClasses);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withoutStrategies, traversalStrategyClasses);
         return clone;
     }
 
@@ -197,7 +197,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, reducer);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -213,7 +213,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue, final BinaryOperator<A> reducer) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, reducer);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue, reducer);
         return clone;
     }
 
@@ -228,7 +228,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSideEffect(final String key, final Supplier<A> initialValue) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, (A) initialValue, null);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -243,7 +243,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSideEffect(final String key, final A initialValue) {
         final TraversalSource clone = this.clone();
         SideEffectStrategy.addSideEffect(clone.getStrategies(), key, initialValue, null);
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSideEffect, key, initialValue);
         return clone;
     }
 
@@ -259,7 +259,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -275,7 +275,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).mergeOperator(mergeOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator, mergeOperator);
         return clone;
     }
 
@@ -289,7 +289,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final A initialValue) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue);
         return clone;
     }
 
@@ -303,7 +303,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue);
         return clone;
     }
 
@@ -318,7 +318,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).splitOperator(splitOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -333,7 +333,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).splitOperator(splitOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, splitOperator);
         return clone;
     }
 
@@ -348,7 +348,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final Supplier<A> initialValue, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(initialValue).mergeOperator(mergeOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 
@@ -363,7 +363,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
     public default <A> TraversalSource withSack(final A initialValue, final BinaryOperator<A> mergeOperator) {
         final TraversalSource clone = this.clone();
         clone.getStrategies().addStrategies(SackStrategy.<A>build().initialValue(new ConstantSupplier<>(initialValue)).mergeOperator(mergeOperator).create());
-        clone.getBytecode().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
+        clone.getGremlinLang().addSource(TraversalSource.Symbols.withSack, initialValue, mergeOperator);
         return clone;
     }
 
@@ -373,7 +373,7 @@ public interface TraversalSource extends Cloneable, AutoCloseable {
 
     /**
      * The clone-method should be used to create immutable traversal sources with each call to a configuration "withXXX"-method.
-     * The clone-method should clone the {@link Bytecode}, {@link TraversalStrategies}, mutate the cloned strategies accordingly,
+     * The clone-method should clone the {@link GremlinLang}, {@link TraversalStrategies}, mutate the cloned strategies accordingly,
      * and then return the cloned traversal source leaving the original unaltered.
      *
      * @return the cloned traversal source

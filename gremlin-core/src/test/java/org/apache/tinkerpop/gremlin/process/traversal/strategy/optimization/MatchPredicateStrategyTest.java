@@ -56,7 +56,7 @@ public class MatchPredicateStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getGremlincode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(MatchPredicateStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {

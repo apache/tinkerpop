@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 /**
- * A {@code GraphOp} or "graph operation" is a static {@link Bytecode} form that does not translate to a traversal
+ * A {@code GraphOp} or "graph operation" is a static {@link GremlinLang} form that does not translate to a traversal
  * but instead refers to a specific function to perform on a graph instance.
  */
 public enum GraphOp {
@@ -30,30 +30,30 @@ public enum GraphOp {
     /**
      * Commit a transaction.
      */
-    TX_COMMIT(new Bytecode(GraphTraversalSource.Symbols.tx, Transaction.Symbols.commit)),
+    TX_COMMIT(new GremlinLang(GraphTraversalSource.Symbols.tx, Transaction.Symbols.commit)),
 
     /**
      * Rollback a transaction.
      */
-    TX_ROLLBACK(new Bytecode(GraphTraversalSource.Symbols.tx, Transaction.Symbols.rollback));
+    TX_ROLLBACK(new GremlinLang(GraphTraversalSource.Symbols.tx, Transaction.Symbols.rollback));
 
-    private final Bytecode bytecode;
+    private final GremlinLang bytecode;
 
-    GraphOp(final Bytecode bc) {
+    GraphOp(final GremlinLang bc) {
         this.bytecode = bc;
     }
 
     /**
-     * Gets the {@link Bytecode} that represents this graph operation. There is no notion of immutable bytecode
+     * Gets the {@link GremlinLang} that represents this graph operation. There is no notion of immutable bytecode
      * instances so it is important that the object returned here is not modified. If they are changed, the operations
      * will no longer be recognized. In a future version, we should probably introduce the concept of immutable
      * bytecode to prevent this possibility - https://issues.apache.org/jira/browse/TINKERPOP-2545
      */
-    public Bytecode getBytecode() {
+    public GremlinLang getBytecode() {
         return bytecode;
     }
 
-    public boolean equals(final Bytecode bc) {
+    public boolean equals(final GremlinLang bc) {
         return bytecode.equals(bc);
     }
 }

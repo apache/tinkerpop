@@ -69,8 +69,8 @@ public class TraversalMethodVisitorTest {
     }
     
     private void compare(Object expected, Object actual) {
-        assertEquals(((DefaultGraphTraversal) expected).asAdmin().getGremlincode(),
-                ((DefaultGraphTraversal) actual).asAdmin().getGremlincode());
+        assertEquals(((DefaultGraphTraversal) expected).asAdmin().getGremlinLang(),
+                ((DefaultGraphTraversal) actual).asAdmin().getGremlinLang());
     }
 
     @Test
