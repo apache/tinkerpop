@@ -63,6 +63,7 @@ public class Bytecode implements Cloneable, Serializable {
     private StringBuilder gremlin = new StringBuilder();
     private Map<String, Object> parameters = new HashMap<>();
     private static final AtomicInteger paramCount = new AtomicInteger(0);
+    // [Discuss] probably ThreadLocal<Integer> is faster, but unsafe for multithreaded traversal construction.
     // private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
     private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
@@ -279,50 +280,54 @@ public class Bytecode implements Cloneable, Serializable {
         Bindings.clear();
 
         if (sourceName.equals(TraversalSource.Symbols.withStrategies) && arguments.length != 0) {
-            final StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < arguments.length; i++) {
-                // special handling for OptionsStrategy
-                if (arguments[i] instanceof OptionsStrategy) {
-                    optionsStrategies.add((OptionsStrategy) arguments[i]);
-                    break;
-                }
-
-                final Configuration configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
-
-                if (configuration.isEmpty()) {
-                    sb.append(arguments[i].getClass().getSimpleName());
-                } else {
-                    sb.append("new ")
-                            .append(arguments[i].getClass().getSimpleName())
-                            .append("(");
-
-                    configuration.getKeys().forEachRemaining(key -> {
-                        if (!key.equals(STRATEGY)) {
-                            sb.append(key).append(":").append(argAsString(configuration.getProperty(key))).append(",");
-                        }
-                    });
-                    // remove last comma
-                    if (sb.lastIndexOf(",") == sb.length() - 1) {
-                        sb.setLength(sb.length() - 1);
-                    }
-
-                    sb.append(')');
-                }
-
-                if (i != arguments.length - 1)
-                    sb.append(',');
-            }
+            final String args =  buildStrategyArgs(arguments);
 
             // possible to have empty strategies list to send
-            if (sb.length() != 0) {
-                gremlin.append('.').append(TraversalSource.Symbols.withStrategies).append('(').append(sb).append(')');
+            if (!args.isEmpty()) {
+                gremlin.append('.').append(TraversalSource.Symbols.withStrategies).append('(').append(args).append(')');
             }
             return;
         }
 
-
-
         addToGremlin(sourceName, arguments);
+    }
+
+    private String buildStrategyArgs(final Object[] arguments) {
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arguments.length; i++) {
+            // special handling for OptionsStrategy
+            if (arguments[i] instanceof OptionsStrategy) {
+                optionsStrategies.add((OptionsStrategy) arguments[i]);
+                break;
+            }
+
+            final Configuration configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
+
+            if (configuration.isEmpty()) {
+                sb.append(arguments[i].getClass().getSimpleName());
+            } else {
+                sb.append("new ")
+                        .append(arguments[i].getClass().getSimpleName())
+                        .append("(");
+
+                configuration.getKeys().forEachRemaining(key -> {
+                    if (!key.equals(STRATEGY)) {
+                        sb.append(key).append(":").append(argAsString(configuration.getProperty(key))).append(",");
+                    }
+                });
+                // remove last comma
+                if (sb.lastIndexOf(",") == sb.length() - 1) {
+                    sb.setLength(sb.length() - 1);
+                }
+
+                sb.append(')');
+            }
+
+            if (i != arguments.length - 1)
+                sb.append(',');
+        }
+
+        return sb.toString();
     }
 
     /**

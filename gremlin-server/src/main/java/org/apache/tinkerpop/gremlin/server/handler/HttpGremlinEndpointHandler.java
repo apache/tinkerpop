@@ -314,7 +314,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final Map<String, Object> args = message.getFields();
-        // !!!
         final String language = args.containsKey(TokensV4.ARGS_LANGUAGE) ? (String) args.get(TokensV4.ARGS_LANGUAGE) : "gremlin-groovy";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 

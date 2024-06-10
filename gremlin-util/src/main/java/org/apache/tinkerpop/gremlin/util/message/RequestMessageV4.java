@@ -51,9 +51,8 @@ public final class RequestMessageV4 {
 
         if (gremlin instanceof String) {
             gremlinType = TokensV4.OPS_EVAL;
-            // !!!
-//             this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
-            this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-lang");
+            // default language is "gremlin-groovy" for now, will be replaced in following PR's
+            this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
         } else if (gremlin instanceof Bytecode) {
             gremlinType = TokensV4.OPS_BYTECODE;
         } else {

@@ -227,7 +227,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode gremlincode) throws RemoteConnectionException {
         try {
             gremlincode.addG(remoteTraversalSourceName);
-            return client.submitAsync(gremlincode.getGremlin(), gremlincode.getParameters())
+            return client.submitAsync(gremlincode.getGremlin(), getRequestOptions(gremlincode))
                     .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
@@ -248,7 +248,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
-            final Map<String,Object> options = optionsStrategy.getOptions();
+            final Map<String, Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_EVAL_TIMEOUT))
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
@@ -257,6 +257,11 @@ public class DriverRemoteConnection implements RemoteConnection {
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
             if (options.containsKey(ARGS_LANGUAGE))
                 builder.language((String) options.get(ARGS_LANGUAGE));
+        }
+
+        final Map<String, Object> parameters = bytecode.getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(builder::addParameter);
         }
         return builder.create();
     }

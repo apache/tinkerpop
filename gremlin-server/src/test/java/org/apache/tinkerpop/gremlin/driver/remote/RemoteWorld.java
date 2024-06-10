@@ -161,6 +161,12 @@ public abstract class RemoteWorld implements World {
 
     public static class GraphBinaryRemoteWorld extends RemoteWorld {
         public GraphBinaryRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "gremlin-lang");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

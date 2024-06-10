@@ -183,7 +183,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     public void shouldHandleInfinity() {
         final Cluster cluster = TestClientFactory.build().create();
         try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster)).with("language", "gremlin-lang");
             final double result = g.inject(Double.POSITIVE_INFINITY).is(P.eq(Double.POSITIVE_INFINITY)).toList().get(0);
             assertEquals(result, Double.POSITIVE_INFINITY, 0.01);
         } catch (Exception ex) {
@@ -245,7 +245,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             g.V().next();
             fail("Expected exception to be thrown.");
         } catch (Exception ex) {
-            assert ex.getMessage().contains("The traversal source [doesNotExist] for alias [g] is not configured on the server.");
+            assert ex.getMessage().contains("Could not alias [g] to [doesNotExist] as [doesNotExist] not in the Graph or TraversalSource global bindings");
         } finally {
             cluster.close();
         }
