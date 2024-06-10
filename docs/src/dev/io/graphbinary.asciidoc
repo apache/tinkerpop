@@ -470,7 +470,7 @@ Format: `{length}{value}`
 
 Where:
 
-- `{length}` is an `Int`.
+- `{length}` is an `Int` describing the size of `{value}` in bytes.
 - `{value}` is the two's complement of the `BigInteger`.
 
 Example values of the two's complement `{value}`:
