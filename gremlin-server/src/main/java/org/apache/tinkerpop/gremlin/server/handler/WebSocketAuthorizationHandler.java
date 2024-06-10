@@ -68,19 +68,9 @@ public class WebSocketAuthorizationHandler extends ChannelInboundHandlerAdapter 
                         final Bytecode bytecode = (Bytecode) requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
                         final Map<String, String> aliases = (Map<String, String>) requestMessage.getArgs().get(Tokens.ARGS_ALIASES);
                         final Bytecode restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
-                        final RequestMessage.Builder restrictedMsgBuilder = RequestMessage.build(Tokens.OPS_BYTECODE).
-                                overrideRequestId(requestMessage.getRequestId()).
-                                processor("traversal").
-                                addArg(Tokens.ARGS_GREMLIN, restrictedBytecode).
-                                addArg(Tokens.ARGS_ALIASES, aliases);
-
-                        // Apply all other arguments except the bytecode and aliases.
-                        for (Map.Entry<String, Object> entry : requestMessage.getArgs().entrySet()) {
-                            if (!Tokens.ARGS_GREMLIN.equals(entry.getKey()) && !Tokens.ARGS_ALIASES.equals(entry.getKey())) {
-                                restrictedMsgBuilder.addArg(entry.getKey(), entry.getValue());
-                            }
-                        }
-                        final RequestMessage restrictedMsg = restrictedMsgBuilder.create();
+                        final RequestMessage restrictedMsg = RequestMessage.from(requestMessage)
+                                .addArg(Tokens.ARGS_GREMLIN, restrictedBytecode)
+                                .addArg(Tokens.ARGS_ALIASES, aliases).create();
                         ctx.fireChannelRead(restrictedMsg);
                         break;
                     case Tokens.OPS_EVAL:
