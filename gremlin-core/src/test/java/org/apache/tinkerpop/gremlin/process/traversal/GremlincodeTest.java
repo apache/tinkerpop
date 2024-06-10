@@ -72,44 +72,44 @@ public class GremlincodeTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
-//                {g.V().count(), "g.V().count()"},
-//                {g.addV("test"), "g.addV(\"test\")"},
-//                {g.addV("t\"'est"), "g.addV(\"t\\\"'est\")"},
-//                {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d), "g.inject(true,1B,2S,3,4L,5.0F,6.0D)"},
-//                {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
-//                        "g.inject(+Infinity,-Infinity)"},
-//                {g.inject(DatetimeHelper.parse("2018-03-21T08:35:44.741Z")),
-//                        "g.inject(datetime(\"2018-03-21T08:35:44.741Z\"))"},
+                {g.V().count(), "g.V().count()"},
+                {g.addV("test"), "g.addV(\"test\")"},
+                {g.addV("t\"'est"), "g.addV(\"t\\\"'est\")"},
+                {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d), "g.inject(true,1B,2S,3,4L,5.0F,6.0D)"},
+                {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
+                        "g.inject(+Infinity,-Infinity)"},
+                {g.inject(DatetimeHelper.parse("2018-03-21T08:35:44.741Z")),
+                        "g.inject(datetime(\"2018-03-21T08:35:44.741Z\"))"},
                 {g.inject(asMap("age", VertexProperty.Cardinality.list(33))),
                         "g.inject([\"age\":Cardinality.list(33)])"},
-//                {g.V(1).out("knows").values("name"), "g.V(1).out(\"knows\").values(\"name\")"},
-//                {g.V().has(T.label,"person"), "g.V().has(T.label,\"person\")"},
-//                {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
-//                        "g.addE(\"knows\").from(new ReferenceVertex(1,\"test1\")).to(new ReferenceVertex(6,\"test2\"))"}
-//                {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within(_0)).count()"},
-//                {g.V(1).outE().has("weight", P.inside(0.0, 0.6)), "g.V(1).outE().has(\"weight\",P.gt(0.0D).and(P.lt(0.6D)))"}
-//                {g.withSack(1.0, Operator.sum).V(1).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack(),
-//                    "g.withSack(1.0D,Operator.sum).V(1).local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()"}
-//                {g.inject(Arrays.asList(1, 2, 3)).skip(local, 1), "g.inject(_0).skip(Scope.local,1L)"},
-//                {g.V().has("name", "marko").
-//                        project("name", "friendsNames").
-//                        by("name").
-//                        by(out("knows").values("name").fold()),
-//                        "g.V().has(\"name\",\"marko\")." +
-//                                "project(\"name\",\"friendsNames\")." +
-//                                "by(\"name\")." +
-//                                "by(__.out(\"knows\").values(\"name\").fold())"},
-//                {g.inject(Arrays.asList(5, 6)).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3, 4))),
-//                        "g.inject(_0).union(__.V(_1),__.V(_2))"},
-//                {g.with("evaluationTimeout", 1000).V(), "g.V()"},
-//                { g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"}
-//                {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
-//                {g.withStrategies(new SeedStrategy(999999)).V().order().by("name").coin(0.5),
-//                        "g.withStrategies(new SeedStrategy(seed:999999L)).V().order().by(\"name\").coin(0.5D)"}
-//                    {g.withStrategies(SubgraphStrategy.build().vertices(hasLabel("person")).create()).V(),
-//                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:_0)).V()", },
-//                {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
-//                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within(_0)))).V()"},
+                {g.V(1).out("knows").values("name"), "g.V(1).out(\"knows\").values(\"name\")"},
+                {g.V().has(T.label, "person"), "g.V().has(T.label,\"person\")"},
+                {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
+                        "g.addE(\"knows\").from(new ReferenceVertex(1,\"test1\")).to(new ReferenceVertex(6,\"test2\"))"},
+                {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within(_0)).count()"},
+                {g.V(1).outE().has("weight", P.inside(0.0, 0.6)), "g.V(1).outE().has(\"weight\",P.gt(0.0D).and(P.lt(0.6D)))"},
+                {g.withSack(1.0, Operator.sum).V(1).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack(),
+                        "g.withSack(1.0D,Operator.sum).V(1).local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()"},
+                {g.inject(Arrays.asList(1, 2, 3)).skip(local, 1), "g.inject(_1).skip(Scope.local,1L)"},
+                {g.V().has("name", "marko").
+                        project("name", "friendsNames").
+                        by("name").
+                        by(out("knows").values("name").fold()),
+                        "g.V().has(\"name\",\"marko\")." +
+                                "project(\"name\",\"friendsNames\")." +
+                                "by(\"name\")." +
+                                "by(__.out(\"knows\").values(\"name\").fold())"},
+                {g.inject(Arrays.asList(5, 6)).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3, 4))),
+                        "g.inject(_2).union(__.V(_3),__.V(_4))"},
+                {g.with("evaluationTimeout", 1000).V(), "g.V()"},
+                {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
+                {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
+                {g.withStrategies(new SeedStrategy(999999)).V().order().by("name").coin(0.5),
+                        "g.withStrategies(new SeedStrategy(seed:999999L)).V().order().by(\"name\").coin(0.5D)"},
+                {g.withStrategies(SubgraphStrategy.build().vertices(hasLabel("person")).create()).V(),
+                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.hasLabel(\"person\"))).V()",},
+                {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
+                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within(_5)))).V()"},
         });
     }
 }

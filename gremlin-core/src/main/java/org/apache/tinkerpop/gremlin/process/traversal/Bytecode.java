@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy.STRATEGY;
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
@@ -61,8 +62,8 @@ public class Bytecode implements Cloneable, Serializable {
 
     private StringBuilder gremlin = new StringBuilder();
     private Map<String, Object> parameters = new HashMap<>();
-    // private static final AtomicInteger paramCount = new AtomicInteger(0);
-    private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
+    private static final AtomicInteger paramCount = new AtomicInteger(0);
+    // private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
     private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
     public Bytecode() {
@@ -76,6 +77,7 @@ public class Bytecode implements Cloneable, Serializable {
     private void addToGremlin(final String name, final Object... arguments) {
         final Object[] flattenedArguments = flattenArguments(arguments);
 
+        // todo: figure out solution for AbstractLambdaTraversal
         if (name.equals("CardinalityValueTraversal")) {
             gremlin.append("Cardinality.").append(flattenedArguments[0])
                     .append("(").append(flattenedArguments[1]).append(")");
@@ -179,9 +181,10 @@ public class Bytecode implements Cloneable, Serializable {
             }
         }
 
-        // final String paramName = String.format("_%d", paramCount.getAndIncrement());
-        final String paramName = String.format("_%d", paramCount.get());
-        paramCount.set(paramCount.get() + 1);
+        //final String paramName = String.format("_%d", paramCount.get());
+        //paramCount.set(paramCount.get() + 1);
+        final String paramName = String.format("_%d", paramCount.getAndIncrement());
+        // todo: consider resetting paramCount when it's larger then 1_000_000
         parameters.put(paramName, arg);
         return paramName;
     }
@@ -436,9 +439,6 @@ public class Bytecode implements Cloneable, Serializable {
             clone.parameters = new HashMap<>(parameters);
             clone.gremlin = new StringBuilder(gremlin.length());
             clone.gremlin.append(gremlin);
-            // gremlincode cloned when new traversal created
-            // let's reset paramCount for easy testing. Will not work for prod usage
-            // paramCount.set(0);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
