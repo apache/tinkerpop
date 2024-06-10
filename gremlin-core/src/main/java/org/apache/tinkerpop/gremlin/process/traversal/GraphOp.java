@@ -37,10 +37,10 @@ public enum GraphOp {
      */
     TX_ROLLBACK(new GremlinLang(GraphTraversalSource.Symbols.tx, Transaction.Symbols.rollback));
 
-    private final GremlinLang bytecode;
+    private final GremlinLang gremlinLang;
 
     GraphOp(final GremlinLang bc) {
-        this.bytecode = bc;
+        this.gremlinLang = bc;
     }
 
     /**
@@ -49,11 +49,11 @@ public enum GraphOp {
      * will no longer be recognized. In a future version, we should probably introduce the concept of immutable
      * bytecode to prevent this possibility - https://issues.apache.org/jira/browse/TINKERPOP-2545
      */
-    public GremlinLang getBytecode() {
-        return bytecode;
+    public GremlinLang getGremlinLang() {
+        return gremlinLang;
     }
 
     public boolean equals(final GremlinLang bc) {
-        return bytecode.equals(bc);
+        return gremlinLang.equals(bc);
     }
 }

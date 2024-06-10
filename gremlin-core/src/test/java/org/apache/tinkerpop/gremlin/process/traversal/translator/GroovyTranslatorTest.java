@@ -316,9 +316,9 @@ public class GroovyTranslatorTest {
 
     @Test
     public void shouldTranslateTx() {
-        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        String script = translator.translate(GraphOp.TX_COMMIT.getGremlinLang()).getScript();
         assertEquals("g.tx().commit()", script);
-        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        script = translator.translate(GraphOp.TX_ROLLBACK.getGremlinLang()).getScript();
         assertEquals("g.tx().rollback()", script);
     }
 

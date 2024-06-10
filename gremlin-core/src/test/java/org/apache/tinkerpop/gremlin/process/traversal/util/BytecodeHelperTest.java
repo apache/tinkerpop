@@ -119,8 +119,8 @@ public class BytecodeHelperTest {
 
     @Test
     public void shouldDetermineOperation() {
-        assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getBytecode()), is(true));
-        assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getBytecode()), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getGremlinLang()), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getGremlinLang()), is(true));
         assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getGremlinLang()), is(false));
     }
 

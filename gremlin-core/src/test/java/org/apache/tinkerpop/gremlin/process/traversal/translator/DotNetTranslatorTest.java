@@ -339,9 +339,9 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateTx() {
-        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        String script = translator.translate(GraphOp.TX_COMMIT.getGremlinLang()).getScript();
         assertEquals("g.Tx().Commit()", script);
-        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        script = translator.translate(GraphOp.TX_ROLLBACK.getGremlinLang()).getScript();
         assertEquals("g.Tx().Rollback()", script);
     }
 

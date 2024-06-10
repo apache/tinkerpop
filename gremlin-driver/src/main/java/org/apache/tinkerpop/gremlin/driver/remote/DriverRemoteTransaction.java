@@ -92,7 +92,7 @@ public class DriverRemoteTransaction implements Transaction, RemoteConnection {
             // else you don't guarantee that we have the returned NO_CONTENT message in hand before proceeding
             // which could mean the transaction is still in the process of committing. not sure why iterate()
             // doesn't quite work in this context.
-            this.sessionBasedConnection.submitAsync(closeTxWith.getBytecode()).join().hasNext();
+            this.sessionBasedConnection.submitAsync(closeTxWith.getGremlinLang()).join().hasNext();
             this.sessionBasedConnection.close();
         } catch (Exception ex) {
             throw new RuntimeException(String.format(failureMsg, sessionBasedConnection.getSessionId()), ex);
