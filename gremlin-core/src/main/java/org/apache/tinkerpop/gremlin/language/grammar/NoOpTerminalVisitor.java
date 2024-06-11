@@ -52,7 +52,7 @@ public class NoOpTerminalVisitor extends GremlinAntlrToJava {
     /**
      * Returns {@link GremlinLang} of {@link Traversal} or {@link GraphTraversalSource}, overriding any terminal step
      * operations to prevent them from being executed using the {@link TraversalTerminalMethodVisitor} to append
-     * terminal operations to bytecode.
+     * terminal operations to GremlinLang.
      *
      * @param ctx - the parse tree
      * @return - bytecode from the traversal or traversal source

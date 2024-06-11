@@ -44,10 +44,10 @@ public enum GraphOp {
     }
 
     /**
-     * Gets the {@link GremlinLang} that represents this graph operation. There is no notion of immutable bytecode
+     * Gets the {@link GremlinLang} that represents this graph operation. There is no notion of immutable GremlinLang
      * instances so it is important that the object returned here is not modified. If they are changed, the operations
      * will no longer be recognized. In a future version, we should probably introduce the concept of immutable
-     * bytecode to prevent this possibility - https://issues.apache.org/jira/browse/TINKERPOP-2545
+     * GremlinLang to prevent this possibility - https://issues.apache.org/jira/browse/TINKERPOP-2545
      */
     public GremlinLang getGremlinLang() {
         return gremlinLang;

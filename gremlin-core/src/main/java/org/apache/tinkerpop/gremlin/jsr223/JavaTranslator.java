@@ -76,17 +76,17 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     }
 
     @Override
-    public T translate(final GremlinLang bytecode) {
-        if (BytecodeHelper.isGraphOperation(bytecode))
+    public T translate(final GremlinLang gremlinLang) {
+        if (BytecodeHelper.isGraphOperation(gremlinLang))
             throw new IllegalArgumentException("JavaTranslator cannot translate traversal operations");
 
         TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
-        for (final GremlinLang.Instruction instruction : bytecode.getSourceInstructions()) {
+        for (final GremlinLang.Instruction instruction : gremlinLang.getSourceInstructions()) {
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
         boolean spawned = false;
-        for (final GremlinLang.Instruction instruction : bytecode.getStepInstructions()) {
+        for (final GremlinLang.Instruction instruction : gremlinLang.getStepInstructions()) {
             if (!spawned) {
                 traversal = (Traversal.Admin) invokeMethod(dynamicSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 spawned = true;

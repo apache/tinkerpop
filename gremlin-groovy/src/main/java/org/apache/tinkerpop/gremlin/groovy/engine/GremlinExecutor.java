@@ -192,7 +192,7 @@ public class GremlinExecutor implements AutoCloseable {
      * result after script evaluates but before transaction commit and before the returned {@link CompletableFuture}
      * is completed.
      *
-     * @param gremlin the script or bytecode to evaluate
+     * @param gremlin the script or GremlinLang to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
@@ -207,7 +207,7 @@ public class GremlinExecutor implements AutoCloseable {
      * result after script evaluates but before transaction commit and before the returned {@link CompletableFuture}
      * is completed.
      *
-     * @param gremlin the script or bytecode to evaluate
+     * @param gremlin the script or GremlinLang to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param timeOut optional override for evaluation timeout
@@ -240,7 +240,7 @@ public class GremlinExecutor implements AutoCloseable {
      * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
      * transaction is committed.
      *
-     * @param gremlin the script or bytecode to evaluate
+     * @param gremlin the script or GremlinLang to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param transformResult a {@link Function} that transforms the result - can be {@code null}
@@ -258,7 +258,7 @@ public class GremlinExecutor implements AutoCloseable {
      * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
      * transaction is committed.
      *
-     * @param gremlin the script or bytecode to evaluate
+     * @param gremlin the script or GremlinLang to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param timeOut optional override for evaluation timeout
@@ -278,7 +278,7 @@ public class GremlinExecutor implements AutoCloseable {
     /**
      * Evaluate a script and allow for the submission of alteration to the entire evaluation execution lifecycle.
      *
-     * @param gremlin the script or bytecode to evaluate
+     * @param gremlin the script or GremlinLang to evaluate
      * @param language the language to evaluate it in
      * @param boundVars the bindings to evaluate in the context of the script
      * @param lifeCycle a set of functions that can be applied at various stages of the evaluation process
@@ -314,9 +314,9 @@ public class GremlinExecutor implements AutoCloseable {
                     o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) gremlin, bindings);
                 }
                 else if (gremlin instanceof GremlinLang) {
-                    final GremlinLang bytecode = (GremlinLang) gremlin;
+                    final GremlinLang GremlinLang = (GremlinLang) gremlin;
                     final Traversal.Admin<?, ?> traversal = eval(
-                            bytecode, bindings, BytecodeHelper.getLambdaLanguage(bytecode).orElse("gremlin-groovy"), "g");
+                            GremlinLang, bindings, BytecodeHelper.getLambdaLanguage(GremlinLang).orElse("gremlin-groovy"), "g");
 
                     o = IteratorUtils.asList(traversal);
                 }

@@ -40,7 +40,7 @@ import java.util.Map;
  * uses {@code gremlin-language} and thus the ANTLR parser, it is not capable of process arbitrary scripts as the
  * {@code GremlinGroovyScriptEngine} can and is therefore a more secure Gremlin evaluator. It is obviously restricted
  * to the capabilities of the ANTLR grammar so therefore syntax that includes things like lambdas are not supported.
- * For bytecode evaluation it simply uses the {@link JavaTranslator}.
+ * For GremlinLang evaluation it simply uses the {@link JavaTranslator}.
  * <p/>
  * As an internal note, technically, this is an incomplete implementation of the {@link GremlinScriptEngine} in the
  * traditional sense as a drop-in replacement for something like the {@code GremlinGroovyScriptEngine}. As a result,
@@ -76,10 +76,10 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     /**
-     * Bytecode is evaluated by the {@link JavaTranslator}.
+     * GremlinLang is evaluated by the {@link JavaTranslator}.
      */
     @Override
-    public Traversal.Admin eval(final GremlinLang bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
+    public Traversal.Admin eval(final GremlinLang gremlinLang, final Bindings bindings, final String traversalSource) throws ScriptException {
         if (traversalSource.equals(HIDDEN_G))
             throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
 
@@ -93,7 +93,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
         if (!(b instanceof TraversalSource))
             throw new IllegalArgumentException(traversalSource + " is of type " + b.getClass().getSimpleName() + " and is not an instance of TraversalSource");
 
-        return JavaTranslator.of((TraversalSource) b).translate(bytecode);
+        return JavaTranslator.of((TraversalSource) b).translate(gremlinLang);
     }
 
     /**

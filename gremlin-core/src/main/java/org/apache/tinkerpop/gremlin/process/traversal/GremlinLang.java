@@ -161,10 +161,10 @@ public class GremlinLang implements Cloneable, Serializable {
         }
 
         if (arg instanceof GremlinLang || arg instanceof DefaultTraversal) {
-            final GremlinLang bytecode = arg instanceof GremlinLang ? (GremlinLang) arg : ((DefaultTraversal) arg).getGremlinLang();
+            final GremlinLang gremlinLang = arg instanceof GremlinLang ? (GremlinLang) arg : ((DefaultTraversal) arg).getGremlinLang();
 
-            parameters.putAll(bytecode.getParameters());
-            return bytecode.getGremlin("__");
+            parameters.putAll(gremlinLang.getParameters());
+            return gremlinLang.getGremlin("__");
         }
 
         // special handling for MergeV when map argument can have cardinality traversal inside
@@ -257,7 +257,7 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
-     * Add a {@link TraversalSource} instruction to the bytecode.
+     * Add a {@link TraversalSource} instruction to the GremlinLang.
      *
      * @param sourceName the traversal source method name (e.g. withSack())
      * @param arguments  the traversal source method arguments
@@ -331,7 +331,7 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
-     * Add a {@link Traversal} instruction to the bytecode.
+     * Add a {@link Traversal} instruction to the GremlinLang.
      *
      * @param stepName  the traversal method name (e.g. out())
      * @param arguments the traversal method arguments

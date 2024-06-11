@@ -59,10 +59,10 @@ public interface Translator<S, T> {
      * Translate {@link GremlinLang} into a new representation. Typically, for language translations, the translation is
      * to a string representing the traversal in the respective scripting language.
      *
-     * @param bytecode the bytecode representing traversal source and traversal manipulations.
+     * @param gremlinLang the bytecode representing traversal source and traversal manipulations.
      * @return the translated object
      */
-    public T translate(final GremlinLang bytecode);
+    public T translate(final GremlinLang gremlinLang);
 
     /**
      * Translates a {@link Traversal} into the specified form

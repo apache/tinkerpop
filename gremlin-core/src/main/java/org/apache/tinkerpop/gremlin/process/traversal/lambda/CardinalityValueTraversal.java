@@ -29,12 +29,12 @@ public final class CardinalityValueTraversal extends AbstractLambdaTraversal {
 
     private final Object value;
 
-    private final GremlinLang bytecode;
+    private final GremlinLang gremlinLang;
 
     public CardinalityValueTraversal(final VertexProperty.Cardinality cardinality, final Object value) {
         this.cardinality = cardinality;
         this.value = value;
-        this.bytecode = new GremlinLang(CardinalityValueTraversal.class.getSimpleName(), cardinality.name(), value);
+        this.gremlinLang = new GremlinLang(CardinalityValueTraversal.class.getSimpleName(), cardinality.name(), value);
     }
 
     public static CardinalityValueTraversal from(final GremlinLang.Instruction inst) {
@@ -44,7 +44,7 @@ public final class CardinalityValueTraversal extends AbstractLambdaTraversal {
 
     @Override
     public GremlinLang getGremlinLang() {
-        return this.bytecode;
+        return this.gremlinLang;
     }
 
     public VertexProperty.Cardinality getCardinality() {
