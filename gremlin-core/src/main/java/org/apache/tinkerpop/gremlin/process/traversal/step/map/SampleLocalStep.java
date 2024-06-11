@@ -49,6 +49,10 @@ public final class SampleLocalStep<S> extends ScalarMapStep<S, S> implements See
         this.amountToSample = amountToSample;
     }
 
+    public int getAmountToSample() {
+        return amountToSample;
+    }
+
     @Override
     public void resetSeed(final long seed) {
         this.random.setSeed(seed);
