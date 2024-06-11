@@ -52,6 +52,10 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         this.amountToSample = amountToSample;
     }
 
+    public int getAmountToSample() {
+        return amountToSample;
+    }
+
     @Override
     public void resetSeed(final long seed) {
         random.setSeed(seed);
