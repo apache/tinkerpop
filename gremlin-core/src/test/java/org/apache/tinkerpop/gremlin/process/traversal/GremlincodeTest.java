@@ -83,6 +83,7 @@ public class GremlincodeTest {
                 {g.V().has(T.label, "person"), "g.V().has(T.label,\"person\")"},
                 {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
                         "g.addE(\"knows\").from(new ReferenceVertex(1,\"test1\")).to(new ReferenceVertex(6,\"test2\"))"},
+                {g.V(Bindings.instance().of("x", 1)), "g.V(1)"},
                 {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within(_0)).count()"},
                 {g.V(1).outE().has("weight", P.inside(0.0, 0.6)), "g.V(1).outE().has(\"weight\",P.gt(0.0D).and(P.lt(0.6D)))"},
                 {g.withSack(1.0, Operator.sum).V(1).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack(),
