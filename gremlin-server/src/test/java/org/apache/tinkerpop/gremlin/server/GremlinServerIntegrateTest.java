@@ -611,7 +611,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessageV4 request = RequestMessageV4.build("[0,1,2,3,4,5,6,7,8,9]").create();
 
             final List<ResponseMessageV4> msgs = client.submit(request);
-            assertEquals(5, client.submit(request).size());
             assertEquals(0, (int) msgs.get(0).getResult().getData().get(0));
             assertEquals(1, (int) msgs.get(0).getResult().getData().get(1));
             assertEquals(2, (int) msgs.get(1).getResult().getData().get(0));
@@ -622,6 +621,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(7, (int) msgs.get(3).getResult().getData().get(1));
             assertEquals(8, (int) msgs.get(4).getResult().getData().get(0));
             assertEquals(9, (int) msgs.get(4).getResult().getData().get(1));
+            for (ResponseMessageV4 resp : msgs.subList(5, msgs.size())) {
+                assertEquals(0, resp.getResult().getData().size());
+            }
         }
     }
 
@@ -806,8 +808,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessageV4 request = RequestMessageV4.build("10").create();
             final List<ResponseMessageV4> responses = client.submit(request);
-            assertEquals(1, responses.size());
-            assertEquals(HttpResponseStatus.OK, responses.get(0).getStatus().getCode());
+            assertEquals(10, responses.get(0).getResult().getData().get(0));
+            for (ResponseMessageV4 resp : responses.subList(1, responses.size())) {
+                assertEquals(0, resp.getResult().getData().size());
+            }
         }
     }
 
@@ -831,7 +835,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessageV4 request = RequestMessageV4.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
             final List<ResponseMessageV4> responses = client.submit(request);
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, responses.get(0).getStatus().getCode());
-            assertEquals(1, responses.size());
+            for (ResponseMessageV4 resp : responses.subList(1, responses.size())) {
+                assertEquals(0, resp.getResult().getData().size());
+            }
         }
     }
 

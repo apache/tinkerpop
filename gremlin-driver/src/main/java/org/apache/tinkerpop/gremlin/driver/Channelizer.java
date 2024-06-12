@@ -26,6 +26,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
@@ -33,7 +34,9 @@ import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -155,6 +158,11 @@ public interface Channelizer extends ChannelHandler {
      * channelizer. Only sessionless requests are possible.
      */
     final class HttpChannelizer extends AbstractChannelizer {
+        /**
+         * This response is used as a signal for determining if all content of the response has been read.
+         */
+        public static final ResponseMessageV4 LAST_CONTENT_READ_RESPONSE =
+                ResponseMessageV4.build().code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
 
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
         private HttpGremlinResponseStreamDecoder gremlinResponseDecoder;
