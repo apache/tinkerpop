@@ -44,6 +44,8 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+
 public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<DefaultHttpObject> {
 
     private static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
@@ -84,13 +86,6 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                 throw new TooLongFrameException("Response exceeded " + maxContentLength + " bytes.");
             }
 
-            if (msg instanceof LastHttpContent && content.readableBytes() == 0 && bytesRead.get() != 0) {
-                // If this last content contains no bytes and there were bytes read previously, it means that this is the
-                // trailing headers. Trailing headers aren't used in the driver and shouldn't be passed on.
-                content.release();
-                return;
-            }
-
             try {
                 // no more chunks expected
                 if (isError(responseStatus.get()) && !SerTokensV4.MIME_GRAPHBINARY_V4.equals(responseEncoding.get())) {
@@ -101,14 +96,15 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                             .create();
 
                     out.add(response);
-                    return;
+                } else {
+                    final ResponseMessageV4 chunk = serializer.readChunk(content, isFirstChunk.get());
+                    isFirstChunk.set(false);
+                    out.add(chunk);
                 }
 
-                final ResponseMessageV4 chunk = serializer.readChunk(content, isFirstChunk.get());
-
-                isFirstChunk.set(false);
-
-                out.add(chunk);
+                if (msg instanceof LastHttpContent) {
+                    out.add(LAST_CONTENT_READ_RESPONSE);
+                }
             } catch (SerializationException e) {
                 throw new RuntimeException(e);
             }

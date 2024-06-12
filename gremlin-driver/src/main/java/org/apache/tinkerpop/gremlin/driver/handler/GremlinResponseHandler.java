@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.AttributeKey;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
@@ -34,12 +35,15 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
+
 /**
  * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
  * as the {@link ResponseMessageV4} objects are deserialized.
  */
 public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessageV4> {
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
+    private static final AttributeKey<ResponseException> CAUGHT_EXCEPTION = AttributeKey.valueOf("caughtException");
     private final AtomicReference<ResultQueue> pending;
 
     public GremlinResponseHandler(final AtomicReference<ResultQueue> pending) {
@@ -60,26 +64,34 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
     @Override
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) {
-        final HttpResponseStatus statusCode = response.getStatus() == null ? HttpResponseStatus.PARTIAL_CONTENT : response.getStatus().getCode();
+        final HttpResponseStatus statusCode = response.getStatus() == null ? null : response.getStatus().getCode();
         final ResultQueue queue = pending.get();
 
-        if (statusCode == HttpResponseStatus.OK || statusCode == HttpResponseStatus.PARTIAL_CONTENT) {
+        if ((null == statusCode) || (statusCode == HttpResponseStatus.OK)) {
             final List<Object> data = response.getResult().getData();
             // unrolls the collection into individual results to be handled by the queue.
             data.forEach(item -> queue.add(new Result(item)));
         } else {
             // this is a "success" but represents no results otherwise it is an error
             if (statusCode != HttpResponseStatus.NO_CONTENT) {
-                queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                        response.getStatus().getException()));
+                // Save the error because there could be a subsequent HttpContent coming (probably just trailers). All
+                // content should be read first before marking the queue or else this channel might get reused too early.
+                channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).set(
+                        new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
+                                response.getStatus().getException())
+                );
             }
         }
 
-        // as this is a non-PARTIAL_CONTENT code - the stream is done.
-        if (statusCode != HttpResponseStatus.PARTIAL_CONTENT) {
-            final ResultQueue current = pending.getAndSet(null);
-            if (current != null) {
-                current.markComplete(response.getStatus().getAttributes());
+        // Stream is done when the last content signaling response message is read.
+        if (LAST_CONTENT_READ_RESPONSE == response) {
+            final ResultQueue resultQueue = pending.getAndSet(null);
+            if (resultQueue != null) {
+                if (null == channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).get()) {
+                    resultQueue.markComplete(response.getStatus().getAttributes());
+                } else {
+                    resultQueue.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
+                }
             }
         }
     }
