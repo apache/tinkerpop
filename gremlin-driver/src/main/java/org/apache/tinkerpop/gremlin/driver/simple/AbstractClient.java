@@ -61,29 +61,6 @@ public abstract class AbstractClient implements SimpleClient {
         return submitAsync(requestMessage).get(180, TimeUnit.SECONDS);
     }
 
-    @Override
-    public CompletableFuture<List<ResponseMessageV4>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
-        final List<ResponseMessageV4> results = new ArrayList<>();
-        final CompletableFuture<List<ResponseMessageV4>> f = new CompletableFuture<>();
-        callbackResponseHandler.callback = response -> {
-            // message with trailers
-            if (f.isDone())
-                throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
-
-            results.add(response);
-
-            // check if the current message is terminating - if it is then we can mark complete
-            if (response.getStatus() != null && response.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT
-                    && response.getStatus().getCode() != HttpResponseStatus.PROXY_AUTHENTICATION_REQUIRED) {
-                f.complete(results);
-            }
-        };
-
-        writeAndFlush(requestMessage);
-
-        return f;
-    }
-
     static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessageV4> {
         public Consumer<ResponseMessageV4> callback;
 
