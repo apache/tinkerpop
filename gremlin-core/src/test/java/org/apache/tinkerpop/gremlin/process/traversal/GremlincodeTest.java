@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
@@ -61,11 +62,6 @@ public class GremlincodeTest {
         assertEquals(expected, gremlin);
     }
 
-    @Before
-    public void setUp() {
-
-    }
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
@@ -84,11 +80,11 @@ public class GremlincodeTest {
                 {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
                         "g.addE(\"knows\").from(new ReferenceVertex(1,\"test1\")).to(new ReferenceVertex(6,\"test2\"))"},
                 {g.V(Bindings.instance().of("x", 1)), "g.V(1)"},
-                {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within(_0)).count()"},
+                {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within([])).count()"},
                 {g.V(1).outE().has("weight", P.inside(0.0, 0.6)), "g.V(1).outE().has(\"weight\",P.gt(0.0D).and(P.lt(0.6D)))"},
                 {g.withSack(1.0, Operator.sum).V(1).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack(),
                         "g.withSack(1.0D,Operator.sum).V(1).local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()"},
-                {g.inject(Arrays.asList(1, 2, 3)).skip(local, 1), "g.inject(_1).skip(Scope.local,1L)"},
+                {g.inject(Arrays.asList(1, 2, 3)).skip(local, 1), "g.inject([1,2,3]).skip(Scope.local,1L)"},
                 {g.V().has("name", "marko").
                         project("name", "friendsNames").
                         by("name").
@@ -97,8 +93,8 @@ public class GremlincodeTest {
                                 "project(\"name\",\"friendsNames\")." +
                                 "by(\"name\")." +
                                 "by(__.out(\"knows\").values(\"name\").fold())"},
-                {g.inject(Arrays.asList(5, 6)).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3, 4))),
-                        "g.inject(_2).union(__.V(_3),__.V(_4))"},
+                {g.inject(new int[]{5, 6}).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3L, new int[]{4}))),
+                        "g.inject([5,6]).union(__.V([1,2]),__.V([3L,[4]]))"},
                 {g.with("evaluationTimeout", 1000).V(), "g.V()"},
                 {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
                 {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
@@ -107,7 +103,30 @@ public class GremlincodeTest {
                 {g.withStrategies(SubgraphStrategy.build().vertices(hasLabel("person")).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.hasLabel(\"person\"))).V()",},
                 {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
-                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within(_5)))).V()"},
+                        "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
+                {g.inject(Parameter.var("x","x")).V(Parameter.var("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
+                {g.inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
         });
+    }
+
+    public static class ParameterTests {
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldCheckParameterName() {
+            g.V(GremlinLang.Parameter.var("\"", new int[]{1, 2, 3}));
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldNowAllowParameterNameDuplicates() {
+            final GremlinLang gremlin = g.inject(Parameter.var("ids", new int[]{1, 2})).V(Parameter.var("ids", new int[]{2, 3}))
+                    .asAdmin().getGremlinLang();
+        }
+
+        @Test
+        public void shouldAllowToUseSameParameterTwice() {
+            final Parameter p = Parameter.var("ids", new int[]{1, 2, 3});
+            final GremlinLang gremlin = g.inject(p).V(p).asAdmin().getGremlinLang();
+
+            assertEquals("g.inject(ids).V(ids)", gremlin.getGremlin());
+        }
     }
 }

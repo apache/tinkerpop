@@ -38,17 +38,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy.STRATEGY;
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
+import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.asIterator;
 
 /**
  *
@@ -157,29 +158,46 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("new ReferenceVertex(%s,\"%s\")", argAsString(((Vertex) arg).id()), ((Vertex) arg).label());
 
         if (arg instanceof P) {
-            return predicateAsString((P<?>) arg);
+            return asString((P<?>) arg);
         }
 
         if (arg instanceof GremlinLang || arg instanceof DefaultTraversal) {
             final GremlinLang gremlinLang = arg instanceof GremlinLang ? (GremlinLang) arg : ((DefaultTraversal) arg).getGremlinLang();
-
             parameters.putAll(gremlinLang.getParameters());
             return gremlinLang.getGremlin("__");
         }
 
-        // special handling for MergeV when map argument can have cardinality traversal inside
-        if (arg instanceof Map) {
-            final Map<Object, Object> asMap = (Map) arg;
-            final AtomicBoolean containsTraversalValue = new AtomicBoolean(false);
-            asMap.forEach((key, value) -> {
-                if (value instanceof GremlinLang || value instanceof DefaultTraversal) {
-                    containsTraversalValue.set(true);
-                }
-            });
+        if (arg instanceof Parameter) {
+            final Parameter param = (Parameter) arg;
+            String key = param.key;
 
-            if (containsTraversalValue.get()) {
-                return mapAsString(asMap);
+            if (key == null) {
+                key = String.format("_%d", paramCount.getAndIncrement());
             }
+
+            if (!key.equals(StringEscapeUtils.escapeJava(key))) {
+                throw new IllegalArgumentException(String.format("Invalid parameter name [%s].", key));
+            }
+
+            if (parameters.containsKey(key)) {
+                if (!Objects.equals(parameters.get(key), param.value)) {
+                    throw new IllegalArgumentException(String.format("Parameter with name [%s] already defined.", key));
+                }
+            } else {
+                parameters.put(key, param.value);
+            }
+            return key;
+        }
+
+        if (arg instanceof Map) {
+            return asString((Map) arg);
+        }
+
+        // todo: add set handling here when will be implemented in Grammar
+
+        // handle all iterables  in similar way
+        if (arg instanceof Iterable || arg instanceof Iterator || arg instanceof Object[] || arg.getClass().isArray()) {
+            return asString(asIterator(arg));
         }
 
         //final String paramName = String.format("_%d", paramCount.get());
@@ -190,8 +208,20 @@ public class GremlinLang implements Cloneable, Serializable {
         return paramName;
     }
 
+    private String asString(final Iterator itty) {
+        final StringBuilder sb = new StringBuilder().append("[");
+
+        while (itty.hasNext()) {
+            sb.append(argAsString(itty.next()));
+            if (itty.hasNext())
+                sb.append(",");
+        }
+
+        return sb.append("]").toString();
+    }
+
     // borrowed from Groovy translator
-    private String predicateAsString(final P<?> p) {
+    private String asString(final P<?> p) {
         final StringBuilder sb = new StringBuilder();
         if (p instanceof TextP) {
             sb.append("TextP.").append(p.getPredicateName()).append("(");
@@ -220,7 +250,7 @@ public class GremlinLang implements Cloneable, Serializable {
         return sb.toString();
     }
 
-    final String mapAsString(final Map<?, ?> map) {
+    final String asString(final Map<?, ?> map) {
         final StringBuilder sb = new StringBuilder("[");
         int size = map.size();
 
@@ -447,6 +477,25 @@ public class GremlinLang implements Cloneable, Serializable {
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    // replacement for Binding
+    public static class Parameter {
+        private final String key;
+        private final Object value;
+
+        private Parameter(final String key, final Object value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public static Parameter var(final String key, final Object value) {
+            return new Parameter(key, value);
+        }
+
+        public static Parameter value(final Object value) {
+            return new Parameter(null, value);
         }
     }
 
