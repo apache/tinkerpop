@@ -56,7 +56,7 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
         shell.execute("g.V().count().next()")
 
         // 6 vertices in modern graph
-        assertTrue(out.toString().endsWith("6\r\n"))
+        assertTrue(out.toString().endsWith("6" + System.lineSeparator()))
     }
 
     @Test
@@ -70,7 +70,7 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
         shell.execute("g.V().count().next()")
 
         // 6 vertices in modern graph
-        assertTrue(out.toString().endsWith("6\r\n"))
+        assertTrue(out.toString().endsWith("6" + System.lineSeparator()))
     }
 
     @Override
