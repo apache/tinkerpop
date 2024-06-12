@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
@@ -35,6 +37,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.slf4j.Logger;
@@ -43,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -101,7 +106,6 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpClientCodec(),
                                     new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
                                     new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false),
-
                                     callbackResponseHandler);
                         }
                     });
@@ -110,6 +114,28 @@ public class SimpleHttpClient extends AbstractClient {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    @Override
+    public CompletableFuture<List<ResponseMessageV4>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
+        final List<ResponseMessageV4> results = new ArrayList<>();
+        final CompletableFuture<List<ResponseMessageV4>> f = new CompletableFuture<>();
+        callbackResponseHandler.callback = response -> {
+            // message with trailers
+            if (f.isDone())
+                throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
+
+            results.add(response);
+
+            // check if the current message is terminating - if it is then we can mark complete
+            if (Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE == response) {
+                f.complete(results);
+            }
+        };
+
+        writeAndFlush(requestMessage);
+
+        return f;
     }
 
     @Override
