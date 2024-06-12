@@ -19,6 +19,7 @@
 from gremlin_python.structure.io import graphsonV2d0
 from gremlin_python.structure.io import graphsonV3d0
 from gremlin_python.structure.io import graphbinaryV1
+from gremlin_python.structure.io import graphbinaryV4
 
 
 __author__ = 'David M. Brown'
@@ -43,3 +44,10 @@ def test_graphbinary_serializer_v1(graphbinary_serializer_v1):
     assert isinstance(graphbinary_serializer_v1._graphbinary_reader, graphbinaryV1.GraphBinaryReader)
     assert isinstance(graphbinary_serializer_v1.standard._writer, graphbinaryV1.GraphBinaryWriter)
     assert isinstance(graphbinary_serializer_v1.traversal._writer, graphbinaryV1.GraphBinaryWriter)
+
+
+def test_graphbinary_serializer_v4(graphbinary_serializer_v4):
+    assert graphbinary_serializer_v4.version == b"application/vnd.graphbinary-v4.0"
+    assert isinstance(graphbinary_serializer_v4._graphbinary_reader, graphbinaryV4.GraphBinaryReader)
+    assert isinstance(graphbinary_serializer_v4.standard._writer, graphbinaryV4.GraphBinaryWriter)
+    assert isinstance(graphbinary_serializer_v4.traversal._writer, graphbinaryV4.GraphBinaryWriter)

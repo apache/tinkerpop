@@ -30,6 +30,7 @@ except ImportError:
     import json
 
 from gremlin_python.structure.io import graphbinaryV1
+from gremlin_python.structure.io import graphbinaryV4
 from gremlin_python.structure.io import graphsonV2d0
 from gremlin_python.structure.io import graphsonV3d0
 
@@ -72,10 +73,10 @@ class Session(Processor):
     def bytecode(self, args):
         gremlin = args['gremlin']
         args['gremlin'] = self._writer.to_dict(gremlin)
-        aliases = args.get('aliases', '')
-        if not aliases:
-            aliases = {'g': 'g'}
-        args['aliases'] = aliases
+        bindings = args.get('bindings', '')
+        if not bindings:
+            bindings = {'g': 'g'}
+        args['bindings'] = bindings
         return args
 
 
@@ -289,6 +290,98 @@ class GraphBinarySerializersV1(object):
                           'message': status_msg,
                           'attributes': status_attrs},
                'result': {'meta': meta_attrs,
+                          'data': result}}
+
+        return msg
+
+class GraphBinarySerializersV4(object):
+    DEFAULT_READER_CLASS = graphbinaryV4.GraphBinaryReader
+    DEFAULT_WRITER_CLASS = graphbinaryV4.GraphBinaryWriter
+    DEFAULT_VERSION = b"application/vnd.graphbinary-v4.0"
+
+    max_int64 = 0xFFFFFFFFFFFFFFFF
+    header_struct = struct.Struct('>b32sBQQ')
+    header_pack = header_struct.pack
+    int_pack = graphbinaryV4.int32_pack
+    int32_unpack = struct.Struct(">i").unpack
+
+    def __init__(self, reader=None, writer=None, version=None):
+        if not version:
+            version = self.DEFAULT_VERSION
+        self._version = version
+        if not reader:
+            reader = self.DEFAULT_READER_CLASS()
+        self._graphbinary_reader = reader
+        if not writer:
+            writer = self.DEFAULT_WRITER_CLASS()
+        self._graphbinary_writer = writer
+        self.standard = Standard(writer)
+        self.traversal = Traversal(writer)
+        self.session = Session(writer)
+
+    @property
+    def version(self):
+        """Read only property"""
+        return self._version
+
+    def get_processor(self, processor):
+        processor = getattr(self, processor, None)
+        if not processor:
+            raise Exception("Unknown processor")
+        return processor
+
+    def serialize_message(self, request_message):
+        message = self.build_message(request_message.fields, request_message.gremlin)
+        return message
+
+    def build_message(self, fields, gremlin):
+        message = {
+            'fields': fields,
+            'gremlin': gremlin
+        }
+        return self.finalize_message(message, 0x20, self.version)
+
+    def finalize_message(self, message, mime_len, mime_type):
+        ba = bytearray()
+
+        ba.extend(graphbinaryV4.uint8_pack(0x81))
+        print(bytes(ba))
+        fields = message["fields"]
+        ba.extend(self.int_pack(len(fields)))
+        for k, v in fields.items():
+            self._graphbinary_writer.to_dict(k, ba)
+            self._graphbinary_writer.to_dict(v, ba)
+
+        gremlin = message['gremlin']
+        if isinstance(gremlin, bytearray):
+            ba.extend(gremlin)
+        else:
+            self._graphbinary_writer.to_dict(gremlin, ba)
+
+        print(bytes(ba))
+
+        return bytes(ba)
+
+    def deserialize_message(self, message):
+        # for parsing string message via HTTP connections
+        b = io.BytesIO(base64.b64decode(message) if isinstance(message, str) else message)
+
+        b.read(1)  # version
+
+        result = self._graphbinary_reader.to_object(b)  # data
+        # marker = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.marker, nullable=True)
+        marker = b.read(3)  # need to create marker class & serializer
+        status_code = self.int32_unpack(b.read(4))[0]  # status code
+        status_msg = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
+        status_ex = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
+        # meta_attrs = self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.map, nullable=False)
+
+        b.close()
+
+        msg = {'status': {'code': status_code,
+                          'message': status_msg,
+                          'exception': status_ex},
+               'result': {'meta': {},
                           'data': result}}
 
         return msg

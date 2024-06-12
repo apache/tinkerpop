@@ -195,8 +195,8 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         async def async_write():
             basic_auth = None
             # basic password authentication for https connections
-            if message['auth']:
-                basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
+            # if message['auth']:
+            #     basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
             async with async_timeout.timeout(self._write_timeout):
                 self._http_req_resp = await self._client_session.post(url="/gremlin",
                                                                       auth=basic_auth,
@@ -210,8 +210,15 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
     def read(self):
         # Inner function to perform async read.
         async def async_read():
+            buffer = b""
+            # async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
+            #     buffer += data
+            #     if end_of_http_chunk:
+            #         print('ended')
+            #     print(buffer)
             async with async_timeout.timeout(self._read_timeout):
-                return {"content": await self._http_req_resp.read(),
+                data = await self._http_req_resp.read()
+                return {"content": data,
                         "ok": self._http_req_resp.ok,
                         "status": self._http_req_resp.status}
 

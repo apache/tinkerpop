@@ -23,9 +23,8 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class ResultSet:
 
-    def __init__(self, stream, request_id):
+    def __init__(self, stream):
         self._stream = stream
-        self._request_id = request_id
         self._done = None
         self._aggregate_to = None
         self._status_attributes = {}
@@ -45,10 +44,6 @@ class ResultSet:
     @status_attributes.setter
     def status_attributes(self, val):
         self._status_attributes = val
-
-    @property
-    def request_id(self):
-        return self._request_id
 
     @property
     def stream(self):

@@ -35,7 +35,7 @@ from gremlin_python.driver.driver_remote_connection import (
 from gremlin_python.driver.protocol import GremlinServerWSProtocol
 from gremlin_python.driver.serializer import (
     GraphSONMessageSerializer, GraphSONSerializersV2d0, GraphSONSerializersV3d0,
-    GraphBinarySerializersV1)
+    GraphBinarySerializersV1, GraphBinarySerializersV4)
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTTPTransport
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
@@ -279,6 +279,11 @@ def remote_connection_graphsonV2(request):
 
         request.addfinalizer(fin)
         return remote_conn
+
+
+@pytest.fixture
+def graphbinary_serializer_v4(request):
+    return GraphBinarySerializersV4()
 
 
 @pytest.fixture
