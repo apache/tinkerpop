@@ -2762,15 +2762,17 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[merge-step]]
 === Merge Step
 
-The `merge()`-step (*map*) merges the elements of the incoming list traverser and the provided list argument into one
-list. This is also known as the union operation. This step only expects list data (array or Iterable) and will throw
-an `IllegalArgumentException` if any other type is encountered (including `null`). This differs from the `combine()`-step
-in that it doesn't allow duplicates.
+The `merge()`-step (*map*) combines collections like lists and maps. It expects an incoming traverser to contain a
+collection objection and will combine that object with its specified argument which must be of a matching type. This is
+also known as the union operation. If the incoming traverser or its associated argument do not meet the expected type,
+the step will throw an `IllegalArgumentException` if any other type is encountered (including `null`). This step differs
+from the `combine()`-step in that it doesn't allow duplicates.
 
 [gremlin-groovy,modern]
 ----
 g.V().values("name").fold().merge(["james","jen","marko","vadas"])
 g.V().values("name").fold().merge(__.constant("james").fold())
+g.V().hasLabel('software').elementMap().merge([year:2009])
 ----
 
 *Additional References*
