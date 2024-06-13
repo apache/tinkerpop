@@ -69,7 +69,7 @@ public class IdentityRemovalStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         applyIdentityRemovalStrategy(original);
         assertEquals(repr, optimized, original);
     }

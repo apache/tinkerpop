@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
- * Handles terminal steps for {@link Bytecode} as they are not added this way naturally. They are normally treated as
+ * Handles terminal steps for {@link GremlinLang} as they are not added this way naturally. They are normally treated as
  * the point of traversal execution.
  */
 public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisitor {
@@ -46,7 +46,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_explain(final GremlinParser.TraversalTerminalMethod_explainContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("explain");
         return bc;
     }
@@ -58,7 +58,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_iterate(final GremlinParser.TraversalTerminalMethod_iterateContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("iterate");
         return bc;
     }
@@ -70,7 +70,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_hasNext(final GremlinParser.TraversalTerminalMethod_hasNextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("hasNext");
         return bc;
     }
@@ -82,7 +82,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_tryNext(final GremlinParser.TraversalTerminalMethod_tryNextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("tryNext");
         return bc;
     }
@@ -94,7 +94,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_next(final GremlinParser.TraversalTerminalMethod_nextContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         if (ctx.getChildCount() == 3) {
             bc.addStep("next");
         } else {
@@ -113,7 +113,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toList(final GremlinParser.TraversalTerminalMethod_toListContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("toList");
         return bc;
     }
@@ -125,7 +125,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toSet(final GremlinParser.TraversalTerminalMethod_toSetContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("toSet");
         return bc;
     }
@@ -137,7 +137,7 @@ public class TerminalMethodToBytecodeVisitor extends TraversalTerminalMethodVisi
      */
     @Override
     public Object visitTraversalTerminalMethod_toBulkSet(final GremlinParser.TraversalTerminalMethod_toBulkSetContext ctx) {
-        final Bytecode bc = this.traversal.asAdmin().getBytecode();
+        final GremlinLang bc = this.traversal.asAdmin().getGremlinLang();
         bc.addStep("toBulkSet");
         return bc;
     }

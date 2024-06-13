@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.language.grammar.NoOpTerminalVisitor;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -44,7 +44,7 @@ public class AnonymizingTypeTranslatorTest {
 
     private void testAnonymize(final String query, final String expected) {
         try {
-            final Bytecode bc = (Bytecode) GremlinQueryParser.parse(query, new NoOpTerminalVisitor());
+            final GremlinLang bc = (GremlinLang) GremlinQueryParser.parse(query, new NoOpTerminalVisitor());
             final Translator.ScriptTranslator translator = GroovyTranslator.of("g", new AnonymizingTypeTranslator());
             final String converted = translator.translate(bc).getScript();
             Assert.assertEquals(expected, converted);

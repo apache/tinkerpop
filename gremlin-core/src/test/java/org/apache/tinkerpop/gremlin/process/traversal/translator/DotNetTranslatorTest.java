@@ -70,7 +70,7 @@ public class DotNetTranslatorTest {
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         new SeedStrategy(999999)).
-                        V().has("name").asAdmin().getBytecode()).getScript());
+                        V().has("name").asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
@@ -78,49 +78,49 @@ public class DotNetTranslatorTest {
         final String script = translator.translate(g.V().id().is(new LinkedHashMap<Object,Object>() {{
             put(3, "32");
             put(Arrays.asList(1, 2, 3.1d), 4);
-        }}).asAdmin().getBytecode()).getScript();
+        }}).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Id().Is(new Dictionary<object,object> {{3, \"32\"}, {new List<object> {1, 2, 3.1}, 4}})", script);
     }
 
     @Test
     public void shouldTranslateValues() {
-        final String script = translator.translate(g.V().values("name").asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.V().values("name").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Values<object>(\"name\")", script);
     }
 
     @Test
     public void shouldTranslateValue() {
-        final String script = translator.translate(g.V().properties().order().by(T.value, asc).value().asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.V().properties().order().by(T.value, asc).value().asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Properties<object>().Order().By(T.Value,Order.Asc).Value<object>()", script);
     }
 
     @Test
     public void shouldTranslateInject() {
-        String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.inject(10,20,null,20,10,10).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject<object>(10,20,null,20,10,10)", script);
-        script = translator.translate(g.inject().asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.inject().asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject<object>()", script);
-        script = translator.translate(g.inject((Object) null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.inject((Object) null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject<object>(null)", script);
-        script = translator.translate(g.inject(null, null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.inject(null, null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject<object>(null,null)", script);
-        script = translator.translate(g.V().values("age").inject().asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().values("age").inject().asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Values<object>(\"age\").Inject()", script);
-        script = translator.translate(g.V().values("age").inject(null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().values("age").inject(null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Values<object>(\"age\").Inject(null)", script);
-        script = translator.translate(g.V().values("age").inject(null, null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().values("age").inject(null, null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Values<object>(\"age\").Inject(null,null)", script);
     }
 
     @Test
     public void shouldTranslateGroup() {
-        final String script = translator.translate(g.V().group("x").group().by("name").asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.V().group("x").group().by("name").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Group(\"x\").Group<object,object>().By(\"name\")", script);
     }
 
     @Test
     public void shouldTranslateGroupCount() {
-        final String script = translator.translate(g.V().groupCount("x").groupCount().by("name").asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.V().groupCount("x").groupCount().by("name").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().GroupCount(\"x\").GroupCount<object>().By(\"name\")", script);
     }
 
@@ -182,15 +182,15 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateHasLabelNull() {
-        String script = translator.translate(g.V().hasLabel(null).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.V().hasLabel(null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().HasLabel((string) null)", script);
-        script = translator.translate(g.V().hasLabel(null, null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().hasLabel(null, null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().HasLabel(null,null)", script);
-        script = translator.translate(g.V().hasLabel(null, "person").asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().hasLabel(null, "person").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().HasLabel(null,\"person\")", script);
-        script = translator.translate(g.V().hasLabel(null, "person", null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().hasLabel(null, "person", null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().HasLabel(null,\"person\",null)", script);
-        script = translator.translate(g.V().has(T.label, (Object) null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().has(T.label, (Object) null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(T.Label,(object) null)", script);
     }
 
@@ -207,15 +207,15 @@ public class DotNetTranslatorTest {
 
     @Test
     public void shouldTranslateHasNull() {
-        String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(\"k\",(object) null)", script);
-        script = translator.translate(g.V().has("l", "k", (Object) null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().has("l", "k", (Object) null).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(\"l\",\"k\",(object) null)", script);
     }
 
     @Test
     public void shouldTranslateMergeVNull() {
-        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).mergeV(__.identity()).asAdmin().getBytecode()).getScript();
+        String script = translator.translate(g.mergeV((Map) null).option(Merge.onCreate, (Map) null).mergeV(__.identity()).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.MergeV((IDictionary<object,object>) null).Option(Merge.OnCreate, (IDictionary<object,object>) null).MergeV((ITraversal) __.Identity())", script);
     }
 
@@ -226,7 +226,7 @@ public class DotNetTranslatorTest {
                 .property("name", "Foo\u0020Bar")
                 .property("age", 25)
                 .property("special", "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?")
-                .asAdmin().getBytecode()).getScript();
+                .asAdmin().getGremlinLang()).getScript();
 
         assertEquals("g.AddV(\"customer\")" +
                         ".Property(\"customer_id\",501)" +
@@ -241,7 +241,7 @@ public class DotNetTranslatorTest {
         final Object id1 = "customer:10:foo\u0020bar\u0020\u0024100#90"; // customer:10:foo bar $100#90
         final Vertex vertex1 = DetachedVertex.build().setLabel("customer").setId(id1)
                 .create();
-        final String script1 = translator.translate(g.inject(vertex1).asAdmin().getBytecode()).getScript();
+        final String script1 = translator.translate(g.inject(vertex1).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject(new Vertex(" +
                         "\"customer:10:foo bar $100#90\", " +
                         "\"customer\"))",
@@ -250,7 +250,7 @@ public class DotNetTranslatorTest {
         final Object id2 = "user:20:foo\\u0020bar\\u005c\\u0022mr\\u005c\\u0022\\u00241000#50"; // user:20:foo\u0020bar\u005c\u0022mr\u005c\u0022\u00241000#50
         final Vertex vertex2 = DetachedVertex.build().setLabel("user").setId(id2)
                 .create();
-        final String script2 = translator.translate(g.inject(vertex2).asAdmin().getBytecode()).getScript();
+        final String script2 = translator.translate(g.inject(vertex2).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject(new Vertex(" +
                         "\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", " +
                         "\"user\"))",
@@ -261,7 +261,7 @@ public class DotNetTranslatorTest {
                 .setOutV((DetachedVertex) vertex1)
                 .setInV((DetachedVertex) vertex2)
                 .create();
-        final String script3 = translator.translate(g.inject(edge).asAdmin().getBytecode()).getScript();
+        final String script3 = translator.translate(g.inject(edge).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.Inject(" +
                         "new Edge(\"knows:30:foo bar $100:\\\\u0020\\\\u0024500#70\", " +
                         "new Vertex(\"customer:10:foo bar $100#90\", \"customer\"), " +
@@ -271,7 +271,7 @@ public class DotNetTranslatorTest {
 
         final String script4 = translator.translate(
                 g.addE("knows").from(vertex1).to(vertex2).property("when", "2018/09/21")
-                        .asAdmin().getBytecode()).getScript();
+                        .asAdmin().getGremlinLang()).getScript();
         assertEquals("g.AddE(\"knows\")" +
                         ".From(new Vertex(\"customer:10:foo bar $100#90\", \"customer\"))" +
                         ".To(new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", \"user\"))" +
@@ -282,71 +282,71 @@ public class DotNetTranslatorTest {
     @Test
     public void shouldTranslateStringFunctionWithAndWithoutScopes(){
         assertEquals("g.Inject(1).AsString()",
-                translator.translate(g.inject(1).asString().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject(1).asString().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(1).AsString<object>(Scope.Local)",
-                translator.translate(g.inject(1).asString(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject(1).asString(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Length()",
-                translator.translate(g.inject("hello").length().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").length().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Length<object>(Scope.Local)",
-                translator.translate(g.inject("hello").length(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").length(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").LTrim()",
-                translator.translate(g.inject("hello").lTrim().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").lTrim().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").LTrim<object>(Scope.Local)",
-                translator.translate(g.inject("hello").lTrim(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").lTrim(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").RTrim()",
-                translator.translate(g.inject("hello").rTrim().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").rTrim().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").RTrim<object>(Scope.Local)",
-                translator.translate(g.inject("hello").rTrim(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").rTrim(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").ToUpper()",
-                translator.translate(g.inject("hello").toUpper().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").toUpper().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").ToUpper<object>(Scope.Local)",
-                translator.translate(g.inject("hello").toUpper(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").toUpper(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").ToLower()",
-                translator.translate(g.inject("hello").toLower().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").toLower().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").ToLower<object>(Scope.Local)",
-                translator.translate(g.inject("hello").toLower(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").toLower(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Trim()",
-                translator.translate(g.inject("hello").trim().asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").trim().asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Trim<object>(Scope.Local)",
-                translator.translate(g.inject("hello").trim(Scope.local).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").trim(Scope.local).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Replace(\"o\",\"a\")",
-                translator.translate(g.inject("hello").replace("o", "a").asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").replace("o", "a").asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Replace<object>(Scope.Local,\"o\",\"a\")",
-                translator.translate(g.inject("hello").replace(Scope.local, "o", "a").asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").replace(Scope.local, "o", "a").asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Split(\"o\")",
-                translator.translate(g.inject("hello").split("o").asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").split("o").asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Split<object>(Scope.Local,\"o\")",
-                translator.translate(g.inject("hello").split(Scope.local, "o").asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").split(Scope.local, "o").asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Substring(1)",
-                translator.translate(g.inject("hello").substring(1).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").substring(1).asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Substring<object>(Scope.Local,1)",
-                translator.translate(g.inject("hello").substring(Scope.local, 1).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").substring(Scope.local, 1).asAdmin().getGremlinLang()).getScript());
 
         assertEquals("g.Inject(\"hello\").Substring(1,2)",
-                translator.translate(g.inject("hello").substring(1, 2).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").substring(1, 2).asAdmin().getGremlinLang()).getScript());
         assertEquals("g.Inject(\"hello\").Substring<object>(Scope.Local,1,2)",
-                translator.translate(g.inject("hello").substring(Scope.local, 1, 2).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject("hello").substring(Scope.local, 1, 2).asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
     public void shouldTranslateTx() {
-        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        String script = translator.translate(GraphOp.TX_COMMIT.getGremlinLang()).getScript();
         assertEquals("g.Tx().Commit()", script);
-        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        script = translator.translate(GraphOp.TX_ROLLBACK.getGremlinLang()).getScript();
         assertEquals("g.Tx().Rollback()", script);
     }
 
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
-        final String script = translator.translate(g.inject(objs).asAdmin().getBytecode()).getScript();
+        final String script = translator.translate(g.inject(objs).asAdmin().getGremlinLang()).getScript();
         assertEquals(String.format("g.Inject(%s)", expectedTranslation), script);
     }
 }

@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 
 /**
- * Provides a way to customize and override {@link Bytecode} to script translation. Not all {@link GremlinScriptEngine}
+ * Provides a way to customize and override {@link GremlinLang} to script translation. Not all {@link GremlinScriptEngine}
  * will support this capability as translation is optional.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -32,7 +32,7 @@ public interface TranslatorCustomizer extends Customizer {
     /**
      * Construct a {@link Translator.ScriptTranslator.TypeTranslator} that will be used by a
      * {@link Translator.ScriptTranslator} instance within the {@link GremlinScriptEngine} to translate
-     * {@link Bytecode} to a script.
+     * {@link GremlinLang} to a script.
      */
     public Translator.ScriptTranslator.TypeTranslator createTypeTranslator();
 }

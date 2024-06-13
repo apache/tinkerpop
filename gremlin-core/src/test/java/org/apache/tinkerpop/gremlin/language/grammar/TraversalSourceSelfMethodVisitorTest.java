@@ -88,6 +88,6 @@ public class TraversalSourceSelfMethodVisitorTest {
         final GremlinParser.TraversalSourceSelfMethodContext ctx = parser.traversalSourceSelfMethod();
         final GraphTraversalSource source = new TraversalSourceSelfMethodVisitor(g, new GremlinAntlrToJava()).visitTraversalSourceSelfMethod(ctx);
 
-        assertEquals(expected.getBytecode(), source.getBytecode());
+        assertEquals(expected.getGremlinLang(), source.getGremlinLang());
     }
 }

@@ -31,8 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -56,21 +54,21 @@ public class BytecodeTest {
         assertNotEquals(traversal1.hashCode(), traversal3.hashCode());
         assertNotEquals(traversal2.hashCode(), traversal3.hashCode());
         //
-        assertEquals(traversal1.getBytecode(), traversal2.getBytecode());
-        assertNotEquals(traversal1.getBytecode(), traversal3.getBytecode());
-        assertNotEquals(traversal2.getBytecode(), traversal3.getBytecode());
+        assertEquals(traversal1.getGremlinLang(), traversal2.getGremlinLang());
+        assertNotEquals(traversal1.getGremlinLang(), traversal3.getGremlinLang());
+        assertNotEquals(traversal2.getGremlinLang(), traversal3.getGremlinLang());
         //
-        assertEquals(traversal1.getBytecode().hashCode(), traversal2.getBytecode().hashCode());
-        assertNotEquals(traversal1.getBytecode().hashCode(), traversal3.getBytecode().hashCode());
-        assertNotEquals(traversal2.getBytecode().hashCode(), traversal3.getBytecode().hashCode());
+        assertEquals(traversal1.getGremlinLang().hashCode(), traversal2.getGremlinLang().hashCode());
+        assertNotEquals(traversal1.getGremlinLang().hashCode(), traversal3.getGremlinLang().hashCode());
+        assertNotEquals(traversal2.getGremlinLang().hashCode(), traversal3.getGremlinLang().hashCode());
 
     }
 
     @Test
     public void shouldCloneCorrectly() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Bytecode bytecode = g.V().out().asAdmin().getBytecode();
-        final Bytecode bytecodeClone = bytecode.clone();
+        final GremlinLang bytecode = g.V().out().asAdmin().getGremlinLang();
+        final GremlinLang bytecodeClone = bytecode.clone();
         assertEquals(bytecode, bytecodeClone);
         assertEquals(bytecode.hashCode(), bytecodeClone.hashCode());
         bytecodeClone.addStep("in", "created"); // mutate the clone and the original should stay the same
@@ -85,10 +83,10 @@ public class BytecodeTest {
         final Bindings b = Bindings.instance();
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
 
-        final Bytecode bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getBytecode();
-        final Bytecode bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getBytecode();
-        final Bytecode bytecode3 = g.V().out(b.of("b", "knows")).asAdmin().getBytecode();
-        final Bytecode bytecode4 = g.V().out(b.of("b", "knows")).asAdmin().getBytecode();
+        final GremlinLang bytecode1 = g.V().out(b.of("a", "created")).asAdmin().getGremlinLang();
+        final GremlinLang bytecode2 = g.V().out(b.of("a", "knows")).asAdmin().getGremlinLang();
+        final GremlinLang bytecode3 = g.V().out(b.of("b", "knows")).asAdmin().getGremlinLang();
+        final GremlinLang bytecode4 = g.V().out(b.of("b", "knows")).asAdmin().getGremlinLang();
 
         assertNotEquals(bytecode1, bytecode2);
         assertNotEquals(bytecode1, bytecode3);
@@ -106,14 +104,14 @@ public class BytecodeTest {
         // adding the choose() step as part of TINKERPOP-2458
         final Bindings b = Bindings.instance();
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        final Bytecode bytecode = g.V().in(b.of("a","created")).
+        final GremlinLang bytecode = g.V().in(b.of("a","created")).
                 choose(__.out().count()).
                 option(b.of("two", 2), __.values("name")).
                 option(b.of("three",3), __.values("age")).
                 where(__.out(b.of("b","knows")).
                         has("age",b.of("c",P.gt(32))).
                         map(__.values(b.of("d","name")))).
-                in(b.of("a", "created")).asAdmin().getBytecode();
+                in(b.of("a", "created")).asAdmin().getGremlinLang();
         assertEquals(6, bytecode.getBindings().size());
         assertEquals("created", bytecode.getBindings().get("a"));
         assertEquals("knows", bytecode.getBindings().get("b"));
@@ -122,25 +120,25 @@ public class BytecodeTest {
         assertEquals(2, bytecode.getBindings().get("two"));
         assertEquals(3, bytecode.getBindings().get("three"));
 
-        Bytecode.Binding binding = (Bytecode.Binding) bytecode.getStepInstructions().get(1).getArguments()[0];
+        GremlinLang.Binding binding = (GremlinLang.Binding) bytecode.getStepInstructions().get(1).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
-        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(3).getArguments()[0];
+        binding = (GremlinLang.Binding) bytecode.getStepInstructions().get(3).getArguments()[0];
         assertEquals("two", binding.variable());
         assertEquals(2, binding.value());
-        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(4).getArguments()[0];
+        binding = (GremlinLang.Binding) bytecode.getStepInstructions().get(4).getArguments()[0];
         assertEquals("three", binding.variable());
         assertEquals(3, binding.value());
-        binding = (Bytecode.Binding) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
+        binding = (GremlinLang.Binding) ((GremlinLang) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
         assertEquals("b", binding.variable());
         assertEquals("knows", binding.value());
-        binding = (Bytecode.Binding) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(1).getArguments()[1];
+        binding = (GremlinLang.Binding) ((GremlinLang) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(1).getArguments()[1];
         assertEquals("c", binding.variable());
         assertEquals(P.gt(32), binding.value());
-        binding = (Bytecode.Binding) ((Bytecode) ((Bytecode) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(2).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
+        binding = (GremlinLang.Binding) ((GremlinLang) ((GremlinLang) bytecode.getStepInstructions().get(5).getArguments()[0]).getStepInstructions().get(2).getArguments()[0]).getStepInstructions().get(0).getArguments()[0];
         assertEquals("d", binding.variable());
         assertEquals("name", binding.value());
-        binding = (Bytecode.Binding) bytecode.getStepInstructions().get(6).getArguments()[0];
+        binding = (GremlinLang.Binding) bytecode.getStepInstructions().get(6).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
     }
@@ -148,17 +146,17 @@ public class BytecodeTest {
     @Test
     public void shouldConvertStrategies() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        Bytecode bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getBytecode();
+        GremlinLang bytecode = g.withStrategies(ReadOnlyStrategy.instance()).getGremlinLang();
         assertEquals(ReadOnlyStrategy.instance(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
-        bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getBytecode();
-        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getBytecode(),
-                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getBytecode());
+        bytecode = g.withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create()).getGremlinLang();
+        assertEquals(SubgraphStrategy.build().edges(__.hasLabel("knows")).create().getEdgeCriterion().asAdmin().getGremlinLang(),
+                ((SubgraphStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getEdgeCriterion().asAdmin().getGremlinLang());
     }
 
     @Test
     public void shouldConvertComputer() {
         final GraphTraversalSource g = EmptyGraph.instance().traversal();
-        Bytecode bytecode = g.withComputer(Computer.compute().workers(10)).getBytecode();
+        GremlinLang bytecode = g.withComputer(Computer.compute().workers(10)).getGremlinLang();
         assertEquals(VertexProgramStrategy.build().create(), bytecode.getSourceInstructions().get(0).getArguments()[0]);
         assertEquals(VertexProgramStrategy.build().workers(10).create().getConfiguration().getInt(VertexProgramStrategy.WORKERS),
                 ((VertexProgramStrategy) bytecode.getSourceInstructions().iterator().next().getArguments()[0]).getConfiguration().getInt(VertexProgramStrategy.WORKERS));
@@ -168,8 +166,8 @@ public class BytecodeTest {
     public void shouldNotHaveHashCollisionsWithBindings() {
         // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
         // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
-        final Bytecode.Binding<String> first = new Bytecode.Binding<>("3", "7");
-        final Bytecode.Binding<String> second = new Bytecode.Binding<>("7", "3");
+        final GremlinLang.Binding<String> first = new GremlinLang.Binding<>("3", "7");
+        final GremlinLang.Binding<String> second = new GremlinLang.Binding<>("7", "3");
         assertNotEquals(first, second);
         assertNotEquals(first.hashCode(), second.hashCode());
     }
@@ -178,10 +176,10 @@ public class BytecodeTest {
     public void shouldNotHaveHashCollisions() {
         // ideally we should be using guava's EqualsTester to test equals/hashCode but the equals/hashCode contract allows hash collisions.
         // Yet we should avoid hash collisions in case these objects are being used in data structures that rely on hashCode
-        final Bytecode first = new Bytecode();
+        final GremlinLang first = new GremlinLang();
         first.addSource("3", "7");
         first.addStep("7", "3");
-        final Bytecode second = new Bytecode();
+        final GremlinLang second = new GremlinLang();
         second.addSource("7", "3");
         second.addStep("3", "7");
         assertNotEquals(first, second);
@@ -190,7 +188,7 @@ public class BytecodeTest {
 
     @Test
     public void shouldHandleArrays() {
-        final Bytecode b = new Bytecode();
+        final GremlinLang b = new GremlinLang();
         b.addStep(GraphTraversal.Symbols.property, "k", new Object[] { new String[] {"A", "B", "C"}});
         assertEquals(1, b.getStepInstructions().size());
         assertEquals(2, b.getStepInstructions().get(0).getArguments().length);
@@ -198,7 +196,7 @@ public class BytecodeTest {
 
     @Test
     public void shouldAvoidArgumentsNpe() {
-        final Bytecode first = new Bytecode();
+        final GremlinLang first = new GremlinLang();
         try {
             first.addSource("3", null);
             first.addSource(TraversalSource.Symbols.withoutStrategies, null);

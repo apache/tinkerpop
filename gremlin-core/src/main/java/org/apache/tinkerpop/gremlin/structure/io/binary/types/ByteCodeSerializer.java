@@ -18,23 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
 import java.util.List;
 
-public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
+public class ByteCodeSerializer extends SimpleTypeSerializer<GremlinLang> {
     public ByteCodeSerializer() {
         super(DataType.BYTECODE);
     }
 
     @Override
-    protected Bytecode readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final Bytecode result = new Bytecode();
+    protected GremlinLang readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        final GremlinLang result = new GremlinLang();
 
         final int stepsLength = buffer.readInt();
         for (int i = 0; i < stepsLength; i++) {
@@ -59,9 +59,9 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     @Override
-    protected void writeValue(final Bytecode value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        final List<Bytecode.Instruction> steps = value.getStepInstructions();
-        final List<Bytecode.Instruction> sources = value.getSourceInstructions();
+    protected void writeValue(final GremlinLang value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+        final List<GremlinLang.Instruction> steps = value.getStepInstructions();
+        final List<GremlinLang.Instruction> sources = value.getSourceInstructions();
         // 2 buffers for the length + plus 2 buffers per each step and source
 
         writeInstructions(buffer, context, steps);
@@ -69,11 +69,11 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     private void writeInstructions(final Buffer buffer, final GraphBinaryWriter context,
-                                   final List<Bytecode.Instruction> instructions) throws IOException {
+                                   final List<GremlinLang.Instruction> instructions) throws IOException {
 
         context.writeValue(instructions.size(), buffer, false);
 
-        for (Bytecode.Instruction instruction : instructions) {
+        for (GremlinLang.Instruction instruction : instructions) {
             context.writeValue(instruction.getOperator(), buffer, false);
             fillArgumentsBuffer(instruction.getArguments(), buffer, context);
         }

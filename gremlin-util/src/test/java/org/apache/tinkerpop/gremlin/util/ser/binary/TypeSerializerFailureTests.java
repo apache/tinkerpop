@@ -20,9 +20,9 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -58,11 +58,11 @@ public class TypeSerializerFailureTests {
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
-        final Bytecode.Binding b = new Bytecode.Binding(null, "b");
+        final GremlinLang.Binding b = new GremlinLang.Binding(null, "b");
 
         final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
 
-        final Bytecode bytecode = new Bytecode();
+        final GremlinLang bytecode = new GremlinLang();
         bytecode.addStep(null);
 
         final BulkSet<Object> bulkSet = new BulkSet<>();

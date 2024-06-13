@@ -38,7 +38,7 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -273,7 +273,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
+    public Traversal.Admin eval(final GremlinLang bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
         // these validations occur before merging in bytecode bindings which will override existing ones. need to
         // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
         // namespace as global bindings (e.g. traversalsources and graphs).

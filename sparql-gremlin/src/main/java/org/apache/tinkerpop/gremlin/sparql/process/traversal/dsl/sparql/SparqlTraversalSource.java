@@ -175,7 +175,7 @@ public class SparqlTraversalSource extends GraphTraversalSource {
         final SparqlTraversalSource clone = this.withStrategies(SparqlStrategy.instance()).clone();
 
         // the inject() holds the sparql which the SparqlStrategy then detects and converts to a traversal
-        clone.bytecode.addStep(GraphTraversal.Symbols.inject, query);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.inject, query);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal(clone);
         return traversal.addStep(new InjectStep<>(traversal, query));
     }

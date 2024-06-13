@@ -25,10 +25,9 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -39,6 +38,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
 
 
@@ -223,9 +223,11 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
         try {
-            return client.submitAsync(bytecode, getRequestOptions(bytecode)).thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
+            gremlinLang.addG(remoteTraversalSourceName);
+            return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
+                    .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
@@ -240,18 +242,25 @@ public class DriverRemoteConnection implements RemoteConnection {
         return Optional.empty();
     }
 
-    protected static RequestOptions getRequestOptions(final Bytecode bytecode) {
-        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
+    protected static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
+        final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
         final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
-            final Map<String,Object> options = optionsStrategy.getOptions();
+            final Map<String, Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_EVAL_TIMEOUT))
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
+            if (options.containsKey(ARGS_LANGUAGE))
+                builder.language((String) options.get(ARGS_LANGUAGE));
+        }
+
+        final Map<String, Object> parameters = gremlinLang.getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(builder::addParameter);
         }
         return builder.create();
     }

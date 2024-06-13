@@ -23,7 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
@@ -106,19 +106,19 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
             .build().code(HttpResponseStatus.OK).result(Collections.singletonList(new ReferenceVertex(1, "person")))
             .create();
 
-    private static final Bytecode bytecode = new Bytecode();
+    private static final GremlinLang gremlinLang = new GremlinLang();
     private static final RequestMessageV4 request = RequestMessageV4
-            .build(bytecode)
+            .build(gremlinLang)
             .create();
 
     private static final GraphBinaryMessageSerializerV4 binarySerializer = new GraphBinaryMessageSerializerV4();
     private static final GraphSONMessageSerializerV4 graphsonSerializer = new GraphSONMessageSerializerV4();
 
     static {
-        bytecode.addStep("V");
-        bytecode.addStep("values", "name");
-        bytecode.addStep("order");
-        bytecode.addStep("tail", 5);
+        gremlinLang.addStep("V");
+        gremlinLang.addStep("values", "name");
+        gremlinLang.addStep("order");
+        gremlinLang.addStep("tail", 5);
     }
 
     @Benchmark

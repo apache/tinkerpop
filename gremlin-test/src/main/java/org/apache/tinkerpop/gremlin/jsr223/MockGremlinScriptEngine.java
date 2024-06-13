@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import javax.script.AbstractScriptEngine;
@@ -51,7 +51,7 @@ public class MockGremlinScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     @Override
-    public Traversal.Admin eval(Bytecode bytecode, Bindings bindings, String traversalSource) throws ScriptException {
+    public Traversal.Admin eval(GremlinLang bytecode, Bindings bindings, String traversalSource) throws ScriptException {
         return null;
     }
 

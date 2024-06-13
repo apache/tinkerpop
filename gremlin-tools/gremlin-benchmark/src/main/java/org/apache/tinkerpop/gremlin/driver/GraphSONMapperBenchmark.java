@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
@@ -53,8 +53,8 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
 
         public byte[] bytecodeBytes1;
         private byte[] bytecodeBytes2;
-        private final Bytecode bytecode1 = new Bytecode();
-        private Bytecode bytecode2;
+        private final GremlinLang bytecode1 = new GremlinLang();
+        private GremlinLang bytecode2;
 
         @Setup(Level.Trial)
         public void doSetup() throws IOException {
@@ -72,7 +72,7 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
                     .property("name4", BigInteger.valueOf(33343455342245L))
                     .property("name5", "kjlkdnvlkdrnvldnvndlrkvnlhkjdkgkrtnlkndblknlknonboirnlkbnrtbonrobinokbnrklnbkrnblktengotrngotkrnglkt")
                     .property("name6", Instant.now())
-                    .asAdmin().getBytecode();
+                    .asAdmin().getGremlinLang();
 
 
             bytecodeBytes1 = mapper.writeValueAsBytes(bytecode1);
@@ -86,12 +86,12 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void readBytecode1(BenchmarkState state) throws IOException {
-        mapper.readValue(state.bytecodeBytes1, Bytecode.class);
+        mapper.readValue(state.bytecodeBytes1, GremlinLang.class);
     }
 
     @Benchmark
     public void readBytecode2(BenchmarkState state) throws IOException {
-        mapper.readValue(state.bytecodeBytes2, Bytecode.class);
+        mapper.readValue(state.bytecodeBytes2, GremlinLang.class);
     }
 
     @Benchmark

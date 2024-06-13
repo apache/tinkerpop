@@ -1139,6 +1139,12 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
             return this.graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()), (Map) null);
         }
 
+        if (ctx.genericLiteralMapNullableArgument().variable() != null) {
+            return graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()),
+                    (Map) antlr.argumentVisitor.visitVariable(ctx.genericLiteralMapNullableArgument().variable()),
+                    TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
+        }
+
         return graphTraversal.option(antlr.argumentVisitor.parseMerge(ctx.traversalMergeArgument()),
                 (Map) new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMapNullableArgument().genericLiteralMap()),
                 TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));

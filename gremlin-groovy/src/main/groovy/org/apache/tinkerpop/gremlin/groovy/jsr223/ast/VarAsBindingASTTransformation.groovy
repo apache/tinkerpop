@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.Translator
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings
 import org.apache.tinkerpop.gremlin.util.CollectionUtil
 import org.codehaus.groovy.ast.ASTNode
@@ -49,7 +49,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 
 /**
  * Converts variables used in Gremlin to {@link Bindings} declarations. By doing this, the generated traversal ends up
- * having those {@link Bindings} in the Gremlin {@link Bytecode} which means that when passed through a
+ * having those {@link Bindings} in the Gremlin {@link GremlinLang} which means that when passed through a
  * {@link Translator} to generate a script form, the variables are preserved.
  * <p/>
  * This AST Transformation is meant to work with a single lines of Gremlin and only Gremlin. Inclusion of Groovy code

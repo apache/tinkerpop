@@ -22,7 +22,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
@@ -68,10 +68,10 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 }
                 switch (requestMessage.getGremlinType()) {
                     case TokensV4.OPS_BYTECODE:
-                        final Bytecode bytecode = (Bytecode) requestMessage.getGremlin();
+                        final GremlinLang bytecode = (GremlinLang) requestMessage.getGremlin();
                         final Map<String, String> aliases = new HashMap<>();
                         aliases.put(TokensV4.ARGS_G, requestMessage.getField(TokensV4.ARGS_G));
-                        final Bytecode restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
+                        final GremlinLang restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
                         final RequestMessageV4 restrictedMsg = RequestMessageV4.from(requestMessage, restrictedBytecode).create();
                         ctx.fireChannelRead(restrictedMsg);
                         break;
