@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransfor
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -496,7 +496,7 @@ public class GremlinGroovyScriptEngineTest {
                         "map(l)." +
                         System.lineSeparator() +
                         "order().by('name',o)", bindings);
-        final Bytecode bytecode = t.getBytecode();
+        final GremlinLang bytecode = t.getGremlinLang();
         engine.eval("g.V(b).out()", bindings);
 
         final PythonTranslator translator = PythonTranslator.of("g");
@@ -529,7 +529,7 @@ public class GremlinGroovyScriptEngineTest {
 
         final Traversal.Admin t = (Traversal.Admin)
                 engine.eval("g.inject(-Infinity,NaN,xx1).is(P.eq(Infinity).or(P.eq(NaN)).or(P.eq(+Infinity)))", bindings);
-        final Bytecode bytecode = t.getBytecode();
+        final GremlinLang bytecode = t.getGremlinLang();
 
         final Map<String,Object> bytecodeBindings = bytecode.getBindings();
         assertEquals(1, bytecodeBindings.size());
@@ -561,7 +561,7 @@ public class GremlinGroovyScriptEngineTest {
 
         final Traversal.Admin t = (Traversal.Admin)
                 engine.eval("g.V().as(\"v\").call(\"tinker.degree.centrality\", xx1, __.project(\"direction\").by(__.constant(OUT))).project(\"vertex\", \"degree\").by(select(\"v\")).by()", bindings);
-        final Bytecode bytecode = t.getBytecode();
+        final GremlinLang bytecode = t.getGremlinLang();
 
         final Map<String,Object> bytecodeBindings = bytecode.getBindings();
         assertEquals(1, bytecodeBindings.size());
@@ -582,7 +582,7 @@ public class GremlinGroovyScriptEngineTest {
         // verify no Bindings bleedover
         final Traversal.Admin t2 = (Traversal.Admin)
                 engine.eval("g.inject([:])", bindings);
-        final Bytecode bytecode2 = t2.getBytecode();
+        final GremlinLang bytecode2 = t2.getGremlinLang();
 
         final Map<String,Object> bytecodeBindings2 = bytecode2.getBindings();
         assertEquals(0, bytecodeBindings2.size());

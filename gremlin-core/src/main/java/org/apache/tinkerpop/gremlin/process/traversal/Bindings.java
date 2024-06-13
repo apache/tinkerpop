@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Bindings are used to associate a variable with a value. They enable the creation of {@link Bytecode.Binding}
- * arguments in {@link Bytecode}. Use the Bindings instance when defining a binding via {@link Bindings#of(String, Object)}.
+ * Bindings are used to associate a variable with a value. They enable the creation of {@link GremlinLang.Binding}
+ * arguments in {@link GremlinLang}. Use the Bindings instance when defining a binding via {@link Bindings#of(String, Object)}.
  * For instance:
  * <p>
  * <code>

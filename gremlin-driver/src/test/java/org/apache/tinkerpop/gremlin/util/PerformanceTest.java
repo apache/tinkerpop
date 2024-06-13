@@ -132,7 +132,7 @@ class PerformanceTest {
                 final Instant start = Instant.now();
                 for (int j = 0; j < queryCount; j++) {
                     final String[] args = getArgs(POOLING_TRAVERSAL_SIZE);
-                    results.add(client.submitAsync(getProjectTraversal(g, POOLING_TRAVERSAL_SIZE, args).asAdmin().getBytecode()));
+                    results.add(client.submitAsync(getProjectTraversal(g, POOLING_TRAVERSAL_SIZE, args)));
                 }
                 for (final CompletableFuture<ResultSet> result : results) {
                     result.get().all().get();

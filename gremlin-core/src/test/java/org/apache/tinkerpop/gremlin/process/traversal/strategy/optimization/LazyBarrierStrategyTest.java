@@ -59,7 +59,7 @@ public class LazyBarrierStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(LazyBarrierStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -63,7 +63,7 @@ public class Context {
      */
     public enum RequestContentType {
         /**
-         * Contents is of type {@link Bytecode}.
+         * Contents is of type {@link GremlinLang}.
          */
         BYTECODE,
 
@@ -188,7 +188,7 @@ public class Context {
     public void setStartedResponse() { startedResponse.set(true); }
 
     private RequestContentType determineRequestContents() {
-        if (gremlinArgument instanceof Bytecode)
+        if (gremlinArgument instanceof GremlinLang)
             return RequestContentType.BYTECODE;
         else if (gremlinArgument instanceof String)
             return RequestContentType.SCRIPT;

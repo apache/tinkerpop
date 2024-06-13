@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -71,7 +71,7 @@ final class TraversalSerializersV2 {
         @Override
         public void serialize(final Traversal traversal, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            jsonGenerator.writeObject(traversal.asAdmin().getBytecode());
+            jsonGenerator.writeObject(traversal.asAdmin().getGremlinLang());
         }
 
         @Override
@@ -82,19 +82,19 @@ final class TraversalSerializersV2 {
 
     }
 
-    final static class BytecodeJacksonSerializer extends StdScalarSerializer<Bytecode> {
+    final static class BytecodeJacksonSerializer extends StdScalarSerializer<GremlinLang> {
 
         public BytecodeJacksonSerializer() {
-            super(Bytecode.class);
+            super(GremlinLang.class);
         }
 
         @Override
-        public void serialize(final Bytecode bytecode, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final GremlinLang bytecode, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
             if (bytecode.getSourceInstructions().iterator().hasNext()) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.SOURCE);
-                for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+                for (final GremlinLang.Instruction instruction : bytecode.getSourceInstructions()) {
                     jsonGenerator.writeStartArray();
                     jsonGenerator.writeString(instruction.getOperator());
                     for (final Object argument : instruction.getArguments()) {
@@ -106,7 +106,7 @@ final class TraversalSerializersV2 {
             }
             if (bytecode.getStepInstructions().iterator().hasNext()) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.STEP);
-                for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+                for (final GremlinLang.Instruction instruction : bytecode.getStepInstructions()) {
                     jsonGenerator.writeStartArray();
                     jsonGenerator.writeString(instruction.getOperator());
                     for (final Object argument : instruction.getArguments()) {
@@ -185,14 +185,14 @@ final class TraversalSerializersV2 {
 
     }
 
-    final static class BindingJacksonSerializer extends StdScalarSerializer<Bytecode.Binding> {
+    final static class BindingJacksonSerializer extends StdScalarSerializer<GremlinLang.Binding> {
 
         public BindingJacksonSerializer() {
-            super(Bytecode.Binding.class);
+            super(GremlinLang.Binding.class);
         }
 
         @Override
-        public void serialize(final Bytecode.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+        public void serialize(final GremlinLang.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField(GraphSONTokens.KEY, binding.variable());
@@ -239,15 +239,15 @@ final class TraversalSerializersV2 {
     // DESERIALIZERS //
     //////////////////
 
-    final static class BytecodeJacksonDeserializer extends StdDeserializer<Bytecode> {
+    final static class BytecodeJacksonDeserializer extends StdDeserializer<GremlinLang> {
 
         public BytecodeJacksonDeserializer() {
-            super(Bytecode.class);
+            super(GremlinLang.class);
         }
 
         @Override
-        public Bytecode deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Bytecode bytecode = new Bytecode();
+        public GremlinLang deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final GremlinLang bytecode = new GremlinLang();
 
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 final String current = jsonParser.getCurrentName();
@@ -443,14 +443,14 @@ final class TraversalSerializersV2 {
         }
     }
 
-    final static class BindingJacksonDeserializer extends StdDeserializer<Bytecode.Binding> {
+    final static class BindingJacksonDeserializer extends StdDeserializer<GremlinLang.Binding> {
 
         public BindingJacksonDeserializer() {
-            super(Bytecode.Binding.class);
+            super(GremlinLang.Binding.class);
         }
 
         @Override
-        public Bytecode.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        public GremlinLang.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             String k = null;
             Object v = null;
 
@@ -463,7 +463,7 @@ final class TraversalSerializersV2 {
                     v = deserializationContext.readValue(jsonParser, Object.class);
                 }
             }
-            return new Bytecode.Binding<>(k, v);
+            return new GremlinLang.Binding<>(k, v);
         }
 
         @Override

@@ -21,12 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
-import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -34,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -95,7 +93,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
     }
 
     @Override
-    public Script translate(final Bytecode bytecode) {
+    public Script translate(final GremlinLang bytecode) {
         return typeTranslator.apply(traversalSource, bytecode);
     }
 
@@ -188,8 +186,8 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceCardinalityValue(final Bytecode o) {
-            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+        protected Script produceCardinalityValue(final GremlinLang o) {
+            final GremlinLang.Instruction inst = o.getSourceInstructions().get(0);
             script.append("CardinalityValue." + inst.getArguments()[0] + "(");
             convertToScript(inst.getArguments()[1]);
             script.append(")");
@@ -301,9 +299,9 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
-        protected Script produceScript(final String traversalSource, final Bytecode o) {
+        protected Script produceScript(final String traversalSource, final GremlinLang o) {
             script.append(traversalSource);
-            for (final Bytecode.Instruction instruction : o.getInstructions()) {
+            for (final GremlinLang.Instruction instruction : o.getInstructions()) {
                 final String methodName = instruction.getOperator();
                 if (0 == instruction.getArguments().length) {
                     script.append(".").append(resolveSymbol(methodName)).append("()");

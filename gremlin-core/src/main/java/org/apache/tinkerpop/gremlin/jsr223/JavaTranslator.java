@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -76,17 +76,17 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     }
 
     @Override
-    public T translate(final Bytecode bytecode) {
-        if (BytecodeHelper.isGraphOperation(bytecode))
+    public T translate(final GremlinLang gremlinLang) {
+        if (BytecodeHelper.isGraphOperation(gremlinLang))
             throw new IllegalArgumentException("JavaTranslator cannot translate traversal operations");
 
         TraversalSource dynamicSource = this.traversalSource;
         Traversal.Admin<?, ?> traversal = null;
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+        for (final GremlinLang.Instruction instruction : gremlinLang.getSourceInstructions()) {
             dynamicSource = (TraversalSource) invokeMethod(dynamicSource, TraversalSource.class, instruction.getOperator(), instruction.getArguments());
         }
         boolean spawned = false;
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+        for (final GremlinLang.Instruction instruction : gremlinLang.getStepInstructions()) {
             if (!spawned) {
                 traversal = (Traversal.Admin) invokeMethod(dynamicSource, Traversal.class, instruction.getOperator(), instruction.getArguments());
                 spawned = true;
@@ -109,12 +109,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     ////
 
     private Object translateObject(final Object object) {
-        if (object instanceof Bytecode.Binding)
-            return translateObject(((Bytecode.Binding) object).value());
-        else if (object instanceof Bytecode) {
+        if (object instanceof GremlinLang.Binding)
+            return translateObject(((GremlinLang.Binding) object).value());
+        else if (object instanceof GremlinLang) {
             // source based bytecode at this stage of translation could have special meaning, but generally this is
             // going to spawn a new anonymous traversal.
-            final Bytecode bc = (Bytecode) object;
+            final GremlinLang bc = (GremlinLang) object;
             if (!bc.getSourceInstructions().isEmpty()) {
                 // currently, valid source instructions will be singly defined. would be odd to get this error. could
                 // be just bad construction from a language variant if it appears. maybe better as an assertion but
@@ -123,7 +123,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                     throw new IllegalStateException("More than one source instruction defined in bytecode");
                 }
 
-                final Bytecode.Instruction inst = bc.getSourceInstructions().get(0);
+                final GremlinLang.Instruction inst = bc.getSourceInstructions().get(0);
                 if (inst.getOperator().equals(CardinalityValueTraversal.class.getSimpleName())) {
                     return CardinalityValueTraversal.from(inst);
                 } else {
@@ -132,7 +132,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
             } else {
                 try {
                     final Traversal.Admin<?, ?> traversal = (Traversal.Admin) this.anonymousTraversalStart.invoke(null);
-                    for (final Bytecode.Instruction instruction : bc.getStepInstructions()) {
+                    for (final GremlinLang.Instruction instruction : bc.getStepInstructions()) {
                         invokeMethod(traversal, Traversal.class, instruction.getOperator(), instruction.getArguments());
                     }
                     return traversal;
