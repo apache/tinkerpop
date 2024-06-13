@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import javax.lang.model.SourceVersion;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +176,7 @@ public class GremlinLang implements Cloneable, Serializable {
                 key = String.format("_%d", paramCount.getAndIncrement());
             }
 
-            if (!key.equals(StringEscapeUtils.escapeJava(key))) {
+            if (!SourceVersion.isIdentifier(key)) {
                 throw new IllegalArgumentException(String.format("Invalid parameter name [%s].", key));
             }
 

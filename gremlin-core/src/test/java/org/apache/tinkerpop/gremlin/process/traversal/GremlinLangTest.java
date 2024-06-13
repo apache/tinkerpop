@@ -112,8 +112,18 @@ public class GremlinLangTest {
 
     public static class ParameterTests {
         @Test(expected = IllegalArgumentException.class)
-        public void shouldCheckParameterName() {
+        public void shouldCheckParameterNameDontNeedEscaping() {
             g.V(GremlinLang.Parameter.var("\"", new int[]{1, 2, 3}));
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldCheckParameterNameIsNotNumber() {
+            g.V(GremlinLang.Parameter.var("1", new int[]{1, 2, 3}));
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldCheckParameterNameIsValidIdentifier() {
+            g.V(GremlinLang.Parameter.var("1a", new int[]{1, 2, 3}));
         }
 
         @Test(expected = IllegalArgumentException.class)
