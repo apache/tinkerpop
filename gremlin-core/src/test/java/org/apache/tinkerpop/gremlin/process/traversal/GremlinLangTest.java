@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,7 +45,7 @@ import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class GremlincodeTest {
+public class GremlinLangTest {
 
     private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
@@ -123,10 +122,12 @@ public class GremlincodeTest {
 
         @Test
         public void shouldAllowToUseSameParameterTwice() {
-            final Parameter p = Parameter.var("ids", new int[]{1, 2, 3});
+            final int[] value = new int[]{1, 2, 3};
+            final Parameter p = Parameter.var("ids", value);
             final GremlinLang gremlin = g.inject(p).V(p).asAdmin().getGremlinLang();
 
             assertEquals("g.inject(ids).V(ids)", gremlin.getGremlin());
+            assertEquals(value, gremlin.getParameters().get("ids"));
         }
     }
 }
