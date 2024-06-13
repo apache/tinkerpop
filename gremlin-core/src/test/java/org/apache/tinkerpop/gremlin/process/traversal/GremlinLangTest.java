@@ -127,6 +127,11 @@ public class GremlinLangTest {
         }
 
         @Test(expected = IllegalArgumentException.class)
+        public void shouldCheckParameterNameIsNotReserved() {
+            g.V(GremlinLang.Parameter.var("_1", new int[]{1, 2, 3}));
+        }
+
+        @Test(expected = IllegalArgumentException.class)
         public void shouldNowAllowParameterNameDuplicates() {
             final GremlinLang gremlin = g.inject(Parameter.var("ids", new int[]{1, 2})).V(Parameter.var("ids", new int[]{2, 3}))
                     .asAdmin().getGremlinLang();

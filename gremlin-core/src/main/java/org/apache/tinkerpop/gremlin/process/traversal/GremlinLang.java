@@ -497,6 +497,10 @@ public class GremlinLang implements Cloneable, Serializable {
         }
 
         public static Parameter var(final String key, final Object value) {
+            if (key != null && key.startsWith("_")) {
+                throw new IllegalArgumentException(String.format("Invalid parameter name [%s]. Should not start with _.", key));
+            }
+
             return new Parameter(key, value);
         }
 
