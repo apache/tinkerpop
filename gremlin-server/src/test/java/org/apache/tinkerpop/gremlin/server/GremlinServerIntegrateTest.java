@@ -512,8 +512,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
-                    pass.set(HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode());
+                if (HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode()) {
+                    pass.set(true);
                     latch.countDown();
                 }
             });
@@ -531,8 +531,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
-                    pass.set(HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode());
+                if (HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode()) {
+                    pass.set(true);
                     latch.countDown();
                 }
             });
@@ -554,8 +554,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
-                    pass.set(HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode());
+                if (HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode()) {
+                    pass.set(true);
                     latch.countDown();
                 }
             });
@@ -573,8 +573,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
-                    pass.set(HttpResponseStatus.OK == result.getStatus().getCode() && (((int) ((List) result.getResult().getData()).get(0) == 246)));
+                if (HttpResponseStatus.OK == result.getStatus().getCode()) {
+                    pass.set((((int) result.getResult().getData().get(0) == 246)));
                     latch.countDown();
                 }
             });
@@ -595,8 +595,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
-                    pass.set(HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode());
+                if (HttpResponseStatus.BAD_REQUEST == result.getStatus().getCode()) {
+                    pass.set(true);
                     latch.countDown();
                 }
             });
