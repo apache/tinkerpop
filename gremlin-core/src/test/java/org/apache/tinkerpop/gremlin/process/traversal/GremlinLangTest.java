@@ -35,6 +35,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
@@ -105,6 +106,7 @@ public class GremlinLangTest {
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
                 {g.inject(Parameter.var("x","x")).V(Parameter.var("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
                 {g.inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
+                {g.inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject(_2)"},
         });
     }
 

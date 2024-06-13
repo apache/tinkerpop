@@ -194,14 +194,19 @@ public class GremlinLang implements Cloneable, Serializable {
         }
 
         // todo: add set handling here when will be implemented in Grammar
+        if (arg instanceof Set) {
+            return asParameter(arg);
+        }
 
         // handle all iterables  in similar way
         if (arg instanceof Iterable || arg instanceof Iterator || arg instanceof Object[] || arg.getClass().isArray()) {
             return asString(asIterator(arg));
         }
 
-        //final String paramName = String.format("_%d", paramCount.get());
-        //paramCount.set(paramCount.get() + 1);
+        return asParameter(arg);
+    }
+
+    private String asParameter(final Object arg) {
         final String paramName = String.format("_%d", paramCount.getAndIncrement());
         // todo: consider resetting paramCount when it's larger then 1_000_000
         parameters.put(paramName, arg);
