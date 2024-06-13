@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -37,7 +37,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK
  * {@link RemoteConnection} that is bound to a session.
  * <p/>
  * For users, starting a transaction with {@link #begin()} will produce a {@link TraversalSource} that can be used
- * across multiple threads sending the bytecode based requests to a remote session. It is worth noting that the session
+ * across multiple threads sending the gremlin requests to a remote session. It is worth noting that the session
  * will process these requests in a serial fashion and not in parallel. Calling {@link #commit()} or
  * {@link #rollback()} will also close the session and no additional traversal can be executed on the
  * {@link TraversalSource}. A fresh call to {@link #begin()} will be required to open a fresh session to work with.
@@ -92,7 +92,7 @@ public class DriverRemoteTransaction implements Transaction, RemoteConnection {
             // else you don't guarantee that we have the returned NO_CONTENT message in hand before proceeding
             // which could mean the transaction is still in the process of committing. not sure why iterate()
             // doesn't quite work in this context.
-            this.sessionBasedConnection.submitAsync(closeTxWith.getBytecode()).join().hasNext();
+            this.sessionBasedConnection.submitAsync(closeTxWith.getGremlinLang()).join().hasNext();
             this.sessionBasedConnection.close();
         } catch (Exception ex) {
             throw new RuntimeException(String.format(failureMsg, sessionBasedConnection.getSessionId()), ex);
@@ -168,7 +168,7 @@ public class DriverRemoteTransaction implements Transaction, RemoteConnection {
     }
 
     @Override
-    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException {
-        return sessionBasedConnection.submitAsync(bytecode);
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
+        return sessionBasedConnection.submitAsync(gremlinLang);
     }
 }

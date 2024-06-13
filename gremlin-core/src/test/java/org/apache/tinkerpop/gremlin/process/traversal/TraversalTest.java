@@ -271,8 +271,8 @@ public class TraversalTest {
         }
 
         @Override
-        public Bytecode getBytecode() {
-            return new Bytecode();
+        public GremlinLang getGremlinLang() {
+            return new GremlinLang();
         }
 
         @Override

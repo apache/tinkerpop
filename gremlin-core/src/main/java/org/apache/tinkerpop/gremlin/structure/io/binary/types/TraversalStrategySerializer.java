@@ -59,7 +59,7 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
         final Map<Object,Object> newConf = new LinkedHashMap<>(conf.size());
         conf.entrySet().forEach(entry -> {
             if (entry.getValue() instanceof Traversal)
-                newConf.put(entry.getKey(), ((Traversal) entry.getValue()).asAdmin().getBytecode());
+                newConf.put(entry.getKey(), ((Traversal) entry.getValue()).asAdmin().getGremlinLang());
             else
                 newConf.put(entry.getKey(), entry.getValue());
         });

@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
@@ -62,13 +62,10 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessageV4 requestMessage, final List<Object> objects) throws Exception {
         final String mimeType = serializer.mimeTypesSupported()[0];
-        // only GraphSON4 and GraphBinary4 recommended for serialization of Bytecode requests
-        if (requestMessage.getField("gremlin") instanceof Bytecode &&
-                !mimeType.equals(SerTokensV4.MIME_GRAPHSON_V4) &&
-                !mimeType.equals(SerTokensV4.MIME_GRAPHBINARY_V4)) {
+        if (requestMessage.getField("gremlin") instanceof GremlinLang) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
-                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: only GraphSON3 and GraphBinary recommended for serialization of Bytecode requests, but used %s",
-                    requestMessage, serializer.getClass().getName()));
+                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: GremlinLang is not intended to be send as query.",
+                    requestMessage));
         }
 
         try {

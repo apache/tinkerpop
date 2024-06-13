@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -125,14 +125,14 @@ public class Model {
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
-        addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
+        addGraphProcessEntry(new GremlinLang.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
 
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);
         bulkSet.add("josh", 2);
         addGraphProcessEntry(bulkSet, "BulkSet", "");
 
-        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
+        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getGremlinLang(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
         addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "");
         addGraphProcessEntry(Column.keys, "Column", "");
         addGraphProcessEntry(Direction.OUT, "Direction", "");

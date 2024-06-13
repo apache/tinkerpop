@@ -22,7 +22,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -69,7 +69,7 @@ public class BytecodeHelperTest {
 
     @Test
     public void shouldFindStrategy() {
-        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getBytecode(), OptionsStrategy.class);
+        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getGremlinLang(), OptionsStrategy.class);
         int counter = 0;
         while(itty.hasNext()) {
             final OptionsStrategy strategy = itty.next();
@@ -87,41 +87,41 @@ public class BytecodeHelperTest {
 
     @Test
     public void shouldNotFindStrategy() {
-        final Iterator<ReadOnlyStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getBytecode(), ReadOnlyStrategy.class);
+        final Iterator<ReadOnlyStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getGremlinLang(), ReadOnlyStrategy.class);
         assertThat(itty.hasNext(), is(false));
     }
 
     @Test
     public void shouldNotFindGremlinGroovyLambdaLanguage() {
-        final Optional<String> lambda = BytecodeHelper.getLambdaLanguage(g.V().out("knows").map(Lambda.function("it.get()")).asAdmin().getBytecode());
+        final Optional<String> lambda = BytecodeHelper.getLambdaLanguage(g.V().out("knows").map(Lambda.function("it.get()")).asAdmin().getGremlinLang());
         assertThat(lambda.isPresent(), is(true));
     }
 
     @Test
     public void shouldNotFindLambdaLanguage() {
-        final Optional<String> lambda = BytecodeHelper.getLambdaLanguage(g.V().out("knows").map(__.identity()).asAdmin().getBytecode());
+        final Optional<String> lambda = BytecodeHelper.getLambdaLanguage(g.V().out("knows").map(__.identity()).asAdmin().getGremlinLang());
         assertThat(lambda.isPresent(), is(false));
     }
 
     @Test
     public void shouldRemoveBindings() {
         final Bindings b = Bindings.instance();
-        final Bytecode bc = g.V(b.of("x", 1)).out(b.of("y", "knows")).asAdmin().getBytecode();
-        final Bytecode filteredBeforeRemoved = BytecodeHelper.filterInstructions(
-                bc, i -> Stream.of(i.getArguments()).anyMatch(o -> o instanceof Bytecode.Binding));
+        final GremlinLang bc = g.V(b.of("x", 1)).out(b.of("y", "knows")).asAdmin().getGremlinLang();
+        final GremlinLang filteredBeforeRemoved = BytecodeHelper.filterInstructions(
+                bc, i -> Stream.of(i.getArguments()).anyMatch(o -> o instanceof GremlinLang.Binding));
         assertEquals(2, filteredBeforeRemoved.getStepInstructions().size());
 
         BytecodeHelper.removeBindings(bc);
-        final Bytecode filteredAfterRemoved = BytecodeHelper.filterInstructions(
-                bc, i -> Stream.of(i.getArguments()).anyMatch(o -> o instanceof Bytecode.Binding));
+        final GremlinLang filteredAfterRemoved = BytecodeHelper.filterInstructions(
+                bc, i -> Stream.of(i.getArguments()).anyMatch(o -> o instanceof GremlinLang.Binding));
         assertEquals(0, filteredAfterRemoved.getStepInstructions().size());
     }
 
     @Test
     public void shouldDetermineOperation() {
-        assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getBytecode()), is(true));
-        assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getBytecode()), is(true));
-        assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getBytecode()), is(false));
+        assertThat(BytecodeHelper.isGraphOperation(TX_COMMIT.getGremlinLang()), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(TX_ROLLBACK.getGremlinLang()), is(true));
+        assertThat(BytecodeHelper.isGraphOperation(g.V().out("knows").asAdmin().getGremlinLang()), is(false));
     }
 
     @Test

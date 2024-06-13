@@ -70,7 +70,7 @@ public class ComputerVerificationStrategyTest {
 
     @Test
     public void shouldBeVerifiedIllegal() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
 
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ComputerVerificationStrategy.instance());

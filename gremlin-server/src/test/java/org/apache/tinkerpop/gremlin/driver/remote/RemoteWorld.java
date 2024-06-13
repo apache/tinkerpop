@@ -69,7 +69,7 @@ public abstract class RemoteWorld implements World {
 
         if (null == graphData) {
             try { // Clear data before run because tests are allowed to modify data for the empty graph.
-                client.submit("graph.clear();").all().get();
+                client.submit("g.V().drop();").all().get();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -161,6 +161,12 @@ public abstract class RemoteWorld implements World {
 
     public static class GraphBinaryRemoteWorld extends RemoteWorld {
         public GraphBinaryRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "gremlin-lang");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -321,12 +321,12 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3.DefaultRemoteTraverserSerializer()));
 
-            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3.BytecodeSerializer()));
+            add(GryoTypeReg.of(GremlinLang.class, 122, new GryoSerializersV3.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3.TextPSerializer()));
             add(GryoTypeReg.of(Text.RegexPredicate.class, 197));                                       // ***LAST ID***
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3.LambdaSerializer()));
-            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3.BindingSerializer()));
+            add(GryoTypeReg.of(GremlinLang.Binding.class, 126, new GryoSerializersV3.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
             add(GryoTypeReg.of(Scope.class, 128));
             add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));
@@ -524,12 +524,12 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ProjectedTraverser.class, 164));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV1.DefaultRemoteTraverserSerializer()));
 
-            add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV1.BytecodeSerializer()));
+            add(GryoTypeReg.of(GremlinLang.class, 122, new GryoSerializersV1.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1.TextPSerializer()));
             add(GryoTypeReg.of(Text.RegexPredicate.class, 197));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV1.LambdaSerializer()));
-            add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV1.BindingSerializer()));
+            add(GryoTypeReg.of(GremlinLang.Binding.class, 126, new GryoSerializersV1.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
             add(GryoTypeReg.of(Scope.class, 128));
             add(GryoTypeReg.of(VertexProperty.Cardinality.class, 131));

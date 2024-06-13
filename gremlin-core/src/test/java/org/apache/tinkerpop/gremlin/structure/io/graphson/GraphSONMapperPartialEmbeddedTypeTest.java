@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -89,14 +89,14 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
         // first validate the failures of TINKERPOP-1738 - prior to the jackson fix on 2.9.4 one of these would have
         // passed based on the ordering of the properties
         try {
-            mapper.readValue(bytecodeJSONFail1, Bytecode.class);
+            mapper.readValue(bytecodeJSONFail1, GremlinLang.class);
             fail("Should have thrown an error because 'bigint1value' is not an int32");
         } catch (Exception ex) {
             assertThat(ex, instanceOf(JsonMappingException.class));
         }
 
         try {
-            mapper.readValue(bytecodeJSONFail2, Bytecode.class);
+            mapper.readValue(bytecodeJSONFail2, GremlinLang.class);
             fail("Should have thrown an error because 'bigint1value' is not an int32");
         } catch (Exception ex) {
             assertThat(ex, instanceOf(JsonMappingException.class));
@@ -106,8 +106,8 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
         final String bytecodeJSON1 = "{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@type\":\"g:Int64\",\"@value\":-4294967295}]]}}";
         final String bytecodeJSON2 = "{\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@value\":-4294967295,\"@type\":\"g:Int64\"}]]},\"@type\":\"g:Bytecode\"}";
 
-        final Bytecode bytecode1 = mapper.readValue(bytecodeJSON1, Bytecode.class);
-        final Bytecode bytecode2 = mapper.readValue(bytecodeJSON2, Bytecode.class);
+        final GremlinLang bytecode1 = mapper.readValue(bytecodeJSON1, GremlinLang.class);
+        final GremlinLang bytecode2 = mapper.readValue(bytecodeJSON2, GremlinLang.class);
         assertEquals(bytecode1, bytecode2);
     }
 

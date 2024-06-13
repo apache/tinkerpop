@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * This Translator will translate {@link Bytecode} into a representation that has been stripped of any user data
+ * This Translator will translate {@link GremlinLang} into a representation that has been stripped of any user data
  * (anonymized). A default anonymizer is provided, but can be replaced with a custom anonymizer as needed. The
  * default anonymizer replaces any String, Numeric, Date, Timestamp, or UUID with a type-based token. Identical values
  * will receive the same token (e.g. if "foo" is assigned "string0" then all occurrences of "foo" will be replaced

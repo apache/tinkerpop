@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -129,59 +129,6 @@ public abstract class Client {
      * must be examined to determine the number of times that object should be presented in iteration.
      */
     public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
-    }
-
-    /**
-     * Submit a {@link Bytecode} to the server for remote execution. Results are returned as {@link Traverser}
-     * instances and are therefore bulked, meaning that to properly iterate the contents of the result each
-     * {@link Traverser#bulk()} must be examined to determine the number of times that object should be presented in
-     * iteration.
-     */
-    public ResultSet submit(final Bytecode bytecode) {
-        try {
-            return submitAsync(bytecode).get();
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
-     *
-     * @param bytecode request in the form of gremlin {@link Bytecode}
-     * @param options  for the request
-     * @see #submit(Bytecode)
-     */
-    public ResultSet submit(final Bytecode bytecode, final RequestOptions options) {
-        try {
-            return submitAsync(bytecode, options).get();
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * An asynchronous version of {@link #submit(Traversal)}. Results are returned as {@link Traverser} instances and
-     * are therefore bulked, meaning that to properly iterate the contents of the result each {@link Traverser#bulk()}
-     * must be examined to determine the number of times that object should be presented in iteration.
-     */
-    public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
-    }
-
-    /**
-     * A version of {@link #submit(Bytecode)} which provides the ability to set per-request options.
-     *
-     * @param bytecode request in the form of gremlin {@link Bytecode}
-     * @param options  for the request
-     * @see #submitAsync(Bytecode)
-     */
-    public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
         throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
     }
 
@@ -564,32 +511,6 @@ public abstract class Client {
         }
 
         @Override
-        public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode) {
-            return submitAsync(bytecode, getRequestOptions(bytecode));
-        }
-
-        @Override
-        public CompletableFuture<ResultSet> submitAsync(final Bytecode bytecode, final RequestOptions options) {
-            try {
-                // need to call buildMessage() right away to get client specific configurations, that way request specific
-                // ones can override as needed
-                final RequestMessageV4.Builder request = buildMessage(RequestMessageV4.build(bytecode));
-
-                // apply settings if they were made available
-                options.getBatchSize().ifPresent(batchSize -> request.addChunkSize(batchSize));
-                options.getTimeout().ifPresent(timeout -> request.addTimeoutMillis(timeout));
-//                options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
-                options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
-
-                return submitAsync(request.create());
-            } catch (RuntimeException re) {
-                throw re;
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        @Override
         public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
             final RequestMessageV4.Builder builder = RequestMessageV4.from(msg);
 
@@ -600,7 +521,9 @@ public abstract class Client {
 
         @Override
         public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-            return submitAsync(traversal.asAdmin().getBytecode());
+            final GremlinLang gremlincode = traversal.asAdmin().getGremlinLang();
+            gremlincode.addG(graphOrTraversalSource);
+            return submitAsync(gremlincode.getGremlin(), gremlincode.getParameters());
         }
 
         @Override

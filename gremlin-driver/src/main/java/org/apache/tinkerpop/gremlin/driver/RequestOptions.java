@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.HashMap;
@@ -30,6 +29,8 @@ import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
 
 /**
@@ -83,18 +84,25 @@ public final class RequestOptions {
         return new Builder();
     }
 
-    public static RequestOptions getRequestOptions(final Bytecode bytecode) {
-        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
+    public static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
+        final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
         final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
-            final Map<String,Object> options = optionsStrategy.getOptions();
+            final Map<String, Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_EVAL_TIMEOUT))
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
+            if (options.containsKey(ARGS_LANGUAGE))
+                builder.language((String) options.get(ARGS_LANGUAGE));
+        }
+
+        final Map<String, Object> parameters = gremlinLang.getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(builder::addParameter);
         }
         return builder.create();
     }
@@ -121,6 +129,14 @@ public final class RequestOptions {
         public Builder addParameter(final String name, final Object value) {
             if (null == parameters)
                 parameters = new HashMap<>();
+
+            if (name.equals(ARGS_G)) {
+                this.graphOrTraversalSource = (String) value;
+            }
+
+            if (name.equals(ARGS_LANGUAGE)) {
+                this.language = (String) value;
+            }
 
             parameters.put(name, value);
             return this;

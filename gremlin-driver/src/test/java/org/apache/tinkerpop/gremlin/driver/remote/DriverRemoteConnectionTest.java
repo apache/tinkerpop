@@ -41,7 +41,7 @@ public class DriverRemoteConnectionTest {
                         with(TokensV4.ARGS_BATCH_SIZE, 1000).
                         with(TokensV4.ARGS_EVAL_TIMEOUT, 100000L).
                         with(TokensV4.ARGS_USER_AGENT, "test").
-                        V().asAdmin().getBytecode());
+                        V().asAdmin().getGremlinLang());
         assertEquals(1000, options.getBatchSize().get().intValue());
         assertEquals(100000L, options.getTimeout().get().longValue());
     }
@@ -51,7 +51,7 @@ public class DriverRemoteConnectionTest {
         final RequestOptions options = getRequestOptions(
                 g.with(TokensV4.ARGS_BATCH_SIZE, 100).
                   with(TokensV4.ARGS_EVAL_TIMEOUT, 1000).
-                  V().asAdmin().getBytecode());
+                  V().asAdmin().getGremlinLang());
         assertEquals(Integer.valueOf(100), options.getBatchSize().get());
         assertEquals(Long.valueOf(1000), options.getTimeout().get());
     }
