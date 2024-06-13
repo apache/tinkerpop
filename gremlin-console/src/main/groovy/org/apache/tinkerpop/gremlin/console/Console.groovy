@@ -26,7 +26,6 @@ import org.apache.groovy.groovysh.ExitNotification
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.groovy.groovysh.InteractiveShellRunner
 import org.apache.groovy.groovysh.commands.SetCommand
-import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
 import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
@@ -103,7 +102,6 @@ class Console {
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
         groovy.register(new PluginCommand(groovy, mediator))
-        groovy.register(new BytecodeCommand(groovy, mediator))
         groovy.register(new ClsCommand(groovy, mediator))
 
         // hide output temporarily while imports execute:pin list

@@ -61,7 +61,7 @@ public class ReadOnlyStrategyTest {
 
     @Test
     public void shouldBeVerifiedIllegal() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         try {
             ReadOnlyStrategy.instance().apply(this.traversal.asAdmin());
             fail("The strategy should have found a mutating step: " + repr);

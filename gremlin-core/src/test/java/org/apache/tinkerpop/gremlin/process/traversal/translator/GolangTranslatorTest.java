@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.GraphOp;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -54,27 +54,27 @@ public class GolangTranslatorTest {
     @Test
     public void shouldTranslateOption() {
         final String gremlinAsGo = translator.translate(
-                g.V().has("person", "name", "marko").asAdmin().getBytecode()).getScript();
+                g.V().has("person", "name", "marko").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
     public void shouldTranslateCardinality() {
         final String gremlinAsGo = translator.translate(
-                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
+                g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getGremlinLang()).getScript();
         assertEquals("g.AddV(\"person\").Property(gremlingo.Cardinality.List, \"name\", \"marko\")", gremlinAsGo);
     }
 
     @Test
     public void shouldTranslateCardinalityValue() {
         assertEquals("g.Inject(gremlingo.CardinalityValue.Set(\"test\"))", translator.translate(
-                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getBytecode()).getScript());
+                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsGo = translator.translate(
-                g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getBytecode()).getScript();
+                g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getGremlinLang()).getScript();
         final String escapedSeparator = StringEscapeUtils.escapeJava(System.lineSeparator());
         final String expected = "g.AddV().Property(\"text\", \"a" + escapedSeparator + StringEscapeUtils.escapeJava("\"and\"") + escapedSeparator + "b\")";
         assertEquals(expected, gremlinAsGo);
@@ -84,7 +84,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateChildTraversals() {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
-                        where(outE()).asAdmin().getBytecode()).getScript();
+                        where(outE()).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE())", gremlinAsGo);
     }
 
@@ -92,7 +92,7 @@ public class GolangTranslatorTest {
     public void shouldTranslateGoNamedSteps() {
         final String gremlinAsGo = translator.translate(
                 g.V().has("person", "name", "marko").
-                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getBytecode()).getScript();
+                        where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getGremlinLang()).getScript();
         assertEquals("g.V().Has(\"person\", \"name\", \"marko\").Where(gremlingo.T__.OutE().Count().Is(2).And(gremlingo.T__.Not(gremlingo.T__.InE().Count().Is(3))))", gremlinAsGo);
     }
 
@@ -102,12 +102,12 @@ public class GolangTranslatorTest {
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                                 SeedStrategy.build().seed(999999).create()).
-                        V().has("name").asAdmin().getBytecode()).getScript());
+                        V().has("name").asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
     public void shouldTranslateLambdas() {
-        final Bytecode bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
+        final GremlinLang bytecode = g.withSideEffect("lengthSum", 0).withSack(1)
                 .V()
                 .filter(Lambda.predicate("x -> x.get().label() == 'person'", "gremlin-groovy"))
                 .flatMap(Lambda.function("it.get().vertices(Direction.OUT)", "gremlin-groovy"))
@@ -115,7 +115,7 @@ public class GolangTranslatorTest {
                 .sideEffect(Lambda.consumer("x -> x.sideEffects(\"lengthSum\", x.sideEffects('lengthSum') + x.get())    ", "gremlin-groovy"))
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
-                .asAdmin().getBytecode();
+                .asAdmin().getGremlinLang();
         assertEquals("g.WithSideEffect(\"lengthSum\", 0).WithSack(1).V()." +
                         "Filter(&gremlingo.Lambda{Script:\"x -> x.get().label() == 'person'\", Language:\"\"})." +
                         "FlatMap(&gremlingo.Lambda{Script:\"it.get().vertices(Direction.OUT)\", Language:\"\"})." +
@@ -129,14 +129,14 @@ public class GolangTranslatorTest {
     @Test
     public void shouldTranslateArrayOfArray() {
         assertEquals("g.Inject([]interface{}{[]interface{}{1, 2}, []interface{}{3, 4}})",
-                translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getBytecode()).getScript());
+                translator.translate(g.inject(Arrays.asList(Arrays.asList(1,2),Arrays.asList(3,4))).asAdmin().getGremlinLang()).getScript());
     }
 
     @Test
     public void shouldTranslateTx() {
-        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        String script = translator.translate(GraphOp.TX_COMMIT.getGremlinLang()).getScript();
         assertEquals("g.Tx().Commit()", script);
-        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        script = translator.translate(GraphOp.TX_ROLLBACK.getGremlinLang()).getScript();
         assertEquals("g.Tx().Rollback()", script);
     }
 }

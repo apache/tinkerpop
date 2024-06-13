@@ -21,10 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.SingleGremlinScriptEngineManager;
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -32,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import javax.script.Bindings;
@@ -74,11 +72,11 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.isRoot()) || traversal.getBytecode().isEmpty())
+        if (!(traversal.isRoot()) || traversal.getGremlinLang().isEmpty())
             return;
 
         final Traversal.Admin<?, ?> translatedTraversal;
-        final Bytecode bytecode = removeTranslationStrategy(insertBindingsForTesting(traversal.getBytecode()));
+        final GremlinLang bytecode = removeTranslationStrategy(insertBindingsForTesting(traversal.getGremlinLang()));
 
         ////////////////
         if (this.translator instanceof Translator.StepTranslator) {
@@ -110,7 +108,7 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         // traversal. we might not do this sometimes in testing if lambdas are present but still want to use
         // TranslationStrategy
         if (assertBytecode)
-            assertEquals(removeTranslationStrategy(traversal.getBytecode()), translatedTraversal.getBytecode());
+            assertEquals(removeTranslationStrategy(traversal.getGremlinLang()), translatedTraversal.getGremlinLang());
     }
 
 
@@ -119,18 +117,18 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
         return POSTS;
     }
 
-    private static final Bytecode removeTranslationStrategy(final Bytecode bytecode) {
+    private static final GremlinLang removeTranslationStrategy(final GremlinLang bytecode) {
         if (bytecode.getSourceInstructions().size() > 0)
             bytecode.getSourceInstructions().remove(0);
         return bytecode;
     }
 
-    private static final Bytecode insertBindingsForTesting(final Bytecode bytecode) {
-        final Bytecode newBytecode = new Bytecode();
-        for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
+    private static final GremlinLang insertBindingsForTesting(final GremlinLang bytecode) {
+        final GremlinLang newBytecode = new GremlinLang();
+        for (final GremlinLang.Instruction instruction : bytecode.getSourceInstructions()) {
             newBytecode.addSource(instruction.getOperator(), instruction.getArguments());
         }
-        for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
+        for (final GremlinLang.Instruction instruction : bytecode.getStepInstructions()) {
             final Object[] args = instruction.getArguments();
             final Object[] newArgs = new Object[args.length];
 
@@ -138,11 +136,11 @@ public final class TranslationStrategy extends AbstractTraversalStrategy<Travers
                 if (args[i] == null)
                     newArgs[i] = null;
                 else if (args[i].equals("knows"))
-                    newArgs[i] = new Bytecode.Binding<>("a", "knows");
+                    newArgs[i] = new GremlinLang.Binding<>("a", "knows");
                 else if (args[i].equals("created"))
-                    newArgs[i] = new Bytecode.Binding<>("b", "created");
+                    newArgs[i] = new GremlinLang.Binding<>("b", "created");
                 else if (args[i].equals(10))
-                    newArgs[i] = new Bytecode.Binding<>("c", 10);
+                    newArgs[i] = new GremlinLang.Binding<>("c", 10);
                 else
                     newArgs[i] = args[i];
             }

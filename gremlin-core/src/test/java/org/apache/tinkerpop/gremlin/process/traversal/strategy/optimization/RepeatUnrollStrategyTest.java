@@ -61,7 +61,7 @@ public class RepeatUnrollStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         final TraversalStrategies strategiesWithLazy = new DefaultTraversalStrategies();
         strategiesWithLazy.addStrategies(RepeatUnrollStrategy.instance());
         Traversal.Admin<?, ?> clonedOriginal = this.original.clone();

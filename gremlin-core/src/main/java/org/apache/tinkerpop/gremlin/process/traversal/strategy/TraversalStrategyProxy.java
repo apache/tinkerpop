@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.io.Serializable;
 
 /**
- * This class is for use with {@link Bytecode} and for serialization purposes. It is not meant for direct use with
+ * This class is for use with {@link GremlinLang} and for serialization purposes. It is not meant for direct use with
  * {@link TraversalSource#withStrategies(TraversalStrategy[])}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

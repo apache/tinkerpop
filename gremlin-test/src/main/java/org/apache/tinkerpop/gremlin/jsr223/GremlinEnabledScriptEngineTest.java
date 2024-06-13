@@ -64,7 +64,7 @@ public class GremlinEnabledScriptEngineTest {
         final Bindings bindings = new SimpleBindings();
         bindings.put("x", g);
 
-        final Traversal evald = scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
+        final Traversal evald = scriptEngine.eval(t.asAdmin().getGremlinLang(), bindings, "x");
 
         assertTraversals(t, evald);
 
@@ -85,7 +85,7 @@ public class GremlinEnabledScriptEngineTest {
         bindings.put("x", g);
         bindings.put(GremlinScriptEngine.HIDDEN_G, g);
 
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
+        scriptEngine.eval(t.asAdmin().getGremlinLang(), bindings, "x");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -101,7 +101,7 @@ public class GremlinEnabledScriptEngineTest {
         final Bindings bindings = new SimpleBindings();
         bindings.put("x", g);
 
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, GremlinScriptEngine.HIDDEN_G);
+        scriptEngine.eval(t.asAdmin().getGremlinLang(), bindings, GremlinScriptEngine.HIDDEN_G);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -117,7 +117,7 @@ public class GremlinEnabledScriptEngineTest {
         final Bindings bindings = new SimpleBindings();
         bindings.put("z", g);
 
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
+        scriptEngine.eval(t.asAdmin().getGremlinLang(), bindings, "x");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -134,7 +134,7 @@ public class GremlinEnabledScriptEngineTest {
         bindings.put("z", g);
         bindings.put("x", "invalid-binding-for-x-given-x-should-be-traversal-source");
 
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
+        scriptEngine.eval(t.asAdmin().getGremlinLang(), bindings, "x");
     }
 
     @Test

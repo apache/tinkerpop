@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
@@ -250,16 +250,16 @@ public final class GryoSerializersV3 {
         }
     }
 
-    public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
+    public final static class BytecodeSerializer implements SerializerShim<GremlinLang> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final GremlinLang bytecode) {
             writeInstructions(kryo, output, bytecode.getSourceInstructions());
             writeInstructions(kryo, output, bytecode.getStepInstructions());
         }
 
         @Override
-        public <I extends InputShim> Bytecode read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode> clazz) {
-            final Bytecode bytecode = new Bytecode();
+        public <I extends InputShim> GremlinLang read(final KryoShim<I, ?> kryo, final I input, final Class<GremlinLang> clazz) {
+            final GremlinLang bytecode = new GremlinLang();
             final int sourceInstructionCount = input.readInt();
             for (int ix = 0; ix < sourceInstructionCount; ix++) {
                 final String operator = input.readString();
@@ -280,9 +280,9 @@ public final class GryoSerializersV3 {
         }
 
         private static <O extends OutputShim> void writeInstructions(final KryoShim<?, O> kryo, final O output,
-                                                                     final List<Bytecode.Instruction> instructions) {
+                                                                     final List<GremlinLang.Instruction> instructions) {
             output.writeInt(instructions.size());
-            for (Bytecode.Instruction inst : instructions) {
+            for (GremlinLang.Instruction inst : instructions) {
                 output.writeString(inst.getOperator());
                 kryo.writeObject(output, inst.getArguments());
             }
@@ -398,18 +398,18 @@ public final class GryoSerializersV3 {
         }
     }
 
-    public final static class BindingSerializer implements SerializerShim<Bytecode.Binding> {
+    public final static class BindingSerializer implements SerializerShim<GremlinLang.Binding> {
         @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode.Binding binding) {
+        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final GremlinLang.Binding binding) {
             output.writeString(binding.variable());
             kryo.writeClassAndObject(output, binding.value());
         }
 
         @Override
-        public <I extends InputShim> Bytecode.Binding read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode.Binding> clazz) {
+        public <I extends InputShim> GremlinLang.Binding read(final KryoShim<I, ?> kryo, final I input, final Class<GremlinLang.Binding> clazz) {
             final String var = input.readString();
             final Object val = kryo.readClassAndObject(input);
-            return new Bytecode.Binding(var, val);
+            return new GremlinLang.Binding(var, val);
         }
     }
 

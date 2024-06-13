@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -100,7 +100,7 @@ public abstract class AbstractRoundTripTest {
     protected static final GraphTraversalSource g = TinkerFactory.createModern().traversal();
     @Parameterized.Parameters(name = "Type{0}")
     public static Collection input() throws Exception {
-        final Bytecode bytecode = new Bytecode();
+        final GremlinLang bytecode = new GremlinLang();
         bytecode.addStep("V");
         bytecode.addStep("tail", 3);
         bytecode.addSource(TraversalSource.Symbols.withComputer, "myComputer");
@@ -201,9 +201,9 @@ public abstract class AbstractRoundTripTest {
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
-                new Object[] {"Binding", new Bytecode.Binding<>("x", 123), null},
+                new Object[] {"Binding", new GremlinLang.Binding<>("x", 123), null},
                 new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
-                new Object[] {"Class", Bytecode.class, null},
+                new Object[] {"Class", GremlinLang.class, null},
                 new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},
                 new Object[] {"InetAddressV4", InetAddress.getByName("localhost"), null},
                 new Object[] {"InetAddressV6", InetAddress.getByName("::1"), null},
@@ -261,7 +261,7 @@ public abstract class AbstractRoundTripTest {
                 }},
                 new Object[] {"TraversalStrategySubgraph", SubgraphStrategy.build().vertices(hasLabel("person")).create(), (Consumer<TraversalStrategyProxy>) strategy -> {
                     assertEquals(SubgraphStrategy.class, strategy.getStrategyClass());
-                    assertEquals(hasLabel("person").asAdmin().getBytecode(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
+                    assertEquals(hasLabel("person").asAdmin().getGremlinLang(), strategy.getConfiguration().getProperty(SubgraphStrategy.VERTICES));
                 }},
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},

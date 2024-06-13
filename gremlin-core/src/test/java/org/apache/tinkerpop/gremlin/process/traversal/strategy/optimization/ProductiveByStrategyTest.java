@@ -70,7 +70,7 @@ public class ProductiveByStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = translator.translate(original.getGremlinLang()).getScript();
         applyProductiveByStrategy(original);
         assertEquals(repr, optimized, original);
     }

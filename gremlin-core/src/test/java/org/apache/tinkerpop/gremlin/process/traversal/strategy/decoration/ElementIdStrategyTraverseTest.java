@@ -85,7 +85,7 @@ public class ElementIdStrategyTraverseTest {
 
     @Test
     public void shouldAlterTraversalToIncludeIdWhereNecessary() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = translator.translate(traversal.getGremlinLang()).getScript();
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         strategy.apply(traversal.asAdmin());
 

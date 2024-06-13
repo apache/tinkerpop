@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -166,8 +166,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
                     put(BulkSet.class, "BulkSet");
-                    put(Bytecode.class, "Bytecode");
-                    put(Bytecode.Binding.class, "Binding");
+                    put(GremlinLang.class, "Bytecode");
+                    put(GremlinLang.Binding.class, "Binding");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
@@ -259,7 +259,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             // traversal
             addSerializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonSerializer());
             addSerializer(Traversal.class, new TraversalSerializersV3.TraversalJacksonSerializer());
-            addSerializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonSerializer());
+            addSerializer(GremlinLang.class, new TraversalSerializersV3.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
                     Column.class,
                     Direction.class,
@@ -274,7 +274,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
-            addSerializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
+            addSerializer(GremlinLang.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
             addSerializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV3.TraversalStrategyJacksonSerializer());
 
@@ -304,8 +304,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             addDeserializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonDeserializer());
-            addDeserializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonDeserializer());
+            addDeserializer(GremlinLang.class, new TraversalSerializersV3.BytecodeJacksonDeserializer());
+            addDeserializer(GremlinLang.Binding.class, new TraversalSerializersV3.BindingJacksonDeserializer());
             Stream.of(VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),
@@ -419,8 +419,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
                     put(BulkSet.class, "BulkSet");
-                    put(Bytecode.class, "Bytecode");
-                    put(Bytecode.Binding.class, "Binding");
+                    put(GremlinLang.class, "Bytecode");
+                    put(GremlinLang.Binding.class, "Binding");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
@@ -512,7 +512,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             // traversal
             addSerializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonSerializer());
             addSerializer(Traversal.class, new TraversalSerializersV3.TraversalJacksonSerializer());
-            addSerializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonSerializer());
+            addSerializer(GremlinLang.class, new TraversalSerializersV3.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
                     Column.class,
                     Direction.class,
@@ -527,7 +527,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
-            addSerializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
+            addSerializer(GremlinLang.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
             addSerializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV3.TraversalStrategyJacksonSerializer());
 
@@ -557,8 +557,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             addDeserializer(BulkSet.class, new TraversalSerializersV3.BulkSetJacksonDeserializer());
-            addDeserializer(Bytecode.class, new TraversalSerializersV3.BytecodeJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonDeserializer());
+            addDeserializer(GremlinLang.class, new TraversalSerializersV3.BytecodeJacksonDeserializer());
+            addDeserializer(GremlinLang.Binding.class, new TraversalSerializersV3.BindingJacksonDeserializer());
             Stream.of(VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),
@@ -667,8 +667,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(TraversalExplanation.class, "TraversalExplanation");
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
-                    put(Bytecode.class, "Bytecode");
-                    put(Bytecode.Binding.class, "Binding");
+                    put(GremlinLang.class, "Bytecode");
+                    put(GremlinLang.Binding.class, "Binding");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
@@ -754,7 +754,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             addSerializer(Traversal.class, new TraversalSerializersV2.TraversalJacksonSerializer());
-            addSerializer(Bytecode.class, new TraversalSerializersV2.BytecodeJacksonSerializer());
+            addSerializer(GremlinLang.class, new TraversalSerializersV2.BytecodeJacksonSerializer());
             Stream.of(VertexProperty.Cardinality.class,
                     Column.class,
                     Direction.class,
@@ -769,7 +769,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV2.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV2.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV2.LambdaJacksonSerializer());
-            addSerializer(Bytecode.Binding.class, new TraversalSerializersV2.BindingJacksonSerializer());
+            addSerializer(GremlinLang.Binding.class, new TraversalSerializersV2.BindingJacksonSerializer());
             addSerializer(Traverser.class, new TraversalSerializersV2.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV2.TraversalStrategyJacksonSerializer());
 
@@ -791,8 +791,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Double.class, new GraphSONSerializersV2.DoubleJacksonDeserializer());
 
             // traversal
-            addDeserializer(Bytecode.class, new TraversalSerializersV2.BytecodeJacksonDeserializer());
-            addDeserializer(Bytecode.Binding.class, new TraversalSerializersV2.BindingJacksonDeserializer());
+            addDeserializer(GremlinLang.class, new TraversalSerializersV2.BytecodeJacksonDeserializer());
+            addDeserializer(GremlinLang.Binding.class, new TraversalSerializersV2.BindingJacksonDeserializer());
             Stream.of(VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),

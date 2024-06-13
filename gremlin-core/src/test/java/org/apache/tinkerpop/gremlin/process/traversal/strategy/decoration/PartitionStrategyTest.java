@@ -111,7 +111,7 @@ public class PartitionStrategyTest {
 
         @Test
         public void shouldIncludeAdditionalHasStepsAndAppendPartitionOnMutatingSteps() {
-            final String repr = translator.translate(traversal.getBytecode()).getScript();
+            final String repr = translator.translate(traversal.getGremlinLang()).getScript();
             final PartitionStrategy strategy = PartitionStrategy.build()
                     .partitionKey("p").writePartition("a").readPartitions("a").create();
 

@@ -105,7 +105,7 @@ public class GroovyTranslatorTest {
                 .sack(Lambda.biFunction("{ a,b -> a + b }"))
                 .asAdmin();
 
-        final String script = translator.translate(t.getBytecode()).getScript();
+        final String script = translator.translate(t.getGremlinLang()).getScript();
         assertEquals(   "g.withSideEffect(\"lengthSum\",(int) 0).withSack((int) 1)" +
                         ".V()" +
                         ".filter({it.get().label().equals('person')})" +
@@ -316,9 +316,9 @@ public class GroovyTranslatorTest {
 
     @Test
     public void shouldTranslateTx() {
-        String script = translator.translate(GraphOp.TX_COMMIT.getBytecode()).getScript();
+        String script = translator.translate(GraphOp.TX_COMMIT.getGremlinLang()).getScript();
         assertEquals("g.tx().commit()", script);
-        script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
+        script = translator.translate(GraphOp.TX_ROLLBACK.getGremlinLang()).getScript();
         assertEquals("g.tx().rollback()", script);
     }
 

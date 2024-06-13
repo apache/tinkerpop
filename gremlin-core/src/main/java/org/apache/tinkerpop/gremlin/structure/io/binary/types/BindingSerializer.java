@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
@@ -29,20 +29,20 @@ import java.io.IOException;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class BindingSerializer extends SimpleTypeSerializer<Bytecode.Binding> {
+public class BindingSerializer extends SimpleTypeSerializer<GremlinLang.Binding> {
 
     public BindingSerializer() {
         super(DataType.BINDING);
     }
 
     @Override
-    protected Bytecode.Binding readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+    protected GremlinLang.Binding readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final String k = context.readValue(buffer, String.class, false);
-        return new Bytecode.Binding<>(k, context.read(buffer));
+        return new GremlinLang.Binding<>(k, context.read(buffer));
     }
 
     @Override
-    protected void writeValue(final Bytecode.Binding value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+    protected void writeValue(final GremlinLang.Binding value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.writeValue(value.variable(), buffer, false);
         context.write(value.value(), buffer);
     }
