@@ -859,9 +859,8 @@ Feature: Step - mergeE()
     When iterated to list
     Then the result should have a count of 2
     And the graph should return 2 for count of "g.V()"
-    And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\",1)"
+    And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
-    And the graph should return 0 for count of "g.V().has(\"weight\")"
 
   Scenario: g_mergeEXlabel_knows_out_marko_in_vadasX_optionXonMatch_sideEffectXpropertyXweight_0XX_constantXemptyXX
     Given the empty graph
@@ -883,3 +882,72 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\",1)"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
     And the graph should return 0 for count of "g.V().has(\"weight\")"
+
+  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_match
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1, xx2).
+        fold().as("m").
+        mergeE(__.select("m").limit(Scope.local,1)).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
+          option(Merge.onMatch, __.select("m").tail(Scope.local))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 6 for count of "g.V()"
+    And the graph should return 6 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().has(\"created\",\"N\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").has(\"created\",\"N\").inV().has(\"person\",\"name\",\"vadas\")"
+
+  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_create
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And the traversal of
+      """
+      g.inject(xx1, xx1, xx2).
+        fold().as("m").
+        mergeE(__.select("m").limit(Scope.local,1)).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
+          option(Merge.onMatch, __.select("m").tail(Scope.local))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 6 for count of "g.V()"
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 7 for count of "g.E().hasNot(\"created\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").hasNot(\"created\").inV().has(\"person\",\"name\",\"vadas\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").outE(\"self\").hasNot('weight').inV().has(\"person\",\"name\",\"vadas\")"

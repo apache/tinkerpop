@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Gremlin.Net.Driver;
@@ -1768,6 +1769,16 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("property", args.ToArray());
             return Wrap<TStart, TEnd>(this);
         }
+
+        /// <summary>
+        ///     Adds the property step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Property (IDictionary<object, object> map)
+        {
+            Bytecode.AddStep("property", map);
+            return Wrap<TStart, TEnd>(this);
+        }
+
 
         /// <summary>
         ///     Adds the propertyMap step to this <see cref="GraphTraversal{SType, EType}" />.

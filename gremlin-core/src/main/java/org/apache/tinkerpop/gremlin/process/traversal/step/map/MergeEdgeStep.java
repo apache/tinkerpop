@@ -34,13 +34,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
@@ -274,7 +272,10 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             edges = IteratorUtils.peek(edges, e -> {
 
                 // override current traverser with the matched Edge so that the option() traversal can operate
-                // on it properly
+                // on it properly. prior to 4.x this only worked for start steps, but now it works consistently
+                // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeE() where you
+                // could operate on the Map directly with the child traversal. from 4.x onward you will have to do
+                // something like g.inject(Map).as('a').mergeE().option(onMatch, select('a'))
                 traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
@@ -284,15 +285,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
                 onMatchMap.forEach((key, value) -> {
                     // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
                     // registry/callbacks then just set the property
-                    if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                        final EventStrategy eventStrategy =
-                                getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                        final Property<?> p = e.property(key);
-                        final Property<Object> oldValue =
-                                p.isPresent() ? eventStrategy.detach(e.property(key)) : null;
-                        final Event.EdgePropertyChangedEvent vpce = new Event.EdgePropertyChangedEvent(eventStrategy.detach(e), oldValue, value);
-                        this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
-                    }
+                    EventUtil.registerEdgePropertyChange(callbackRegistry, getTraversal(), e, key, value);
                     e.property(key, value);
                 });
 
@@ -339,11 +332,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         final Edge edge = fromV.addEdge(label, toV, properties.toArray());
 
         // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
-        if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-            final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-            final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
-            this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-        }
+        EventUtil.registerEdgeCreationWithGenericEventRegistry(callbackRegistry, getTraversal(), edge);
 
         return IteratorUtils.of(edge);
     }

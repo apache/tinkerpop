@@ -32,11 +32,11 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var id = reader.ToObject(graphsonObject.GetProperty("id"));
-            var label = graphsonObject.TryGetProperty("label", out var labelProperty)
-                ? labelProperty.GetString()
+            string label = graphsonObject.TryGetProperty("label", out var labelProperty)
+                ? labelProperty.GetString()!
                 : Vertex.DefaultLabel;
 
-            dynamic?[]? properties = null;
+            dynamic[]? properties = null;
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {

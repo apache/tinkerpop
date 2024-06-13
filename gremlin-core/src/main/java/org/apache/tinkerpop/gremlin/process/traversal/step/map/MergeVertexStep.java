@@ -30,10 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -94,9 +92,12 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
             // attach the onMatch properties
             vertices = IteratorUtils.peek(vertices, v -> {
 
-                // if this was a start step the traverser is initialized with Boolean/false, so override that with
-                // the matched Vertex so that the option() traversal can operate on it properly
-                if (isStart) traverser.set((S) v);
+                // override current traverser with the matched Vertex so that the option() traversal can operate
+                // on it properly. prior to 4.x this only worked for start steps, but now it works consistently
+                // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeV() where you
+                // could operate on the Map directly with the child traversal. from 4.x onward you will have to do
+                // something like g.inject(Map).as('a').mergeV().option(onMatch, select('a'))
+                traverser.set((S) v);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, Object> onMatchMap = materializeMap(traverser, onMatchTraversal);
@@ -115,13 +116,7 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
 
                     // trigger callbacks for eventing - in this case, it's a VertexPropertyChangedEvent. if there's no
                     // registry/callbacks then just set the property
-                    if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-                        final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-                        final Property<?> p = v.property(key);
-                        final Property<Object> oldValue = p.isPresent() ? eventStrategy.detach(v.property(key)) : null;
-                        final Event.VertexPropertyChangedEvent vpce = new Event.VertexPropertyChangedEvent(eventStrategy.detach(v), oldValue, val);
-                        this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vpce));
-                    }
+                    EventUtil.registerVertexPropertyChange(callbackRegistry, getTraversal(), v, key, val);
 
                     // try to detect proper cardinality for the key according to the graph
                     v.property(card, key, val);
@@ -164,11 +159,7 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
                 });
 
         // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
-        if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-            final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-            final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
-            this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-        }
+        EventUtil.registerVertexCreationWithGenericEventRegistry(callbackRegistry, getTraversal(), vertex);
 
         return IteratorUtils.of(vertex);
     }

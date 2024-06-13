@@ -21,9 +21,19 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremfir Master of the Pan Flute*
 
-== TinkerPop 3.7.2
+=== TinkerPop 3.7.3
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.3/CHANGELOG.asciidoc#release-3-7-3[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+== TinkerPop 3.7.2
+
+*Release Date: April 8, 2024*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.2/CHANGELOG.asciidoc#release-3-7-2[changelog] for a
 complete list of all the modifications that are part of this release.

@@ -3512,7 +3512,7 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
 [[graphson-3d0]]
 == Version 3.0
 
-Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is represented by the `application/vnd.graphbinary-v3.0`
+Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is represented by the `application/vnd.gremlin-v3.0+json`
 mime type. It was introduced as only having embedded types. It is quite similar to GraphSON 2.0 with embedded types
 and in most cases will appear compatible to the eye, however there are some critical differences. GraphSON 2.0 relied
 on JSON data types for collections like `Map` and `List`. In GraphSON 3.0, there is explicit typed support for `Map`,
@@ -3522,7 +3522,7 @@ two and for `Map` it was necessary to have the ability to return `Map` instances
 (e.g. `g.V().out().groupCount()`).
 
 As of TinkerPop 3.7.0, GraphSON 3.0 also has a typeless representation referenced by the
-`application/vnd.graphbinary-v3.0;types=false`. This format matches the format developed for 1.0.
+`application/vnd.gremlin-v3.0+json;types=false`. This format matches the format developed for 1.0.
 
 === Core
 

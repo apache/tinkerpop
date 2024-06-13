@@ -17,51 +17,17 @@
  * under the License.
  */
 
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
-import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
-import org.codehaus.groovy.control.customizers.CompilationCustomizer
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
+import org.apache.tinkerpop.gremlin.language.translator.Translator
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
-import javax.script.SimpleBindings
 import java.nio.file.Paths
-
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
-
-// getting an exception like:
-// > InvocationTargetException: javax.script.ScriptException: groovy.lang.MissingMethodException: No signature of
-// > method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.mergeE() is applicable for
-// > argument types: (String) values: [4ffdea36-4a0e-4681-acba-e76875d1b25b]
-// usually means bindings are not being extracted properly by VarAsBindingASTTransformation which typically happens
-// when a step is taking an argument that cannot properly resolve to the type required by the step itself. there are
-// special cases in that VarAsBindingASTTransformation class which might need to be adjusted. Editing the
-// GremlinGroovyScriptEngineTest#shouldProduceBindingsForVars() with the failing step and argument can typically make
-// this issue relatively easy to debug and enforce.
-//
-// getting an exception like:
-// > Ambiguous method overloading for method org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#mergeV.
-// likely requires changes to the AmbiguousMethodASTTransformation which forces a call to a particular method overload
-// and usually relates to use of null where the type isn't clear
 
 // file is overwritten on each generation
 radishGremlinFile = new File("${projectBaseDir}/gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Gherkin/Gremlin.cs")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
 gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())
-
-gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
-        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },
-        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()) }
-)
-
-translator = DotNetTranslator.of('g')
-g = traversal().withEmbedded(EmptyGraph.instance())
-bindings = new SimpleBindings()
-bindings.put('g', g)
 
 radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine('#region License\n' +
@@ -124,29 +90,27 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             '            new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
             '            {')
 
-    // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
-    // at runtime. using this approach for now as these are the only such situations encountered so far. a better
-    // solution may become necessary as testing of nulls expands.
-    def staticTranslate = [g_withoutStrategiesXCountStrategyX_V_count: "               {\"g_withoutStrategiesXCountStrategyX_V_count\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(CountStrategy)).V().Count()}}, "]
+
+    // some traversals may require a static translation if the translator can't handle them for some reason
+    def staticTranslate = [:]
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
     gremlins.each { k,v ->
-        if (staticTranslate.containsKey(k)) {
+        // skipping lambdas until we decide for sure that they are out in 4.x
+        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
+            writer.writeLine("               {\"${k}\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>()},  // skipping as it contains a lambda")
+        } else if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
             writer.write("               {\"")
             writer.write(k)
             writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
-            def collected = v.collect {
-                def t = gremlinGroovyScriptEngine.eval(it, bindings)
-                [t, t.bytecode.bindings.keySet()]
-            }
-
+            def collected = v.collect { GremlinTranslator.translate(it, Translator.DOTNET) }
             def gremlinItty = collected.iterator()
             while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()[0]
+                def t = gremlinItty.next()
                 writer.write("(g,p) =>")
-                writer.write(translator.translate(t.bytecode).script.
+                writer.write(t.getTranslated().
                         replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
                         replaceAll("v([0-9]+)", "(Vertex) p[\"v\$1\"]").
                         replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").

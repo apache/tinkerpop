@@ -20,6 +20,7 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-require('./StringSerializerTestTemplate')({ ID: 0x06, name: 'Class' });
+import StringSerializerTestTemplate from './StringSerializerTestTemplate.js';
+
+StringSerializerTestTemplate({ ID: 0x06, name: 'Class' });

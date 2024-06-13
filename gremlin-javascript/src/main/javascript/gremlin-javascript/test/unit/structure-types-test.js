@@ -20,10 +20,9 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const { assert } = require('chai');
-const { VertexProperty, Property, Vertex, Edge, Path } = require('../../lib/structure/graph');
+import { assert } from 'chai';
+import { VertexProperty, Property, Vertex, Edge, Path } from '../../lib/structure/graph.js';
 
 describe('Edge', () => {
   describe('#toString()', () => {

@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -69,7 +70,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     private Parameters parameters = new Parameters();
 
-    private boolean usesPartitionStrategy;
+    protected boolean usesPartitionStrategy;
 
     public MergeStep(final Traversal.Admin traversal, final boolean isStart) {
         this(traversal, isStart, new IdentityTraversal<>());
@@ -171,6 +172,10 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public Parameters getParameters() {
         return this.parameters;
+    }
+
+    public boolean isUsingPartitionStrategy() {
+        return usesPartitionStrategy;
     }
 
     @Override

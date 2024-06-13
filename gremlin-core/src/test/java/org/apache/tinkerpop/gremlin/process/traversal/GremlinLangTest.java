@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,13 +49,17 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class GremlinLangTest {
 
-    private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
+    private static GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
     @Parameterized.Parameter(value = 0)
     public Traversal traversal;
 
     @Parameterized.Parameter(value = 1)
     public String expected;
+
+    static {
+        g.getGremlinLang().reset();
+    }
 
     @Test
     public void doTest() {

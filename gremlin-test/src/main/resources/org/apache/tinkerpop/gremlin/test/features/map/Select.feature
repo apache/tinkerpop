@@ -901,12 +901,13 @@ Feature: Step - select()
       | m[{"a":["a1","b1","a1"]}] |
       | m[{"a":["a2","b2","a2"]}] |
       | m[{"a":["a3","b3","a3"]}] |
-
-  Scenario: g_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
+@TestTag
+  @StepClassIntegrated
+  Scenario: g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
     Given the modern graph
     And the traversal of
       """
-      g.V().as("label").aggregate(local,"x").select("x").select("label")
+      g.withoutStrategies(LazyBarrierStrategy).V().as("label").aggregate(local,"x").select("x").select("label")
       """
     When iterated to list
     Then the result should be unordered

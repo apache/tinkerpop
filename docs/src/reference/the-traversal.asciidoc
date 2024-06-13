@@ -1361,7 +1361,7 @@ g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dat
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd()++[`dateAdd()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd(org.apache.tinkerpop.gremlin.process.traversal.DT,int)++[`dateAdd(DT,int)`]
 
 [[dateDiff-step]]
 === DateDiff Step
@@ -1378,7 +1378,8 @@ g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff()++[`dateDiff()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
 
 [[dedup-step]]
 === Dedup Step
@@ -2776,15 +2777,17 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[merge-step]]
 === Merge Step
 
-The `merge()`-step (*map*) merges the elements of the incoming list traverser and the provided list argument into one
-list. This is also known as the union operation. This step only expects list data (array or Iterable) and will throw
-an `IllegalArgumentException` if any other type is encountered (including `null`). This differs from the `combine()`-step
-in that it doesn't allow duplicates.
+The `merge()`-step (*map*) combines collections like lists and maps. It expects an incoming traverser to contain a
+collection objection and will combine that object with its specified argument which must be of a matching type. This is
+also known as the union operation. If the incoming traverser or its associated argument do not meet the expected type,
+the step will throw an `IllegalArgumentException` if any other type is encountered (including `null`). This step differs
+from the `combine()`-step in that it doesn't allow duplicates.
 
 [gremlin-groovy,modern]
 ----
 g.V().values("name").fold().merge(["james","jen","marko","vadas"])
 g.V().values("name").fold().merge(__.constant("james").fold())
+g.V().hasLabel('software').elementMap().merge([year:2009])
 ----
 
 *Additional References*
@@ -3098,15 +3101,15 @@ contains additional information that will be applied if an existing vertex is fo
 
 [gremlin-groovy]
 ----
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1)). <1>
-  option(Merge.onCreate,range(local,1,2)). <2>
-  option(Merge.onMatch,tail(local)) <3>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1)). <1>
+  option(Merge.onCreate, select('m').range(local,1,2)). <2>
+  option(Merge.onMatch, select('m').tail(local)) <3>
 g.V(400).valueMap().with(WithOptions.tokens)
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1)).
-  option(Merge.onCreate,range(local,1,2)).
-  option(Merge.onMatch,tail(local))  <4>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1)).
+  option(Merge.onCreate, select('m').range(local,1,2)).
+  option(Merge.onMatch, select('m').tail(local))  <4>
 g.V(400).valueMap().with(WithOptions.tokens)  <5>
 ----
 
@@ -5839,7 +5842,7 @@ With `SeedStrategy` in place, however, the same order is applied each time:
 
 [gremlin-groovy,modern]
 ----
-seedStrategy = new SeedStrategy(999998L)
+seedStrategy = SeedStrategy.build().seed(999998L).create()
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)

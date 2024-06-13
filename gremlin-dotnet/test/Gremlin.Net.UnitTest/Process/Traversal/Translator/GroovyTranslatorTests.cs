@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Process.Traversal.Step.Util;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Gremlin.Net.Process.Traversal.Translator;
@@ -36,24 +35,24 @@ namespace Gremlin.Net.UnitTest.Process.Traversal.Translator;
 public class GroovyTranslatorTests
 {
     private readonly GraphTraversalSource _g = AnonymousTraversalSource.Traversal().With(null);
-    
+
     [Fact]
     public void ShouldTranslateStepsWithSingleArguments()
     {
         var translator = GroovyTranslator.Of("g");
 
         var translated = translator.Translate(_g.V().Values<string>("name").Bytecode);
-        
+
         Assert.Equal("g.V().values('name')", translated);
     }
-    
+
     [Fact]
     public void ShouldTranslateStepsWithMultipleArguments()
     {
         var translator = GroovyTranslator.Of("g");
 
         var translated = translator.Translate(_g.V().Values<string>("name", "age").Bytecode);
-        
+
         Assert.Equal("g.V().values('name', 'age')", translated);
     }
 
@@ -62,7 +61,7 @@ public class GroovyTranslatorTests
     {
         AssertTranslation("null", null);
     }
-    
+
     [Theory]
     [InlineData("3, 5", 3, 5)]
     [InlineData("3.2, 5.1", 3.2, 5.1)]
@@ -79,7 +78,7 @@ public class GroovyTranslatorTests
     {
         AssertTranslation("new Date(122, 11, 30, 12, 0, 1)", DateTimeOffset.Parse("2022-12-30T12:00:01Z"));
     }
-    
+
     [Fact]
     public void ShouldTranslateDateTimeArgument()
     {
@@ -115,25 +114,25 @@ public class GroovyTranslatorTests
     {
         AssertTranslation("Column.keys", Column.Keys);
     }
-    
+
     [Fact]
     public void ShouldTranslateDirection()
     {
         AssertTranslation("Direction.BOTH", Direction.Both);
     }
-    
+
     [Fact]
     public void ShouldTranslateOrder()
     {
         AssertTranslation("Order.desc", Order.Desc);
     }
-    
+
     [Fact]
     public void ShouldTranslatePop()
     {
         AssertTranslation("Pop.last", Pop.Last);
     }
-    
+
     [Fact]
     public void ShouldTranslateScope()
     {
@@ -151,14 +150,14 @@ public class GroovyTranslatorTests
     {
         AssertTranslation("P.between([20, 30])", P.Between(20, 30));
     }
-    
+
     [Fact]
     public void ShouldTranslateValueMapOptions()
     {
         AssertTraversalTranslation("g.V().valueMap().with(WithOptions.tokens, WithOptions.all).V()",
             _g.V().ValueMap<object, object>().With(WithOptions.Tokens, WithOptions.All).V());
     }
-    
+
     [Fact]
     public void ShouldTranslateIndexerOptions()
     {
@@ -172,7 +171,7 @@ public class GroovyTranslatorTests
         AssertTraversalTranslation("g.withStrategies(new OptionsStrategy('~tinkerpop.valueMap.tokens': true)).V()",
             _g.With(WithOptions.Tokens).V());
     }
-    
+
     [Fact]
     public void TranslationTest()
     {
@@ -420,6 +419,10 @@ public class GroovyTranslatorTests
             { _g.V().Has("runways", P.Inside(3, 5)), "g.V().has('runways', P.inside([3, 5]))" },
             { _g.V("44").OutE().ElementMap<object>(), "g.V('44').outE().elementMap()" },
             { _g.V("44").ValueMap<object, object>().By(__.Unfold<object>()), "g.V('44').valueMap().by(__.unfold())" },
+            {
+                _g.V().Property(new Dictionary<object, object> { { "name", "test" }, { "age", 30 } }),
+                "g.V().property(['name': 'test', 'age': 30])"
+            },
             { _g.V().E("1"), "g.V().E('1')" },
 
             // TODO: Support WithOptions
@@ -455,7 +458,8 @@ public class GroovyTranslatorTests
                 "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), edges: __.hasLabel('route'))).V().count()"
             },
             {
-                _g.WithStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.Has("region", "US-TX"), checkAdjacentVertices: true)).V()
+                _g.WithStrategies(new ReadOnlyStrategy(),
+                        new SubgraphStrategy(vertices: __.Has("region", "US-TX"), checkAdjacentVertices: true)).V()
                     .Count(),
                 "g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy(vertices: __.has('region', 'US-TX'), checkAdjacentVertices: true)).V().count()"
             },
@@ -490,13 +494,13 @@ public class GroovyTranslatorTests
     {
         AssertTraversalTranslation($"g.inject({expectedTranslation})", _g.Inject(objs));
     }
-    
+
     private static void AssertTraversalTranslation(string expectedTranslation, ITraversal traversal)
     {
         var translator = GroovyTranslator.Of("g");
-        
+
         var translated = translator.Translate(traversal);
-        
+
         Assert.Equal(expectedTranslation, translated);
     }
 }

@@ -41,7 +41,6 @@ import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
 
-
 /**
  * A {@link RemoteConnection} implementation for Gremlin Server. Each {@code DriverServerConnection} is bound to one
  * graph instance hosted in Gremlin Server.

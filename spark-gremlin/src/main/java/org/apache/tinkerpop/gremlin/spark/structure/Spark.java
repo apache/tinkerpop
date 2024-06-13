@@ -43,12 +43,17 @@ public class Spark {
     private static SparkContext CONTEXT;
     private static final Map<String, RDD<?>> NAME_TO_RDD = new ConcurrentHashMap<>();
 
+    public static final String DEFAULT_APP_NAME = "Apache TinkerPop's Spark-Gremlin";
+
     private Spark() {
     }
 
     public static SparkContext create(final SparkConf sparkConf) {
         if (isContextNullOrStopped()) {
-            sparkConf.setAppName("Apache TinkerPop's Spark-Gremlin");
+            // Set the default app name if it is not specified
+            if (sparkConf.get("spark.app.name", DEFAULT_APP_NAME).equals(DEFAULT_APP_NAME)) {
+                sparkConf.setAppName(DEFAULT_APP_NAME);
+            }
             CONTEXT = SparkContext.getOrCreate(sparkConf);
         }
         return CONTEXT;

@@ -38,7 +38,7 @@ complete list of all the modifications that are part of this release.
 ==== Runtime Version Upgrades
 
 `gremlin-javascript` and `gremlint` have upgraded from Node 10 to Node 16 as Node 10 has passed end of life.
-`gremlin-go` has upgraded from Go 1.17 to Go 1.20 as Go 1.20 has passed end of life.
+`gremlin-go` has upgraded from Go 1.17 to Go 1.20 as Go 1.17 has passed end of life.
 
 ==== GraphSON max token lengths
 

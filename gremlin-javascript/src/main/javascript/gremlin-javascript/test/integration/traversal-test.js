@@ -20,19 +20,15 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const Mocha = require('mocha');
-const assert = require('assert');
-const { AssertionError } = require('assert');
-const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
-const { Vertex } = require('../../lib/structure/graph');
-const { traversal } = require('../../lib/process/anonymous-traversal');
-const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
-const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,
-        ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
-const Bytecode = require('../../lib/process/bytecode');
-const helper = require('../helper');
+import assert from 'assert';
+import { AssertionError } from 'assert';
+import { Vertex } from '../../lib/structure/graph.js';
+import anon from '../../lib/process/anonymous-traversal.js';
+import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
+import { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } from '../../lib/process/traversal-strategy.js';
+import Bytecode from '../../lib/process/bytecode.js';
+import { getConnection, getDriverRemoteConnection } from '../helper.js';
 const __ = statics;
 
 let connection;
@@ -68,7 +64,7 @@ function aged(age) {
 
 describe('Traversal', function () {
   before(function () {
-    connection = helper.getConnection('gmodern');
+    connection = getConnection('gmodern');
     return connection.open();
   });
   after(function () {
@@ -76,7 +72,7 @@ describe('Traversal', function () {
   });
   describe("#construct", function () {
     it('should not hang if server not present', function() {
-      const g = traversal().with_(helper.getDriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
+      const g = anon.traversal().with_(getDriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
       return g.V().toList().then(function() {
         assert.fail("there is no server so an error should have occurred");
       }).catch(function(err) {
@@ -87,7 +83,7 @@ describe('Traversal', function () {
   });
   describe('#toList()', function () {
     it('should submit the traversal and return a list', function () {
-      var g = traversal().with_(connection);
+      var g = anon.traversal().with_(connection);
       return g.V().toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
@@ -97,7 +93,7 @@ describe('Traversal', function () {
   });
   describe('#clone()', function () {
     it('should reset a traversal when cloned', function () {
-      var g = traversal().with_(connection);
+      var g = anon.traversal().with_(connection);
       var t = g.V().count();
       return t.next().then(function (item1) {
         assert.ok(item1);
@@ -111,7 +107,7 @@ describe('Traversal', function () {
   });
   describe('#next()', function () {
     it('should submit the traversal and return an iterator', function () {
-      var g = traversal().with_(connection);
+      var g = anon.traversal().with_(connection);
       var t = g.V().count();
       return t.hasNext()
         .then(function (more) {
@@ -131,7 +127,7 @@ describe('Traversal', function () {
   });
   describe('lambdas', function() {
     it('should handle 1-arg lambdas', function() {
-      const g = traversal().with_(connection);
+      const g = anon.traversal().with_(connection);
       return g.V().has('person','name','marko').values('name').map(() => "it.get()[1]").toList().then(function (s) {
         assert.ok(s);
         assert.strictEqual(s[0], 'a');
@@ -140,7 +136,7 @@ describe('Traversal', function () {
   });
   describe('dsl', function() {
     it('should expose DSL methods', function() {
-      const g = traversal(SocialTraversalSource).with_(connection);
+      const g = anon.traversal(SocialTraversalSource).with_(connection);
       return g.person('marko').aged(29).values('name').toList().then(function (list) {
           assert.ok(list);
           assert.strictEqual(list.length, 1);
@@ -149,7 +145,7 @@ describe('Traversal', function () {
     });
 
     it('should expose anonymous DSL methods', function() {
-      const g = traversal(SocialTraversalSource).with_(connection);
+      const g = anon.traversal(SocialTraversalSource).with_(connection);
       return g.person('marko').filter(aged(29)).values('name').toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
@@ -159,7 +155,7 @@ describe('Traversal', function () {
   });
   describe("more complex traversals", function() {
     it('should return paths of value maps', function() {
-      const g = traversal().with_(connection);
+      const g = anon.traversal().with_(connection);
       return g.V(1).out().order().in_().order().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
@@ -171,7 +167,7 @@ describe('Traversal', function () {
   });
   describe("should allow TraversalStrategy definition", function() {
     it('should allow SubgraphStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(
+      const g = anon.traversal().with_(connection).withStrategies(
           new SubgraphStrategy({vertices:__.hasLabel("person"), edges:__.hasLabel("created")}));
       g.V().count().next().then(function (item1) {
         assert.ok(item1);
@@ -191,15 +187,15 @@ describe('Traversal', function () {
       }, (err) => assert.fail("tanked: " + err));
     });
     it('should allow ReadOnlyStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(new ReadOnlyStrategy());
+      const g = anon.traversal().with_(connection).withStrategies(new ReadOnlyStrategy());
       return g.addV().iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
     });
     it('should allow ReservedKeysVerificationStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(new ReservedKeysVerificationStrategy(false, true));
+      const g = anon.traversal().with_(connection).withStrategies(new ReservedKeysVerificationStrategy(false, true));
       return g.addV().property("id", "please-don't-use-id").iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
     });
     it('should allow EdgeLabelVerificationStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(new EdgeLabelVerificationStrategy(false, true));
+      const g = anon.traversal().with_(connection).withStrategies(new EdgeLabelVerificationStrategy(false, true));
       g.V().outE("created", "knows").count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 6);
@@ -207,11 +203,11 @@ describe('Traversal', function () {
       return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
     it('should allow with_(evaluationTimeout,10)', function() {
-      const g = traversal().with_(connection).with_('x').with_('evaluationTimeout', 10);
+      const g = anon.traversal().with_(connection).with_('x').with_('evaluationTimeout', 10);
       return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 598));
     });
     it('should allow SeedStrategy', function () {
-      const g = traversal().with_(connection).withStrategies(new SeedStrategy({seed: 999999}));
+      const g = anon.traversal().with_(connection).withStrategies(new SeedStrategy({seed: 999999}));
       return g.V().coin(0.4).count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 1);
@@ -220,7 +216,7 @@ describe('Traversal', function () {
   });
   describe("should handle tx errors if graph not support tx", function() {
     it('should throw exception on commit if graph not support tx', async function() {
-      const g = traversal().withRemote(connection);
+      const g = anon.traversal().withRemote(connection);
       const tx = g.tx();
       const gtx = tx.begin();
       const result = await g.V().count().next();
@@ -233,7 +229,7 @@ describe('Traversal', function () {
       }
     });
     it('should throw exception on rollback if graph not support tx', async function() {
-      const g = traversal().withRemote(connection);
+      const g = anon.traversal().withRemote(connection);
       const tx = g.tx();
       tx.begin();
       try {
@@ -246,17 +242,17 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      txConnection = helper.getConnection('gtx');
+      txConnection = getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      const g = traversal().with_(txConnection);
+      const g = anon.traversal().with_(txConnection);
       return g.V().drop().iterate().then(() => {
         return txConnection.close()
       });
     });
     it('should commit a simple transaction', async function () {
-      const g = traversal().with_(txConnection);
+      const g = anon.traversal().with_(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
       await Promise.all([
@@ -285,17 +281,17 @@ describe('Traversal', function () {
   describe('support remote transactions - rollback', function() {
     before(function () {
 
-      txConnection = helper.getConnection('gtx');
+      txConnection = getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      const g = traversal().with_(txConnection);
+      const g = anon.traversal().with_(txConnection);
       return g.V().drop().iterate().then(() => {
         return txConnection.close()
       });
     });
     it('should rollback a simple transaction', async function() {
-      const g = traversal().with_(txConnection);
+      const g = anon.traversal().with_(txConnection);
       const tx = g.tx();
       const gtx = tx.begin();
       await Promise.all([

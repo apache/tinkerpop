@@ -95,4 +95,12 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     public String toString() {
         return StringFactory.stepString(this);
     }
+
+    public Date getValue() {
+        return this.value;
+    }
+
+    public Traversal.Admin<S, Date> getDateTraversal() {
+        return this.dateTraversal;
+    }
 }

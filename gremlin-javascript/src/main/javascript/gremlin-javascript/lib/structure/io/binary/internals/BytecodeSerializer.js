@@ -20,20 +20,19 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const Bytecode = require('../../../../process/bytecode');
-const t = require('../../../../process/traversal');
+import { Buffer } from 'buffer';
+import Bytecode from '../../../../process/bytecode.js';
+import { Traversal } from '../../../../process/traversal.js';
 
-module.exports = class BytecodeSerializer {
+export default class BytecodeSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.BYTECODE] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof Bytecode || value instanceof t.Traversal;
+    return value instanceof Bytecode || value instanceof Traversal;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -46,7 +45,7 @@ module.exports = class BytecodeSerializer {
       return Buffer.from([...steps_length, ...sources_length]);
     }
 
-    if (item instanceof t.Traversal) {
+    if (item instanceof Traversal) {
       item = item.getBytecode();
     }
 
@@ -247,4 +246,4 @@ module.exports = class BytecodeSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

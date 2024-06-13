@@ -60,6 +60,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// The GLV suite does not test against a graph that has null property values enabled.
         /// </summary>
-        NullPropertyValuesNotSupportedOnTestGraph
+        NullPropertyValuesNotSupportedOnTestGraph,
+
+        /// <summary>
+        /// Tests with lambdas can't be translated. This should be removed once lambdas are completely dropped.
+        /// </summary>
+        LambdasNotTranslated
     }
 }

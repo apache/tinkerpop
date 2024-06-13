@@ -18,12 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
 

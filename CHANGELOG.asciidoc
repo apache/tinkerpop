@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
+* Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Added integer overflow checks for `sum()`.
 * Gremlin Server only supports instantiation of `authentication.authenticationHandler` with three-arg constructor.
 * Removed previously deprecated two-arg constructors for `authentication.authenticationHandler` implementations.
@@ -35,19 +36,62 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
+* Made `mergeE()` and `mergeV()` consistent in their use as a start step and as mid-traversal by always promoting the currently created or matched `Element` to the `onCreate` or `onMatch` child traversal.
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Added TypeScript & ECMAScript module support.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
+[[release-3-7-3]]
+=== TinkerPop 3.7.3 (NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-6-8, 3.6.8>>.
+
+* Refactored mutation events registration by moving reusable code from relevant steps to `EventUtil`
+* Open `NoOpBarrierStep` for extensibility (removed `final` keyword)
+* Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
+* Allow specifying a customized Spark app name
+
 [[release-3-7-2]]
-=== TinkerPop 3.7.2 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.2 (April 8, 2024)
+
+This release also includes changes from <<release-3-6-7, 3.6.7>>.
 
 * Deprecated `ltrim()` and `rTrim()` in favor of `l_trim()` and `r_trim` in Python.
 * Fixed bug in `onCreate` for `mergeV()` where use of the `Cardinality` functions was not properly handled.
+* Fixed multiple concurrent initially requests caused authentication to fail.
+
+==== Bugs
+
+* TINKERPOP-2132 Authentication when using multiple threads fails
+* TINKERPOP-2359 onShutDown not being called when docker container stopped
+* TINKERPOP-2913 Ensure that if tx.commit() is called remotely it does not hang for graphs without transactions
+* TINKERPOP-3012 Wrong hashCode implementation for DetachedVertexPropert
+* TINKERPOP-3022 JavaTranslator failing for has(String, null)
+* TINKERPOP-3025 l_trim() and r_trim() missing in python
+* TINKERPOP-3026 checkAdjacentVertices is misconfigured for python in SubgraphStrategy
+* TINKERPOP-3027 Pick.any should be any_()
+* TINKERPOP-3029 Gremlin.Net: Traversal enumeration fails on .NET 8
+* TINKERPOP-3031 Bad translation for g.tx()
+* TINKERPOP-3039 Java driver won't propagate with args when using aliased client directly
+* TINKERPOP-3049 onCreate for mergeV() doesn't handle Cardinality functions
+* TINKERPOP-3054 RequestId serialization broken in Python GLV
+* TINKERPOP-3056 mergeE is updating vertices in certain conditions
+* TINKERPOP-3061 Concurrent queries will break authentication on javascript driver
+
+==== Improvements
+
+* TINKERPOP-2456 Add missing tests for queries
+* TINKERPOP-2872 Inconsistency in comparing Elements in JavaScript tests
+* TINKERPOP-2995 Create Sample Applications in each GLV
+* TINKERPOP-3020 Incorrect tests
+* TINKERPOP-3021 Publish ARM64 Gremlin Console Images
+* TINKERPOP-3030 Update to .NET 8
+* TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-7-1]]
 === TinkerPop 3.7.1 (November 20, 2023)
@@ -301,8 +345,13 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
+[[release-3-6-8]]
+=== TinkerPop 3.6.8 (NOT OFFICIALLY RELEASED YET)
+
+* Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
+
 [[release-3-6-7]]
-=== TinkerPop 3.6.7 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.6.7 (April 8, 2024)
 
 * Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
 * Fixed message requestId serialization in `gremlin-python`.
@@ -310,14 +359,38 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in bytecode translation of `g.tx().commit()` and `g.tx().rollback()` in all languages.
 * Improved error message from `JavaTranslator` by including exception source.
 * Added missing `short` serialization (`gx:Int16`) to GraphSONV2 and GraphSONV3 in `gremlin-python`.
-* Added tests for error handling for GLV's if tx.commit() is called remotely for graphs without transactions support.
+* Added tests for error handling for GLV's if `tx.commit()` is called remotely for graphs without transactions support.
 * Introduced multi-architecture AMD64/ARM64 docker images for gremlin-console.
 * Fixed bug in `JavaTranslator` where `has(String, null)` could call `has(String, Traversal)` to generate an error.
 * Fixed issue where server errors weren't being properly parsed when sending bytecode over HTTP.
-* Improved bulkset contains check for elements if all elements in bulkset are of the same type.
+* Improved `Bulkset` contains check for elements if all elements in `Bulkset` are of the same type.
 * Fixed bug in `EarlyLimitStrategy` which was too aggressive when promoting `limit()` before `map()`.
-* Fixed bug in mid-traversal `mergeE()` where mutations in `sideEffect()` were being applied to the current traverser rather than a `onMatch` edge.
+* Prevented mid-traversal `mergeE()` and `mergeV()` from operating on an incoming `Traverser` that contains an `Element`.
 * Improved performance of the application of `FilterRankingStrategy` for large traversals with deeply nested traversals by improving the cache operation.
+* Updated aliased client to pass along options via `with()` when submitting traversals.
+* Upgraded `gremlin-go` to Go 1.21.
+* Upgraded `gremlin-javascript` and `gremlint` to Node 18.17.0.
+* Allowed public access for `serviceName` and `mergedParams` in `CallStep`, and checks on `PartitionStrategy` usage in `MergeStep`.
+
+==== Bugs
+
+* TINKERPOP-2359 onShutDown not being called when docker container stopped
+* TINKERPOP-2913 Ensure that if tx.commit() is called remotely it does not hang for graphs without transactions
+* TINKERPOP-3022 JavaTranslator failing for has(String, null)
+* TINKERPOP-3027 Pick.any should be any_()
+* TINKERPOP-3029 Gremlin.Net: Traversal enumeration fails on .NET 8
+* TINKERPOP-3031 Bad translation for g.tx()
+* TINKERPOP-3039 Java driver won't propagate with args when using aliased client directly
+* TINKERPOP-3045 EarlyLimitStrategy is too aggresive to promote Limit and thus causing incorrect results
+* TINKERPOP-3054 RequestId serialization broken in Python GLV
+* TINKERPOP-3056 mergeE is updating vertices in certain conditions
+
+==== Improvements
+
+* TINKERPOP-2995 Create Sample Applications in each GLV
+* TINKERPOP-3021 Publish ARM64 Gremlin Console Images
+* TINKERPOP-3030 Update to .NET 8
+* TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-6-6]]
 === TinkerPop 3.6.6 (November 20, 2023)

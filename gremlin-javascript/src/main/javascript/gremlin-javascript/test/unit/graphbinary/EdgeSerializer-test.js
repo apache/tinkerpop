@@ -20,13 +20,12 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { edgeSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
-const g = require('../../../lib/structure/graph');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { edgeSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
+import { Edge, Vertex } from '../../../lib/structure/graph.js';
 
 const { from, concat } = Buffer;
 
@@ -48,7 +47,7 @@ describe('GraphBinary.EdgeSerializer', () => {
         0xFE,0x01, // parent
         0xFE,0x01, // properties
       ],
-      av:new g.Edge('', new g.Vertex('','',null), '', new g.Vertex('','',null), null),
+      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), null),
     },
     { v:null, fq:1, b:[0x0D,0x01] },
     { v:null, fq:0,
@@ -62,10 +61,10 @@ describe('GraphBinary.EdgeSerializer', () => {
         0xFE,0x01, // parent
         0xFE,0x01, // properties
       ],
-      av:new g.Edge('', new g.Vertex('','',null), '', new g.Vertex('','',null), null),
+      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), null),
     },
 
-    { v:new g.Edge('A', new g.Vertex('B','Person',null), 'has', new g.Vertex('C','Pet',null), null),
+    { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), null),
       b:[
         0x03,0x00, 0x00,0x00,0x00,0x01, 0x41, // id
         0x00,0x00,0x00,0x03, ...from('has'), // label
@@ -101,7 +100,7 @@ describe('GraphBinary.EdgeSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -117,7 +116,7 @@ describe('GraphBinary.EdgeSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -154,15 +153,15 @@ describe('GraphBinary.EdgeSerializer', () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: new t.P(),         e: false },
+      { v: new Traverser(), e: false },
+      { v: new P(),         e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
-      { v: [new g.Vertex()],  e: false },
-      { v: new g.Vertex(),    e: false },
-      { v: [new g.Edge()],    e: false },
-      { v: new g.Edge(),      e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: [new Vertex()],  e: false },
+      { v: new Vertex(),    e: false },
+      { v: [new Edge()],    e: false },
+      { v: new Edge(),      e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( edgeSerializer.canBeUsedFor(v), e )
     ))
   );

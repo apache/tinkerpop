@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -137,11 +137,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
-        if (callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-            final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-            final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(eventStrategy.detach(edge));
-            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-        }
+        EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
         return edge;
     }
 

@@ -17,19 +17,17 @@
  *  under the License.
  */
 
-'use strict';
-
-const assert = require('assert');
-const helper = require('../helper');
-const {getUserAgent} = require("../../lib/utils");
+import assert from 'assert';
+import { getGremlinSocketServerClient, getGremlinSocketServerSettings, getGremlinSocketServerClientNoUserAgent } from '../helper.js';
+import { getUserAgent } from "../../lib/utils.js";
 
 let client;
 let settings;
 
 describe('Client', function () {
     before(function () {
-        client = helper.getGremlinSocketServerClient('gmodern');
-        settings = helper.getGremlinSocketServerSettings();
+        client = getGremlinSocketServerClient('gmodern');
+        settings = getGremlinSocketServerSettings();
         return client.open();
     });
     after(function () {
@@ -55,7 +53,7 @@ describe('Client', function () {
             assert.strictEqual(result.first(), await getUserAgent());
         });
         it('should not include user agent in handshake request if disabled', async function () {
-            let noUserAgentClient = helper.getGremlinSocketServerClientNoUserAgent('gmodern');
+            let noUserAgentClient = getGremlinSocketServerClientNoUserAgent('gmodern');
             let result = await noUserAgentClient.submit('1', null,
                 {requestId: settings.USER_AGENT_REQUEST_ID});
 

@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(GremlinProcessRunner.class)
 public class SeedStrategyProcessTest extends AbstractGremlinProcessTest {
-    private static final SeedStrategy seedStrategy = new SeedStrategy(1235L);
+    private static final SeedStrategy seedStrategy = SeedStrategy.build().seed(1234L).create();
 
     @Test
     @LoadGraphWith(MODERN)

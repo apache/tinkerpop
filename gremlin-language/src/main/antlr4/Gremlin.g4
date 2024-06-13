@@ -979,6 +979,10 @@ traversalScope
     | 'global' | 'Scope.global'
     ;
 
+traversalBarrier
+    : 'normSack' | 'Barrier.normSack'
+    ;
+
 traversalToken
     : 'id' | 'T.id'
     | 'label' | 'T.label'
@@ -1095,7 +1099,7 @@ traversalTerminalMethod
     ;
 
 traversalSackMethod
-    : 'normSack' | 'Barrier.normSack'
+    : traversalBarrier
     ;
 
 traversalSelfMethod
