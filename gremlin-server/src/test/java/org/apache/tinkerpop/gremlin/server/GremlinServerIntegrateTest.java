@@ -57,6 +57,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -300,6 +301,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Lambda is not supported")
     public void shouldScriptEvaluationErrorForRemoteTraversal() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
@@ -330,6 +332,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Lambda is not supported")
     public void shouldTimeOutRemoteTraversal() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
@@ -360,6 +363,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Lambda is not supported")
     public void shouldTimeOutRemoteTraversalWithPerRequestOption() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
@@ -845,6 +849,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Lambda is not supported")
     public void shouldSupportLambdasUsingWithRemote() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
@@ -854,6 +859,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    @Ignore("Lambda is not supported")
     public void shouldDoNonBlockingPromiseWithRemote() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
