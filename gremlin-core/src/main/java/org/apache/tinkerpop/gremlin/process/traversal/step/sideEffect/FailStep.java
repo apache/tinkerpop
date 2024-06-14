@@ -48,6 +48,10 @@ public class FailStep<S> extends SideEffectStep<S> {
         this.metadata = metadata;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         throw new FailException(traversal, traverser, message, metadata);
