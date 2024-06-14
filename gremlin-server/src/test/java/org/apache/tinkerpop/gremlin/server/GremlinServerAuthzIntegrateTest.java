@@ -112,7 +112,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
-            case "shouldFailBytecodeRequestWithAllowAllAuthenticator":
+            case "shouldFailGremlinLangRequestWithAllowAllAuthenticator":
             case "shouldFailStringRequestWithAllowAllAuthenticator":
                 authSettings.authenticator = AllowAllAuthenticator.class.getName();
                 break;
@@ -133,8 +133,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldAuthorizeBytecodeRequest() {
-        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
+    public void shouldAuthorizeGremlinLangRequest() {
+        final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gmodern"));
         try {
@@ -145,7 +145,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldAuthorizeBytecodeRequestWithLambda() {
+    public void shouldAuthorizeGremlinLangRequestWithLambda() {
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gclassic"));
@@ -159,18 +159,18 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldFailBytecodeRequestWithLambda() throws Exception{
+    public void shouldFailGremlinLangRequestWithLambda() throws Exception{
         final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                 DriverRemoteConnection.using(cluster, "gmodern"));
 
         try {
             g.V().map(Lambda.function("it.get().value('name')")).count().next();
-            fail("Authorization for bytecode request with lambda should fail");
+            fail("Authorization for GremlinLang request with lambda should fail");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
 
             // wait for logger to flush - (don't think there is a way to detect this)
             stopServer();
@@ -178,29 +178,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
 
             assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                     "User stephen with address .+? attempted an unauthorized http request: " +
-                    "\\[\\[], \\[V\\(\\), map\\(lambda\\[it.get\\(\\).value\\('name'\\)]\\), count\\(\\)]]")), is(true));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldKeepAuthorizingBytecodeRequests() {
-        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
-                DriverRemoteConnection.using(cluster, "gmodern"));
-
-        try {
-            assertEquals(6, (long) g.V().count().next());
-            try {
-                g.V().map(Lambda.function("it.get().value('name')")).count().next();
-                fail("Authorization for bytecode request with lambda should fail");
-            } catch (Exception ex) {
-                final ResponseException re = (ResponseException) ex.getCause();
-                assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-                assertEquals("Failed to authorize: User not authorized for bytecode requests on [gmodern] using lambdas.", re.getMessage());
-            }
-            assertEquals(6, (long) g.V().count().next());
+                    "g.V\\(\\).map\\(.+\\).count\\(\\)")), is(true));
         } finally {
             cluster.close();
         }
@@ -262,17 +240,17 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     }
 
     @Test
-    public void shouldFailBytecodeRequestWithAllowAllAuthenticator() {
+    public void shouldFailGremlinLangRequestWithAllowAllAuthenticator() {
         final Cluster cluster = TestClientFactory.build().create();
         try {
-            final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+            final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
                     DriverRemoteConnection.using(cluster, "gclassic"));
             g.V().count().next();
             fail("Authorization without authentication should fail");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for bytecode requests on [gclassic].", re.getMessage());
+            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
         } finally {
             cluster.close();
         }

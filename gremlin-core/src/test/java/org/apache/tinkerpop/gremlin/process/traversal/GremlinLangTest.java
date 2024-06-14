@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class GremlinLangTest {
 
-    private static GraphTraversalSource g = traversal().with(EmptyGraph.instance());
+    private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
     @Parameterized.Parameter(value = 0)
     public Traversal traversal;
@@ -57,14 +57,16 @@ public class GremlinLangTest {
     @Parameterized.Parameter(value = 1)
     public String expected;
 
-    static {
-        g.getGremlinLang().reset();
-    }
-
     @Test
     public void doTest() {
         final String gremlin = traversal.asAdmin().getGremlinLang().getGremlin();
         assertEquals(expected, gremlin);
+    }
+
+    private static GraphTraversalSource newG() {
+        final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
+        g.getGremlinLang().reset();
+        return g;
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -110,8 +112,8 @@ public class GremlinLangTest {
                 {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
                 {g.inject(Parameter.var("x","x")).V(Parameter.var("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
-                {g.inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
-                {g.inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject(_2)"},
+                {newG().inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
+                {newG().inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject(_0)"},
         });
     }
 
