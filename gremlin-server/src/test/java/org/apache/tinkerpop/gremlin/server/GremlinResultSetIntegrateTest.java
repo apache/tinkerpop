@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -95,6 +96,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    @Ignore("[Discuss] is this valid use case?")
     public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();

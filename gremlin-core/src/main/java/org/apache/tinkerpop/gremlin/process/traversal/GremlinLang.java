@@ -81,7 +81,7 @@ public class GremlinLang implements Cloneable, Serializable {
         final Object[] flattenedArguments = flattenArguments(arguments);
 
         // todo: figure out solution for AbstractLambdaTraversal
-        if (name.equals("CardinalityValueTraversal")) {
+        if ("CardinalityValueTraversal".equals(name)) {
             gremlin.append("Cardinality.").append(flattenedArguments[0])
                     .append("(").append(flattenedArguments[1]).append(")");
             return;
