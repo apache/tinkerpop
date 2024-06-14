@@ -62,6 +62,7 @@ import static org.junit.Assert.fail;
  * @author Marc de Lignie
  */
 public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final Long DEFAULT_EVALUATION_TIMEOUT = 1000L;
     private static LogCaptor logCaptor;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -107,6 +108,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         settings.authentication = authSettings;
         settings.authorization = authzSettings;
         settings.enableAuditLog = true;
+        settings.evaluationTimeout = DEFAULT_EVALUATION_TIMEOUT;
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
@@ -385,6 +387,25 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
+
+    @Test
+    public void shouldRespectTimeoutWithAuth() {
+        final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+                DriverRemoteConnection.using(cluster, "gmodern"));
+        try {
+            g.with("evaluationTimeout", DEFAULT_EVALUATION_TIMEOUT + 1000).V().limit(1).map(t -> {
+                try {
+                    Thread.sleep(DEFAULT_EVALUATION_TIMEOUT + 500);
+                } catch (InterruptedException ie) {
+                    // do nothing
+                }
+                return t;
+            }).next();
+        } finally {
+            cluster.close();
         }
     }
 }
