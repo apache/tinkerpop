@@ -62,6 +62,12 @@ public class GremlinLangTest {
         assertEquals(expected, gremlin);
     }
 
+    private static GraphTraversalSource newG() {
+        final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
+        g.getGremlinLang().reset();
+        return g;
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
@@ -105,8 +111,8 @@ public class GremlinLangTest {
                 {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
                 {g.inject(Parameter.var("x","x")).V(Parameter.var("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
-                {g.inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
-                {g.inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject(_2)"},
+                {newG().inject(Parameter.value("test1"),Parameter.value("test2")), "g.inject(_0,_1)"},
+                {newG().inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject(_0)"},
         });
     }
 

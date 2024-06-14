@@ -295,6 +295,6 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                 String.format("User %s with address .+? authenticated by %s", username, authenticatorName))));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m ->
-                m.matches("User .+? with address .+? requested: \\[\\[], \\[V\\(\\), count\\(\\)]]")));
+                m.matches("User .+? with address .+? requested: g.V\\(\\).count\\(\\)")));
     }
 }

@@ -130,11 +130,11 @@ public final class RequestOptions {
             if (null == parameters)
                 parameters = new HashMap<>();
 
-            if (name.equals(ARGS_G)) {
+            if (ARGS_G.equals(name)) {
                 this.graphOrTraversalSource = (String) value;
             }
 
-            if (name.equals(ARGS_LANGUAGE)) {
+            if (ARGS_LANGUAGE.equals(name)) {
                 this.language = (String) value;
             }
 
