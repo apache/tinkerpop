@@ -26,6 +26,7 @@ from gremlin_python.driver.transport import AbstractBaseTransport
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove WS transport & refactor
 class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
@@ -195,8 +196,8 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         async def async_write():
             basic_auth = None
             # basic password authentication for https connections
-            # if message['auth']:
-            #     basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
+            if message['auth']:
+                basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
             async with async_timeout.timeout(self._write_timeout):
                 self._http_req_resp = await self._client_session.post(url="/gremlin",
                                                                       auth=basic_auth,
@@ -210,6 +211,7 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
     def read(self):
         # Inner function to perform async read.
         async def async_read():
+            # TODO: set-up chunked reading
             buffer = b""
             # async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
             #     buffer += data

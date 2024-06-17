@@ -18,6 +18,7 @@
 #
 import os
 
+import pytest
 from gremlin_python import statics
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import Traverser
@@ -29,7 +30,6 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
 from gremlin_python.structure.io.util import HashableDict
-from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 from gremlin_python.driver.protocol import GremlinServerError
 
 gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
@@ -73,7 +73,7 @@ class TestDriverRemoteConnectionHttp(object):
         assert 'dur' in results[0]
         # #
         results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
-            __.valueMap()).toList()
+            __.value_map()).toList()
         assert 1 == len(results)
         assert 'peter' == results[0]['a']['name'][0]
         assert 35 == results[0]['a']['age'][0]
@@ -102,15 +102,12 @@ class TestDriverRemoteConnectionHttp(object):
         results = g.V().has('person', 'age', Bindings.of('x', P.lt(30))).count().next()
         assert 2 == results
         # #
-        # test dict keys which can only work on GraphBinary and GraphSON3 which include specific serialization
+        # test dict keys
         # types for dict
-        if not isinstance(remote_connection_http._client._message_serializer, GraphSONSerializersV2d0):
-            results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
-            assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
-        if not isinstance(remote_connection_http._client._message_serializer, GraphSONSerializersV2d0):
-            results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(
-                __.values('name').fold()).next()
-            assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
+        results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+        assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
+        results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
+        assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
 
     def test_iteration(self, remote_connection_http):
         statics.load_statics(globals())
@@ -166,8 +163,8 @@ class TestDriverRemoteConnectionHttp(object):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection_http). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
-                                             {"vertices": __.hasLabel("person"),
-                                              "edges": __.hasLabel("created")},
+                                             {"vertices": __.has_label("person"),
+                                              "edges": __.has_label("created")},
                                              "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
@@ -176,14 +173,14 @@ class TestDriverRemoteConnectionHttp(object):
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection_http). \
-            withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
+            withStrategies(SubgraphStrategy(vertices=__.has_label("person"), edges=__.has_label("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection_http). \
-            withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
+            withStrategies(SubgraphStrategy(edges=__.has_label("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
         assert 1 == g.E().label().dedup().count().next()
@@ -214,22 +211,19 @@ class TestDriverRemoteConnectionHttp(object):
         assert 10 == t.clone().limit(10).count().next()
 
     def test_receive_error(self, invalid_alias_remote_connection_http):
-        g = traversal().withRemote(invalid_alias_remote_connection_http)
+        g = traversal().with_(invalid_alias_remote_connection_http)
 
         try:
             g.V().next()
             assert False
         except GremlinServerError as err:
             assert err.status_code == 400
-            assert 'Could not rebind' in err.status_message
+            assert 'The traversal source [does_not_exist] for alias [g] is not configured on the server.' \
+                   in err.status_message
 
-    """
-    # The WsAndHttpChannelizer somehow does not distinguish the ssl handlers so authenticated https remote connection
-    # only work with HttpChannelizer that is currently not in the testing set up, thus this is commented out for now
-    
+    @pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
     def test_authenticated(self, remote_connection_http_authenticated):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection_http_authenticated)
 
         assert long(6) == g.V().count().toList()[0]
-    """

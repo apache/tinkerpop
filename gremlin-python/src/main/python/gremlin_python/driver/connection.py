@@ -35,7 +35,7 @@ class Connection:
         self._executor = executor
         self._transport = None
         self._pool = pool
-        self._results = {}
+        self._result_set = None
         self._inited = False
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
@@ -56,19 +56,15 @@ class Connection:
             self._transport.close()
 
     def write(self, request_message):
+        print('\n===conn===')
+        print(request_message)
         if not self._inited:
             self.connect()
-        if request_message.args.get("requestId"):
-            request_id = str(request_message.args.get("requestId"))
-            uuid.UUID(request_id)  # Checks for proper UUID or else server will return an error.
-        else:
-            request_id = str(uuid.uuid4())
-        result_set = resultset.ResultSet(queue.Queue(), request_id)
-        self._results[request_id] = result_set
+        self._result_set = resultset.ResultSet(queue.Queue())
         # Create write task
         future = Future()
         future_write = self._executor.submit(
-            self._protocol.write, request_id, request_message)
+            self._protocol.write, request_message)
 
         def cb(f):
             try:
@@ -79,8 +75,8 @@ class Connection:
             else:
                 # Start receive task
                 done = self._executor.submit(self._receive)
-                result_set.done = done
-                future.set_result(result_set)
+                self._result_set.done = done
+                future.set_result(self._result_set)
 
         future_write.add_done_callback(cb)
         return future
@@ -89,7 +85,7 @@ class Connection:
         try:
             while True:
                 data = self._transport.read()
-                status_code = self._protocol.data_received(data, self._results)
+                status_code = self._protocol.data_received(data, self._result_set)
                 if status_code != 206:
                     break
         finally:

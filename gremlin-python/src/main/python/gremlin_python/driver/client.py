@@ -38,6 +38,7 @@ except ImportError:
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove session, update connection pooling, etc.
 class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
@@ -58,7 +59,7 @@ class Client:
         if not self._use_http and "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
-            message_serializer = serializer.GraphBinarySerializersV1()
+            message_serializer = serializer.GraphBinarySerializersV4()
 
         self._message_serializer = message_serializer
         self._username = username
@@ -180,7 +181,6 @@ class Client:
             raise Exception("Client is closed")
 
         log.debug("message '%s'", str(message))
-        # args = {'gremlin': message, 'fields': {'g': self._traversal_source}}
         fields = {'g': self._traversal_source}
         if isinstance(message, traversal.Bytecode):
             fields['gremlinType'] = 'bytecode'
@@ -196,5 +196,6 @@ class Client:
 
         conn = self._pool.get(True)
         if request_options:
-            message.args.update(request_options)
+            message.fields.update(request_options)
+
         return conn.write(message)

@@ -65,6 +65,7 @@ class AbstractBaseProtocol(metaclass=abc.ABCMeta):
         pass
 
 
+# TODO: remove WS protocol & refactor
 class GremlinServerWSProtocol(AbstractBaseProtocol):
     QOP_AUTH_BIT = 1
     _kerberos_context = None

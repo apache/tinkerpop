@@ -33,10 +33,12 @@ from gremlin_python.structure.io import graphbinaryV1
 from gremlin_python.structure.io import graphbinaryV4
 from gremlin_python.structure.io import graphsonV2d0
 from gremlin_python.structure.io import graphsonV3d0
+from gremlin_python.structure.io.util import Marker
 
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove all classes except for GraphBinarySerializersV4
 class Processor:
     """Base class for OpProcessor serialization system."""
 
@@ -294,6 +296,10 @@ class GraphBinarySerializersV1(object):
 
         return msg
 
+
+"""
+GraphBinaryV4
+"""
 class GraphBinarySerializersV4(object):
     DEFAULT_READER_CLASS = graphbinaryV4.GraphBinaryReader
     DEFAULT_WRITER_CLASS = graphbinaryV4.GraphBinaryWriter
@@ -315,20 +321,11 @@ class GraphBinarySerializersV4(object):
         if not writer:
             writer = self.DEFAULT_WRITER_CLASS()
         self._graphbinary_writer = writer
-        self.standard = Standard(writer)
-        self.traversal = Traversal(writer)
-        self.session = Session(writer)
 
     @property
     def version(self):
         """Read only property"""
         return self._version
-
-    def get_processor(self, processor):
-        processor = getattr(self, processor, None)
-        if not processor:
-            raise Exception("Unknown processor")
-        return processor
 
     def serialize_message(self, request_message):
         message = self.build_message(request_message.fields, request_message.gremlin)
@@ -345,7 +342,6 @@ class GraphBinarySerializersV4(object):
         ba = bytearray()
 
         ba.extend(graphbinaryV4.uint8_pack(0x81))
-        print(bytes(ba))
         fields = message["fields"]
         ba.extend(self.int_pack(len(fields)))
         for k, v in fields.items():
@@ -353,12 +349,11 @@ class GraphBinarySerializersV4(object):
             self._graphbinary_writer.to_dict(v, ba)
 
         gremlin = message['gremlin']
-        if isinstance(gremlin, bytearray):
-            ba.extend(gremlin)
-        else:
-            self._graphbinary_writer.to_dict(gremlin, ba)
-
-        print(bytes(ba))
+        # TODO: hack to remove type code from gremlin value for V4 message format, writer doesn't seem to have a way to
+        #  write value directly by passing serializer types, check back when removing bytecode
+        gremlin_ba = bytearray()
+        self._graphbinary_writer.to_dict(gremlin, gremlin_ba)
+        ba.extend(gremlin_ba[2:])
 
         return bytes(ba)
 
@@ -368,13 +363,11 @@ class GraphBinarySerializersV4(object):
 
         b.read(1)  # version
 
-        result = self._graphbinary_reader.to_object(b)  # data
-        # marker = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.marker, nullable=True)
-        marker = b.read(3)  # need to create marker class & serializer
+        result = self.read_payload(b)
         status_code = self.int32_unpack(b.read(4))[0]  # status code
         status_msg = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
         status_ex = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
-        # meta_attrs = self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.map, nullable=False)
+        # meta_attrs = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.map, nullable=False)
 
         b.close()
 
@@ -385,3 +378,13 @@ class GraphBinarySerializersV4(object):
                           'data': result}}
 
         return msg
+
+    def read_payload(self, buffer):
+        results = []
+        while buffer.readable():
+            data = self._graphbinary_reader.to_object(buffer)
+            if data == Marker.end_of_stream():
+                break
+            results.append(data)
+
+        return results

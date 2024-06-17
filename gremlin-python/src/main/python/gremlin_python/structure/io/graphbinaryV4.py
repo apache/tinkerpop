@@ -38,7 +38,7 @@ from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardina
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
-from gremlin_python.structure.io.util import HashableDict, SymbolUtil
+from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
 
@@ -803,7 +803,7 @@ class BytecodeIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        # cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         bc = obj.bytecode if isinstance(obj, Traversal) else obj
         to_extend.extend(int32_pack(len(bc.step_instructions)))
         for inst in bc.step_instructions:
@@ -1161,18 +1161,18 @@ class DurationIO(_GraphBinaryTypeIO):
         return timedelta(seconds=seconds, microseconds=nanos / 1000)
 
 
-# class MarkerIO(_GraphBinaryTypeIO):
-#     python_type = SingleByte
-#     graphbinary_type = DataType.marker
-#
-#     @classmethod
-#     def dictify(cls, obj, writer, to_extend, as_value=True, nullable=True):
-#         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-#         to_extend.extend(int8_pack(obj))
-#         return to_extend
-#
-#     @classmethod
-#     def objectify(cls, buff, reader, nullable=True):
-#         return cls.is_null(buff, reader,
-#                            lambda b, r: int.__new__(SingleByte, int8_unpack(b.read(1))),
-#                            nullable)
+class MarkerIO(_GraphBinaryTypeIO):
+    python_type = Marker
+    graphbinary_type = DataType.marker
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        to_extend.extend(int8_pack(obj.get_value()))
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader,
+                           lambda b, r: Marker.of(int8_unpack(b.read(1))),
+                           nullable)

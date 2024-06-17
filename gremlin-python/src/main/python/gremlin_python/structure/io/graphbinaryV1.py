@@ -49,6 +49,7 @@ _serializers = OrderedDict()
 _deserializers = {}
 
 
+# TODO: to be removed
 class DataType(Enum):
     null = 0xfe
     int = 0x01
