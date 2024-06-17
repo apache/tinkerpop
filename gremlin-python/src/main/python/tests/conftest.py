@@ -52,7 +52,7 @@ basic_url = gremlin_basic_auth_url.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
 kerberized_service = 'test-service@{}'.format(kerberos_hostname)
 
-"""HTTP server testing"""
+"""HTTP server testing variables"""
 gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
 gremlin_basic_auth_url_http = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/')
 anonymous_url_http = gremlin_server_url_http.format(45940)
@@ -176,7 +176,7 @@ def authenticated_client(request):
 def remote_connection(request):
     try:
         if request.param == 'graphbinaryv1':
-            remote_conn = DriverRemoteConnection(anonymos_url, 'gmodern',
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
                                                  message_serializer=serializer.GraphBinarySerializersV1())
         elif request.param == 'graphsonv2':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
