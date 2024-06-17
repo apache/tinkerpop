@@ -46,6 +46,10 @@ public final class CoinStep<S> extends FilterStep<S> implements Seedable {
         random.setSeed(seed);
     }
 
+    public double getProbability() {
+        return this.probability;
+    }
+
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         long newBulk = 0l;
