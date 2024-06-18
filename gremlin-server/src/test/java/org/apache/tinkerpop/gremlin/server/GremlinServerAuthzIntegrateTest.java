@@ -396,7 +396,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
                 DriverRemoteConnection.using(cluster, "gmodern"));
         try {
-            final String lambdaFunction = String.format("{ n, i -> sleep(%d); return i; }", DEFAULT_EVALUATION_TIMEOUT + 1000);
+            final String lambdaFunction = String.format("{ n, i -> sleep(%d); return i; }", (DEFAULT_EVALUATION_TIMEOUT + 1000) / 1000);
             g.with("evaluationTimeout", DEFAULT_EVALUATION_TIMEOUT + 2000).
                     V().
                     limit(1).
