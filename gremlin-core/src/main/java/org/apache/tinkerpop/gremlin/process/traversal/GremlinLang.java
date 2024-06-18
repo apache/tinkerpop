@@ -195,6 +195,10 @@ public class GremlinLang implements Cloneable, Serializable {
             return asString(asIterator(arg));
         }
 
+        if (arg instanceof Class) {
+            return ((Class) arg).getSimpleName();
+        }
+
         return asParameter(arg);
     }
 
@@ -283,8 +287,8 @@ public class GremlinLang implements Cloneable, Serializable {
         parameters.put("g", g);
     }
 
-    // for test usage only
-    void reset() {
+    // reset parameter naming counter
+    public void reset() {
         paramCount.set(0);
     }
 

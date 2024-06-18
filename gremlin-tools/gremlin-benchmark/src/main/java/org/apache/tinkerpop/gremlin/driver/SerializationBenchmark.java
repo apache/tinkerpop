@@ -108,7 +108,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final GremlinLang gremlinLang = new GremlinLang();
     private static final RequestMessageV4 request = RequestMessageV4
-            .build(gremlinLang)
+            .build(gremlinLang.getGremlin())
             .create();
 
     private static final GraphBinaryMessageSerializerV4 binarySerializer = new GraphBinaryMessageSerializerV4();
