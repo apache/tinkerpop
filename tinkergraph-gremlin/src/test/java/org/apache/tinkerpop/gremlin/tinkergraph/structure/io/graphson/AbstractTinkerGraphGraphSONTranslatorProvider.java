@@ -20,9 +20,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
@@ -238,8 +236,7 @@ public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends Tink
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        final GraphTraversalSource g = graph.traversal();
-        return g.withStrategies(new TranslationStrategy(g, new GraphSONTranslator<>(JavaTranslator.of(g), version), true));
+        return graph.traversal();
     }
 
     @Graph.OptOut(

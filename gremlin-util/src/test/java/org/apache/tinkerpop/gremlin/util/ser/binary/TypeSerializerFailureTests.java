@@ -58,8 +58,6 @@ public class TypeSerializerFailureTests {
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
-        final GremlinLang.Binding b = new GremlinLang.Binding(null, "b");
-
         final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
 
         final GremlinLang bytecode = new GremlinLang();
@@ -75,9 +73,7 @@ public class TypeSerializerFailureTests {
 
         // Provide instances that are malformed for serialization to fail
         return Arrays.asList(
-                b,
                 vertex,
-                Collections.singletonMap("one", b),
                 bulkSet,
                 bytecode,
                 Collections.singletonList(vertex),

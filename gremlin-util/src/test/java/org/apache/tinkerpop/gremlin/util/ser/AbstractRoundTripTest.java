@@ -201,7 +201,6 @@ public abstract class AbstractRoundTripTest {
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
                 new Object[] {"Bytecode", bytecode, null},
-                new Object[] {"Binding", new GremlinLang.Binding<>("x", 123), null},
                 new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
                 new Object[] {"Class", GremlinLang.class, null},
                 new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},

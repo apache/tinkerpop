@@ -37,11 +37,6 @@ public final class CardinalityValueTraversal extends AbstractLambdaTraversal {
         this.gremlinLang = new GremlinLang(CardinalityValueTraversal.class.getSimpleName(), cardinality.name(), value);
     }
 
-    public static CardinalityValueTraversal from(final GremlinLang.Instruction inst) {
-        return new CardinalityValueTraversal(VertexProperty.Cardinality.valueOf(inst.getArguments()[0].toString()),
-                inst.getArguments()[1]);
-    }
-
     @Override
     public GremlinLang getGremlinLang() {
         return this.gremlinLang;

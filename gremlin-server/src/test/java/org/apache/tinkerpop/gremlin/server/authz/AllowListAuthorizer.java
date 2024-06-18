@@ -18,16 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.server.Settings.AuthorizationSettings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.util.TokensV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,7 +49,6 @@ public class AllowListAuthorizer implements Authorizer {
 
     public static final String SANDBOX = "sandbox";
     public static final String REJECT_BYTECODE = "User not authorized for bytecode requests on %s";
-    public static final String REJECT_LAMBDA = "lambdas";
     public static final String REJECT_MUTATE = "the ReadOnlyStrategy";
     public static final String REJECT_OLAP = "the VertexProgramRestrictionStrategy";
     public static final String REJECT_SUBGRAPH = "the SubgraphStrategy";
@@ -112,16 +110,12 @@ public class AllowListAuthorizer implements Authorizer {
         }
         final boolean userHasTraversalSourceGrant = usernames.contains(user.getName()) || usernames.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
         final boolean userHasSandboxGrant = usernamesSandbox.contains(user.getName()) || usernamesSandbox.contains(AuthenticatedUser.ANONYMOUS_USERNAME);
-        final boolean runsLambda = BytecodeHelper.getLambdaLanguage(bytecode).isPresent();
         final boolean touchesReadOnlyStrategy = bytecode.toString().contains(ReadOnlyStrategy.class.getSimpleName());
         final boolean touchesOLAPRestriction = bytecode.toString().contains(VertexProgramRestrictionStrategy.class.getSimpleName());
         // This element becomes obsolete after resolving TINKERPOP-2473 for allowing only a single instance of each traversal strategy.
         final boolean touchesSubgraphStrategy = bytecode.toString().contains(SubgraphStrategy.class.getSimpleName());
 
         final List<String> rejections = new ArrayList<>();
-        if (runsLambda) {
-            rejections.add(REJECT_LAMBDA);
-        }
         if (touchesReadOnlyStrategy) {
             rejections.add(REJECT_MUTATE);
         }
@@ -137,7 +131,7 @@ public class AllowListAuthorizer implements Authorizer {
         }
         rejectMessage += ".";
 
-        if ( (!userHasTraversalSourceGrant || runsLambda || touchesOLAPRestriction || touchesReadOnlyStrategy || touchesSubgraphStrategy) && !userHasSandboxGrant) {
+        if ( (!userHasTraversalSourceGrant || touchesOLAPRestriction || touchesReadOnlyStrategy || touchesSubgraphStrategy) && !userHasSandboxGrant) {
             throw new AuthorizationException(String.format(rejectMessage, aliases.values()));
         }
         return bytecode;

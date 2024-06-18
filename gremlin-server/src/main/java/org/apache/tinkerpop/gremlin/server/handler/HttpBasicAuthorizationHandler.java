@@ -66,22 +66,14 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 if (null == user) {    // This is expected when using the AllowAllAuthenticator
                     user = AuthenticatedUser.ANONYMOUS_USER;
                 }
-                switch (requestMessage.getGremlinType()) {
-                    case TokensV4.OPS_BYTECODE:
-                        final GremlinLang bytecode = (GremlinLang) requestMessage.getGremlin();
-                        final Map<String, String> aliases = new HashMap<>();
-                        aliases.put(TokensV4.ARGS_G, requestMessage.getField(TokensV4.ARGS_G));
-                        final GremlinLang restrictedBytecode = authorizer.authorize(user, bytecode, aliases);
-                        final RequestMessageV4 restrictedMsg = RequestMessageV4.from(requestMessage, restrictedBytecode).create();
-                        ctx.fireChannelRead(restrictedMsg);
-                        break;
-                    case TokensV4.OPS_EVAL:
-                        authorizer.authorize(user, requestMessage);
-                        ctx.fireChannelRead(requestMessage);
-                        break;
-                    default:
-                        throw new AuthorizationException("This AuthorizationHandler only handles requests with OPS_BYTECODE or OPS_EVAL.");
-                }
+
+                final String gremlin = requestMessage.getGremlin();
+                final Map<String, String> aliases = new HashMap<>();
+                aliases.put(TokensV4.ARGS_G, requestMessage.getField(TokensV4.ARGS_G));
+                final String restrictedGremlin = authorizer.authorize(user, gremlin, aliases);
+                final RequestMessageV4 restrictedMsg = RequestMessageV4.from(requestMessage, restrictedGremlin).create();
+                ctx.fireChannelRead(restrictedMsg);
+
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
                 String address = ctx.channel().remoteAddress().toString();
                 if (address.startsWith("/") && address.length() > 1) address = address.substring(1);

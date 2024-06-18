@@ -19,9 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.TranslationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 
@@ -224,7 +222,6 @@ public class TinkerGraphGryoTranslatorProvider extends TinkerGraphProvider {
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
-        final GraphTraversalSource g = graph.traversal();
-        return g.withStrategies(new TranslationStrategy(g, new GryoTranslator<>(JavaTranslator.of(g)), true));
+        return graph.traversal();
     }
 }

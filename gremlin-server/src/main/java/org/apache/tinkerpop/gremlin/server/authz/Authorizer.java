@@ -51,6 +51,11 @@ public interface Authorizer {
      */
     public GremlinLang authorize(final AuthenticatedUser user, final GremlinLang bytecode, final Map<String, String> aliases) throws AuthorizationException;
 
+    // todo: implement auth for gremlin-lang
+    public default String authorize(final AuthenticatedUser user, final String gremlin, final Map<String, String> aliases) throws AuthorizationException {
+        return gremlin;
+    }
+
     /**
      * Checks whether a user is authorized to have a script request from a gremlin client answered and raises an
      * {@link AuthorizationException} if this is not the case.

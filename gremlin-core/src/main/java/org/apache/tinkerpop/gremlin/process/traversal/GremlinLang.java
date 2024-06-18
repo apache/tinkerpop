@@ -21,22 +21,17 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import javax.lang.model.SourceVersion;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,9 +54,6 @@ public class GremlinLang implements Cloneable, Serializable {
 
     private static final Object[] EMPTY_ARRAY = new Object[]{};
 
-    private List<Instruction> sourceInstructions = new ArrayList<>();
-    private List<Instruction> stepInstructions = new ArrayList<>();
-
     private StringBuilder gremlin = new StringBuilder();
     private Map<String, Object> parameters = new HashMap<>();
     private static final AtomicInteger paramCount = new AtomicInteger(0);
@@ -73,7 +65,6 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     public GremlinLang(final String sourceName, final Object... arguments) {
-        this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
         addToGremlin(sourceName, arguments);
     }
 
@@ -276,7 +267,7 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     // g for gts, __ for anonymous, any for gremlin-groovy
-    private String getGremlin(final String g) {
+    public String getGremlin(final String g) {
         // special handling for CardinalityValueTraversal
         if (gremlin.length() != 0 && gremlin.charAt(0) != '.') {
             return gremlin.toString();
@@ -304,22 +295,6 @@ public class GremlinLang implements Cloneable, Serializable {
      * @param arguments  the traversal source method arguments
      */
     public void addSource(final String sourceName, final Object... arguments) {
-        if (sourceName.equals(TraversalSource.Symbols.withoutStrategies)) {
-            if (arguments == null)
-                this.sourceInstructions.add(new Instruction(sourceName, null));
-            else {
-                final Class<TraversalStrategy>[] classes = new Class[arguments.length];
-                for (int i = 0; i < arguments.length; i++) {
-                    classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
-                            ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
-                            (Class) arguments[i];
-                }
-                this.sourceInstructions.add(new Instruction(sourceName, classes));
-            }
-        } else
-            this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
-        Bindings.clear();
-
         if (sourceName.equals(TraversalSource.Symbols.withStrategies) && arguments.length != 0) {
             final String args =  buildStrategyArgs(arguments);
 
@@ -378,8 +353,6 @@ public class GremlinLang implements Cloneable, Serializable {
      * @param arguments the traversal method arguments
      */
     public void addStep(final String stepName, final Object... arguments) {
-        this.stepInstructions.add(new Instruction(stepName, flattenArguments(arguments)));
-
         addToGremlin(stepName, arguments);
     }
 
@@ -387,101 +360,34 @@ public class GremlinLang implements Cloneable, Serializable {
         return optionsStrategies;
     }
 
-    /**
-     * Get the {@link TraversalSource} instructions associated with this bytecode.
-     *
-     * @return an iterable of instructions
-     */
-    public List<Instruction> getSourceInstructions() {
-        return this.sourceInstructions;
-    }
-
-    /**
-     * Get the {@link Traversal} instructions associated with this bytecode.
-     *
-     * @return an iterable of instructions
-     */
-    public List<Instruction> getStepInstructions() {
-        return this.stepInstructions;
-    }
-
-    /**
-     * Get both the {@link TraversalSource} and {@link Traversal} instructions of this bytecode.
-     * The traversal source instructions are provided prior to the traversal instructions.
-     *
-     * @return an interable of all the instructions in this bytecode
-     */
-    public Iterable<Instruction> getInstructions() {
-        return () -> IteratorUtils.concat(this.sourceInstructions.iterator(), this.stepInstructions.iterator());
-    }
-
-    /**
-     * Get all the bindings (in a nested, recursive manner) from all the arguments of all the instructions of this bytecode.
-     *
-     * @return a map of string variable and object value bindings
-     */
-    public Map<String, Object> getBindings() {
-        final Map<String, Object> bindingsMap = new HashMap<>();
-        for (final Instruction instruction : this.sourceInstructions) {
-            for (final Object argument : instruction.getArguments()) {
-                addArgumentBinding(bindingsMap, argument);
-            }
-        }
-        for (final Instruction instruction : this.stepInstructions) {
-            for (final Object argument : instruction.getArguments()) {
-                addArgumentBinding(bindingsMap, argument);
-            }
-        }
-        return bindingsMap;
-    }
-
     public boolean isEmpty() {
-        return this.sourceInstructions.isEmpty() && this.stepInstructions.isEmpty();
-    }
-
-    private static void addArgumentBinding(final Map<String, Object> bindingsMap, final Object argument) {
-        if (argument instanceof Binding)
-            bindingsMap.put(((Binding) argument).key, ((Binding) argument).value);
-        else if (argument instanceof Map) {
-            for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
-                addArgumentBinding(bindingsMap, entry.getKey());
-                addArgumentBinding(bindingsMap, entry.getValue());
-            }
-        } else if (argument instanceof Collection) {
-            for (final Object item : (Collection) argument) {
-                addArgumentBinding(bindingsMap, item);
-            }
-        } else if (argument instanceof GremlinLang)
-            bindingsMap.putAll(((GremlinLang) argument).getBindings());
+        return this.gremlin.length() == 0;
     }
 
     @Override
     public String toString() {
-        return Arrays.asList(this.sourceInstructions, this.stepInstructions).toString();
+        return gremlin.toString();
     }
 
+    // todo: fix and add tests
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final GremlinLang bytecode = (GremlinLang) o;
-        return Objects.equals(sourceInstructions, bytecode.sourceInstructions) &&
-                Objects.equals(stepInstructions, bytecode.stepInstructions);
+        return Objects.equals(gremlin.toString(), bytecode.gremlin.toString()) &&
+                Objects.equals(parameters, bytecode.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sourceInstructions, stepInstructions);
+        return Objects.hash(gremlin, parameters);
     }
 
-    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     @Override
     public GremlinLang clone() {
         try {
             final GremlinLang clone = (GremlinLang) super.clone();
-            clone.sourceInstructions = new ArrayList<>(this.sourceInstructions);
-            clone.stepInstructions = new ArrayList<>(this.stepInstructions);
-
             clone.parameters = new HashMap<>(parameters);
             clone.gremlin = new StringBuilder(gremlin.length());
             clone.gremlin.append(gremlin);
@@ -514,108 +420,24 @@ public class GremlinLang implements Cloneable, Serializable {
         }
     }
 
-    public static class Instruction implements Serializable {
-
-        private final String operator;
-        private final Object[] arguments;
-
-        private Instruction(final String operator, final Object... arguments) {
-            this.operator = operator;
-            this.arguments = arguments;
-        }
-
-        public String getOperator() {
-            return this.operator;
-        }
-
-        public Object[] getArguments() {
-            return this.arguments;
-        }
-
-        @Override
-        public String toString() {
-            return this.operator + "(" + StringFactory.removeEndBrackets(Arrays.asList(this.arguments)) + ")";
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Instruction that = (Instruction) o;
-            return Objects.equals(operator, that.operator) &&
-                    Arrays.equals(arguments, that.arguments);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Objects.hash(operator);
-            result = 31 * result + Arrays.hashCode(arguments);
-            return result;
-        }
-    }
-
-    public static class Binding<V> implements Serializable {
-
-        private final String key;
-        private final V value;
-
-        public Binding(final String key, final V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String variable() {
-            return this.key;
-        }
-
-        public V value() {
-            return this.value;
-        }
-
-        @Override
-        public String toString() {
-            return "binding[" + this.key + "=" + this.value + "]";
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Binding<?> binding = (Binding<?>) o;
-            return Objects.equals(key, binding.key) &&
-                    Objects.equals(value, binding.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, value);
-        }
-    }
-
     /////
 
-    private final Object[] flattenArguments(final Object... arguments) {
+    private Object[] flattenArguments(final Object... arguments) {
         if (arguments == null || arguments.length == 0)
             return EMPTY_ARRAY;
         final List<Object> flatArguments = new ArrayList<>(arguments.length);
         for (final Object object : arguments) {
             if (object instanceof Object[]) {
                 for (final Object nestObject : (Object[]) object) {
-                    flatArguments.add(convertArgument(nestObject, true));
+                    flatArguments.add(convertArgument(nestObject));
                 }
             } else
-                flatArguments.add(convertArgument(object, true));
+                flatArguments.add(convertArgument(object));
         }
         return flatArguments.toArray();
     }
 
-    private final Object convertArgument(final Object argument, final boolean searchBindings) {
-        if (searchBindings) {
-            final String variable = Bindings.getBoundVariable(argument);
-            if (null != variable)
-                return new Binding<>(variable, convertArgument(argument, false));
-        }
-        //
+    private Object convertArgument(final Object argument) {
         if (argument instanceof Traversal) {
             // prevent use of "g" to spawn child traversals
             if (((Traversal) argument).asAdmin().getTraversalSource().isPresent())
@@ -626,25 +448,23 @@ public class GremlinLang implements Cloneable, Serializable {
         } else if (argument instanceof Map) {
             final Map<Object, Object> map = new LinkedHashMap<>(((Map) argument).size());
             for (final Map.Entry<?, ?> entry : ((Map<?, ?>) argument).entrySet()) {
-                map.put(convertArgument(entry.getKey(), true), convertArgument(entry.getValue(), true));
+                map.put(convertArgument(entry.getKey()), convertArgument(entry.getValue()));
             }
             return map;
         } else if (argument instanceof List) {
             final List<Object> list = new ArrayList<>(((List) argument).size());
             for (final Object item : (List) argument) {
-                list.add(convertArgument(item, true));
+                list.add(convertArgument(item));
             }
             return list;
         } else if (argument instanceof Set) {
             final Set<Object> set = new LinkedHashSet<>(((Set) argument).size());
             for (final Object item : (Set) argument) {
-                set.add(convertArgument(item, true));
+                set.add(convertArgument(item));
             }
             return set;
         } else
             return argument;
     }
-
-    /////
 
 }

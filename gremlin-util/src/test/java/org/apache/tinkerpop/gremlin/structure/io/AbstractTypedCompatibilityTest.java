@@ -126,19 +126,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    public void shouldReadWriteBinding() throws Exception {
-        final String resourceName = "binding";
-
-        final GremlinLang.Binding resource = findModelEntryObject(resourceName);
-        final GremlinLang.Binding fromStatic = read(readFromResource(resourceName), GremlinLang.Binding.class);
-        final GremlinLang.Binding recycled = read(write(fromStatic, GremlinLang.Binding.class, resourceName), GremlinLang.Binding.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource, fromStatic);
-        assertEquals(resource, recycled);
-    }
-
-    @Test
     public void shouldReadWriteByte() throws Exception {
         final String resourceName = "byte";
 

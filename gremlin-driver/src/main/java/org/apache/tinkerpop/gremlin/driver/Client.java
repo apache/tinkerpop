@@ -21,10 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.slf4j.Logger;
@@ -103,31 +100,6 @@ public abstract class Client {
      */
     public Client alias(final String graphOrTraversalSource) {
         return new AliasClusteredClient(this, graphOrTraversalSource);
-    }
-
-    /**
-     * Submit a {@link Traversal} to the server for remote execution.Results are returned as {@link Traverser}
-     * instances and are therefore bulked, meaning that to properly iterate the contents of the result each
-     * {@link Traverser#bulk()} must be examined to determine the number of times that object should be presented in
-     * iteration.
-     */
-    public ResultSet submit(final Traversal traversal) {
-        try {
-            return submitAsync(traversal).get();
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * An asynchronous version of {@link #submit(Traversal)}. Results are returned as {@link Traverser} instances and
-     * are therefore bulked, meaning that to properly iterate the contents of the result each {@link Traverser#bulk()}
-     * must be examined to determine the number of times that object should be presented in iteration.
-     */
-    public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-        throw new UnsupportedOperationException("This implementation does not support Traversal submission - use a Client created with from the alias() method");
     }
 
     /**
@@ -515,13 +487,6 @@ public abstract class Client {
             builder.addG(graphOrTraversalSource);
 
             return super.submitAsync(builder.create());
-        }
-
-        @Override
-        public CompletableFuture<ResultSet> submitAsync(final Traversal traversal) {
-            final GremlinLang gremlincode = traversal.asAdmin().getGremlinLang();
-            gremlincode.addG(graphOrTraversalSource);
-            return submitAsync(gremlincode.getGremlin(), gremlincode.getParameters());
         }
 
         @Override

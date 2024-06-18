@@ -320,7 +320,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
             }
         }
 
-        return g;
+        return g.with("language", "gremlin-lang");
     }
 
     public static Cluster.Builder createClusterBuilder(final SerializersV4 serializer) {

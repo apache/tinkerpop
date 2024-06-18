@@ -82,45 +82,6 @@ final class TraversalSerializersV2 {
 
     }
 
-    final static class BytecodeJacksonSerializer extends StdScalarSerializer<GremlinLang> {
-
-        public BytecodeJacksonSerializer() {
-            super(GremlinLang.class);
-        }
-
-        @Override
-        public void serialize(final GremlinLang bytecode, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            jsonGenerator.writeStartObject();
-            if (bytecode.getSourceInstructions().iterator().hasNext()) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.SOURCE);
-                for (final GremlinLang.Instruction instruction : bytecode.getSourceInstructions()) {
-                    jsonGenerator.writeStartArray();
-                    jsonGenerator.writeString(instruction.getOperator());
-                    for (final Object argument : instruction.getArguments()) {
-                        jsonGenerator.writeObject(argument);
-                    }
-                    jsonGenerator.writeEndArray();
-                }
-                jsonGenerator.writeEndArray();
-            }
-            if (bytecode.getStepInstructions().iterator().hasNext()) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.STEP);
-                for (final GremlinLang.Instruction instruction : bytecode.getStepInstructions()) {
-                    jsonGenerator.writeStartArray();
-                    jsonGenerator.writeString(instruction.getOperator());
-                    for (final Object argument : instruction.getArguments()) {
-                        jsonGenerator.writeObject(argument);
-                    }
-                    jsonGenerator.writeEndArray();
-                }
-                jsonGenerator.writeEndArray();
-            }
-
-            jsonGenerator.writeEndObject();
-        }
-    }
-
     static class EnumJacksonSerializer extends StdScalarSerializer<Enum> {
 
         public EnumJacksonSerializer() {
@@ -180,23 +141,6 @@ final class TraversalSerializersV2 {
             jsonGenerator.writeStringField(GraphSONTokens.SCRIPT, lambda.getLambdaScript());
             jsonGenerator.writeStringField(GraphSONTokens.LANGUAGE, lambda.getLambdaLanguage());
             jsonGenerator.writeNumberField(GraphSONTokens.ARGUMENTS, lambda.getLambdaArguments());
-            jsonGenerator.writeEndObject();
-        }
-
-    }
-
-    final static class BindingJacksonSerializer extends StdScalarSerializer<GremlinLang.Binding> {
-
-        public BindingJacksonSerializer() {
-            super(GremlinLang.Binding.class);
-        }
-
-        @Override
-        public void serialize(final GremlinLang.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField(GraphSONTokens.KEY, binding.variable());
-            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, binding.value());
             jsonGenerator.writeEndObject();
         }
 
@@ -435,35 +379,6 @@ final class TraversalSerializersV2 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    final static class BindingJacksonDeserializer extends StdDeserializer<GremlinLang.Binding> {
-
-        public BindingJacksonDeserializer() {
-            super(GremlinLang.Binding.class);
-        }
-
-        @Override
-        public GremlinLang.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            String k = null;
-            Object v = null;
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                if (jsonParser.getCurrentName().equals(GraphSONTokens.KEY)) {
-                    jsonParser.nextToken();
-                    k = jsonParser.getText();
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
-                    jsonParser.nextToken();
-                    v = deserializationContext.readValue(jsonParser, Object.class);
-                }
-            }
-            return new GremlinLang.Binding<>(k, v);
         }
 
         @Override

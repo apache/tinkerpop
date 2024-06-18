@@ -1122,58 +1122,6 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should200OnPOSTWithValidGraphSONBytecodeRequest() throws Exception {
-        final GremlinLang bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlinLang();
-        final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
-        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessageV4.build(bytecodeQuery).addG("gmodern").create(),
-                new UnpooledByteBufAllocator(false));
-
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader(HttpHeaders.CONTENT_TYPE, SerializersV4.GRAPHSON_V4.getValue());
-        httppost.addHeader(HttpHeaders.ACCEPT, SerializersV4.GRAPHSON_V4.getValue());
-        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerializersV4.GRAPHSON_V4.getValue(), response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            final JsonNode dataArray = node.get("result").get(GraphSONTokens.VALUEPROP);
-            assertTrue(dataArray.isArray());
-            assertEquals(6, dataArray.size());
-        }
-    }
-
-    @Test
-    public void should200OnPOSTWithValidGraphBinaryBytecodeRequest() throws Exception {
-        final GremlinLang bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlinLang();
-        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
-//        final Map<String, String> aliases = new HashMap<>();
-//        aliases.put("g", "gmodern");
-        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessageV4.build(bytecodeQuery).addG("gmodern").create(),
-//                RequestMessage.build(Tokens.OPS_BYTECODE).addArg(Tokens.ARGS_GREMLIN, bytecodeQuery).addArg(Tokens.ARGS_ALIASES, aliases).create(),
-                new UnpooledByteBufAllocator(false));
-
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader(HttpHeaders.CONTENT_TYPE, SerializersV4.GRAPHBINARY_V4.getValue());
-        httppost.addHeader(HttpHeaders.ACCEPT, SerializersV4.GRAPHBINARY_V4.getValue());
-        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals(SerializersV4.GRAPHBINARY_V4.getValue(), response.getEntity().getContentType().getValue());
-            final ResponseMessageV4 respMsg = serializer.deserializeBinaryResponse(toByteBuf(response.getEntity()));
-            Object results = respMsg.getResult().getData();
-            assertTrue(results instanceof List);
-            assertEquals(6, ((List) results).size());
-        }
-    }
-
-    @Test
     public void should200OnPOSTWithGremlinGraphSONEndcodedBodyAndDoubleBindings() throws Exception {
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final SimpleBindings bindings = new SimpleBindings();
@@ -1219,31 +1167,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should400OnPOSTWithInvalidRequestArgsWhenAliasesNotSuppliedForBytecode() throws Exception {
-        final GremlinLang bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlinLang();
-        final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
-        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessageV4.build(bytecodeQuery).create(), new UnpooledByteBufAllocator(false));
-
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader(HttpHeaders.CONTENT_TYPE, SerializersV4.GRAPHSON_V4.getValue());
-        httppost.addHeader(HttpHeaders.ACCEPT, SerializersV4.GRAPHSON_V4.getValue());
-        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertTrue(node.get("status").get("message").asText().contains("A [bytecode] message requires a [g] argument"));
-        }
-    }
-
-    @Test
-    public void shouldErrorOnBytecodeGremlinFromApplicationJsonPostRequest() throws Exception {
-        final GremlinLang bytecodeQuery = EmptyGraph.instance().traversal().V().asAdmin().getGremlinLang();
+    public void shouldErrorOnGremlinFromApplicationJsonPostRequest() throws Exception {
+        final GremlinLang gremlin = EmptyGraph.instance().traversal().V().asAdmin().getGremlinLang();
         final UUID requestId = UUID.fromString("1e55c495-22d5-4a39-934a-a2744ba010ef");
-        final String body = "{ \"gremlin\": \"" + bytecodeQuery + "\", \"requestId\": \"" + requestId + "\", \"g\": \"gmodern" + "\", \"language\":  \"gremlin-lang\"}";
+        final String body = "{ \"gremlin\": \"" + gremlin + "\", \"g\": \"gmodern" + "\", \"language\":  \"gremlin-lang\"}";
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
