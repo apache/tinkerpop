@@ -788,24 +788,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldReturnNiceMessageFromOpSelector() {
-        final Cluster cluster = TestClientFactory.build().create();
-        final Client client = cluster.connect();
-
-        try {
-            final Map m = new HashMap<>();
-            m.put(null, "a null key will force a throw of OpProcessorException in message validation");
-            client.submit("1+1", m).all().get();
-            fail("Should throw an exception.");
-        } catch (Exception re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-            assertEquals("The [eval] message is using one or more invalid binding keys - they must be of type String and cannot be null", root.getMessage());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldNotThrowNoSuchElementException() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
@@ -867,35 +849,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
 
         assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
-
-        cluster.close();
-    }
-
-    @Ignore("used sessions")
-    @Test
-    public void shouldExecuteScriptInSessionWithBindingsSavedOnServerBetweenRequests() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect(name.getMethodName());
-
-        final Map<String, Object> bindings1 = new HashMap<>();
-        bindings1.put("a", 100);
-        bindings1.put("b", 200);
-        final ResultSet results1 = client.submit("x = a + b", bindings1);
-        assertEquals(300, results1.one().getInt());
-
-        final Map<String, Object> bindings2 = new HashMap<>();
-        bindings2.put("b", 100);
-        final ResultSet results2 = client.submit("x + b + a", bindings2);
-        assertEquals(500, results2.one().getInt());
-
-        final Map<String, Object> bindings3 = new HashMap<>();
-        bindings3.put("x", 100);
-        final ResultSet results3 = client.submit("x + b + a + 1", bindings3);
-        assertEquals(301, results3.one().getInt());
-
-        final Map<String, Object> bindings4 = new HashMap<>();
-        final ResultSet results4 = client.submit("x + b + a + 1", bindings4);
-        assertEquals(301, results4.one().getInt());
 
         cluster.close();
     }

@@ -1162,7 +1162,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals(200, response.getStatusLine().getStatusCode());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertTrue(node.get("status").get("message").asText().contains("The [eval] message supplies one or more invalid parameters key"));
+            assertTrue(node.get("status").get("message").asText().contains("The message supplies one or more invalid parameters key"));
         }
     }
 
