@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
@@ -555,7 +556,8 @@ public abstract class Client {
         private void throwNoHostAvailableException() {
             final Throwable rootCause = ExceptionUtils.getRootCause(initializationFailure);
             // allow the certain exceptions to propagate as a cause
-            if (rootCause instanceof SSLException || rootCause instanceof ConnectException) {
+            if (rootCause instanceof SSLException || rootCause instanceof ConnectException ||
+                    rootCause instanceof WebSocketClientHandshakeException) {
                 throw new NoHostAvailableException(initializationFailure);
             } else {
                 throw new NoHostAvailableException();
