@@ -129,7 +129,7 @@ final class Connection {
                 // close did not come from the client side. it means the server closed the channel for some reason.
                 // it's important to distinguish that difference in debugging
                 if (thisConnection.closeFuture.get() == null) {
-                    logger.error(String.format(
+                    logger.warn(String.format(
                             "Server closed the Connection on channel %s - scheduling removal from %s",
                             channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
 
