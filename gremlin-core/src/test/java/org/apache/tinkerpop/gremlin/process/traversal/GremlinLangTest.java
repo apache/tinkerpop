@@ -37,6 +37,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -83,6 +84,7 @@ public class GremlinLangTest {
                         "g.inject(datetime(\"2018-03-21T08:35:44.741Z\"))"},
                 {g.inject(asMap("age", VertexProperty.Cardinality.list(33))),
                         "g.inject([\"age\":Cardinality.list(33)])"},
+                {g.inject(new HashMap<>()), "g.inject([:])"},
                 {g.V(1).out("knows").values("name"), "g.V(1).out(\"knows\").values(\"name\")"},
                 {g.V().has(T.label, "person"), "g.V().has(T.label,\"person\")"},
                 {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),

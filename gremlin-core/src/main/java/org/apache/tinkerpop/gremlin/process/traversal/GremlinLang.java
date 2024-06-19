@@ -107,6 +107,9 @@ public class GremlinLang implements Cloneable, Serializable {
             return arg.toString();
         if (arg instanceof Long)
             return String.format("%sL", arg);
+        // todo: BigInteger and BigDecimal format is different in gremlin-lang and gremlin-groovy
+//        if (arg instanceof BigInteger)
+//            return String.format("%sN", arg);
         if (arg instanceof Float) {
             if (NumberHelper.isNaN(arg))
                 return "NaN";
@@ -126,6 +129,8 @@ public class GremlinLang implements Cloneable, Serializable {
                 return "-Infinity";
             return String.format("%sD", arg);
         }
+//        if (arg instanceof BigDecimal)
+//            return String.format("%sM", arg);
 
         if (arg instanceof Date)
             return String.format("datetime(\"%s\")", format(((Date) arg).toInstant()));
@@ -255,10 +260,14 @@ public class GremlinLang implements Cloneable, Serializable {
         final StringBuilder sb = new StringBuilder("[");
         int size = map.size();
 
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            sb.append(argAsString(entry.getKey())).append(":").append(argAsString(entry.getValue()));
-            if (--size > 0) {
-                sb.append(',');
+        if (size == 0) {
+            sb.append(":");
+        } else {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                sb.append(argAsString(entry.getKey())).append(":").append(argAsString(entry.getValue()));
+                if (--size > 0) {
+                    sb.append(',');
+                }
             }
         }
 
