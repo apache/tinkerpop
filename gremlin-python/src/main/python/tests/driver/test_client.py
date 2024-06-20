@@ -74,6 +74,14 @@ def test_client_message_too_big(client_http):
         client_http.close()
 
 
+def test_client_script_submission(client_http):
+    assert len(client_http.submit("new int[100]").all().result()) == 100
+
+
+def test_client_script_submission_inject(client_http):
+    assert len(client_http.submit("g.inject(new int[100])").all().result()) == 100
+
+
 def test_client_simple_eval(client_http):
     assert client_http.submit('1 + 1').all().result()[0] == 2
 

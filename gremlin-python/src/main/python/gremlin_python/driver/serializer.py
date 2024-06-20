@@ -75,10 +75,10 @@ class Session(Processor):
     def bytecode(self, args):
         gremlin = args['gremlin']
         args['gremlin'] = self._writer.to_dict(gremlin)
-        bindings = args.get('bindings', '')
-        if not bindings:
-            bindings = {'g': 'g'}
-        args['bindings'] = bindings
+        aliases = args.get('aliases', '')
+        if not aliases:
+            aliases = {'g': 'g'}
+        args['aliases'] = aliases
         return args
 
 
@@ -336,9 +336,9 @@ class GraphBinarySerializersV4(object):
             'fields': fields,
             'gremlin': gremlin
         }
-        return self.finalize_message(message, 0x20, self.version)
+        return self.finalize_message(message)
 
-    def finalize_message(self, message, mime_len, mime_type):
+    def finalize_message(self, message):
         ba = bytearray()
 
         ba.extend(graphbinaryV4.uint8_pack(0x81))
@@ -358,6 +358,11 @@ class GraphBinarySerializersV4(object):
         return bytes(ba)
 
     def deserialize_message(self, message):
+        if len(message) == 0:
+            return {'status': {'code': 204},
+                    'result': {'meta': {},
+                               'data': []}}
+
         # for parsing string message via HTTP connections
         b = io.BytesIO(base64.b64decode(message) if isinstance(message, str) else message)
 

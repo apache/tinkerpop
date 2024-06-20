@@ -27,7 +27,6 @@ class ResultSet:
         self._stream = stream
         self._done = None
         self._aggregate_to = None
-        self._status_attributes = {}
 
     @property
     def aggregate_to(self):
@@ -36,14 +35,6 @@ class ResultSet:
     @aggregate_to.setter
     def aggregate_to(self, val):
         self._aggregate_to = val
-
-    @property
-    def status_attributes(self):
-        return self._status_attributes
-
-    @status_attributes.setter
-    def status_attributes(self, val):
-        self._status_attributes = val
 
     @property
     def stream(self):
