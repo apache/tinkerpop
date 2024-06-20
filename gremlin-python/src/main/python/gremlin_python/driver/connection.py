@@ -56,8 +56,6 @@ class Connection:
             self._transport.close()
 
     def write(self, request_message):
-        print('\n===conn===')
-        print(request_message)
         if not self._inited:
             self.connect()
         self._result_set = resultset.ResultSet(queue.Queue())
