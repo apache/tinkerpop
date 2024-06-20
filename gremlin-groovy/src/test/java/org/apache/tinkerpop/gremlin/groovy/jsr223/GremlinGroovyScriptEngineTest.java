@@ -25,7 +25,6 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -75,8 +74,7 @@ public class GremlinGroovyScriptEngineTest {
     private static final Object[] EMPTY_ARGS = new Object[0];
 
     private static final GremlinGroovyScriptEngine ambiguousNullEngine = new GremlinGroovyScriptEngine(
-            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
+            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()));
 
     @Test
     public void shouldNotCacheGlobalFunctions() throws Exception {

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -80,6 +81,25 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             assertEquals(100, client.submit("new int[100]").all().get().size());
         } catch (Exception ex) {
             throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldFailWhenNeeded() {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
+                    addParameter("x", "Good bye, world!").create();
+            client.submit("g.inject(1).fail(x)", ro).all().get();
+            fail("should throw exception");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionHelper.getRootCause(ex);
+            assertThat(inner, instanceOf(ResponseException.class));
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+            assertTrue(ex.getMessage().contains("Good bye, world!"));
         } finally {
             cluster.close();
         }

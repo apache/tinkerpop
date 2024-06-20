@@ -54,7 +54,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimiza
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -280,7 +279,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(GraphTraversalSource.class);
         CLASS_IMPORTS.add(Traversal.class);
         CLASS_IMPORTS.add(TraversalMetrics.class);
-        CLASS_IMPORTS.add(Bindings.class);
         // graph computer
         CLASS_IMPORTS.add(Computer.class);
         CLASS_IMPORTS.add(ComputerResult.class);
