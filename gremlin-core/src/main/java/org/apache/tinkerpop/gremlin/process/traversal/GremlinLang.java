@@ -264,7 +264,13 @@ public class GremlinLang implements Cloneable, Serializable {
             sb.append(":");
         } else {
             for (Map.Entry<?, ?> entry : map.entrySet()) {
-                sb.append(argAsString(entry.getKey())).append(":").append(argAsString(entry.getValue()));
+                String key = argAsString(entry.getKey());
+                // special handling for non-string keys
+                if (entry.getKey() instanceof Enum && key.contains(".")) {
+                    key = String.format("(%s)", key);
+                }
+
+                sb.append(key).append(":").append(argAsString(entry.getValue()));
                 if (--size > 0) {
                     sb.append(',');
                 }
