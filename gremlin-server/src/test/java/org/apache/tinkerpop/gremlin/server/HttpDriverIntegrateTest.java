@@ -31,8 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
@@ -40,6 +40,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,7 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
-import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -134,27 +134,27 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         }
     }
 
+    // !!!
     @Test
     public void playTest() {
         final Cluster cluster = TestClientFactory.build().create();
         try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster))
+                    .with("language", "gremlin-lang");
 
-            g.V().drop().iterate();
+            final GremlinLang.Parameter p = GremlinLang.Parameter.value(BigInteger.valueOf(0L));
 
-            g.addV("person").property("name", "marko")
-                    .property(list, "age", 29)
-                    .property(list, "age", 31)
-                    .property(list, "age", 32)
-                    .iterate();
+            final Object[] nested = new Object[] {new Object[]{0L, (byte) 0, 0, p}};
+            // g.inject(0L,0B,0,_0).unfold().where(__.is(0B))
+//            final List<?> result = g.inject(nested).unfold().where(__.is((byte) 0)).toList();
 
-            g.mergeV(asMap("name", "marko"))
-                    .option(Merge.onMatch, asMap("age", VertexProperty.Cardinality.list(33)))
-                    .iterate();
+            // g.inject(0L,0B,0,_0).unfold().where(__.is(0B))
+//            final List<?> result = g.inject(new Object[]{0L, (byte) 0, 0, p}).unfold().where(__.is((byte) 0)).toList();
 
-            final List<Vertex> result = g.V().has("person", "name", "marko")
-                    .has("age", 33).toList();
-            assertEquals(1, result.size());
+            // g.inject([0L,0B,0,_0]).unfold().where(__.is(0B))
+             final List<?> result = g.inject(Arrays.asList(0L, (byte) 0, 0, p)).unfold().where(__.is((byte) 0)).toList();
+
+            assertEquals(4, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {

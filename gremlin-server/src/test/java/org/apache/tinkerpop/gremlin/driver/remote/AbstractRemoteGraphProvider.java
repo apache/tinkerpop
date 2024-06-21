@@ -304,7 +304,8 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
         // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
         // moved with breaking change.
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(((RemoteGraph) graph).getConnection());
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal()
+                .withRemote(((RemoteGraph) graph).getConnection());
 
         if (useComputer) {
             final int state = TestHelper.RANDOM.nextInt(3);
@@ -324,8 +325,8 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     }
 
     public static Cluster.Builder createClusterBuilder(final SerializersV4 serializer) {
-        // match the content length in the server yaml
-        return TestClientFactory.build().maxContentLength(1000000).serializer(serializer);
+        // bigger buffer for some tests
+        return TestClientFactory.build().maxContentLength(10_000_000).serializer(serializer);
     }
 
     public static void startServer() throws Exception {
