@@ -27,11 +27,11 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -40,7 +40,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.*;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -140,21 +140,15 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster))
-                    .with("language", "gremlin-lang");
+                .withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create())
+                .with("language", "gremlin-lang");
+                //.with("language", "gremlin-groovy");
 
-            final GremlinLang.Parameter p = GremlinLang.Parameter.value(BigInteger.valueOf(0L));
+            final List result = g.V().match(
+                    as("a").out("created").as("b"),
+                    as("b").in("created").as("a")).toList();
 
-            final Object[] nested = new Object[] {new Object[]{0L, (byte) 0, 0, p}};
-            // g.inject(0L,0B,0,_0).unfold().where(__.is(0B))
-//            final List<?> result = g.inject(nested).unfold().where(__.is((byte) 0)).toList();
-
-            // g.inject(0L,0B,0,_0).unfold().where(__.is(0B))
-//            final List<?> result = g.inject(new Object[]{0L, (byte) 0, 0, p}).unfold().where(__.is((byte) 0)).toList();
-
-            // g.inject([0L,0B,0,_0]).unfold().where(__.is(0B))
-             final List<?> result = g.inject(Arrays.asList(0L, (byte) 0, 0, p)).unfold().where(__.is((byte) 0)).toList();
-
-            assertEquals(4, result.size());
+            assertEquals(0, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {

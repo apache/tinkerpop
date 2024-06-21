@@ -253,6 +253,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
 
             // optimizations
             put(ProductiveByStrategy.class.getSimpleName(), ProductiveByStrategy.class);
+            put(PathRetractionStrategy.class.getSimpleName(), PathRetractionStrategy.class);
 
             // verification
             put(EdgeLabelVerificationStrategy.class.getSimpleName(), EdgeLabelVerificationStrategy.class);
