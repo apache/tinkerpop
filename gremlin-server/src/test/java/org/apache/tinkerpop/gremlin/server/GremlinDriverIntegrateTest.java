@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -30,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -39,9 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.net.ConnectException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,23 +99,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Before
     public void setupForEachTest() {
-        if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
-                name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(GremlinResponseHandler.class);
-            previousLogLevel = webSocketClientHandlerLogger.getLevel();
-            webSocketClientHandlerLogger.setLevel(Level.DEBUG);
-        }
-
         logCaptor.clearLogs();
-    }
-
-    @After
-    public void afterEachTest() {
-        if (name.getMethodName().equals("shouldKeepAliveForWebSockets") ||
-                name.getMethodName().equals("shouldKeepAliveForWebSocketsWithNoInFlightRequests")) {
-            final Logger webSocketClientHandlerLogger = (Logger) LoggerFactory.getLogger(GremlinResponseHandler.class);
-            webSocketClientHandlerLogger.setLevel(previousLogLevel);
-        }
     }
 
     /**
@@ -153,10 +132,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.serializers.stream().filter(s -> s.className.contains("Gryo"))
                         .forEach(s -> s.config.put("custom", custom));
                 break;
-            case "shouldExecuteScriptInSessionOnTransactionalGraph":
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
-            case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
-            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
             case "shouldManageTransactionsInSession":
                 useTinkerTransactionGraph(settings);
                 break;
@@ -296,7 +272,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             try {
-                client.submit("def x = '';(0..<1024).each{x = x + '$it'};x").all().get();
+                client.submit("def x = '';(0..<128).each{x = x + '$it'};x").all().get();
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
