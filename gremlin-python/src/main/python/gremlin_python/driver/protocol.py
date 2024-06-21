@@ -251,6 +251,7 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
                                           'message': message['status']['message'],
                                           'attributes': {}})
         else:
+            # TODO check error deserialization after chunking implementation
             log.error("\r\nReceived error message '%s'\r\n\r\nWith result set '%s'",
                       str(response['content']), str(result_set))
             body = json.loads(response['content'])

@@ -351,7 +351,7 @@ def test_client_bytecode_with_bigint(client_http):
 
 def test_big_result_set(client_http):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    t = g.inject(1).repeat(__.add_V('person').property('name', __.loops())).times(20000).count()
+    t = g.inject(1).repeat(__.add_v('person').property('name', __.loops())).times(20000).count()
     message = create_basic_request_message(t, source='g')
     result_set = client_http.submit(message)
     results = []
