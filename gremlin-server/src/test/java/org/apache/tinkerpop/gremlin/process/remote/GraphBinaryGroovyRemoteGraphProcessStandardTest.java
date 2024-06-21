@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryRemoteGraphProvider;
+import org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryGroovyRemoteGraphProvider;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
 import org.junit.runner.RunWith;
@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = GraphBinaryRemoteGraphProvider.class, graph = RemoteGraph.class)
-public class GraphBinaryRemoteGraphProcessStandardTest {
+@GraphProviderClass(provider = GraphBinaryGroovyRemoteGraphProvider.class, graph = RemoteGraph.class)
+public class GraphBinaryGroovyRemoteGraphProcessStandardTest {
 }

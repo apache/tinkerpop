@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphBinaryRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
-    public GraphBinaryRemoteGraphProvider() {
-        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create());
+public class GraphBinaryGroovyRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
+    public GraphBinaryGroovyRemoteGraphProvider() {
+        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), false, "gremlin-groovy");
     }
 }

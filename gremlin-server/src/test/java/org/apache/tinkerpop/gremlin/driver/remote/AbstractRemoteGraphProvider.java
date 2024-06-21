@@ -221,6 +221,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     private final Cluster cluster;
     private final Client client;
     private final boolean useComputer;
+    private final String queryLanguage;
 
 
     public AbstractRemoteGraphProvider(final Cluster cluster) {
@@ -228,9 +229,14 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     }
 
     public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer) {
+        this(cluster, useComputer, "gremlin-groovy");
+    }
+
+    public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer, final String queryLanguage) {
         this.cluster = cluster;
         this.client = this.cluster.connect();
         this.useComputer = useComputer;
+        this.queryLanguage = queryLanguage;
         try {
             startServer();
         } catch (Exception ex) {
@@ -305,7 +311,8 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
         // moved with breaking change.
         final GraphTraversalSource g = AnonymousTraversalSource.traversal()
-                .withRemote(((RemoteGraph) graph).getConnection());
+                .with(((RemoteGraph) graph).getConnection())
+                .with("language", queryLanguage);
 
         if (useComputer) {
             final int state = TestHelper.RANDOM.nextInt(3);
@@ -321,7 +328,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
             }
         }
 
-        return g.with("language", "gremlin-lang");
+        return g;
     }
 
     public static Cluster.Builder createClusterBuilder(final SerializersV4 serializer) {
