@@ -22,4 +22,4 @@
  */
 'use strict';
 
-require('./ArraySerializerTestTemplate')({ ID: 0x0B, name: 'Set' });
+require('./SetSerializerTestTemplate')({ ID: 0x0B, name: 'Set' });

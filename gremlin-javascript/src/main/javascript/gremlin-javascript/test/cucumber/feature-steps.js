@@ -56,7 +56,7 @@ const parsers = [
   [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'p\\[(.+)\\]', toPath ],
   [ 'l\\[(.*)\\]', toArray ],
-  [ 's\\[(.*)\\]', toArray ],
+  [ 's\\[(.*)\\]', toSet ],
   [ 'm\\[(.+)\\]', toMap ],
   [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
@@ -73,61 +73,11 @@ chai.use(function (chai, chaiUtils) {
 const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
-  setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_in_valuesXnameX_fold_dedupXlocalX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnonexistantX_fold_differenceXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnameX_fold_differenceXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_differenceXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_path_byXvaluesXnameX_toUpperX_differenceXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXmarkoX_differenceXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valueMapXlocationX_selectXvaluesX_unfold_differenceXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_differenceXrippleX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_differenceXempty_listX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_differenceXconstantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_differenceXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_differenceXa_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_differenceXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectX3_threeX_differenceXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnonexistantX_fold_disjunctXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnameX_fold_disjunctXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_disjunctXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_path_byXvaluesXnameX_toUpperX_disjunctXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valueMapXlocationX_selectXvaluesX_unfold_disjunctXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_disjunctXmarkoX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_disjunctXstephen_markoX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_disjunctXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_disjunctXa_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_disjunctXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectX3_threeX_disjunctXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnonexistantX_fold_intersectXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnameX_fold_intersectXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_path_byXvaluesXnameX_toUpperX_intersectXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXmarkoX_intersectX___V_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valueMapXlocationX_selectXvaluesX_unfold_intersectXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_intersectX___constantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_intersectXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_intersectXa_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_intersectXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectX3_threeX_intersectXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnonexistantX_fold_mergeXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXnameX_fold_mergeXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_mergeXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_path_byXvaluesXnameX_toUpperX_mergeXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXmarkoX_mergeXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valueMapXlocationX_selectXvaluesX_unfold_mergeXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_mergeXempty_listX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_valuesXageX_fold_mergeXconstantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_V_out_out_path_byXnameX_mergeXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_mergeXa_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectXa_null_bX_mergeXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_injectX3_threeX_mergeXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
@@ -250,7 +200,7 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(toCompare(expectedResult));
+      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
       break;
     case 'of':
       // result is a subset of the expected
@@ -438,6 +388,16 @@ function toArray(stringList) {
     return new Array(0);
   }
   return stringList.split(',').map(x => parseValue.call(this, x));
+}
+
+function toSet(stringList) {
+  if (stringList === '') {
+    return new Set();
+  }
+
+  const s = new Set();
+  stringList.split(',').forEach(x => s.add(parseValue.call(this, x)));
+  return s;
 }
 
 function toMap(stringMap) {

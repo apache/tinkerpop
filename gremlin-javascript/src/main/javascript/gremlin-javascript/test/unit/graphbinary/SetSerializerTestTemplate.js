@@ -20,7 +20,6 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
 const utils = require('./utils');
 const assert = require('assert');
@@ -32,7 +31,7 @@ const { from, concat } = Buffer;
 
 module.exports = ({ ID, name }) => {
 
-describe(`GraphBinary.${name}Serializer`, () => {
+describe(`GraphBinary.SetSerializer`, () => {
 
   const type_code =  from([ID]);
   const value_flag = from([0x00]);
@@ -40,14 +39,14 @@ describe(`GraphBinary.${name}Serializer`, () => {
   const serializer = ioc.serializers[ID];
 
   const cases = [
-    { v:undefined,                          fq:1, b:[ID,0x01],          av:null },
-    { v:undefined,                          fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
+    { v:undefined,                          fq:1, b:[ID,0x01],             av:null },
+    { v:undefined,                          fq:0, b:[0x00,0x00,0x00,0x00], av:new Set() },
     { v:null,                               fq:1, b:[ID,0x01] },
-    { v:null,                               fq:0, b:[0x00,0x00,0x00,0x00], av:[] },
+    { v:null,                               fq:0, b:[0x00,0x00,0x00,0x00], av:new Set() },
 
-    { v:[],                                 b:[0x00,0x00,0x00,0x00] },
-    { v:[2147483647],                       b:[0x00,0x00,0x00,0x01, 0x01,0x00,0x7F,0xFF,0xFF,0xFF] },
-    { v:[-1,'A'],                           b:[0x00,0x00,0x00,0x02, 0x01,0x00,0xFF,0xFF,0xFF,0xFF, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
+    { v:new Set(),                          b:[0x00,0x00,0x00,0x00] },
+    { v:new Set([2147483647]),       b:[0x00,0x00,0x00,0x01, 0x01,0x00,0x7F,0xFF,0xFF,0xFF] },
+    { v:new Set([-1,'A']),           b:[0x00,0x00,0x00,0x02, 0x01,0x00,0xFF,0xFF,0xFF,0xFF, 0x03,0x00,0x00,0x00,0x00,0x01,0x41] },
 
     { des:1, err:/buffer is missing/,       fq:1, b:undefined },
     { des:1, err:/buffer is missing/,       fq:0, b:undefined },
@@ -76,27 +75,23 @@ describe(`GraphBinary.${name}Serializer`, () => {
 
   describe('#serialize', () => {
     cases
-    .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
-      b = from(b);
+        .filter(({des}) => !des)
+        .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+            b = from(b);
 
-      // when fq is under control
-      if (fq !== undefined) {
-        assert.deepEqual( serializer.serialize(v, fq), b );
-        return;
-      }
+            // when fq is under control
+            if (fq !== undefined) {
+                assert.deepEqual( serializer.serialize(v, fq), b );
+                return;
+            }
 
-      // generic case
-      assert.deepEqual( serializer.serialize(v, true),  concat([type_code, value_flag, b]) );
-      assert.deepEqual( serializer.serialize(v, false), concat([                       b]) );
-    }));
+            // generic case
+            assert.deepEqual( serializer.serialize(v, true),  concat([type_code, value_flag, b]) );
+            assert.deepEqual( serializer.serialize(v, false), concat([                       b]) );
+        }));
 
-    it.skip('should not error if array length is INT32_MAX'); // TODO: resource heavy
+    it.skip('should not error if set length is INT32_MAX');
 
-    it('should error if array length is greater than INT32_MAX', () => assert.throws(
-      () => serializer.serialize(new Array(intSerializer.INT32_MAX+1)),
-      { message: new RegExp(`Array length=${intSerializer.INT32_MAX+1} is greater than supported max_length=${intSerializer.INT32_MAX}`) }
-    ));
   });
 
   describe('#deserialize', () =>
@@ -134,13 +129,16 @@ describe(`GraphBinary.${name}Serializer`, () => {
   describe('#canBeUsedFor', () =>
     // most of the cases are implicitly tested via AnySerializer.serialize() tests
     [
-      { v: null,              e: false },
-      { v: undefined,         e: false },
-      { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: [],                e: true },
-      { v: [0],               e: true },
-      { v: [undefined],       e: true },
+      { v: null,                  e: false },
+      { v: undefined,             e: false },
+      { v: {},                    e: false },
+      { v: new t.Traverser(),     e: false },
+      { v: [],                    e: false },
+      { v: [0],                   e: false },
+      { v: [undefined],           e: false },
+      { v: new Set(),             e: true },
+      { v: new Set([0]),          e: true },
+      { v: new Set([undefined]),  e: true },
     ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
       assert.strictEqual( serializer.canBeUsedFor(v), e )
     ))

@@ -33,10 +33,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
@@ -296,6 +298,15 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         }
     }
 
+    @Override
+    public Object visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+        final Set<Object> result = new HashSet<>(ctx.getChildCount() / 2);
+        for (GremlinParser.GenericLiteralContext ic : ctx.genericLiteral()) {
+            result.add(antlr.genericVisitor.visitGenericLiteral(ic));
+        }
+        return result;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -333,6 +344,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 key = visitTraversalDirection((GremlinParser.TraversalDirectionContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralCollectionContext) {
                 key = visitGenericLiteralCollection((GremlinParser.GenericLiteralCollectionContext) kctx);
+            } else if (kctx instanceof GremlinParser.GenericLiteralSetContext) {
+                key = visitGenericLiteralSet((GremlinParser.GenericLiteralSetContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralMapContext) {
                 key = visitGenericLiteralMap((GremlinParser.GenericLiteralMapContext) kctx);
             } else if (kctx instanceof GremlinParser.KeywordContext) {

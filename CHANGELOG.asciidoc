@@ -28,6 +28,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
+* Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
+* Added `Set` syntax in `gremlin-language`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.

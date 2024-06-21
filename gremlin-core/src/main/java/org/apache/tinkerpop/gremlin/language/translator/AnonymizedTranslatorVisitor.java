@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A translator that anonymizes Gremlin so that arguments that might contain sensitive information are removed.
@@ -73,6 +74,11 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
             sb.append(anonymizedValue);
         }
         return null;
+    }
+
+    @Override
+    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+        return anonymize(ctx, Set.class);
     }
 
     @Override

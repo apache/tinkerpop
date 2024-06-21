@@ -474,6 +474,21 @@ class SetSerializer extends ArraySerializer {
   constructor() {
     super('g:Set');
   }
+
+  deserialize(obj) {
+    return new Set(super.deserialize(obj));
+  }
+
+  serialize(item) {
+    return {
+      [typeKey]: this.typeKey,
+      [valueKey]: [...item].map((x) => this.writer.adaptObject(x)),
+    };
+  }
+
+  canBeUsedFor(value) {
+    return value instanceof Set;
+  }
 }
 
 module.exports = {

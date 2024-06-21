@@ -266,11 +266,6 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitChainedParentOfGraphTraversal(final GremlinParser.ChainedParentOfGraphTraversalContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
     public Void visitNestedTraversal(final GremlinParser.NestedTraversalContext ctx) {
         if (ctx.ANON_TRAVERSAL_ROOT() == null)
             appendAnonymousSpawn();
@@ -878,7 +873,7 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitTraversalMethod_none_P(final GremlinParser.TraversalMethod_none_PContext ctx) {
+    public Void visitTraversalMethod_none(final GremlinParser.TraversalMethod_noneContext ctx) {
         return visitChildren(ctx);
     }
 
@@ -1606,11 +1601,6 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitTraversalSelfMethod(final GremlinParser.TraversalSelfMethodContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
     public Void visitTraversalComparator(final GremlinParser.TraversalComparatorContext ctx) {
         return visitChildren(ctx);
     }
@@ -1806,11 +1796,6 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
 
     @Override
     public Void visitTraversalTerminalMethod_toBulkSet(final GremlinParser.TraversalTerminalMethod_toBulkSetContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalSelfMethod_discard(final GremlinParser.TraversalSelfMethod_discardContext ctx) {
         return visitChildren(ctx);
     }
 
@@ -2201,6 +2186,11 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
 
     @Override
     public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
         return visitChildren(ctx);
     }
 
