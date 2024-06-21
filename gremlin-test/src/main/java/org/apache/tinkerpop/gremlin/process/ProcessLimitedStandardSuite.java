@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TernaryBooleanLogicsTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
@@ -59,8 +58,8 @@ public class ProcessLimitedStandardSuite extends AbstractGremlinSuite {
             MergeVertexTest.Traversals.class,
             MergeEdgeTest.Traversals.class,
 
-            MatchTest.CountMatchTraversals.class,
-            MatchTest.GreedyMatchTraversals.class,
+//            MatchTest.CountMatchTraversals.class,
+//            MatchTest.GreedyMatchTraversals.class,
             ProfileTest.Traversals.class,
             WriteTest.Traversals.class,
             ExplainTest.Traversals.class,

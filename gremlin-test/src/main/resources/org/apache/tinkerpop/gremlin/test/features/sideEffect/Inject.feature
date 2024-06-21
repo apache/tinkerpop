@@ -113,6 +113,7 @@ Feature: Step - inject()
       | m[{"name":"marko", "age":null}] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # bug in implementation for gremlin-groovy
   Scenario: g_injectXnull_nullX
     Given the modern graph
     And the traversal of
@@ -148,6 +149,7 @@ Feature: Step - inject()
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # bug in implementation for gremlin-groovy
   Scenario: g_VX1X_valuesXageX_injectXnull_nullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"

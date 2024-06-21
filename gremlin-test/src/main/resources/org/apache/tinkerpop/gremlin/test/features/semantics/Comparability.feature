@@ -866,6 +866,7 @@ Feature: Comparability
   ######################################################
     
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfX_eqXInfX
     Given the empty graph
     And the traversal of
@@ -878,6 +879,7 @@ Feature: Comparability
       | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfArgX_eqXInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[Infinity]"
@@ -891,6 +893,7 @@ Feature: Comparability
       | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfX_neqXInfX
     Given the empty graph
     And the traversal of
@@ -901,6 +904,7 @@ Feature: Comparability
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfArgX_neqXInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[Infinity]"
@@ -912,6 +916,7 @@ Feature: Comparability
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfX_eqXNegInfX
     Given the empty graph
     And the traversal of
@@ -924,6 +929,7 @@ Feature: Comparability
       | d[-Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfArgX_eqXNegInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[-Infinity]"
@@ -937,6 +943,7 @@ Feature: Comparability
       | d[-Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfX_neqXNegInfX
     Given the empty graph
     And the traversal of
@@ -947,6 +954,7 @@ Feature: Comparability
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfArgX_neqXNegInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[-Infinity]"
@@ -958,6 +966,7 @@ Feature: Comparability
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfX_gtXNegInfX
     Given the empty graph
     And the traversal of
@@ -970,6 +979,7 @@ Feature: Comparability
       | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXInfX_ltXNegInfX
     Given the empty graph
     And the traversal of
@@ -980,6 +990,7 @@ Feature: Comparability
     Then the result should be empty
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfX_ltXInfX
     Given the empty graph
     And the traversal of
@@ -992,6 +1003,7 @@ Feature: Comparability
       | d[-Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
+  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: InjectXNegInfX_gtXInfX
     Given the empty graph
     And the traversal of

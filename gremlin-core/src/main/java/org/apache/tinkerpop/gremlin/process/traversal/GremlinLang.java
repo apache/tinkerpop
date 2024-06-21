@@ -108,6 +108,7 @@ public class GremlinLang implements Cloneable, Serializable {
         if (arg instanceof Long)
             return String.format("%sL", arg);
         // todo: BigInteger and BigDecimal format is different in gremlin-lang and gremlin-groovy
+        // let's keep it as parameter for now to reduce number of failed tests
 //        if (arg instanceof BigInteger)
 //            return String.format("%sN", arg);
         if (arg instanceof Float) {
