@@ -481,4 +481,15 @@ export class SetSerializer extends ArraySerializer {
   deserialize(obj: SerializedValue): any {
     return new Set(super.deserialize(obj));
   }
+
+  serialize(item: unknown[]) {
+    return {
+      [typeKey]: this.typeKey,
+      [valueKey]: [...item].map((x) => this.writer.adaptObject(x)),
+    };
+  }
+
+  canBeUsedFor(value: unknown) {
+    return value instanceof Set;
+  }
 }

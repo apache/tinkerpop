@@ -1430,6 +1430,7 @@ const gremlins = {
     g_V_aggregateXlocal_a_nameX_out_capXaX: [function({g}) { return g.V().aggregate(Scope.local, "a").by("name").out().cap("a") }], 
     g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX: [function({g, vid1}) { return g.V(vid1).aggregate(Scope.local, "a").by("name").out().aggregate(Scope.local, "a").by("name").values("name").cap("a") }], 
     g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX: [function({g, xx1}) { return g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local, "a").cap("a") }], 
+    g_withSideEffectXa_set_inlineX_V_both_name_aggregateXlocal_aX_capXaX: [function({g}) { return g.withSideEffect("a", new Set(["alice"])).V().both().values("name").aggregate(Scope.local, "a").cap("a") }], 
     g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX: [function({g}) { return g.V().aggregate(Scope.local, "a").by(__.outE("created").count()).out().out().aggregate(Scope.local, "a").by(__.inE("created").values("weight").sum()).cap("a") }], 
     g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX: [function({g}) { return g.V().aggregate("x").by(__.values("age").is(P.gt(29))).cap("x") }], 
     g_withStrategiesXProductiveByStrategyX_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX: [function({g}) { return g.withStrategies(new ProductiveByStrategy()).V().aggregate("x").by(__.values("age").is(P.gt(29))).cap("x") }], 
@@ -1483,7 +1484,10 @@ const gremlins = {
     g_VX1X_valuesXageX_injectXnullX: [function({g, xx1}) { return g.V(xx1).values("age").inject(null) }], 
     g_VX1X_valuesXageX_inject: [function({g, xx1}) { return g.V(xx1).values("age").inject() }], 
     g_injectXnull_1_3_nullX_asXaX_selectXaX: [function({g}) { return g.inject(null, 1, 3, null).as("a").select("a") }], 
-    g_injectX1_3lX_injectX100_300X: [function({g}) { return g.inject(1, 3).inject(100, 300) }], 
+    g_injectX1_3X_injectX100_300X: [function({g}) { return g.inject(1, 3).inject(100, 300) }], 
+    g_injectX1_3_100_300X_list: [function({g}) { return g.inject([1, 3, 100, 300]) }], 
+    g_injectX1_3_100_300X_set: [function({g}) { return g.inject(new Set([1, 3, 100, 300])) }], 
+    g_injectX1_1X_set: [function({g}) { return g.inject(new Set([1, 1])) }], 
     g_io_readXkryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_read_withXreader_gryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").with_(IO.reader, IO.gryo).read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_readXgraphsonX: [function({g}) { return g.io("data/tinkerpop-modern.json").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
@@ -1512,6 +1516,7 @@ const gremlins = {
     g_V_storeXa_nameX_out_capXaX: [function({g}) { return g.V().store("a").by("name").out().cap("a") }], 
     g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX: [function({g, vid1}) { return g.V(vid1).store("a").by("name").out().store("a").by("name").values("name").cap("a") }], 
     g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX: [function({g, xx1}) { return g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a") }], 
+    g_withSideEffectXa_set_inlineX_V_both_name_storeXaX_capXaX: [function({g}) { return g.withSideEffect("a", new Set(["alice"])).V().both().values("name").store("a").cap("a") }], 
     g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX: [function({g}) { return g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum()).cap("a") }], 
 }
 

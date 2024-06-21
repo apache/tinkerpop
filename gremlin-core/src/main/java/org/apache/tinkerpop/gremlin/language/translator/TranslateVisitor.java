@@ -2205,6 +2205,11 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
+    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Void visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) {
         return visitChildren(ctx);
     }

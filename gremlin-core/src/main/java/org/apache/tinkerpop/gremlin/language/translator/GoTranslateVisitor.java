@@ -99,6 +99,20 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+        sb.append(GO_PACKAGE_NAME);
+        sb.append("NewSimpleSet(");
+        for (int i = 0; i < ctx.genericLiteral().size(); i++) {
+            final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
+            visit(genericLiteralContext);
+            if (i < ctx.genericLiteral().size() - 1)
+                sb.append(", ");
+        }
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
         sb.append("[]interface{}{");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {

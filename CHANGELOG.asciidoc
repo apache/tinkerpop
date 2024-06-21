@@ -33,6 +33,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
+* Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
+* Added `Set` syntax in `gremlin-language`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
@@ -41,7 +43,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
 * Added TypeScript & ECMAScript module support.
-* Improved graph structures type definitions in TypeScript
+* Improved graph structures type definitions in TypeScript.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

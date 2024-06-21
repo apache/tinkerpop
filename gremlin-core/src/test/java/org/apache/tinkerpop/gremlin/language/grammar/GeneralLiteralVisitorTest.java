@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -33,10 +34,13 @@ import java.math.BigInteger;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -549,6 +553,12 @@ public class GeneralLiteralVisitorTest {
                     {"[new: true]", 1},
                     {"[new : true]", 1},
                     {"['new' : true]", 1},
+                    {"[s: {'x'}]", 1},
+                    {"[l: ['x']]", 1},
+                    {"[({'x'}): 'x']", 1},
+                    {"[{'x'}: 'x']", 1},
+                    {"[['x']: ['x',{'y'}]]", 1},
+                    {"[['x']: ['x',['y']]]", 1},
             });
         }
 
@@ -560,7 +570,7 @@ public class GeneralLiteralVisitorTest {
             final Object genericLiteral = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
 
             // verify type is Map
-            assertThat(genericLiteral, instanceOf(Map.class));
+            assertThat(script, genericLiteral, instanceOf(Map.class));
 
             // verify total number of elements
             final Map<Object, Object> genericLiterals = (Map<Object, Object>) genericLiteral;
@@ -572,7 +582,7 @@ public class GeneralLiteralVisitorTest {
 
         @Test
         public void shouldParseGenericLiteralCollection() {
-            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("['world', 165, [12L, 0xA, 14.5, \"hello\"]]"));
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("['world', 165, 165, [12L, 0xA, 14.5, \"hello\"]]"));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
             final Object genericLiteral = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
@@ -582,19 +592,20 @@ public class GeneralLiteralVisitorTest {
 
             // verify total number of elements
             List<Object> genericLiterals = (List<Object>) genericLiteral;
-            assertEquals(genericLiterals.size(), 3);
+            assertEquals(genericLiterals.size(), 4);
 
             // verify first element
             assertEquals("world", genericLiterals.get(0));
 
-            // verify second element
+            // verify second/third element
             assertEquals(165, genericLiterals.get(1));
+            assertEquals(165, genericLiterals.get(2));
 
-            // verify 3rd element
-            assertThat(genericLiterals.get(2), instanceOf(List.class));
+            // verify 4th element
+            assertThat(genericLiterals.get(3), instanceOf(List.class));
 
             // verify total number of elements
-            genericLiterals = (List<Object>) genericLiterals.get(2);
+            genericLiterals = (List<Object>) genericLiterals.get(3);
             assertEquals(genericLiterals.size(), 4);
 
             // verify first element
@@ -625,6 +636,77 @@ public class GeneralLiteralVisitorTest {
 
             // verify total number of elements
             final List<Object> genericLiterals = (List<Object>) genericLiteral;
+            Assert.assertTrue(genericLiterals.isEmpty());
+        }
+    }
+
+    public static class ValidSetLiteralTest {
+
+        @Test
+        public void shouldParseGenericLiteralSet() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("{'world', 165, 14.5, {12L, 0xA, 14.5, \"hello\"}}"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
+            final Object genericLiteral = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
+
+            // verify type is Object[]
+            assertThat(genericLiteral, instanceOf(Set.class));
+
+            // verify total number of elements
+            Set<Object> genericLiterals = (Set<Object>) genericLiteral;
+            assertEquals(genericLiterals.size(), 4);
+
+            assertThat(genericLiterals.contains("world"), Matchers.is(true));
+            assertThat(genericLiterals.contains(165), Matchers.is(true));
+            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(new HashSet<Object>() {{
+                add(12L);
+                add(10);
+                add(new BigDecimal(14.5));
+                add("hello");
+            }}), Matchers.is(true));
+        }
+
+        @Test
+        public void shouldParseGenericLiteralSetWithEmbeddedList() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("{'world', 165, 14.5, [12L, 0xA, 14.5, \"hello\"]}"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
+            final Object genericLiteral = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
+
+            // verify type is Object[]
+            assertThat(genericLiteral, instanceOf(Set.class));
+
+            // verify total number of elements
+            Set<Object> genericLiterals = (Set<Object>) genericLiteral;
+            assertEquals(genericLiterals.size(), 4);
+
+            assertThat(genericLiterals.contains("world"), Matchers.is(true));
+            assertThat(genericLiterals.contains(165), Matchers.is(true));
+            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(new ArrayList<Object>() {{
+                add(12L);
+                add(10);
+                add(new BigDecimal(14.5));
+                add("hello");
+            }}), Matchers.is(true));
+        }
+
+        /**
+         * Generic literal collection test
+         */
+        @Test
+        public void shouldParseEmptyGenericLiteralCollection() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("{}"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralContext ctx = parser.genericLiteral();
+            final Object genericLiteral = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteral(ctx);
+
+            // verify type is Object[]
+            assertThat(genericLiteral, instanceOf(Set.class));
+
+            // verify total number of elements
+            final Set<Object> genericLiterals = (Set<Object>) genericLiteral;
             Assert.assertTrue(genericLiterals.isEmpty());
         }
     }

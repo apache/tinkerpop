@@ -179,15 +179,21 @@ Feature: Step - aggregate()
       """
       g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter  |
+      | s[marko,vadas,lop,josh,ripple,peter] |
+
+  Scenario: g_withSideEffectXa_set_inlineX_V_both_name_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSideEffect("a", {"alice"}).V().both().values("name").aggregate(local,"a").cap("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[alice,marko,vadas,lop,josh,ripple,peter] |
 
   Scenario: g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX
     Given the modern graph
