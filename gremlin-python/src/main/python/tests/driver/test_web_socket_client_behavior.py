@@ -23,14 +23,18 @@ __author__ = 'Cole Greer (cole@colegreer.ca)'
 import re
 import operator
 from functools import reduce
+
+import pytest
 from gremlin_python.driver import useragent
 
 
+# TODO: remove or modify after implementing equivalent support in HTTP server
 # Note: This test demonstrates different behavior in response to a server sending a close frame than the other GLV's.
 # Other GLV's will respond to this by trying to reconnect. This test is also demonstrating incorrect behavior of
 # client.is_closed() as it appears unaware that the event loop is dead.
 # These differences from other GLV's are being tracked in [TINKERPOP-2846]. If this behavior is changed to resemble
 # other GLV's, this test should be updated to show a vertex is being received by the second request.
+@pytest.mark.skip(reason="not implemented in HTTP & need to check on server side")
 def test_does_not_create_new_connection_if_closed_by_server(socket_server_client, socket_server_settings):
     try:
         socket_server_client.submit(

@@ -23,12 +23,12 @@ import math
 
 from gremlin_python.statics import timestamp, long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
-from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
+from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge, Direction
+from gremlin_python.structure.io.util import Marker
 
 
-# TODO: to be removed
-class TestGraphBinaryV1(object):
+class TestGraphBinaryV4(object):
     graphbinary_writer = GraphBinaryWriter()
     graphbinary_reader = GraphBinaryReader()
 
@@ -231,5 +231,10 @@ class TestGraphBinaryV1(object):
 
     def test_duration(self):
         x = datetime.timedelta(seconds=1000, microseconds=1000)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_marker(self):
+        x = Marker.end_of_stream()
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
