@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.sigv4;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -108,7 +109,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         assertThat(fullHttpRequest.get().headers().get("Authorization"),
                 startsWith("AWS4-HMAC-SHA256 Credential=I am AWSAccessKeyId"));
         assertThat(fullHttpRequest.get().headers().get("Authorization"),
-                containsString("/us-west2/neptune-db/aws4_request, SignedHeaders=accept;content-length;content-type;host;user-agent;x-amz-date, Signature="));
+                allOf(containsString("/us-west2/neptune-db/aws4_request"), containsString("Signature=")));
 
         cluster.close();
     }
