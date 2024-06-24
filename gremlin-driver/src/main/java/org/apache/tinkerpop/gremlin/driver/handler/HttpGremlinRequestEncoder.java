@@ -25,6 +25,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -74,6 +75,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
+            request.headers().add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.DEFLATE);
             request.headers().add(HttpHeaderNames.HOST, ((InetSocketAddress) channelHandlerContext.channel().remoteAddress()).getAddress().getHostAddress());
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
