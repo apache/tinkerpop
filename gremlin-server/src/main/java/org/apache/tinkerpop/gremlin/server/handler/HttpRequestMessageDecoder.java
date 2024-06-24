@@ -80,6 +80,8 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final FullHttpRequest req, final List<Object> objects) throws Exception {
+        ctx.channel().attr(StateKey.REQUEST_HEADERS).set(req.headers());
+
         final String acceptMime = Optional.ofNullable(req.headers().get(HttpHeaderNames.ACCEPT)).orElse("application/json");
         final Pair<String, MessageSerializerV4<?>> serializer = chooseSerializer(acceptMime);
 

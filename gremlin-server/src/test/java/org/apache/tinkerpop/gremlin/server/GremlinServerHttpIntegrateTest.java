@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.EofSensorInputStream;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -58,6 +59,7 @@ import org.junit.Test;
 
 import javax.script.SimpleBindings;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Base64;
@@ -1114,11 +1116,17 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     private Header[] getTrailingHeaders(final CloseableHttpResponse response) throws IOException, NoSuchFieldException, IllegalAccessException {
-        final EofSensorInputStream content = (EofSensorInputStream) response.getEntity().getContent();
+        final InputStream content = response.getEntity().getContent();
         final Field field = content.getClass().getDeclaredField("wrappedStream");
         field.setAccessible(true);
-        final ChunkedInputStream stream = (ChunkedInputStream) field.get(content);
-        return stream.getFooters();
+        final EofSensorInputStream stream = (EofSensorInputStream) field.get(content);
+        final Field eofStreamField = stream.getClass().getDeclaredField("eofWatcher");
+        eofStreamField.setAccessible(true);
+        final HttpEntityWrapper entityProxy = (HttpEntityWrapper) eofStreamField.get(stream);
+        final EofSensorInputStream innerEofStream = (EofSensorInputStream) entityProxy.getContent();
+        final Field eofWrappedStreamField = innerEofStream.getClass().getDeclaredField("wrappedStream");
+        eofWrappedStreamField.setAccessible(true);
+        return ((ChunkedInputStream) eofWrappedStreamField.get(innerEofStream)).getFooters();
     }
 
     @Test
