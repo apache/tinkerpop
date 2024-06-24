@@ -61,10 +61,11 @@ class AbstractBaseProtocol(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def write(self, request_id, request_message):
+    def write(self, request_message):
         pass
 
 
+# TODO: remove WS protocol & refactor
 class GremlinServerWSProtocol(AbstractBaseProtocol):
     QOP_AUTH_BIT = 1
     _kerberos_context = None
@@ -206,7 +207,7 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
     def connection_made(self, transport):
         super(GremlinServerHTTPProtocol, self).connection_made(transport)
 
-    def write(self, request_id, request_message):
+    def write(self, request_message):
 
         basic_auth = {}
         if self._username and self._password:
@@ -217,13 +218,13 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
         message = {
             'headers': {'CONTENT-TYPE': content_type,
                         'ACCEPT': content_type},
-            'payload': self._message_serializer.serialize_message(request_id, request_message),
+            'payload': self._message_serializer.serialize_message(request_message),
             'auth': basic_auth
         }
 
         self._transport.write(message)
 
-    def data_received(self, response, results_dict):
+    def data_received(self, response, result_set):
         # if Gremlin Server cuts off then we get a None for the message
         if response is None:
             log.error("Received empty message from server.")
@@ -232,8 +233,6 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
         if response['ok']:
             message = self._message_serializer.deserialize_message(response['content'])
-            request_id = message['requestId']
-            result_set = results_dict[request_id] if request_id in results_dict else ResultSet(None, None)
             status_code = message['status']['code']
             aggregate_to = message['result']['meta'].get('aggregateTo', 'list')
             data = message['result']['data']
@@ -241,19 +240,19 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
             if status_code == 204:
                 result_set.stream.put_nowait([])
-                del results_dict[request_id]
                 return status_code
             elif status_code in [200, 206]:
                 result_set.stream.put_nowait(data)
-                if status_code == 200:
-                    result_set.status_attributes = message['status']['attributes']
-                    del results_dict[request_id]
                 return status_code
+            else:
+                log.error("\r\nReceived error message '%s'\r\n\r\nWith result set '%s'",
+                          str(message), str(result_set))
+                raise GremlinServerError({'code': status_code,
+                                          'message': message['status']['message'],
+                                          'attributes': {}})
         else:
-            # This message is going to be huge and kind of hard to read, but in the event of an error,
-            # it can provide invaluable info, so space it out appropriately.
-            log.error("\r\nReceived error message '%s'\r\n\r\nWith results dictionary '%s'",
-                      str(response['content']), str(results_dict))
+            # TODO check error deserialization after chunking implementation
+            log.error("\r\nReceived error message '%s'\r\n\r\nWith result set '%s'",
+                      str(response['content']), str(result_set))
             body = json.loads(response['content'])
-            del results_dict[body['requestId']]
             raise GremlinServerError({'code': response['status'], 'message': body['message'], 'attributes': {}})

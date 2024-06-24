@@ -16,6 +16,9 @@
 # under the License.
 
 import re
+from threading import Lock
+
+from gremlin_python.statics import SingleByte
 
 
 class SymbolUtil:
@@ -57,4 +60,39 @@ class HashableDict(dict):
             else:
                 new_o[k] = cls.of(v)
         return new_o
+
+
+# referenced python singleton from https://refactoring.guru/design-patterns/singleton/python/example#example-1--main-py,
+# might need some refactoring
+class SingletonMeta(type):
+
+    _instances = {}
+    _lock: Lock = Lock()
+
+    def __call__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls not in cls._instances:
+                instance = super().__call__(*args, **kwargs)
+                cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class Marker(metaclass=SingletonMeta):
+    _value: SingleByte
+
+    def __init__(self, value: SingleByte) -> None:
+        self._value = value
+
+    @staticmethod
+    def end_of_stream():
+        return Marker(SingleByte(0))
+
+    def get_value(self):
+        return self._value
+
+    @classmethod
+    def of(cls, val):
+        if val != 0:
+            raise ValueError
+        return cls.end_of_stream()
 
