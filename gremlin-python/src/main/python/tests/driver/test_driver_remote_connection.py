@@ -18,6 +18,7 @@
 #
 import os
 
+import pytest
 from gremlin_python import statics
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
@@ -37,6 +38,9 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)
 
+
+# TODO: WS tests to be removed
+@pytest.mark.skip(reason="disabling all WS tests as we move to HTTP")
 class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())

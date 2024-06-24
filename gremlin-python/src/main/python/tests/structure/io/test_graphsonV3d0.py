@@ -36,7 +36,7 @@ from gremlin_python.process.traversal import P, Merge, Barrier, Order, Operator,
 from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
-
+# TODO: to be removed
 class TestGraphSONReader:
     graphson_reader = GraphSONReader()
 

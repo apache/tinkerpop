@@ -38,7 +38,7 @@ from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardina
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
-from gremlin_python.structure.io.util import HashableDict, SymbolUtil
+from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +49,6 @@ _serializers = OrderedDict()
 _deserializers = {}
 
 
-# TODO: to be removed
 class DataType(Enum):
     null = 0xfe
     int = 0x01
@@ -101,6 +100,7 @@ class DataType(Enum):
     dt = 0x2f
     char = 0x80
     duration = 0x81
+    marker = 0xfd
     inetaddress = 0x82            # todo
     instant = 0x83                # todo
     localdate = 0x84              # todo
@@ -1168,3 +1168,20 @@ class DurationIO(_GraphBinaryTypeIO):
         seconds = r.to_object(b, DataType.long, False)
         nanos = r.to_object(b, DataType.int, False)
         return timedelta(seconds=seconds, microseconds=nanos / 1000)
+
+
+class MarkerIO(_GraphBinaryTypeIO):
+    python_type = Marker
+    graphbinary_type = DataType.marker
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        to_extend.extend(int8_pack(obj.get_value()))
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader,
+                           lambda b, r: Marker.of(int8_unpack(b.read(1))),
+                           nullable)

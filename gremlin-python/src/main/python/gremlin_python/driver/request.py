@@ -20,6 +20,5 @@ import collections
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-
-RequestMessage = collections.namedtuple(
-    'RequestMessage', ['processor', 'op', 'args'])
+RequestMessageV4 = collections.namedtuple(
+    'RequestMessageV4', ['fields', 'gremlin'])
