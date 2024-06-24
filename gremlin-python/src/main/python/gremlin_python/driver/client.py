@@ -38,6 +38,7 @@ except ImportError:
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove session, update connection pooling, etc.
 class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
@@ -58,7 +59,7 @@ class Client:
         if not self._use_http and "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
-            message_serializer = serializer.GraphBinarySerializersV1()
+            message_serializer = serializer.GraphBinarySerializersV4()
 
         self._message_serializer = message_serializer
         self._username = username
@@ -180,25 +181,21 @@ class Client:
             raise Exception("Client is closed")
 
         log.debug("message '%s'", str(message))
-        args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
-        processor = ''
-        op = 'eval'
+        fields = {'g': self._traversal_source}
         if isinstance(message, traversal.Bytecode):
-            op = 'bytecode'
-            processor = 'traversal'
+            fields['gremlinType'] = 'bytecode'
+        elif isinstance(message, str):
+            fields['gremlinType'] = 'eval'
 
         if isinstance(message, str) and bindings:
-            args['bindings'] = bindings
-
-        if self._session_enabled:
-            args['session'] = str(self._session)
-            processor = 'session'
+            fields['bindings'] = bindings
 
         if isinstance(message, traversal.Bytecode) or isinstance(message, str):
-            log.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
-            message = request.RequestMessage(processor=processor, op=op, args=args)
+            log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
+            message = request.RequestMessageV4(fields=fields, gremlin=message)
 
         conn = self._pool.get(True)
         if request_options:
-            message.args.update(request_options)
+            message.fields.update(request_options)
+
         return conn.write(message)

@@ -38,6 +38,7 @@ from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 
 
+# TODO: to be removed
 class TestGraphSONReader(object):
     graphson_reader = GraphSONReader()
 

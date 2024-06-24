@@ -43,6 +43,7 @@ _serializers = OrderedDict()
 _deserializers = {}
 
 
+# TODO: to be removed
 class GraphSONTypeType(type):
     def __new__(mcs, name, bases, dct):
         cls = super(GraphSONTypeType, mcs).__new__(mcs, name, bases, dct)

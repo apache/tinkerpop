@@ -26,6 +26,7 @@ from gremlin_python.driver.transport import AbstractBaseTransport
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove WS transport & refactor
 class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
@@ -210,8 +211,16 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
     def read(self):
         # Inner function to perform async read.
         async def async_read():
+            # TODO: set-up chunked reading
+            buffer = b""
+            # async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
+            #     buffer += data
+            #     if end_of_http_chunk:
+            #         print('ended')
+            #     print(buffer)
             async with async_timeout.timeout(self._read_timeout):
-                return {"content": await self._http_req_resp.read(),
+                data = await self._http_req_resp.read()
+                return {"content": data,
                         "ok": self._http_req_resp.ok,
                         "status": self._http_req_resp.status}
 
