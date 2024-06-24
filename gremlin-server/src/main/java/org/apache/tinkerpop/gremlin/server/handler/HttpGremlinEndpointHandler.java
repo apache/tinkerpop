@@ -27,6 +27,7 @@ import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -88,8 +89,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCEPT_ENCODING;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_ENCODING;
 import static io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING;
 import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
+import static io.netty.handler.codec.http.HttpHeaderValues.DEFLATE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -193,6 +197,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
                 // failures that follow this will show up in the response body instead.
                 final HttpResponse responseHeader = new DefaultHttpResponse(HTTP_1_1, OK);
+                if (acceptsDeflateEncoding(ctx.attr(StateKey.REQUEST_HEADERS).get().getAll(ACCEPT_ENCODING))) {
+                    responseHeader.headers().add(CONTENT_ENCODING, DEFLATE);
+                }
                 responseHeader.headers().set(TRANSFER_ENCODING, CHUNKED);
                 responseHeader.headers().set(HttpHeaderNames.CONTENT_TYPE, serializer.getValue0());
                 ctx.writeAndFlush(responseHeader);
@@ -487,6 +494,16 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private Optional<Throwable> determineIfSpecialException(final Throwable ex) {
         return Stream.of(ExceptionUtils.getThrowables(ex)).
                 filter(i -> i instanceof TemporaryException || i instanceof Failure).findFirst();
+    }
+
+    private boolean acceptsDeflateEncoding(List<String> encodings) {
+        for (String encoding : encodings) {
+            if (encoding.contains(DEFLATE.toString())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ByteBuf makeChunk(final Context ctx, final RequestMessageV4 msg,
