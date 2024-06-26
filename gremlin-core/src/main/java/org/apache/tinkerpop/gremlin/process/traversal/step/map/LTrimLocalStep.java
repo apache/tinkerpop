@@ -51,18 +51,9 @@ public final class LTrimLocalStep<S, E> extends StringLocalStep<S, E> {
 
     @Override
     protected E applyStringOperation(String item) {
-        return (E) item.substring(getIdx(item));
+        return (E) getTrimmedString(item, true, false);
     }
 
     @Override
     public String getStepName() { return "lTrim(local)"; }
-
-    private int getIdx(final String str) {
-        int idx = 0;
-        while (idx < str.length() && Character.isWhitespace(str.charAt(idx))) {
-            idx++;
-        }
-        return idx;
-    }
-
 }

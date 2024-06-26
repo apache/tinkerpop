@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import java.util.Collections;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep.getTrimmedString;
+
 /**
  * Reference implementation for trim() step, a mid-traversal step which returns a string with leading and trailing
  * whitespace removed. Null values are not processed and remain as null when returned.
@@ -47,9 +49,7 @@ public final class TrimGlobalStep<S, E> extends ScalarMapStep<S, E> {
             throw new IllegalArgumentException(
                     String.format("The trim() step can only take string as argument, encountered %s", item.getClass()));
         }
-
-        // we will pass null values to next step
-        return null == item? null : (E) ((String) item).trim();
+        return (E) getTrimmedString((String) item, true, true);
     }
 
     @Override

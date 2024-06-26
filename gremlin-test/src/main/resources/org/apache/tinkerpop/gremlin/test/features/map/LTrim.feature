@@ -19,11 +19,12 @@
 Feature: Step - lTrim()
 
   @GraphComputerVerificationInjectionNotSupported
+  # This verifies both ASCII control space and ideographic space character \u3000 are property trimmed.
   Scenario: g_injectX__feature___test__nullX_lTrim
     Given the empty graph
     And the traversal of
       """
-      g.inject("  feature", " one test", null, "", " ").lTrim()
+      g.inject("  feature", " one test", null, "", " ", "　abc", "abc　", "　abc　", "　　").lTrim()
       """
     When iterated to list
     Then the result should be unordered
@@ -33,6 +34,23 @@ Feature: Step - lTrim()
       | null |
       | str[] |
       | str[] |
+      | str[abc] |
+      | str[abc　] |
+      | str[abc　] |
+      | str[] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  # This verifies both ASCII control space and ideographic space character \u3000 are property trimmed.
+  Scenario: g_injectX__feature___test__nullX_lTrimXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(["  feature  ", " one test ", null, "", " ", "　abc", "abc　", "　abc　", "　　"]).lTrim(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[str[feature  ],str[one test ],null,str[],str[],str[abc],str[abc　],str[abc　],str[]] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX__feature__X_lTrim
