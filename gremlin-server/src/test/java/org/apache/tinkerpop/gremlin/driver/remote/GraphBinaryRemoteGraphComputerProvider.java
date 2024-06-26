@@ -147,6 +147,6 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 
     public GraphBinaryRemoteGraphComputerProvider() {
-        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), true);
+        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), true, "groovy-test");
     }
 }

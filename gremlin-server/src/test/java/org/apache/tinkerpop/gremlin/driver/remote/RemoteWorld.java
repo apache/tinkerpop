@@ -184,11 +184,10 @@ public abstract class RemoteWorld implements World {
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
         public GraphBinaryRemoteComputerWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
 
-        // gremlin lang can't handle VertexProgramStrategy
-//        @Override
-//        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
-//            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
-//            return g.with("language", "gremlin-lang");
-//        }
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "groovy-test");
+        }
     }
 }
