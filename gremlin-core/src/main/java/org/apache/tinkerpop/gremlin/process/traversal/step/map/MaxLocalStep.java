@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
@@ -34,23 +34,26 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MaxLocalStep<E extends Comparable, S extends Iterable<E>> extends ScalarMapStep<S, E> {
+public final class MaxLocalStep<E extends Comparable, S extends Iterable<E>> extends MapStep<S, E> {
 
     public MaxLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        final Iterator<E> iterator = IteratorUtils.asIterator(traverser.get());
-        if (iterator.hasNext()) {
-            Comparable result = iterator.next();
-            while (iterator.hasNext()) {
-                result = max(iterator.next(), result);
+    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+        while (true) {
+            final Traverser.Admin<S> traverser = this.starts.next();
+            final Iterator<E> iterator = IteratorUtils.asIterator(traverser.get());
+
+            if (iterator.hasNext()) {
+                Comparable result = iterator.next();
+                while (iterator.hasNext()) {
+                    result = max(iterator.next(), result);
+                }
+                return traverser.split((E) result, this);
             }
-            return (E) result;
         }
-        throw FastNoSuchElementException.instance();
     }
 
     @Override
