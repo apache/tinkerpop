@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
@@ -35,6 +36,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,7 +80,8 @@ public class GremlinLangTest {
                 {g.V().count(), "g.V().count()"},
                 {g.addV("test"), "g.addV(\"test\")"},
                 {g.addV("t\"'est"), "g.addV(\"t\\\"'est\")"},
-                {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d), "g.inject(true,1B,2S,3,4L,5.0F,6.0D)"},
+                {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d, BigInteger.valueOf(7L), BigDecimal.valueOf(8L)),
+                        "g.inject(true,1B,2S,3,4L,5.0F,6.0D,7N,8M)"},
                 {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
                         "g.inject(+Infinity,-Infinity)"},
                 {g.inject(DatetimeHelper.parse("2018-03-21T08:35:44.741Z")),
@@ -124,6 +128,13 @@ public class GremlinLangTest {
     }
 
     public static class ParameterTests {
+
+        @Test
+        public void play() {
+            final GraphTraversal t = g.inject(1).is(P.eq(3));
+            System.out.println(t.asAdmin().getGremlinLang());
+        }
+
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameDontNeedEscaping() {
             g.V(GremlinLang.Parameter.var("\"", new int[]{1, 2, 3}));

@@ -66,15 +66,13 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
         switch (lastCharacter) {
             case 'b':
                 // parse B/b as byte
-                sb.append("new Byte(");
+                sb.append("(byte)");
                 sb.append(integerLiteral, 0, lastCharIndex);
-                sb.append(")");
                 break;
             case 's':
                 // parse S/s as short
-                sb.append("new Short(");
+                sb.append("(short)");
                 sb.append(integerLiteral, 0, lastCharIndex);
-                sb.append(")");
                 break;
             case 'n':
                 // parse N/n as BigInteger which for groovy is "g" shorthand
@@ -103,14 +101,39 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
                 sb.append(floatLiteral, 0, lastCharIndex).append(lastCharacter);
                 break;
             case 'm':
-                // parse N/n as BigDecimal which for groovy is "g" shorthand
-                sb.append(floatLiteral, 0, lastCharIndex).append("g");
+                // parse N/n as BigDecimal which for groovy is default for floating point numerics
+                if (!floatLiteral.contains(".")) {
+                    // 1g is interpreted as BigInteger, so 'g' suffix can't be used here
+                    sb.append("new BigDecimal(").append(floatLiteral, 0, lastCharIndex).append("L)");
+                } else {
+                    sb.append(floatLiteral, 0, lastCharIndex);
+                }
                 break;
             default:
                 // everything else just goes as specified
                 sb.append(floatLiteral);
                 break;
         }
+        return null;
+    }
+
+    @Override
+    public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
+        if (ctx.SignedInfLiteral().getText().equals("-Infinity"))
+            sb.append("Double.NEGATIVE_INFINITY");
+        else
+            sb.append("Double.POSITIVE_INFINITY");
+        return null;
+    }
+
+    @Override
+    public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
+        if (ctx.getParent() instanceof GremlinParser.GenericLiteralMapNullableArgumentContext) {
+            sb.append("null as Map");
+            return null;
+        }
+
+        sb.append(ctx.getText());
         return null;
     }
 }

@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 import javax.lang.model.SourceVersion;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -107,10 +109,9 @@ public class GremlinLang implements Cloneable, Serializable {
             return arg.toString();
         if (arg instanceof Long)
             return String.format("%sL", arg);
-        // todo: BigInteger and BigDecimal format is different in gremlin-lang and gremlin-groovy
-        // let's keep it as parameter for now to reduce number of failed tests
-//        if (arg instanceof BigInteger)
-//            return String.format("%sN", arg);
+
+        if (arg instanceof BigInteger)
+            return String.format("%sN", arg);
         if (arg instanceof Float) {
             if (NumberHelper.isNaN(arg))
                 return "NaN";
@@ -130,8 +131,8 @@ public class GremlinLang implements Cloneable, Serializable {
                 return "-Infinity";
             return String.format("%sD", arg);
         }
-//        if (arg instanceof BigDecimal)
-//            return String.format("%sM", arg);
+        if (arg instanceof BigDecimal)
+            return String.format("%sM", arg);
 
         if (arg instanceof Date)
             return String.format("datetime(\"%s\")", format(((Date) arg).toInstant()));

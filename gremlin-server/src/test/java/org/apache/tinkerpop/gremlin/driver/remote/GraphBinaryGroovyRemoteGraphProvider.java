@@ -18,13 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest",
+        method = "*",
+        reason = "MatchAlgorithmStrategy construction doesn't work for gremlin-groovy")
 public class GraphBinaryGroovyRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphBinaryGroovyRemoteGraphProvider() {
-        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), false, "gremlin-groovy");
+        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), false, "groovy-test");
     }
 }

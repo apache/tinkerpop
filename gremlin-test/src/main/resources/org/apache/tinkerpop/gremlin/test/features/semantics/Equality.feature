@@ -15,8 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# not work due to passing BigDecimal and BigInteger as params in array
-@StepClassSemantics @GremlinGroovyOnly @GremlinLangOnly
+@StepClassSemantics
 Feature: Equality
 
   @GraphComputerVerificationInjectionNotSupported

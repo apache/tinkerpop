@@ -30,8 +30,6 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -51,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -127,28 +124,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
             final String result = g.inject("2").toList().get(0);
             assertEquals("2", result);
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            cluster.close();
-        }
-    }
-
-    // !!!
-    @Test
-    public void playTest() {
-        final Cluster cluster = TestClientFactory.build().create();
-        try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster))
-                .withStrategies(MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create())
-                .with("language", "gremlin-lang");
-                //.with("language", "gremlin-groovy");
-
-            final List result = g.V().match(
-                    as("a").out("created").as("b"),
-                    as("b").in("created").as("a")).toList();
-
-            assertEquals(0, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {

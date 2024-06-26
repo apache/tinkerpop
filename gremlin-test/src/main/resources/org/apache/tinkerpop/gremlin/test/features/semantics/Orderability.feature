@@ -119,7 +119,6 @@ Feature: Orderability
       | d[0.2].d |
 
   @GraphComputerVerificationInjectionNotSupported
-  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: g_inject_order
     Given the empty graph
     And using the parameter xx1 defined as "null"
@@ -163,7 +162,6 @@ Feature: Orderability
       | m[{"a":"a", "b":"b"}] |
 
   @GraphComputerVerificationInjectionNotSupported
-  @GremlinLangOnly # infinity definition is different for gremlin-groovy
   Scenario: g_inject_order_byXdescX
     Given the empty graph
     And using the parameter xx1 defined as "null"
