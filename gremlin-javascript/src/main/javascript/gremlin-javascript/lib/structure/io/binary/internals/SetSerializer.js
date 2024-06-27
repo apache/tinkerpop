@@ -34,7 +34,34 @@ export default class SetSerializer {
   }
 
   serialize(item, fullyQualifiedFormat = true) {
-    throw new Error('serialize() method not implemented for SetSerializer');
+    if (item === undefined || item === null) {
+      if (fullyQualifiedFormat) {
+        return Buffer.from([this.ID, 0x01]);
+      }
+      return Buffer.from([0x00, 0x00, 0x00, 0x00]); // {length} = 0
+    }
+
+    const bufs = [];
+    if (fullyQualifiedFormat) {
+      bufs.push(Buffer.from([this.ID, 0x00]));
+    }
+
+    // {length}
+    let length = item.size;
+    if (length < 0) {
+      length = 0;
+    }
+    if (length > this.ioc.intSerializer.INT32_MAX) {
+      throw new Error(`Set length=${length} is greater than supported max_length=${this.ioc.intSerializer.INT32_MAX}.`);
+    }
+    bufs.push(this.ioc.intSerializer.serialize(length, false));
+
+    // {item_0}...{item_n}
+    for (const i of item) {
+      bufs.push(this.ioc.anySerializer.serialize(i));
+    }
+
+    return Buffer.concat(bufs);
   }
 
   deserialize(buffer, fullyQualifiedFormat = true) {

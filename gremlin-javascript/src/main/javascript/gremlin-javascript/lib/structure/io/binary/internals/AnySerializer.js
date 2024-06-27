@@ -39,6 +39,7 @@ export default class AnySerializer {
       ioc.pSerializer,
       ioc.traverserSerializer,
       ioc.enumSerializer,
+      ioc.setSerializer,
       ioc.listSerializer,
       ioc.uuidSerializer,
       ioc.edgeSerializer,

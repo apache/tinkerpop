@@ -205,7 +205,7 @@ Feature: Step - inject()
       | null |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_3lX_injectX100_300X
+  Scenario: g_injectX1_3X_injectX100_300X
     Given the modern graph
     And the traversal of
       """
@@ -218,3 +218,39 @@ Feature: Step - inject()
       | d[300].i |
       | d[1].i |
       | d[3].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_3_100_300X_list
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject([1, 3, 100, 300])
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[1].i,d[3].i,d[100].i,d[300].i] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_3_100_300X_set
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject({1, 3, 100, 300})
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[d[100].i,d[300].i,d[1].i,d[3].i] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_1X_set
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject({1, 1})
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | s[d[1].i] |

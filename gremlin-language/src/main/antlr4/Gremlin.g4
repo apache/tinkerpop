@@ -1604,6 +1604,10 @@ genericLiteralRange
     | stringLiteral DOT DOT stringLiteral
     ;
 
+genericLiteralSet
+    : LBRACE (genericLiteral (COMMA genericLiteral)*)? RBRACE
+    ;
+
 genericLiteralCollection
     : LBRACK (genericLiteral (COMMA genericLiteral)*)? RBRACK
     ;
@@ -1637,6 +1641,7 @@ genericLiteral
     | traversalPick
     | traversalDT
     | structureVertex
+    | genericLiteralSet
     | genericLiteralCollection
     | genericLiteralRange
     | nestedTraversal
@@ -1655,6 +1660,7 @@ mapEntry
     | (LPAREN numericLiteral RPAREN | numericLiteral) COLON genericLiteral
     | (LPAREN traversalToken RPAREN | traversalToken) COLON genericLiteral
     | (LPAREN traversalDirection RPAREN | traversalDirection) COLON genericLiteral
+    | (LPAREN genericLiteralSet RPAREN | genericLiteralSet) COLON genericLiteral
     | (LPAREN genericLiteralCollection RPAREN | genericLiteralCollection) COLON genericLiteral
     | (LPAREN genericLiteralMap RPAREN | genericLiteralMap) COLON genericLiteral
     | keyword COLON genericLiteral

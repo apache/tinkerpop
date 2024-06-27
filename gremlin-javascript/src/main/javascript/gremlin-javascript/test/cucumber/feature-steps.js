@@ -67,14 +67,11 @@ use(function (chai, chaiUtils) {
 const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
-  setNotSupported: "There is no Set support in gremlin-javascript",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
-  'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
-  'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
   'g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX': new IgnoreError(ignoreReason.classNotSupported),
@@ -198,7 +195,7 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(toCompare(expectedResult));
+      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
       break;
     case 'of':
       // result is a subset of the expected
