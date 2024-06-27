@@ -70,6 +70,21 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
+    public void playTest() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+
+            final Object result = g.with("language", "groovy-test").inject(null, null).toList().get(0);
+            assertNull(result);
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldSubmitScriptWithGraphBinary() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         try {
@@ -555,9 +570,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
 
-            // this query doesn't work in gremlin-groovy
-            final Object result = g.with("language", "gremlin-lang").inject(null, null).toList().get(0);
-            assertNull(result);
+            final List result = g.with("language", "gremlin-lang").inject(null, null).inject(null, null).toList();
+            assertEquals(4, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {

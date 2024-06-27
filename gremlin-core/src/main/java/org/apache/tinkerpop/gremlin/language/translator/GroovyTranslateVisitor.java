@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.language.translator;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser.GenericLiteralVarargsContext;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 /**
@@ -119,10 +121,11 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
-        if (ctx.SignedInfLiteral().getText().equals("-Infinity"))
+        if (ctx.SignedInfLiteral().getText().equals("-Infinity")) {
             sb.append("Double.NEGATIVE_INFINITY");
-        else
+        } else {
             sb.append("Double.POSITIVE_INFINITY");
+        }
         return null;
     }
 
@@ -135,5 +138,43 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
         sb.append(ctx.getText());
         return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
+        return handleInject(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_inject(final GremlinParser.TraversalMethod_injectContext ctx) {
+        return handleInject(ctx);
+    }
+
+    private Void handleInject(final ParserRuleContext ctx) {
+        // very special handling for inject with second `null` argument like g.inject(1, null)
+        // gremlin-groovy cannot work correctly with such type of queries
+        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GenericLiteralVarargsContext) {
+            final GenericLiteralVarargsContext varArgs = (GenericLiteralVarargsContext) ctx.getChild(2);
+            if (varArgs.getChildCount() > 2 && "null".equals(varArgs.getChild(2).getText())) {
+                sb.append(ctx.getChild(0).getText());
+                sb.append("(");
+                for (int i = 0; i < varArgs.getChildCount(); i += 2) {
+                    if (i == 2) {
+                        sb.append("(Object) null");
+                    } else {
+                        visit(varArgs.getChild(i));
+                    }
+
+                    if (i < varArgs.getChildCount() - 1) {
+                        sb.append(", ");
+                    }
+                }
+
+                sb.append(")");
+                return null;
+            }
+        }
+
+        return visitChildren(ctx);
     }
 }

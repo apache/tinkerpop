@@ -54,8 +54,8 @@ public class ProcessLimitedComputerSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             GraphComputerTest.class,
-//            MatchTest.CountMatchTraversals.class,
-//            MatchTest.GreedyMatchTraversals.class,
+            MatchTest.CountMatchTraversals.class,
+            MatchTest.GreedyMatchTraversals.class,
             ProfileTest.Traversals.class,
             ProgramTest.Traversals.class,
             WriteTest.Traversals.class,
