@@ -262,6 +262,37 @@ public class OperatorTest {
         }
     }
 
+    @RunWith(Parameterized.class)
+    public static class CommutativeTest {
+        @Parameterized.Parameters(name = "isCommutative({0}) = {1}")
+        public static Iterable<Object[]> data() {
+            return new ArrayList<>(Arrays.asList(new Object[][]{
+                    {Operator.sum, true},
+                    {Operator.sumLong, true},
+                    {Operator.minus, false},
+                    {Operator.mult, true},
+                    {Operator.div, false},
+                    {Operator.max, true},
+                    {Operator.min, true},
+                    {Operator.and, true},
+                    {Operator.or, true},
+                    {Operator.addAll, true},
+                    {Operator.assign, true},
+            }));
+        }
+
+        @Parameterized.Parameter(value = 0)
+        public Operator operator;
+
+        @Parameterized.Parameter(value = 1)
+        public Boolean expected;
+
+        @Test
+        public void shouldCallOperatorIsCommucative() {
+            assertEquals(expected, operator.isCommutative());
+        }
+    }
+
     /**
      * Required to verify that Operator can handle Number type, that it doesn't know explicitly.
      */
@@ -301,4 +332,5 @@ public class OperatorTest {
             return Integer.compare(n, anotherCustomNumber.n);
         }
     }
+
 }

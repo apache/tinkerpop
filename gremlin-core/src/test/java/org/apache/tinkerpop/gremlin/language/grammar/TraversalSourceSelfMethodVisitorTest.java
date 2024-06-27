@@ -57,6 +57,7 @@ public class TraversalSourceSelfMethodVisitorTest {
                 {"withSack('hello')", g.withSack("hello")},
                 {"withSack('hello', addAll)", g.withSack("hello", Operator.addAll)},
                 {"withSideEffect('hello', 12)", g.withSideEffect("hello", 12)},
+                {"withSideEffect('hello', 12, sum)", g.withSideEffect("hello", 12, Operator.sum)},
                 {"withStrategies(ReadOnlyStrategy)", g.withStrategies(ReadOnlyStrategy.instance())},
                 {"withStrategies(new EdgeLabelVerificationStrategy(logWarning: true, throwException: true))", g.withStrategies(EdgeLabelVerificationStrategy.build().logWarning(true).throwException(true).create())},
                 {"withStrategies(ReadOnlyStrategy, new EdgeLabelVerificationStrategy(logWarning: true, throwException: true))", g.withStrategies(ReadOnlyStrategy.instance(), EdgeLabelVerificationStrategy.build().logWarning(true).throwException(true).create())},
@@ -65,6 +66,7 @@ public class TraversalSourceSelfMethodVisitorTest {
                 {"with('requestId')", g.with("requestId")},
                 {"withSideEffect('hello', ['one':1])", g.withSideEffect("hello", map)},
                 {"withSideEffect('hello', ['one' : 1])", g.withSideEffect("hello", map)},
+                {"withSideEffect('hello', ['one' : 1], Operator.addAll)", g.withSideEffect("hello", map, Operator.addAll)},
                 {"withSideEffect('hello', ['one':1, 'two':2])", g.withSideEffect("hello", new HashMap<String, Integer>() {{
                     put("one", 1);
                     put("two", 2);
