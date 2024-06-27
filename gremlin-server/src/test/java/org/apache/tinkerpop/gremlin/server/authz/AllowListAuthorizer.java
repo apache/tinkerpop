@@ -33,9 +33,9 @@ import java.util.Set;
 
 
 /**
- * Authorizes a user per request, based on a list that grants access to {@link TraversalSource} instances for
- * bytecode requests and to gremlin server's sandbox for string requests and lambdas. The {@link
- * AuthorizationSettings}.config must have an authorizationAllowList entry that contains the name of a YAML file.
+ * Authorizes a user per request, based on a list that grants access to {@link TraversalSource} instances
+ * to gremlin server's sandbox for string requests and lambdas. The {@link AuthorizationSettings}.config must have
+ * an authorizationAllowList entry that contains the name of a YAML file.
  * This authorizer is for demonstration purposes only. It does not scale well in the number of users regarding
  * memory usage and administrative burden.
  *

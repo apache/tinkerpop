@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -39,17 +38,14 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
 import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
-import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
-import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -200,55 +196,6 @@ final class TraversalSerializersV3 {
     ///////////////////
     // DESERIALIZERS //
     //////////////////
-
-    final static class BytecodeJacksonDeserializer extends StdDeserializer<GremlinLang> {
-        private static final JavaType listJavaType = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, Object.class);
-        private static final JavaType listListJavaType = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, listJavaType);
-
-        public BytecodeJacksonDeserializer() {
-            super(GremlinLang.class);
-        }
-
-        @Override
-        public GremlinLang deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final GremlinLang bytecode = new GremlinLang();
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                final String current = jsonParser.getCurrentName();
-                if (current.equals(GraphSONTokens.SOURCE) || current.equals(GraphSONTokens.STEP)) {
-                    jsonParser.nextToken();
-
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-
-                        // there should be a list now and the first item in the list is always string and is the step name
-                        // skip the start array
-                        jsonParser.nextToken();
-
-                        final String stepName = jsonParser.getText();
-
-                        // iterate through the rest of the list for arguments until it gets to the end
-                        final List<Object> arguments = new ArrayList<>();
-                        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                            // we don't know the types here, so let the deserializer figure that business out
-                            arguments.add(deserializationContext.readValue(jsonParser, Object.class));
-                        }
-
-                        // if it's not a "source" then it must be a "step"
-                        if (current.equals(GraphSONTokens.SOURCE))
-                            bytecode.addSource(stepName, arguments.toArray());
-                        else
-                            bytecode.addStep(stepName, arguments.toArray());
-                    }
-                }
-            }
-            return bytecode;
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
 
     final static class EnumJacksonDeserializer<A extends Enum> extends StdDeserializer<A> {
 

@@ -390,14 +390,14 @@ public class GremlinLang implements Cloneable, Serializable {
         return gremlin.toString();
     }
 
-    // todo: fix and add tests
+    // todo: clarify equality with parameters
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final GremlinLang bytecode = (GremlinLang) o;
-        return Objects.equals(gremlin.toString(), bytecode.gremlin.toString()) &&
-                Objects.equals(parameters, bytecode.parameters);
+        final GremlinLang gremlinLang = (GremlinLang) o;
+        return Objects.equals(gremlin.toString(), gremlinLang.gremlin.toString()) &&
+                Objects.equals(parameters, gremlinLang.parameters);
     }
 
     @Override

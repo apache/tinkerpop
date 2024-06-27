@@ -194,14 +194,6 @@ import org.apache.tinkerpop.gremlin.util.TinkerGraphProvider;
         method = "*",
         reason = "Reason requires investigation")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest",
-        method = "*",
-        reason = "Strategy not properly supported by Bytecode based traversals")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest",
-        method = "*",
-        reason = "Strategy not properly supported by Bytecode based traversals")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "shouldNeverPropagateANoBulkTraverser",
         reason = "Reason requires investigation")

@@ -68,12 +68,12 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     protected boolean locked = false;
     protected boolean closed = false;
-    protected GremlinLang bytecode;
+    protected GremlinLang gremlinLang;
 
-    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final GremlinLang bytecode) {
+    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final GremlinLang gremlinLang) {
         this.graph = graph;
         this.strategies = traversalStrategies;
-        this.bytecode = bytecode;
+        this.gremlinLang = gremlinLang;
         this.g = null;
     }
 
@@ -96,12 +96,12 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new GremlinLang());
     }
 
-    public DefaultTraversal(final GremlinLang bytecode) {
-        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), bytecode);
+    public DefaultTraversal(final GremlinLang gremlinLang) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), gremlinLang);
     }
 
     public GremlinLang getGremlinLang() {
-        return this.bytecode;
+        return this.gremlinLang;
     }
 
     @Override
@@ -272,7 +272,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies;
-            clone.bytecode = this.bytecode.clone();
+            clone.gremlinLang = this.gremlinLang.clone();
             for (final Step<?, ?> step : this.steps) {
                 final Step<?, ?> clonedStep = step.clone();
                 clonedStep.setTraversal(clone);

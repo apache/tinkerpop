@@ -60,7 +60,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
         public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
 
-        public GremlinLang bytecode2;
+        public GremlinLang gremlinLang2;
 
         @Setup(Level.Trial)
         public void doSetup() throws IOException {
@@ -70,7 +70,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
             Graph g = TinkerGraph.open();
 
-            bytecode2 = g.traversal()
+            gremlinLang2 = g.traversal()
                     .addV("person")
                     .property("name1", 1)
                     .property("name2", UUID.randomUUID())
@@ -81,7 +81,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
                     .asAdmin().getGremlinLang();
 
             writer.writeValue(gremlinLang1, bytecodeBuffer1, false);
-            writer.writeValue(bytecode2, bytecodeBuffer2, false);
+            writer.writeValue(gremlinLang2, bytecodeBuffer2, false);
             writer.writeValue(P.between(1, 2), pBuffer1, false);
         }
 
@@ -109,7 +109,7 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void writeBytecode2(BenchmarkState state) throws IOException {
-        writer.writeValue(state.bytecode2, state.bufferWrite, false);
+        writer.writeValue(state.gremlinLang2, state.bufferWrite, false);
     }
 
     @Benchmark

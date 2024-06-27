@@ -60,8 +60,8 @@ public class TypeSerializerFailureTests {
     public static Collection input() {
         final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
 
-        final GremlinLang bytecode = new GremlinLang();
-        bytecode.addStep(null);
+        final GremlinLang gremlinLang = new GremlinLang();
+        gremlinLang.addStep(null);
 
         final BulkSet<Object> bulkSet = new BulkSet<>();
         bulkSet.add(vertex, 1L);
@@ -75,7 +75,7 @@ public class TypeSerializerFailureTests {
         return Arrays.asList(
                 vertex,
                 bulkSet,
-                bytecode,
+                gremlinLang,
                 Collections.singletonList(vertex),
                 new ReferenceEdge("an edge", null, vertex, vertex),
                 Lambda.supplier(null),
