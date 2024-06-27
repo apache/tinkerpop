@@ -90,8 +90,6 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
             DataType.STRING.getCodeByte(), 0, 0, 0, 0, 0x01, 0x67,
             // "gremlin"
             DataType.STRING.getCodeByte(), 0, 0, 0, 0, 0x07, 0x67, 0x72, 0x65, 0x6d, 0x6c, 0x69, 0x6e,
-            // Bytecode for ['V', 'tail']
-            DataType.BYTECODE.getCodeByte(), 0, 0, 0, 0, 0x02,
             // "V" (no values)
             0, 0, 0, 0x1, 0x56, 0, 0, 0, 0,
             // tail (no values)
