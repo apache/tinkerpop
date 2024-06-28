@@ -202,3 +202,18 @@ Feature: Step - sum()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+      # It verifies if empty lists are filtered out as expected
+  Scenario: g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(union(values("age"), outE().values("weight")).fold()).sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[30.9].d |
+      | d[27].i |
+      | d[33.4].d |
+      | d[35.2].d |

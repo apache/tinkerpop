@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
 * Allow specifying a customized Spark app name
 * CoinStep has a getter method for its probability field
+* Fix a bug in MaxLocalStep, MinLocalStep, MeanLocalStep and SumLocalStep that it throws NoSuchElementException when encounters an empty iterator as input.
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
