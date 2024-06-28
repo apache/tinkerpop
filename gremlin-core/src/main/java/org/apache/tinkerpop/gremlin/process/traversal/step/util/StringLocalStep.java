@@ -72,6 +72,27 @@ public abstract class StringLocalStep<S, E> extends ScalarMapStep<S, E> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
+    public static String getTrimmedString(final String s, final boolean lTrim, final boolean rTrim) {
+        if (s == null) {
+            return null;
+        }
+
+        int start = 0;
+        if (lTrim) {
+            while (start < s.length() && Character.isWhitespace(s.charAt(start))) {
+                start++;
+            }
+        }
+
+        int end = s.length() - 1;
+        if (rTrim) {
+            while (end >= start && Character.isWhitespace(s.charAt(end))) {
+                end--;
+            }
+        }
+        return s.substring(start, end + 1);
+    }
+
     protected abstract E applyStringOperation(final String item);
 
     protected abstract String getStepName();

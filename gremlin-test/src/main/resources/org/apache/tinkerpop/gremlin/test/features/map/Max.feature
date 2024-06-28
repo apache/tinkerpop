@@ -201,3 +201,18 @@ Feature: Step - max()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  # It verifies if empty lists are filtered out as expected
+  Scenario: g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_maxXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(union(values("age"), outE().values("weight")).fold()).max(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].d |
+      | d[27].i |
+      | d[32].d |
+      | d[35].d |

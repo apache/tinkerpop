@@ -37,18 +37,9 @@ public final class RTrimLocalStep<S, E> extends StringLocalStep<S, E> {
 
     @Override
     protected E applyStringOperation(String item) {
-        return (E) item.substring(0,getEndIdx(item)+1);
+        return (E) getTrimmedString(item, false, true);
     }
 
     @Override
     public String getStepName() { return "rTrim(local)"; }
-
-    private int getEndIdx(final String str) {
-        int idx = str.length() - 1;
-        while (idx >= 0 && Character.isWhitespace(str.charAt(idx))) {
-            idx--;
-        }
-        return idx;
-    }
-
 }
