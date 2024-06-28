@@ -150,9 +150,11 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
         return handleInject(ctx);
     }
 
+    /*
+    * very special handling for inject with second `null` argument like g.inject(1, null)
+    * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
+    */
     private Void handleInject(final ParserRuleContext ctx) {
-        // very special handling for inject with second `null` argument like g.inject(1, null)
-        // gremlin-groovy cannot work correctly with such type of queries
         if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GenericLiteralVarargsContext) {
             final GenericLiteralVarargsContext varArgs = (GenericLiteralVarargsContext) ctx.getChild(2);
             if (varArgs.getChildCount() > 2 && "null".equals(varArgs.getChild(2).getText())) {

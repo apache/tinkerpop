@@ -144,7 +144,7 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
         method = "g_injectX1_null_nullX_path_dedup",
         reason = "The inject() step is not supported by GraphComputer")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$GreedyMatchTraversals",
         method = "*",
         reason = "MatchAlgorithmStrategy construction doesn't work for gremlin-groovy")
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)

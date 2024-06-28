@@ -20,8 +20,6 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
@@ -36,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -60,9 +59,6 @@ public class TypeSerializerFailureTests {
     public static Collection input() {
         final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
 
-        final GremlinLang gremlinLang = new GremlinLang();
-        gremlinLang.addStep(null);
-
         final BulkSet<Object> bulkSet = new BulkSet<>();
         bulkSet.add(vertex, 1L);
 
@@ -75,7 +71,6 @@ public class TypeSerializerFailureTests {
         return Arrays.asList(
                 vertex,
                 bulkSet,
-                gremlinLang,
                 Collections.singletonList(vertex),
                 new ReferenceEdge("an edge", null, vertex, vertex),
                 Lambda.supplier(null),

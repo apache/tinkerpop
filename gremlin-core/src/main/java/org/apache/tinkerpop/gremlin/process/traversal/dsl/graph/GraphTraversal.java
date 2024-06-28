@@ -2291,10 +2291,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        // todo: check if this magic is needed for gremlin-lang
-        if (null == propertyTraversal)
-            return has(propertyKey, (Object) null);
-
         this.asAdmin().getGremlinLang().addStep(Symbols.has, propertyKey, propertyTraversal);
         return this.asAdmin().addStep(
                 new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,

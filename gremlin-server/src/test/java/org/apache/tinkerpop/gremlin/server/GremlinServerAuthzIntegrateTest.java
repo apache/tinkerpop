@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
 import org.apache.http.Consts;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,11 +28,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
@@ -44,7 +41,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Base64;
@@ -52,10 +48,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Run with:
@@ -111,23 +104,8 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         settings.enableAuditLog = true;
 
         final String nameOfTest = name.getMethodName();
-        switch (nameOfTest) {
-            case "shouldFailGremlinLangRequestWithAllowAllAuthenticator":
-            case "shouldFailStringRequestWithAllowAllAuthenticator":
-                authSettings.authenticator = AllowAllAuthenticator.class.getName();
-                break;
-            case "shouldAuthorizeWithHttpTransport":
-            case "shouldFailAuthorizeWithHttpTransport":
-            case "shouldKeepAuthorizingWithHttpTransport":
-                authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
-                break;
-            case "shouldAuthorizeWithAllowAllAuthenticatorAndHttpTransport":
-                authSettings.authenticator = AllowAllAuthenticator.class.getName();
-                authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
-                authSettings.config = null;
-                final String fileHttp = Objects.requireNonNull(getClass().getClassLoader().getResource(yamlHttpName)).getFile();
-                authzSettings.config.put(AllowListAuthorizer.KEY_AUTHORIZATION_ALLOWLIST, fileHttp);
-                break;
+        if (nameOfTest.equals("shouldAuthorizeWithHttpTransport")) {
+            authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
         }
         return settings;
     }
@@ -158,33 +136,6 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         }
     }
 
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailGremlinLangRequestWithLambda() throws Exception{
-        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
-                DriverRemoteConnection.using(cluster, "gmodern"));
-
-        try {
-            g.V().map(Lambda.function("it.get().value('name')")).count().next();
-            fail("Authorization for GremlinLang request with lambda should fail");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
-
-            // wait for logger to flush - (don't think there is a way to detect this)
-            stopServer();
-            Thread.sleep(1000);
-
-            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                    "User stephen with address .+? attempted an unauthorized http request: " +
-                    "g.V\\(\\).map\\(.+\\).count\\(\\)")), is(true));
-        } finally {
-            cluster.close();
-        }
-    }
-
     @Test
     public void shouldAuthorizeStringRequest() throws Exception {
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
@@ -194,85 +145,6 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
             assertEquals(6, client.submit("gclassic.V().count()").all().get().get(0).getInt());
             assertEquals(6, client.submit("gmodern.V().map{it.get().value('name')}.count()").all().get().get(0).getInt());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailStringRequestWithGroovyScript() throws Exception {
-        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("1+1").all().get();
-            fail("Authorization without authentication should fail");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
-
-            // wait for logger to flush - (don't think there is a way to detect this)
-            stopServer();
-            Thread.sleep(1000);
-
-            assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                    "User stephen with address .+? attempted an unauthorized http request: 1\\+1")), is(true));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailStringRequestWithGremlinTraversal() {
-        final Cluster cluster = TestClientFactory.build().auth(basic("stephen", "password")).create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("gmodern.V().count()").all().get();
-            fail("Authorization without authentication should fail");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailGremlinLangRequestWithAllowAllAuthenticator() {
-        final Cluster cluster = TestClientFactory.build().create();
-        try {
-            final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
-                    DriverRemoteConnection.using(cluster, "gclassic"));
-            g.V().count().next();
-            fail("Authorization without authentication should fail");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailStringRequestWithAllowAllAuthenticator() {
-        final Cluster cluster = TestClientFactory.build().create();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("1+1").all().get();
-            fail("Authorization without authentication should fail");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.UNAUTHORIZED, re.getResponseStatusCode());
-            assertEquals("Failed to authorize: User not authorized for string-based requests.", re.getMessage());
         } finally {
             cluster.close();
         }
@@ -291,61 +163,6 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(1, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
-        }
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldFailAuthorizeWithHttpTransport() throws Exception {
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httpPost = new HttpPost(TestClientFactory.createURLString());
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"3-1\"}", Consts.UTF_8));
-        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
-
-        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            assertEquals(401, response.getStatusLine().getStatusCode());
-        }
-        // wait for logger to flush - (don't think there is a way to detect this)
-        stopServer();
-        Thread.sleep(1000);
-
-        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? attempted an unauthorized http request: 3-1")), is(true));
-    }
-
-    @Ignore("not implemented for string requests")
-    @Test
-    public void shouldKeepAuthorizingWithHttpTransport() throws Exception {
-        HttpPost httpPost;
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-
-        httpPost = new HttpPost(TestClientFactory.createURLString());
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"4-1\"}", Consts.UTF_8));
-        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals("application/json", response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(3, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
-        }
-
-        httpPost = new HttpPost(TestClientFactory.createURLString());
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"5-1\"}", Consts.UTF_8));
-        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            assertEquals(401, response.getStatusLine().getStatusCode());
-        }
-
-        httpPost = new HttpPost(TestClientFactory.createURLString());
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"6-1\"}", Consts.UTF_8));
-        httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
-        try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals("application/json", response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(5, node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 }

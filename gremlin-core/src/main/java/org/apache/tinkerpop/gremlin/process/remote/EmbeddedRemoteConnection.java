@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import javax.script.Bindings;
-import javax.script.SimpleBindings;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -50,6 +49,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EmbeddedRemoteConnection implements RemoteConnection {
 
+    private final GremlinLangScriptEngine scriptEngine = new GremlinLangScriptEngine();
     private final GraphTraversalSource g;
 
     public EmbeddedRemoteConnection(final GraphTraversalSource g) {
@@ -62,8 +62,8 @@ public class EmbeddedRemoteConnection implements RemoteConnection {
         // the new submit() in 3.3.x when the deprecation is removed
         final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
         try {
-            final GremlinLangScriptEngine scriptEngine = new GremlinLangScriptEngine();
-            final Bindings b = new SimpleBindings();
+            final Bindings b = scriptEngine.createBindings();
+            b.putAll(gremlinLang.getParameters());
             b.put("g", g);
 
             promise.complete(new EmbeddedRemoteTraversal((Traversal)scriptEngine.eval(gremlinLang.getGremlin(), b)));

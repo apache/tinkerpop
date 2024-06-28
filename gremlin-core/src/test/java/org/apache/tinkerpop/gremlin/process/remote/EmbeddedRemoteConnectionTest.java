@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter.value;
+import static org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter.var;
 import static org.junit.Assert.assertEquals;
 
 public class EmbeddedRemoteConnectionTest {
@@ -33,5 +35,13 @@ public class EmbeddedRemoteConnectionTest {
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
         assertEquals(0, simulatedRemoteG.V().count().next().intValue());
+    }
+
+    @Test
+    public void shouldAllowToUseLocalGraphAsRemoteWithParameter() {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
+        assertEquals(33L, simulatedRemoteG.inject(value(11), var("x", 22)).sum().next());
     }
 }

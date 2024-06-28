@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -50,7 +51,8 @@ import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.asIterator;
 
 /**
- *
+ * This class helps to build a gremlin-lang compatible string representation based on a {@link TraversalSource}
+ * and then a {@link Traversal}.
  */
 public class GremlinLang implements Cloneable, Serializable {
 
@@ -59,8 +61,6 @@ public class GremlinLang implements Cloneable, Serializable {
     private StringBuilder gremlin = new StringBuilder();
     private Map<String, Object> parameters = new HashMap<>();
     private static final AtomicInteger paramCount = new AtomicInteger(0);
-    // [Discuss] probably ThreadLocal<Integer> is faster, but unsafe for multithreaded traversal construction.
-    // private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
     private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
     public GremlinLang() {
@@ -258,7 +258,7 @@ public class GremlinLang implements Cloneable, Serializable {
         return sb.toString();
     }
 
-    final String asString(final Map<?, ?> map) {
+    private String asString(final Map<?, ?> map) {
         final StringBuilder sb = new StringBuilder("[");
         int size = map.size();
 
@@ -283,11 +283,22 @@ public class GremlinLang implements Cloneable, Serializable {
         return sb.toString();
     }
 
+    /**
+     * Get gremlin-lang compatible representation of Traversal
+     * @return gremlin-lang compatible String
+     */
     public String getGremlin() {
         return getGremlin("g");
     }
 
-    // g for gts, __ for anonymous, any for gremlin-groovy
+    /**
+     * Get gremlin-lang compatible representation of Traversal.
+     * "g" is expected for gremlin-lang.
+     * "__" can be used for an anonymous {@link GraphTraversal}.
+     *
+     * @param g GraphTraversalSource name
+     * @return gremlin-lang compatible String
+     */
     public String getGremlin(final String g) {
         // special handling for CardinalityValueTraversal
         if (gremlin.length() != 0 && gremlin.charAt(0) != '.') {
@@ -296,15 +307,25 @@ public class GremlinLang implements Cloneable, Serializable {
         return g + gremlin;
     }
 
+    /**
+     * Get parameters used in Traversal.
+     *
+     * @return parameters Map
+     */
     public Map<String, Object> getParameters() {
         return parameters;
     }
 
+    /**
+     * The alias to set.
+     */
     public void addG(final String g) {
         parameters.put("g", g);
     }
 
-    // reset parameter naming counter
+    /**
+    * Reset parameter naming counter. Mainly intended to make testing easier
+    */
     public void reset() {
         paramCount.set(0);
     }
@@ -377,6 +398,11 @@ public class GremlinLang implements Cloneable, Serializable {
         addToGremlin(stepName, arguments);
     }
 
+    /**
+     * Provides a way to get configuration of a Traversal.
+     *
+     * @return list of OptionsStrategy
+     */
     public List<OptionsStrategy> getOptionsStrategies() {
         return optionsStrategies;
     }
@@ -418,7 +444,9 @@ public class GremlinLang implements Cloneable, Serializable {
         }
     }
 
-    // replacement for Binding
+    /**
+     * Parameter to be used in Traversal.
+     */
     public static class Parameter {
         private final String key;
         private final Object value;
@@ -487,5 +515,4 @@ public class GremlinLang implements Cloneable, Serializable {
         } else
             return argument;
     }
-
 }

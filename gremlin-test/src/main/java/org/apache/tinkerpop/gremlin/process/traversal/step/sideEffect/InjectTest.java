@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -115,7 +114,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     public void g_injectXnull_nullX() {
         final Traversal<Integer, Integer> traversal = get_g_injectXnull_nullX();
         printTraversalForm(traversal);
@@ -138,7 +136,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore
     public void g_VX1X_valuesXageX_injectXnull_nullX() {
         final Traversal<Vertex, Object> traversal = get_g_VX1X_valuesXageX_injectXnull_nullX(convertToVertexId("marko"));
         printTraversalForm(traversal);

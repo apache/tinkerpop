@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
@@ -128,12 +127,6 @@ public class GremlinLangTest {
     }
 
     public static class ParameterTests {
-
-        @Test
-        public void play() {
-            final GraphTraversal t = g.inject(1).is(P.eq(3));
-            System.out.println(t.asAdmin().getGremlinLang());
-        }
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameDontNeedEscaping() {

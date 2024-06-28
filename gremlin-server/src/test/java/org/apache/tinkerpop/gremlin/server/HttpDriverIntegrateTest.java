@@ -37,7 +37,7 @@ import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,21 +67,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     public Settings overrideSettings(final Settings settings) {
         settings.channelizer = HttpChannelizer.class.getName();
         return settings;
-    }
-
-    @Test
-    public void playTest() {
-        final Cluster cluster = TestClientFactory.build().create();
-        try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-
-            final Object result = g.with("language", "groovy-test").inject(null, null).toList().get(0);
-            assertNull(result);
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            cluster.close();
-        }
     }
 
     @Test

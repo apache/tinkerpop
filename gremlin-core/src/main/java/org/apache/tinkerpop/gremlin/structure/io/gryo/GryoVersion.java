@@ -320,6 +320,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3.DefaultRemoteTraverserSerializer()));
 
+            // 122 was Bytecode until it was removed for 4.x
+            // 126 was Bytecode.Binding until it was removed 4.x
+
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3.TextPSerializer()));
             add(GryoTypeReg.of(Text.RegexPredicate.class, 197));                                       // ***LAST ID***
@@ -520,6 +523,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
             add(GryoTypeReg.of(ProjectedTraverser.class, 164));
             add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV1.DefaultRemoteTraverserSerializer()));
+
+            // 122 was Bytecode until it was removed for 4.x
+            // 126 was Bytecode.Binding until it was removed 4.x
 
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV1.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV1.TextPSerializer()));
