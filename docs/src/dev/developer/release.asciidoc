@@ -326,6 +326,7 @@ the help of a PMC member for those steps.
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
 .. Commit and push the `SNAPSHOT` changes to git
 . Examine the `future.asciidoc` and update the "Roadmap" as needed.
+. Update the version numbers in `pull_request_template.md`.
 . Send email to advise that code freeze is lifted.
 . Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
 .. Make changes as necessary to update the examples.
