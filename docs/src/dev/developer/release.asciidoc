@@ -324,6 +324,7 @@ the help of a PMC member for those steps.
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`
 .. Commit and push the `SNAPSHOT` changes to git
 . Examine the `future.asciidoc` and update the "Roadmap" as needed.
+. Update the version numbers in `pull_request_template.md`.
 . Send email to advise that code freeze is lifted.
 . Consider the changes made to Gremlin and determine if the community needs to organize a PR to [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/gremlin) to keep TypeScript up to date.
 . Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
