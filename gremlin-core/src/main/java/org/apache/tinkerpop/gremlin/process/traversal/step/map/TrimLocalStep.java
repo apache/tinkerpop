@@ -37,7 +37,7 @@ public final class TrimLocalStep<S, E> extends StringLocalStep<S, E> {
 
     @Override
     protected E applyStringOperation(String item) {
-        return (E) item.trim();
+        return (E) getTrimmedString(item, true, true);
     }
 
     @Override
