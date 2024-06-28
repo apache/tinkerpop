@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
@@ -38,6 +39,11 @@ public final class StateKey {
      * The key for the current serializer requested by the client.
      */
     public static final AttributeKey<Pair<String, MessageSerializerV4<?>>> SERIALIZER = AttributeKey.valueOf("serializer");
+
+    /**
+     * The key for the current request headers.
+     */
+    public static final AttributeKey<HttpHeaders> REQUEST_HEADERS = AttributeKey.valueOf("requestHeaders");
 
     /**
      * The key for the current request ID.

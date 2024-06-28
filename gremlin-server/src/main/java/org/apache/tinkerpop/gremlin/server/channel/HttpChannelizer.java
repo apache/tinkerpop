@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthorizationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpContentCompressionHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpRequestCheckingHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpRequestMessageDecoder;
@@ -55,6 +56,7 @@ public class HttpChannelizer extends AbstractChannelizer {
     private HttpRequestCheckingHandler httpRequestCheckingHandler = new HttpRequestCheckingHandler();
     private HttpRequestMessageDecoder httpRequestMessageDecoder = new HttpRequestMessageDecoder(serializers);
     private HttpRequestIdHandler httpRequestIdHandler = new HttpRequestIdHandler();
+    private HttpContentCompressionHandler httpContentEncoder = new HttpContentCompressionHandler();
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
@@ -81,6 +83,7 @@ public class HttpChannelizer extends AbstractChannelizer {
         pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
         pipeline.addLast("http-request-checker", httpRequestCheckingHandler);
         pipeline.addLast("http-user-agent-handler", new HttpUserAgentHandler());
+        pipeline.addLast("http-compression-handler", httpContentEncoder);
 
         if (authenticator != null) {
             // Cannot add the same handler instance multiple times unless
