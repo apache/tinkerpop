@@ -50,7 +50,7 @@ import java.util.stream.IntStream;
  */
 public class ProfilingApplication {
 
-    private static final Random random = new Random(0);
+    private static final Random random = new Random(0); // Same seed to ensure consistent test runs.
     private static final String[] scripts = new String[]{
             "g.V()",
             "g.V(1).out('knows')",
@@ -138,8 +138,6 @@ public class ProfilingApplication {
         try {
             client.init();
 
-            long total = 0;
-
             final long start = System.nanoTime();
             int size = 0;
             final Iterator itr = client.submitAsync(script).get().iterator();
@@ -152,7 +150,7 @@ public class ProfilingApplication {
                 ; // Expected as hasNext() not called to increase performance.
             }
             final long end = System.nanoTime();
-            total += (end - start);
+            final long total = (end - start);
 
 
             final double totalSeconds = total / 1000000000d;
@@ -170,7 +168,7 @@ public class ProfilingApplication {
         return scripts[random.nextInt(scripts.length - 1)];
     }
 
-    public enum TestType { UNKNOWN, LATENCY, THROUGHPUT };
+    public enum TestType { LATENCY, THROUGHPUT };
 
     public static void main(final String[] args) {
         final Map<String,Object> options = ElementHelper.asMap(args);
@@ -178,7 +176,7 @@ public class ProfilingApplication {
         final int parallelism = Integer.parseInt(options.getOrDefault("parallelism", "16").toString());
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("profiler-%d").build();
         final ExecutorService executor = Executors.newFixedThreadPool(parallelism, threadFactory);
-        final TestType testType = TestType.values()[(Integer.parseInt(options.getOrDefault("testType", "2").toString()) % TestType.values().length)];
+        final TestType testType = TestType.values()[(Integer.parseInt(options.getOrDefault("testType", "1").toString()) % TestType.values().length)];
 
         final String host = options.getOrDefault("host", "localhost").toString();
         final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "1000").toString());
@@ -207,6 +205,12 @@ public class ProfilingApplication {
                 .workerPoolSize(workerPoolSize).create();
 
         try {
+            if (TestType.LATENCY == testType) {
+                System.out.println("-----------------------LATENCY TEST SELECTED----------------------");
+            } else {
+                System.out.println("---------------------THROUGHPUT TEST SELECTED---------------------");
+            }
+
             if (exercise) {
                 System.out.println("--------------------------INITIALIZATION--------------------------");
                 final Client client = cluster.connect();
