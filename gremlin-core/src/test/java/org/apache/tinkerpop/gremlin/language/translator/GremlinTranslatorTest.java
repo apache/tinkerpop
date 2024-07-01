@@ -1063,6 +1063,15 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             null},
+                    {"g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
+                            "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
+                            "g.call(string0).with(string1, __.constant(string2))",
+                            "g.Call<object>((string) \"--list\").With(\"service\", __.Constant<object>(\"tinker.search\"))",
+                            "g.Call(\"--list\").With(\"service\", gremlingo.T__.Constant(\"tinker.search\"))",
+                            "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
+                            "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
+                            "g.call(\"--list\").with_(\"service\", __.constant(\"tinker.search\"))",
+                            "g.call('--list').with_('service', __.constant('tinker.search'))"},
             });
         }
 

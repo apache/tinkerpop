@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
@@ -223,15 +224,15 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     private final boolean useComputer;
     private final String queryLanguage;
 
-
-    public AbstractRemoteGraphProvider(final Cluster cluster) {
-        this(cluster, false);
-    }
-
-    public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer) {
-        this(cluster, useComputer, "gremlin-groovy");
-    }
-
+    /**
+     * A helper class that can provide a graph for feature testing.
+     *
+     * @param cluster {@link Cluster} to connect.
+     * @param useComputer Test with {@link Computer} or not.
+     * @param queryLanguage available options are "gremlin-lang" and "groovy-test".
+     *                      "groovy-test" passing incoming Gremlin through the translator to groovy so that
+     *                      it can be executed in the {@link GremlinGroovyScriptEngine}.
+     */
     public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer, final String queryLanguage) {
         this.cluster = cluster;
         this.client = this.cluster.connect();
