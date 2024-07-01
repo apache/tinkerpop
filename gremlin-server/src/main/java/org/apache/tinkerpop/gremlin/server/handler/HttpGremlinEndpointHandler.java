@@ -33,8 +33,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -42,7 +40,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -115,8 +112,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
-
-    private static final Bindings EMPTY_BINDINGS = new SimpleBindings();
 
     protected static final Set<String> INVALID_BINDINGS_KEYS = new HashSet<>();
 
@@ -203,19 +198,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 ctx.writeAndFlush(responseHeader);
                 ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(true);
 
-                switch (requestMessage.getGremlinType()) {
-                    case "":
-                    case TokensV4.OPS_EVAL:
-                        iterateScriptEvalResult(requestCtx, serializer.getValue1(), requestMessage);
-                        break;
-                    case TokensV4.OPS_BYTECODE:
-                        iterateTraversal(requestCtx, serializer.getValue1(), translateBytecodeToTraversal(requestCtx));
-                        break;
-                    case TokensV4.OPS_INVALID:
-                        throw new ProcessingException(GremlinError.invalidGremlinType(requestMessage));
-                    default:
-                        throw new ProcessingException(GremlinError.unknownGremlinType(requestMessage));
-                }
+                iterateScriptEvalResult(requestCtx, serializer.getValue1(), requestMessage);
             } catch (Throwable t) {
                 writeError(requestCtx, formErrorResponseMessage(t, requestMessage), serializer.getValue1());
             } finally {
@@ -320,42 +303,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
-        final Object result = scriptEngine.eval((String) message.getGremlin(), mergedBindings);
+        final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
         handleIterator(context, IteratorUtils.asIterator(result), serializer);
-    }
-
-    private static Traversal.Admin<?,?> translateBytecodeToTraversal(Context ctx) throws ProcessingException {
-        final RequestMessageV4 requestMsg = ctx.getRequestMessage();
-        if (!(requestMsg.getGremlin() instanceof GremlinLang)) {
-            throw new ProcessingException(GremlinError.gremlinType());
-        }
-
-        final Optional<String> alias = requestMsg.optionalField(TokensV4.ARGS_G);
-        if (!alias.isPresent()) {
-            throw new ProcessingException(GremlinError.traversalSource());
-        }
-
-        final String traversalSourceName = alias.get();
-        if (!ctx.getGraphManager().getTraversalSourceNames().contains(traversalSourceName)) {
-            throw new ProcessingException(GremlinError.traversalSource(traversalSourceName));
-        }
-
-        final TraversalSource g = ctx.getGraphManager().getTraversalSource(traversalSourceName);
-        final GremlinLang bytecode = (GremlinLang) requestMsg.getGremlin(); // type checked at start of method.
-        try {
-            final Optional<String> lambdaLanguage = BytecodeHelper.getLambdaLanguage(bytecode);
-            if (!lambdaLanguage.isPresent())
-                return JavaTranslator.of(g).translate(bytecode);
-            else
-                return ctx.getGremlinExecutor().eval(bytecode, EMPTY_BINDINGS, lambdaLanguage.get(), traversalSourceName);
-        } catch (ScriptException ex) {
-            logger.error("Traversal contains a lambda that cannot be compiled", ex);
-            throw new ProcessingException(GremlinError.lambdaNotSupported(ex));
-        } catch (Exception ex) {
-            logger.error("Could not deserialize the Traversal instance", ex);
-            throw new ProcessingException(GremlinError.deserializeTraversal(ex));
-        }
     }
 
     @Override

@@ -51,7 +51,7 @@ public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripT
             // GraphSONv4 assumes that results are always in a list.
             final ByteBuf bb = serializer.serializeResponseAsBinary(
                     responseMessageBuilder.result(Collections.singletonList(value)).code(HttpResponseStatus.OK).create(), allocator);
-            final Object result = ((List) serializer.deserializeBinaryResponse(bb).getResult().getData()).get(0);
+            final Object result = serializer.deserializeBinaryResponse(bb).getResult().getData().get(0);
 
             Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);
         }

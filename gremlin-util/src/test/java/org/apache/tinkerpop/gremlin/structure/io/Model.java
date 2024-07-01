@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -125,7 +124,6 @@ public class Model {
         addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
-        addGraphProcessEntry(new GremlinLang.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
 
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);

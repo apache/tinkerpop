@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 
 import java.util.Collections;
@@ -31,35 +30,17 @@ import java.util.Optional;
  * The model for a request message in the HTTP body that is sent to the server beginning in 4.0.0.
  */
 public final class RequestMessageV4 {
-    /**
-     * An "invalid" message.  Used internally only.
-     */
-    public static final RequestMessageV4 INVALID = new RequestMessageV4();
-
-    private String gremlinType; // Type information needed to help deserialize "gremlin" into either String/Bytecode.
-    private Object gremlin; // Should be either a String or Bytecode type.
+    private String gremlin;
     private Map<String, Object> fields;
 
-    private RequestMessageV4(final Object gremlin, final Map<String, Object> fields) {
+    private RequestMessageV4(final String gremlin, final Map<String, Object> fields) {
         if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
-        if (!(gremlin instanceof GremlinLang || gremlin instanceof String)) {
-            throw new IllegalArgumentException("gremlin argument for RequestMessage must be either String or Bytecode");
-        }
 
         this.gremlin = gremlin;
         this.fields = fields;
 
-        if (gremlin instanceof String) {
-            gremlinType = TokensV4.OPS_EVAL;
-            // default language is "gremlin-groovy" for now, will be replaced in following PR's
-            this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
-        } else if (gremlin instanceof GremlinLang) {
-            gremlinType = TokensV4.OPS_BYTECODE;
-        } else {
-            gremlinType = TokensV4.OPS_INVALID;
-        }
-
-        this.fields.put("gremlinType", gremlinType);
+        // default language is "gremlin-groovy" for now, will be replaced in following PR's
+        this.fields.putIfAbsent(TokensV4.ARGS_LANGUAGE, "gremlin-groovy");
     }
 
     /**
@@ -80,11 +61,7 @@ public final class RequestMessageV4 {
         return (T) optionalField(key).orElse(def);
     }
 
-    public String getGremlinType() {
-        return gremlinType;
-    }
-
-    public Object getGremlin() {
+    public String getGremlin() {
         return gremlin;
     }
 
@@ -93,7 +70,7 @@ public final class RequestMessageV4 {
     }
 
     public RequestMessageV4 trimMessage(int size) {
-        gremlin = gremlin.toString().substring(0, size) + "...";
+        gremlin = gremlin.substring(0, size) + "...";
         return this;
     }
 
@@ -106,7 +83,7 @@ public final class RequestMessageV4 {
         return builder;
     }
 
-    public static Builder from(final RequestMessageV4 msg, final Object gremlin) {
+    public static Builder from(final RequestMessageV4 msg, final String gremlin) {
         final Builder builder = build(gremlin);
         builder.fields.putAll(msg.getFields());
         if (msg.getFields().containsKey(TokensV4.ARGS_BINDINGS)) {
@@ -123,7 +100,7 @@ public final class RequestMessageV4 {
                 '}';
     }
 
-    public static Builder build(final Object gremlin) {
+    public static Builder build(final String gremlin) {
         return new Builder(gremlin);
     }
 
@@ -131,13 +108,11 @@ public final class RequestMessageV4 {
      * Builder class for {@link RequestMessageV4}.
      */
     public static final class Builder {
-        private final Object gremlin; // Should be either a String or Bytecode type.
-
+        private final String gremlin;
         private final Map<String, Object> bindings = new HashMap<>();
-
         private final Map<String, Object> fields = new HashMap<>(); // Only allow certain items to be added to prevent breaking changes.
 
-        private Builder(final Object gremlin) {
+        private Builder(final String gremlin) {
             this.gremlin = gremlin;
         }
 

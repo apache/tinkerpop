@@ -56,18 +56,6 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
 
-import static org.apache.commons.text.StringEscapeUtils.escapeJava;
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Every.everyItem;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
-import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
-import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -84,6 +72,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.apache.commons.text.StringEscapeUtils.escapeJava;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Every.everyItem;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
+import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
+import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @ScenarioScoped
 public final class StepDefinition {
@@ -333,6 +333,7 @@ public final class StepDefinition {
 
         // skip the header in the dataTable
         final Object[] expected = dataTable.asList().stream().skip(1).map(this::convertToObject).toArray();
+
         assertThat(actual, containsInAnyOrder(expected));
     }
 

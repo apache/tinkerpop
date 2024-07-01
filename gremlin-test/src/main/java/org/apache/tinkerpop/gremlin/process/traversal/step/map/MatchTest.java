@@ -43,10 +43,10 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.fail;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.match;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
@@ -58,7 +58,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
@@ -801,7 +801,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_selectXa_b_cX_byXidX() {
             return g.V().match(
-                    where("a", P.neq("c")),
+                    where("a", neq("c")),
                     as("a").out("created").as("b"),
                     or(
                             as("a").out("knows").has("name", "vadas"),
@@ -824,7 +824,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("a").in("writtenBy").as("b"),
                     as("b").out("followedBy").as("c"),
                     as("c").out("writtenBy").as("d"),
-                    where("d", P.neq("a")));
+                    where("d", neq("a")));
         }
 
         @Override
@@ -865,7 +865,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match(
                     where(and(
                             as("a").out("created").as("b"),
-                            as("b").in("created").count().is(eq(3)))),
+                            as("b").in("created").count().is(P.eq(3)))),
                     as("a").both().as("b"),
                     where(as("b").in()));
         }
@@ -907,7 +907,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_notXmatchXa_age_b__a_name_cX_whereXb_eqXcXX_selectXaXX_name() {
-            return g.V().not(match(__.as("a").values("age").as("b"), __.as("a").values("name").as("c")).where("b", eq("c")).select("a")).values("name");
+            return g.V().not(match(__.as("a").values("age").as("b"), __.as("a").values("name").as("c")).where("b", P.eq("c")).select("a")).values("name");
         }
 
         @Override

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.benchmark.util.AbstractGraphBenchmark;
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -52,8 +52,6 @@ public class TraversalConstructionBenchmark  extends AbstractGraphBenchmark {
         put("k9", "v9");
     }};
 
-    private static final Bindings b = Bindings.instance();
-
     @Benchmark
     public GraphTraversal constructShort() throws Exception {
         return g.V().out("knows");
@@ -75,7 +73,7 @@ public class TraversalConstructionBenchmark  extends AbstractGraphBenchmark {
 
     @Benchmark
     public GraphTraversal constructMediumWithBindings() throws Exception {
-        return g.V().has("person","name",b.of("x","marko")).
+        return g.V().has("person","name", GremlinLang.Parameter.var("x","marko")).
                 project("user","knows","created").
                 by(project("name","age").by("name").by("age")).
                 by(out("knows").project("name","age").by("name").by("age")).

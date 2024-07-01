@@ -16,23 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.jsr223;
+package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
+import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 
 /**
- * Provides a way to customize and override {@link GremlinLang} to script translation. Not all {@link GremlinScriptEngine}
- * will support this capability as translation is optional.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface TranslatorCustomizer extends Customizer {
-
-    /**
-     * Construct a {@link Translator.ScriptTranslator.TypeTranslator} that will be used by a
-     * {@link Translator.ScriptTranslator} instance within the {@link GremlinScriptEngine} to translate
-     * {@link GremlinLang} to a script.
-     */
-    public Translator.ScriptTranslator.TypeTranslator createTypeTranslator();
+public class GraphBinaryLangRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
+    public GraphBinaryLangRemoteGraphProvider() {
+        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), false, "gremlin-lang");
+    }
 }

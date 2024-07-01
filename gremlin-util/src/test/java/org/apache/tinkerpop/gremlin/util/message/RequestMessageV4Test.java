@@ -38,17 +38,6 @@ public class RequestMessageV4Test {
     }
 
     @Test
-    public void shouldErrorSettingGremlinWithInvalidType() {
-        final Integer script = 5;
-        try {
-            RequestMessageV4.build(script).create();
-            fail("RequestMessage shouldn't accept Integer for gremlin input.");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("gremlin argument for RequestMessage must be either String or Bytecode"));
-        }
-    }
-
-    @Test
     public void shouldSetBindingsWithMap() {
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("a", "b");

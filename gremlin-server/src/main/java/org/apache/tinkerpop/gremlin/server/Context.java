@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -50,33 +49,12 @@ public class Context {
     private final ScheduledExecutorService scheduledExecutorService;
     private final long requestTimeout;
     private final String materializeProperties;
-    private final RequestContentType requestContentType;
     private final Object gremlinArgument;
     private HttpGremlinEndpointHandler.RequestState requestState;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
     private ScheduledFuture<?> timeoutExecutor = null;
     private boolean timeoutExecutorGrabbed = false;
     private final Object timeoutExecutorLock = new Object();
-
-    /**
-     * The type of the request as determined by the contents of {@link TokensV4#ARGS_GREMLIN}.
-     */
-    public enum RequestContentType {
-        /**
-         * Contents is of type {@link GremlinLang}.
-         */
-        BYTECODE,
-
-        /**
-         * Contents is of type {@code String}.
-         */
-        SCRIPT,
-
-        /**
-         * Contents are not of a type that is expected.
-         */
-        UNKNOWN
-    }
 
     public Context(final RequestMessageV4 requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -99,7 +77,6 @@ public class Context {
         // order of calls matter as one depends on the next
         this.gremlinArgument = requestMessage.getGremlin();
         this.requestState = requestState;
-        this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
         this.materializeProperties = determineMaterializeProperties();
     }
@@ -187,15 +164,6 @@ public class Context {
      */
     public void setStartedResponse() { startedResponse.set(true); }
 
-    private RequestContentType determineRequestContents() {
-        if (gremlinArgument instanceof GremlinLang)
-            return RequestContentType.BYTECODE;
-        else if (gremlinArgument instanceof String)
-            return RequestContentType.SCRIPT;
-        else
-            return RequestContentType.UNKNOWN;
-    }
-
     private long determineTimeout() {
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
@@ -204,21 +172,17 @@ public class Context {
 
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
         // options then allow that value to override what's provided on the lifecycle
-        final Optional<Long> timeoutDefinedInScript = requestContentType == RequestContentType.SCRIPT ?
-                GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
+        final Optional<Long> timeoutDefinedInScript = GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout();
 
         return timeoutDefinedInScript.orElse(seto);
     }
 
     private String determineMaterializeProperties() {
-        // with() in Script request has the highest priority
-        if (requestContentType == RequestContentType.SCRIPT) {
-            final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
-            if (mp.isPresent())
-                return mp.get().equals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
-                        ? TokensV4.MATERIALIZE_PROPERTIES_TOKENS
-                        : TokensV4.MATERIALIZE_PROPERTIES_ALL;
-        }
+        final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
+        if (mp.isPresent())
+            return mp.get().equals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
+                    ? TokensV4.MATERIALIZE_PROPERTIES_TOKENS
+                    : TokensV4.MATERIALIZE_PROPERTIES_ALL;
 
         final String materializeProperties = requestMessage.getField(TokensV4.ARGS_MATERIALIZE_PROPERTIES);
         // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL

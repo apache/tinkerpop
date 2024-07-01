@@ -29,7 +29,6 @@ public class GremlinScriptEngineSuite extends Suite {
     static String ENGINE_TO_TEST;
 
     private static final Class<?>[] allTests = new Class<?>[]{
-            BindingsScriptEngineTest.class,
             CachedGremlinScriptEngineManagerTest.class,
             GremlinEnabledScriptEngineTest.class,
             ScriptEngineLambdaTest.class };

@@ -32,10 +32,10 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = GraphBinaryRemoteFeatureTest.RemoteGuiceFactory.class,
+        objectFactory = GraphBinaryGroovyRemoteFeatureTest.RemoteGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
-public class GraphBinaryRemoteFeatureTest extends AbstractFeatureTest {
+public class GraphBinaryGroovyRemoteFeatureTest extends AbstractFeatureTest {
     public static class RemoteGuiceFactory extends AbstractGuiceFactory {
         public RemoteGuiceFactory() {
             super(Guice.createInjector(Stage.PRODUCTION, CucumberModules.createScenarioModule(), new ServiceModule()));
@@ -45,7 +45,7 @@ public class GraphBinaryRemoteFeatureTest extends AbstractFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(RemoteWorld.GraphBinaryRemoteWorld.class);
+            bind(World.class).to(RemoteWorld.GraphBinaryGroovyRemoteWorld.class);
         }
     }
 }

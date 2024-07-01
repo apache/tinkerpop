@@ -96,19 +96,6 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
-    @Ignore("[Discuss] is this valid use case?")
-    public void shouldHandleVertexResultFromTraversalBulked() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final Client aliased = client.alias("gmodern");
-        final ResultSet resultSetUnrolled = aliased.submit(g.V().both().barrier().both().barrier());
-        final List<Result> results = resultSetUnrolled.all().get();
-
-        assertThat(results.get(0).getObject(), CoreMatchers.instanceOf(Traverser.class));
-        assertEquals(6, results.size());
-    }
-
-    @Test
     public void shouldHandleNullResult() throws Exception {
         final ResultSet results = client.submit("gmodern.V().drop().iterate();null");
         assertNull(results.all().get().get(0).getObject());

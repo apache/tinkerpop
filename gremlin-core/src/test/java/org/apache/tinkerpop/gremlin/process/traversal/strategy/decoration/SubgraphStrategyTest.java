@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -32,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -58,15 +56,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(Enclosed.class)
 public class SubgraphStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
-
     @RunWith(Parameterized.class)
     public static class TraverseTest {
         private static final GraphTraversalSource g = EmptyGraph.instance().traversal();
@@ -100,7 +95,7 @@ public class SubgraphStrategyTest {
 
         @Test
         public void shouldSubgraph() {
-            final String repr = translator.translate(traversal.getGremlinLang()).getScript();
+            final String repr = traversal.getGremlinLang().getGremlin();
             final SubgraphStrategy strategy = SubgraphStrategy.build().edges(__.has("edge")).vertices(__.has("vertex")).create();
             strategy.apply(traversal);
 
@@ -120,7 +115,7 @@ public class SubgraphStrategyTest {
 
         @Test
         public void doTest() {
-            final String repr = translator.translate(original.getGremlinLang()).getScript();
+            final String repr = original.getGremlinLang().getGremlin();
             final TraversalStrategies originalStrategies = new DefaultTraversalStrategies();
             originalStrategies.addStrategies(SubgraphStrategy.build().
                     vertices(__.and(has("name", "marko"), has("age", 29))).

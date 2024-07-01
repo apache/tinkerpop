@@ -59,11 +59,4 @@ public class GremlinLangScriptEngineTest {
         assertThat(result, instanceOf(Traversal.Admin.class));
         assertEquals(g.V(100, 1000, 10000).asAdmin().getGremlinLang(), ((Traversal.Admin) result).getGremlinLang());
     }
-
-    @Test
-    public void shouldEvalGremlinBytecode() throws ScriptException {
-        final Object result = scriptEngine.eval(g.V().asAdmin().getGremlinLang(), "g");
-        assertThat(result, instanceOf(Traversal.Admin.class));
-        assertEquals(g.V().asAdmin().getGremlinLang(), ((Traversal.Admin) result).getGremlinLang());
-    }
 }

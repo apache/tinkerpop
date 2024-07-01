@@ -350,12 +350,6 @@ public class GryoMapperTest {
     }
 
     @Test
-    public void shouldHandleBytecode() throws Exception {
-        final GremlinLang bytecode = __().out().outV().outE().asAdmin().getGremlinLang();
-        assertEquals(bytecode.toString(), serializeDeserialize(bytecode, GremlinLang.class).toString());
-    }
-
-    @Test
     public void shouldHandleClass() throws Exception {
         final Class<?> clazz = java.io.File.class;
         assertEquals(clazz, serializeDeserialize(clazz, Class.class));
