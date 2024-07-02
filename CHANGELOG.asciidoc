@@ -47,6 +47,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Made `new` keyword optional in the Gremlin grammar.
 * Added TypeScript & ECMAScript module support.
 * Improved graph structures type definitions in TypeScript.
+* Removed usage of `Bytecode` for Gremlin Server and Java GLV, script engines and `GremlinExecutor` will not be able to handle `Bytecode`.
+* `Bytecode` - based authorization removed.
+* Added `GremlinLang` which allows to generate gremlin-lang compatible string based on Traversal.
+* `Bindings` replaced with 'Parameter`, it's thread-safe construct which can be used to pass parameters from GLV to server.
+* Feature tests will be performed not only for `GremlinGroovyScriptEngine`, but also for `GremlinLangScriptEngine`.
+* Old translator's removed, new Grammar-based one's will be used.
+* Serialization support removed for `Bindings` and `Bytecode`.
+* `EmbeddedRemoteConnection` will use `Gremlinlang`, not `JavaTranslator`.
+* Java `Client` will no longer support submitting traversals. `DriverRemoteConnection` should be used instead.
+* Fixed `GremlinLangScriptEngine` handling for some strategies.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)

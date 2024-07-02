@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class TraversalSourceSelfMethodVisitorTest {
-    private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+    private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
     @Parameterized.Parameter(value = 0)
     public String script;

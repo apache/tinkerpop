@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
-import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -28,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
@@ -40,6 +40,7 @@ import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -51,10 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.UUID;
-
-import javax.net.ssl.TrustManager;
 
 /**
  * Server settings as configured by a YAML file.
@@ -107,7 +105,7 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a request (script or bytecode) to complete execution. Defaults to 30000.
+     * Time in milliseconds to wait for a request to complete execution. Defaults to 30000.
      */
     public long evaluationTimeout = 30000L;
 

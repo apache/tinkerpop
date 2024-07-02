@@ -55,7 +55,7 @@ public class NoOpTerminalVisitor extends GremlinAntlrToJava {
      * terminal operations to GremlinLang.
      *
      * @param ctx - the parse tree
-     * @return - bytecode from the traversal or traversal source
+     * @return - gremlinLang from the traversal or traversal source
      */
     @Override
     public Object visitQuery(final GremlinParser.QueryContext ctx){

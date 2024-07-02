@@ -137,13 +137,15 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
      *     intended to use with curl, postman, etc. by users
      *     both GET and POST
      *     Content-Type header can be empty or application/json
-     *     Accept header can be any, most useful can be application/json, text/plain, application/vnd.gremlin-v3.0+json and application/vnd.gremlin-v3.0+json;types=false
+     *     Accept header can be any, most useful can be application/json, text/plain, application/vnd.gremlin-v3.0+json
+     *     and application/vnd.gremlin-v3.0+json;types=false
      *     Request body example: { "gremlin": "g.V()" }
      * 2.
      *     experimental payload with serialized RequestMessage
-     *     intended for drivers/GLV's. Support both gremlin and bytecode queries.
+     *     intended for drivers/GLV's. Support only gremlin.
      *     only POST
-     *     Content-Type is defined by used serializer, expected type GraphSON application/vnd.gremlin-v3.0+json or GraphBinary application/vnd.graphbinary-v1.0. Untyped GraphSON is not supported, it can't deserialize bytecode
+     *     Content-Type is defined by used serializer, expected type GraphSON application/vnd.gremlin-v3.0+json or
+     *     GraphBinary application/vnd.graphbinary-v1.0. Untyped GraphSON is not supported, it can't deserialize parameters
      *     Accept header can be any.
      *     Request body contains serialized RequestMessage
      */

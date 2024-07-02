@@ -225,7 +225,6 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.E()"
     And the graph should return 2 for count of "g.V()"
 
-  # null same as empty
   Scenario: g_mergeEXnullX
     Given the empty graph
     And the graph initializer of

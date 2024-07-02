@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.structure.RemoteGraph;
@@ -221,16 +222,22 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     private final Cluster cluster;
     private final Client client;
     private final boolean useComputer;
+    private final String queryLanguage;
 
-
-    public AbstractRemoteGraphProvider(final Cluster cluster) {
-        this(cluster, false);
-    }
-
-    public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer) {
+    /**
+     * A helper class that can provide a graph for feature testing.
+     *
+     * @param cluster {@link Cluster} to connect.
+     * @param useComputer Test with {@link Computer} or not.
+     * @param queryLanguage available options are "gremlin-lang" and "groovy-test".
+     *                      "groovy-test" passing incoming Gremlin through the translator to groovy so that
+     *                      it can be executed in the {@link GremlinGroovyScriptEngine}.
+     */
+    public AbstractRemoteGraphProvider(final Cluster cluster, final boolean useComputer, final String queryLanguage) {
         this.cluster = cluster;
         this.client = this.cluster.connect();
         this.useComputer = useComputer;
+        this.queryLanguage = queryLanguage;
         try {
             startServer();
         } catch (Exception ex) {
@@ -304,7 +311,9 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         // concerns and will be likely relegated to the test module so that OptOut can continue to work and we can
         // full execute the process tests. we should be able to clean this up considerably when RemoteGraph can be
         // moved with breaking change.
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(((RemoteGraph) graph).getConnection());
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal()
+                .with(((RemoteGraph) graph).getConnection())
+                .with("language", queryLanguage);
 
         if (useComputer) {
             final int state = TestHelper.RANDOM.nextInt(3);
@@ -324,8 +333,8 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     }
 
     public static Cluster.Builder createClusterBuilder(final SerializersV4 serializer) {
-        // match the content length in the server yaml
-        return TestClientFactory.build().maxContentLength(1000000).serializer(serializer);
+        // bigger buffer for some tests
+        return TestClientFactory.build().maxContentLength(10_000_000).serializer(serializer);
     }
 
     public static void startServer() throws Exception {

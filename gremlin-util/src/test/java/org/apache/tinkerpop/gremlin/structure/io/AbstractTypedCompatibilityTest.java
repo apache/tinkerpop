@@ -126,19 +126,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    public void shouldReadWriteBinding() throws Exception {
-        final String resourceName = "binding";
-
-        final GremlinLang.Binding resource = findModelEntryObject(resourceName);
-        final GremlinLang.Binding fromStatic = read(readFromResource(resourceName), GremlinLang.Binding.class);
-        final GremlinLang.Binding recycled = read(write(fromStatic, GremlinLang.Binding.class, resourceName), GremlinLang.Binding.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        assertEquals(resource, fromStatic);
-        assertEquals(resource, recycled);
-    }
-
-    @Test
     public void shouldReadWriteByte() throws Exception {
         final String resourceName = "byte";
 
@@ -165,21 +152,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertThat(Arrays.equals(fromStaticArray, recycledArray), is(true));
         assertThat(Arrays.equals(resourceArray, fromStaticArray), is(true));
         assertThat(Arrays.equals(resourceArray, recycledArray), is(true));
-    }
-
-    @Test
-    public void shouldReadWriteBytecode() throws Exception {
-        final String resourceName = "bytecode";
-
-        final GremlinLang fromStatic = read(readFromResource(resourceName), GremlinLang.class);
-        final GremlinLang recycled = read(write(fromStatic, GremlinLang.class, resourceName), GremlinLang.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(fromStatic, recycled);
-        // can't reasonably assert the bytecode against the original model as changes to strategies over time might
-        // alter the bytecode form and then break the test. the assertions as they are ensure that the core of
-        // serialization is correct by ensuring the contents of bytecode (whether they are valid for a specific version
-        // or not). it seems beyond the scope of these tests to validate that bytecode itself is unchanging and fully
-        // backward compatible (at least for now).
     }
 
     @Test
