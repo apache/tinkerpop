@@ -159,13 +159,23 @@ public abstract class RemoteWorld implements World {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class GraphBinaryRemoteWorld extends RemoteWorld {
-        public GraphBinaryRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+    public static class GraphBinaryLangRemoteWorld extends RemoteWorld {
+        public GraphBinaryLangRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
-            return g.with("language", "gremlin-lang");
+             return g.with("language", "gremlin-lang");
+        }
+    }
+
+    public static class GraphBinaryGroovyRemoteWorld extends RemoteWorld {
+        public GraphBinaryGroovyRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "groovy-test");
         }
     }
 
@@ -173,5 +183,11 @@ public abstract class RemoteWorld implements World {
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
         public GraphBinaryRemoteComputerWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "groovy-test");
+        }
     }
 }

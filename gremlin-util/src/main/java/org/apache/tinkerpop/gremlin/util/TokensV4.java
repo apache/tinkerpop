@@ -29,10 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public final class TokensV4 {
     private TokensV4() {}
 
-    public static final String OPS_BYTECODE = "bytecode";
-    public static final String OPS_EVAL = "eval";
-    public static final String OPS_INVALID = "invalid";
-
     /**
      * Argument name that allows definition of the number of iterations each HTTP chunk should contain -
      * overrides the @{code resultIterationBatchSize} server setting.
