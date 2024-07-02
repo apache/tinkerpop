@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -183,10 +182,6 @@ public final class StringFactory {
 
     public static String traversalStrategyProxyString(final TraversalStrategyProxy traversalStrategyProxy) {
         return traversalStrategyProxy.getStrategyClass().getSimpleName();
-    }
-
-    public static String translatorString(final Translator translator) {
-        return "translator" + L_BRACKET + translator.getTraversalSource() + ":" + translator.getTargetLanguage() + R_BRACKET;
     }
 
     public static String vertexProgramString(final VertexProgram vertexProgram, final String internalString) {

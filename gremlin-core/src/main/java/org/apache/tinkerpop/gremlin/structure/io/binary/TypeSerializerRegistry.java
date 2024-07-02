@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -50,10 +49,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigIntegerSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BindingSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BulkSetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteBufferSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CharSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
@@ -159,8 +156,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Graph.class, new GraphSerializer()),
             new RegistryEntry<>(Vertex.class, new VertexSerializer()),
             new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
-            new RegistryEntry<>(GremlinLang.Binding.class, new BindingSerializer()),
-            new RegistryEntry<>(GremlinLang.class, new ByteCodeSerializer()),
             new RegistryEntry<>(VertexProperty.Cardinality.class, EnumSerializer.CardinalitySerializer),
             new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),

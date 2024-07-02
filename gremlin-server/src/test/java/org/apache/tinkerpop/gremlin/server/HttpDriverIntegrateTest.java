@@ -31,14 +31,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,7 +50,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
-import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -86,6 +84,25 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
+    public void shouldFailWhenNeeded() {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
+                    addParameter("x", "Good bye, world!").create();
+            client.submit("g.inject(1).fail(x)", ro).all().get();
+            fail("should throw exception");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionHelper.getRootCause(ex);
+            assertThat(inner, instanceOf(ResponseException.class));
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+            assertTrue(ex.getMessage().contains("Good bye, world!"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldHandleObjectBiggerThen8kb() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         try {
@@ -107,34 +124,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
             final String result = g.inject("2").toList().get(0);
             assertEquals("2", result);
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void playTest() {
-        final Cluster cluster = TestClientFactory.build().create();
-        try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-
-            g.V().drop().iterate();
-
-            g.addV("person").property("name", "marko")
-                    .property(list, "age", 29)
-                    .property(list, "age", 31)
-                    .property(list, "age", 32)
-                    .iterate();
-
-            g.mergeV(asMap("name", "marko"))
-                    .option(Merge.onMatch, asMap("age", VertexProperty.Cardinality.list(33)))
-                    .iterate();
-
-            final List<Vertex> result = g.V().has("person", "name", "marko")
-                    .has("age", 33).toList();
-            assertEquals(1, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {
@@ -566,9 +555,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
 
-            // this query doesn't work in gremlin-groovy
-            final Object result = g.with("language", "gremlin-lang").inject(null, null).toList().get(0);
-            assertNull(result);
+            final List result = g.with("language", "gremlin-lang").inject(null, null).inject(null, null).toList();
+            assertEquals(4, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {
