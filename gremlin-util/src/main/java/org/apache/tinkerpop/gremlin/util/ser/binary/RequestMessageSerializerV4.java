@@ -19,15 +19,14 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.structure.io.Buffer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -49,16 +48,8 @@ public class RequestMessageSerializerV4 {
 
         try {
             final Map<String, Object> fields = context.readValue(buffer, Map.class, false);
-            final String gremlinType = (String) fields.get("gremlinType");
 
-            final Object gremlin;
-            if (gremlinType.equals(TokensV4.OPS_EVAL)) {
-                gremlin = context.readValue(buffer, String.class, false);
-            } else if (gremlinType.equals(TokensV4.OPS_BYTECODE)) {
-                gremlin = context.readValue(buffer, GremlinLang.class, false);
-            } else {
-                throw new SerializationException("Type " + gremlinType + " not supported for serialization.");
-            }
+            final String gremlin = context.readValue(buffer, String.class, false);
 
             final RequestMessageV4.Builder builder = RequestMessageV4.build(gremlin);
             if (fields.containsKey(SerTokensV4.TOKEN_LANGUAGE)) {

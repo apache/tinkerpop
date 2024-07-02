@@ -18,13 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
-import org.apache.tinkerpop.gremlin.jsr223.JavaTranslator;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngine;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.EmbeddedRemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import javax.script.Bindings;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -38,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * GraphTraversalSource g = graph.traversal();
  *
  * // setup the remote as normal but give it the embedded "g" so that it executes against that
- * GraphTraversalSource simulatedRemoteG = TraversalSourceFactory.traversal(new EmbeddedRemoteConnection(g));
+ * GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
  * assertEquals(6, simulatedRemoteG.V().count().next().intValue());
  * }
  * </pre>
@@ -47,6 +49,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EmbeddedRemoteConnection implements RemoteConnection {
 
+    private final GremlinLangScriptEngine scriptEngine = new GremlinLangScriptEngine();
     private final GraphTraversalSource g;
 
     public EmbeddedRemoteConnection(final GraphTraversalSource g) {
@@ -59,7 +62,11 @@ public class EmbeddedRemoteConnection implements RemoteConnection {
         // the new submit() in 3.3.x when the deprecation is removed
         final CompletableFuture<RemoteTraversal<?, E>> promise = new CompletableFuture<>();
         try {
-            promise.complete(new EmbeddedRemoteTraversal(JavaTranslator.of(g).translate(gremlinLang)));
+            final Bindings b = scriptEngine.createBindings();
+            b.putAll(gremlinLang.getParameters());
+            b.put("g", g);
+
+            promise.complete(new EmbeddedRemoteTraversal((Traversal)scriptEngine.eval(gremlinLang.getGremlin(), b)));
         } catch (Exception t) {
             promise.completeExceptionally(t);
         }

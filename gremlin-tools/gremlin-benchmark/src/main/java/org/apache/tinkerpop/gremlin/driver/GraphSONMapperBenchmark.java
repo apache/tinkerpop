@@ -51,20 +51,20 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
     @State(Scope.Thread)
     public static class BenchmarkState {
 
-        public byte[] bytecodeBytes1;
-        private byte[] bytecodeBytes2;
-        private final GremlinLang bytecode1 = new GremlinLang();
-        private GremlinLang bytecode2;
+        public byte[] gremlinBytes1;
+        private byte[] gremlinBytes2;
+        private final GremlinLang gremlinLang1 = new GremlinLang();
+        private GremlinLang gremlinLang2;
 
         @Setup(Level.Trial)
         public void doSetup() throws IOException {
-            bytecode1.addStep("V");
-            bytecode1.addStep("values", "name");
-            bytecode1.addStep("tail", 5);
+            gremlinLang1.addStep("V");
+            gremlinLang1.addStep("values", "name");
+            gremlinLang1.addStep("tail", 5);
 
             Graph g = TinkerGraph.open();
 
-            bytecode2 = g.traversal()
+            gremlinLang2 = g.traversal()
                     .addV("person")
                     .property("name1", 1)
                     .property("name2", UUID.randomUUID())
@@ -75,8 +75,8 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
                     .asAdmin().getGremlinLang();
 
 
-            bytecodeBytes1 = mapper.writeValueAsBytes(bytecode1);
-            bytecodeBytes2 = mapper.writeValueAsBytes(bytecode2);
+            gremlinBytes1 = mapper.writeValueAsBytes(gremlinLang1);
+            gremlinBytes2 = mapper.writeValueAsBytes(gremlinLang2);
         }
 
         @TearDown(Level.Trial)
@@ -86,21 +86,21 @@ public class GraphSONMapperBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void readBytecode1(BenchmarkState state) throws IOException {
-        mapper.readValue(state.bytecodeBytes1, GremlinLang.class);
+        mapper.readValue(state.gremlinBytes1, GremlinLang.class);
     }
 
     @Benchmark
     public void readBytecode2(BenchmarkState state) throws IOException {
-        mapper.readValue(state.bytecodeBytes2, GremlinLang.class);
+        mapper.readValue(state.gremlinBytes2, GremlinLang.class);
     }
 
     @Benchmark
     public void writeBytecode1(BenchmarkState state) throws IOException {
-        mapper.writeValueAsString(state.bytecode1);
+        mapper.writeValueAsString(state.gremlinLang1);
     }
 
     @Benchmark
     public void writeBytecode2(BenchmarkState state) throws IOException {
-        mapper.writeValueAsBytes(state.bytecode2);
+        mapper.writeValueAsBytes(state.gremlinLang2);
     }
 }

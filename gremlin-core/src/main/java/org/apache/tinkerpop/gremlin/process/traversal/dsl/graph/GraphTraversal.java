@@ -2291,13 +2291,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        // the translation here of null to has(String, Object) is likely what was intended. a null Traversal doesn't
-        // really make much sense. this should resolve issues with JavaTranslator grabbing this method when bytecode
-        // uses null as the second argument. we've taken this tactic for other overloads of has() as well, so just
-        // continuing with that pattern.
-        if (null == propertyTraversal)
-            return has(propertyKey, (Object) null);
-
         this.asAdmin().getGremlinLang().addStep(Symbols.has, propertyKey, propertyTraversal);
         return this.asAdmin().addStep(
                 new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
