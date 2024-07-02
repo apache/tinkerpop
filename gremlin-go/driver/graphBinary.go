@@ -989,15 +989,10 @@ func readMap(data *[]byte, i *int) (interface{}, error) {
 		}
 		if k == nil {
 			mapData[nil] = v
+		} else if reflect.TypeOf(k).Comparable() {
+			mapData[k] = v
 		} else {
-			switch reflect.TypeOf(k).Kind() {
-			case reflect.Map:
-				mapData[&k] = v
-			case reflect.Slice:
-				mapData[fmt.Sprint(k)] = v
-			default:
-				mapData[k] = v
-			}
+			mapData[fmt.Sprint(k)] = v
 		}
 	}
 	return mapData, nil
