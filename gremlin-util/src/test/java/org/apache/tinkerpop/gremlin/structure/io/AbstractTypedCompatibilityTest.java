@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -29,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -741,22 +739,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
             assertEquals(recycled.getMetrics(m.getId()).getName(), fromStatic.getMetrics(m.getId()).getName());
             assertEquals(recycled.getMetrics(m.getId()).getCounts(), fromStatic.getMetrics(m.getId()).getCounts());
         });
-    }
-
-    @Test
-    public void shouldReadWriteTraverser() throws Exception {
-        final String resourceName = "traverser";
-
-        final Traverser resource = findModelEntryObject(resourceName);
-        final Traverser fromStatic = read(readFromResource(resourceName), Traverser.class);
-        final Traverser recycled = read(write(fromStatic, Traverser.class, resourceName), Traverser.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(resource.bulk(), recycled.bulk());
-        assertEquals(resource.bulk(), fromStatic.bulk());
-        assertEquals(resource.get(), recycled.get());
-        assertEquals(resource.get(), fromStatic.get());
-        assertVertex((Vertex) resource.get(), (Vertex) recycled.get());
-        assertVertex((Vertex) resource.get(), (Vertex) fromStatic.get());
     }
 
     @Test
