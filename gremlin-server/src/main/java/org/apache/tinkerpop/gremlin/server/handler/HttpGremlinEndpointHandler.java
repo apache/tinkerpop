@@ -203,7 +203,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 timerContext.stop();
 
                 // There is a race condition that this query may have finished before the timeoutFuture was created,
-                // though this is very unlikely. This is handled in the settor, if this has already been grabbed.
+                // though this is very unlikely. This is handled in the setter, if this has already been grabbed.
                 // If we passed this point and the setter hasn't been called, it will cancel the timeoutFuture inside
                 // the setter to compensate.
                 final ScheduledFuture<?> timeoutFuture = requestCtx.getTimeoutExecutor();
@@ -363,7 +363,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         if (!itty.hasNext()) {
             ByteBuf chunk = null;
             try {
-                chunk = makeChunk(context, msg, serializer, new ArrayList<>(), false);
+                chunk = makeChunk(context, serializer, new ArrayList<>(), false);
                 nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
             } catch (Exception ex) {
                 // Bytebuf is a countable release - if it does not get written downstream
@@ -420,7 +420,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     ByteBuf chunk = null;
                     try {
-                        chunk = makeChunk(context, msg, serializer, aggregate, itty.hasNext());
+                        chunk = makeChunk(context, serializer, aggregate, itty.hasNext());
                     } catch (Exception ex) {
                         // Bytebuf is a countable release - if it does not get written downstream
                         // it needs to be released here
@@ -477,9 +477,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 filter(i -> i instanceof TemporaryException || i instanceof Failure).findFirst();
     }
 
-    private static ByteBuf makeChunk(final Context ctx, final RequestMessageV4 msg,
-                                     final MessageSerializerV4<?> serializer, final List<Object> aggregate,
-                                     final boolean hasMore) throws Exception {
+    private static ByteBuf makeChunk(final Context ctx, final MessageSerializerV4<?> serializer,
+                                     final List<Object> aggregate, final boolean hasMore) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
