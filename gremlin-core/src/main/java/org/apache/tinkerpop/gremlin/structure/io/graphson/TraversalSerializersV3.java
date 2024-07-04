@@ -21,12 +21,10 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -157,22 +155,6 @@ final class TraversalSerializersV3 {
                 jsonGenerator.writeObject(entry.getValue());
             }
             jsonGenerator.writeEndArray();
-        }
-    }
-
-    final static class TraverserJacksonSerializer extends StdScalarSerializer<Traverser> {
-
-        public TraverserJacksonSerializer() {
-            super(Traverser.class);
-        }
-
-        @Override
-        public void serialize(final Traverser traverserInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeObjectField(GraphSONTokens.BULK, traverserInstance.bulk());
-            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, traverserInstance.get());
-            jsonGenerator.writeEndObject();
         }
     }
 
@@ -419,36 +401,6 @@ final class TraversalSerializersV3 {
             }
 
             return bulkSet;
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    static class TraverserJacksonDeserializer extends StdDeserializer<Traverser> {
-
-        public TraverserJacksonDeserializer() {
-            super(Traverser.class);
-        }
-
-        @Override
-        public Traverser deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            long bulk = 1;
-            Object v = null;
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                if (jsonParser.getCurrentName().equals(GraphSONTokens.BULK)) {
-                    jsonParser.nextToken();
-                    bulk = deserializationContext.readValue(jsonParser, Long.class);
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
-                    jsonParser.nextToken();
-                    v = deserializationContext.readValue(jsonParser, Object.class);
-                }
-            }
-
-            return new DefaultRemoteTraverser<>(v, bulk);
         }
 
         @Override

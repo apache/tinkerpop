@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
@@ -354,20 +353,6 @@ public final class GryoSerializersV3 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-    }
-
-    public final static class DefaultRemoteTraverserSerializer implements SerializerShim<DefaultRemoteTraverser> {
-        @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final DefaultRemoteTraverser remoteTraverser) {
-            kryo.writeClassAndObject(output, remoteTraverser.get());
-            output.writeLong(remoteTraverser.bulk());
-        }
-
-        @Override
-        public <I extends InputShim> DefaultRemoteTraverser read(final KryoShim<I, ?> kryo, final I input, final Class<DefaultRemoteTraverser> remoteTraverserClass) {
-            final Object o = kryo.readClassAndObject(input);
-            return new DefaultRemoteTraverser<>(o, input.readLong());
         }
     }
 

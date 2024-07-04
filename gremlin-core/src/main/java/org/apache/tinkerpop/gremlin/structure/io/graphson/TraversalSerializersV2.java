@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -330,36 +329,6 @@ final class TraversalSerializersV2 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    static class TraverserJacksonDeserializer extends StdDeserializer<Traverser> {
-
-        public TraverserJacksonDeserializer() {
-            super(Traverser.class);
-        }
-
-        @Override
-        public Traverser deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            long bulk = 1;
-            Object v = null;
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                if (jsonParser.getCurrentName().equals(GraphSONTokens.BULK)) {
-                    jsonParser.nextToken();
-                    bulk = deserializationContext.readValue(jsonParser, Long.class);
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
-                    jsonParser.nextToken();
-                    v = deserializationContext.readValue(jsonParser, Object.class);
-                }
-            }
-
-            return new DefaultRemoteTraverser<>(v, bulk);
         }
 
         @Override

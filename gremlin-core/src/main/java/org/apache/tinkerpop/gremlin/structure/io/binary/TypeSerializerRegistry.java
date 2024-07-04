@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -83,7 +82,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerialize
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalExplanationSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalMetricsSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalStrategySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
@@ -172,7 +170,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
             new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
-            new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),

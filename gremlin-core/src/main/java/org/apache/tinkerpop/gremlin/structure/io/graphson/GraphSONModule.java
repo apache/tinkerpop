@@ -270,7 +270,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
-            addSerializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV3.TraversalStrategyJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
@@ -314,7 +313,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(P.class, new TraversalSerializersV3.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV3.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonDeserializer());
-            addDeserializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonDeserializer());
             Arrays.asList(
                     ConnectiveStrategy.class,
                     ElementIdStrategy.class,
@@ -517,7 +515,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
-            addSerializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV3.TraversalStrategyJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
@@ -561,7 +558,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(P.class, new TraversalSerializersV3.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV3.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonDeserializer());
-            addDeserializer(Traverser.class, new TraversalSerializersV3.TraverserJacksonDeserializer());
             Arrays.asList(
                     ConnectiveStrategy.class,
                     ElementIdStrategy.class,
@@ -789,7 +785,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(P.class, new TraversalSerializersV2.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV2.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV2.LambdaJacksonDeserializer());
-            addDeserializer(Traverser.class, new TraversalSerializersV2.TraverserJacksonDeserializer());
             Arrays.asList(
                     ConnectiveStrategy.class,
                     ElementIdStrategy.class,

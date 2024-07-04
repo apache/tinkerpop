@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -269,12 +267,6 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
         // Not equals because of type loss
         assertNotEquals(myList, read);
-    }
-
-    @Test
-    public void shouldHandleDefaultRemoteTraverser() throws Exception {
-        final DefaultRemoteTraverser<String> o = new DefaultRemoteTraverser<>("test", 100);
-        assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
     }
 
     @Test

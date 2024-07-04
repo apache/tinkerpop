@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
@@ -255,14 +253,6 @@ public class GryoMapperTest {
             assertThat(ex, instanceOf(UnsupportedOperationException.class));
             assertEquals("I don't do anything", ex.getMessage());
         }
-    }
-
-    @Test
-    public void shouldHandleDefaultRemoteTraverser() throws Exception  {
-        final DefaultRemoteTraverser<Integer> br = new DefaultRemoteTraverser<>(123, 1000);
-        final DefaultRemoteTraverser inOut = serializeDeserialize(br, DefaultRemoteTraverser.class);
-        assertEquals(br.bulk(), inOut.bulk());
-        assertEquals(br.get(), inOut.get());
     }
 
     @Test

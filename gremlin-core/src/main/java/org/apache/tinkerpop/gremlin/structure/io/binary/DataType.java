@@ -57,7 +57,7 @@ public enum DataType {
     P(0X1E),
     SCOPE(0X1F),
     T(0X20),
-    TRAVERSER(0X21),
+    // was TRAVERSER(0X21),
     BIGDECIMAL(0X22),
     BIGINTEGER(0X23),
     BYTE(0X24),

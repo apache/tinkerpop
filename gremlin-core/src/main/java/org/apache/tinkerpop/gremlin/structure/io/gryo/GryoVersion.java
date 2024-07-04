@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -318,9 +317,8 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
 
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
-            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV3.DefaultRemoteTraverserSerializer()));
-
-            // 122 was Bytecode until it was removed for 4.x
+            // 123 was Traverser until it was removed for 4.x
+             // 122 was Bytecode until it was removed for 4.x
             // 126 was Bytecode.Binding until it was removed 4.x
 
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
@@ -522,8 +520,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LP_O_OB_S_SE_SL_Traverser.class, 90));
             add(GryoTypeReg.of(LP_O_OB_P_S_SE_SL_Traverser.class, 91));
             add(GryoTypeReg.of(ProjectedTraverser.class, 164));
-            add(GryoTypeReg.of(DefaultRemoteTraverser.class, 123, new GryoSerializersV1.DefaultRemoteTraverserSerializer()));
-
+            // 123 was Traverser until it was removed for 4.x
             // 122 was Bytecode until it was removed for 4.x
             // 126 was Bytecode.Binding until it was removed 4.x
 

@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -49,7 +48,6 @@ import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -353,16 +351,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         return bindings;
-    }
-
-    private void iterateTraversal(final Context context, MessageSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
-            throws InterruptedException {
-        final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
-        logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
-
-        // compile the traversal - without it getEndStep() has nothing in it
-        traversal.applyStrategies();
-        handleIterator(context, new TraverserIterator(traversal), serializer);
     }
 
     private void handleIterator(final Context context, final Iterator itty, final MessageSerializerV4<?> serializer) throws InterruptedException {
