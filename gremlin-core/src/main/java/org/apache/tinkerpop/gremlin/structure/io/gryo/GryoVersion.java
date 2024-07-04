@@ -318,7 +318,7 @@ public enum GryoVersion {
 
             add(GryoTypeReg.of(ProjectedTraverser.class, 168));
             // 123 was Traverser until it was removed for 4.x
-             // 122 was Bytecode until it was removed for 4.x
+            // 122 was Bytecode until it was removed for 4.x
             // 126 was Bytecode.Binding until it was removed 4.x
 
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
