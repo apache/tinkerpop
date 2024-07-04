@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
@@ -41,14 +42,18 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.codehaus.groovy.tools.shell.CommandException;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.CompletionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -62,6 +67,7 @@ import static org.junit.Assert.fail;
  * @author Marc de Lignie
  */
 public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final Long DEFAULT_EVALUATION_TIMEOUT = 2000L;
     private static LogCaptor logCaptor;
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -107,6 +113,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         settings.authentication = authSettings;
         settings.authorization = authzSettings;
         settings.enableAuditLog = true;
+        settings.evaluationTimeout = DEFAULT_EVALUATION_TIMEOUT;
 
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
@@ -385,6 +392,25 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
+
+    @Test
+    public void shouldRespectTimeoutWithAuth() {
+        final Cluster cluster = TestClientFactory.build().credentials("stephen", "password").create();
+        final GraphTraversalSource g = AnonymousTraversalSource.traversal().withRemote(
+                DriverRemoteConnection.using(cluster, "gmodern"));
+        final Instant instant = Instant.now();
+        try {
+            g.with("evaluationTimeout", DEFAULT_EVALUATION_TIMEOUT / 20).
+                    V().
+                    repeat(__.both()).
+                    until(__.count().is(0)).
+                    toList();
+        } catch (final CompletionException e) {
+            Assert.assertTrue(Instant.now().toEpochMilli() - instant.toEpochMilli() < DEFAULT_EVALUATION_TIMEOUT / 2);
+        } finally {
+            cluster.close();
         }
     }
 }
