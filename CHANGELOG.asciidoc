@@ -355,7 +355,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-6-8]]
 === TinkerPop 3.6.8 (NOT OFFICIALLY RELEASED YET)
 
-* Fixed a bug in GremlinServer not properly propagating arguments when authentication is enabled.
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
 * Raised handshake exceptions for Java driver for `NoHostAvailableException` situations.
 
