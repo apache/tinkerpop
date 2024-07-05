@@ -226,7 +226,7 @@ public class DriverRemoteConnection implements RemoteConnection {
         try {
             gremlinLang.addG(remoteTraversalSourceName);
             return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
-                    .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
+                    .thenApply(rs -> new DriverRemoteTraversal<>(rs, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
         }
@@ -243,7 +243,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     protected static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
         final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
-        final RequestOptions.Builder builder = RequestOptions.build();
+        final RequestOptions.Builder builder = RequestOptions.build().withBulking(true);
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String, Object> options = optionsStrategy.getOptions();

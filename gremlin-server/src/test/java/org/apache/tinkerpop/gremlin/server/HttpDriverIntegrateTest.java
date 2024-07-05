@@ -122,8 +122,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-            final String result = g.inject("2").toList().get(0);
-            assertEquals("2", result);
+            final List result = g.inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, result.size());
         } catch (Exception ex) {
             throw ex;
         } finally {

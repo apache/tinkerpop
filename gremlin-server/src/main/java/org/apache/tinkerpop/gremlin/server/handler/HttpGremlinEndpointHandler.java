@@ -305,7 +305,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-        handleIterator(context, IteratorUtils.asIterator(result), serializer);
+        if (args.containsKey(TokensV4.ARGS_BULKING) && (boolean) args.get(TokensV4.ARGS_BULKING)) {
+            // optimization for driver requests
+            ((Traversal.Admin<?, ?>) result).applyStrategies();
+            handleIterator(context, new TraverserIterator((Traversal.Admin<?, ?>) result), serializer);
+        } else {
+            handleIterator(context, IteratorUtils.asIterator(result), serializer);
+        }
     }
 
     @Override
@@ -353,16 +359,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         return bindings;
-    }
-
-    private void iterateTraversal(final Context context, MessageSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
-            throws InterruptedException {
-        final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
-        logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
-
-        // compile the traversal - without it getEndStep() has nothing in it
-        traversal.applyStrategies();
-        handleIterator(context, new TraverserIterator(traversal), serializer);
     }
 
     private void handleIterator(final Context context, final Iterator itty, final MessageSerializerV4<?> serializer) throws InterruptedException {
