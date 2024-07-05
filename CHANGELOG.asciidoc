@@ -78,7 +78,6 @@ This release also includes changes from <<release-3-6-7, 3.6.7>>.
 
 * Deprecated `ltrim()` and `rTrim()` in favor of `l_trim()` and `r_trim` in Python.
 * Fixed bug in `onCreate` for `mergeV()` where use of the `Cardinality` functions was not properly handled.
-* Fixed multiple concurrent initially requests caused authentication to fail.
 
 ==== Bugs
 
