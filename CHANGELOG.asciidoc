@@ -356,7 +356,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.6.8 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
-* Raised handshake exceptions for Java driver for `NoHostAvailableException` situations.
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
