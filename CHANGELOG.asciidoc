@@ -33,6 +33,10 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Fixed so that TrimGlobalStep and TrimLocalStep have the same character control handling as Ltrim and Rtrim
 * Fix a bug in MaxLocalStep, MinLocalStep, MeanLocalStep and SumLocalStep that it throws NoSuchElementException when encounters an empty iterator as input.
 
+==== Improvements
+
+* TINKERPOP-3093 optimization of readmap function
+
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
 
