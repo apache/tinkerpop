@@ -18,16 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Keys used in the various handlers to store state in the pipeline.
@@ -62,11 +58,6 @@ public final class StateKey {
      * The key for the current request.
      */
     public static final AttributeKey<RequestMessage> REQUEST_MESSAGE = AttributeKey.valueOf("request");
-
-    /**
-     * The key for the deferred requests.
-     */
-    public static final AttributeKey<Pair<LocalDateTime, List<RequestMessage>>> DEFERRED_REQUEST_MESSAGES = AttributeKey.valueOf("deferredRequests");
 
     /**
      * The key for the current {@link AuthenticatedUser}.
