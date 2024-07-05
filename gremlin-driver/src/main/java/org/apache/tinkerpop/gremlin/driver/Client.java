@@ -44,8 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
-
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
  * This class itself is a base class as there are different implementations that provide differing kinds of
@@ -240,6 +238,7 @@ public abstract class Client {
         options.getG().ifPresent(g -> request.addG(g));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
+        if (options.isBulking()) request.addBulking(true);
 
         return submitAsync(request.create());
     }

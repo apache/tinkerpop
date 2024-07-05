@@ -48,6 +48,7 @@ public final class RequestOptions {
     private final Long timeout;
     private final String language;
     private final String materializeProperties;
+    private final boolean bulking;
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
@@ -56,6 +57,7 @@ public final class RequestOptions {
         this.timeout = builder.timeout;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
+        this.bulking = builder.bulking;
     }
 
     public Optional<String> getG() {
@@ -80,13 +82,15 @@ public final class RequestOptions {
 
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
+    public boolean isBulking() { return bulking; }
+
     public static Builder build() {
         return new Builder();
     }
 
     public static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
         final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
-        final RequestOptions.Builder builder = RequestOptions.build();
+        final RequestOptions.Builder builder = RequestOptions.build().withBulking(true);
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String, Object> options = optionsStrategy.getOptions();
@@ -114,6 +118,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private String materializeProperties = null;
         private String language = null;
+        private boolean bulking = false;
 
         /**
          * The aliases to set on the request.
@@ -149,6 +154,11 @@ public final class RequestOptions {
          */
         public Builder batchSize(final int batchSize) {
             this.batchSize = batchSize;
+            return this;
+        }
+
+        public Builder withBulking(final boolean bulking) {
+            this.bulking = bulking;
             return this;
         }
 
