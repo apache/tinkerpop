@@ -197,8 +197,8 @@ public class GremlinLang implements Cloneable, Serializable {
             return asParameter(arg);
         }
 
-        // handle all iterables  in similar way
-        if (arg instanceof Iterable || arg instanceof Iterator || arg instanceof Object[] || arg.getClass().isArray()) {
+        // handle all iterables in similar way
+        if (arg instanceof List || arg instanceof Object[] || arg.getClass().isArray()) {
             return asString(asIterator(arg));
         }
 
