@@ -35,6 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -78,6 +80,11 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     public MergeElementStep(final Traversal.Admin traversal, final boolean isStart, final Map mergeMap) {
         this(traversal, isStart, new ConstantTraversal<>(mergeMap));
         validate(mergeMap, false);
+    }
+
+    public MergeElementStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> mergeMap) {
+        this(traversal, isStart, new ConstantTraversal<>(mergeMap));
+        validate(mergeMap.get(), false);
     }
 
     public MergeElementStep(final Traversal.Admin traversal, final boolean isStart,
@@ -279,7 +286,7 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                             op, allowedTokens, k));
                 }
                 if (k == T.label) {
-                    if (!(v instanceof String)) {
+                    if (!(GValue.instanceOf(v, GType.STRING))) {
                         throw new IllegalArgumentException(String.format(
                                 "%s() and option(onCreate) args expect T.label value to be of String - found: %s", op,
                                 v.getClass().getSimpleName()));
@@ -318,7 +325,8 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
      * null Map == empty Map
      */
     protected Map materializeMap(final Traverser.Admin<S> traverser, Traversal.Admin<S, ?> mapTraversal) {
-        Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
+        final Object o = TraversalUtil.apply(traverser, mapTraversal);
+        Map map = GValue.getFrom(o);
 
         // PartitionStrategy uses parameters as a mechanism for setting the partition key. trying to be as specific
         // as possible here wrt parameters usage to avoid misuse
@@ -360,7 +368,7 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
         return id != null ? graph.traversal().V(id) : graph.traversal().V();
     }
 
-    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final String label) {
+    protected GraphTraversal searchVerticesLabelConstraint(final GraphTraversal t, final String label) {
         return label != null ? t.hasLabel(label) : t;
     }
 

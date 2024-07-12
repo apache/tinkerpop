@@ -39,7 +39,7 @@ public interface ListFunction {
      * @param iterable an Iterable or array.
      * @return The iterable type as a Collection or null if argument isn't iterable.
      */
-    public static Collection asCollection(Object iterable) {
+    public static Collection asCollection(final Object iterable) {
         if (iterable instanceof Collection) {
             return (Collection) iterable;
         } else if ((iterable != null && iterable.getClass().isArray()) || iterable instanceof Iterable) {
@@ -56,7 +56,7 @@ public interface ListFunction {
      * @param iterable an Iterable or array.
      * @return The iterable type as a Collection or null if argument isn't iterable.
      */
-    public static Set asSet(Object iterable) {
+    public static Set asSet(final Object iterable) {
         if (iterable instanceof Iterable || iterable != null && iterable.getClass().isArray()) {
             return IteratorUtils.asSet(iterable);
         } else {
@@ -71,7 +71,7 @@ public interface ListFunction {
      */
     public String getStepName();
 
-    public default Collection convertArgumentToCollection(Object arg) {
+    public default Collection convertArgumentToCollection(final Object arg) {
         if (null == arg) {
             throw new IllegalArgumentException(
                     String.format("Argument provided for %s step can't be null.", getStepName()));
@@ -90,7 +90,7 @@ public interface ListFunction {
         return incoming;
     }
 
-    public default <S> Collection convertTraverserToCollection(Traverser.Admin<S> traverser) {
+    public default <S> Collection convertTraverserToCollection(final Traverser.Admin<S> traverser) {
         final S items = traverser.get();
 
         if (null == items) {
@@ -111,7 +111,7 @@ public interface ListFunction {
         return incoming;
     }
 
-    public default <S, E> Collection convertTraversalToCollection(Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+    public default <S, E> Collection convertTraversalToCollection(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         final Object array = TraversalUtil.apply(traverser, traversal);
 
         if (null == array) {
@@ -134,7 +134,7 @@ public interface ListFunction {
         return input;
     }
 
-    public default Set convertArgumentToSet(Object arg) {
+    public default Set convertArgumentToSet(final Object arg) {
         if (null == arg) {
             throw new IllegalArgumentException(
                     String.format("Argument provided for %s step can't be null.", getStepName()));
@@ -153,7 +153,7 @@ public interface ListFunction {
         return incoming;
     }
 
-    public default <S> Set convertTraverserToSet(Traverser.Admin<S> traverser) {
+    public default <S> Set convertTraverserToSet(final Traverser.Admin<S> traverser) {
         final S items = traverser.get();
 
         if (null == items) {
@@ -174,7 +174,7 @@ public interface ListFunction {
         return incoming;
     }
 
-    public default <S, E> Set convertTraversalToSet(Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+    public default <S, E> Set convertTraversalToSet(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         final Object array = TraversalUtil.apply(traverser, traversal);
 
         if (null == array) {

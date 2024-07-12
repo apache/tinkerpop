@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.junit.Test;
 
@@ -355,5 +356,15 @@ public class ParametersTest {
         parameters.set(mock, "a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat", "t", __.outE("knows"));
 
         verify(mock).integrateChild(__.outE("knows").asAdmin());
+    }
+
+    @Test
+    public void shouldGetKeyValuesAndResolveGValues() {
+        final Parameters parameters = new Parameters();
+        parameters.set(null, "a", "axe", "b", GValue.of("B", "bat"), "c", GValue.of("C", "cat"));
+
+        final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class));
+        assertEquals(6, params.length);
+        assertThat(Arrays.equals(new Object[] {"a", "axe", "b", "bat", "c", "cat"}, params), is(true));
     }
 }

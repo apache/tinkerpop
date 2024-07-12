@@ -22,10 +22,20 @@ import org.apache.tinkerpop.gremlin.AssertHelper;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class CollectionUtilTest {
@@ -69,5 +79,105 @@ public class CollectionUtilTest {
 
         final ConcurrentHashMap<?, ?> cloned = CollectionUtil.clone(source);
         assertTrue(source.equals(cloned));
+    }
+
+    @Test
+    public void shouldCloneEmptyConcurrentHashMap() {
+        final ConcurrentHashMap<String, String> source = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<?, ?> cloned = CollectionUtil.clone(source);
+        assertTrue(source.equals(cloned));
+    }
+
+    @Test
+    public void shouldCloneConcurrentHashMapWithMixedTypes() {
+        final ConcurrentHashMap<String, Object> source = new ConcurrentHashMap<>();
+        source.put("key1", "value1");
+        source.put("key2", new ArrayList<>(Arrays.asList("a", "b")));
+        source.put("key3", new HashSet<>(Arrays.asList("x", "y")));
+
+        final ConcurrentHashMap<?, ?> cloned = CollectionUtil.clone(source);
+        assertTrue(source.equals(cloned));
+    }
+
+    @Test
+    public void shouldAddFirstWhenBothArgumentsNull() {
+        String[] result = CollectionUtil.addFirst(null, null, String.class);
+        assertArrayEquals(new String[]{null}, result);
+    }
+
+    @Test
+    public void shouldAddFirstWhenArrayNull() {
+        String[] result = CollectionUtil.addFirst(null, "element", String.class);
+        assertArrayEquals(new String[]{"element"}, result);
+    }
+
+    @Test
+    public void shoulAddFirstWhenNeitherArgumentNull() {
+        Integer[] array = {1, 2, 3};
+        Integer[] result = CollectionUtil.addFirst(array, 0, Integer.class);
+        assertArrayEquals(new Integer[]{0, 1, 2, 3}, result);
+    }
+
+    @Test
+    public void shouldAddFirstWhenEmptyArray() {
+        String[] array = {};
+        String[] result = CollectionUtil.addFirst(array, "element", String.class);
+        assertArrayEquals(new String[]{"element"}, result);
+    }
+
+    @Test
+    public void shouldAddFirstWhenIntegers() {
+        Integer[] array = {1, 2, 3};
+        Integer[] result = CollectionUtil.addFirst(array, 0, Integer.class);
+        assertArrayEquals(new Integer[]{0, 1, 2, 3}, result);
+    }
+
+    @Test
+    public void shouldConvertVarargsToList() {
+        List<String> result = CollectionUtil.asList("a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), result);
+    }
+
+    @Test
+    public void shouldConvertEmptyVarargsToList() {
+        List<String> result = CollectionUtil.asList();
+        assertEquals(Collections.emptyList(), result);
+    }
+
+    @Test
+    public void shouldConvertVarargsToSet() {
+        Set<String> result = CollectionUtil.asSet("a", "b", "c");
+        assertEquals(new LinkedHashSet<>(Arrays.asList("a", "b", "c")), result);
+    }
+
+    @Test
+    public void shouldConvertEmptyVarargsToSet() {
+        Set<String> result = CollectionUtil.asSet();
+        assertEquals(new LinkedHashSet<>(), result);
+    }
+
+    @Test
+    public void shouldConvertCollectionToSet() {
+        Collection<String> collection = Arrays.asList("a", "b", "c");
+        Set<String> result = CollectionUtil.asSet(collection);
+        assertEquals(new LinkedHashSet<>(collection), result);
+    }
+
+    @Test
+    public void shouldConvertVarargsToMap() {
+        Map<String, String> result = CollectionUtil.asMap("key1", "value1", "key2", "value2");
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("key1", "value1");
+        expected.put("key2", "value2");
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void shouldConvertVarargsToMapWithOddNumberOfElements() {
+        Map<String, String> result = CollectionUtil.asMap("key1", "value1", "key2");
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("key1", "value1");
+        expected.put("key2", null);
+        assertEquals(expected, result);
     }
 }

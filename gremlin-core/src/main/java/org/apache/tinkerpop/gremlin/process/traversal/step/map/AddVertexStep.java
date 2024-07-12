@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -51,6 +52,10 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         super(traversal);
         this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
         userProvidedLabel = label != null;
+    }
+    public AddVertexStep(final Traversal.Admin traversal, final GValue<String> label) {
+        super(traversal);
+        this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {

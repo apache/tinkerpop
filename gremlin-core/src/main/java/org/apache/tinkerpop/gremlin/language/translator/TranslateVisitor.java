@@ -903,17 +903,17 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitTraversalMethod_option_Merge_Traversal(final GremlinParser.TraversalMethod_option_Merge_TraversalContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
     public Void visitTraversalMethod_option_Object_Traversal(final GremlinParser.TraversalMethod_option_Object_TraversalContext ctx) {
         return visitChildren(ctx);
     }
 
     @Override
     public Void visitTraversalMethod_option_Traversal(final GremlinParser.TraversalMethod_option_TraversalContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_option_Merge_Traversal(final GremlinParser.TraversalMethod_option_Merge_TraversalContext ctx) {
         return visitChildren(ctx);
     }
 
