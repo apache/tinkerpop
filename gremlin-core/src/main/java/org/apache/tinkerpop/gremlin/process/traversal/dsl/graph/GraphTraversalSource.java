@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
@@ -407,6 +408,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
      * {@code Map} as an argument.
      *
@@ -436,6 +453,20 @@ public class GraphTraversalSource implements TraversalSource {
                 new MergeEdgeStep(traversal, true, searchCreate.asAdmin());
 
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
     }
 
     /**
@@ -555,6 +586,36 @@ public class GraphTraversalSource implements TraversalSource {
         final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service, params) :
                 new CallStep(traversal, true, service, params, childTraversal.asAdmin());
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with the specified
+     * static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with the specified
+     * static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params, final Traversal<S, Map> childTraversal) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
 
     /**

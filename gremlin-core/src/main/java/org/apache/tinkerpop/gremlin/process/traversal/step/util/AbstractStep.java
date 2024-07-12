@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -228,5 +229,4 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
         return traverser;
     }
-
 }

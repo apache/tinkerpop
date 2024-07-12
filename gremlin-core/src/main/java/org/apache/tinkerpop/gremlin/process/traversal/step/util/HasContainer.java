@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -154,11 +156,11 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
             if (predicateValue instanceof Collection) {
                 final Collection collection = (Collection) predicateValue;
                 if (!collection.isEmpty()) {
-                    return ((Collection) predicateValue).stream().allMatch(c -> null == c || c instanceof String);
+                    return ((Collection) predicateValue).stream().allMatch(c -> null == c || GValue.instanceOf(c, GType.STRING));
                 }
             }
 
-            return predicateValue instanceof String;
+            return GValue.instanceOf(predicateValue, GType.STRING);
         }
 
         return false;

@@ -41,7 +41,7 @@ public class ConjoinStepTest extends StepTest {
     @Test
     public void testReturnTypes() {
         try {
-            __.__(Collections.emptyList()).conjoin(null).next();
+            __.__(Collections.emptyList()).conjoin((String) null).next();
             fail();
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Input delimiter to conjoin step can't be null"));

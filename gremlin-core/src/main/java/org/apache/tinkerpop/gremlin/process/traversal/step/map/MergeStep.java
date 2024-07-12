@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
@@ -40,7 +41,7 @@ import java.util.Set;
  */
 public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements TraversalParent, ListFunction {
     private Traversal.Admin<S, E> valueTraversal;
-    private Object parameterItems;
+    private GValue<Object> parameterItems;
 
     public MergeStep(final Traversal.Admin traversal, final Object values) {
         super(traversal);
@@ -48,8 +49,20 @@ public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements Traver
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
         } else {
-            parameterItems = values;
+            parameterItems = GValue.of(values);;
         }
+    }
+
+    public Traversal.Admin<S, E> getValueTraversal() {
+        return valueTraversal;
+    }
+
+    public Object getParameterItems() {
+        return parameterItems;
+    }
+
+    public GValue<Object> getParameterItemsGValue() {
+        return parameterItems;
     }
 
     @Override
@@ -61,7 +74,7 @@ public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements Traver
 
         final Map mapA = (incoming instanceof Map) ? (Map) incoming : null;
         if (mapA != null) {
-            final Object mapB = (valueTraversal != null) ? TraversalUtil.apply(traverser, valueTraversal) : parameterItems;
+            final Object mapB = (valueTraversal != null) ? TraversalUtil.apply(traverser, valueTraversal) : parameterItems.get();
             if (!(mapB instanceof Map)) {
                 throw new IllegalArgumentException(
                         String.format(
@@ -76,13 +89,13 @@ public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements Traver
         } else {
             final Collection listA = convertTraverserToCollection(traverser);
 
-            if (parameterItems instanceof Map) {
+            if (parameterItems != null && parameterItems.get() instanceof Map) {
                 throw new IllegalArgumentException(getStepName() + " step type mismatch: expected argument to be Iterable but got Map");
             }
             final Collection listB =
                     (null != valueTraversal)
                             ? convertTraversalToCollection(traverser, valueTraversal)
-                            : convertArgumentToCollection(parameterItems);
+                            : convertArgumentToCollection(parameterItems.get());
 
             final Set elements = new HashSet();
 
