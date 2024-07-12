@@ -23,6 +23,9 @@ remain compatible with upcoming releases of TinkerPop, however long term support
 be dropped from future versions of TinkerPop if compatibility cannot reasonably be maintained. Alternative TinkerPop
 enabled graph providers can be found on the link:https://tinkerpop.apache.org/providers.html[TinkerPop site].
 
+WARNING: Neo4j-Gremlin can work with JDK17, but requires the use of the `--add-opens` flag to be provided to the JVM
+as follows: `--add-opens=java.base/sun.nio.ch=ALL-UNNAMED`.
+
 [source,xml]
 ----
 <dependency>

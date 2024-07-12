@@ -55,12 +55,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-6-8, 3.6.8>>.
 
 * Refactored mutation events registration by moving reusable code from relevant steps to `EventUtil`
-* Open `NoOpBarrierStep` for extensibility (removed `final` keyword)
+* Open `NoOpBarrierStep` for extensibility (removed `final` keyword).
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
-* Allow specifying a customized Spark app name
-* CoinStep has a getter method for its probability field
-* Fixed so that TrimGlobalStep and TrimLocalStep have the same character control handling as Ltrim and Rtrim
-* Fix a bug in MaxLocalStep, MinLocalStep, MeanLocalStep and SumLocalStep that it throws NoSuchElementException when encounters an empty iterator as input.
+* Allow specifying a customized Spark app name.
+* Added getter method to `CoinStep` for its probability field.
+* Attempted to detect JDK version for Gremlin Console to avoid problems with Java 17 if `neo4j-gremlin` is used.
+* Fixed so that `TrimGlobalStep` and `TrimLocalStep` have the same character control handling as `Ltrim` and `Rtrim`
+* Fix a bug in `MaxLocalStep`, `MinLocalStep`, `MeanLocalStep` and `SumLocalStep` that it throws `NoSuchElementException` when encounters an empty iterator as input.
 * Fix cases where Map keys of incomparable types could panic in `gremlin-go`.
 
 [[release-3-7-2]]
@@ -131,7 +132,7 @@ This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3
 * Moved some TinkerGraph specific transaction tests from `TransactionMultiThreadedTest` to `TinkerTransactionGraphTest`
 * Fixed incorrect read operations in some cases for `TinkerTransactionGraph`.
 * Updated JavaScript tests to check equality on only id and class when comparing elements for consistency with other GLVs.
-* Improved performance for Element comparison by comparing hashCode() prior to doing more expensive checks.
+* Improved performance for `Element` comparison by comparing hashCode() prior to doing more expensive checks.
 
 ==== Bugs
 
