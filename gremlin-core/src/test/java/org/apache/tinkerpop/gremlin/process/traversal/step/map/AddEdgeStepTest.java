@@ -45,8 +45,8 @@ public class AddEdgeStepTest extends StepTest {
         return Arrays.asList(
                 __.addE("knows").property("a", "b"),
                 __.addE("created").property("a", "b"),
-                __.addE("knows").property("a", "b").property("c", "d"),
-                __.addE("knows").property("c", "d")
+                __.addE("knows").property("a", "b").property("c", "e"),
+                __.addE("knows").property("c", "e")
         );
     }
 

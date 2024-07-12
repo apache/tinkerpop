@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -166,7 +167,7 @@ public class GraphTraversalTest {
                 else if (stepMethod.getName().equals("to") || stepMethod.getName().equals("from"))
                     traversal.addE(randomString(random));
 
-                if (stepMethod.getName().equals("range")) {
+                if (stepMethod.getName().equals("range") && !GValue.class.isAssignableFrom(stepMethod.getParameterTypes()[1])) { // skip GValue case
                     if (Scope.class.isAssignableFrom(stepMethod.getParameterTypes()[0])) {
                         list.add(arguments[0] = Scope.local);
                         list.add(arguments[1] = (long) (Math.abs(random.nextInt(10))));
@@ -249,5 +250,23 @@ public class GraphTraversalTest {
         }
         final String temp = "" + random.nextBoolean();
         return temp.substring(temp.length() - (random.nextInt(2) + 1)) + s.replace("\"", "x").replace(",", "y").replace("'", "z");
+    }
+
+    public void hasIdShouldUnrollListOfIds() {
+        assertEquals(g.V().hasId(1,2,3,4,5,6,7,8),
+                g.V().hasId(new Integer[]{1, 2, 3}, new Integer[]{4, 5}, Arrays.asList(6, 7), 8));
+    }
+
+    @Test
+    public void hasIdShouldUnrollGValueListOfIds() {
+        assertEquals(
+                g.V().hasId(
+                        GValue.ofInteger(null, 1), GValue.ofInteger(null, 2), GValue.ofInteger(null, 3),
+                        GValue.ofInteger(null, 4), GValue.ofInteger(null, 5), GValue.ofInteger(null, 6),
+                        GValue.ofInteger(null, 7), GValue.ofInteger("d", 8)
+                ),
+                g.V().hasId(
+                        GValue.of("a", new Integer[]{1, 2, 3}), GValue.of("b", new Integer[]{4, 5}),
+                        GValue.of("c", Arrays.asList(6, 7)), GValue.ofInteger("d", 8)));
     }
 }

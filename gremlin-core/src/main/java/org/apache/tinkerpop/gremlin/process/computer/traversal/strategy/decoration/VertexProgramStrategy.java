@@ -70,6 +70,9 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        // Don't track GValues in OLAP
+        traversal.getGValueManager().reset();
+
         // VertexPrograms can only execute at the root level of a Traversal and should not be applied locally prior to RemoteStrategy
         if (!(traversal.isRoot())
                 || traversal instanceof AbstractLambdaTraversal
@@ -80,7 +83,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         Step<?, ?> currentStep = traversal.getEndStep();
         final Set<String> currentLabels = new HashSet<>();
         while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {  // todo: is there a general solution?
+            if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {
                 currentLabels.addAll(currentStep.getLabels());
                 currentStep.clearLabels();
             } else {

@@ -174,10 +174,9 @@ Feature: Step - aggregate()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "s[]"
     And the traversal of
       """
-      g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")
+      g.withSideEffect("a", {}).V().both().values("name").aggregate(Scope.local,"a").cap("a")
       """
     When iterated to list
     Then the result should be unordered

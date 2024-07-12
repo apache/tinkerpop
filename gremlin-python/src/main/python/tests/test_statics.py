@@ -19,6 +19,8 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+from decimal import Decimal
+
 from gremlin_python import statics
 from gremlin_python.process.traversal import Cardinality
 from gremlin_python.process.traversal import P
@@ -61,5 +63,21 @@ class TestStatics(object):
         try:
             statics.SingleChar('abc')
             raise Exception("SingleChar should throw a value error if input is not a single character string")
+        except ValueError:
+            pass
+
+    def test_bigdecimal(self):
+        assert statics.to_bigdecimal(1.23456).value == statics.BigDecimal(5,123456).value
+        assert statics.to_bigdecimal(-1.23456).value == statics.BigDecimal(5,-123456).value
+        # make sure the precision isn't changed globally
+        assert Decimal("123456789").scaleb(-5) == Decimal('1234.56789')
+        try:
+            statics.to_bigdecimal('NaN')
+            raise Exception("to_bigdecimal should throw a value error with NaN, Infinity or -Infinity")
+        except ValueError:
+            pass
+        try:
+            statics.to_bigdecimal('abc')
+            raise Exception("to_bigdecimal should throw a value error if input is not a convertable to Decimal")
         except ValueError:
             pass

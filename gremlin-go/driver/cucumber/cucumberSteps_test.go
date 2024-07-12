@@ -847,18 +847,6 @@ func (tg *tinkerPopGraph) usingTheParameterDefined(name string, params string) e
 	return nil
 }
 
-func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string) error {
-	predicate := reflect.ValueOf(gremlingo.P).MethodByName(strings.Title(pVal)).Interface().(func(...interface{}) gremlingo.Predicate)
-	values := parseValue(stringVal, tg.graphName)
-	switch reflect.TypeOf(values).Kind() {
-	case reflect.Array, reflect.Slice:
-		tg.parameters[paramName] = predicate(values.([]interface{})...)
-	default:
-		tg.parameters[paramName] = predicate(values)
-	}
-	return nil
-}
-
 func (tg *tinkerPopGraph) theTraversalWillRaiseAnError() error {
 	if _, ok := tg.error[true]; ok {
 		return nil
@@ -938,7 +926,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
-	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
 	ctx.Step(`^the traversal will raise an error$`, tg.theTraversalWillRaiseAnError)
 	ctx.Step(`^the traversal will raise an error with message (\w+) text of "(.+)"$`, tg.theTraversalWillRaiseAnErrorWithMessageContainingTextOf)
 }

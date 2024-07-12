@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>>, TailGlobalStepInterface<S> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
@@ -52,6 +52,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         this.tail = new ArrayDeque<>((int) limit);
     }
 
+    @Override
     public void setBypass(final boolean bypass) {
         this.bypass = bypass;
     }
@@ -164,5 +165,10 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });
+    }
+
+    @Override
+    public Long getLimit() {
+        return limit;
     }
 }

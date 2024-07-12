@@ -67,7 +67,7 @@ traversalSourceSelfMethod
     ;
 
 traversalSourceSelfMethod_withBulk
-    : K_WITHBULK LPAREN booleanArgument RPAREN
+    : K_WITHBULK LPAREN booleanLiteral RPAREN
     ;
 
 traversalSourceSelfMethod_withPath
@@ -75,13 +75,13 @@ traversalSourceSelfMethod_withPath
     ;
 
 traversalSourceSelfMethod_withSack
-    : K_WITHSACK LPAREN genericArgument RPAREN
-    | K_WITHSACK LPAREN genericArgument COMMA traversalBiFunction RPAREN
+    : K_WITHSACK LPAREN genericLiteral RPAREN
+    | K_WITHSACK LPAREN genericLiteral COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withSideEffect
-    : K_WITHSIDEEFFECT LPAREN stringArgument COMMA genericArgument RPAREN
-    | K_WITHSIDEEFFECT LPAREN stringArgument COMMA genericArgument COMMA traversalBiFunction RPAREN
+    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument RPAREN
+    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies
@@ -93,8 +93,8 @@ traversalSourceSelfMethod_withoutStrategies
     ;
 
 traversalSourceSelfMethod_with
-    : K_WITH LPAREN stringArgument RPAREN
-    | K_WITH LPAREN stringArgument COMMA genericArgument RPAREN
+    : K_WITH LPAREN stringLiteral RPAREN
+    | K_WITH LPAREN stringLiteral COMMA genericLiteral RPAREN
     ;
 
 traversalSourceSpawnMethod
@@ -149,10 +149,10 @@ traversalSourceSpawnMethod_mergeE
 
 traversalSourceSpawnMethod_call
     : K_CALL LPAREN RPAREN #traversalSourceSpawnMethod_call_empty
-    | K_CALL LPAREN stringArgument RPAREN #traversalSourceSpawnMethod_call_string
-    | K_CALL LPAREN stringArgument COMMA genericMapArgument RPAREN #traversalSourceSpawnMethod_call_string_map
-    | K_CALL LPAREN stringArgument COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_traversal
-    | K_CALL LPAREN stringArgument COMMA genericMapArgument COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_map_traversal
+    | K_CALL LPAREN stringLiteral RPAREN #traversalSourceSpawnMethod_call_string
+    | K_CALL LPAREN stringLiteral COMMA genericMapArgument RPAREN #traversalSourceSpawnMethod_call_string_map
+    | K_CALL LPAREN stringLiteral COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_traversal
+    | K_CALL LPAREN stringLiteral COMMA genericMapArgument COMMA nestedTraversal RPAREN #traversalSourceSpawnMethod_call_string_map_traversal
     ;
 
 traversalSourceSpawnMethod_union
@@ -423,11 +423,11 @@ traversalMethod_coalesce
     ;
 
 traversalMethod_coin
-    : K_COIN LPAREN floatArgument RPAREN
+    : K_COIN LPAREN floatLiteral RPAREN
     ;
 
 traversalMethod_combine
-    : K_COMBINE LPAREN genericArgument RPAREN #traversalMethod_combine_Object
+    : K_COMBINE LPAREN genericLiteral RPAREN #traversalMethod_combine_Object
     ;
 
 traversalMethod_concat
@@ -436,7 +436,7 @@ traversalMethod_concat
     ;
 
 traversalMethod_conjoin
-    : K_CONJOIN LPAREN stringArgument RPAREN #traversalMethod_conjoin_String
+    : K_CONJOIN LPAREN stringLiteral RPAREN #traversalMethod_conjoin_String
     ;
 
 traversalMethod_connectedComponent
@@ -444,7 +444,7 @@ traversalMethod_connectedComponent
     ;
 
 traversalMethod_constant
-    : K_CONSTANT LPAREN genericArgument RPAREN
+    : K_CONSTANT LPAREN genericLiteral RPAREN
     ;
 
 traversalMethod_count
@@ -471,11 +471,11 @@ traversalMethod_dedup
     ;
 
 traversalMethod_difference
-    : K_DIFFERENCE LPAREN genericArgument RPAREN #traversalMethod_difference_Object
+    : K_DIFFERENCE LPAREN genericLiteral RPAREN #traversalMethod_difference_Object
     ;
 
 traversalMethod_disjunct
-    : K_DISJUNCT LPAREN genericArgument RPAREN #traversalMethod_disjunct_Object
+    : K_DISJUNCT LPAREN genericLiteral RPAREN #traversalMethod_disjunct_Object
     ;
 
 traversalMethod_drop
@@ -512,7 +512,7 @@ traversalMethod_flatMap
 
 traversalMethod_fold
     : K_FOLD LPAREN RPAREN #traversalMethod_fold_Empty
-    | K_FOLD LPAREN genericArgument COMMA traversalBiFunction RPAREN #traversalMethod_fold_Object_BiFunction
+    | K_FOLD LPAREN genericLiteral COMMA traversalBiFunction RPAREN #traversalMethod_fold_Object_BiFunction
     ;
 
 traversalMethod_format
@@ -580,15 +580,15 @@ traversalMethod_identity
     ;
 
 traversalMethod_in
-    : K_IN LPAREN stringNullableLiteralVarargs RPAREN
+    : K_IN LPAREN stringNullableArgumentVarargs RPAREN
     ;
 
 traversalMethod_inE
-    : K_INE LPAREN stringNullableLiteralVarargs RPAREN
+    : K_INE LPAREN stringNullableArgumentVarargs RPAREN
     ;
 
 traversalMethod_intersect
-    : K_INTERSECT LPAREN genericArgument RPAREN #traversalMethod_intersect_Object
+    : K_INTERSECT LPAREN genericLiteral RPAREN #traversalMethod_intersect_Object
     ;
 
 traversalMethod_inV
@@ -663,7 +663,7 @@ traversalMethod_mean
     ;
 
 traversalMethod_merge
-    : K_MERGE LPAREN genericArgument RPAREN #traversalMethod_merge_Object
+    : K_MERGE LPAREN genericLiteral RPAREN #traversalMethod_merge_Object
     ;
 
 traversalMethod_mergeV
@@ -731,7 +731,7 @@ traversalMethod_outV
 
 traversalMethod_pageRank
     : K_PAGERANK LPAREN RPAREN #traversalMethod_pageRank_Empty
-    | K_PAGERANK LPAREN floatArgument RPAREN #traversalMethod_pageRank_double
+    | K_PAGERANK LPAREN floatLiteral RPAREN #traversalMethod_pageRank_double
     ;
 
 traversalMethod_path
@@ -743,7 +743,7 @@ traversalMethod_peerPressure
     ;
 
 traversalMethod_product
-    : K_PRODUCT LPAREN genericArgument RPAREN #traversalMethod_product_Object
+    : K_PRODUCT LPAREN genericLiteral RPAREN #traversalMethod_product_Object
     ;
 
 traversalMethod_profile
@@ -760,9 +760,9 @@ traversalMethod_properties
     ;
 
 traversalMethod_property
-    : K_PROPERTY LPAREN traversalCardinality COMMA genericArgument COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+    : K_PROPERTY LPAREN traversalCardinality COMMA genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
     | K_PROPERTY LPAREN traversalCardinality COMMA genericMapNullableArgument RPAREN # traversalMethod_property_Cardinality_Object
-    | K_PROPERTY LPAREN genericArgument COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Object_Object_Object
+    | K_PROPERTY LPAREN genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Object_Object_Object
     | K_PROPERTY LPAREN genericMapNullableArgument RPAREN # traversalMethod_property_Object
     ;
 
@@ -804,7 +804,7 @@ traversalMethod_sack
     ;
 
 traversalMethod_sample
-    : K_SAMPLE LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_sample_Scope_int
+    : K_SAMPLE LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_sample_Scope_int
     | K_SAMPLE LPAREN integerLiteral RPAREN #traversalMethod_sample_int
     ;
 
@@ -876,14 +876,14 @@ traversalMethod_times
     ;
 
 traversalMethod_to
-    : K_TO LPAREN traversalDirection (COMMA stringNullableLiteralVarargs)? RPAREN #traversalMethod_to_Direction_String
+    : K_TO LPAREN traversalDirection (COMMA stringNullableArgumentVarargs)? RPAREN #traversalMethod_to_Direction_String
     | K_TO LPAREN stringLiteral RPAREN #traversalMethod_to_String
     | K_TO LPAREN genericArgument RPAREN #traversalMethod_to_GenricArgument
     | K_TO LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
     ;
 
 traversalMethod_toE
-    : K_TOE LPAREN traversalDirection (COMMA stringNullableLiteralVarargs)? RPAREN
+    : K_TOE LPAREN traversalDirection (COMMA stringNullableArgumentVarargs)? RPAREN
     ;
 
 traversalMethod_toLower
@@ -944,7 +944,7 @@ traversalMethod_where
 
 traversalMethod_with
     : K_WITH LPAREN (withOptionKeys | stringLiteral) RPAREN #traversalMethod_with_String
-    | K_WITH LPAREN (withOptionKeys | stringLiteral) COMMA (withOptionsValues | ioOptionsValues | genericArgument) RPAREN #traversalMethod_with_String_Object
+    | K_WITH LPAREN (withOptionKeys | stringLiteral) COMMA (withOptionsValues | ioOptionsValues | genericLiteral) RPAREN #traversalMethod_with_String_Object
     ;
 
 traversalMethod_write
@@ -1622,7 +1622,7 @@ booleanLiteral
     ;
 
 dateLiteral
-    : K_DATETIME LPAREN stringArgument RPAREN
+    : K_DATETIME LPAREN stringLiteral RPAREN
     | K_DATETIME LPAREN RPAREN
     | K_DATETIMEU LPAREN stringArgument RPAREN
     | K_DATETIMEU LPAREN RPAREN

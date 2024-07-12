@@ -79,6 +79,10 @@ limitations under the License.
             <artifactId>exp4j</artifactId>
             <version>${exp4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>

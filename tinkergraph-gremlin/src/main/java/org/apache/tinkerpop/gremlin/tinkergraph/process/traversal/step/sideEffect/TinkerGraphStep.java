@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder, AutoCloseable {
+public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder<S, E>, AutoCloseable {
 
     private final List<HasContainer> hasContainers = new ArrayList<>();
     /**

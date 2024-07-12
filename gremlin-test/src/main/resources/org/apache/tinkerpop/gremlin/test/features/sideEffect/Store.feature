@@ -51,10 +51,9 @@ Feature: Step - store()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "s[]"
     And the traversal of
       """
-      g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")
+      g.withSideEffect("a", {}).V().both().values("name").store("a").cap("a")
       """
     When iterated to list
     Then the result should be unordered

@@ -58,7 +58,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C> {
+        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, MergeStepInterface<S, E, C> {
 
     protected final boolean isStart;
     protected boolean first = true;
@@ -81,7 +81,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         validate(mergeMap, false);
     }
 
-    public MergeStep(final Traversal.Admin traversal, final boolean isStart, 
+    public MergeStep(final Traversal.Admin traversal, final boolean isStart,
                      final Traversal.Admin mergeTraversal) {
         super(traversal);
         this.isStart = isStart;
@@ -100,6 +100,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * This {@code Map} also will be used as the default data set to be used to create the element if the search is not
      * successful.
      */
+    @Override
     public Traversal.Admin<S, Map> getMergeTraversal() {
         return mergeTraversal;
     }
@@ -108,6 +109,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * Gets the traversal that will be used to provide the {@code Map} that will be used to create elements that
      * do not match the search criteria of {@link #getMergeTraversal()}.
      */
+    @Override
     public Traversal.Admin<S, Map> getOnCreateTraversal() {
         return onCreateTraversal;
     }
@@ -116,6 +118,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * Gets the traversal that will be used to provide the {@code Map} that will be used to modify elements that
      * match the search criteria of {@link #getMergeTraversal()}.
      */
+    @Override
     public Traversal.Admin<S, Map<String, ?>> getOnMatchTraversal() {
         return onMatchTraversal;
     }
@@ -123,6 +126,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     /**
      * Determines if this is a start step.
      */
+    @Override
     public boolean isStart() {
         return isStart;
     }
@@ -130,6 +134,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     /**
      * Determine if this is the first pass through {@link #processNextStart()}.
      */
+    @Override
     public boolean isFirst() {
         return first;
     }
@@ -182,6 +187,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         return this.parameters;
     }
 
+    @Override
     public boolean isUsingPartitionStrategy() {
         return usesPartitionStrategy;
     }
@@ -387,6 +393,24 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected abstract Iterator<E> flatMap(final Traverser.Admin<S> traverser);
 
     protected abstract Set getAllowedTokens();
+
+    @Override
+    public void setMerge(final Traversal.Admin<?,Map<Object, Object>> mergeMap) {
+        this.mergeTraversal = integrateChild(new ConstantTraversal<>(mergeMap));
+        this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateMap) {
+        this.onCreateTraversal = integrateChild(new ConstantTraversal<>(onCreateMap));
+        this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchMap) {
+        this.onMatchTraversal = integrateChild(new ConstantTraversal<>(onMatchMap));
+        this.reset(); //TODO:: should we reset?
+    }
 
     /**
      * Guard rail to ensure that the incoming object is not an {@link Element}.

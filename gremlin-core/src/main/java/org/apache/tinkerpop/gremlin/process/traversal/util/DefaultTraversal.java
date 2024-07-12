@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -70,11 +71,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected boolean locked = false;
     protected boolean closed = false;
     protected Bytecode bytecode;
+    protected GValueManager gValueManager;
 
     private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
         this.graph = graph;
         this.strategies = traversalStrategies;
         this.bytecode = bytecode;
+        this.gValueManager = new GValueManager();
         this.g = null;
     }
 
@@ -103,6 +106,16 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     public Bytecode getBytecode() {
         return this.bytecode;
+    }
+
+    @Override
+    public GValueManager getGValueManager() {
+        return this.gValueManager;
+    }
+
+    @Override
+    public void setGValueManager(final GValueManager gValueManager) {
+        this.gValueManager = gValueManager;
     }
 
     @Override
@@ -279,6 +292,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies;
             clone.bytecode = this.bytecode.clone();
+            clone.gValueManager = this.gValueManager.clone();
             for (final Step<?, ?> step : this.steps) {
                 final Step<?, ?> clonedStep = step.clone();
                 clonedStep.setTraversal(clone);
@@ -393,7 +407,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         if (this.locked) throw Exceptions.traversalIsLocked();
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
         final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
-        //this.steps.get(index).setTraversal(EmptyTraversal.instance());
         this.steps.remove(index);
         if (null != previousStep) previousStep.setNextStep(null == nextStep ? EmptyStep.instance() : nextStep);
         if (null != nextStep) nextStep.setPreviousStep(null == previousStep ? EmptyStep.instance() : previousStep);

@@ -71,7 +71,7 @@ public class AnonymizingTypeTranslator extends GroovyTranslator.DefaultTypeTrans
          * Return an anonymized token for the supplied object of the form "type:instance#".
          */
         @Override
-        public Object anonymize(Object obj) {
+        public Object anonymize(final Object obj) {
             final String type = obj.getClass().getSimpleName();
 
             Map<Object, String> objectToAnonymizedString = simpleNameToObjectCache.get(type);
@@ -116,68 +116,36 @@ public class AnonymizingTypeTranslator extends GroovyTranslator.DefaultTypeTrans
     @Override
     protected String getSyntax(final String o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        return (o.contains("\"") ? "\"\"\"" + StringEscapeUtils.escapeJava(o) + "\"\"\"" : "\"" + StringEscapeUtils.escapeJava(o) + "\"")
-//                .replace("$", "\\$");
     }
 
     @Override
     protected String getSyntax(final Date o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        return "new Date(" + o.getTime() + "L)";
     }
 
     @Override
     protected String getSyntax(final OffsetDateTime o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        return "OffsetDateTime.parse(\"" + o.toString() + "\")";
     }
 
     @Override
     protected String getSyntax(final Timestamp o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        return "new Timestamp(" + o.getTime() + "L)";
     }
 
     @Override
     protected String getSyntax(final UUID o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        return "UUID.fromString('" + o.toString() + "')";
     }
 
     @Override
     protected String getSyntax(final Number o) {
         return anonymizer.anonymize(o).toString();
-//      Original syntax:
-//        if (o instanceof Long)
-//            return o + "L";
-//        else if (o instanceof Double)
-//            return o + "d";
-//        else if (o instanceof Float)
-//            return o + "f";
-//        else if (o instanceof Integer)
-//            return "(int) " + o;
-//        else if (o instanceof Byte)
-//            return "(byte) " + o;
-//        if (o instanceof Short)
-//            return "(short) " + o;
-//        else if (o instanceof BigInteger)
-//            return "new BigInteger('" + o.toString() + "')";
-//        else if (o instanceof BigDecimal)
-//            return "new BigDecimal('" + o.toString() + "')";
-//        else
-//            return o.toString();
     }
 
     @Override
     protected Script produceScript(final Class<?> o) {
         return script.append(anonymizer.anonymize(o).toString());
-//      Original syntax:
-//        return script.append(CoreImports.getClassImports().contains(o) ? o.getSimpleName() : o.getCanonicalName());
     }
 
 }

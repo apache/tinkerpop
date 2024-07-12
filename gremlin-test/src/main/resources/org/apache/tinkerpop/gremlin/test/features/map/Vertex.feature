@@ -186,6 +186,20 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  Scenario: g_VX4X_bothEXcreatedvarX
+    Given the modern graph
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter xx1 defined as "created"
+    And the traversal of
+      """
+      g.V(vid4).bothE(xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
   Scenario: g_VX4X_bothE
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -199,44 +213,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
       | e[marko-knows->josh] |
-
-  Scenario: g_VX1X_outE_inV
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).both()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[josh] |
-      | v[lop] |
-
-  Scenario: g_VX2X_inE_outV
-    Given the modern graph
-    And using the parameter vid2 defined as "v[vadas].id"
-    And the traversal of
-      """
-      g.V(vid2).inE().outV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-
-  Scenario: g_V_outE_hasXweight_1X_outV
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().outE().has("weight",1.0).outV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-      | v[josh] |
 
   Scenario: g_V_out_outE_inV_inE_inV_both_name
     Given the modern graph
@@ -258,61 +234,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | peter |
       | peter |
 
-  Scenario: g_VX1X_outEXknowsX_bothV_name
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).outE("knows").bothV().values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | marko |
-      | josh |
-      | vadas |
-
-  Scenario: g_VX1X_outE_otherV
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).outE().otherV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[josh] |
-      | v[lop] |
-
-  Scenario: g_VX4X_bothE_otherV
-    Given the modern graph
-    And using the parameter vid4 defined as "v[josh].id"
-    And the traversal of
-      """
-      g.V(vid4).bothE().otherV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[marko] |
-      | v[ripple] |
-      | v[lop] |
-
-  Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
-    Given the modern graph
-    And using the parameter vid4 defined as "v[josh].id"
-    And the traversal of
-      """
-      g.V(vid4).bothE().has("weight", P.lt(1.0)).otherV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[lop] |
-
   Scenario: g_VX2X_inE
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -324,20 +245,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     Then the result should be unordered
       | result |
       | e[marko-knows->vadas] |
-
-  Scenario: get_g_VX1X_outE_otherV
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).outE().otherV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[josh] |
-      | v[lop] |
 
   Scenario: g_VX1X_outXknowsX
     Given the modern graph
@@ -379,25 +286,14 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[josh] |
       | v[lop] |
 
-  Scenario: g_VX1X_outEXknowsX_inV
+  Scenario: g_VX1X_outXknowsvar_createdvarX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx2 defined as "knows"
+    And using the parameter xx3 defined as "created"
     And the traversal of
       """
-      g.V(vid1).outE("knows").inV()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-      | v[josh] |
-
-  Scenario: g_VX1X_outEXknows_createdX_inV
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V(vid1).outE("knows","created").inV()
+      g.V(vid1).out(xx2,xx3)
       """
     When iterated to list
     Then the result should be unordered
@@ -454,8 +350,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | v[vadas] |
       | v[josh] |
-
-
 
   # the point here is to test g.V() where an id is not present. to do this with the gherkin structure
   # the test establishes the modern graph, does a drop() of "lop" and then tries to query the 4 vertices

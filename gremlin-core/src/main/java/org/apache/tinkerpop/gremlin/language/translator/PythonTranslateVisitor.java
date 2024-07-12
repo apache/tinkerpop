@@ -266,6 +266,11 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
+        if (ctx.genericLiteral().isEmpty()) {
+            // handle the empty set case separately as `{}` in python is an empty dict, not a set
+            sb.append("set()");
+            return null;
+        }
         sb.append("{");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
