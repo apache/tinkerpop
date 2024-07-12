@@ -20,9 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -32,7 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface MergeStepInterface<S, E, C> extends Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, PropertyAdding {
+public interface MergeStepInterface<S, E, C> {
+
+    Map<Object, Object> getMergeMap();
+
+    Map<Object, Object> getOnCreateMap();
+
+    Map<Object, Object> getOnMatchMap();
 
     Traversal.Admin<S, Map> getMergeTraversal();
 
@@ -43,6 +46,8 @@ public interface MergeStepInterface<S, E, C> extends Writing<Event>, Deleting<Ev
     boolean isStart();
 
     boolean isFirst();
+
+    void addChildOption(Merge token, Traversal.Admin<S, C> traversalOption);
 
     boolean isUsingPartitionStrategy();
 

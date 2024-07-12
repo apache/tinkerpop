@@ -182,9 +182,10 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_intersectXa_cX
     Given the empty graph
+    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(["a",null,"b"]).intersect(["a","c"])
+      g.inject(xx1).intersect(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -194,9 +195,10 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_intersectXa_null_cX
     Given the empty graph
+    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(["a",null,"b"]).intersect(["a",null,"c"])
+      g.inject(xx1).intersect(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -206,9 +208,10 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_intersectXfive_three_7X
     Given the empty graph
+    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject([3,"three"]).intersect(["five","three",7i])
+      g.inject(xx1).intersect(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

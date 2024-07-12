@@ -193,4 +193,19 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map<Object, Object>
 
         return combinedMap;
     }
+
+    @Override
+    public Map<Object, Object> getMergeMap() {
+        throw new UnsupportedOperationException("Cannot access merge map from step"); //TODO::
+    }
+
+    @Override
+    public Map<Object, Object> getOnCreateMap() {
+        throw new UnsupportedOperationException("Cannot access onCreate map from step"); //TODO::
+    }
+
+    @Override
+    public Map<Object, Object> getOnMatchMap() {
+        throw new UnsupportedOperationException("Cannot access onMatch map from step"); //TODO::
+    }
 }

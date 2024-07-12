@@ -21,8 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
+import java.util.Objects;
+
 /**
  * A {@link Traversal} that always returns a constant value.
+ *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
@@ -30,8 +34,8 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
     private ConstantTraversal<S, E> constantTraversal;
 
     public GValueConstantTraversal(final GValue<E> end) {
-        this.end = end == null ? GValue.of(null) : end;
-        this.constantTraversal = new ConstantTraversal<>(this.end.get());
+        this.end = end;
+        this.constantTraversal = new ConstantTraversal<>(end.get());
     }
 
     @Override
@@ -46,14 +50,12 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
 
     @Override
     public int hashCode() {
-        return this.getClass().hashCode() ^ end.hashCode();
+        return constantTraversal.hashCode();
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof GValueConstantTraversal) {
-            return this.end.equals(((GValueConstantTraversal<?, ?>) other).end);
-        }
+        //TODO what if other is GValueConstantTraversal?
         return constantTraversal.equals(other);
     }
 
@@ -71,6 +73,7 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
 
     public void updateVariable(String name, Object value) {
         if (name.equals(end.getName())) {
+            //TODO type check?
             end = (GValue<E>) GValue.of(name, value);
             this.constantTraversal = new ConstantTraversal<>(end.get());
         }

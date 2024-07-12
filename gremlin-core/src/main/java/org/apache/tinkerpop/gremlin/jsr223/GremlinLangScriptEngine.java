@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
@@ -178,7 +179,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
                         throw new IllegalArgumentException(variable + " binding is not found");
                     }
 
-                    manager.updateVariable(variable, m.get(variable));
+                    manager.track(GValue.of(variable, m.get(variable)));
                 }
 
                 return clonedTraversal;
@@ -194,7 +195,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
             final Traversal.Admin<?,?> traversal = (Traversal.Admin) GremlinQueryParser.parse(script, antlr);
 
             // add the traversal to the cache in its executable form - note that the cache is really just sparing us
-            // script parsing
+            // traversal execution
             if (cacheEnabled) traversalCache.put(script, traversal.clone());
 
             return traversal;

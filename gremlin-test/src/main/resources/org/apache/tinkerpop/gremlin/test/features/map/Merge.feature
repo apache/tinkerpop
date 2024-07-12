@@ -82,7 +82,7 @@ Feature: Step - merge()
     Given the modern graph
     And the traversal of
       """
-      g.V().fold().merge([k:"v"])
+      g.V().fold().merge(["k":"v"])
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "step type mismatch: expected argument to be Iterable but got Map"
@@ -225,9 +225,10 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_mergeXa_cX
     Given the empty graph
+    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(["a",null,"b"]).merge(["a","c"])
+      g.inject(xx1).merge(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -237,9 +238,10 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_mergeXa_null_cX
     Given the empty graph
+    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(["a",null,"b"]).merge(["a",null,"c"])
+      g.inject(xx1).merge(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -249,9 +251,10 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_mergeXfive_three_7X
     Given the empty graph
+    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject([3,"three"]).merge(["five","three",7i])
+      g.inject(xx1).merge(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

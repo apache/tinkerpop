@@ -156,15 +156,27 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                 final String[] keys = new String[byTraversals.size()];
                 int counter = 0;
                 for (final Map.Entry<String, Traversal.Admin<Object, Object>> entry : byTraversals.entrySet()) {
+                    final Traversal.Admin<Object, Object> byTraversal = entry.getValue();
+                    final Traversal.Admin<Object, Object> clonedByTraversal = byTraversal.clone();
                     final SelectOneStep selectOneStep = new SelectOneStep(traversal, selectStep.getPop(), entry.getKey());
-                    final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, entry.getValue().clone());
+                    final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, clonedByTraversal);
                     mapStep.addLabel(entry.getKey());
                     traversal.addStep(index + 1, mapStep);
                     traversal.addStep(index + 1, selectOneStep);
                     keys[counter++] = entry.getKey();
+
+                    final List<Step> byChildSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, byTraversal);
+                    for (int ix = 0; ix < byChildSteps.size(); ix++) {
+                        // TODO:: manager.copyRegistryState(byChildSteps.get(ix), clonedByTraversal.getSteps().get(ix));
+                        // TODO:: manager.pinGValues(byChildSteps.get(ix));
+                        // TODO:: manager.remove(byChildSteps.get(ix));
+                        // TODO:: clonedByTraversal.getGValueManager().pinGValues(byChildSteps.get(ix));
+                        // TODO:: clonedByTraversal.getGValueManager().remove(byChildSteps.get(ix));
+                    }
+
                 }
                 traversal.addStep(index + 1 + (byTraversals.size() * 2), new SelectStep(traversal, Pop.last, keys));
-                traversal.removeStep(index);
+                TraversalHelper.removeStep(selectStep, traversal);
             }
         }
 

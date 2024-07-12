@@ -87,6 +87,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,7 +108,6 @@ public final class StepDefinition {
     private World world;
     private GraphTraversalSource g;
     private final Map<String, Object> stringParameters = new HashMap<>();
-    private final Map<String, String> sideEffects = new HashMap<>();
     private Traversal traversal;
     private Object result;
     private Throwable error;
@@ -334,11 +334,6 @@ public final class StepDefinition {
             stringParameters.put(key, convertToObject(value));
     }
 
-    @Given("using the side effect {word} defined as {string}")
-    public void usingTheSideEffectXDefinedAsX(final String key, final String value) {
-        sideEffects.put(key, convertToString(value));
-    }
-
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
         try {
@@ -349,7 +344,7 @@ public final class StepDefinition {
             // applied to the script as variables.
             final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
 
-            traversal = parseGremlin(applySideEffects(gremlin));
+            traversal = parseGremlin(gremlin);
         } catch (Exception ex) {
             ex.printStackTrace();
             error = ex;
@@ -523,7 +518,7 @@ public final class StepDefinition {
         assertThatNoErrorWasThrown();
 
         final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applySideEffects(gremlin))).count().next());
+        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(gremlin)).count().next());
     }
 
     @Then("the result should be empty")

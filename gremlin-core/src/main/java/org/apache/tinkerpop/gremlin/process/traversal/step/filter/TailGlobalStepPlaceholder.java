@@ -23,9 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.TailGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,9 +39,6 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     public TailGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
-        if (this.limit.isVariable()) {
-            traversal.getGValueManager().register(limit);
-        }
     }
 
     @Override
@@ -76,9 +71,7 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
 
     @Override
     public Step<S, S> asConcreteStep() {
-        TailGlobalStep<S> step = new TailGlobalStep<>(traversal, limit.get());
-        TraversalHelper.copyLabels(this, step, false);
-        return step;
+        return new TailGlobalStep<>(traversal, limit.get());
     }
 
     @Override
@@ -89,10 +82,7 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     @Override
     public void updateVariable(String name, Object value) {
         if (name.equals(limit.getName())) {
-            if (!(value instanceof Number)) {
-                throw new IllegalArgumentException("The variable " + name + " must have a value of type Number");
-            }
-            this.limit = GValue.ofLong(name, ((Number) value).longValue());
+            limit = GValue.ofLong(name, (Long) value);
         }
     }
 

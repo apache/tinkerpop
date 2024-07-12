@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -27,11 +26,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -46,12 +42,29 @@ import java.util.stream.Collectors;
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected PBiPredicate<V, V> biPredicate;
-    protected Map<String, V> variables = new HashMap<>();
-    protected Collection<V> literals = Collections.EMPTY_LIST;
-    private boolean isCollection = false;
+    protected V value;
+    protected V originalValue;
+    protected Optional<GValue<V>> gValue = Optional.empty();
+    protected Optional<GValue<V>[]> gValues = Optional.empty();
 
-    public P(final PBiPredicate<V, V> biPredicate, final V value) {
-        setValue(value);
+    public P(final PBiPredicate<V, V> biPredicate, V value) {
+        if (value instanceof GValue) {
+            this.gValue = Optional.of((GValue<V>) value);
+            this.value = ((GValue<V>) value).get();
+        } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = Optional.of(GValue.ensureGValues(((List) value).toArray()));
+            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
+        } else {
+            this.value = value;
+        }
+        this.originalValue = this.value;
+        this.biPredicate = biPredicate;
+    }
+
+    public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
+        this.gValue = Optional.of(value);
+        this.value = value.get();
+        this.originalValue = value.get();
         this.biPredicate = biPredicate;
     }
 
@@ -78,6 +91,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public PBiPredicate<V, V> getBiPredicate() {
         return this.biPredicate;
+    }
+
+    /**
+     * Gets the original value used at time of construction of the {@code P}. This value can change its type
+     * in some cases.
+     */
+    public V getOriginalValue() {
+        return originalValue;
     }
 
     /**
@@ -386,17 +407,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
-     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
-     *
-     * @since 3.8.0
-     */
-    public static <V> P<V> within(final GValue<V>... values) {
-        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
-        return P.within(Arrays.asList(v));
-    }
-
-    /**
      * Determines if a value is within the specified list of values. Calling this with {@code null} is the same as
      * calling {@link #within(Object[])} using {@code null}.
      *
@@ -456,5 +466,37 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
+    }
+
+    public boolean isParameterized() {
+        return gValue.isPresent() || gValues.isPresent();
+    }
+
+    public void updateVariable(final String name, final Object value) {
+        if (this.gValue.isPresent() && name.equals(this.gValue.get().getName())) {
+            this.gValue = Optional.of(GValue.of(name, (V) value));
+            this.value = (V) value;
+            this.originalValue = (V) value; //TODO is this right?
+        }
+        if (this.gValues.isPresent()) {
+            GValue<V>[] gValueArgs = this.gValues.get();
+            for (int i = 0; i < gValueArgs.length; i++) {
+                if (name.equals(gValueArgs[i].getName())) {
+                    gValueArgs[i] = GValue.of(name, (V) value);
+                    ((List<V>) value).set(i, (V) value);
+                }
+            }
+        }
+    }
+
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> results = new HashSet<>();
+        if (gValue.isPresent()) {
+            results.add(gValue.get());
+        }
+        if (gValues.isPresent()) {
+            results.addAll(Arrays.asList(gValues.get()));
+        }
+        return results;
     }
 }

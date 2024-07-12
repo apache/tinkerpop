@@ -75,10 +75,10 @@ public final class EarlyLimitStrategy
                     // previous RangeStep; keep the RangeStep's labels at its preceding step
                     TraversalHelper.copyLabels(step, step.getPreviousStep(), true);
                     insertAfter = moveRangeStep((RangeGlobalStepInterface) step, insertAfter, traversal, merge);
-                    if (insertAfter instanceof DiscardStep) {
-                        // any step besides a SideEffectCapStep after a DiscardStep would be pointless
-                        final int discardStepIndex = TraversalHelper.stepIndex(insertAfter, traversal);
-                        for (i = j - 2; i > discardStepIndex; i--) {
+                    if (insertAfter instanceof NoneStep) {
+                        // any step besides a SideEffectCapStep after a NoneStep would be pointless
+                        final int noneStepIndex = TraversalHelper.stepIndex(insertAfter, traversal);
+                        for (i = j - 2; i > noneStepIndex; i--) {
                             if (!(steps.get(i) instanceof SideEffectCapStep) && !(steps.get(i) instanceof ProfileSideEffectStep)) {
                                 traversal.removeStep(i);
                             }
@@ -111,7 +111,7 @@ public final class EarlyLimitStrategy
         if (insertAfter instanceof RangeGlobalStepInterface) {
             // there's a previous RangeStep which might affect the effective range of the current RangeStep
             // recompute this step's low and high; if the result is still a valid range, create a new RangeStep,
-            // otherwise a DiscardStep
+            // otherwise a NoneStep
             //
             // GValue instances that merge here are discarded when the original steps are removed in favor of the
             // merged one. no reasonable way to resolve that.

@@ -80,8 +80,8 @@ traversalSourceSelfMethod_withSack
     ;
 
 traversalSourceSelfMethod_withSideEffect
-    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral RPAREN
-    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral COMMA traversalBiFunction RPAREN
+    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument RPAREN
+    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies
@@ -473,10 +473,6 @@ traversalMethod_dedup
 
 traversalMethod_difference
     : K_DIFFERENCE LPAREN genericLiteral RPAREN #traversalMethod_difference_Object
-    ;
-
-traversalMethod_discard
-    : K_DISCARD LPAREN RPAREN
     ;
 
 traversalMethod_disjunct

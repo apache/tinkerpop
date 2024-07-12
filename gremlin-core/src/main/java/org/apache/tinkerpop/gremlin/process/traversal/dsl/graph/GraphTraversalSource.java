@@ -355,7 +355,7 @@ public class GraphTraversalSource implements TraversalSource {
      * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
      * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      *
-     * @since 3.8.0
+     * @since 4.0.0
      */
     public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
@@ -392,7 +392,7 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
      *
-     * @since 3.8.0
+     * @since 4.0.0
      */
     public GraphTraversal<Edge, Edge> addE(final GValue<String> label) {
         final GraphTraversalSource clone = this.clone();
@@ -458,6 +458,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<?, ?>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get())); //TODO
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
      * {@code Map} as an argument.
      *
@@ -504,6 +520,21 @@ public class GraphTraversalSource implements TraversalSource {
                 new MergeEdgeStepPlaceholder(traversal, true, searchCreate);
 
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, ?>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        final MergeEdgeStep<Edge> step = new MergeEdgeStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get());
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get())); //TODO
     }
 
     /**
@@ -643,13 +674,13 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 3.8.0
+     * @since 4.0.0
      */
     public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params));
+        return traversal.addStep(new CallStep<>(traversal, true, service, params.get())); //TODO
     }
 
     /**
@@ -658,13 +689,14 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 3.8.0
+     * @since 4.0.0
      */
-    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map<?,?>> childTraversal) {
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params, childTraversal.asAdmin()));
+        CallStep<S,S> step = new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin());
+        return traversal.addStep(new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin())); //TODO
     }
 
     /**

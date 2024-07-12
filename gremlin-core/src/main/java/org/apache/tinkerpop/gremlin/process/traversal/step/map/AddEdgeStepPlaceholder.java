@@ -20,91 +20,184 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 
-public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
-        implements AddEdgeStepInterface<S> {
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
+        implements AddEdgeStepInterface<S>, GValueHolder<S, Edge> {
 
+    private final Traversal.Admin<S,String> label;
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;
+    private Map<Object, List<Object>> properties = new HashMap<>();
+    private GValue<Object> elementId;
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final String edgeLabel) {
-        super(traversal, edgeLabel == null ? Edge.DEFAULT_LABEL : edgeLabel);
+        this(traversal, new ConstantTraversal<>(edgeLabel));
     }
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
-        super(traversal, edgeLabel == null || edgeLabel.isNull() ? GValue.of(Edge.DEFAULT_LABEL) : edgeLabel);
+        this(traversal.asAdmin(), new GValueConstantTraversal<>(edgeLabel));
     }
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
-        super(traversal, edgeLabelTraversal == null ?
-                new ConstantTraversal<>(Edge.DEFAULT_LABEL) : edgeLabelTraversal);
+        super(traversal);
+        this.label = edgeLabelTraversal;
+        if (edgeLabelTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().track(((GValueConstantTraversal<S, String>) edgeLabelTraversal).getGValue());
+        }
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        throw new IllegalStateException("TODO:: not implemented");
+//        return this.parameters.getReferencedLabels();
     }
 
     @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
-        addTraversal(toObject);
         if (toObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) toObject).getGValue());
+            traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) toObject).getGValue());
         }
         this.to = toObject;
     }
 
     @Override
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        addTraversal(fromObject);
         if (fromObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
+            traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
         }
         this.from = fromObject;
     }
 
     @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    protected Traverser.Admin<Edge> processNextStart() throws NoSuchElementException {
+        throw new IllegalStateException("GValuePlaceholder step is not executable");
+    }
+
+    @Override
     public int hashCode() {
         int hash = super.hashCode();
+        if (label != null) {
+            hash ^= label.hashCode();
+        }
         if (from != null) {
             hash ^= from.hashCode();
         }
         if (to != null) {
             hash ^= to.hashCode();
         }
+        if (properties != null) {
+            for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+                hash ^= Objects.hashCode(entry.getKey());
+                hash ^= Objects.hashCode(entry.getValue());
+            };
+        }
         return hash;
     }
 
     @Override
     public Step asConcreteStep() {
+
         AddEdgeStep<S> step = new AddEdgeStep<>(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) label).getConstantTraversal() : label);
-        super.configureConcreteStep(step);
+
         if (from != null) {
             step.addFrom(from instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) from).getConstantTraversal() : from);
         }
         if (to != null) {
-            step.addTo(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) to).getConstantTraversal() : to);
+            step.addFrom(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) to).getConstantTraversal() : to);
         }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (Object value : entry.getValue()) {
+                step.addProperty(entry.getKey(), value instanceof GValue ? ((GValue<?>) value).get() : value);
+            }
+        }
+
         return step;
     }
 
     @Override
     public boolean isParameterized() {
-        if (super.isParameterized() ||
+        if ((label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).isParameterized()) ||
                 (from instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) from).isParameterized()) ||
                 (to instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) to).isParameterized())) {
             return true;
+        }
+        for (List<Object> list : properties.values()) {
+            if (GValue.containsVariables(list.toArray())) {
+                return true;
+            }
         }
         return false;
     }
 
     @Override
-    protected boolean supportsMultiProperties() {
-        return false;
+    public String getLabel() {
+        if (label instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) label).getGValue().getName());
+        }
+        return label.next();
+    }
+
+    public String getLabelGValueSafe() {
+        return label.next();
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        if (key instanceof GValue) {
+            throw new IllegalArgumentException("GValue cannot be used as a property key");
+        }
+        if (value instanceof GValue) { //TODO could value come in as a traversal?
+            traversal.getGValueManager().track((GValue<?>) value);
+        }
+        if (properties.containsKey(key)) {
+            throw new IllegalArgumentException("Edges only support properties with single cardinality");
+        }
+        properties.put(key, Collections.singletonList(value));
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        for (List<Object> list : properties.values()) {
+            for (Object value : list) {
+                if (value instanceof GValue) {
+                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
+                }
+            }
+        }
+        return properties;
+    }
+
+    public Map<Object, List<Object>> getPropertiesGValueSafe() {
+        return properties;
     }
 
     @Override
@@ -127,42 +220,71 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
         return to == null ? null : (Vertex) to.next();
     }
 
+    @Override
+    public Object getElementId() {
+        if (elementId == null) {
+            return null;
+        }
+        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        return elementId.get();
+    }
+
+    public Object getElementIdGValueSafe() {
+        if (elementId == null) {
+            return null;
+        }
+        return elementId.get();
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
+        this.traversal.getGValueManager().track(this.elementId);
+    }
+
     public Vertex getToGValueSafe() {
         return to == null ? null : (Vertex) to.next();
     }
 
     @Override
     public void updateVariable(String name, Object value) {
-        super.updateVariable(name, value);
+        if (label instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<S, String>) label).updateVariable(name, value);
+        }
         if (from instanceof GValueConstantTraversal) {
             ((GValueConstantTraversal<S, String>) from).updateVariable(name, value);
         }
         if (to instanceof GValueConstantTraversal) {
             ((GValueConstantTraversal<S, String>) to).updateVariable(name, value);
         }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object propertyVal : entry.getValue()) {
+                if (propertyVal instanceof GValue && name.equals(((GValue<?>) propertyVal).getName())) {
+                    properties.put(entry.getKey(), Collections.singletonList(GValue.of(name, value))); //TODO type check?
+                }
+            }
+        }
     }
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        Collection<GValue<?>> gValues = super.getGValues();
+        Set<GValue<?>> gValues = new HashSet<>();
+        if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).getGValue().isVariable()) {
+            gValues.add(((GValueConstantTraversal<S, String>) label).getGValue());
+        }
         if (from instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) from).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) from).getGValue());
         }
         if (to instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) to).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) to).getGValue());
         }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object propertyVal : entry.getValue()) {
+                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
+                    gValues.add((GValue<?>) propertyVal);
+                }
+            }
+        }
         return gValues;
-    }
-
-    @Override
-    public AddEdgeStepPlaceholder<S> clone() {
-        final AddEdgeStepPlaceholder<S> clone = (AddEdgeStepPlaceholder) super.clone();
-        if (from != null){
-            clone.from = from.clone();
-        }
-        if (to != null){
-            clone.to = to.clone();
-        }
-        return clone;
     }
 }

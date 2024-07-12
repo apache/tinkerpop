@@ -22,17 +22,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+/**
+ * Defines the contract for {@code range} related steps.
+ */
 public interface GraphStepInterface<S, E extends Element> extends Step<S, E>, GraphComputing {
 
-    Class<E> getReturnClass();
+    public Class<E> getReturnClass();
 
-    boolean isStartStep();
+    public boolean isStartStep();
 
-    boolean returnsVertex();
+    public boolean returnsVertex();
 
-    boolean returnsEdge();
+    public boolean returnsEdge();
 
-    Object[] getIds();
+    public Object[] getIds();
 
-    void clearIds();
+    public void clearIds();
 }

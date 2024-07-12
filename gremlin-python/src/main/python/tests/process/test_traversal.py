@@ -20,15 +20,14 @@
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 import os
-import pytest
 from pytest import fail
 
 from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.structure.graph import Graph
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.traversal import P, Direction, Bindings, Binding
+from gremlin_python.process.traversal import P, Direction, Bindings, Binding, GValue
 from gremlin_python.process.graph_traversal import __
+from gremlin_python.process.translator import Translator
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 anonymous_url = gremlin_server_url.format(45940)
@@ -405,6 +404,65 @@ class TestTraversal(object):
         assert g.V().count().next() == 0
 
         drop_graph_check_count(g)
+
+    def test_gvalue_name_cannot_be_null(self):
+        g = traversal().with_(None)
+        try:
+            g.V(GValue(None, [1, 2, 3]))
+            fail()
+        except Exception as ex:
+            assert str(ex) == 'The parameter name cannot be None.'
+
+    # TODO:: the following tests were based on naming rules for GremlinLang. Should these rules apply for bytecode?
+
+    # def test_gvalue_name_dont_need_escaping(self):
+    #     g = traversal().with_(None)
+    #     try:
+    #         g.V(GValue('\"', [1, 2, 3]))
+    #         fail()
+    #     except Exception as ex:
+    #         assert str(ex) == 'invalid parameter name ".'
+    #
+    # def test_gvalue_is_not_number(self):
+    #     g = traversal().with_(None)
+    #     try:
+    #         g.V(GValue('1', [1, 2, 3]))
+    #         fail()
+    #     except Exception as ex:
+    #         assert str(ex) == 'invalid parameter name 1.'
+    #
+    # def test_gvalue_is_valid_identifier(self):
+    #     g = traversal().with_(None)
+    #     try:
+    #         g.V(GValue('1a', [1, 2, 3]))
+    #         fail()
+    #     except Exception as ex:
+    #         assert str(ex) == 'invalid parameter name 1a.'
+    #
+    # def test_gvalue_is_not_reserved(self):
+    #     g = traversal().with_(None)
+    #     try:
+    #         g.V(GValue('_1', [1, 2, 3]))
+    #         fail()
+    #     except Exception as ex:
+    #         assert str(ex) == 'invalid GValue name _1. Should not start with _.'
+
+    # TODO:: is it a concern that bindings may be overwritten if name is reused?
+    # def test_gvalue_is_not_duplicate(self):
+    #     g = traversal().with_(None)
+    #     try:
+    #         g.inject(GValue('ids', [1, 2])).V(GValue('ids', [2, 3]))
+    #         fail()
+    #     except Exception as ex:
+    #         assert str(ex) == 'parameter with name ids already exists.'
+
+    def test_gvalue_allow_parameter_reuse(self):
+        g = traversal().with_(None)
+        val = [1, 2, 3]
+        p = GValue('ids', val)
+        gremlin = g.inject(p).V(p)
+
+        assert gremlin.bytecode.bindings['ids'] == val
 
 
 def create_connection_to_gtx():

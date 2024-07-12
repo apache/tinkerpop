@@ -20,33 +20,52 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class AddVertexStartStepPlaceholder extends AbstractAddElementStepPlaceholder<Vertex, Vertex, Event.VertexAddedEvent>
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class AddVertexStartStepPlaceholder extends AbstractStep<Vertex, Vertex>
         implements AddVertexStepInterface<Vertex>, GValueHolder<Vertex, Vertex> {
 
     private boolean userProvidedLabel;
+    private Map<Object, List<Object>> properties = new HashMap<>();
+    private Traversal.Admin<?,String> label;
+    private GValue<Object> elementId;
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        super(traversal, label == null ? Vertex.DEFAULT_LABEL : label);
-        userProvidedLabel = label != null;
+        this(traversal, null ==  label ? null : new ConstantTraversal<>(label));
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal, label == null ? GValue.of(Vertex.DEFAULT_LABEL) : label);
-        userProvidedLabel = label != null;
+        this(traversal, null ==  label ? null : new GValueConstantTraversal<>(label));
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,String> vertexLabelTraversal) {
-        super(traversal, vertexLabelTraversal == null ?
-                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : (Traversal.Admin<Vertex,String>) vertexLabelTraversal);
+        super(traversal);
+        this.label = null == vertexLabelTraversal ? new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : vertexLabelTraversal;
         userProvidedLabel = vertexLabelTraversal != null;
+        if (vertexLabelTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().track(((GValueConstantTraversal<?, String>) vertexLabelTraversal).getGValue());
+        }
     }
 
     @Override
@@ -55,21 +74,144 @@ public class AddVertexStartStepPlaceholder extends AbstractAddElementStepPlaceho
     }
 
     @Override
+    public Object getElementId() {
+        if (elementId == null) {
+            return null;
+        }
+        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        return elementId.get();
+    }
+
+    public Object getElementIdGValueSafe() {
+        if (elementId == null) {
+            return null;
+        }
+        return elementId.get();
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
+        this.traversal.getGValueManager().track(this.elementId);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ Objects.hashCode(this.label) ^ Objects.hashCode(this.properties);
+    }
+
+    @Override
+    protected Traverser.Admin<Vertex> processNextStart() throws NoSuchElementException {
+        throw new IllegalStateException("GValuePlaceholder step is not executable");
+    }
+
+    @Override
     public AddVertexStartStepPlaceholder clone() {
         final AddVertexStartStepPlaceholder clone = (AddVertexStartStepPlaceholder) super.clone();
+        clone.label = this.label.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
+        clone.properties = new HashMap<>(this.properties);
         return clone;
     }
 
     @Override
-    protected boolean supportsMultiProperties() {
-        return true;
+    public String getLabel() {
+        if (label instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) label).getGValue().getName());
+        }
+        return label.next();
+    }
+
+    public String getLabelGValueSafe() {
+        return label.next();
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        for (List<Object> list : properties.values()) {
+            for (Object value : list) {
+                if (value instanceof GValue) {
+                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
+                }
+            }
+        }
+        return properties;
+    }
+
+    public Map<Object, List<Object>> getPropertiesGValueSafe() {
+        return properties;
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        if (key instanceof GValue) {
+            throw new IllegalArgumentException("GValue cannot be used as a property key");
+        }
+        if (value instanceof GValue) { //TODO could value come in as a traversal?
+            traversal.getGValueManager().track((GValue<?>) value);
+        }
+        List<Object> values = properties.get(key);
+        if (values == null) {
+            values = new ArrayList<>();
+            properties.put(key, values);
+        }
+        values.add(value);
     }
 
     @Override
     public Step asConcreteStep() {
         AddVertexStartStep step = new AddVertexStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
-        super.configureConcreteStep(step);
+
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (Object value : entry.getValue()) {
+                step.addProperty(entry.getKey(), value instanceof GValue ? ((GValue<?>) value).get() : value);
+            }
+        }
+
         return step;
+    }
+
+    @Override
+    public boolean isParameterized() {
+        if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, String>) label).isParameterized()) {
+            return true;
+        }
+        for (List<Object> list : properties.values()) {
+            if (GValue.containsVariables(list.toArray())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void updateVariable(String name, Object value) {
+        if (label instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<?, String>) label).updateVariable(name, value);
+        }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            List<Object> values = entry.getValue();
+            for (int i = 0; i < values.size(); i++) {
+                if (values.get(i) instanceof GValue && name.equals(((GValue<?>) values.get(i)).getName())) {
+                    values.set(i, value);
+                }
+            }
+        }
+    }
+
+    @Override
+    public Collection<GValue<?>> getGValues() {
+        Set<GValue<?>> gValues = new HashSet<>();
+        if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, String>) label).getGValue().isVariable()) {
+            gValues.add(((GValueConstantTraversal<?, String>) label).getGValue());
+        }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object propertyVal : entry.getValue()) {
+                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
+                    gValues.add((GValue<?>) propertyVal);
+                }
+            }
+        }
+        return gValues;
     }
 }

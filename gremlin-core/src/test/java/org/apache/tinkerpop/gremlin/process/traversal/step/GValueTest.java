@@ -18,29 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class GValueTest {
@@ -59,28 +58,11 @@ public class GValueTest {
         GValue.of("x", gValue);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectVariableNamesStartingWithUnderscore() {
-        GValue.of("_invalid", "value");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectNestedGValues() {
-        final GValue inner = GValue.of("inner", "value");
-        GValue.of("outer", inner);
-    }
-
-    @Test
-    public void shouldMaintainTypeInformation() {
-        final GValue<List<String>> listValue = GValue.of("list", Arrays.asList("a", "b"));
-        assertEquals(listValue.get(), Arrays.asList("a", "b"));
-        assertTrue(listValue.get() instanceof List);
-    }
-
     @Test
     public void shouldCreateGValueFromValue() {
         final GValue<Integer> gValue = GValue.of(123);
         assertEquals(123, gValue.get().intValue());
+        assertEquals(GType.INTEGER, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -88,6 +70,7 @@ public class GValueTest {
     public void shouldCreateGValueFromNameAndValue() {
         final GValue<Integer> gValue = GValue.of("varName", 123);
         assertEquals(123, gValue.get().intValue());
+        assertEquals(GType.INTEGER, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -96,6 +79,7 @@ public class GValueTest {
     public void shouldCreateGValueFromString() {
         final GValue<String> gValue = GValue.ofString(null, "test");
         assertEquals("test", gValue.get());
+        assertEquals(GType.STRING, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -103,6 +87,7 @@ public class GValueTest {
     public void shouldCreateGValueFromStringWithName() {
         final GValue<String> gValue = GValue.ofString("varName", "test");
         assertEquals("test", gValue.get());
+        assertEquals(GType.STRING, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -111,6 +96,7 @@ public class GValueTest {
     public void shouldCreateGValueFromInteger() {
         final GValue<Integer> gValue = GValue.ofInteger(123);
         assertEquals(123, gValue.get().intValue());
+        assertEquals(GType.INTEGER, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -118,6 +104,7 @@ public class GValueTest {
     public void shouldCreateGValueFromIntegerWithName() {
         final GValue<Integer> gValue = GValue.ofInteger("varName", 123);
         assertEquals(123, gValue.get().intValue());
+        assertEquals(GType.INTEGER, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -126,6 +113,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBoolean() {
         final GValue<Boolean> gValue = GValue.ofBoolean(true);
         assertEquals(true, gValue.get());
+        assertEquals(GType.BOOLEAN, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -133,6 +121,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBooleanWithName() {
         final GValue<Boolean> gValue = GValue.ofBoolean("varName", true);
         assertEquals(true, gValue.get());
+        assertEquals(GType.BOOLEAN, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -141,6 +130,7 @@ public class GValueTest {
     public void shouldCreateGValueFromDouble() {
         final GValue<Double> gValue = GValue.ofDouble(123.45);
         assertEquals(123.45, gValue.get(), 0.0);
+        assertEquals(GType.DOUBLE, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -148,6 +138,7 @@ public class GValueTest {
     public void shouldCreateGValueFromDoubleWithName() {
         final GValue<Double> gValue = GValue.ofDouble("varName", 123.45);
         assertEquals(123.45, gValue.get(), 0.0);
+        assertEquals(GType.DOUBLE, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -156,6 +147,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBigInteger() {
         final GValue<BigInteger> gValue = GValue.ofBigInteger(BigInteger.ONE);
         assertEquals(BigInteger.ONE, gValue.get());
+        assertEquals(GType.BIG_INTEGER, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -163,6 +155,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBigIntegerWithName() {
         final GValue<BigInteger> gValue = GValue.ofBigInteger("varName", BigInteger.ONE);
         assertEquals(BigInteger.ONE, gValue.get());
+        assertEquals(GType.BIG_INTEGER, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -171,6 +164,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBigDecimal() {
         final GValue<BigDecimal> gValue = GValue.ofBigDecimal(BigDecimal.ONE);
         assertEquals(BigDecimal.ONE, gValue.get());
+        assertEquals(GType.BIG_DECIMAL, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -178,6 +172,7 @@ public class GValueTest {
     public void shouldCreateGValueFromBigDecimalWithName() {
         final GValue<BigDecimal> gValue = GValue.ofBigDecimal("varName", BigDecimal.ONE);
         assertEquals(BigDecimal.ONE, gValue.get());
+        assertEquals(GType.BIG_DECIMAL, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -186,6 +181,7 @@ public class GValueTest {
     public void shouldCreateGValueFromLong() {
         final GValue<Long> gValue = GValue.ofLong(123L);
         assertEquals(123L, gValue.get().longValue());
+        assertEquals(GType.LONG, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -193,6 +189,7 @@ public class GValueTest {
     public void shouldCreateGValueFromLongWithName() {
         final GValue<Long> gValue = GValue.ofLong("varName", 123L);
         assertEquals(123L, gValue.get().longValue());
+        assertEquals(GType.LONG, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -204,6 +201,7 @@ public class GValueTest {
         }};
         final GValue<Map> gValue = GValue.ofMap(map);
         assertEquals(map, gValue.get());
+        assertEquals(GType.MAP, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -214,6 +212,7 @@ public class GValueTest {
         }};
         final GValue<Map<?,?>> gValue = GValue.ofMap("varName", map);
         assertEquals(map, gValue.get());
+        assertEquals(GType.MAP, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -223,6 +222,7 @@ public class GValueTest {
         final List<String> list = Arrays.asList("value1", "value2");
         final GValue<List<String>> gValue = GValue.ofList(list);
         assertEquals(list, gValue.get());
+        assertEquals(GType.LIST, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -231,6 +231,7 @@ public class GValueTest {
         final List<String> list = Arrays.asList("value1", "value2");
         final GValue<List<String>> gValue = GValue.ofList("varName", list);
         assertEquals(list, gValue.get());
+        assertEquals(GType.LIST, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -240,6 +241,7 @@ public class GValueTest {
         final Set<String> set = new HashSet<>(Arrays.asList("value1", "value2"));
         final GValue<Set> gValue = GValue.ofSet(set);
         assertEquals(set, gValue.get());
+        assertEquals(GType.SET, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -248,6 +250,7 @@ public class GValueTest {
         final Set<String> set = new HashSet<>(Arrays.asList("value1", "value2"));
         final GValue<Set> gValue = GValue.ofSet("varName", set);
         assertEquals(set, gValue.get());
+        assertEquals(GType.SET, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
@@ -257,6 +260,7 @@ public class GValueTest {
         final Vertex vertex = mock(Vertex.class);
         final GValue<Vertex> gValue = GValue.ofVertex(vertex);
         assertEquals(vertex, gValue.get());
+        assertEquals(GType.VERTEX, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
     }
 
@@ -265,31 +269,84 @@ public class GValueTest {
         final Vertex vertex = mock(Vertex.class);
         final GValue<Vertex> gValue = GValue.ofVertex("varName", vertex);
         assertEquals(vertex, gValue.get());
+        assertEquals(GType.VERTEX, gValue.getType());
         assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
     @Test
+    public void shouldBeAnInstanceOf() {
+        assertThat(GValue.instanceOf(GValue.of("string"), GType.STRING), is(true));
+        assertThat(GValue.instanceOf(GValue.ofInteger(1), GType.INTEGER), is(true));
+        assertThat(GValue.instanceOf("string", GType.STRING), is(true));
+        assertThat(GValue.instanceOf(1, GType.INTEGER), is(true));
+    }
+
+    @Test
+    public void shouldNotBeAnInstanceOf() {
+        assertThat(GValue.instanceOf(GValue.of("string"), GType.INTEGER), is(false));
+        assertThat(GValue.instanceOf(GValue.ofInteger(1), GType.STRING), is(false));
+        assertThat(GValue.instanceOf("string", GType.INTEGER), is(false));
+        assertThat(GValue.instanceOf(1, GType.STRING), is(false));
+    }
+
+    @Test
+    public void shouldBeAnInstanceOfCollection() {
+        assertThat(GValue.instanceOfCollection(GValue.of(Arrays.asList("string"))), is(true));
+        assertThat(GValue.instanceOfCollection(GValue.ofSet(new HashSet(Arrays.asList("string")))), is(true));
+        assertThat(GValue.instanceOfCollection(Arrays.asList("string")), is(true));
+        assertThat(GValue.instanceOfCollection(new HashSet(Arrays.asList("string"))), is(true));
+    }
+
+    @Test
+    public void shouldNotBeAnInstanceOfCollection() {
+        assertThat(GValue.instanceOfCollection(GValue.of(new HashMap())), is(false));
+        assertThat(GValue.instanceOfCollection(GValue.ofInteger(1)), is(false));
+        assertThat(GValue.instanceOfCollection(new HashMap()), is(false));
+        assertThat(GValue.instanceOfCollection(1), is(false));
+    }
+
+    @Test
+    public void shouldBeAnInstanceOfNumber() {
+        assertThat(GValue.instanceOfNumber(GValue.of(1)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.of(1L)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.of(1D)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.of(BigInteger.valueOf((1L)))), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.of(BigDecimal.valueOf((1.0)))), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.ofInteger(1)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.ofLong(1L)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.ofDouble(1D)), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.ofBigInteger(BigInteger.valueOf((1L)))), is(true));
+        assertThat(GValue.instanceOfNumber(GValue.ofBigDecimal(BigDecimal.valueOf((1.0)))), is(true));
+    }
+
+    @Test
+    public void shouldNotBeAnInstanceOfNumber() {
+        assertThat(GValue.instanceOfNumber(GValue.of("string")), is(false));
+        assertThat(GValue.instanceOfNumber(GValue.of(Arrays.asList("string"))), is(false));
+    }
+
+    @Test
     public void shouldHaveForMatchingType() {
         final GValue<Integer> gValue = GValue.of(123);
-        assertThat(GValue.valueInstanceOf(gValue, Integer.class), is(true));
+        assertThat(GValue.valueInstanceOf(gValue, GType.INTEGER), is(true));
     }
 
     @Test
     public void valueInstanceOfShouldReturnFalseForNonMatchingType() {
         final GValue<Integer> gValue = GValue.of(123);
-        assertThat(GValue.valueInstanceOf(gValue, String.class), is(false));
+        assertThat(GValue.valueInstanceOf(gValue, GType.STRING), is(false));
     }
 
     @Test
     public void valueInstanceOfShouldReturnFalseForNonGValueObject() {
-        final String nonGValue = "test";
-        assertThat(GValue.valueInstanceOf(nonGValue, String.class), is(false));
+        String nonGValue = "test";
+        assertThat(GValue.valueInstanceOf(nonGValue, GType.STRING), is(false));
     }
 
     @Test
     public void valueInstanceOfShouldReturnFalseForNullObject() {
-        assertThat(GValue.valueInstanceOf(null, String.class), is(false));
+        assertThat(GValue.valueInstanceOf(null, GType.STRING), is(false));
     }
 
     @Test
@@ -307,6 +364,49 @@ public class GValueTest {
     @Test
     public void getShouldReturnNullForNullInput() {
         assertThat(GValue.getFrom(null), is((Object) null));
+    }
+
+    @Test
+    public void valueInstanceOfCollectionShouldReturnTrueForGValueWithCollectionType() {
+        final GValue<List<String>> gValue = GValue.ofList(Arrays.asList("value1", "value2"));
+        assertThat(GValue.valueInstanceOfCollection(gValue), is(true));
+    }
+
+    @Test
+    public void valueInstanceOfCollectionShouldReturnFalseForGValueWithNonCollectionType() {
+        final GValue<Integer> gValue = GValue.of(123);
+        assertThat(GValue.valueInstanceOfCollection(gValue), is(false));
+    }
+
+    @Test
+    public void valueInstanceOfCollectionShouldReturnFalseForNonGValueObject() {
+        assertThat(GValue.valueInstanceOfCollection("test"), is(false));
+    }
+
+    @Test
+    public void valueInstanceOfCollectionShouldReturnFalseForNullObject() {
+        assertThat(GValue.valueInstanceOfCollection(null), is(false));
+    }
+
+    @Test
+    public void valueInstanceOfNumericShouldReturnTrueForGValueWithNumericType() {
+        final GValue<Integer> gValue = GValue.of(123);
+        assertThat(GValue.valueInstanceOfNumeric(gValue), is(true));
+    }
+
+    @Test
+    public void valueInstanceOfNumericShouldReturnFalseForGValueWithNonNumericType() {
+        assertThat(GValue.valueInstanceOfNumeric("test"), is(false));
+    }
+
+    @Test
+    public void valueInstanceOfNumericShouldReturnFalseForNonGValueObject() {
+        assertThat(GValue.valueInstanceOfNumeric("test"), is(false));
+    }
+
+    @Test
+    public void valueInstanceOfNumericShouldReturnFalseForNullObject() {
+        assertThat(GValue.valueInstanceOfNumeric(null), is(false));
     }
 
     @Test
@@ -437,196 +537,60 @@ public class GValueTest {
         assertNull(GValue.valueOf(null));
         assertNull(null);
     }
-    
+
     @Test
-    public void cloneShouldHandleNullValue() throws CloneNotSupportedException {
-        final GValue<String> original = GValue.of("varName", null);
-        final GValue<String> cloned = original.clone();
-        
-        assertBasicCloneProperties(original, cloned);
-        assertNull(cloned.get());
+    public void numberOfShouldReturnGValueValue() {
+        final GValue<Integer> gValue = GValue.ofInteger(1234);
+        assertEquals(1234, GValue.numberOf(gValue));
     }
 
     @Test
-    public void cloneShouldHandleNullValueWithoutName() throws CloneNotSupportedException {
-        final GValue<String> original = GValue.of(null);
-        final GValue<String> cloned = original.clone();
-        
-        assertBasicCloneProperties(original, cloned);
-        assertNull(cloned.getName());
-        assertNull(cloned.get());
+    public void numberOfShouldReturnObjectAsIs() {
+        assertEquals(1234, GValue.numberOf(1234));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void numberOfShouldThrowBecauseGValueNotNumberType() {
+        assertEquals(1234, GValue.numberOf("1234"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void numberOfShouldThrowBecauseObjectNotNumberType() {
+        final GValue<String> gValue = GValue.of("1234");
+        GValue.numberOf(gValue);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void numberOfShouldThrowBecauseNullIntegerGType() {
+        GValue.numberOf(GValue.of(null, GType.INTEGER));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void numberOfShouldThrowBecauseNullObject() {
+        GValue.numberOf(null);
     }
 
     @Test
-    public void cloneShouldDeepCloneSerializableList() throws CloneNotSupportedException {
-        final List<String> originalList = new ArrayList<>(Arrays.asList("item1", "item2"));
-        final GValue<List<String>> original = GValue.of("listVar", originalList);
-        final GValue<List<String>> cloned = original.clone();
-        
-        assertDeepClone(original, cloned);
-        
-        // Modify original list to verify deep clone
-        originalList.add("item3");
-        assertEquals(2, cloned.get().size()); // Cloned list should not be affected
-        assertEquals(3, original.get().size()); // Original list should be affected
+    public void numberOfShouldAcceptAllNumericTypeLiterals() {
+        assertEquals((byte) 123, GValue.numberOf((byte) 123));
+        assertEquals((short) 123, GValue.numberOf((short) 123));
+        assertEquals(123, GValue.numberOf(123));
+        assertEquals(123l, GValue.numberOf(123l));
+        assertEquals(123.45f, GValue.numberOf(123.45f));
+        assertEquals(123.45, GValue.numberOf(123.45));
+        assertEquals(BigInteger.ONE, GValue.numberOf(BigInteger.ONE));
+        assertEquals(BigDecimal.ONE, GValue.numberOf(BigDecimal.ONE));
     }
 
     @Test
-    public void cloneShouldDeepCloneSerializableMap() throws CloneNotSupportedException {
-        final Map<String, String> originalMap = new HashMap<>();
-        originalMap.put("key1", "value1");
-        originalMap.put("key2", "value2");
-        
-        final GValue<Map<String, String>> original = GValue.of("mapVar", originalMap);
-        final GValue<Map<String, String>> cloned = original.clone();
-        
-        assertDeepClone(original, cloned);
-        
-        // Modify original map to verify deep clone
-        originalMap.put("key3", "value3");
-        assertEquals(2, cloned.get().size()); // Cloned map should not be affected
-        assertEquals(3, original.get().size()); // Original map should be affected
-    }
-
-    @Test
-    public void cloneShouldDeepCloneSerializableSet() throws CloneNotSupportedException {
-        final Set<String> originalSet = new HashSet<>(Arrays.asList("item1", "item2"));
-        final GValue<Set<String>> original = GValue.of("setVar", originalSet);
-        final GValue<Set<String>> cloned = original.clone();
-        
-        assertDeepClone(original, cloned);
-        
-        // Modify original set to verify deep clone
-        originalSet.add("item3");
-        assertEquals(2, cloned.get().size()); // Cloned set should not be affected
-        assertEquals(3, original.get().size()); // Original set should be affected
-    }
-
-    @Test
-    public void cloneShouldDeepClonePrimitiveInt() throws CloneNotSupportedException {
-        final GValue<Integer> original = GValue.of("intVar", 42);
-        assertImmutableClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldDeepCloneString() throws CloneNotSupportedException {
-        final GValue<String> original = GValue.of("stringVar", "test value");
-        assertImmutableClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldDeepCloneBigInteger() throws CloneNotSupportedException {
-        final GValue<BigInteger> original = GValue.of("bigIntVar", new BigInteger("12345678901234567890"));
-        assertImmutableClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldDeepCloneBigDecimal() throws CloneNotSupportedException {
-        final GValue<BigDecimal> original = GValue.of("bigDecVar", new BigDecimal("123.456789"));
-        assertImmutableClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldShallowCloneNonSerializableValue() throws CloneNotSupportedException {
-        final GValue<NonSerializableClass> original = GValue.of("nonSerVar", new NonSerializableClass("test"));
-        assertShallowClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldFallbackToShallowCloneOnSerializationFailure() throws CloneNotSupportedException {
-        final GValue<FailingSerializableClass> original = GValue.of("failVar", new FailingSerializableClass("test"));
-        assertShallowClone(original, original.clone());
-    }
-
-    @Test
-    public void cloneShouldHandleComplexNestedSerializableStructures() throws CloneNotSupportedException {
-        final Map<String, List<String>> complexMap = new HashMap<>();
-        complexMap.put("list1", new ArrayList<>(Arrays.asList("a", "b")));
-        complexMap.put("list2", new ArrayList<>(Arrays.asList("c", "d")));
-        
-        final GValue<Map<String, List<String>>> original = GValue.of("complexVar", complexMap);
-        final GValue<Map<String, List<String>>> cloned = original.clone();
-        
-        assertNotSame(original, cloned);
-        assertEquals(original.getName(), cloned.getName());
-        assertDeepClone(original, cloned);
-        
-        // Verify deep cloning of nested structures
-        original.get().get("list1").add("e");
-        assertEquals(2, cloned.get().get("list1").size()); // Cloned nested list should not be affected
-        assertEquals(3, original.get().get("list1").size()); // Original nested list should be affected
-    }
-    
-    private <T> void assertBasicCloneProperties(final GValue<T> original, final GValue<T> cloned) {
-        assertNotSame(original, cloned);
-        assertEquals(original.getName(), cloned.getName());
-        assertEquals(original, cloned);
-        assertEquals(original.isVariable(), cloned.isVariable());
-    }
-
-    private <T> void assertDeepClone(final GValue<T> original, final GValue<T> cloned) {
-        assertBasicCloneProperties(original, cloned);
-        assertEquals(original.get(), cloned.get());
-        assertNotSame(original.get(), cloned.get());
-    }
-
-    private <T> void assertShallowClone(final GValue<T> original, final GValue<T> cloned) {
-        assertBasicCloneProperties(original, cloned);
-        assertSame(original.get(), cloned.get());
-    }
-
-    private <T> void assertImmutableClone(final GValue<T> original, final GValue<T> cloned) {
-        assertBasicCloneProperties(original, cloned);
-        assertEquals(original.get(), cloned.get());
-    }
-    
-    private static class NonSerializableClass {
-        private final String value;
-        
-        public NonSerializableClass(final String value) {
-            this.value = value;
-        }
-        
-        public String getValue() {
-            return value;
-        }
-        
-        @Override
-        public boolean equals(final Object o) {
-            return EqualsBuilder.reflectionEquals(this, o);
-        }
-        
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.reflectionHashCode(this);
-        }
-    }
-    
-    private static class FailingSerializableClass implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final String value;
-        
-        public FailingSerializableClass(final String value) {
-            this.value = value;
-        }
-        
-        public String getValue() {
-            return this.value;
-        }
-        
-        // This will cause serialization to fail
-        private void writeObject(final java.io.ObjectOutputStream out) throws java.io.IOException {
-            throw new java.io.IOException("Intentional serialization failure for testing");
-        }
-        
-        @Override
-        public boolean equals(final Object o) {
-            return EqualsBuilder.reflectionEquals(this, o);
-        }
-        
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.reflectionHashCode(this);
-        }
+    public void numberOfShouldAcceptAllNumericTypeGValues() {
+        assertEquals((byte) 123, GValue.numberOf(GValue.of((byte) 123)));
+        assertEquals((short) 123, GValue.numberOf((GValue.of((short) 123))));
+        assertEquals(123, GValue.numberOf((GValue.of(123))));
+        assertEquals(123l, GValue.numberOf((GValue.of(123l))));
+        assertEquals(123.45f, GValue.numberOf((GValue.of(123.45f))));
+        assertEquals(123.45, GValue.numberOf((GValue.of(123.45))));
+        assertEquals(BigInteger.ONE, GValue.numberOf((GValue.of(BigInteger.ONE))));
+        assertEquals(BigDecimal.ONE, GValue.numberOf((GValue.of(BigDecimal.ONE))));
     }
 }

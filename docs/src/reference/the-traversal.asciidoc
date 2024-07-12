@@ -5388,34 +5388,39 @@ a comparatively slow script compilation, which makes parameterization essential 
 
 |<<addedge-step,addE()>> | String edgeLabel
 |<<addvertex-step,addV()>> | String vertexLabel
-|<<vertex-steps,both()>> | String... edgeLabels
-|<<vertex-steps,bothE()>> | String... edgeLabels
+|<<vertex-steps,both()>> | String...edgeLabels
+|<<vertex-steps,bothE()>> | String...edgeLabels
 |<<call-step,call()>> | Map params
+|<<coin-step,coin()>> | double probability
+|<<combine-step,combine()>> | Object values
+|<<conjoin-step,conjoin()>> | String delimiter
+|<<constant-step,constant()>> | E e/value
+|<<difference-step,difference()>> | Object values
+|<<disjunct-step,disjunct()>> | Object values
 |<<from-step,from()>> | Vertex fromVertex
 |<<has-step,has()>> | String label
-|<<has-step,hasId()>> | Object id, Object... ids
 |<<has-step,hasLabel()>> | String label, String... labels
-|<<has-step,hasValue()>> | Object value, Object... values
-|<<vertex-steps,in()>> | String... edgeLabels
-|<<vertex-steps,inE()>> | String... edgeLabels
-|<<is-step,is()>> | Object value
+|<<vertex-steps,in()>> | String...edgeLabels
+|<<vertex-steps,inE()>> | String...edgeLabels
+|<<intersect-step,intersect()>> | Object values
 |<<limit-step,limit()>> | Long limit
+|<<merge-step,merge()>> | Object values
 |<<mergeedge-step,mergeE()>> | Map searchCreate
 |<<mergevertex-step,mergeV()>> | Map searchCreate
-|<<option-step,option()>> | Map m
-|<<vertex-steps,out()>> | String... edgeLabels
-|<<vertex-steps,outE()>> | String... edgeLabels
-|<<property-step,property()>> | Object value, Object... values
+|<<option-step,option()>> | M token, Map m
+|<<vertex-steps,out()>> | String...edgeLabels
+|<<vertex-steps,outE()>> | String...edgeLabels
+|<<product-step,product()>> | Object values
 |<<range-step,range()>> | Long low, Long high
 |<<skip-step,skip()>> | Long limit
 |<<tail-step,tail()>> | Long limit
 |<<to-step,to()>> | String... edgeLabels, Vertex toVertex
-|<<vertex-steps,toE()>> | String... edgeLabels
+|<<vertex-steps,toE()>> | String...edgeLabels
 |===
 
 *Additional References*
 
-<<gremlin-java-gvalue,Java>>, <<parameterized-scripts,Server>>
+<<gremlin-java-gvalue,Java>>, <<gremlin-python-gvalue,Python>>, <<parameterized-scripts,Server>>
 
 [[a-note-on-predicates]]
 == A Note on Predicates

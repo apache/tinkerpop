@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Objects;
 
@@ -37,8 +40,8 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericMapNullableArgumentContext ctx) {
-        final Object literalOrVar = visitGenericMapNullableArgument(ctx);
-        if (GValue.valueInstanceOf(literalOrVar, Map.class)) {
+        Object literalOrVar = visitGenericMapNullableArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
             return ((GValue<Map>) literalOrVar).get();
         } else {
             return (Map) literalOrVar;
@@ -77,8 +80,8 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Wrapper to visit function for string types.
      */
     public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
-        final Object literalOrVar = visitStringNullableArgument((ctx));
-        if (GValue.valueInstanceOf(literalOrVar, String.class)) {
+        Object literalOrVar = visitStringNullableArgument((ctx));
+        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
             return (GValue<String>) literalOrVar;
         } else {
             return GValue.ofString(null, (String) literalOrVar);
@@ -94,17 +97,17 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (ctx.integerLiteral() != null) {
             return antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).longValue();
         } else {
-            final Object var = visitVariable(ctx.variable());
+            Object var = visitVariable(ctx.variable());
             if (var instanceof Number) {
                 return ((Number) var).longValue();
             }
-            if (GValue.valueInstanceOf(var, Long.class)) {
+            if (GValue.valueInstanceOf(var, GType.LONG)) {
                 return var;
-            } else if (GValue.valueInstanceOf(var, Integer.class)) {
+            } else if (GValue.valueInstanceOf(var, GType.INTEGER)) {
                 return GValue.ofLong(((GValue<Integer>) var).getName(), ((GValue<Integer>) var).get().longValue());
-            } else if (GValue.valueInstanceOf(var, Short.class)) {
+            } else if (GValue.valueInstanceOf(var, GType.SHORT)) {
                 return GValue.ofLong(((GValue<Short>) var).getName(), ((GValue<Short>) var).get().longValue());
-            } else if (GValue.valueInstanceOf(var, Byte.class)) {
+            } else if (GValue.valueInstanceOf(var, GType.BYTE)) {
                 return GValue.ofLong(((GValue<Byte>) var).getName(), ((GValue<Byte>) var).get().longValue());
             } else {
                 throw new GremlinParserException(String.format("Expected variable [%s] to resolve to an integer type, instead found: %s", ctx.variable().Identifier().getSymbol(), var.getClass().getName()));

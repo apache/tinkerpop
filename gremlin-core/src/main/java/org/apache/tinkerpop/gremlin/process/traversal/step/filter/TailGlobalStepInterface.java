@@ -16,13 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import java.util.List;
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 
-//TODO:: consider new names
-public interface PropertyAdding {
-    void addProperty(Object key, Object value);
-    public Map<Object, List<Object>> getProperties();
+public interface TailGlobalStepInterface<S> extends Step<S, S> {
+    Long getLimit();
 }

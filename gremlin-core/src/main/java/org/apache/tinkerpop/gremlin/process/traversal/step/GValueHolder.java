@@ -26,20 +26,20 @@ import java.util.Collection;
 
 public interface GValueHolder<S, E> extends Step<S, E> {
 
-    default void reduce() {
+    public default void reduce() {
         // todo: maybe check to see if GValueManager was updated after traversal construction to spare this updateVariable
-        final GValueManager manager = this.getTraversal().getGValueManager();
-        manager.getGValues().forEach(gValue -> updateVariable(gValue.getName(), gValue.get()));
-        Step<S, E> concreteStep = this.asConcreteStep();
-        concreteStep.setId(this.getId());
-        TraversalHelper.replaceStep(this, concreteStep, this.getTraversal());
+        final GValueManager manger = this.getTraversal().getGValueManager();
+        manger.getGValues().forEach(gValue -> {
+            updateVariable(gValue.getName(), gValue.get());
+        });
+        TraversalHelper.replaceStep(this, this.asConcreteStep(), this.getTraversal());
     }
 
-    Step<S, E> asConcreteStep();
+    public Step<S, E> asConcreteStep();
 
-    boolean isParameterized();
+    public boolean isParameterized();
 
-    void updateVariable(String name, Object value);
+    public void updateVariable(String name, Object value);
 
-    Collection<GValue<?>> getGValues();
+    public Collection<GValue<?>> getGValues();
 }

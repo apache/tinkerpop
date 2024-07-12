@@ -1171,7 +1171,7 @@ public class __ {
     /**
      * @see GraphTraversal#hasLabel(GValue, GValue...)
      */
-    public static <A> GraphTraversal<A, A> hasLabel(final GValue<String> label, final GValue<String>... otherLabels) {
+    public static <A> GraphTraversal<A, A> hasLabel(final GValue<String> label, GValue<String>... otherLabels) {
         return __.<A>start().hasLabel(label, otherLabels);
     }
 
@@ -1824,7 +1824,7 @@ public class __ {
     /**
      * @see GraphTraversal#call(String, GValue, Traversal)
      */
-    public static <A, B> GraphTraversal<A, B> call(final String service, final GValue<Map<?,?>> params, final Traversal<A, Map<?,?>> childTraversal) {
+    public static <A, B> GraphTraversal<A, B> call(final String service, final GValue<Map<?,?>> params, final Traversal<?, Map<?,?>> childTraversal) {
         return __.<A>start().call(service, params, childTraversal);
     }
 }

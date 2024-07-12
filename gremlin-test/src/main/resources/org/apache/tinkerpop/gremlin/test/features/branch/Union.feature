@@ -139,7 +139,7 @@ Feature: Step - union()
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
        """
-       g.V(vid2).union(constant(1i), constant(2i), constant(3i))
+       g.V(vid2).union(constant(1), constant(2), constant(3))
        """
     When iterated to list
     Then the result should be unordered

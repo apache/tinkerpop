@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddElementStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
@@ -109,8 +110,7 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
                 final AddElementStepInterface addElement = (AddElementStepInterface) step;
                 if (addElement.getElementId() != null) {
                     addElement.addProperty(this.idPropertyKey, addElement.getElementId());
-                    //TODO:: old code directly accessed parameters to remove original id
-                    // this is not possible without extending the new interface. Is this necessary?
+                    addElement.setElementId(null); //TODO necessary?
                 } else if (!addElement.getProperties().containsKey(this.idPropertyKey)) {
                     addElement.addProperty(this.idPropertyKey, idMaker.get());
                 }

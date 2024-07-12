@@ -242,9 +242,12 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             if (vertexFeatures.isPresent()) {
                 // GraphTraversal folds g.addV().property('k','v') to just AddVertexStep/AddVertexStartStep so this
                 // has to be exploded back to g.addV().property(cardinality, 'k','v','partition','A')
-                if (step instanceof AddVertexStartStep || step instanceof AddVertexStep ||
-                        step instanceof AddVertexStartStepPlaceholder || step instanceof AddEdgeStartStepPlaceholder) {
-                    final Map<Object, List<Object>> params = ((PropertyAdding) step).getProperties();
+                if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
+                    final Parameters parameters = ((Parameterizing) step).getParameters();
+                    final Map<Object, List<Object>> params = parameters.getRaw();
+                    // TODO:: final AddVertexContract contract = traversal.getGValueManager().getStepContract(step);
+
+                    params.forEach((k, v) -> {
 
                     // we get accused of ConcurrentModification if we rely on either the entry set or key set iterators in HashMap here
                     for (Object k : params.keySet().toArray()) {
@@ -254,15 +257,27 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
                             final VertexProperty.Cardinality cardinality = vertexFeatures.get().getCardinality((String) k);
                             v.forEach(o -> {
-                                final AddPropertyStepInterface addPropertyStep = new AddPropertyStepPlaceholder(traversal, cardinality, k, o);
-                                addPropertyStep.addProperty(partitionKey, writePartition);
+                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o); //TODO:: should this use AddPropertyStepGValueContract?
+                                addPropertyStep.configure(partitionKey, writePartition);
                                 addPropertyStepsToAppend.add(addPropertyStep);
 
-                                // need to remove the property from the AddVertex/StartStep because it's now being
-                                // added via the AddPropertyStep
-                                ((PropertyAdding) step).removeProperty(k);
+                                // need to remove the parameter from the AddVertex/StartStep and move any GValue to a
+                                // different contract related because it's now being added via the AddPropertyStep
+                                parameters.remove(k);
 
-                                //TODO:: Extract properties as GValue from addV/addE and preserve GValue in AddPropertyStepPlaceholder
+                                //TODO::
+                                /*if (contract != null) {
+                                    final Object possibleGValue = contract.removeProperty(k);
+                                    if (possibleGValue instanceof GValue) {
+                                        final AddPropertyContract addPropertyContract = new DefaultAddPropertyContract(k, possibleGValue);
+                                        traversal.getGValueManager().register(addPropertyStep, addPropertyContract);
+                                    }
+
+                                    // remove an empty contract for the addV because we've moved all the state to
+                                    // the property() steps
+                                    if (contract.getProperties().isEmpty())
+                                        traversal.getGValueManager().remove(step);
+                                }*/
 
                                 TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
                             });

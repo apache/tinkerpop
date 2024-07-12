@@ -135,9 +135,6 @@ Given('the traversal of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
   p.g = this.g;
   this.traversal = gremlin[this.scenario].shift()(p);
-  for (const key in this.sideEffects) {
-    this.traversal.getBytecode().addSource('withSideEffect', [key, this.sideEffects[key]]);
-  }
 });
 
 Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, stringValue) {

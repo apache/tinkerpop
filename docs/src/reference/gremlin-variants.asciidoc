@@ -2477,6 +2477,19 @@ instead of translating, compiling, and then executing each submitted bytecode, i
 
 WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
 
+[[gremlin-python-gvalue]]
+=== GValue Parameterization
+
+A `GValue` is an encapsulation of a parameter name and value. A <<traversal-parameterization,subset of gremlin steps>>
+are able to accept GValues. When constructing a `GraphTraversal` with such steps in Python, a GValue may be passed in
+the traversal to utilize a parameter in place of a literal.
+
+[source,python]
+----
+g.V().has('name', GValue('name', 'marko'))
+g.merge_v(GValue('vertexPattern', {'name': 'marko'}))
+----
+
 [[gremlin-python-scripts]]
 === Submitting Scripts
 

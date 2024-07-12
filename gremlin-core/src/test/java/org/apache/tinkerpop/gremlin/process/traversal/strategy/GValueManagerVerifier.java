@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder.RangeGlobalStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -316,7 +316,7 @@ public class GValueManagerVerifier {
 
         /**
          * Verifies that a RangeContract is properly set up
-         */ //TODO rename
+         */
         public T isRangeGlobalGValueContract(final Step step, final long expectedLow, final long expectedHigh,
                                              final String lowName, final String highName) {
             assertThat("Step should be parameterized", step instanceof RangeGlobalStepPlaceholder && ((RangeGlobalStepPlaceholder<?>) step).isParameterized(), is(true));
