@@ -185,7 +185,7 @@ public class DotNetTranslatorTest {
     public void shouldTranslateHasLabelNull() {
         String script = translator.translate(g.V().hasLabel(null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().HasLabel((string) null)", script);
-        script = translator.translate(g.V().hasLabel(null, null).asAdmin().getBytecode()).getScript();
+        script = translator.translate(g.V().hasLabel((String) null, null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().HasLabel(null,null)", script);
         script = translator.translate(g.V().hasLabel(null, "person").asAdmin().getBytecode()).getScript();
         assertEquals("g.V().HasLabel(null,\"person\")", script);

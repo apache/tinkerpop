@@ -140,10 +140,6 @@ Given('the traversal of', function (traversalText) {
   }
 });
 
-Given(/^using the parameter (.+) of P\.(.+)\("(.+)"\)$/, function (paramName, pval, stringValue) {
-  this.parameters[paramName] =  new P(pval, parseValue.call(this, stringValue))
-});
-
 Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, stringValue) {
   // Remove escaped chars
   stringValue = stringValue.replace(/\\"/g, '"');

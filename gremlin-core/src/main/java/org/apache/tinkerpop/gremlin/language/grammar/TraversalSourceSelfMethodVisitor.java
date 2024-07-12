@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +58,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
      */
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withBulk(final GremlinParser.TraversalSourceSelfMethod_withBulkContext ctx) {
-        final boolean useBulk = (boolean) antlr.argumentVisitor.visitBooleanArgument(ctx.booleanArgument());
+        final boolean useBulk = (boolean) antlr.genericVisitor.visitBooleanLiteral(ctx.booleanLiteral());
         return source.withBulk(useBulk);
     }
 
@@ -75,9 +76,9 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withSack(final GremlinParser.TraversalSourceSelfMethod_withSackContext ctx) {
         if (ctx.getChildCount() == 4) {
-            return source.withSack(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
+            return source.withSack(antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral()));
         } else {
-            return source.withSack(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()),
+            return source.withSack(antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral()),
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
@@ -87,13 +88,17 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
      */
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withSideEffect(final GremlinParser.TraversalSourceSelfMethod_withSideEffectContext ctx) {
+        Object literalOrVar = antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument());
+        if (literalOrVar instanceof GValue) {
+            literalOrVar = ((GValue<?>) literalOrVar).get(); // TODO:: revert withSideEffect accepting variables
+        }
         if (ctx.getChildCount() < 8) {
             // with 4 children withSideEffect() was called without a reducer specified.
-            return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
-                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
+            return source.withSideEffect(antlr.genericVisitor.parseString(ctx.stringLiteral()),
+                    literalOrVar);
         } else {
-            return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
-                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()),
+            return source.withSideEffect(antlr.genericVisitor.parseString(ctx.stringLiteral()),
+                    literalOrVar,
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
@@ -138,10 +143,10 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_with(final GremlinParser.TraversalSourceSelfMethod_withContext ctx) {
         if (ctx.getChildCount() == 4) {
-            return source.with(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+            return source.with(antlr.genericVisitor.parseString(ctx.stringLiteral()));
         } else {
-            return source.with(antlr.argumentVisitor.parseString(ctx.stringArgument()),
-                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
+            return source.with(antlr.genericVisitor.parseString(ctx.stringLiteral()),
+                    antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral()));
         }
     }
 }

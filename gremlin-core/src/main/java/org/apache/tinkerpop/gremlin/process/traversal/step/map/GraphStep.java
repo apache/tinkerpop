@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;             
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -49,7 +51,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, GraphStepInterface<S, E> {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
@@ -65,6 +67,12 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         super(traversal);
         this.returnClass = returnClass;
         this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
+        //TODO:: Better Check
+        for (Object id : this.ids) {
+            if (id instanceof GValue) {
+                throw new IllegalArgumentException("GValue Not Allowed as id in GraphStep");
+            }
+        }
         this.isStart = isStart;
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                 this.getTraversal().getGraph().get().vertices(this.ids) :
@@ -85,10 +93,12 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.parameters.set(null, keyValues);
     }
 
+    @Override
     public Class<E> getReturnClass() {
         return this.returnClass;
     }
 
+    @Override
     public boolean isStartStep() {
         return this.isStart;
     }
@@ -97,10 +107,12 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         return step instanceof GraphStep && ((GraphStep) step).isStart;
     }
 
+    @Override
     public boolean returnsVertex() {
         return this.returnClass.equals(Vertex.class);
     }
 
+    @Override
     public boolean returnsEdge() {
         return this.returnClass.equals(Edge.class);
     }
@@ -109,6 +121,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.iteratorSupplier = iteratorSupplier;
     }
 
+    @Override
     public Object[] getIds() {
         return this.ids;
     }
@@ -125,6 +138,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
                             newIds);
     }
 
+    @Override
     public void clearIds() {
         this.ids = new Object[0];
     }

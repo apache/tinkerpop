@@ -19,14 +19,16 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -56,9 +58,11 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -114,7 +118,8 @@ public final class TraversalHelper {
             } else if (step instanceof EdgeVertexStep) {
                 state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
-                for (final HasContainer hasContainer : ((HasContainerHolder) step).getHasContainers()) {
+                List<HasContainer> hasContainers = ((HasContainerHolder) step).getHasContainers();
+                for (final HasContainer hasContainer : hasContainers) {
                     if (!hasContainer.getKey().equals(T.id.getAccessor()))
                         return 'x';
                 }
@@ -175,7 +180,7 @@ public final class TraversalHelper {
     }
 
     /**
-     * Replace a step with a new step.
+     * Replace a step with a new step. When a step is replaced, it is also removed from the {@link GValueManager}.
      *
      * @param removeStep the step to remove
      * @param insertStep the step to insert
@@ -187,11 +192,26 @@ public final class TraversalHelper {
         traversal.addStep(i, insertStep);
     }
 
+    /**
+     * Moves a step to a new position.
+     *
+     * @param stepToMove the step to move
+     * @param indexToMoveTo the index in the traversal to move it to
+     * @param traversal the traversal to move the step in which must be the same as the one assigned to the step
+     */
+    public static <S, E> void moveStep(final Step<S, E> stepToMove, final int indexToMoveTo, final Traversal.Admin<?, ?> traversal) {
+        if (!traversal.getSteps().contains(stepToMove))
+            throw new IllegalStateException("Traversal does not contain step");
+        traversal.removeStep(stepToMove);
+        traversal.addStep(indexToMoveTo, stepToMove);
+    }
+
     public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
     }
 
     public static <S, E> Step<?, E> insertTraversal(final int insertIndex, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
+        traversal.getGValueManager().mergeInto(insertTraversal.getGValueManager());
         if (0 == traversal.getSteps().size()) {
             Step currentStep = EmptyStep.instance();
             for (final Step insertStep : insertTraversal.getSteps()) {
@@ -714,6 +734,10 @@ public final class TraversalHelper {
         return false;
     }
 
+    public static Traversal.Admin<?, ?> removeStep(final Step<?, ?> stepToRemove, final Traversal.Admin<?, ?> traversal) {
+        return traversal.removeStep(stepToRemove);
+    }
+
     public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
         final int size = traversal.getSteps().size();
         for (int i = 0; i < size; i++) {
@@ -757,23 +781,6 @@ public final class TraversalHelper {
     }
 
     /**
-     * @deprecated As of release 3.5.2, not replaced as strategies are not applied in this fashion after 3.5.0
-     */
-    @Deprecated
-    public static void applySingleLevelStrategies(final Traversal.Admin<?, ?> parentTraversal,
-                                                  final Traversal.Admin<?, ?> childTraversal,
-                                                  final Class<? extends TraversalStrategy> stopAfterStrategy) {
-        childTraversal.setStrategies(parentTraversal.getStrategies());
-        childTraversal.setSideEffects(parentTraversal.getSideEffects());
-        parentTraversal.getGraph().ifPresent(childTraversal::setGraph);
-        for (final TraversalStrategy<?> strategy : parentTraversal.getStrategies()) {
-            strategy.apply(childTraversal);
-            if (null != stopAfterStrategy && stopAfterStrategy.isInstance(strategy))
-                break;
-        }
-    }
-
-    /**
      * Used to left-fold a {@link HasContainer} to a {@link HasContainerHolder} if it exists. Else, append a {@link HasStep}.
      *
      * @param traversal    the traversal to fold or append.
@@ -782,11 +789,50 @@ public final class TraversalHelper {
      * @return the has container folded or appended traversal
      */
     public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
+        if (hasContainer.getPredicate().isParameterized()) {
+            traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
+        }
         if (traversal.getEndStep() instanceof HasContainerHolder) {
             ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
+            if (hasContainer.getPredicate().isParameterized()) {
+                traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
+            }
             return traversal;
-        } else
-            return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
+        } else {
+            HasStep<?> step = new HasStep<>(traversal, hasContainer);
+            if (hasContainer.getPredicate().isParameterized()) {
+                traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
+            }
+            return (T) traversal.addStep(step);
+        }
+    }
+
+    public static Map<Step, Collection<GValue<?>>> gatherStepGValues(final Traversal.Admin<?, ?> traversal) {
+        Map<Step, Collection<GValue<?>>> gValues = new HashMap<>();
+        applyTraversalRecursively(
+                (t) -> {
+                    for (final Step step : traversal.getSteps()) {
+                        if (step instanceof GValueHolder) {
+                            gValues.put(step, ((GValueHolder) step).getGValues());
+                        }
+                    }
+                },
+                traversal);
+        return gValues;
+    }
+
+    public static Set<Step<?,?>> gatherGValuePlaceholders(final Traversal.Admin<?, ?> traversal) {
+        final Set<Step<?,?>> steps = new HashSet<>();
+        applyTraversalRecursively(
+                (t) -> {
+                    for (final Step step : traversal.getSteps()) {
+                        if (step instanceof GValueHolder) {
+                            steps.add(step);
+                        }
+                    }
+                },
+                traversal);
+        return steps;
     }
 
     /**

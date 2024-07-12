@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -31,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGen
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -45,7 +45,7 @@ import java.util.Set;
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
-
+    protected GValueManager gValueManager = new GValueManager();
     protected Traversal.Admin<S, E> bypassTraversal = null;
 
     public void setBypassTraversal(final Traversal.Admin<S, E> bypassTraversal) {
@@ -66,6 +66,18 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
         return null == this.bypassTraversal ? new Bytecode() : this.bypassTraversal.getBytecode();
     }
 
+    @Override
+    public GValueManager getGValueManager() {
+        return null == this.bypassTraversal ? gValueManager : this.bypassTraversal.getGValueManager();
+    }
+
+    @Override
+    public void setGValueManager(final GValueManager gValueManager) {
+        if (bypassTraversal == null)
+            this.gValueManager = gValueManager;
+        else
+            bypassTraversal.setGValueManager(gValueManager);
+    }
 
     @Override
     public void reset() {

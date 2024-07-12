@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
+public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
@@ -51,16 +51,15 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
 
-
     public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart) {
         super(traversal, isStart);
     }
 
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         super(traversal, isStart, merge);
     }
 
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map<Object, Object>> mergeTraversal) {
         super(traversal, isStart, mergeTraversal);
     }
 
@@ -195,4 +194,18 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
         return combinedMap;
     }
 
+    @Override
+    public Map<Object, Object> getMergeMap() {
+        throw new UnsupportedOperationException("Cannot access merge map from step"); //TODO::
+    }
+
+    @Override
+    public Map<Object, Object> getOnCreateMap() {
+        throw new UnsupportedOperationException("Cannot access onCreate map from step"); //TODO::
+    }
+
+    @Override
+    public Map<Object, Object> getOnMatchMap() {
+        throw new UnsupportedOperationException("Cannot access onMatch map from step"); //TODO::
+    }
 }

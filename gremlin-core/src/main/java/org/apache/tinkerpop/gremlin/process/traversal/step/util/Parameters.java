@@ -199,6 +199,23 @@ public class Parameters implements Cloneable, Serializable {
     }
 
     /**
+     * Gets the array of keys/values of the parameters without evaluating them in the context of a {@link Traverser} as
+     * is done in {@link #getKeyValues(Traverser.Admin, Object...)}.
+     * @param exceptKeys keys to not include in the returned {@link Map}
+     */
+    public Object[] getRawKeyValues(final Object... exceptKeys) {
+        Map<Object, List<Object>> raw = getRaw(exceptKeys);
+        List<Object> keyValues = new ArrayList<>(raw.size());
+        for (Map.Entry<Object, List<Object>> entry : raw.entrySet()) {
+            for (Object value : entry.getValue()) {
+                keyValues.add(entry.getKey());
+                keyValues.add(value);
+            }
+        }
+        return keyValues.toArray();
+    }
+
+    /**
      * Set parameters given key/value pairs.
      */
     public void set(final TraversalParent parent, final Object... keyValues) {

@@ -20,10 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -72,15 +71,9 @@ public class IdentityRemovalStrategyTest {
     @Test
     public void doTest() {
         final String repr = translator.translate(original.getBytecode()).getScript();
-        applyIdentityRemovalStrategy(original);
+        GValueManagerVerifier.verify(original.asAdmin(), IdentityRemovalStrategy.instance())
+                .afterApplying()
+                .managerIsEmpty();
         assertEquals(repr, optimized, original);
-    }
-
-    private void applyIdentityRemovalStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IdentityRemovalStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-
     }
 }

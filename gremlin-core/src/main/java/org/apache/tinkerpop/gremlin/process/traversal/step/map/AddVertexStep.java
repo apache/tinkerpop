@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -34,7 +35,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,7 +45,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<S> {
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
@@ -60,8 +63,19 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
+    @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
+    }
+
+    @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
     }
 
     @Override
@@ -146,5 +160,20 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         clone.parameters = this.parameters.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
+    }
+
+    @Override
+    public String getLabel() {
+        return parameters.get(T.label, ()->"Edge").get(0);
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void addProperty(final Object key, final Object value) {
+        configure(key, value);
     }
 }
