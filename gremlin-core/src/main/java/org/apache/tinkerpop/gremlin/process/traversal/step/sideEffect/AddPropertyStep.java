@@ -21,9 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -41,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -49,7 +49,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping {
+        implements AddPropertyStepInterface<S>, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
@@ -69,14 +69,6 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
-    }
-
-    @Override
-    public HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(Scoping.super.getPopInstructions());
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
     }
 
     @Override
@@ -204,6 +196,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
+    @Override
     public VertexProperty.Cardinality getCardinality() {
         return cardinality;
     }
@@ -218,5 +211,15 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         final AddPropertyStep<S> clone = (AddPropertyStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
         return clone;
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        configure(key, value);
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return parameters.getRaw(T.key, T.value); //TODO:: are these the right exclusions?
     }
 }

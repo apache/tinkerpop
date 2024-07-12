@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+
 /**
  * Predefined {@code Predicate} values that can be used as {@code String} filters.
  *
@@ -26,6 +28,10 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 public class TextP extends P<String> {
 
     public TextP(final PBiPredicate<String, String> biPredicate, final String value) {
+        super(biPredicate, value);
+    }
+
+    public TextP(final PBiPredicate<String, String> biPredicate, final GValue<String> value) {
         super(biPredicate, value);
     }
 
@@ -60,11 +66,29 @@ public class TextP extends P<String> {
     }
 
     /**
+     * Determines if String does start with the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP startingWith(final GValue<String> value) {
+        return new TextP(Text.startingWith, value);
+    }
+
+    /**
      * Determines if String does not start with the given value.
      *
      * @since 3.4.0
      */
     public static TextP notStartingWith(final String value) {
+        return new TextP(Text.notStartingWith, value);
+    }
+
+    /**
+     * Determines if String does not start with the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP notStartingWith(final GValue<String> value) {
         return new TextP(Text.notStartingWith, value);
     }
 
@@ -78,11 +102,29 @@ public class TextP extends P<String> {
     }
 
     /**
+     * Determines if String does start with the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP endingWith(final GValue<String> value) {
+        return new TextP(Text.endingWith, value);
+    }
+
+    /**
      * Determines if String does not start with the given value.
      *
      * @since 3.4.0
      */
     public static TextP notEndingWith(final String value) {
+        return new TextP(Text.notEndingWith, value);
+    }
+
+    /**
+     * Determines if String does not start with the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP notEndingWith(final GValue<String> value) {
         return new TextP(Text.notEndingWith, value);
     }
 
@@ -96,11 +138,29 @@ public class TextP extends P<String> {
     }
 
     /**
+     * Determines if String does contain the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP containing(final GValue<String> value) {
+        return new TextP(Text.containing, value);
+    }
+
+    /**
      * Determines if String does not contain the given value.
      *
      * @since 3.4.0
      */
     public static TextP notContaining(final String value) {
+        return new TextP(Text.notContaining, value);
+    }
+
+    /**
+     * Determines if String does not contain the given value.
+     *
+     * @since 3.8.0
+     */
+    public static TextP notContaining(final GValue<String> value) {
         return new TextP(Text.notContaining, value);
     }
     
@@ -116,6 +176,18 @@ public class TextP extends P<String> {
         return new TextP(new Text.RegexPredicate(value, false), value);
     }
 
+    /**
+     * Determines if String has a match with the given regex pattern. The TinkerPop reference implementation uses
+     * Java syntax for regex. The string is considered a match to the pattern if any substring matches the pattern. It
+     * is therefore important to use the appropriate boundary matchers (e.g. `$` for end of a line) to ensure a proper
+     * match.
+     *
+     * @since 3.8.0
+     */
+    public static TextP regex(final GValue<String> value) {
+        return new TextP(new Text.RegexPredicate(value.get(), false), value);
+    }
+
     /**           
      * Determines if String has no match with the given regex pattern and the reference implementation treats it as a
      * simple negation of the evaluation of the pattern match of {@link #regex(String)}.
@@ -124,5 +196,15 @@ public class TextP extends P<String> {
      */
     public static TextP notRegex(final String value) {
         return new TextP(new Text.RegexPredicate(value, true), value);
+    }
+
+    /**
+     * Determines if String has no match with the given regex pattern and the reference implementation treats it as a
+     * simple negation of the evaluation of the pattern match of {@link #regex(String)}.
+     *
+     * @since 3.8.0
+     */
+    public static TextP notRegex(final GValue<String> value) {
+        return new TextP(new Text.RegexPredicate(value.get(), true), value);
     }
 }

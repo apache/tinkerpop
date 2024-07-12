@@ -136,13 +136,10 @@ Feature: Step - union()
 
   Scenario: g_V_unionXconstantX1X_constantX2X_constantX3XX
     Given the modern graph
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[2].i"
-    And using the parameter xx3 defined as "d[3].i"
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
        """
-       g.V(vid2).union(constant(xx1), constant(xx2), constant(xx3))
+       g.V(vid2).union(constant(1), constant(2), constant(3))
        """
     When iterated to list
     Then the result should be unordered

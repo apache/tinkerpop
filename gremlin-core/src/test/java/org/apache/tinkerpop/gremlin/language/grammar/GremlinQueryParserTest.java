@@ -41,7 +41,7 @@ public class GremlinQueryParserTest {
     public void shouldParseVariables() {
         final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
                 EmptyGraph.instance(), __::start, g,
-                new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("z", 50)));
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("z", 50)));
         final GraphTraversal<?, ?> t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V().has('name',gt(z))", gremlinAntlrToJava);
 
         assertEquals(g.V().has("name", P.gt(50)).asAdmin().getBytecode(),
@@ -52,7 +52,7 @@ public class GremlinQueryParserTest {
     public void shouldParseVariablesInVarargs() {
         final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
                 EmptyGraph.instance(), __::start, g,
-                new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100,
                                                                                  "y", 200,
                                                                                  "z", 50)));
 
@@ -73,7 +73,7 @@ public class GremlinQueryParserTest {
     public void shouldNotParseVariablesInList() {
         final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
                 EmptyGraph.instance(), __::start, g,
-                new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100,
                         "y", 200,
                         "z", 50)));
         GremlinQueryParser.parse("g.V([x, y, 300]).has('name',gt(z))", gremlinAntlrToJava);
@@ -83,7 +83,7 @@ public class GremlinQueryParserTest {
     public void shouldNotParseVariablesWhichAreTraversalBased() {
         final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
                 EmptyGraph.instance(), __::start, g,
-                new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100,
+                new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100,
                         "y", 200,
                         "z", __.out())));
         GremlinQueryParser.parse("g.V([x, y, 300]).where(z)", gremlinAntlrToJava);

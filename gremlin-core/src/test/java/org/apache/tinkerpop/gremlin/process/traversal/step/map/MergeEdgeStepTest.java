@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -121,11 +122,13 @@ public class MergeEdgeStepTest {
         when(traversal.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         when(traversal.getParent()).thenReturn(EmptyStep.instance());
         when(traversal.getStrategies()).thenReturn(new DefaultTraversalStrategies());
+        when(traversal.getGValueManager()).thenReturn(new GValueManager());
         final Traverser.Admin traverser = mock(Traverser.Admin.class);
         when(traverser.split()).thenReturn(mock(Traverser.Admin.class));
         final Traversal.Admin onCreateTraversal = mock(Traversal.Admin.class);
         when(onCreateTraversal.next()).thenReturn(Collections.unmodifiableMap(CollectionUtil.asMap("key1", "value1")));
         when(onCreateTraversal.getSideEffects()).thenReturn(mock(TraversalSideEffects.class));
+        when(onCreateTraversal.getGValueManager()).thenReturn(new GValueManager());
 
         final MergeEdgeStep step = new MergeEdgeStep<>(traversal, true);
         step.addChildOption(Merge.onCreate, onCreateTraversal);

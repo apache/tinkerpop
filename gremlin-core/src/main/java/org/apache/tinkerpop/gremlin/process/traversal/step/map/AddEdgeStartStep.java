@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -44,14 +42,16 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
-        implements Writing<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating {
+        implements Writing<Event.EdgeAddedEvent>, AddEdgeStepInterface<Edge> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -86,13 +86,6 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     }
 
     @Override
-    public HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
-    }
-
-    @Override
     public void configure(final Object... keyValues) {
         this.parameters.set(this, keyValues);
     }
@@ -105,6 +98,16 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     @Override
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
         this.parameters.set(this, FROM, fromObject);
+    }
+
+    @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
     }
 
     @Override
@@ -197,4 +200,28 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
         return clone;
     }
 
+    @Override
+    public String getLabel() {
+        return parameters.get(T.label, ()->"Edge").get(0);
+    }
+
+    @Override
+    public Vertex getFrom() {
+        return (Vertex) parameters.get(FROM, ()->(Traversal.Admin<?, ?>) null).get(0).next();
+    }
+
+    @Override
+    public Vertex getTo() {
+        return (Vertex) parameters.get(TO, ()->(Traversal.Admin<?, ?>) null).get(0).next();
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void addProperty(final Object key, final Object value) {
+        configure(key, value);
+    }
 }

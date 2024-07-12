@@ -23,54 +23,110 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Traversa
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(Parameterized.class)
+@RunWith(Enclosed.class)
 public class OrderLimitStrategyTest {
     private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
-    @Parameterized.Parameter(value = 0)
-    public Traversal.Admin traversal;
+    @RunWith(Parameterized.class)
+    public static class StandardTest {
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin traversal;
 
-    @Parameterized.Parameter(value = 1)
-    public long limit;
+        @Parameterized.Parameter(value = 1)
+        public long limit;
 
-    void applyOrderLimitStrategyStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(OrderLimitStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
+
+        @Test
+        public void doTest() {
+            final String repr = translator.translate(traversal.getBytecode()).getScript();
+            traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
+            GValueManagerVerifier.verify(traversal, OrderLimitStrategy.instance()).
+                    afterApplying().variablesArePreserved();
+            assertEquals(repr, limit, TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).get().getLimit());
+        }
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {__.order().limit(1), 1l},
+                    {__.out().order().range(7, 15), 15l},
+                    {__.order().select("a").limit(7), 7l},
+                    {__.order().out().limit(10), Long.MAX_VALUE}});
+        }
     }
 
-    @Test
-    public void doTest() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
-        traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
-        applyOrderLimitStrategyStrategy(traversal);
-        assertEquals(repr, limit, TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).get().getLimit());
-    }
+    /**
+     * Tests that GValueManager correctly preserves GValue parameters when OrderLimitStrategy is applied.
+     */
+    @RunWith(Parameterized.class)
+    public static class GValueTest {
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin<?, ?> traversal;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> generateTestParameters() {
-        return Arrays.asList(new Object[][]{
-                {__.order().limit(1), 1l},
-                {__.out().order().range(7, 15), 15l},
-                {__.order().select("a").limit(7), 7l},
-                {__.order().out().limit(10), Long.MAX_VALUE}});
+        @Parameterized.Parameter(value = 1)
+        public String[] expectedNames;
+
+        @Parameterized.Parameter(value = 2)
+        public String[] expectedUnpinnedNames;
+
+        @Parameterized.Parameter(value = 3)
+        public Collection<TraversalStrategy> additionalStrategies;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {
+                        __.order().limit(GValue.ofLong("x", 5L)).asAdmin(),
+                        new String[]{"x"},
+                        new String[]{},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.out().order().range(GValue.ofLong("low", 3L), GValue.ofLong("high", 10L)).asAdmin(),
+                        new String[]{"low", "high"},
+                        new String[]{"low"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.order().select("a").limit(GValue.ofLong("x", 7L)).asAdmin(),
+                        new String[]{"x"},
+                        new String[]{},
+                        Collections.emptyList(),
+                    }
+            });
+        }
+
+        @Test
+        public void shouldPreserveGValueParameters() {
+            traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
+            GValueManagerVerifier.verify(traversal, OrderLimitStrategy.instance()).
+                    beforeApplying().
+                        hasVariables(expectedNames).
+                    afterApplying().
+                        hasUnpinnedVariables(expectedUnpinnedNames);
+        }
     }
 }

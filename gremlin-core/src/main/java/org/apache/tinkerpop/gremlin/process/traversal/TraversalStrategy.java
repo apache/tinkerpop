@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
@@ -31,21 +33,37 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * There are 5 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
- * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
- * That is, decorations are applied, then optimizations, then provider optimizations, then finalizations, and finally, verifications.
- * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
+ * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its
+ * evaluation. There are 5 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy},
+ * {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * Strategies within a category are sorted amongst themselves, and then category sorts are applied in the ordered
+ * specified previously. That is, decorations are applied, then optimizations, then provider optimizations, then
+ * finalizations, and finally, verifications. If a strategy does not fit within the specified categories, then it can
+ * simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
  * <p/>
- * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to be assigned to more general classes.
- * A traversal strategy should typically be stateless with a public static <code>instance()</code> method.
- * However, at limit, a traversal strategy can have a state defining constructor (typically via a "builder"), but that state can not mutate once instantiated.
+ * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to
+ * be assigned to more general classes. A traversal strategy should typically be stateless with a public static
+ * <code>instance()</code> method. However, at limit, a traversal strategy can have a state-defining constructor
+ * (typically via a "builder"), but that state cannot mutate once instantiated.
+ * <p/>
+ * Given that a traversal strategy can completely rewrite a traversal, it must take into account the
+ * {@link GValueManager} state while doing so. While most of the registry state is kept in sync by underlying
+ * {@link Traversal} mutation operations when adding and removing steps, there are cases where those changes alone
+ * will not capture the necessary changes. A good example of where this is the case is
+ * {@link AdjacentToIncidentStrategy} where a new step can replace another. When that replacement occurs, {@link GValue}
+ * instances registered to the original step apply to the new step. The strategy therefore uses
+ * {@link GValueManager#copyRegistryState} to ensure that this state gets propagated to the new step. If that step isn't
+ * taken, the traversal will still execute, but the reference to the {@link GValue} will be lost and any optimizations
+ * gained there will be forfeit.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
 
+    /**
+     * The transformation the strategy applies to the traversal.
+     */
     public void apply(final Traversal.Admin<?, ?> traversal);
 
     /**

@@ -20,7 +20,6 @@ Feature: Step - miscellaneous
 
   Scenario: g_V_coworker
     Given the modern graph
-    And using the parameter xx1 defined as "l[]"
     And the traversal of
       """
       g.V().hasLabel("person").
@@ -31,7 +30,7 @@ Feature: Step - miscellaneous
         where(neq("p1")).as("p2").values("name").as("p2n").
         select("p2").
         out("created").
-        choose(__.in("created").where(P.eq("p1")), __.values("name"), __.constant(xx1)).
+        choose(__.in("created").where(P.eq("p1")), __.values("name"), __.constant([])).
         group().
           by(__.select("p1n")).
           by(__.group().
