@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -55,6 +56,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
+        super(traversal);
+        this.parameters.set(this, T.label, edgeLabel);
+    }
+
+    public AddEdgeStep(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
         super(traversal);
         this.parameters.set(this, T.label, edgeLabel);
     }

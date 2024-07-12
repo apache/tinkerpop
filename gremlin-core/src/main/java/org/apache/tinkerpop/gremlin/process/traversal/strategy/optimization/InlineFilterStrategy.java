@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
@@ -124,26 +126,28 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 && ((VertexStep) step.getPreviousStep()).returnsEdge()
                 && 0 == ((VertexStep) step.getPreviousStep()).getEdgeLabels().length) {
             final VertexStep<Edge> previousStep = (VertexStep<Edge>) step.getPreviousStep();
-            final List<String> edgeLabels = new ArrayList<>();
+            final List<Object> edgeLabels = new ArrayList<>();
             for (final HasContainer hasContainer : new ArrayList<>(step.getHasContainers())) {
                 if (hasContainer.getKey().equals(T.label.getAccessor())) {
                     if (hasContainer.getBiPredicate() == Compare.eq &&
-                            hasContainer.getValue() instanceof String &&
+                            (hasContainer.getValue() instanceof String ||
+                                    (hasContainer.getValue() instanceof GValue && ((GValue) hasContainer.getValue()).getType() == GType.STRING)) &&
                             edgeLabels.isEmpty()) {
-                        edgeLabels.add((String) hasContainer.getValue());
+                        edgeLabels.add(hasContainer.getValue());
                         step.removeHasContainer(hasContainer);
                     } else if (hasContainer.getBiPredicate() == Contains.within &&
                             hasContainer.getValue() instanceof Collection &&
                             ((Collection) hasContainer.getValue()).containsAll(edgeLabels)) {
-                        edgeLabels.addAll((Collection<String>) hasContainer.getValue());
+                        edgeLabels.addAll((Collection) hasContainer.getValue());
                         step.removeHasContainer(hasContainer);
                     } else if (hasContainer.getPredicate() instanceof OrP && edgeLabels.isEmpty()) {
                         boolean removeContainer = true;
                         final List<P<?>> orps = ((OrP) hasContainer.getPredicate()).getPredicates();
-                        final List<String> newEdges = new ArrayList<>();
+                        final List<Object> newEdges = new ArrayList<>();
                         for (int i = 0; i < orps.size(); i++) {
-                            if (orps.get(i).getBiPredicate() == Compare.eq && orps.get(i).getValue() instanceof String)
-                                newEdges.add((String) orps.get(i).getValue());
+                            if (orps.get(i).getBiPredicate() == Compare.eq && (orps.get(i).getValue() instanceof String ||
+                                    (orps.get(i).getValue() instanceof GValue && ((GValue) orps.get(i).getValue()).getType() == GType.STRING)))
+                                newEdges.add(orps.get(i).getValue());
                             else {
                                 removeContainer = false;
                                 break;
@@ -157,7 +161,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 }
             }
             if (!edgeLabels.isEmpty()) {
-                final VertexStep<Edge> newVertexStep = new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), edgeLabels.toArray(new String[edgeLabels.size()]));
+                final VertexStep<Edge> newVertexStep = new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), edgeLabels.toArray(new Object[edgeLabels.size()]));
                 TraversalHelper.replaceStep(previousStep, newVertexStep, traversal);
                 TraversalHelper.copyLabels(previousStep, newVertexStep, false);
                 if (step.getHasContainers().isEmpty()) {

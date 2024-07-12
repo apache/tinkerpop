@@ -35,6 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -79,6 +81,11 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     public MergeStep(final Traversal.Admin traversal, final boolean isStart, final Map mergeMap) {
         this(traversal, isStart, new ConstantTraversal<>(mergeMap));
         validate(mergeMap, false);
+    }
+
+    public MergeStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> mergeMap) {
+        this(traversal, isStart, new ConstantTraversal<>(mergeMap));
+        validate(mergeMap.get(), false);
     }
 
     public MergeStep(final Traversal.Admin traversal, final boolean isStart, 
@@ -288,7 +295,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
                             op, allowedTokens, k));
                 }
                 if (k == T.label) {
-                    if (!(v instanceof String)) {
+                    if (!(isStringType(v))) {
                         throw new IllegalArgumentException(String.format(
                                 "%s() and option(onCreate) args expect T.label value to be of String - found: %s", op,
                                 v.getClass().getSimpleName()));
@@ -307,6 +314,13 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
                 }
             }
         });
+    }
+
+    /**
+     * Determines if the object is a string or a {@link GValue} with a string value.
+     */
+    protected static boolean isStringType(final Object k) {
+        return k instanceof String || (k instanceof GValue && ((GValue) k).getType() == GType.STRING);
     }
 
     /**
@@ -369,7 +383,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         return id != null ? graph.traversal().V(id) : graph.traversal().V();
     }
 
-    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final String label) {
+    protected GraphTraversal searchVerticesLabelConstraint(final GraphTraversal t, final String label) {
         return label != null ? t.hasLabel(label) : t;
     }
 

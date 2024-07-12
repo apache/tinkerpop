@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -324,7 +326,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3.TextPSerializer()));
-            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));                                       // ***LAST ID***
+            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -421,6 +423,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
             add(GryoTypeReg.of(ReferenceMap.class, 182));
+
+            add(GryoTypeReg.of(GValue.class, 199, new JavaSerializer()));
+            add(GryoTypeReg.of(GType.class, 200, new JavaSerializer()));        // ***LAST ID***
 
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
@@ -537,7 +542,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(Pick.class, 137));
-            add(GryoTypeReg.of(DT.class, 198));     // ***LAST ID***
+            add(GryoTypeReg.of(DT.class, 198));
             add(GryoTypeReg.of(Merge.class, 196));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
@@ -628,6 +633,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
             add(GryoTypeReg.of(ReferenceMap.class, 182));
+
+            add(GryoTypeReg.of(GValue.class, 199, new JavaSerializer()));
+            add(GryoTypeReg.of(GType.class, 200, new JavaSerializer()));        // ***LAST ID***
         }};
     }
 

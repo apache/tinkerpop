@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
 import java.util.LinkedHashMap;
@@ -445,7 +447,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_coin(final GremlinParser.TraversalMethod_coinContext ctx) {
-        return graphTraversal.coin(((Number) antlr.argumentVisitor.visitFloatArgument(ctx.floatArgument())).doubleValue());
+        final Object literalOrVar = antlr.argumentVisitor.visitFloatArgument(ctx.floatArgument());
+        if (literalOrVar instanceof Number)
+            return graphTraversal.coin(((Number) literalOrVar).doubleValue());
+        else if (literalOrVar instanceof GValue && ((GValue) literalOrVar).getType().isNumeric())
+            return graphTraversal.asAdmin().coin((GValue<Double>) literalOrVar);
+        else
+            throw new IllegalArgumentException("coin() argument must be a double");
+
     }
 
     /**

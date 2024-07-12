@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
@@ -74,7 +75,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public boolean test(final V testValue) {
-        return this.biPredicate.test(testValue, this.value);
+        if (this.value instanceof GValue)
+            return this.biPredicate.test(testValue, ((GValue<V>) this.value).get());
+        else
+            return this.biPredicate.test(testValue, this.value);
     }
 
     @Override

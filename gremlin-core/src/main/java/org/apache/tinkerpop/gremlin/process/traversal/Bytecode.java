@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -295,8 +296,13 @@ public class Bytecode implements Cloneable, Serializable {
             if (null != variable)
                 return new Binding<>(variable, convertArgument(argument, false));
         }
-        //
-        if (argument instanceof Traversal) {
+
+        // a GValue gets converted to its value because we don't serialize it. it really doesn't have anything to do
+        // with bytecode/remoting. it's an internal construct related to parsing with the grammar that is leaking
+        // over here. in 4.x with bytecode removed, we won't need to worry about this.
+        if (argument instanceof GValue)
+            return convertArgument(((GValue) argument).get(), false);
+        else if (argument instanceof Traversal) {
             // prevent use of "g" to spawn child traversals
             if (((Traversal) argument).asAdmin().getTraversalSource().isPresent())
                 throw new IllegalStateException(String.format(

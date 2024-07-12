@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
@@ -66,10 +67,27 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.returnClass = returnClass;
         this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         this.isStart = isStart;
+
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.getTraversal().getGraph().get().vertices(this.ids) :
-                this.getTraversal().getGraph().get().edges(this.ids));
+                this.getTraversal().getGraph().get().vertices(convertGValuesToIds()) :
+                this.getTraversal().getGraph().get().edges(convertGValuesToIds()));
     }
+
+    /**
+     * Converts {@link GValue} objects the ids array to their values to prevent them from leaking to the Graph API.
+     */
+    private Object[] convertGValuesToIds() {
+        final Object[] newIds = new Object[this.ids.length];
+        for (int i = 0; i < this.ids.length; i++) {
+            if (newIds[i] instanceof GValue) {
+                newIds[i] = ((GValue) this.ids[i]).get();
+            } else {
+                newIds[i] = this.ids[i];
+            }
+        }
+        return newIds;
+    }
+
 
     public String toString() {
         return StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
@@ -137,7 +155,13 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     public void convertElementsToIds() {
         if (null != this.ids) {
-            for (int i = 0; i < this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
+            // if this is going to OLAP, convert to ids so you don't serialize elements
+            for (int i = 0; i < this.ids.length; i++) {
+
+                // spare the Graph API from GValue objects, as they are Gremlin level objects
+                if (this.ids[i] instanceof GValue)
+                    this.ids[i] = ((GValue) this.ids[i]).get();
+
                 if (this.ids[i] instanceof Element)
                     this.ids[i] = ((Element) this.ids[i]).id();
             }
