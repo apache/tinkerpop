@@ -62,7 +62,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     private ServiceCallContext ctx;
     private String serviceName;
     private Service<S, E> service;
-    private Map staticParams;
+    private Map<?, ?> staticParams;
     private Traversal.Admin<S,Map> mapTraversal;
     private Parameters parameters;
 
@@ -100,6 +100,14 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public Map<?, ?> getStaticParams() {
+        return staticParams;
+    }
+
+    public void setStaticParams(Map<?, ?> params) {
+        this.staticParams = staticParams;
     }
 
     @Override

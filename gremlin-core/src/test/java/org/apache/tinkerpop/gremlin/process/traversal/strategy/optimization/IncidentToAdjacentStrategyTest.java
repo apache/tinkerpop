@@ -18,15 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -38,48 +40,129 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-@RunWith(Parameterized.class)
+@RunWith(Enclosed.class)
 public class IncidentToAdjacentStrategyTest {
     private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
-    @Parameterized.Parameter(value = 0)
-    public Traversal.Admin original;
+    @RunWith(Parameterized.class)
+    public static class StandardTest {
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin original;
 
-    @Parameterized.Parameter(value = 1)
-    public Traversal optimized;
+        @Parameterized.Parameter(value = 1)
+        public Traversal optimized;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> generateTestParameters() {
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            Function<Traverser<Vertex>, Vertex> lambda = Traverser::get; // to ensure same hashCode
+            return Arrays.asList(new Traversal[][]{
+                    {__.outE().inV(), __.out()},
+                    {__.inE().outV(), __.in()},
+                    {__.bothE().otherV(), __.both()},
+                    {__.outE().outV(), __.outE().outV()},
+                    {__.inE().inV(), __.inE().inV()},
+                    {__.bothE().bothV(), __.bothE().bothV()},
+                    {__.bothE().inV(), __.bothE().inV()},
+                    {__.bothE().outV(), __.bothE().outV()},
+                    {__.outE().otherV(), __.out()},
+                    {__.inE().otherV(), __.in()},
+                    {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
+                    {__.outE().inV().path(), __.outE().inV().path()},
+                    {__.outE().inV().simplePath(), __.outE().inV().simplePath()},
+                    {__.outE().inV().tree(), __.outE().inV().tree()},
+                    {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
+                    {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
+                    {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")},
+                    {__.outE("link").inV(), __.out("link")},
+                    {__.inE("link").outV(), __.in("link")},
+                    {__.bothE("link").otherV(), __.both("link")},
+            });
+        }
 
-        Function<Traverser<Vertex>, Vertex> lambda = Traverser::get; // to ensure same hashCode
-        return Arrays.asList(new Traversal[][]{
-                {__.outE().inV(), __.out()},
-                {__.inE().outV(), __.in()},
-                {__.bothE().otherV(), __.both()},
-                {__.outE().outV(), __.outE().outV()},
-                {__.inE().inV(), __.inE().inV()},
-                {__.bothE().bothV(), __.bothE().bothV()},
-                {__.bothE().inV(), __.bothE().inV()},
-                {__.bothE().outV(), __.bothE().outV()},
-                {__.outE().otherV(), __.out()},
-                {__.inE().otherV(), __.in()},
-                {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
-                {__.outE().inV().path(), __.outE().inV().path()},
-                {__.outE().inV().simplePath(), __.outE().inV().simplePath()},
-                {__.outE().inV().tree(), __.outE().inV().tree()},
-                {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
-                {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()},
-                {__.as("a").outE().inV().as("b"), __.as("a").out().as("b")}});
+        @Test
+        public void doTest() {
+            final String repr = translator.translate(original.getBytecode()).getScript();
+            GValueManagerVerifier.verify(original.asAdmin(), IncidentToAdjacentStrategy.instance())
+                    .afterApplying()
+                    .managerIsEmpty();
+            assertEquals(repr, this.optimized, this.original);
+        }
     }
 
-    @Test
-    public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(IncidentToAdjacentStrategy.instance());
-        this.original.asAdmin().setStrategies(strategies);
-        this.original.asAdmin().applyStrategies();
-        assertEquals(repr, this.optimized, this.original);
+    /**
+     * Tests that GValueManager.copyParams is being called correctly in IncidentToAdjacentStrategy
+     * such that the newly added VertexStep has the same parameters that previous one had.
+     */
+    @RunWith(Parameterized.class)
+    public static class GValueTest {
+
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin<?, ?> traversal;
+
+        @Parameterized.Parameter(value = 1)
+        public int expectedLabelCount;
+
+        @Parameterized.Parameter(value = 2)
+        public String[] expectedNames;
+
+        @Parameterized.Parameter(value = 3)
+        public String[] expectedValues;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {
+                        __.outE(GValue.of("x", "link")).inV().asAdmin(),
+                        1,
+                        new String[]{"x"},
+                        new String[]{"link"}
+                    },
+                    {
+                        __.outE(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).inV().asAdmin(),
+                        3,
+                        new String[]{"x", "y", "z"},
+                        new String[]{"link", "knows", "created"}
+                    },
+                    {
+                        __.inE(GValue.of("x", "link")).outV().asAdmin(),
+                        1,
+                        new String[]{"x"},
+                        new String[]{"link"}
+                    },
+                    {
+                        __.inE(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).outV().asAdmin(),
+                        3,
+                        new String[]{"x", "y", "z"},
+                        new String[]{"link", "knows", "created"}
+                    },
+                    {
+                        __.bothE(GValue.of("x", "link")).otherV().asAdmin(),
+                        1,
+                        new String[]{"x"},
+                        new String[]{"link"}
+                    },
+                    {
+                        __.bothE(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).otherV().asAdmin(),
+                        3,
+                        new String[]{"x", "y", "z"},
+                        new String[]{"link", "knows", "created"}
+                    }
+            });
+        }
+
+        @Test
+        public void shouldCopyGValueParameters() {
+            // get reference to the start step before we apply strategies as its going to get replaced and we need
+            // it to verify the before state.
+            final Step step = traversal.asAdmin().getSteps().get(0);
+            GValueManagerVerifier.verify(traversal, AdjacentToIncidentStrategy.instance()).
+                    beforeApplying().
+                        hasVariables(expectedNames).
+                    // TODO:: edgeLabelContractIsValid(step, expectedLabelCount, expectedNames, expectedValues).
+                    afterApplying().
+                        hasVariables(expectedNames).
+                        variablesArePreserved();
+            // TODO:: edgeLabelContractIsValid(traversal.getStartStep(), expectedLabelCount, expectedNames, expectedValues);
+        }
     }
 }
-

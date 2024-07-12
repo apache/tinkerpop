@@ -178,6 +178,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
             new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
+            new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),

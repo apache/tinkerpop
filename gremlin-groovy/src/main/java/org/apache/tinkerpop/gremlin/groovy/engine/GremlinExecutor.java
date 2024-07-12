@@ -312,8 +312,7 @@ public class GremlinExecutor implements AutoCloseable {
                 Object o;
                 if (gremlin instanceof String) {
                     o = gremlinScriptEngineManager.getEngineByName(lang).eval((String) gremlin, bindings);
-                }
-                else if (gremlin instanceof Bytecode) {
+                } else if (gremlin instanceof Bytecode) {
                     final Bytecode bytecode = (Bytecode) gremlin;
                     final Traversal.Admin<?, ?> traversal = eval(
                             bytecode, bindings, BytecodeHelper.getLambdaLanguage(bytecode).orElse("gremlin-groovy"), "g");
@@ -323,7 +322,6 @@ public class GremlinExecutor implements AutoCloseable {
                 else {
                     throw new IllegalArgumentException("Invalid gremlin type.");
                 }
-
 
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some

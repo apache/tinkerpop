@@ -70,6 +70,21 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V()"
 
+  Scenario: g_V_mergeE_inlineXemptyX_optionXonCreate_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().as("v").mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV]).option(Merge.onCreate,null).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+
   Scenario: g_mergeEXemptyX_exists
     Given the empty graph
     And the graph initializer of
@@ -116,6 +131,22 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.E()"
     And the graph should return 2 for count of "g.V()"
 
+  Scenario: g_V_mergeE_inlineXemptyX_two_exist
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And the traversal of
+      """
+      g.V().as("v").mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV]).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.E()"
+    And the graph should return 2 for count of "g.V()"
+
   # null same as empty
   Scenario: g_mergeEXnullX
     Given the empty graph
@@ -126,6 +157,36 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.mergeE(null)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  @GremlinGroovyNotSupported
+  Scenario: g_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  @GremlinGroovyNotSupported
+  Scenario: g_V_limitX1X_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.V().limit(1).mergeE(xx1)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
@@ -548,6 +609,24 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
+  Scenario: g_mergeE_inline_with_outVinV_options_map
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE([(OUT):Merge.outV,(IN):Merge.inV,T.label:"knows"]).option(outV, xx1).option(inV, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
+
   Scenario: g_mergeE_with_outVinV_options_select
     Given the empty graph
     And the graph initializer of
@@ -561,6 +640,24 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.V(vid1).as("x").V(vid2).as("y").mergeE(xx1).option(outV, select("x")).option(inV, select("y"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
+
+  Scenario: g_mergeE_inline_with_outVinV_options_select
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+       addV("person").property("name", "vadas")
+      """
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And the traversal of
+      """
+      g.V(vid1).as("x").V(vid2).as("y").mergeE([(OUT):Merge.outV,(IN):Merge.inV,T.label:"knows"]).option(outV, select("x")).option(inV, select("y"))
       """
     When iterated to list
     Then the result should have a count of 1

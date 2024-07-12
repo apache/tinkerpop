@@ -143,6 +143,11 @@ public class HadoopGraphFeatureIntegrateTest {
                 put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
             }};
         }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
+        }
     }
 
     public static final class WorldInjectorSource implements InjectorSource {

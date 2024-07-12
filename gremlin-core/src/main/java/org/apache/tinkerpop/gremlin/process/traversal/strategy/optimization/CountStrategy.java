@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -90,7 +92,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
         for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
             if (i < size - 1 && doStrategy(curr)) {
-                final IsStep isStep = (IsStep) traversal.getSteps().get(i + 1);
+                final IsStepInterface isStep = (IsStepInterface) traversal.getSteps().get(i + 1);
                 final P isStepPredicate = isStep.getPredicate();
                 Long highRange = null;
                 boolean useNotStep = false, dismissCountIs = false, hasGtOrLtNegative = false;
@@ -147,10 +149,11 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                         }
                     }
                 }
+
                 if (highRange != null) {
                     if (useNotStep || dismissCountIs) {
-                        traversal.asAdmin().removeStep(isStep); // IsStep
-                        traversal.asAdmin().removeStep(curr); // CountStep
+                        TraversalHelper.removeStep(isStep, traversal); // IsStep
+                        TraversalHelper.removeStep(curr, traversal); // CountStep
                         size -= 2;
                         if (!dismissCountIs) {
                             if (parent instanceof ConnectiveStep) {
@@ -173,13 +176,14 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                                         inner.addStep(0, prev);
                                         if (pp instanceof EmptyStep || pp instanceof GraphStep ||
                                                 !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
-                                        traversal.removeStep(prev);
+                                        TraversalHelper.removeStep(prev, traversal);
                                         prev = pp;
                                         size--;
                                     }
                                 } else {
                                     inner = __.identity().asAdmin();
                                 }
+
                                 if (prev != null)
                                     TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
                                 else
@@ -189,7 +193,6 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                             final Step parentStep = traversal.getParent().asStep();
                             if (!(parentStep instanceof EmptyStep)) {
                                 final Traversal.Admin parentTraversal = parentStep.getTraversal();
-                                //parentTraversal.removeStep(parentStep); // this leads to IndexOutOfBoundsExceptions
                                 TraversalHelper.replaceStep(parentStep, new IdentityStep<>(parentTraversal), parentTraversal);
                             }
                         }
@@ -218,8 +221,8 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
 
     private boolean doStrategy(final Step step) {
         if (!(step instanceof CountGlobalStep) ||
-                !(step.getNextStep() instanceof IsStep) ||
-                step.getPreviousStep() instanceof RangeGlobalStep) // if a RangeStep was provided, assume that the user knows what he's doing
+                !(step.getNextStep() instanceof IsStepInterface) ||
+                step.getPreviousStep() instanceof RangeGlobalStepInterface) // if a RangeStep was provided, assume that the user knows what he's doing
             return false;
 
         final Step parent = step.getTraversal().getParent().asStep();

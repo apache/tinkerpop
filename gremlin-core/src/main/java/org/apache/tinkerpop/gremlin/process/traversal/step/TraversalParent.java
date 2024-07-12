@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -84,6 +85,11 @@ public interface TraversalParent extends PopContaining, AutoCloseable {
         childTraversal.setParent(this);
         childTraversal.getSideEffects().mergeInto(this.asStep().getTraversal().getSideEffects());
         childTraversal.setSideEffects(this.asStep().getTraversal().getSideEffects());
+        final GValueManager childManager = childTraversal.getGValueManager();
+        final GValueManager parentManager = this.asStep().getTraversal().getGValueManager();
+        childManager.mergeInto(parentManager);
+        //childTraversal.getGValueManager().mergeInto(this.asStep().getTraversal().getGValueManager());
+        TraversalHelper.applyTraversalRecursively(t -> t.setGValueManager(this.asStep().getTraversal().getGValueManager()), childTraversal);
         return (Traversal.Admin<S, E>) childTraversal;
     }
 
