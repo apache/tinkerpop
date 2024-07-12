@@ -487,7 +487,7 @@ traversalMethod_fold
     ;
 
 traversalMethod_from
-    : 'from' LPAREN stringArgument RPAREN #traversalMethod_from_String
+    : 'from' LPAREN stringLiteral RPAREN #traversalMethod_from_String
     | 'from' LPAREN structureVertexArgument RPAREN #traversalMethod_from_Vertex
     | 'from' LPAREN nestedTraversal RPAREN #traversalMethod_from_Traversal
     ;
@@ -809,7 +809,7 @@ traversalMethod_times
 
 traversalMethod_to
     : 'to' LPAREN traversalDirection (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_to_Direction_String
-    | 'to' LPAREN stringArgument RPAREN #traversalMethod_to_String
+    | 'to' LPAREN stringLiteral RPAREN #traversalMethod_to_String
     | 'to' LPAREN structureVertexArgument RPAREN #traversalMethod_to_Vertex
     | 'to' LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
     ;

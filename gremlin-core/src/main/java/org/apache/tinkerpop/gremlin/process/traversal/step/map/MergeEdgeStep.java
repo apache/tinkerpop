@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -68,6 +69,10 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
     }
 
     public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+        super(traversal, isStart, merge);
+    }
+
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> merge) {
         super(traversal, isStart, merge);
     }
 

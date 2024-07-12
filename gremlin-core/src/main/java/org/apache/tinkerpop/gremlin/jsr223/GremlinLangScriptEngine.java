@@ -31,7 +31,11 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A {@link GremlinScriptEngine} implementation that evaluates Gremlin scripts using {@code gremlin-language}. As it
@@ -50,6 +54,8 @@ import java.util.Map;
 public class GremlinLangScriptEngine extends AbstractScriptEngine implements GremlinScriptEngine {
     private volatile GremlinScriptEngineFactory factory;
 
+    private final Function<Map<String, Object>, VariableResolver> variableResolverMaker;
+
     /**
      * Creates a new instance using no {@link Customizer}.
      */
@@ -58,6 +64,15 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     public GremlinLangScriptEngine(final Customizer... customizers) {
+        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+
+        // this ScriptEngine really only supports the VariableResolverCustomizer to configure the VariableResolver
+        // and can't configure it more than once. first one wins
+        final Optional<Customizer> opt = listOfCustomizers.stream().filter(c -> c instanceof VariableResolverCustomizer).findFirst();
+        variableResolverMaker = opt.isPresent() ?
+                ((VariableResolverCustomizer) opt.get()).getVariableResolverMaker() :
+                VariableResolver.DirectVariableResolver::new;
+
     }
 
     @Override
@@ -84,7 +99,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
 
         final Map<String, Object> m = context.getBindings(ScriptContext.ENGINE_SCOPE);
         final GremlinAntlrToJava antlr = new GremlinAntlrToJava((GraphTraversalSource) o,
-                new VariableResolver.DefaultVariableResolver(m));
+                variableResolverMaker.apply(m));
 
         try {
             return GremlinQueryParser.parse(script, antlr);

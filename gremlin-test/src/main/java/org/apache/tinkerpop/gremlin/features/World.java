@@ -83,6 +83,15 @@ public interface World {
     }
 
     /**
+     * Determines if the test should use parameters literally or treat them as variables to be applied to the script.
+     * By default, they are treated literally.
+     */
+    public default boolean useParametersLiterally() {
+        return true;
+    }
+
+
+    /**
      * Allows for some flexibility in error message assertion, where the provider can handle assertions themselves.
      * Providers should use standard assertion logic as they would with tests. Note that if this method is called, then
      * the exception has happened and that the only point of concern for assertion is the message. Providers can not use

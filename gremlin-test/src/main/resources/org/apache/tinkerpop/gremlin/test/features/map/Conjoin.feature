@@ -59,7 +59,7 @@ Feature: Step - conjoin()
       | result |
       | josh_lop_marko_peter_ripple_vadas |
 
-  Scenario: g_V_valuesXageX_order_fold_conjoinX_X
+  Scenario: g_V_valuesXageX_order_fold_conjoinXsemicolonX
     Given the modern graph
     And the traversal of
       """
@@ -69,6 +69,18 @@ Feature: Step - conjoin()
     Then the result should be unordered
       | result |
       | 27;29;32;35 |
+
+  Scenario: g_V_valuesXageX_order_fold_conjoinXslashX
+    Given the modern graph
+    And using the parameter xx1 defined as "/"
+    And the traversal of
+      """
+      g.V().values("age").order().fold().conjoin(xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | 27/29/32/35 |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_conjoinXMARKOX

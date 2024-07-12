@@ -32,6 +32,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
 import org.apache.tinkerpop.gremlin.language.translator.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -62,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -92,7 +94,7 @@ public final class StepDefinition {
 
     private World world;
     private GraphTraversalSource g;
-    private final Map<String, String> stringParameters = new HashMap<>();
+    private final Map<String, Object> stringParameters = new HashMap<>();
     private Traversal traversal;
     private Object result;
     private Throwable error;
@@ -182,13 +184,13 @@ public final class StepDefinition {
             }
         }));
 
-        add(Pair.with(Pattern.compile("l\\[\\]"), s -> Collections.emptyList()));
+        add(Pair.with(Pattern.compile("l\\[\\]"), s -> new ArrayList<>()));
         add(Pair.with(Pattern.compile("l\\[(.*)\\]"), s -> {
             final String[] items = s.split(",");
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
         }));
 
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> Collections.emptySet()));
+        add(Pair.with(Pattern.compile("s\\[\\]"), s -> new HashSet<>()));
         add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
             final String[] items = s.split(",");
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
@@ -234,7 +236,7 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> getEdge(g, s)));
 
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), T::valueOf));
-        add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
+        add(Pair.with(Pattern.compile("D\\[(.*)\\]"), StepDefinition::getDirection));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
         add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
@@ -285,19 +287,26 @@ public final class StepDefinition {
 
     @Given("using the parameter {word} defined as {string}")
     public void usingTheParameterXDefinedAsX(final String key, final String value) {
-        stringParameters.put(key, convertToString(value));
-    }
-
-    @Given("using the parameter {word} of P.{word}\\({string})")
-    public void usingTheParameterXOfPX(final String key, final String pval, final String string) {
-        stringParameters.put(key, String.format("P.%s(%s)", pval, convertToString(string)));
+        // when parameters are used literally, they are converted to string representations that can be recognized by
+        // the grammar and parsed inline. when they are used as variables, they are converted to objects that can be
+        // applied to the script as variables.
+        if (world.useParametersLiterally())
+            stringParameters.put(key, convertToString(value));
+        else
+            stringParameters.put(key, convertToObject(value));
     }
 
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
         try {
-            final String gremlin = tryUpdateDataFilePath(docString);
-            traversal = parseGremlin(applyParameters(gremlin));
+            final String rawGremlin = tryUpdateDataFilePath(docString);
+
+            // when parameters are used literally, they are converted to string representations that can be recognized by
+            // the grammar and parsed inline. when they are used as variables, they are converted to objects that can be
+            // applied to the script as variables.
+            final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
+
+            traversal = parseGremlin(gremlin);
         } catch (Exception ex) {
             ex.printStackTrace();
             error = ex;
@@ -375,10 +384,11 @@ public final class StepDefinition {
     }
 
     @Then("the graph should return {int} for count of {string}")
-    public void theGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
+    public void theGraphShouldReturnForCountOf(final Integer count, final String rawGremlin) {
         assertThatNoErrorWasThrown();
 
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
+        final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
+        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(gremlin)).count().next());
     }
 
     @Then("the result should be empty")
@@ -450,7 +460,14 @@ public final class StepDefinition {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(normalizedGremlin));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.QueryContext ctx = parser.query();
-        return (Traversal) new GremlinAntlrToJava(g).visitQuery(ctx);
+
+        // when parameters are used literally, they are converted to string representations that can be recognized by
+        // the grammar and parsed inline. when they are used as variables, they are converted to objects that can be
+        // applied to the script as variables.
+        if (world.useParametersLiterally())
+            return (Traversal) new GremlinAntlrToJava(g).visitQuery(ctx);
+        else
+            return (Traversal) new GremlinAntlrToJava(g, new VariableResolver.DefaultVariableResolver(this.stringParameters)).visitQuery(ctx);
     }
 
     private List<Object> translateResultsToActual() {
@@ -574,7 +591,7 @@ public final class StepDefinition {
         final List<String> paramNames = new ArrayList<>(stringParameters.keySet());
         paramNames.sort((a,b) -> b.length() - a.length());
         for (String k : paramNames) {
-            replaced = replaced.replace(k, stringParameters.get(k));
+            replaced = replaced.replace(k, stringParameters.get(k).toString());
         }
         return replaced;
     }
@@ -585,6 +602,12 @@ public final class StepDefinition {
         final String relPath = matcher.group(1);
         final String absPath = world.changePathToDataFile(relPath);
         return docString.replace(relPath, escapeJava(absPath));
+    }
+
+    private static Direction getDirection(final String direction) {
+        if (direction.equals("from")) return Direction.OUT;
+        if (direction.equals("to")) return Direction.IN;
+        return Direction.valueOf(direction);
     }
 
     /**
