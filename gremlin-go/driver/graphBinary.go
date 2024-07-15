@@ -1009,7 +1009,7 @@ func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
 	for j := uint32(0); j < sz; j++ {
 		keyDataType := readDataType(data, i)
 		if keyDataType != stringType {
-			return nil, newError(err0703ReadMapNonStringKeyError)
+			return nil, newError(err0703ReadMapNonStringKeyError, keyDataType)
 		}
 
 		// Skip nullable, key must be present

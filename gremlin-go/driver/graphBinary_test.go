@@ -320,7 +320,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			buff := []byte{0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01}
 			m, err := readMapUnqualified(&buff, &i)
 			assert.Nil(t, m)
-			assert.Equal(t, newError(err0703ReadMapNonStringKeyError), err)
+			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
 }
