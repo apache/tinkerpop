@@ -33,8 +33,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
-* Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
-* Added `Set` syntax in `gremlin-language`.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
@@ -42,18 +40,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Switched to HTTP protocol in `gremlin-python` and replaced GraphSONV2, GraphSONV2 & GraphBinaryV1 with GraphBinaryV4
+* Added support for chunked transfer in `gremlin-python`
 * Added TypeScript & ECMAScript module support.
-* Improved graph structures type definitions in TypeScript.
-* Removed usage of `Bytecode` for Gremlin Server and Java GLV, script engines and `GremlinExecutor` will not be able to handle `Bytecode`.
-* `Bytecode` - based authorization removed.
-* Added `GremlinLang` which allows to generate gremlin-lang compatible string based on Traversal.
-* `Bindings` replaced with 'Parameter`, it's thread-safe construct which can be used to pass parameters from GLV to server.
-* Feature tests will be performed not only for `GremlinGroovyScriptEngine`, but also for `GremlinLangScriptEngine`.
-* Old translator's removed, new Grammar-based one's will be used.
-* Serialization support removed for `Bindings` and `Bytecode`.
-* `EmbeddedRemoteConnection` will use `Gremlinlang`, not `JavaTranslator`.
-* Java `Client` will no longer support submitting traversals. `DriverRemoteConnection` should be used instead.
-* Fixed `GremlinLangScriptEngine` handling for some strategies.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -68,10 +57,6 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Open `NoOpBarrierStep` for extensibility (removed `final` keyword)
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
 * Allow specifying a customized Spark app name
-* CoinStep has a getter method for its probability field
-* Fixed so that TrimGlobalStep and TrimLocalStep have the same character control handling as Ltrim and Rtrim
-* Fix a bug in MaxLocalStep, MinLocalStep, MeanLocalStep and SumLocalStep that it throws NoSuchElementException when encounters an empty iterator as input.
-* Fix cases where Map keys of incomparable types could panic in `gremlin-go`.
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)

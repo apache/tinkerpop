@@ -14,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import uuid
 import queue
 from concurrent.futures import Future
 
@@ -81,10 +80,9 @@ class Connection:
 
     def _receive(self):
         try:
-            while True:
-                data = self._transport.read()
-                status_code = self._protocol.data_received(data, self._result_set)
-                if status_code != 206:
-                    break
+            self._transport.read(self.stream_chunk)
         finally:
             self._pool.put_nowait(self)
+
+    def stream_chunk(self, chunk_data, read_completed=None, http_req_resp=None):
+        self._protocol.data_received(chunk_data, self._result_set, read_completed, http_req_resp)
