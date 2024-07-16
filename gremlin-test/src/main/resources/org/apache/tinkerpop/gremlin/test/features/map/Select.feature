@@ -901,7 +901,7 @@ Feature: Step - select()
       | m[{"a":["a1","b1","a1"]}] |
       | m[{"a":["a2","b2","a2"]}] |
       | m[{"a":["a3","b3","a3"]}] |
-@TestTag
+
   @StepClassIntegrated
   Scenario: g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
     Given the modern graph
