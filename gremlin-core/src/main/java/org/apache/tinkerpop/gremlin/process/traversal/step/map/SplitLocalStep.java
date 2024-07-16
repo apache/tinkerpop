@@ -56,6 +56,10 @@ public final class SplitLocalStep<S, E> extends StringLocalStep<S, E> implements
     @Override
     public String getStepName() { return "split(local)"; }
 
+    public String getSeparator() {
+        return this.separator;
+    }
+
     @Override
     public int hashCode() {
         int result = super.hashCode();

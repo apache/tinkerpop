@@ -66,6 +66,10 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
         }
     }
 
+    public String getDelimiter() {
+        return this.delimiter;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() { return Collections.singleton(TraverserRequirement.OBJECT); }
 
