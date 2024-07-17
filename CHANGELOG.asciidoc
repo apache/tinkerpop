@@ -63,6 +63,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Fixed so that `TrimGlobalStep` and `TrimLocalStep` have the same character control handling as `Ltrim` and `Rtrim`
 * Fix a bug in `MaxLocalStep`, `MinLocalStep`, `MeanLocalStep` and `SumLocalStep` that it throws `NoSuchElementException` when encounters an empty iterator as input.
 * Fix cases where Map keys of incomparable types could panic in `gremlin-go`.
+* Fixed an issue where missing necessary parameters for logging, resulting in '%!x(MISSING)' output in `gremlin-go`.
 * Added getter method to `ConcatStep`, `ConjoinStep`, `SplitGlobalStep` and `SplitLocalStep` for their private fields.
 
 [[release-3-7-2]]
