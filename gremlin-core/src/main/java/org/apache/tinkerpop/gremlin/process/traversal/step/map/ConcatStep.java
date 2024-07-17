@@ -120,6 +120,14 @@ public final class ConcatStep<S> extends ScalarMapStep<S, String> implements Tra
         return this.isNullString? null : sb.toString();
     }
 
+    public List<String> getConcatStrings() {
+        return this.concatStrings;
+    }
+
+    public String getStringArgsResult() {
+        return this.stringArgsResult;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);

@@ -60,6 +60,10 @@ public final class SplitGlobalStep<S, E> extends ScalarMapStep<S, E> implements 
         return null == item? null : (E) Arrays.asList(StringUtils.splitByWholeSeparator((String) item, this.separator));
     }
 
+    public String getSeparator() {
+        return this.separator;
+    }
+
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
