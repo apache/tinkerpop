@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BULKING;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
@@ -102,6 +103,8 @@ public final class RequestOptions {
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
             if (options.containsKey(ARGS_LANGUAGE))
                 builder.language((String) options.get(ARGS_LANGUAGE));
+            if (options.containsKey(ARGS_BULKING))
+                builder.withBulking((boolean) options.get(ARGS_BULKING));
         }
 
         final Map<String, Object> parameters = gremlinLang.getParameters();
@@ -157,6 +160,11 @@ public final class RequestOptions {
             return this;
         }
 
+        /**
+         * Enable or disable bulking on server.
+         * In some cases, bulking can significantly improve performance. It is better to enable when
+         * the server response may contain duplicates, in other cases a small overhead will be added.
+         */
         public Builder withBulking(final boolean bulking) {
             this.bulking = bulking;
             return this;

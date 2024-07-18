@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.AbstractRemoteTraversal;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -111,7 +112,11 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            return (RemoteTraverser<E>) inner.next().getObject();
+            final Object next = inner.next().getObject();
+
+            return next instanceof RemoteTraverser
+                    ? (RemoteTraverser<E>) next
+                    : new DefaultRemoteTraverser<>((E) next, 1);
         }
     }
 

@@ -130,6 +130,20 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             cluster.close();
         }
     }
+    @Test
+    public void shouldAllowBulkingDisabling() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final List result = g.with("bulking", false).inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, result.size());
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
 
     @Test
     public void shouldSubmitGremlinWithCollectionAsArgument() {
