@@ -61,7 +61,7 @@ setup(
               'gremlin_python.driver.aiohttp', 'gremlin_python.process',
               'gremlin_python.structure', 'gremlin_python.structure.io'],
     license='Apache 2',
-    url='http://tinkerpop.apache.org',
+    url='https://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
     long_description=codecs.open("README.rst", "r", "UTF-8").read(),
     long_description_content_type='text/x-rst',
