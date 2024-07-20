@@ -67,7 +67,7 @@ services:
       bash -c "apt-get update && apt-get -y install libkrb5-dev krb5-user
       && echo 'password' | kinit stephen
       && klist
-      && pip install wheel radish-bdd PyHamcrest aenum isodate kerberos six
+      && pip install wheel radish-bdd PyHamcrest aenum isodate kerberos
       && python3 ./setup.py build
       && python3 ./setup.py test
       && python3 ./setup.py install
