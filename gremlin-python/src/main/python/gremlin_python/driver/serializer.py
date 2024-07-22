@@ -131,7 +131,6 @@ class GraphBinarySerializersV4(object):
         results = []
         readable = True
         while buffer.readable():  # find method or way to access readable bytes without using buffer.getvalue()
-            # print(buffer.tell())
             if buffer.tell() == len(buffer.getvalue()):
                 readable = False
                 break
