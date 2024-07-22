@@ -43,12 +43,6 @@ class RemoteConnection(object, metaclass=abc.ABCMeta):
     def is_closed(self):
         raise Exception('is_closed() must be implemented')
 
-    def is_session_bound(self):
-        return False
-
-    def create_session(self):
-        raise Exception('createSession() must be implemented');
-
     def commit(self):
         raise Exception('commit() must be implemented')
 

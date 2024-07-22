@@ -27,11 +27,11 @@ from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-gremlin_server_url_http = 'http://localhost:{}'
-test_no_auth_http_url = gremlin_server_url_http.format(45940)
+gremlin_server_url = 'http://localhost:{}'
+test_no_auth_url = gremlin_server_url.format(45940)
 
 
-def test_conns_in_threads(remote_connection_http):
+def test_conns_in_threads(remote_connection):
     q = queue.Queue()
     child = Thread(target=_executor, args=(q, None))
     child2 = Thread(target=_executor, args=(q, None))
@@ -44,10 +44,10 @@ def test_conns_in_threads(remote_connection_http):
     child2.join()
 
 
-def test_conn_in_threads(remote_connection_http):
+def test_conn_in_threads(remote_connection):
     q = queue.Queue()
-    child = Thread(target=_executor, args=(q, remote_connection_http))
-    child2 = Thread(target=_executor, args=(q, remote_connection_http))
+    child = Thread(target=_executor, args=(q, remote_connection))
+    child2 = Thread(target=_executor, args=(q, remote_connection))
     child.start()
     child2.start()
     for x in range(2):
@@ -62,7 +62,7 @@ def _executor(q, conn):
     if not conn:
         # This isn't a fixture so close manually
         close = True
-        conn = DriverRemoteConnection(test_no_auth_http_url, 'gmodern', pool_size=4)
+        conn = DriverRemoteConnection(test_no_auth_url, 'gmodern', pool_size=4)
     try:
         g = traversal().with_(conn)
         future = g.V().promise()
@@ -79,7 +79,7 @@ def _executor(q, conn):
 
 def handle_request():
     try:
-        remote_connection = DriverRemoteConnection(test_no_auth_http_url, "gmodern")
+        remote_connection = DriverRemoteConnection(test_no_auth_url, "gmodern")
         g = traversal().with_(remote_connection)
         g.V().limit(1).toList()
         remote_connection.close()
