@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a bug in GremlinServer not properly propagating arguments when authentication is enabled.
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
 * Raised handshake exceptions for Java driver for `NoHostAvailableException` situations.
+* The default logging level for Gremlin Console in Windows is set to the same WARN level as for Linux.
+* Add command line option `-l` to change logging level for Gremlin Console in Windows.
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
