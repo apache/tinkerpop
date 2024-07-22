@@ -43,8 +43,7 @@ class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 message_serializer=None, username="", password="",
-                 kerberized_service="", headers=None, session=None,
+                 message_serializer=None, username="", password="", headers=None,
                  enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
 
@@ -56,7 +55,7 @@ class Client:
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
-        if not self._use_http and "max_content_length" not in transport_kwargs:
+        if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if message_serializer is None:
             message_serializer = serializer.GraphBinarySerializersV4()
@@ -64,42 +63,28 @@ class Client:
         self._message_serializer = message_serializer
         self._username = username
         self._password = password
-        self._session = session
-        self._session_enabled = (session is not None and session != "")
+
         if transport_factory is None:
             try:
-                from gremlin_python.driver.aiohttp.transport import (
-                    AiohttpTransport, AiohttpHTTPTransport)
+                from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
             except ImportError:
                 raise Exception("Please install AIOHTTP or pass "
                                 "custom transport factory")
             else:
                 def transport_factory():
-                    if self._use_http:
-                        return AiohttpHTTPTransport(**transport_kwargs)
-                    else:
-                        return AiohttpTransport(**transport_kwargs)
+                    if self._protocol_factory is None:
+                        self._protocol_factory = protocol_factory
+                    return AiohttpHTTPTransport(**transport_kwargs)
         self._transport_factory = transport_factory
+
         if protocol_factory is None:
             def protocol_factory():
-                if self._use_http:
-                    return protocol.GremlinServerHTTPProtocol(
-                        self._message_serializer,
-                        username=self._username,
-                        password=self._password)
-                else:
-                    return protocol.GremlinServerWSProtocol(
-                        self._message_serializer,
-                        username=self._username,
-                        password=self._password,
-                        kerberized_service=kerberized_service,
-                        max_content_length=transport_kwargs["max_content_length"])
+                return protocol.GremlinServerHTTPProtocol(
+                    self._message_serializer,
+                    username=self._username,
+                    password=self._password)
         self._protocol_factory = protocol_factory
-        if self._session_enabled:
-            if pool_size is None:
-                pool_size = 1
-            elif pool_size != 1:
-                raise Exception("PoolSize must be 1 on session mode!")
+
         if pool_size is None:
             pool_size = 8
         self._pool_size = pool_size
@@ -139,25 +124,12 @@ class Client:
         if self._closed:
             return
 
-        if self._session_enabled:
-            self._close_session()
         log.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
         self._closed = True
-
-    def _close_session(self):
-        message = request.RequestMessage(
-            processor='session', op='close',
-            args={'session': str(self._session)})
-        conn = self._pool.get(True)
-        try:
-            write_result_set = conn.write(message).result()
-            return write_result_set.all().result()  # wait for _receive() to finish
-        except protocol.GremlinServerError:
-            pass
 
     def _get_connection(self):
         protocol = self._protocol_factory()

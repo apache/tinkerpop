@@ -42,6 +42,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Switched to HTTP protocol in `gremlin-python` and replaced GraphSONV2, GraphSONV2 & GraphBinaryV1 with GraphBinaryV4
+* Added support for chunked transfer in `gremlin-python`
 * Added TypeScript & ECMAScript module support.
 * Improved graph structures type definitions in TypeScript.
 * Removed usage of `Bytecode` for Gremlin Server and Java GLV, script engines and `GremlinExecutor` will not be able to handle `Bytecode`.
