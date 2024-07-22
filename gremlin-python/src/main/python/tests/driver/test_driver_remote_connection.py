@@ -20,7 +20,6 @@ import os
 
 import pytest
 from gremlin_python import statics
-from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
@@ -29,19 +28,16 @@ from gremlin_python.process.traversal import P, Order, T
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy, ReservedKeysVerificationStrategy, SeedStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
 from gremlin_python.structure.io.util import HashableDict
-from gremlin_python.driver.serializer import GraphSONSerializersV2d0
+from gremlin_python.driver.protocol import GremlinServerError
 
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
-
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
 test_no_auth_url = gremlin_server_url.format(45940)
 
 
-# TODO: WS tests to be removed
-@pytest.mark.skip(reason="disabling all WS tests as we move to HTTP")
 class TestDriverRemoteConnection(object):
+
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection)
@@ -66,7 +62,8 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # #
-        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(P.within('a')).toList()
+        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
+            P.within('a')).toList()
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
@@ -77,7 +74,7 @@ class TestDriverRemoteConnection(object):
         assert 'dur' in results[0]
         # #
         results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
-            __.valueMap()).toList()
+            __.value_map()).toList()
         assert 1 == len(results)
         assert 'peter' == results[0]['a']['name'][0]
         assert 35 == results[0]['a']['age'][0]
@@ -91,7 +88,8 @@ class TestDriverRemoteConnection(object):
         assert 'marko' in results
         assert 'vadas' in results
         # #
-        results = g.V().has('person', 'name', 'marko').map(lambda: ("it.get().value('name')", "gremlin-groovy")).toList()
+        results = g.V().has('person', 'name', 'marko').map(
+            lambda: ("it.get().value('name')", "gremlin-groovy")).toList()
         assert 1 == len(results)
         assert 'marko' in results
         # #
@@ -105,14 +103,12 @@ class TestDriverRemoteConnection(object):
         results = g.V().has('person', 'age', Bindings.of('x', P.lt(30))).count().next()
         assert 2 == results
         # #
-        # test dict keys which can only work on GraphBinary and GraphSON3 which include specific serialization
+        # test dict keys
         # types for dict
-        if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
-            results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
-            assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
-        if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
-            results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
-            assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
+        results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+        assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
+        results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
+        assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
         # #
         # test materializeProperties in V - GraphSON will deserialize into None and GraphBinary to []
         results = g.with_("materializeProperties", "tokens").V().to_list()
@@ -129,17 +125,6 @@ class TestDriverRemoteConnection(object):
         for vp in results:
             assert vp.properties is None or len(vp.properties) == 0
 
-    def test_lambda_traversals(self, remote_connection):
-        statics.load_statics(globals())
-        assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
-        g = traversal().with_(remote_connection)
-
-        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-
-        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection)
@@ -151,11 +136,11 @@ class TestDriverRemoteConnection(object):
         assert t.hasNext()
         assert t.hasNext()
         assert 6 == t.next()
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
 
         t = g.V().has('name', P.within('marko', 'peter')).values('name').order()
         assert "marko" == t.next()
@@ -165,11 +150,11 @@ class TestDriverRemoteConnection(object):
         assert t.hasNext()
         assert t.hasNext()
         assert "peter" == t.next()
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
-        assert not(t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
+        assert not (t.hasNext())
 
         try:
             t.next()
@@ -177,13 +162,26 @@ class TestDriverRemoteConnection(object):
         except StopIteration:
             assert True
 
+    def test_lambda_traversals(self, remote_connection):
+        statics.load_statics(globals())
+        assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
+        g = traversal().with_(remote_connection)
+
+        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"),
+                                  lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+
+        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"),
+                                  lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
+
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
-                                             {"vertices": __.hasLabel("person"),
-                                              "edges": __.hasLabel("created")},
-                                              "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"))
+                                             {"vertices": __.has_label("person"),
+                                              "edges": __.has_label("created")},
+                                             "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
@@ -191,14 +189,14 @@ class TestDriverRemoteConnection(object):
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection). \
-            withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
+            withStrategies(SubgraphStrategy(vertices=__.has_label("person"), edges=__.has_label("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection). \
-            withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
+            withStrategies(SubgraphStrategy(edges=__.has_label("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
         assert 1 == g.E().label().dedup().count().next()
@@ -220,63 +218,6 @@ class TestDriverRemoteConnection(object):
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
-        #
-        g = traversal().with_(remote_connection). \
-            withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
-        try:
-            g.addV("person").property("id", "please-don't-use-id").iterate()
-            assert False
-        except GremlinServerError as gse:
-            assert gse.status_code == 500
-        #
-        g = traversal().with_(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
-        try:
-            g.inject(1).sideEffect(lambda: ("Thread.sleep(1000)", "gremlin-groovy")).iterate()
-            assert False
-        except GremlinServerError as gse:
-            assert gse.status_code == 598
-
-    def test_close_sessions(self, remote_transaction_connection):
-        g = traversal().with_(remote_transaction_connection)
-        tx = g.tx()
-        gtx = tx.begin()
-        # session created for new transaction
-        assert 1 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
-        gtx.addV("person").iterate()
-        tx.rollback()
-        # after closing transaction we should remove spawned_session
-        assert 0 == len(remote_transaction_connection._DriverRemoteConnection__spawned_sessions)
-
-    def test_tx_on_graph_without_tx_support(self, remote_connection):
-        g = traversal().withRemote(remote_connection)
-        tx = g.tx()
-        try:
-            # tx is just a session, so no exception here
-            gtx = tx.begin()
-            # read operation is ok for sessioned connection
-            assert 6 == gtx.V().count().next()
-            tx.commit().all().result()
-            assert False
-        except GremlinServerError as ex:
-            assert "500: Graph does not support transactions" == str(ex)
-
-    def test_tx_commit_on_graph_without_tx_support(self, remote_connection):
-        g = traversal().withRemote(remote_connection)
-        tx = g.tx()
-        try:
-            tx.commit()
-            assert False
-        except Exception as ex:
-            assert "Cannot commit a transaction that is not started." == str(ex)
-
-    def test_tx_rollback_on_graph_without_tx_support(self, remote_connection):
-        g = traversal().withRemote(remote_connection)
-        tx = g.tx()
-        try:
-            tx.rollback()
-            assert False
-        except Exception as ex:
-            assert "Cannot rollback a transaction that is not started." == str(ex)
 
     def test_clone(self, remote_connection):
         g = traversal().with_(remote_connection)
@@ -285,6 +226,18 @@ class TestDriverRemoteConnection(object):
         assert 5 == t.clone().limit(5).count().next()
         assert 10 == t.clone().limit(10).count().next()
 
+    def test_receive_error(self, invalid_alias_remote_connection):
+        g = traversal().with_(invalid_alias_remote_connection)
+
+        try:
+            g.V().next()
+            assert False
+        except GremlinServerError as err:
+            assert err.status_code == 400
+            assert 'The traversal source [does_not_exist] for alias [g] is not configured on the server.' \
+                   in err.status_message
+
+    @pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
     def test_authenticated(self, remote_connection_authenticated):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection_authenticated)

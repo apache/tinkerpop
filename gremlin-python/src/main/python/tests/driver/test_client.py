@@ -22,7 +22,6 @@ import threading
 import uuid
 
 import pytest
-from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessageV4
@@ -30,142 +29,157 @@ from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
-from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTTPTransport
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.statics import *
 from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
-test_no_auth_http_url = gremlin_server_url_http.format(45940)
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
+test_no_auth_url = gremlin_server_url.format(45940)
 
 
 def create_basic_request_message(traversal, source='gmodern', type='bytecode'):
     return RequestMessageV4(fields={'g': source, 'gremlinType': type}, gremlin=traversal.bytecode)
 
 
-@pytest.mark.skip(reason="needs additional updates")
-def test_connection(connection_http):
+def test_connection(connection):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
-    results_set = connection_http.write(message).result()
+    results_set = connection.write(message).result()
     future = results_set.all()
     results = future.result()
     assert len(results) == 6
     assert isinstance(results, list)
     assert results_set.done.done()
-    assert 'host' in results_set.status_attributes
 
 
-@pytest.mark.skip(reason="needs additional updates")
-def test_client_message_too_big(client_http):
+def test_client_message_too_big(client):
     try:
-        client_http = Client(test_no_auth_http_url, 'g', max_content_length=4096)
-        client_http.submit("\" \"*8000").all().result()
+        client = Client(test_no_auth_url, 'g', max_content_length=4096)
+        client.submit("\" \"*8000").all().result()
         assert False
     except Exception as ex:
-        assert ex.args[0].startswith("Received error on read: 'Message size") \
-               and ex.args[0].endswith("exceeds limit 4096'")
+        assert ex.args[0].startswith('Response size') \
+               and ex.args[0].endswith('exceeds limit 4096 bytes')
 
         # confirm the client instance is still usable and not closed
-        assert ["test"] == client_http.submit("'test'").all().result()
+        assert ["test"] == client.submit("'test'").all().result()
     finally:
-        client_http.close()
+        client.close()
 
 
-def test_client_script_submission(client_http):
-    assert len(client_http.submit("new int[100]").all().result()) == 100
+def test_client_large_result(client):
+    result_set = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]").all().result()
+    assert len(result_set[0]) == 200000
+    assert len(result_set[1]) == 100000
 
 
-def test_client_script_submission_inject(client_http):
-    assert len(client_http.submit("g.inject(new int[100])").all().result()) == 100
+def test_client_script_submission(client):
+    assert len(client.submit("new int[100]").all().result()) == 100
 
 
-def test_client_simple_eval(client_http):
-    assert client_http.submit('1 + 1').all().result()[0] == 2
+def test_client_script_submission_inject(client):
+    assert len(client.submit("g.inject(new int[100])").all().result()) == 100
 
 
-def test_client_simple_eval_bindings(client_http):
-    assert client_http.submit('x + x', {'x': 2}).all().result()[0] == 4
+def test_client_simple_eval(client):
+    assert client.submit('1 + 1').all().result()[0] == 2
 
 
-def test_client_eval_traversal(client_http):
-    assert len(client_http.submit('g.V()').all().result()) == 6
+def test_client_simple_eval_bindings(client):
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
-@pytest.mark.skip(reason="needs additional updates")
-def test_client_error(client_http):
+def test_client_eval_traversal(client):
+    assert len(client.submit('g.V()').all().result()) == 6
+
+
+def test_client_error(client):
     try:
         # should fire an exception
-        client_http.submit('1/0').all().result()
+        client.submit('1/0').all().result()
         assert False
     except GremlinServerError as ex:
-        assert 'exceptions' in ex.status_attributes
-        assert 'stackTrace' in ex.status_attributes
+        assert ex.status_message.endswith('Division by zero')
+        assert ex.status_exception
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
     # still can submit after failure
-    assert client_http.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
-@pytest.mark.skip(reason="needs additional updates")
-def test_client_connection_pool_after_error(client_http):
+def test_bad_serialization(client):
+    try:
+        # should timeout
+        client.submit('java.awt.Color.RED').all().result()
+        assert False
+    except GremlinServerError as ex:
+        assert ex.status_message
+        assert ex.status_exception
+        assert str(ex) == f"{ex.status_code}: {ex.status_message}"
+
+    # still can submit after failure
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+
+
+def test_client_connection_pool_after_error(client):
     # Overwrite fixture with pool_size=1 client
-    client_http = Client(test_no_auth_http_url, 'gmodern', pool_size=1)
+    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
 
     try:
         # should fire an exception
-        client_http.submit('1/0').all().result()
+        client.submit('1/0').all().result()
         assert False
     except GremlinServerError as gse:
         # expecting the pool size to be 1 again after query returned
-        assert gse.status_code == 597
-        assert client_http.available_pool_size == 1
+        assert gse.status_code == 500
+        assert client.available_pool_size == 1
 
     # still can submit after failure
-    assert client_http.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
-def test_client_no_hang_if_submit_on_closed(client_http):
-    assert client_http.submit('1 + 1').all().result()[0] == 2
-    client_http.close()
+def test_client_no_hang_if_submit_on_closed(client):
+    assert client.submit('1 + 1').all().result()[0] == 2
+    client.close()
     try:
         # should fail since not hang if closed
-        client_http.submit('1 + 1').all().result()
+        client.submit('1 + 1').all().result()
         assert False
     except Exception as ex:
         assert True
 
 
-def test_client_close_all_connection_in_pool(client_http):
-    client_http = Client(test_no_auth_http_url, 'g', pool_size=1)
-    assert client_http.available_pool_size == 1
-    client_http.submit('2+2').all().result()
-    client_http.close()
-    assert client_http.available_pool_size == 0
+def test_client_close_all_connection_in_pool(client):
+    client = Client(test_no_auth_url, 'g', pool_size=1)
+    assert client.available_pool_size == 1
+    client.submit('2+2').all().result()
+    client.close()
+    assert client.available_pool_size == 0
 
 
-def test_client_side_timeout_set_for_aiohttp(client_http):
-    client_http = Client(test_no_auth_http_url, 'gmodern',
-                         transport_factory=lambda: AiohttpHTTPTransport(read_timeout=1, write_timeout=1))
+def test_client_side_timeout_set_for_aiohttp(client):
+    client = Client(test_no_auth_url, 'gmodern',
+                    transport_factory=lambda: AiohttpHTTPTransport(read_timeout=1, write_timeout=1))
 
     try:
         # should fire an exception
-        client_http.submit('Thread.sleep(2000);1').all().result()
+        client.submit('Thread.sleep(2000);1').all().result()
         assert False
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
         assert str(err) == ""
 
     # still can submit after failure
-    assert client_http.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
 
 
 async def async_connect(enable):
     try:
         transport = AiohttpHTTPTransport(call_from_event_loop=enable)
-        transport.connect(test_no_auth_http_url)
+        transport.connect(test_no_auth_url)
         transport.close()
         return True
     except RuntimeError:
@@ -177,8 +191,8 @@ def test_from_event_loop():
     assert asyncio.get_event_loop().run_until_complete(async_connect(True))
 
 
-def test_client_gremlin(client_http):
-    result_set = client_http.submit('g.V(1)')
+def test_client_gremlin(client):
+    result_set = client.submit('g.V(1)')
     result = result_set.all().result()
     assert 1 == len(result)
     vertex = result[0]
@@ -188,7 +202,7 @@ def test_client_gremlin(client_http):
     assert 'name' == vertex.properties[0].key
     assert 'marko' == vertex.properties[0].value
     ##
-    result_set = client_http.submit('g.with("materializeProperties", "tokens").V(1)')
+    result_set = client.submit('g.with("materializeProperties", "tokens").V(1)')
     result = result_set.all().result()
     assert 1 == len(result)
     vertex = result[0]
@@ -209,58 +223,58 @@ def test_client_gremlin(client_http):
         assert 0 == len(vp.properties)
 
 
-def test_client_bytecode(client_http):
+def test_client_bytecode(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
 
 
-def test_client_bytecode_options(client_http):
+def test_client_bytecode_options(client):
     # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
     # test perspective because there's no way to access the internals of the strategy via bytecode
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.with_strategies(OptionsStrategy(options={"x": "test", "y": True})).V()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
     ##
     t = g.with_("x", "test").with_("y", True).V()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
 
 
-def test_iterate_result_set(client_http):
+def test_iterate_result_set(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 6
 
 
-def test_client_async(client_http):
+def test_client_async(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
-    future = client_http.submit_async(message)
+    future = client.submit_async(message)
     result_set = future.result()
     assert len(result_set.all().result()) == 6
 
 
-def test_connection_share(client_http):
+def test_connection_share(client):
     # Overwrite fixture with pool_size=1 client
-    client_http = Client(test_no_auth_http_url, 'gmodern', pool_size=1)
+    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
     message2 = create_basic_request_message(t)
-    future = client_http.submit_async(message)
-    future2 = client_http.submit_async(message2)
+    future = client.submit_async(message)
+    future2 = client.submit_async(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
@@ -271,14 +285,14 @@ def test_connection_share(client_http):
     assert len(result_set.all().result()) == 6
 
 
-def test_multi_conn_pool(client_http):
+def test_multi_conn_pool(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
     message2 = create_basic_request_message(t)
-    client_http = Client(test_no_auth_http_url, 'g', pool_size=1)
-    future = client_http.submit_async(message)
-    future2 = client_http.submit_async(message2)
+    client = Client(test_no_auth_url, 'g', pool_size=1)
+    future = client.submit_async(message)
+    future2 = client.submit_async(message2)
 
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
@@ -288,7 +302,7 @@ def test_multi_conn_pool(client_http):
     assert len(result_set.all().result()) == 6
 
 
-def test_multi_thread_pool(client_http):
+def test_multi_thread_pool(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     traversals = [g.V(),
                   g.V().count(),
@@ -305,7 +319,7 @@ def test_multi_thread_pool(client_http):
         message = create_basic_request_message(tr)
         with condition:
             condition.wait(5)
-        result_set = client_http.submit(message)
+        result_set = client.submit(message)
         for result in result_set:
             result_list.append(result)
 
@@ -329,44 +343,44 @@ def test_multi_thread_pool(client_http):
     assert results[3][0][0].object == 6
 
 
-def test_client_bytecode_with_short(client_http):
+def test_client_bytecode_with_short(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', short(16)).count()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1
 
 
-def test_client_bytecode_with_long(client_http):
+def test_client_bytecode_with_long(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', long(851401972585122)).count()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1
 
 
-def test_client_bytecode_with_bigint(client_http):
+def test_client_bytecode_with_bigint(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
     message = create_basic_request_message(t)
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1
 
 
-def test_big_result_set(client_http):
+def test_big_result_set(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.inject(1).repeat(__.add_v('person').property('name', __.loops())).times(20000).count()
     message = create_basic_request_message(t, source='g')
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -374,7 +388,7 @@ def test_big_result_set(client_http):
 
     t = g.V().limit(10)
     message = create_basic_request_message(t, source='g')
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -382,7 +396,7 @@ def test_big_result_set(client_http):
 
     t = g.V().limit(100)
     message = create_basic_request_message(t, source='g')
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -390,28 +404,27 @@ def test_big_result_set(client_http):
 
     t = g.V().limit(1000)
     message = create_basic_request_message(t, source='g')
-    result_set = client_http.submit(message)
+    result_set = client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1000
 
-    # TODO: enable after setting up docker for GitHub or cleaning up server-side locally
-    # t = g.V().limit(10000)
-    # message = create_basic_request_message(t, source='g')
-    # result_set = client_http.submit(message)
-    # results = []
-    # for result in result_set:
-    #     results += result
-    # assert len(results) == 10000
+    t = g.V().limit(10000)
+    message = create_basic_request_message(t, source='g')
+    result_set = client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000
 
 
 @pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
-def test_big_result_set_secure(authenticated_client_http):
+def test_big_result_set_secure(authenticated_client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.inject(1).repeat(__.add_v('person').property('name', __.loops())).times(20000).count()
     message = create_basic_request_message(t, source='g')
-    result_set = authenticated_client_http.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -419,7 +432,7 @@ def test_big_result_set_secure(authenticated_client_http):
 
     t = g.V().limit(10)
     message = create_basic_request_message(t, source='g')
-    result_set = authenticated_client_http.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -427,7 +440,7 @@ def test_big_result_set_secure(authenticated_client_http):
 
     t = g.V().limit(100)
     message = create_basic_request_message(t, source='g')
-    result_set = authenticated_client_http.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
@@ -435,27 +448,26 @@ def test_big_result_set_secure(authenticated_client_http):
 
     t = g.V().limit(1000)
     message = create_basic_request_message(t, source='g')
-    result_set = authenticated_client_http.submit(message)
+    result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1000
 
-    # TODO: enable after setting up docker for GitHub or cleaning up server-side locally
-    # t = g.V().limit(10000)
-    # message = create_basic_request_message(t, source='g')
-    # result_set = authenticated_client_http.submit(message)
-    # results = []
-    # for result in result_set:
-    #     results += result
-    # assert len(results) == 10000
+    t = g.V().limit(10000)
+    message = create_basic_request_message(t, source='g')
+    result_set = authenticated_client.submit(message)
+    results = []
+    for result in result_set:
+        results += result
+    assert len(results) == 10000
 
 
 async def asyncio_func():
     return 1
 
 
-def test_asyncio(client_http):
+def test_asyncio(client):
     try:
         asyncio.get_event_loop().run_until_complete(asyncio_func())
     except RuntimeError:
@@ -464,48 +476,48 @@ def test_asyncio(client_http):
 
 # TODO: tests pass because requestID is now generated on HTTP server and this option gets ignored, tests to be removed
 #  or updated depending on if we still want to use requestID or not
-def test_client_custom_invalid_request_id_graphson_script(client_http):
-    client = Client(test_no_auth_http_url, 'gmodern')
+def test_client_custom_invalid_request_id_graphson_script(client):
+    client = Client(test_no_auth_url, 'gmodern')
     try:
         client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
     except Exception as ex:
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
-def test_client_custom_invalid_request_id_graphbinary_script(client_http):
-    client_http = Client(test_no_auth_http_url, 'gmodern')
+def test_client_custom_invalid_request_id_graphbinary_script(client):
+    client = Client(test_no_auth_url, 'gmodern')
     try:
-        client_http.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
+        client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
     except Exception as ex:
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
-def test_client_custom_valid_request_id_script_uuid(client_http):
-    assert len(client_http.submit('g.V()', request_options={"requestId": uuid.uuid4()}).all().result()) == 6
+def test_client_custom_valid_request_id_script_uuid(client):
+    assert len(client.submit('g.V()', request_options={"requestId": uuid.uuid4()}).all().result()) == 6
 
 
-def test_client_custom_valid_request_id_script_string(client_http):
-    assert len(client_http.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
+def test_client_custom_valid_request_id_script_string(client):
+    assert len(client.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
 
 
-def test_client_custom_invalid_request_id_graphson_bytecode(client_http):
-    client_http = Client(test_no_auth_http_url, 'gmodern')
+def test_client_custom_invalid_request_id_graphson_bytecode(client):
+    client = Client(test_no_auth_url, 'gmodern')
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     try:
-        client_http.submit(query, request_options={"requestId": "malformed"}).all().result()
+        client.submit(query, request_options={"requestId": "malformed"}).all().result()
     except Exception as ex:
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
-def test_client_custom_invalid_request_id_graphbinary_bytecode(client_http):
-    client_http = Client(test_no_auth_http_url, 'gmodern')
+def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
+    client = Client(test_no_auth_url, 'gmodern')
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     try:
-        client_http.submit(query, request_options={"requestId": "malformed"}).all().result()
+        client.submit(query, request_options={"requestId": "malformed"}).all().result()
     except Exception as ex:
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
-def test_client_custom_valid_request_id_bytecode(client_http):
+def test_client_custom_valid_request_id_bytecode(client):
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    assert len(client_http.submit(query).all().result()) == 6
+    assert len(client.submit(query).all().result()) == 6
