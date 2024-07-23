@@ -19,7 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.graphson.GraphSONAccess;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.Model;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
@@ -40,17 +43,6 @@ import java.util.Arrays;
 @RunWith(Parameterized.class)
 public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTest {
 
-    private static ObjectMapper mapperV2 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV2.instance()).
-            typeInfo(TypeInfo.PARTIAL_TYPES).
-            addCustomModule(GraphSONXModuleV2.build()).
-            version(GraphSONVersion.V2_0).create().createMapper();
-
-    private static ObjectMapper mapperV3 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV3.instance()).
-            addCustomModule(GraphSONXModuleV3.build()).
-            version(GraphSONVersion.V3_0).create().createMapper();
-
     private static ObjectMapper mapperV4 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3.instance()).
             addCustomModule(GraphSONXModuleV3.build()).
@@ -67,8 +59,6 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"v2", mapperV2 },
-                {"v3", mapperV3 },
                 {"v4", mapperV4 },
         });
     }
@@ -87,7 +77,7 @@ public class GraphSONTypedCompatibilityTest extends AbstractTypedCompatibilityTe
     @Override
     protected byte[] readFromResource(final String resource) throws IOException {
         final String testResource = resource + "-" + compatibility + ".json";
-        return IOUtils.toByteArray(getClass().getResourceAsStream(testResource));
+        return IOUtils.toByteArray(GraphSONAccess.class.getResourceAsStream(testResource));
     }
 
     @Override

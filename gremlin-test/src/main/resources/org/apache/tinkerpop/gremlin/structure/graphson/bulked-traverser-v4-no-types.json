@@ -1,0 +1,14 @@
+{
+  "bulk" : 7,
+  "value" : {
+    "id" : 11,
+    "label" : "software",
+    "type" : "vertex",
+    "properties" : {
+      "name" : [ {
+        "id" : 5,
+        "value" : "tinkergraph"
+      } ]
+    }
+  }
+}

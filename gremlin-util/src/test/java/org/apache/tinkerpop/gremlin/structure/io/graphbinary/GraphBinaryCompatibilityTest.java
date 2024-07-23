@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.tinkerpop.gremlin.structure.graphbinary.GraphBinaryAccess;
+import org.apache.tinkerpop.gremlin.structure.graphson.GraphSONAccess;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
@@ -42,8 +44,8 @@ import java.util.Arrays;
 public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest {
 
     private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
-    private static final GraphBinaryWriter writerV1 = new GraphBinaryWriter();
-    private static final GraphBinaryReader readerV1 = new GraphBinaryReader();
+    private static final GraphBinaryWriter writerV4 = new GraphBinaryWriter();
+    private static final GraphBinaryReader readerV4 = new GraphBinaryReader();
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     private static final String testCaseDataPath = root.getPath() + File.separator + "test-case-data" + File.separator
@@ -56,7 +58,7 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"v1", readerV1, writerV1 },
+                {"v4", readerV4, writerV4 },
         });
     }
 
@@ -77,7 +79,7 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     @Override
     protected byte[] readFromResource(final String resource) throws IOException {
         final String testResource = resource + "-" + compatibility + ".gbin";
-        return IOUtils.toByteArray(getClass().getResourceAsStream(testResource));
+        return IOUtils.toByteArray(GraphBinaryAccess.class.getResourceAsStream(testResource));
     }
 
     @Override

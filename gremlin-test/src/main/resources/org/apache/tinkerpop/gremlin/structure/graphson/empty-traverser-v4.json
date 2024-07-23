@@ -1,0 +1,10 @@
+{
+  "@type" : "g:Traverser",
+  "@value" : {
+    "bulk" : {
+      "@type" : "g:Int64",
+      "@value" : 0
+    },
+    "value" : null
+  }
+}

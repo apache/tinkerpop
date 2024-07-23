@@ -1,0 +1,13 @@
+{
+  "@type" : "g:Path",
+  "@value" : {
+    "labels" : {
+      "@type" : "g:List",
+      "@value" : [ ]
+    },
+    "objects" : {
+      "@type" : "g:List",
+      "@value" : [ ]
+    }
+  }
+}
