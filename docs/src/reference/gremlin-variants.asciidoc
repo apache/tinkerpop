@@ -2586,8 +2586,23 @@ results within a collection across different languages. If a `Set` is needed the
 to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Using GraphSON 3.0 or GraphBinary (after 3.5.0) makes it possible to return
-such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of
-key.
+such results. However, it may not be possible to serialize these maps so they can't be re-inserted (or round tripped).
+In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of key.
+* The `float` type in Python is a double precision floating point number which is commonly referred to in other
+languages as a `double`. This means that single precision floating point values will be deserialized into a double, so
+there will be a precision difference.
+* Gremlin supports multiple fixed-width integers such as byte (1-byte), short (2-byte), and long (8-byte). These are
+deserialized into Python's variable size `int` type. These numbers can't be exactly round tripped because the original
+type information is lost during deserialization. During serialization, these numbers will try to be converted into a
+4-byte integer which may throw exceptions if the value is too large or waste space if the value is very small.
+* The Gremlin Char type is deserialized as a string and therefore can't be round tripped as it will it will attempt to
+be serialized as a string.
+* Date and Duration types in Gremlin are deserialized as `datetime.datetime` and `datetime.timedelta` respectively in
+`gremlin-python`. This can lead to errors for large values because they exceed the maximum size allowed for `datetime`
+and `timedelta`.
+* In Gremlin, 1 isn't equal to the boolean true value and 0 isn't equal to the boolean false value, but they are equal
+in Python. This means that in `gremlin-python` if these values are in a `Set`, you will get a different behavior than
+what is intended by Gremlin, since it follows Python's behavior.
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.

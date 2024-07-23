@@ -48,7 +48,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
 
     @Test
     public void shouldReadWriteEdge() throws Exception {
-        final String resourceName = "edge";
+        final String resourceName = "traversal-edge";
 
         final Edge resource = findModelEntryObject(resourceName);
         final byte[] bytes = write(resource, Edge.class, resourceName);
@@ -90,7 +90,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
 
     @Test
     public void shouldReadWritePath() throws Exception {
-        final String resourceName = "path";
+        final String resourceName = "traversal-path";
 
         final Path resource = findModelEntryObject(resourceName);
         final byte[] bytes = write(resource, Path.class, resourceName);
@@ -123,7 +123,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
 
     @Test
     public void shouldReadWriteProperty() throws Exception {
-        final String resourceName = "property";
+        final String resourceName = "edge-property";
 
         final Property resource = findModelEntryObject(resourceName);
         final byte[] bytes = write(resource, Property.class, resourceName);
@@ -139,67 +139,8 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
     }
 
     @Test
-    public void shouldReadWriteStandardRequestMessage() throws Exception {
-        final String resourceName = "standardrequest";
-
-        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-                this.getClass().equals(GraphBinaryCompatibilityTest.class),
-                is(false));
-        assumeThat("RequestMessage was supported starting in GraphSONv4",
-                getCompatibility(),
-                is("v4-no-types"));
-
-        final RequestMessage resource = findModelEntryObject(resourceName);
-        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
-        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
-        assertNotSame(fromStatic, recycled);
-        assertRequestMessage(resource, fromStatic, recycled);
-    }
-
-    @Test
-    public void shouldReadWriteStandardExceptionResult() throws Exception {
-        final String resourceName = "standardexceptionresult";
-
-        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-                this.getClass().equals(GraphBinaryCompatibilityTest.class),
-                is(false));
-        assumeThat("ResponseMessage was supported starting in GraphSONv4",
-                getCompatibility(),
-                is("v4-no-types"));
-
-        final GraphSONUntypedMessageSerializerV4 gsSerializer = new GraphSONUntypedMessageSerializerV4();
-        final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
-        final ResponseMessage resource = read(resourceInBytes.array(), ResponseMessage.class);
-        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
-        final ResponseMessage recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessage.class);
-        assertNotSame(fromStatic, recycled);
-        assertResponseMessage(resource, fromStatic, recycled);
-        resourceInBytes.release();
-    }
-
-    @Test
-    public void shouldReadWriteStandardResult() throws Exception {
-        final String resourceName = "standardresult";
-
-        assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
-                this.getClass().equals(GraphBinaryCompatibilityTest.class),
-                is(false));
-        assumeThat("ResponseMessage was supported starting in GraphSONv4",
-                getCompatibility(),
-                is("v4-no-types"));
-
-        final GraphSONUntypedMessageSerializerV4 gsSerializer = new GraphSONUntypedMessageSerializerV4();
-        final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
-        final ResponseMessage resource = read(resourceInBytes.array(), ResponseMessage.class);
-        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
-        final ResponseMessage recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessage.class);
-        assertNotSame(fromStatic, recycled);
-        assertResponseMessage(resource, fromStatic, recycled);
-    }
-
-    @Test
     public void shouldReadWriteVertex() throws Exception {
-        final String resourceName = "vertex";
+        final String resourceName = "traversal-vertex";
 
         final Vertex resource = findModelEntryObject(resourceName);
         final byte[] bytes = write(resource, Vertex.class, resourceName);
@@ -245,7 +186,7 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
 
     @Test
     public void shouldReadWriteVertexProperty() throws Exception {
-        final String resourceName = "vertexproperty";
+        final String resourceName = "traversal-vertexproperty";
 
         final VertexProperty resource = findModelEntryObject(resourceName);
         final byte[] bytes = write(resource, VertexProperty.class, resourceName);
