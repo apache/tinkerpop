@@ -40,9 +40,20 @@ FOR /r %%j in (*.jar *.JAR) do (
 )
 cd ..
 
+set GREMLIN_LOG_LEVEL=WARN
+
+:: Process options
+
+:parse
+IF "%~1"=="" GOTO endparse
+IF "%~1"=="-l" set GREMLIN_LOG_LEVEL=%~2
+SHIFT
+GOTO parse
+:endparse
+
 :: workaround for https://issues.apache.org/jira/browse/GROOVY-6453
 set JAVA_OPTIONS=-Xms32m -Xmx512m -Djline.terminal=none
 
 :: Launch the application
 
-java %JAVA_OPTIONS% %JAVA_ARGS% -cp "%CONSOLE_JARS%" org.apache.tinkerpop.gremlin.console.Console %*
+java %JAVA_OPTIONS% %JAVA_ARGS% -cp "%CONSOLE_JARS%" "-Dlogback.configurationFile=conf/logback.xml" "-Dgremlin.logback.level=%GREMLIN_LOG_LEVEL%" org.apache.tinkerpop.gremlin.console.Console %*
