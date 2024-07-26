@@ -98,7 +98,7 @@ public class GraphSONMessageSerializerV4Test {
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
-        assertEquals(8, ((List)deserialized.getResult().getData()).size());
+        assertEquals(8, ((List)deserialized.getResult().getListData()).size());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class GraphSONMessageSerializerV4Test {
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
-        assertEquals(0, ((List)deserialized.getResult().getData()).size());
+        assertEquals(0, ((List)deserialized.getResult().getListData()).size());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class GraphSONMessageSerializerV4Test {
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
-        assertEquals(0, ((List)deserialized.getResult().getData()).size());
+        assertEquals(0, ((List)deserialized.getResult().getListData()).size());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class GraphSONMessageSerializerV4Test {
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
-        assertEquals(6, ((List)deserialized.getResult().getData()).size());
+        assertEquals(6, ((List)deserialized.getResult().getListData()).size());
     }
 
     @Test

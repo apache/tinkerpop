@@ -107,7 +107,7 @@ public class SamplePersonSerializerTest {
 
         final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(serialized);
 
-        final SamplePerson actual = (SamplePerson) deserialized.getResult().getData().get(0);
+        final SamplePerson actual = (SamplePerson) deserialized.getResult().getListData().get(0);
         assertThat(actual, reflectionEquals(person));
     }
 

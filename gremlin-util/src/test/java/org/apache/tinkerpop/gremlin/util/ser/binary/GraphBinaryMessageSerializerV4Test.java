@@ -220,6 +220,6 @@ public class GraphBinaryMessageSerializerV4Test {
 
     private static boolean isEmptyData(final ResponseMessageV4 responseMessage) {
         return responseMessage.getResult() == null || responseMessage.getResult().getData() == null ||
-                ((List) responseMessage.getResult().getData()).isEmpty();
+                ((List) responseMessage.getResult().getListData()).isEmpty();
     }
 }
