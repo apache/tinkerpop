@@ -26,6 +26,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -68,7 +69,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         final ResultQueue queue = pending.get();
 
         if ((null == statusCode) || (statusCode == HttpResponseStatus.OK)) {
-            final List<Object> data = response.getResult().getData();
+            final BulkSet<Object> data = response.getResult().getData();
             // unrolls the collection into individual results to be handled by the queue.
             data.forEach(item -> queue.add(new Result(item)));
         } else {

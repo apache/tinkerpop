@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.util.TokensV4;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -191,13 +193,15 @@ public class Context {
                 : TokensV4.MATERIALIZE_PROPERTIES_ALL;
     }
 
-    public void handleDetachment(final List<Object> aggregate) {
+    public void handleDetachment(final BulkSet<Object> aggregate) {
         if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(TokensV4.MATERIALIZE_PROPERTIES_ALL)) {
             final Object firstElement = aggregate.get(0);
 
             if (firstElement instanceof Element) {
-                for (int i = 0; i < aggregate.size(); i++)
-                    aggregate.set(i, ReferenceFactory.detach((Element) aggregate.get(i)));
+                for (Map.Entry<Object, Long> element : aggregate.asBulk().entrySet()) {
+                    aggregate.remove(element);
+                    aggregate.add(ReferenceFactory.detach((Element) element.getKey()), element.getValue());
+                }
             } else if (firstElement instanceof AbstractTraverser) {
                 for (final Object item : aggregate)
                     ((AbstractTraverser) item).detach();

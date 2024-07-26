@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -52,7 +53,7 @@ public class ResponseMessageSerializerV4 {
                     .statusMessage(context.readValue(buffer, String.class, true))
                     .statusAttributes(context.readValue(buffer, Map.class, false))
                     .responseMetaData(context.readValue(buffer, Map.class, false))
-                    .result(context.read(buffer))
+                    .result(context.<BulkSet<Object>>read(buffer))
                     .create();
         } catch (IOException ex) {
             throw new SerializationException(ex);

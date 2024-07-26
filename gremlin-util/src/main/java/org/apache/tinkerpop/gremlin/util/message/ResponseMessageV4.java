@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public final class ResponseMessageV4 {
 
     public final static class Builder {
         private HttpResponseStatus code = null;
-        private List<Object> result = Collections.emptyList();
+        private BulkSet<Object> result = new BulkSet<>();
         private String statusMessage = null;
         private String exception = null;
         private Map<String, Object> attributes = Collections.emptyMap();
@@ -129,6 +130,11 @@ public final class ResponseMessageV4 {
         }
 
         public Builder result(final List<Object> result) {
+            result.stream().forEach(res -> this.result.add(res));
+            return this;
+        }
+
+        public Builder result(final BulkSet<Object> result) {
             this.result = result;
             return this;
         }

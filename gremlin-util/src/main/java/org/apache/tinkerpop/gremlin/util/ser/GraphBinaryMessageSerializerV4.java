@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -232,8 +233,9 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
                         ? responseMessage.getResult().getData()
                         : aggregate;
                 if (data != null) {
-                    for (final Object item : (List) data) {
-                        writer.write(item, buffer);
+                    for (final Map.Entry<Object, Long> item : ((BulkSet<Object>) data).asBulk().entrySet()) {
+                        writer.write(item.getKey(), buffer);
+                        writer.write(item.getValue(), buffer);
                     }
                 }
             }
@@ -263,14 +265,17 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         return readChunk(msg, true);
     }
 
-    private List<Object> readPayload(final Buffer buffer) throws IOException {
-        final List<Object> result = new ArrayList<>();
+    private BulkSet<Object> readPayload(final Buffer buffer) throws IOException {
+        final BulkSet<Object> result = new BulkSet<>();
         while (buffer.readableBytes() != 0) {
             final Object obj = reader.read(buffer);
+
             if (Marker.END_OF_STREAM.equals(obj)) {
                 break;
             }
-            result.add(obj);
+
+            final Long bulk = reader.read(buffer);
+            result.add(obj, bulk);
         }
         return result;
     }
@@ -290,7 +295,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         try {
             // empty input buffer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessageV4.build().result(Collections.emptyList()).create();
+                return ResponseMessageV4.build().result(new BulkSet<>()).create();
             }
 
             if (isFirstChunk) {
@@ -303,7 +308,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
                 }
             }
 
-            final List<Object> result = readPayload(buffer);
+            final BulkSet<Object> result = readPayload(buffer);
 
             // no footer
             if (buffer.readableBytes() == 0) {

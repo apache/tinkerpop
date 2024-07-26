@@ -45,13 +45,13 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
     @Override
     public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) {
         return (responseMessage.getStatus().getCode() == HttpResponseStatus.OK)
-                ? convertStringData(responseMessage.getResult().getData(), false, allocator)
+                ? convertStringData(responseMessage.getResult().getListData(), false, allocator)
                 : convertErrorString(responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
     public ByteBuf writeHeader(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
-        return convertStringData(responseMessage.getResult().getData(), false, allocator);
+        return convertStringData(responseMessage.getResult().getListData(), false, allocator);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
 
     @Override
     public ByteBuf writeFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
-        return convertStringData(responseMessage.getResult().getData(), true, allocator);
+        return convertStringData(responseMessage.getResult().getListData(), true, allocator);
     }
 
     @Override

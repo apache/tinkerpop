@@ -22,6 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -378,7 +379,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             jsonGenerator.writeFieldName(SerTokensV4.TOKEN_RESULT);
-            final List<Object> result = responseMessage.getResult().getData();
+            final List<Object> result = responseMessage.getResult().getListData();
             if (result != null) {
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
             } else {
@@ -476,7 +477,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokensV4.TOKEN_STATUS);
             ResponseMessageV4.Builder response = ResponseMessageV4.build()
                     .code(HttpResponseStatus.valueOf((Integer) status.get(SerTokensV4.TOKEN_CODE)))
-                    .result((List) data.get(SerTokensV4.TOKEN_RESULT));
+                    .result((BulkSet<Object>) data.get(SerTokensV4.TOKEN_RESULT));
 
             if (null != status.get(SerTokensV4.TOKEN_EXCEPTION)) {
                 response.exception(String.valueOf(status.get(SerTokensV4.TOKEN_EXCEPTION)));
