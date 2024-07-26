@@ -48,12 +48,8 @@ install_requires = [
     'nest_asyncio',
     'aiohttp>=3.8.0,<4.0.0',
     'aenum>=1.4.5,<4.0.0',
-    'six>=1.10.0,<2.0.0',
     'isodate>=0.6.0,<1.0.0'
 ]
-
-if sys.version_info < (3, 5):
-    install_requires += ['pyparsing>=2.4.7,<3.0.0']
 
 setup(
     name='gremlinpython',
@@ -62,7 +58,7 @@ setup(
               'gremlin_python.driver.aiohttp', 'gremlin_python.process',
               'gremlin_python.structure', 'gremlin_python.structure.io'],
     license='Apache 2',
-    url='http://tinkerpop.apache.org',
+    url='https://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
     long_description=codecs.open("README.rst", "r", "UTF-8").read(),
     long_description_content_type='text/x-rst',
@@ -74,7 +70,6 @@ setup(
     ],
     tests_require=[
         'pytest>=4.6.4,<7.2.0',
-        'mock>=3.0.5,<5.0.0',
         'radish-bdd==0.13.4',
         'PyHamcrest>=1.9.0,<3.0.0',
         'PyYAML>=5.3'
