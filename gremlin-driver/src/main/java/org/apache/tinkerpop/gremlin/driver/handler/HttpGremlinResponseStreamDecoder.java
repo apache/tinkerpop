@@ -59,7 +59,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
     public HttpGremlinResponseStreamDecoder(final MessageSerializerV4<?> serializer, final int maxContentLength) {
         this.serializer = serializer;
-        this.maxContentLength = maxContentLength;
+        this.maxContentLength = Integer.MAX_VALUE;
     }
 
     @Override
