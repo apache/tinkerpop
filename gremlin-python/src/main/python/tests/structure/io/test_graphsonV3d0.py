@@ -26,7 +26,7 @@ import uuid
 import math
 from decimal import *
 
-from mock import Mock
+from unittest.mock import Mock
 
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
@@ -37,7 +37,7 @@ from gremlin_python.process.strategies import SubgraphStrategy
 from gremlin_python.process.graph_traversal import __
 
 
-class TestGraphSONReader(object):
+class TestGraphSONReader:
     graphson_reader = GraphSONReader()
 
     def test_collections(self):
@@ -57,7 +57,7 @@ class TestGraphSONReader(object):
                                                      "3"]}))
         # return a set as normal
         assert isinstance(x, set)
-        assert x == set([1, 2, "3"])
+        assert x == {1, 2, "3"}
 
         x = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
@@ -261,7 +261,7 @@ class TestGraphSONReader(object):
     def test_custom_mapping(self):
 
         # extended mapping
-        class X(object):
+        class X:
             pass
 
         type_string = "test:Xtype"
@@ -344,7 +344,7 @@ class TestGraphSONReader(object):
         assert c is None
 
 
-class TestGraphSONWriter(object):
+class TestGraphSONWriter:
     graphson_writer = GraphSONWriter()
     graphson_reader = GraphSONReader()
 
@@ -356,7 +356,7 @@ class TestGraphSONWriter(object):
         assert {"@type": "g:Set", "@value": [{"@type": "g:Int32", "@value": 1},
                                              {"@type": "g:Int32", "@value": 2},
                                              {"@type": "g:Int32", "@value": 3}]} == json.loads(
-            self.graphson_writer.write_object(set([1, 2, 3, 3])))
+            self.graphson_writer.write_object({1, 2, 3, 3}))
         assert {"@type": "g:Map",
                 "@value": ['a', {"@type": "g:Int32", "@value": 1}]} == json.loads(
             self.graphson_writer.write_object({'a': 1}))
@@ -484,7 +484,7 @@ class TestGraphSONWriter(object):
 
     def test_custom_mapping(self):
         # extended mapping
-        class X(object):
+        class X:
             pass
 
         serdes = Mock()

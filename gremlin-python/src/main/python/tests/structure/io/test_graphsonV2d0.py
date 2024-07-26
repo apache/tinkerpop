@@ -26,7 +26,7 @@ import uuid
 import math
 from decimal import *
 
-from mock import Mock
+from unittest.mock import Mock
 
 from gremlin_python.statics import *
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Graph, Path
@@ -38,7 +38,7 @@ from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 
 
-class TestGraphSONReader(object):
+class TestGraphSONReader:
     graphson_reader = GraphSONReader()
 
     def test_number_input(self):
@@ -217,7 +217,7 @@ class TestGraphSONReader(object):
     def test_custom_mapping(self):
 
         # extended mapping
-        class X(object):
+        class X:
             pass
 
         type_string = "test:Xtype"
@@ -299,7 +299,7 @@ class TestGraphSONReader(object):
         assert c is None
 
 
-class TestGraphSONWriter(object):
+class TestGraphSONWriter:
     graphson_writer = GraphSONWriter()
     graphson_reader = GraphSONReader()
 
@@ -419,7 +419,7 @@ class TestGraphSONWriter(object):
 
     def test_custom_mapping(self):
         # extended mapping
-        class X(object):
+        class X:
             pass
 
         serdes = Mock()
@@ -490,7 +490,7 @@ class TestGraphSONWriter(object):
         assert expected == output
 
 
-class TestFunctionalGraphSONIO(object):
+class TestFunctionalGraphSONIO:
     """Functional IO tests"""
 
     def test_timestamp(self, remote_connection_graphsonV2):
