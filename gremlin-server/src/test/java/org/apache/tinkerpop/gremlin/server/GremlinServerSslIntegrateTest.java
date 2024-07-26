@@ -177,7 +177,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
                 System.out.println(result.getStatus());
                 if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
                     pass.set(HttpResponseStatus.OK == result.getStatus().getCode() &&
-                            (((int) ((List) result.getResult().getData()).get(0) == 246)));
+                            (((int) ((List) result.getResult().getListData()).get(0) == 246)));
                 }
                 latch.countDown();
             });

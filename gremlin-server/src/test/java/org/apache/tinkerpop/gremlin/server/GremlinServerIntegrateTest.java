@@ -651,7 +651,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // this should return "nothing" - there should be no exception
             final List<ResponseMessageV4> responses = client.submit("g.V().has('name','kadfjaldjfla')");
-            assertTrue(((List) responses.get(0).getResult().getData()).isEmpty());
+            assertTrue(((List) responses.get(0).getResult().getListData()).isEmpty());
         }
     }
 
@@ -663,7 +663,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getListData()).get(0)).intValue());
         }
     }
 
@@ -678,7 +678,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(responses.get(0).getStatus().getMessage(), containsString("A timeout occurred during traversal evaluation"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getListData()).get(0)).intValue());
         }
     }
 
@@ -691,7 +691,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getListData()).get(0)).intValue());
         }
     }
 
@@ -699,7 +699,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldLoadInitScript() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            assertEquals(2, ((Integer) (client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("addItUp(1,1)").get(0).getResult().getListData()).get(0)).intValue());
         }
     }
 

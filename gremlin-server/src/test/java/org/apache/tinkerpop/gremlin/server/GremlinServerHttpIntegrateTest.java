@@ -949,7 +949,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertTrue(response.getEntity().isChunked());
 
             final ResponseMessageV4 responseMessage = serializer.readChunk(toByteBuf(response.getEntity()), true);
-            assertEquals(17, ((List)responseMessage.getResult().getData()).size());
+            assertEquals(17, ((List)responseMessage.getResult().getListData()).size());
 
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(1, footers.length);
@@ -976,7 +976,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertTrue(response.getEntity().isChunked());
 
             final ResponseMessageV4 responseMessage = serializer.readChunk(toByteBuf(response.getEntity()), true);
-            assertEquals(0, ((List)responseMessage.getResult().getData()).size());
+            assertEquals(0, ((List)responseMessage.getResult().getListData()).size());
 
             final Header[] footers = getTrailingHeaders(response);
             assertEquals(1, footers.length);
