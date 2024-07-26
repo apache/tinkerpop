@@ -39,23 +39,6 @@ import java.util.Arrays;
 @RunWith(Parameterized.class)
 public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibilityTest {
 
-    private static final ObjectMapper mapperV1 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV1.instance()).
-            typeInfo(TypeInfo.NO_TYPES).
-            version(GraphSONVersion.V1_0).create().createMapper();
-
-    private static final ObjectMapper mapperV2 = GraphSONMapper.build().
-                    addRegistry(TinkerIoRegistryV2.instance()).
-                    typeInfo(TypeInfo.NO_TYPES).
-                    addCustomModule(GraphSONXModuleV2.build()).
-                    version(GraphSONVersion.V2_0).create().createMapper();
-
-    private static final ObjectMapper mapperV3 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV3.instance()).
-            typeInfo(TypeInfo.NO_TYPES).
-            addCustomModule(GraphSONXModuleV3.build()).
-            version(GraphSONVersion.V3_0).create().createMapper();
-
     private static final ObjectMapper mapperV4 = GraphSONMapper.build().
             addRegistry(TinkerIoRegistryV3.instance()).
             typeInfo(TypeInfo.NO_TYPES).
@@ -73,9 +56,6 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"v1-no-types", mapperV1 },
-                {"v2-no-types", mapperV2 },
-                {"v3-no-types", mapperV3 },
                 {"v4-no-types", mapperV4 },
         });
     }
