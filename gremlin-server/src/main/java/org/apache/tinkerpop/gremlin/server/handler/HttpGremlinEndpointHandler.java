@@ -421,7 +421,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) aggregate.add(itty.next());
+            if (aggregate.uniqueSize() < resultIterationBatchSize && itty.hasNext()) aggregate.add(itty.next());
 
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
@@ -438,7 +438,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // already given up on these requests. This leads to these executors waiting for the client to consume
             // results till the timeout. checking for isActive() should help prevent that.
             if (nettyContext.channel().isActive() && nettyContext.channel().isWritable()) {
-                if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                if (aggregate.uniqueSize() == resultIterationBatchSize || !itty.hasNext()) {
                     ByteBuf chunk = null;
                     try {
                         chunk = makeChunk(context, msg, serializer, aggregate, itty.hasNext());
