@@ -86,6 +86,13 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         public static readonly SingleTypeSerializer<byte> ByteSerializer = new SingleTypeSerializer<byte>(DataType.Byte,
             (value, stream, cancellationToken) => stream.WriteByteAsync(value, cancellationToken),
             (stream, cancellationToken) => stream.ReadByteAsync(cancellationToken));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static readonly SingleTypeSerializer<Marker> MarkerSerializer = new SingleTypeSerializer<Marker>(DataType.Marker,
+                (value, stream, cancellationToken) => stream.WriteByteAsync(value.Value, cancellationToken),
+                async (stream, cancellationToken) => Marker.Of(await stream.ReadByteAsync(cancellationToken)));
     }
     
     /// <summary>

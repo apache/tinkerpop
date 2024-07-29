@@ -84,7 +84,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// A custom type, represented as a blob value.
         /// </summary>
         public static readonly DataType Custom = new DataType(0);
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static readonly DataType Marker = new DataType(0xFD);
+
         /// <summary>
         /// A null value for an unspecified Object value.
         /// </summary>

@@ -23,6 +23,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +90,37 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     await gremlinClient.SubmitWithSingleResultAsync<object>(gremlinScript, bindings);
 
                 Assert.Null(response);
+            }
+        }
+
+        [Fact]
+        public async Task Should()
+        {
+            try
+            {
+                var fakeMessage = new byte[] { 256 - 127, 0, 0, 0, 2, 3, 0, 0, 0, 0, 8, 98, 105, 110, 100, 105, 110, 103, 115, 10, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 8, 108, 97, 110, 103, 117, 97, 103, 101, 3, 0, 0, 0, 0, 14, 103, 114, 101, 109, 108, 105, 110, 45, 103, 114, 111, 111, 118, 121, 0, 0, 0, 13, 103, 46, 86, 40, 41, 46, 99, 111, 117, 110, 116, 40, 41 };
+
+                var url = "http://localhost:8182";
+                var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.graphbinary-v4.0");
+                var request = new HttpRequestMessage(new HttpMethod("POST"), url);
+                request.Content = new ByteArrayContent(fakeMessage);
+                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/vnd.graphbinary-v4.0");
+
+                var httpResponse = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                var results = new List<object>();
+                var logger = new FakeStream(results);
+
+                using (var responseStream = await httpResponse.Content.ReadAsStreamAsync())
+                {
+                    await responseStream.CopyToAsync(logger);
+                }
+
+                Console.WriteLine(results);
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
 

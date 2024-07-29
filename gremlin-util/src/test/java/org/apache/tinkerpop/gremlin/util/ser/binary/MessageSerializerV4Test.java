@@ -21,11 +21,13 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.TokensV4;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -40,6 +42,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -82,6 +86,24 @@ public class MessageSerializerV4Test {
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
         final RequestMessageV4 deserialized = serializer.deserializeBinaryRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
+    }
+
+    @Test
+    public void test() throws SerializationException {
+        final RequestMessageV4 request = RequestMessageV4.build("g.V().count()").create();
+
+        final ByteBuf buffer = new GraphBinaryMessageSerializerV4().serializeRequestAsBinary(request, allocator);
+        byte[] arr = new byte[buffer.readableBytes()];
+        buffer.readBytes(arr);
+
+        StringBuilder sbStr = new StringBuilder();
+        for (int i = 0, il = arr.length; i < il; i++) {
+            if (i > 0)
+                sbStr.append(",");
+            sbStr.append(arr[i]);
+        }
+        final String s = sbStr.toString();
+        System.out.println(s);
     }
 
     @Test

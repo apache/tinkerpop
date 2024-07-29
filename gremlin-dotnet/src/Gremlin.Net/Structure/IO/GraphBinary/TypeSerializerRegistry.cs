@@ -133,6 +133,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {DataType.BulkSet, new BulkSetSerializer<List<object>>()},
                 {DataType.Char, new CharSerializer()},
                 {DataType.Duration, new DurationSerializer()},
+                {DataType.Marker, SingleTypeSerializers.MarkerSerializer},
             };
 
         private readonly Dictionary<string, CustomTypeSerializer> _serializerByCustomTypeName =
