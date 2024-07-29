@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.util.message;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The model for a response message that is sent to the server beginning in 4.0.0. ResponseMessageV4 is designed to be
@@ -103,8 +101,6 @@ public final class ResponseMessageV4 {
         private List<Object> result = Collections.emptyList();
         private String statusMessage = null;
         private String exception = null;
-        private Map<String, Object> attributes = Collections.emptyMap();
-        private Map<String, Object> metaData = Collections.emptyMap();
 
         private Builder() { }
 
@@ -123,23 +119,13 @@ public final class ResponseMessageV4 {
             return this;
         }
 
-        public Builder statusAttributes(final Map<String, Object> attributes) {
-            this.attributes = attributes;
-            return this;
-        }
-
         public Builder result(final List<Object> result) {
             this.result = result;
             return this;
         }
 
-        public Builder responseMetaData(final Map<String, Object> metaData) {
-            this.metaData = metaData;
-            return this;
-        }
-
         public ResponseMessageV4 create() {
-            final ResponseResultV4 responseResult = new ResponseResultV4(result, metaData);
+            final ResponseResultV4 responseResult = new ResponseResultV4(result);
             // skip null values
             if (code == null && statusMessage == null) {
                 return new ResponseMessageV4(null, responseResult);

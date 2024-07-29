@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
 import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.binary.ResponseMessageSerializerV4;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -55,8 +54,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     private GraphBinaryReader reader;
     private GraphBinaryWriter writer;
     private RequestMessageSerializerV4 requestSerializer;
-    private ResponseMessageSerializerV4 responseSerializer;
-    private GraphBinaryMapper mapper;
+    private final GraphBinaryMapper mapper;
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokensV4.MIME_GRAPHBINARY_V4;
@@ -74,7 +72,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         mapper = new GraphBinaryMapper(writer, reader);
 
         requestSerializer = new RequestMessageSerializerV4();
-        responseSerializer = new ResponseMessageSerializerV4();
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry.Builder builder) {
@@ -129,7 +126,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         writer = new GraphBinaryWriter(registry);
 
         requestSerializer = new RequestMessageSerializerV4();
-        responseSerializer = new ResponseMessageSerializerV4();
     }
 
     @Override

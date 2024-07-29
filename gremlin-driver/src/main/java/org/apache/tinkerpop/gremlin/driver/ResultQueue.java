@@ -24,9 +24,7 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -52,8 +50,6 @@ public final class ResultQueue {
 
     private final Queue<Pair<CompletableFuture<List<Result>>,Integer>> waiting = new ConcurrentLinkedQueue<>();
 
-    private Map<String,Object> statusAttributes = null;
-
     public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
         this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
         this.readComplete = readComplete;
@@ -67,14 +63,6 @@ public final class ResultQueue {
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
         tryDrainNextWaiting(false);
-    }
-
-    private <V> V validate(final String aggregateTo, final Class<?> expected) {
-        if (!(expected.isAssignableFrom(aggregatedResult.getClass())))
-            throw new IllegalStateException(String.format("Side-effect \"%s\" contains the type %s that is not acceptable for %s",
-                    aggregatedResult.getClass().getSimpleName(), aggregateTo));
-
-        return (V) aggregatedResult;
     }
 
     public CompletableFuture<List<Result>> await(final int items) {
@@ -105,13 +93,11 @@ public final class ResultQueue {
         resultLinkedBlockingQueue.drainTo(collection);
     }
 
-     public void markComplete(final Map<String, Object> statusAttributes) {
+     public void markComplete() {
         // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
         // added to the ResultSet
         if (aggregatedResult != null)
             add(new Result(aggregatedResult));
-
-        this.statusAttributes = null == statusAttributes ? Collections.emptyMap() : statusAttributes;
 
         this.readComplete.complete(null);
 
@@ -122,10 +108,6 @@ public final class ResultQueue {
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
         this.drainAllWaiting();
-    }
-
-    Map<String,Object> getStatusAttributes() {
-        return statusAttributes;
     }
 
     /**
