@@ -174,7 +174,7 @@ public class GraphBinaryMessageSerializerV4Test {
         // Status
         assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
         assertEquals(footer.getStatus().getMessage(), deserialized.getStatus().getMessage());
-        assertEquals(footer.getStatus().getException(), footer.getStatus().getException());
+        assertEquals(footer.getStatus().getException(), deserialized.getStatus().getException());
         // Result
         List<Integer> combinedData = new ArrayList<>();
         Stream.of(headerData, chunkData1, chunkData2).forEach(combinedData::addAll);
@@ -208,18 +208,16 @@ public class GraphBinaryMessageSerializerV4Test {
         if (expected.getStatus() != null && actual.getStatus() != null) {
             assertEquals(expected.getStatus().getCode(), actual.getStatus().getCode());
             assertEquals(expected.getStatus().getMessage(), actual.getStatus().getMessage());
-            assertEquals(expected.getStatus().getAttributes(), actual.getStatus().getAttributes());
         }
         // Result
         // null == empty List
         if (!isEmptyData(expected) && !isEmptyData(actual)) {
             assertEquals(expected.getResult().getData(), actual.getResult().getData());
         }
-        assertEquals(expected.getResult().getMeta(), actual.getResult().getMeta());
     }
 
     private static boolean isEmptyData(final ResponseMessageV4 responseMessage) {
         return responseMessage.getResult() == null || responseMessage.getResult().getData() == null ||
-                ((List) responseMessage.getResult().getData()).isEmpty();
+                responseMessage.getResult().getData().isEmpty();
     }
 }

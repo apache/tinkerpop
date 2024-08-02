@@ -88,7 +88,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
             final ResultQueue resultQueue = pending.getAndSet(null);
             if (resultQueue != null) {
                 if (null == channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).get()) {
-                    resultQueue.markComplete(response.getStatus().getAttributes());
+                    resultQueue.markComplete();
                 } else {
                     resultQueue.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
                 }

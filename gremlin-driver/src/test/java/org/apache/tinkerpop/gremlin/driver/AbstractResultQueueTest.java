@@ -94,7 +94,7 @@ public abstract class AbstractResultQueueTest {
                 }
             }
 
-            if (markDone) resultQueue.markComplete(Collections.emptyMap());
+            if (markDone) resultQueue.markComplete();
 
         }, "ResultQueueTest-job-submitter");
 
