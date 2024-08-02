@@ -30,20 +30,11 @@ public final class ResponseStatusV4 {
     private final HttpResponseStatus code;
     private final String message;
     private final String exception;
-    private final Map<String, Object> attributes;
-
-    public ResponseStatusV4(final HttpResponseStatus code, final String message, final Map<String, Object> attributes) {
-        this.code = code;
-        this.message = message;
-        this.attributes = attributes;
-        this.exception = null;
-    }
 
     public ResponseStatusV4(final HttpResponseStatus code, final String message, final String exception) {
         this.code = code;
         this.message = message;
         this.exception = exception;
-        this.attributes = Collections.emptyMap();
     }
 
     /**
@@ -65,14 +56,6 @@ public final class ResponseStatusV4 {
      */
     public String getException() {
         return exception;
-    }
-
-    /**
-     * Gets the meta-data related to the response.  If meta-data is returned it is to be considered specific to the
-     * "op" that is executed.  Not all "op" implementations will return meta-data.
-     */
-    public Map<String, Object> getAttributes() {
-        return attributes;
     }
 
     @Override
