@@ -141,6 +141,19 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
+        sb.append("[");
+        for (int i = 0; i < ctx.genericLiteral().size(); i++) {
+            final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
+            visit(genericLiteralContext);
+            if (i < ctx.genericLiteral().size() - 1)
+                sb.append(", ");
+        }
+        sb.append("] as Set");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
         return handleInject(ctx);
     }
