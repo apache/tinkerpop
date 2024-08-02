@@ -119,6 +119,7 @@ public class Model {
         addCoreEntry(Double.NaN, "nan-double");
         addCoreEntry(Double.POSITIVE_INFINITY, "pos-inf-double");
         addCoreEntry(Double.NEGATIVE_INFINITY, "neg-inf-double");
+        addCoreEntry(-0.0, "neg-zero-double");
 
         addCoreEntry(Float.MAX_VALUE, "max-float");
         addCoreEntry(Float.MIN_VALUE, "min-float");
@@ -127,6 +128,7 @@ public class Model {
         addCoreEntry(Float.NaN, "nan-float");
         addCoreEntry(Float.POSITIVE_INFINITY, "pos-inf-float");
         addCoreEntry(Float.NEGATIVE_INFINITY, "neg-inf-float");
+        addCoreEntry(-0.0f, "neg-zero-float");
 
         addCoreEntry(Integer.MAX_VALUE, "max-int");
         addCoreEntry(Integer.MIN_VALUE, "min-int");
@@ -205,6 +207,9 @@ public class Model {
 
         addExtendedEntry(Short.MIN_VALUE, "min-short", "");
         addExtendedEntry(Short.MAX_VALUE, "max-short", "");
+
+        addGraphProcessEntry(Direction.OUT, "out-direction", "");
+        addGraphProcessEntry(T.id, "id-t", "");
     }
 
     public static Model instance() {

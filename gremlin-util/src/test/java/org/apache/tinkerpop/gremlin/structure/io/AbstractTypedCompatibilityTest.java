@@ -289,6 +289,19 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteNegativeZeroDouble() throws Exception {
+        final String resourceName = "neg-zero-double";
+
+        final Double resource = findModelEntryObject(resourceName);
+        final Double fromStatic = read(readFromResource(resourceName), Double.class);
+        final Double recycled = read(write(fromStatic, Double.class, resourceName), Double.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
     public void shouldReadWriteZeroDuration() throws Exception {
         final String resourceName = "zero-duration";
 
@@ -424,6 +437,19 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     @Test
     public void shouldReadWriteNegativeInfinityFloat() throws Exception {
         final String resourceName = "neg-inf-float";
+
+        final Float resource = findModelEntryObject(resourceName);
+        final Float fromStatic = read(readFromResource(resourceName), Float.class);
+        final Float recycled = read(write(fromStatic, Float.class, resourceName), Float.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteNegativeZeroFloat() throws Exception {
+        final String resourceName = "neg-zero-float";
 
         final Float resource = findModelEntryObject(resourceName);
         final Float fromStatic = read(readFromResource(resourceName), Float.class);
@@ -828,4 +854,29 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertVertexProperty(resource, recycled);
         assertVertexProperty(resource, fromStatic);
     }
+
+    @Test
+    public void shouldReadWriteIdT() throws Exception {
+        final String resourceName = "id-t";
+
+        final T resource = findModelEntryObject(resourceName);
+        final T fromStatic = read(readFromResource(resourceName), T.class);
+        final T recycled = read(write(fromStatic, T.class, resourceName), T.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteOutDirection() throws Exception {
+        final String resourceName = "out-direction";
+
+        final Direction resource = findModelEntryObject(resourceName);
+        final Direction fromStatic = read(readFromResource(resourceName), Direction.class);
+        final Direction recycled = read(write(fromStatic, Direction.class, resourceName), Direction.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
 }
