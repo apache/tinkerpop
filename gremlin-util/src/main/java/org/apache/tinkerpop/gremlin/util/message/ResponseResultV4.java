@@ -19,33 +19,25 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Data model for the "result" portion of a {@link ResponseMessageV4}.
  */
 public final class ResponseResultV4 {
     private final List<Object> data;
-    private final Map<String, Object> meta;
 
-    public ResponseResultV4(final List<Object> data, final Map<String, Object> meta) {
+    public ResponseResultV4(final List<Object> data) {
         this.data = data;
-        this.meta = meta;
     }
 
     public List<Object> getData() {
         return data;
     }
 
-    public Map<String, Object> getMeta() {
-        return meta;
-    }
-
     @Override
     public String toString() {
         return "ResponseResult{" +
                 "data=" + data +
-                ", meta=" + meta +
                 '}';
     }
 }
