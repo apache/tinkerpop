@@ -525,7 +525,7 @@ public class GremlinTranslatorTest {
                             "g.with(string0, set0)",
                             "g.With(\"x\", new HashSet<object> { 1, \"x\" })",
                             "g.With(\"x\", gremlingo.NewSimpleSet(1, \"x\"))",
-                            null,
+                            "g.with('x', [1, 'x'] as Set)",
                             "g.with(\"x\", new HashSet<Object>() {{ add(1); add(\"x\"); }})",
                             "g.with_(\"x\", new Set([1, \"x\"]))",
                             "g.with_('x', {1, 'x'})"},

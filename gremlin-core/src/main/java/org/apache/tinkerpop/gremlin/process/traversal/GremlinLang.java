@@ -192,9 +192,8 @@ public class GremlinLang implements Cloneable, Serializable {
             return asString((Map) arg);
         }
 
-        // todo: add set handling here when will be implemented in Grammar
         if (arg instanceof Set) {
-            return asParameter(arg);
+            return asString((Set) arg);
         }
 
         // handle all iterables in similar way
@@ -226,6 +225,20 @@ public class GremlinLang implements Cloneable, Serializable {
         }
 
         return sb.append("]").toString();
+    }
+
+    private String asString(final Set<?> set) {
+        final StringBuilder sb = new StringBuilder().append("{");
+
+        final Iterator itty = asIterator(set);
+
+        while (itty.hasNext()) {
+            sb.append(argAsString(itty.next()));
+            if (itty.hasNext())
+                sb.append(",");
+        }
+
+        return sb.append("}").toString();
     }
 
     // borrowed from Groovy translator
