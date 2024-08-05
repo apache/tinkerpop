@@ -144,6 +144,11 @@ public final class RequestMessageV4 {
             return this;
         }
 
+        public Builder addBulking(final boolean bulking) {
+            this.fields.put(TokensV4.ARGS_BULKING, bulking);
+            return this;
+        }
+
         public Builder addMaterializeProperties(final String materializeProps) {
             Objects.requireNonNull(materializeProps, "materializeProps argument cannot be null.");
             if (!materializeProps.equals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS) && !materializeProps.equals(TokensV4.MATERIALIZE_PROPERTIES_ALL)) {

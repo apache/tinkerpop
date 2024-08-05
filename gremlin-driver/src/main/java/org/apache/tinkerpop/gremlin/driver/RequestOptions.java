@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BULKING;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
 import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
@@ -48,6 +49,7 @@ public final class RequestOptions {
     private final Long timeout;
     private final String language;
     private final String materializeProperties;
+    private final boolean bulking;
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
@@ -56,6 +58,7 @@ public final class RequestOptions {
         this.timeout = builder.timeout;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
+        this.bulking = builder.bulking;
     }
 
     public Optional<String> getG() {
@@ -80,13 +83,15 @@ public final class RequestOptions {
 
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
+    public boolean isBulking() { return bulking; }
+
     public static Builder build() {
         return new Builder();
     }
 
     public static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
         final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
-        final RequestOptions.Builder builder = RequestOptions.build();
+        final RequestOptions.Builder builder = RequestOptions.build().withBulking(true);
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String, Object> options = optionsStrategy.getOptions();
@@ -98,6 +103,8 @@ public final class RequestOptions {
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
             if (options.containsKey(ARGS_LANGUAGE))
                 builder.language((String) options.get(ARGS_LANGUAGE));
+            if (options.containsKey(ARGS_BULKING))
+                builder.withBulking((boolean) options.get(ARGS_BULKING));
         }
 
         final Map<String, Object> parameters = gremlinLang.getParameters();
@@ -114,6 +121,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private String materializeProperties = null;
         private String language = null;
+        private boolean bulking = false;
 
         /**
          * The aliases to set on the request.
@@ -149,6 +157,16 @@ public final class RequestOptions {
          */
         public Builder batchSize(final int batchSize) {
             this.batchSize = batchSize;
+            return this;
+        }
+
+        /**
+         * Enable or disable bulking on server.
+         * In some cases, bulking can significantly improve performance. It is better to enable when
+         * the server response may contain duplicates, in other cases a small overhead will be added.
+         */
+        public Builder withBulking(final boolean bulking) {
+            this.bulking = bulking;
             return this;
         }
 

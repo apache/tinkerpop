@@ -58,6 +58,11 @@ public final class TokensV4 {
     public static final String ARGS_LANGUAGE = "language";
 
     /**
+     * Argument name that allows turning on bulking optimization for driver requests.
+     */
+    public static final String ARGS_BULKING = "bulking";
+
+    /**
      * Argument name that allows the override of the server setting that determines the maximum time to wait for a
      * request to execute on the server.
      */
