@@ -25,7 +25,7 @@ require (
 	github.com/gorilla/websocket v1.5.2
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/text v0.16.0
+	golang.org/x/text v0.17.0
 )
 
 require (
