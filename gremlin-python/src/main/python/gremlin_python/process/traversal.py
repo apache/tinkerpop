@@ -18,25 +18,37 @@
 #
 
 import copy
+import math
+import numbers
+import re
+import threading
 import warnings
+from io import StringIO
+
 from aenum import Enum
+# from gremlin_python.process.strategies import OptionsStrategy
+from gremlin_python.structure.graph import Vertex
+# from gremlin_python.process.gremlin_lang import GremlinLang
+
 from .. import statics
-from ..statics import long
+from ..statics import long, SingleByte, short, bigint, BigDecimal
+from datetime import datetime
+
 
 class Traversal(object):
-    def __init__(self, graph, traversal_strategies, bytecode):
+    def __init__(self, graph, traversal_strategies, gremlin_lang):
         self.graph = graph
         self.traversal_strategies = traversal_strategies
-        self.bytecode = bytecode
+        self.gremlin_lang = gremlin_lang
         self.traversers = None
         self.last_traverser = None
 
     def __repr__(self):
-        return str(self.bytecode)
+        return self.gremlin_lang.get_gremlin()
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.bytecode == other.bytecode
+            return self.gremlin_lang.get_gremlin() == other.gremlin_lang.get_gremlin()
         else:
             return False
 
@@ -48,11 +60,15 @@ class Traversal(object):
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
             self.last_traverser = next(self.traversers)
-        object = self.last_traverser.object
-        self.last_traverser.bulk = self.last_traverser.bulk - 1
-        if self.last_traverser.bulk <= 0:
-            self.last_traverser = None
-        return object
+        # TODO affected by bulking, revisit after bulking is added back
+        # object = self.last_traverser.object
+        # self.last_traverser.bulk = self.last_traverser.bulk - 1
+        # if self.last_traverser.bulk <= 0:
+        #     self.last_traverser = None
+        # return object
+        res = self.last_traverser
+        self.last_traverser = None
+        return res
 
     def toList(self):
         warnings.warn(
@@ -75,10 +91,12 @@ class Traversal(object):
         return set(iter(self))
 
     def iterate(self):
-        self.bytecode.add_step("discard")
+        self.gremlin_lang.add_step("discard")
         while True:
-            try: self.next_traverser()
-            except StopIteration: return self
+            try:
+                self.next_traverser()
+            except StopIteration:
+                return self
 
     def nextTraverser(self):
         warnings.warn(
@@ -87,6 +105,7 @@ class Traversal(object):
             DeprecationWarning)
         return self.next_traverser()
 
+    # TODO: affected by bulking, revisit after bulking is added back
     def next_traverser(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
@@ -104,13 +123,16 @@ class Traversal(object):
             DeprecationWarning)
         return self.has_next()
 
+    # TODO: revisit after bulking is added back
     def has_next(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
-            try: self.last_traverser = next(self.traversers)
-            except StopIteration: return False
-        return not(self.last_traverser is None) and self.last_traverser.bulk > 0
+            try:
+                self.last_traverser = next(self.traversers)
+            except StopIteration:
+                return False
+        return not (self.last_traverser is None)  # and self.last_traverser.bulk > 0
 
     def next(self, amount=None):
         if amount is None:
@@ -120,8 +142,10 @@ class Traversal(object):
             tempList = []
             while count < amount:
                 count = count + 1
-                try: temp = self.__next__()
-                except StopIteration: return tempList
+                try:
+                    temp = self.__next__()
+                except StopIteration:
+                    return tempList
                 tempList.append(temp)
             return tempList
 
@@ -129,6 +153,7 @@ class Traversal(object):
         self.traversal_strategies.apply_async_strategies(self)
         future_traversal = self.remote_results
         future = type(future_traversal)()
+
         def process(f):
             try:
                 traversal = f.result()
@@ -145,6 +170,7 @@ class Traversal(object):
                         future.set_result(result)
                 else:
                     future.set_result(self)
+
         future_traversal.add_done_callback(process)
         return future
 
@@ -183,12 +209,14 @@ statics.add_static('BOTH', Direction.BOTH)
 statics.add_static('from_', Direction.OUT)
 statics.add_static('to', Direction.IN)
 
+# TODO to be removed
 GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
 
 statics.add_static('V1_0', GraphSONVersion.V1_0)
 statics.add_static('V2_0', GraphSONVersion.V2_0)
 statics.add_static('V3_0', GraphSONVersion.V3_0)
 
+# TODO to be removed
 GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
 
 statics.add_static('V1_0', GryoVersion.V1_0)
@@ -231,7 +259,6 @@ Scope = Enum('Scope', ' global_ local')
 statics.add_static('global_', Scope.global_)
 statics.add_static('local', Scope.local)
 
-
 T = Enum('T', ' id id_ key label value')
 
 statics.add_static('id', T.id)
@@ -239,7 +266,6 @@ statics.add_static('label', T.label)
 statics.add_static('id_', T.id_)
 statics.add_static('key', T.key)
 statics.add_static('value', T.value)
-
 
 Operator = Enum('Operator', ' addAll add_all and_ assign div max max_ min min_ minus mult or_ sum_ sumLong sum_long')
 
@@ -316,7 +342,7 @@ class P(object):
             return P("within", list(args[0]))
         else:
             return P("within", list(args))
-        
+
     @staticmethod
     def without(*args):
         if len(args) == 1 and type(args[0]) == list:
@@ -570,16 +596,12 @@ statics.add_static('regex', regex)
 
 statics.add_static('not_regex', not_regex)
 
-
-
-
 '''
 IO
 '''
 
 
 class IO(object):
-
     graphml = "graphml"
 
     graphson = "graphson"
@@ -599,7 +621,6 @@ ConnectedComponent
 
 
 class ConnectedComponent(object):
-
     component = "gremlin.connectedComponentVertexProgram.component"
 
     edges = "~tinkerpop.connectedComponent.edges"
@@ -615,7 +636,6 @@ ShortestPath
 
 
 class ShortestPath(object):
-
     distance = "~tinkerpop.shortestPath.distance"
 
     edges = "~tinkerpop.shortestPath.edges"
@@ -637,7 +657,6 @@ PageRank
 
 
 class PageRank(object):
-
     edges = "~tinkerpop.pageRank.edges"
 
     propertyName = "~tinkerpop.pageRank.propertyName"
@@ -653,7 +672,6 @@ PeerPressure
 
 
 class PeerPressure(object):
-
     edges = "~tinkerpop.peerPressure.edges"
 
     propertyName = "~tinkerpop.peerPressure.propertyName"
@@ -734,6 +752,7 @@ BYTECODE
 '''
 
 
+# TODO to be removed
 class Bytecode(object):
     def __init__(self, bytecode=None):
         self.source_instructions = []
@@ -778,7 +797,8 @@ class Bytecode(object):
     def __convertArgument(self, arg):
         if isinstance(arg, Traversal):
             if arg.graph is not None:
-                raise TypeError("The child traversal of " + str(arg) + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
+                raise TypeError("The child traversal of " + str(
+                    arg) + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
             self.bindings.update(arg.bytecode.bindings)
             return arg.bytecode
         elif isinstance(arg, dict):
@@ -804,7 +824,7 @@ class Bytecode(object):
 
     def __repr__(self):
         return (str(self.source_instructions) if len(self.source_instructions) > 0 else "") + \
-               (str(self.step_instructions) if len(self.step_instructions) > 0 else "")
+            (str(self.step_instructions) if len(self.step_instructions) > 0 else "")
 
     @staticmethod
     def _create_graph_op(name, *values):
@@ -846,6 +866,7 @@ BINDINGS
 '''
 
 
+# TODO to be removed
 class Bindings(object):
 
     @staticmethod
@@ -876,7 +897,6 @@ WITH OPTIONS
 
 
 class WithOptions(object):
-
     tokens = "~tinkerpop.valueMap.tokens"
 
     none = 0
@@ -897,3 +917,365 @@ class WithOptions(object):
 
     map = 1
 
+
+'''
+GREMLIN LANGUAGE
+'''
+
+
+class GremlinLang(object):
+    conn_p = ['and', 'or']
+
+    def __init__(self, gremlin_lang=None):
+        self.empty_array = []
+
+        self.gremlin = []
+        self.parameters = {}
+        self.options_strategies = []
+        self.param_count = AtomicInteger()
+
+        if gremlin_lang is not None:
+            self.gremlin = list(gremlin_lang.gremlin)
+            self.parameters = dict(gremlin_lang.parameters)
+            self.options_strategies = list(gremlin_lang.options_strategies)
+            self.param_count = gremlin_lang.param_count
+
+    def _add_to_gremlin(self, string_name, *args):
+
+        if string_name == 'CardinalityValueTraversal':
+            self.gremlin.append(
+                f'Cardinality.{self._convert_argument(args[0][0])}({self._convert_argument(args[0][1])})')
+            return
+
+        self.gremlin.extend(['.', string_name, '('])
+
+        c = 0
+        while len(args[0]) > c:
+            if c != 0:
+                self.gremlin.append(',')
+            self.gremlin.append(self._arg_as_string(self._convert_argument(args[0][c])))
+            c += 1
+
+        self.gremlin.append(')')
+
+    def _arg_as_string(self, arg):
+
+        if arg is None:
+            return 'null'
+
+        if isinstance(arg, str):
+            return f'{arg!r}'  # use repr() format for canonical string rep
+            # return f'"{arg}"'
+        if isinstance(arg, bool):
+            return 'true' if arg else 'false'
+
+        if isinstance(arg, SingleByte):
+            return f'{arg}B'
+        if isinstance(arg, short):
+            return f'{arg}S'
+        if isinstance(arg, long):
+            return f'{arg}L'
+        if isinstance(arg, bigint):
+            return f'{arg}N'
+        if isinstance(arg, int):
+            return f'{arg}'
+        if isinstance(arg, float):
+            # converting floats into doubles for script since python doesn't distinguish and java defaults to double
+            if math.isnan(arg):
+                return "NaN"
+            elif math.isinf(arg) and arg > 0:
+                return "+Infinity"
+            elif math.isinf(arg) and arg < 0:
+                return "-Infinity"
+            else:
+                return f'{arg}D'
+        if isinstance(arg, BigDecimal):
+            # TODO double check implementation when revisiting types definition
+            return f'{arg.unscaled_value}M'
+
+        if isinstance(arg, datetime):
+            return f'datetime("{arg.isoformat()}")'
+
+        if isinstance(arg, Enum):
+            tmp = str(arg)
+            return tmp[0:-1] if tmp.endswith('_') else tmp
+
+        if isinstance(arg, Vertex):
+            return f'new ReferenceVertex({self._arg_as_string(arg.id)},\'{arg.label}\')'
+
+        if isinstance(arg, P):
+            return self._process_predicate(arg)
+
+        if isinstance(arg, GremlinLang) or isinstance(arg, Traversal):
+            gremlin_lang = arg if isinstance(arg, GremlinLang) else arg.gremlin_lang
+            self.parameters.update(gremlin_lang.parameters)
+            return gremlin_lang.get_gremlin('__')
+
+        if isinstance(arg, Parameter):
+            key = arg.key
+            if key is None:
+                key = f'_{self.param_count.get_and_increment()}'
+
+            if not key.isidentifier():
+                raise Exception(f'invalid parameter name {key}.')
+
+            if key in self.parameters:
+                if self.parameters[key] != arg.value:
+                    raise Exception(f'parameter with name {key} already exists.')
+            else:
+                self.parameters[key] = arg.value
+            return key
+
+        if isinstance(arg, dict):
+            return self._process_dict(arg)
+
+        if isinstance(arg, set):
+            return self._process_set(arg)
+
+        if isinstance(arg, list):
+            return self._process_list(arg)
+
+        if hasattr(arg, '__class__'):
+            try:
+                return arg.__name__
+            except AttributeError:
+                pass
+
+        return self._as_parameter(arg)
+
+    def _as_parameter(self, arg):
+        param_name = f'_{self.param_count.get_and_increment()}'
+        self.parameters[param_name] = arg
+        return param_name
+
+    # Do special processing needed to format predicates that come in
+    # such as "gt(a)" correctly.
+    def _process_predicate(self, p):
+        res = []
+        if p.operator in self.conn_p:
+            res.append(f'{self._process_predicate(p.value)}.{p.operator}({self._process_predicate(p.other)})')
+        else:
+            res.append(f'{self._process_p_value(p)}')
+        return ''.join(res)
+
+    # process the value of the predicates
+    def _process_p_value(self, p):
+        c = 0
+        res = [str(p).split('(')[0] + '(']
+        if isinstance(p.value, list):
+            res.append('[')
+            for v in p.value:
+                if c > 0:
+                    res.append(',')
+                res.append(self._arg_as_string(v))
+                c += 1
+            res.append(']')
+        else:
+            res.append(self._arg_as_string(p.value))
+            if p.other is not None:
+                res.append(f',{self._arg_as_string(p.other)}')
+        res.append(')')
+        return ''.join(res)
+
+    def _process_dict(self, d):
+        c = 0
+        res = ['[']
+        if len(d) == 0:
+            res.append(':')
+        else:
+            for k, v in d.items():
+                wrap = not isinstance(k, str)
+                if c > 0:
+                    res.append(',')
+                res.append(f'({self._arg_as_string(k)})') if wrap else res.append(self._arg_as_string(k))
+                res.append(f':{self._arg_as_string(v)}')
+                c += 1
+        res.append(']')
+        return ''.join(res)
+
+    def _process_set(self, s):
+        c = 0
+        res = ['{']
+        for i in s:
+            if c > 0:
+                res.append(',')
+            res.append(self._arg_as_string(i))
+            c += 1
+        res.append('}')
+        return ''.join(res)
+
+    def _process_list(self, lst):
+        c = 0
+        res = ['[']
+        for i in lst:
+            if c > 0:
+                res.append(',')
+            res.append(self._arg_as_string(i))
+            c += 1
+        res.append(']')
+        return ''.join(res)
+
+    def get_gremlin(self, g='g'):
+        # special handling for CardinalityValueTraversal
+        if len(self.gremlin) != 0 and self.gremlin[0] != '.':
+            return ''.join(self.gremlin)
+
+        return g + ''.join(self.gremlin)
+
+    def get_parameters(self):
+        return self.parameters
+
+    def add_g(self, g):
+        self.parameters['g'] = g
+
+    def reset(self):
+        self.param_count.set(0)
+
+    def add_source(self, source_name, *args):
+
+        if source_name == 'withStrategies' and len(args) != 0:
+            args = self.build_strategy_args(args)
+            if len(args) != 0:
+                self.gremlin.append('.')
+                self.gremlin.append(f'withStrategies({args})')
+            return
+        self._add_to_gremlin(source_name, args)
+
+    def build_strategy_args(self, args):
+        res = []
+        c = 0
+        for arg in args:
+            if c > 0:
+                res.append(',')
+            # special handling for OptionsStrategy
+            from gremlin_python.process.strategies import OptionsStrategy
+            if isinstance(arg, OptionsStrategy):
+                self.options_strategies.append(arg)
+                break
+            if not arg.configuration:
+                res.append(arg.strategy_name)
+            else:
+                res.append(f'new {str(arg)}(')
+                ct = 0
+                for key in arg.configuration:
+                    if ct > 0:
+                        res.append(',')
+                    res.append(f'{key}:')
+                    val = arg.configuration[key]
+                    if isinstance(val, Traversal):
+                        res.append(self._arg_as_string(val.gremlin_lang))
+                    else:
+                        res.append(self._arg_as_string(val))
+                    ct += 1
+                res.append(')')
+            c += 1
+        return ''.join(res)
+
+    def add_step(self, step_name, *args):
+        self._add_to_gremlin(step_name, args)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return ''.join(self.gremlin) == ''.join(self.gremlin) and self.parameters == other.parameters
+        else:
+            return False
+
+    def __copy__(self):
+        gl = GremlinLang()
+        gl.parameters = self.parameters
+        gl.gremlin = self.gremlin
+        return gl
+
+    def __deepcopy__(self, memo=None):
+        if memo is None:
+            memo = {}
+        gl = GremlinLang()
+        gl.parameters = copy.deepcopy(self.parameters, memo)
+        gl.gremlin = copy.deepcopy(self.gremlin, memo)
+        return gl
+
+    def _convert_argument(self, arg):
+        # if arg is None or len(arg) == 0:
+        #     return arg
+        if isinstance(arg, Traversal):
+            if arg.graph is not None:
+                raise TypeError("The child traversal of " + str(
+                    arg) + "was not spawned anonymously - use the __ class rather than a TraversalSource to construct "
+                           "the child traversal.")
+            return arg.gremlin_lang
+        elif isinstance(arg, dict):
+            newDict = {}
+            for key in arg:
+                newDict[self._convert_argument(key)] = self._convert_argument(arg[key])
+            return newDict
+        elif isinstance(arg, list):
+            newList = []
+            for item in arg:
+                newList.append(self._convert_argument(item))
+            return newList
+        elif isinstance(arg, set):
+            newSet = set()
+            for item in arg:
+                newSet.add(self._convert_argument(item))
+            return newSet
+        else:
+            return arg
+
+    def __repr__(self):
+        return (''.join(self.gremlin) if len(self.gremlin) > 0 else "") + \
+            (str(self.parameters) if len(self.parameters) > 0 else "")
+
+    # TODO to be removed or updated once HTTP transaction is implemented
+    # @staticmethod
+    # def _create_graph_op(name, *values):
+    #     bc = Bytecode()
+    #     bc.add_source(name, *values)
+    #     return bc
+    #
+    # @staticmethod
+    # class GraphOp:
+    #     @staticmethod
+    #     def commit():
+    #         return Bytecode._create_graph_op("tx", "commit")
+    #
+    #     @staticmethod
+    #     def rollback():
+    #         return Bytecode._create_graph_op("tx", "rollback")
+
+
+class Parameter:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+    @staticmethod
+    def var(key, value):
+        if key is not None and key.startswith('_'):
+            raise Exception(f'invalid parameter name {key}. Should not start with _.')
+        return Parameter(key, value)
+
+    @staticmethod
+    def value(value):
+        return Parameter(None, value)
+
+
+class AtomicInteger:
+    def __init__(self):
+        self._value = 0
+        self._lock = threading.Lock()
+
+    def get_and_increment(self):
+        with self._lock:
+            value = self._value
+            self._value += 1
+            return value
+
+    def set(self, value):
+        with self._lock:
+            self._value = value
+            return self._value
+
+    @property
+    def value(self):
+        with self._lock:
+            return self._value

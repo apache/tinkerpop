@@ -55,6 +55,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Serialization support removed for `Bindings` and `Bytecode`.
 * `EmbeddedRemoteConnection` will use `Gremlinlang`, not `JavaTranslator`.
 * Java `Client` will no longer support submitting traversals. `DriverRemoteConnection` should be used instead.
+* Removed usage of `Bytecode` from `gremlin-python`.
 * Fixed `GremlinLangScriptEngine` handling for some strategies.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)

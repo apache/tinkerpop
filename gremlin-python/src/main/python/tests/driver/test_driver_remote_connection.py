@@ -17,14 +17,12 @@
 # under the License.
 #
 import os
+from datetime import datetime
 
 import pytest
 from gremlin_python import statics
 from gremlin_python.statics import long
-from gremlin_python.process.traversal import Traverser
-from gremlin_python.process.traversal import TraversalStrategy
-from gremlin_python.process.traversal import Bindings
-from gremlin_python.process.traversal import P, Order, T
+from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, Parameter
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
@@ -38,6 +36,24 @@ test_no_auth_url = gremlin_server_url.format(45940)
 
 class TestDriverRemoteConnection(object):
 
+    def test_extract_request_options(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
+        assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
+                                                                             'evaluationTimeout': 1000}
+        assert 6 == t.to_list()[0]
+
+    def test_extract_request_options_with_params(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        t = g.with_("evaluationTimeout",
+                    1000).with_("batchSize", 100).with_("userAgent",
+                                                        "test").V(Parameter.var('ids', [1, 2, 3])).count()
+        assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
+                                                                             'evaluationTimeout': 1000,
+                                                                             'userAgent': 'test',
+                                                                             'params': {'ids': [1, 2, 3]}}
+        assert 3 == t.to_list()[0]
+
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection)
@@ -47,7 +63,7 @@ class TestDriverRemoteConnection(object):
         assert Vertex(1) == g.V(1).next()
         assert Vertex(1) == g.V(Vertex(1)).next()
         assert 1 == g.V(1).id_().next()
-        assert Traverser(Vertex(1)) == g.V(1).nextTraverser()
+        # assert Traverser(Vertex(1)) == g.V(1).nextTraverser()  # TODO check back after bulking added back
         assert 1 == len(g.V(1).toList())
         assert isinstance(g.V(1).toList(), list)
         results = g.V().repeat(__.out()).times(2).name
@@ -88,20 +104,11 @@ class TestDriverRemoteConnection(object):
         assert 'marko' in results
         assert 'vadas' in results
         # #
-        results = g.V().has('person', 'name', 'marko').map(
-            lambda: ("it.get().value('name')", "gremlin-groovy")).toList()
-        assert 1 == len(results)
-        assert 'marko' in results
-        # #
         # this test just validates that the underscored versions of steps conflicting with Gremlin work
         # properly and can be removed when the old steps are removed - TINKERPOP-2272
         results = g.V().filter_(__.values('age').sum_().and_(
             __.max_().is_(P.gt(0)), __.min_().is_(P.gt(0)))).range_(0, 1).id_().next()
         assert 1 == results
-        # #
-        # test binding in P
-        results = g.V().has('person', 'age', Bindings.of('x', P.lt(30))).count().next()
-        assert 2 == results
         # #
         # test dict keys
         # types for dict
@@ -147,6 +154,7 @@ class TestDriverRemoteConnection(object):
         except StopIteration:
             assert True
 
+    @pytest.mark.skip(reason="to be removed, lambda disabled in gremlin lang")
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
@@ -170,7 +178,6 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
-        assert 4 == g.V().filter_(lambda: ("x -> true", "gremlin-groovy")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection). \
@@ -219,8 +226,8 @@ class TestDriverRemoteConnection(object):
             assert False
         except GremlinServerError as err:
             assert err.status_code == 400
-            assert 'The traversal source [does_not_exist] for alias [g] is not configured on the server.' \
-                   in err.status_message
+            assert ('Could not alias [g] to [does_not_exist] as [does_not_exist] not in the Graph or TraversalSource '
+                    'global bindings') in err.status_message
 
     @pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
     def test_authenticated(self, remote_connection_authenticated):

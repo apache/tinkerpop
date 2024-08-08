@@ -22,3 +22,6 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 RequestMessageV4 = collections.namedtuple(
     'RequestMessageV4', ['fields', 'gremlin'])
+
+TokensV4 = ['batchSize', 'bindings', 'g', 'gremlin', 'language',
+            'evaluationTimeout', 'materializeProperties', 'timeoutMs', 'userAgent']

@@ -28,6 +28,7 @@ from gremlin_python.process.translator import *
 from datetime import datetime
 
 
+# TODO to be removed as bytecode and groovy are replaced by gremlin lang scripts
 class TestTranslator(object):
 
     def test_translations(self):
