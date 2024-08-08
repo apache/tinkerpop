@@ -168,7 +168,12 @@ class Client:
         conn = self._pool.get(True)
         if request_options:
             message.fields.update({token: request_options[token] for token in TokensV4
-                                   if token in request_options})
+                                   if token in request_options and token != 'bindings'})
+            if 'bindings' in request_options:
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['bindings'])
+                else:
+                    message.fields['bindings'] = request_options['bindings']
             if 'params' in request_options:
                 if 'bindings' in message.fields:
                     message.fields['bindings'].update(request_options['params'])

@@ -264,6 +264,8 @@ def test_client_gremlin_lang_request_options_with_binding(client):
     request_opts['bindings'] = {'y': 4}
     result_set = client.submit('g.V(y).values("name")', request_options=request_opts)
     assert result_set.all().result()[0] == 'josh'
+    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5}, request_options=request_opts)
+    assert result_set.all().result()[0] == 'ripple'
 
 
 def test_iterate_result_set(client):
@@ -366,8 +368,9 @@ def test_multi_thread_pool(client):
 def test_client_gremlin_lang_with_short(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.with_('language', 'gremlin-lang').V().has('age', short(16)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
@@ -377,8 +380,9 @@ def test_client_gremlin_lang_with_short(client):
 def test_client_gremlin_lang_with_long(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', long(851401972585122)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
@@ -388,8 +392,9 @@ def test_client_gremlin_lang_with_long(client):
 def test_client_gremlin_lang_with_bigint(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.with_('language', 'gremlin-lang').V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
