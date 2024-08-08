@@ -23,9 +23,7 @@ import warnings
 from gremlin_python.driver import client, serializer
 from gremlin_python.driver.remote_connection import (
     RemoteConnection, RemoteTraversal)
-from gremlin_python.process.strategies import OptionsStrategy
-from gremlin_python.process.traversal import Bytecode
-import uuid
+from gremlin_python.driver.request import TokensV4
 
 log = logging.getLogger("gremlinpython")
 
@@ -74,9 +72,11 @@ class DriverRemoteConnection(RemoteConnection):
 
         self._client.close()
 
-    def submit(self, bytecode):
-        log.debug("submit with bytecode '%s'", str(bytecode))
-        result_set = self._client.submit(bytecode, request_options=self._extract_request_options(bytecode))
+    def submit(self, gremlin_lang):
+        log.debug("submit with gremlin lang script '%s'", gremlin_lang.get_gremlin())
+        gremlin_lang.add_g(self._traversal_source)
+        result_set = self._client.submit(gremlin_lang.get_gremlin(),
+                                         request_options=self.extract_request_options(gremlin_lang))
         results = result_set.all().result()
         return RemoteTraversal(iter(results))
 
@@ -87,10 +87,12 @@ class DriverRemoteConnection(RemoteConnection):
             DeprecationWarning)
         self.submit_async(message, bindings, request_options)
 
-    def submit_async(self, bytecode):
-        log.debug("submit_async with bytecode '%s'", str(bytecode))
+    def submit_async(self, gremlin_lang):
+        log.debug("submit_async with gremlin lang script '%s'", gremlin_lang.get_gremlin())
         future = Future()
-        future_result_set = self._client.submit_async(bytecode, request_options=self._extract_request_options(bytecode))
+        gremlin_lang.add_g(self._traversal_source)
+        future_result_set = self._client.submit_async(gremlin_lang.get_gremlin(),
+                                                      request_options=self.extract_request_options(gremlin_lang))
 
         def cb(f):
             try:
@@ -106,22 +108,25 @@ class DriverRemoteConnection(RemoteConnection):
     def is_closed(self):
         return self._client.is_closed()
 
-    def commit(self):
-        log.info("Submitting commit graph operation.")
-        return self._client.submit(Bytecode.GraphOp.commit())
-
-    def rollback(self):
-        log.info("Submitting rollback graph operation.")
-        return self._client.submit(Bytecode.GraphOp.rollback())
+    # TODO remove or update once HTTP transaction is implemented
+    # def commit(self):
+    #     log.info("Submitting commit graph operation.")
+    #     return self._client.submit(Bytecode.GraphOp.commit())
+    #
+    # def rollback(self):
+    #     log.info("Submitting rollback graph operation.")
+    #     return self._client.submit(Bytecode.GraphOp.rollback())
 
     @staticmethod
-    def _extract_request_options(bytecode):
-        options_strategy = next((x for x in bytecode.source_instructions
-                                 if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
-        request_options = None
-        if options_strategy:
-            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent',
-                            'materializeProperties']
-            request_options = {allowed: options_strategy[1].configuration[allowed] for allowed in allowed_keys
-                               if allowed in options_strategy[1].configuration}
+    def extract_request_options(gremlin_lang):
+        request_options = {}
+        for os in gremlin_lang.options_strategies:
+            request_options.update({token: os.configuration[token] for token in TokensV4
+                                    if token in os.configuration})
+        if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
+            if request_options is None:
+                request_options = gremlin_lang.parameters
+            else:
+                request_options["params"] = gremlin_lang.parameters
+
         return request_options
