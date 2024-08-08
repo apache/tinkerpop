@@ -27,7 +27,7 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessageV4
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
-from gremlin_python.process.traversal import TraversalStrategies
+from gremlin_python.process.traversal import TraversalStrategies, Parameter
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
@@ -40,12 +40,8 @@ gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost
 test_no_auth_url = gremlin_server_url.format(45940)
 
 
-def create_basic_request_message(traversal, source='gmodern', request_opts=None):
-    # gremlin lang extracts options out of the traversal and send it inside the request message fields
-    request_opts = DriverRemoteConnection.extract_request_options(traversal.gremlin_lang)
+def create_basic_request_message(traversal, source='gmodern'):
     msg = RequestMessageV4(fields={'g': source}, gremlin=traversal.gremlin_lang.get_gremlin())
-    if request_opts:
-        msg.fields.update(request_opts)
     return msg
 
 
@@ -100,6 +96,20 @@ def test_client_simple_eval_bindings(client):
 
 def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
+
+
+def test_client_eval_traversal_bindings(client):
+    assert client.submit('g.V(x).values("name")', bindings={'x': 1}).all().result()[0] == 'marko'
+
+
+def test_client_eval_traversal_request_options_bindings(client):
+    assert client.submit('g.V(x).values("name")', request_options={'bindings': {'x': 1}}).all().result()[0] == 'marko'
+
+
+def test_client_eval_traversal_bindings_request_options_bindings(client):
+    # Note that parameters from request_options[bindings] is applied later and will replace bindings if key is the same
+    assert client.submit('g.V(x).values("name")', bindings={'x': 1},
+                         request_options={'bindings': {'x': 2}}).all().result()[0] == 'vadas'
 
 
 def test_client_error(client):
@@ -237,6 +247,23 @@ def test_client_gremlin_lang_options(client):
     message = create_basic_request_message(t)
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
+
+
+def test_client_gremlin_lang_request_options_with_binding(client):
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
+    # Note that bindings for constructed traversals is done via Parameter only
+    t = g.with_('language', 'gremlin-lang').V(Parameter.var('x', [1, 2, 3])).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    message = create_basic_request_message(t)
+    result_set = client.submit(message, request_options=request_opts)
+    assert result_set.all().result()[0] == 3
+    # We can re-use the extracted request options in script submission
+    result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
+    assert result_set.all().result()[0] == 'marko'
+    # For script submission only, we can also add bindings to request options and they will be applied
+    request_opts['bindings'] = {'y': 4}
+    result_set = client.submit('g.V(y).values("name")', request_options=request_opts)
+    assert result_set.all().result()[0] == 'josh'
 
 
 def test_iterate_result_set(client):

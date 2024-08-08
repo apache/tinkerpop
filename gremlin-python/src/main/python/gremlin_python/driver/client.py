@@ -156,7 +156,8 @@ class Client:
         log.debug("message '%s'", str(message))
         fields = {'g': self._traversal_source}
 
-        # TODO: binding is part of request_options, evaluate the need to keep it separate in python
+        # TODO: bindings is now part of request_options, evaluate the need to keep it separate in python.
+        #  Note this bindings parameter only applies to string script submissions
         if isinstance(message, str) and bindings:
             fields['bindings'] = bindings
 
@@ -169,8 +170,9 @@ class Client:
             message.fields.update({token: request_options[token] for token in TokensV4
                                    if token in request_options})
             if 'params' in request_options:
-                if 'bindings' not in message.fields:
-                    message.fields['bindings'] = bindings if bindings else {}
-                message.fields['bindings'].update(request_options['params'])
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['params'])
+                else:
+                    message.fields['bindings'] = request_options['params']
 
         return conn.write(message)
