@@ -124,9 +124,6 @@ class DriverRemoteConnection(RemoteConnection):
             request_options.update({token: os.configuration[token] for token in TokensV4
                                     if token in os.configuration})
         if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
-            if request_options is None:
-                request_options = gremlin_lang.parameters
-            else:
-                request_options["params"] = gremlin_lang.parameters
+            request_options["params"] = gremlin_lang.parameters
 
         return request_options

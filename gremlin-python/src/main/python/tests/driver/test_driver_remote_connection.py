@@ -22,8 +22,7 @@ from datetime import datetime
 import pytest
 from gremlin_python import statics
 from gremlin_python.statics import long
-from gremlin_python.process.traversal import TraversalStrategy
-from gremlin_python.process.traversal import P, Order, T
+from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, Parameter
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
@@ -43,6 +42,17 @@ class TestDriverRemoteConnection(object):
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
                                                                              'evaluationTimeout': 1000}
         assert 6 == t.to_list()[0]
+
+    def test_extract_request_options_with_params(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        t = g.with_("evaluationTimeout",
+                    1000).with_("batchSize", 100).with_("userAgent",
+                                                        "test").V(Parameter.var('ids', [1, 2, 3])).count()
+        assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
+                                                                             'evaluationTimeout': 1000,
+                                                                             'userAgent': 'test',
+                                                                             'params': {'ids': [1, 2, 3]}}
+        assert 3 == t.to_list()[0]
 
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
