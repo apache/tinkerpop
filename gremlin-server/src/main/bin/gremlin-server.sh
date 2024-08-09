@@ -209,7 +209,7 @@ startForeground() {
   fi
 
   if [[ -z "$RUNAS" ]]; then
-    $JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
+    exec $JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
     exit 0
   else
     echo Starting in foreground not supported with RUNAS

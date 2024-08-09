@@ -29,12 +29,4 @@ GREMLIN_SERVER=/opt/gremlin-server/bin/gremlin-server.sh
 IP=$(ip -o -4 addr list eth0 | perl -n -e 'if (m{inet\s([\d\.]+)\/\d+\s}xms) { print $1 }')
 sed -i "s|^host:.*|host: $IP|" $CONF_FILE
 
-handler()
-{
-  kill -s SIGINT "$PID"
-}
-
-exec $GREMLIN_SERVER "$@" &
-PID=$(ps | grep -w $GREMLIN_SERVER | grep -v grep | awk 'NR==1 {print $1}')
-trap 'handler $PID' SIGTERM
-wait "$PID"
+exec $GREMLIN_SERVER "$@"
