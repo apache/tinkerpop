@@ -23,10 +23,11 @@ import uuid
 
 import pytest
 from gremlin_python.driver.client import Client
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessageV4
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
-from gremlin_python.process.traversal import TraversalStrategies
+from gremlin_python.process.traversal import TraversalStrategies, Parameter
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
@@ -39,8 +40,9 @@ gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost
 test_no_auth_url = gremlin_server_url.format(45940)
 
 
-def create_basic_request_message(traversal, source='gmodern', type='bytecode'):
-    return RequestMessageV4(fields={'g': source, 'gremlinType': type}, gremlin=traversal.bytecode)
+def create_basic_request_message(traversal, source='gmodern'):
+    msg = RequestMessageV4(fields={'g': source}, gremlin=traversal.gremlin_lang.get_gremlin())
+    return msg
 
 
 def test_connection(connection):
@@ -94,6 +96,20 @@ def test_client_simple_eval_bindings(client):
 
 def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
+
+
+def test_client_eval_traversal_bindings(client):
+    assert client.submit('g.V(x).values("name")', bindings={'x': 1}).all().result()[0] == 'marko'
+
+
+def test_client_eval_traversal_request_options_bindings(client):
+    assert client.submit('g.V(x).values("name")', request_options={'bindings': {'x': 1}}).all().result()[0] == 'marko'
+
+
+def test_client_eval_traversal_bindings_request_options_bindings(client):
+    # Note that parameters from request_options[bindings] is applied later and will replace bindings if key is the same
+    assert client.submit('g.V(x).values("name")', bindings={'x': 1},
+                         request_options={'bindings': {'x': 2}}).all().result()[0] == 'vadas'
 
 
 def test_client_error(client):
@@ -191,7 +207,7 @@ def test_from_event_loop():
     assert asyncio.get_event_loop().run_until_complete(async_connect(True))
 
 
-def test_client_gremlin(client):
+def test_client_submit(client):
     result_set = client.submit('g.V(1)')
     result = result_set.all().result()
     assert 1 == len(result)
@@ -223,7 +239,7 @@ def test_client_gremlin(client):
         assert 0 == len(vp.properties)
 
 
-def test_client_bytecode(client):
+def test_client_gremlin_lang(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
@@ -231,7 +247,7 @@ def test_client_bytecode(client):
     assert len(result_set.all().result()) == 6
 
 
-def test_client_bytecode_options(client):
+def test_client_gremlin_lang_options(client):
     # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
     # test perspective because there's no way to access the internals of the strategy via bytecode
     g = GraphTraversalSource(Graph(), TraversalStrategies())
@@ -244,6 +260,25 @@ def test_client_bytecode_options(client):
     message = create_basic_request_message(t)
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
+
+
+def test_client_gremlin_lang_request_options_with_binding(client):
+    g = GraphTraversalSource(Graph(), TraversalStrategies())
+    # Note that bindings for constructed traversals is done via Parameter only
+    t = g.with_('language', 'gremlin-lang').V(Parameter.var('x', [1, 2, 3])).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    message = create_basic_request_message(t)
+    result_set = client.submit(message, request_options=request_opts)
+    assert result_set.all().result()[0] == 3
+    # We can re-use the extracted request options in script submission
+    result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
+    assert result_set.all().result()[0] == 'marko'
+    # For script submission only, we can also add bindings to request options and they will be applied
+    request_opts['bindings'] = {'y': 4}
+    result_set = client.submit('g.V(y).values("name")', request_options=request_opts)
+    assert result_set.all().result()[0] == 'josh'
+    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5}, request_options=request_opts)
+    assert result_set.all().result()[0] == 'ripple'
 
 
 def test_iterate_result_set(client):
@@ -338,38 +373,41 @@ def test_multi_thread_pool(client):
         t.join(5)
 
     assert len(results[0][0]) == 6
-    assert results[1][0][0].object == 6
+    assert results[1][0][0] == 6
     assert len(results[2][0]) == 6
-    assert results[3][0][0].object == 6
+    assert results[3][0][0] == 6
 
 
-def test_client_bytecode_with_short(client):
+def test_client_gremlin_lang_with_short(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    t = g.V().has('age', short(16)).count()
+    t = g.with_('language', 'gremlin-lang').V().has('age', short(16)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1
 
 
-def test_client_bytecode_with_long(client):
+def test_client_gremlin_lang_with_long(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', long(851401972585122)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
     assert len(results) == 1
 
 
-def test_client_bytecode_with_bigint(client):
+def test_client_gremlin_lang_with_bigint(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    t = g.V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
+    t = g.with_('language', 'gremlin-lang').V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
-    result_set = client.submit(message)
+    result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
         results += result
@@ -476,6 +514,7 @@ def test_asyncio(client):
 
 # TODO: tests pass because requestID is now generated on HTTP server and this option gets ignored, tests to be removed
 #  or updated depending on if we still want to use requestID or not
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_invalid_request_id_graphson_script(client):
     client = Client(test_no_auth_url, 'gmodern')
     try:
@@ -484,6 +523,7 @@ def test_client_custom_invalid_request_id_graphson_script(client):
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_invalid_request_id_graphbinary_script(client):
     client = Client(test_no_auth_url, 'gmodern')
     try:
@@ -492,14 +532,17 @@ def test_client_custom_invalid_request_id_graphbinary_script(client):
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_valid_request_id_script_uuid(client):
     assert len(client.submit('g.V()', request_options={"requestId": uuid.uuid4()}).all().result()) == 6
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_valid_request_id_script_string(client):
     assert len(client.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_invalid_request_id_graphson_bytecode(client):
     client = Client(test_no_auth_url, 'gmodern')
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
@@ -509,6 +552,7 @@ def test_client_custom_invalid_request_id_graphson_bytecode(client):
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
     client = Client(test_no_auth_url, 'gmodern')
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
@@ -518,6 +562,7 @@ def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
         assert "badly formed hexadecimal UUID string" in str(ex)
 
 
+@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_valid_request_id_bytecode(client):
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     assert len(client.submit(query).all().result()) == 6
