@@ -34,6 +34,7 @@ from gremlin_python.structure.graph import Vertex, Edge, VertexProperty
 from datetime import datetime
 
 
+# TODO to be removed as bytecode and groovy are replaced by gremlin lang scripts
 class Translator:
     """
     Turn a bytecode object back into a textual query (Gremlin Groovy script).
