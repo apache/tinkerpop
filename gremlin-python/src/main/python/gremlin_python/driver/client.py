@@ -24,6 +24,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from gremlin_python.driver import connection, protocol, request, serializer
 from gremlin_python.process import traversal
+from gremlin_python.driver.request import TokensV4
 
 log = logging.getLogger("gremlinpython")
 
@@ -154,20 +155,29 @@ class Client:
 
         log.debug("message '%s'", str(message))
         fields = {'g': self._traversal_source}
-        if isinstance(message, traversal.Bytecode):
-            fields['gremlinType'] = 'bytecode'
-        elif isinstance(message, str):
-            fields['gremlinType'] = 'eval'
 
+        # TODO: bindings is now part of request_options, evaluate the need to keep it separate in python.
+        #  Note this bindings parameter only applies to string script submissions
         if isinstance(message, str) and bindings:
             fields['bindings'] = bindings
 
-        if isinstance(message, traversal.Bytecode) or isinstance(message, str):
+        if isinstance(message, str):
             log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
             message = request.RequestMessageV4(fields=fields, gremlin=message)
 
         conn = self._pool.get(True)
         if request_options:
-            message.fields.update(request_options)
+            message.fields.update({token: request_options[token] for token in TokensV4
+                                   if token in request_options and token != 'bindings'})
+            if 'bindings' in request_options:
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['bindings'])
+                else:
+                    message.fields['bindings'] = request_options['bindings']
+            if 'params' in request_options:
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['params'])
+                else:
+                    message.fields['bindings'] = request_options['params']
 
         return conn.write(message)
