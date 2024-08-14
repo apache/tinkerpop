@@ -36,9 +36,9 @@ import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
@@ -49,7 +49,6 @@ import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING;
 import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -90,14 +89,14 @@ public class HttpHandlerUtil {
     }
 
     /**
-     * Writes and flushes a {@link ResponseMessageV4} that contains an error back to the client. Can be used to send
+     * Writes and flushes a {@link ResponseMessage} that contains an error back to the client. Can be used to send
      * errors while streaming or when no response chunk has been sent. This serves as the end of a response.
      *
      * @param context           The netty context.
      * @param responseMessage   The response to send back.
      * @param serializer        The serializer to use to serialize the error response.
      */
-    static void writeError(final Context context, final ResponseMessageV4 responseMessage, final MessageSerializerV4<?> serializer) {
+    static void writeError(final Context context, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
@@ -123,15 +122,15 @@ public class HttpHandlerUtil {
     }
 
     /**
-     * Writes a {@link GremlinError} into the status object of a {@link ResponseMessageV4} and then flushes it. Used to
+     * Writes a {@link GremlinError} into the status object of a {@link ResponseMessage} and then flushes it. Used to
      * send specific errors back to the client. This serves as the end of a response.
      *
      * @param context       The netty context.
      * @param error         The GremlinError used to populate the status.
      * @param serializer    The serializer to use to serialize the error response.
      */
-    static void writeError(final Context context, final GremlinError error, final MessageSerializerV4<?> serializer) {
-        final ResponseMessageV4 responseMessage = ResponseMessageV4.build()
+    static void writeError(final Context context, final GremlinError error, final MessageSerializer<?> serializer) {
+        final ResponseMessage responseMessage = ResponseMessage.build()
                 .code(error.getCode())
                 .statusMessage(error.getMessage())
                 .exception(error.getException())
@@ -150,9 +149,9 @@ public class HttpHandlerUtil {
      */
     static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String exceptionType) {
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
-        defaultLastHttpContent.trailingHeaders().add(SerTokensV4.TOKEN_CODE, statusCode.code());
+        defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());
         if (exceptionType != null && !exceptionType.isEmpty()) {
-            defaultLastHttpContent.trailingHeaders().add(SerTokensV4.TOKEN_EXCEPTION, exceptionType);
+            defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_EXCEPTION, exceptionType);
         }
 
         ctx.writeAndFlush(defaultLastHttpContent);

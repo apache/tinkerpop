@@ -20,11 +20,10 @@ package org.apache.tinkerpop.gremlin.driver.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -190,7 +189,7 @@ public class ProfilingApplication {
         final int maxWaitForConnection = Integer.parseInt(options.getOrDefault("maxWaitForConnection", "3000").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", Runtime.getRuntime().availableProcessors() * 2).toString());
         final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
-        final String serializer = options.getOrDefault("serializer", SerializersV4.GRAPHBINARY_V4.name()).toString();
+        final String serializer = options.getOrDefault("serializer", Serializers.GRAPHBINARY_V4.name()).toString();
 
         final boolean exercise = Boolean.parseBoolean(options.getOrDefault("exercise", "false").toString());
         final String script = options.getOrDefault("script", "1+1").toString();
@@ -200,7 +199,7 @@ public class ProfilingApplication {
                 .maxConnectionPoolSize(maxConnectionPoolSize)
                 .nioPoolSize(nioPoolSize)
                 .maxWaitForConnection(maxWaitForConnection)
-                .serializer(SerializersV4.valueOf(serializer))
+                .serializer(Serializers.valueOf(serializer))
                 .workerPoolSize(workerPoolSize).create();
 
         try {

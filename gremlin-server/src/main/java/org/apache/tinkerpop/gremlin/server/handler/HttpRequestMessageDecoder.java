@@ -22,10 +22,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,8 +54,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendError;
 
 /**
- * Decodes the contents of a {@code FullHttpRequest}. This will extract the {@code RequestMessageV4} from the
- * {@code FullHttpRequest} or, if unsuccessful, will flush an error back.
+ * Decodes the contents of a {@link FullHttpRequest}. This will extract the {@link RequestMessage} from the
+ * {@link FullHttpRequest} or, if unsuccessful, will flush an error back.
  */
 @ChannelHandler.Sharable
 public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpRequest> {
@@ -64,9 +64,9 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     /**
      * Serializer for {@code text/plain} which is a serializer exclusive to HTTP.
      */
-    private final TextPlainMessageSerializerV4 textPlainSerializer = new TextPlainMessageSerializerV4();
+    private final TextPlainMessageSerializer textPlainSerializer = new TextPlainMessageSerializer();
 
-    private final Map<String, MessageSerializerV4<?>> serializers;
+    private final Map<String, MessageSerializer<?>> serializers;
 
     /**
      * A generic mapper to decode an application/json request.
@@ -74,7 +74,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     private final ObjectMapper mapper = new ObjectMapper();
 
 
-    public HttpRequestMessageDecoder(final Map<String, MessageSerializerV4<?>> serializers) {
+    public HttpRequestMessageDecoder(final Map<String, MessageSerializer<?>> serializers) {
         this.serializers = serializers;
     }
 
@@ -83,7 +83,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         ctx.channel().attr(StateKey.REQUEST_HEADERS).set(req.headers());
 
         final String acceptMime = Optional.ofNullable(req.headers().get(HttpHeaderNames.ACCEPT)).orElse("application/json");
-        final Pair<String, MessageSerializerV4<?>> serializer = chooseSerializer(acceptMime);
+        final Pair<String, MessageSerializer<?>> serializer = chooseSerializer(acceptMime);
 
         if (req.method() != POST) {
             sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
@@ -95,7 +95,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
             return;
         }
 
-        final RequestMessageV4 requestMessage;
+        final RequestMessage requestMessage;
         try {
             requestMessage = getRequestMessageFromHttpRequest(req, serializers);
         } catch (IllegalArgumentException | SerializationException | NullPointerException ex) {
@@ -108,7 +108,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         objects.add(requestMessage);
     }
 
-    private Pair<String, MessageSerializerV4<?>> chooseSerializer(final String mimeType) {
+    private Pair<String, MessageSerializer<?>> chooseSerializer(final String mimeType) {
         final List<Pair<String, Double>> ordered = Stream.of(mimeType.split(",")).map(mediaType -> {
             // parse out each mediaType with its params - keeping it simple and just looking for "quality".  if
             // that value isn't there, default it to 1.0.  not really validating here so users better get their
@@ -132,7 +132,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
     }
 
     /**
-     * Convert a http request into a {@link RequestMessageV4}.
+     * Convert a http request into a {@link RequestMessage}.
      * There are 2 payload types options here.
      * 1.
      *     existing https://tinkerpop.apache.org/docs/current/reference/#connecting-via-http
@@ -151,12 +151,12 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
      *     Accept header can be any.
      *     Request body contains serialized RequestMessage
      */
-    public RequestMessageV4 getRequestMessageFromHttpRequest(final FullHttpRequest request,
-                                                                    Map<String, MessageSerializerV4<?>> serializers) throws SerializationException {
+    public RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request,
+                                                           Map<String, MessageSerializer<?>> serializers) throws SerializationException {
         final String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
         if (contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
-            final MessageSerializerV4<?> serializer = serializers.get(contentType);
+            final MessageSerializer<?> serializer = serializers.get(contentType);
             final ByteBuf buffer = request.content();
 
             try {
@@ -165,10 +165,10 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
                 throw new SerializationException("Unable to deserialize request using: " + serializer.getClass().getSimpleName(), e);
             }
         }
-        return getRequestMessageV4FromHttpRequest(request);
+        return getRequestMessageFromHttpRequest(request);
     }
 
-    private RequestMessageV4 getRequestMessageV4FromHttpRequest(final FullHttpRequest request) {
+    private RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
         final JsonNode body;
         try {
             body = mapper.readTree(request.content().toString(CharsetUtil.UTF_8));
@@ -176,12 +176,12 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
             throw new IllegalArgumentException("body could not be parsed", ioe);
         }
 
-        final JsonNode scriptNode = body.get(TokensV4.ARGS_GREMLIN);
+        final JsonNode scriptNode = body.get(Tokens.ARGS_GREMLIN);
         if (null == scriptNode) throw new IllegalArgumentException("no gremlin script supplied");
 
-        final RequestMessageV4.Builder builder = RequestMessageV4.build(scriptNode.asText());
+        final RequestMessage.Builder builder = RequestMessage.build(scriptNode.asText());
 
-        final JsonNode bindingsNode = body.get(TokensV4.ARGS_BINDINGS);
+        final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
         if (bindingsNode != null && !bindingsNode.isObject())
             throw new IllegalArgumentException("bindings must be a Map");
 
@@ -190,19 +190,19 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
             bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
         builder.addBindings(bindings);
 
-        final JsonNode gNode = body.get(TokensV4.ARGS_G);
+        final JsonNode gNode = body.get(Tokens.ARGS_G);
         if (null != gNode) builder.addG(gNode.asText());
 
-        final JsonNode languageNode = body.get(TokensV4.ARGS_LANGUAGE);
+        final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
         builder.addLanguage((null == languageNode) ? "gremlin-groovy" : languageNode.asText());
 
-        final JsonNode chunkSizeNode = body.get(TokensV4.ARGS_BATCH_SIZE);
+        final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());
 
-        final JsonNode timeoutMsNode = body.get(TokensV4.TIMEOUT_MS);
+        final JsonNode timeoutMsNode = body.get(Tokens.TIMEOUT_MS);
         if (null != timeoutMsNode) builder.addTimeoutMillis(timeoutMsNode.asLong());
 
-        final JsonNode matPropsNode = body.get(TokensV4.ARGS_MATERIALIZE_PROPERTIES);
+        final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         if (null != matPropsNode) builder.addMaterializeProperties(matPropsNode.asText());
 
         return builder.create();

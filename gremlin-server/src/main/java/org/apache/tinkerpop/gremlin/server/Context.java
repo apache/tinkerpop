@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Context {
-    private final RequestMessageV4 requestMessage;
+    private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
     private final Settings settings;
     private final GraphManager graphManager;
@@ -56,14 +56,14 @@ public class Context {
     private boolean timeoutExecutorGrabbed = false;
     private final Object timeoutExecutorLock = new Object();
 
-    public Context(final RequestMessageV4 requestMessage, final ChannelHandlerContext ctx,
+    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
         this(requestMessage, ctx, settings, graphManager, gremlinExecutor, scheduledExecutorService,
                 HttpGremlinEndpointHandler.RequestState.NOT_STARTED);
     }
 
-    public Context(final RequestMessageV4 requestMessage, final ChannelHandlerContext ctx,
+    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService,
                    final HttpGremlinEndpointHandler.RequestState requestState) {
@@ -103,7 +103,7 @@ public class Context {
     /**
      * The timeout for the request. If the request is a script it examines the script for a timeout setting using
      * {@code with()}. If that is not found then it examines the request itself to see if the timeout is provided by
-     * {@link TokensV4#TIMEOUT_MS}. If that is not provided then the {@link Settings#evaluationTimeout} is
+     * {@link Tokens#TIMEOUT_MS}. If that is not provided then the {@link Settings#evaluationTimeout} is
      * utilized as the default.
      */
     public long getRequestTimeout() {
@@ -121,7 +121,7 @@ public class Context {
     /**
      * Gets the current request to Gremlin Server.
      */
-    public RequestMessageV4 getRequestMessage() {
+    public RequestMessage getRequestMessage() {
         return requestMessage;
     }
 
@@ -167,7 +167,7 @@ public class Context {
     private long determineTimeout() {
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        final Long timeoutMs = requestMessage.getField(TokensV4.TIMEOUT_MS);
+        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : settings.getEvaluationTimeout();
 
         // override the timeout if the lifecycle has a value assigned. if the script contains with(timeout)
@@ -180,19 +180,19 @@ public class Context {
     private String determineMaterializeProperties() {
         final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
         if (mp.isPresent())
-            return mp.get().equals(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
-                    ? TokensV4.MATERIALIZE_PROPERTIES_TOKENS
-                    : TokensV4.MATERIALIZE_PROPERTIES_ALL;
+            return mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                    ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                    : Tokens.MATERIALIZE_PROPERTIES_ALL;
 
-        final String materializeProperties = requestMessage.getField(TokensV4.ARGS_MATERIALIZE_PROPERTIES);
+        final String materializeProperties = requestMessage.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL
-        return TokensV4.MATERIALIZE_PROPERTIES_TOKENS.equals(materializeProperties)
-                ? TokensV4.MATERIALIZE_PROPERTIES_TOKENS
-                : TokensV4.MATERIALIZE_PROPERTIES_ALL;
+        return Tokens.MATERIALIZE_PROPERTIES_TOKENS.equals(materializeProperties)
+                ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                : Tokens.MATERIALIZE_PROPERTIES_ALL;
     }
 
     public void handleDetachment(final List<Object> aggregate) {
-        if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(TokensV4.MATERIALIZE_PROPERTIES_ALL)) {
+        if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
             final Object firstElement = aggregate.get(0);
 
             if (firstElement instanceof Element) {

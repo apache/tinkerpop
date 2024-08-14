@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.TokensV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.junit.Test;
 
 import java.lang.reflect.Constructor;
@@ -32,8 +32,8 @@ import static org.junit.Assert.assertTrue;
 public class TokensTest {
     @Test
     public void shouldBeUtilityClass() throws Exception {
-        final Constructor constructor = TokensV4.class.getDeclaredConstructor();
-        assertTrue(Modifier.isFinal(TokensV4.class.getModifiers()));
+        final Constructor constructor = Tokens.class.getDeclaredConstructor();
+        assertTrue(Modifier.isFinal(Tokens.class.getModifiers()));
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
         constructor.setAccessible(true);
         constructor.newInstance();

@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphBinaryLangRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphBinaryLangRemoteGraphProvider() {
-        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), false, "gremlin-lang");
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V4).create(), false, "gremlin-lang");
     }
 }

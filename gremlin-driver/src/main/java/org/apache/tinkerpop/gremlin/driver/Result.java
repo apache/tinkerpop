@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
 
 import java.util.Iterator;
 
@@ -39,7 +39,7 @@ public final class Result {
     final Object resultObject;
 
     /**
-     * Constructs a "result" from data found in {@link ResponseResultV4#getData()}.
+     * Constructs a "result" from data found in {@link ResponseResult#getData()}.
      */
     public Result(final Object responseData) {
         this.resultObject = responseData;

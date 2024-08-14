@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 
 import java.util.ArrayList;
@@ -500,7 +500,7 @@ final class ConnectionPool {
             // pool needs it. for now that seems like an unnecessary added bit of complexity for dealing with this
             // error state
             connection = connectionFactory.create(this);
-            final RequestMessageV4 ping = client.buildMessage(cluster.validationRequest()).create();
+            final RequestMessage ping = client.buildMessage(cluster.validationRequest()).create();
             final CompletableFuture<ResultSet> f = new CompletableFuture<>();
             connection.write(ping, f);
             f.get().all().get();

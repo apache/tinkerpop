@@ -21,12 +21,12 @@ package org.apache.tinkerpop.gremlin.util.message;
 import java.util.List;
 
 /**
- * Data model for the "result" portion of a {@link ResponseMessageV4}.
+ * Data model for the "result" portion of a {@link ResponseMessage}.
  */
-public final class ResponseResultV4 {
+public final class ResponseResult {
     private final List<Object> data;
 
-    public ResponseResultV4(final List<Object> data) {
+    public ResponseResult(final List<Object> data) {
         this.data = data;
     }
 

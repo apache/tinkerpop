@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
     @Before
     public void setupThis() {
-        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessageV4.build("traversal").create(), null);
+        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
     }
 
     @Test

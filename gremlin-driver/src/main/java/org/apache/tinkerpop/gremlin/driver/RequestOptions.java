@@ -20,18 +20,18 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_BATCH_SIZE;
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_G;
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_LANGUAGE;
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_MATERIALIZE_PROPERTIES;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_G;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_LANGUAGE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -145,7 +145,7 @@ public final class RequestOptions {
         /**
          * The per client request override for the client and server configured {@code resultIterationBatchSize}. If
          * this value is not set, then the configuration for the {@link Cluster} is used unless the
-         * {@link RequestMessageV4} is configured completely by the user.
+         * {@link RequestMessage} is configured completely by the user.
          */
         public Builder batchSize(final int batchSize) {
             this.batchSize = batchSize;

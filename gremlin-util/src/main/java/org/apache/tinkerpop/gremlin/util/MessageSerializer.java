@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.buffer.ByteBuf;
@@ -34,18 +34,18 @@ import java.util.ServiceLoader;
 
 /**
  * Serializes data to and from Gremlin Server.  Typically, the object being serialized or deserialized will be an item
- * from an {@link Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessageV4}.
- * {@link MessageSerializerV4} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
- * the mime types they support.  If a mime type is supported more than once, the first {@link MessageSerializerV4}
+ * from an {@link Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessage}.
+ * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
+ * the mime types they support.  If a mime type is supported more than once, the first {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the server default is chosen. The
  * default may change from version to version so it is best to not rely on it when developing applications and to
  * always be explicit in specifying the type you wish to bind to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface MessageSerializerV4<M> {
+public interface MessageSerializer<M> {
 
-    static final Logger logger = LoggerFactory.getLogger(MessageSerializerV4.class);
+    static final Logger logger = LoggerFactory.getLogger(MessageSerializer.class);
 
     /**
      * Gets the "mapper" that performs the underlying serialization work.
@@ -53,30 +53,30 @@ public interface MessageSerializerV4<M> {
     M getMapper();
 
     /**
-     * Serialize a {@link ResponseMessageV4} to a Netty {@code ByteBuf}.
+     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
      *
      * @param responseMessage The response message to serialize to bytes.
      * @param allocator       The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     /**
-     * Serialize a {@link ResponseMessageV4} to a Netty {@code ByteBuf}.
+     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
      *
      * @param requestMessage The request message to serialize to bytes.
      * @param allocator      The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public ByteBuf serializeRequestAsBinary(final RequestMessageV4 requestMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     /**
-     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessageV4}.
+     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
      */
-    public RequestMessageV4 deserializeBinaryRequest(final ByteBuf msg) throws SerializationException;
+    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) throws SerializationException;
 
     /**
-     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessageV4}.
+     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
      */
-    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) throws SerializationException;
+    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException;
 
     /**
      * The list of mime types that the serializer supports. They should be ordered in preferred ordered where the
@@ -94,15 +94,15 @@ public interface MessageSerializerV4<M> {
     public default void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
     }
 
-    public ByteBuf writeHeader(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
     public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ByteBuf writeFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ByteBuf writeErrorFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
 
-    public ResponseMessageV4 readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
 
     public enum MessageParts {
         HEADER, DATA, FOOTER;

@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.server.util;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
 import java.util.Set;
 
 /**
- * Exception utility class that generates exceptions in the form expected in a {@code ResponseStatusV4} for different
+ * Exception utility class that generates exceptions in the form expected in a {@code ResponseStatus} for different
  * issues that the server can encounter.
  */
 public class GremlinError {
@@ -56,7 +56,7 @@ public class GremlinError {
     // ------------ request validation errors
 
     // script type errors
-    public static GremlinError invalidGremlinType(final RequestMessageV4 requestMessage ) {
+    public static GremlinError invalidGremlinType(final RequestMessage requestMessage ) {
         final String message = String.format("Message could not be parsed. Check the format of the request. [%s]",
                 requestMessage);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
@@ -82,12 +82,12 @@ public class GremlinError {
 
     public static GremlinError binding(final String aliased) {
         final String message = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
-                TokensV4.ARGS_G, aliased, aliased);
+                Tokens.ARGS_G, aliased, aliased);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
     // execution errors
-    public static GremlinError timeout(final RequestMessageV4 requestMessage ) {
+    public static GremlinError timeout(final RequestMessage requestMessage ) {
         final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout",
                 requestMessage);
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "ServerTimeoutExceededException");
@@ -120,7 +120,7 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, message, "RequestEntityTooLargeException");
     }
 
-    public static GremlinError longRequest(final RequestMessageV4 requestMessage ) {
+    public static GremlinError longRequest(final RequestMessage requestMessage ) {
         final String message = String.format("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM, please split it into multiple smaller statements - %s", requestMessage.trimMessage(1021));
         return new GremlinError(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, message, "RequestEntityTooLargeException");
     }

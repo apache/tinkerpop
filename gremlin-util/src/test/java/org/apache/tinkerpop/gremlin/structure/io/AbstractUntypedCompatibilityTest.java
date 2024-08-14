@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibilityTest;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
 import org.junit.Test;
 
@@ -145,13 +145,13 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
                 this.getClass().equals(GraphBinaryCompatibilityTest.class),
                 is(false));
-        assumeThat("RequestMessageV4 was supported starting in GraphSONv4",
+        assumeThat("RequestMessage was supported starting in GraphSONv4",
                 getCompatibility(),
                 is("v4-no-types"));
 
-        final RequestMessageV4 resource = findModelEntryObject(resourceName);
-        final RequestMessageV4 fromStatic = read(readFromResource(resourceName), RequestMessageV4.class);
-        final RequestMessageV4 recycled = read(write(fromStatic, RequestMessageV4.class, resourceName), RequestMessageV4.class);
+        final RequestMessage resource = findModelEntryObject(resourceName);
+        final RequestMessage fromStatic = read(readFromResource(resourceName), RequestMessage.class);
+        final RequestMessage recycled = read(write(fromStatic, RequestMessage.class, resourceName), RequestMessage.class);
         assertNotSame(fromStatic, recycled);
         assertRequestMessage(resource, fromStatic, recycled);
     }
@@ -163,15 +163,15 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
                 this.getClass().equals(GraphBinaryCompatibilityTest.class),
                 is(false));
-        assumeThat("ResponseMessageV4 was supported starting in GraphSONv4",
+        assumeThat("ResponseMessage was supported starting in GraphSONv4",
                 getCompatibility(),
                 is("v4-no-types"));
 
         final GraphSONUntypedMessageSerializerV4 gsSerializer = new GraphSONUntypedMessageSerializerV4();
         final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
-        final ResponseMessageV4 resource = read(resourceInBytes.array(), ResponseMessageV4.class);
-        final ResponseMessageV4 fromStatic = read(readFromResource(resourceName), ResponseMessageV4.class);
-        final ResponseMessageV4 recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessageV4.class);
+        final ResponseMessage resource = read(resourceInBytes.array(), ResponseMessage.class);
+        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
+        final ResponseMessage recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessage.class);
         assertNotSame(fromStatic, recycled);
         assertResponseMessage(resource, fromStatic, recycled);
         resourceInBytes.release();
@@ -184,15 +184,15 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assumeThat("GraphBinary does not test this because Request/ResponseMessage are not actual GraphBinary types",
                 this.getClass().equals(GraphBinaryCompatibilityTest.class),
                 is(false));
-        assumeThat("ResponseMessageV4 was supported starting in GraphSONv4",
+        assumeThat("ResponseMessage was supported starting in GraphSONv4",
                 getCompatibility(),
                 is("v4-no-types"));
 
         final GraphSONUntypedMessageSerializerV4 gsSerializer = new GraphSONUntypedMessageSerializerV4();
         final ByteBuf resourceInBytes = gsSerializer.writeHeader(findModelEntryObject(resourceName), new UnpooledByteBufAllocator(false));
-        final ResponseMessageV4 resource = read(resourceInBytes.array(), ResponseMessageV4.class);
-        final ResponseMessageV4 fromStatic = read(readFromResource(resourceName), ResponseMessageV4.class);
-        final ResponseMessageV4 recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessageV4.class);
+        final ResponseMessage resource = read(resourceInBytes.array(), ResponseMessage.class);
+        final ResponseMessage fromStatic = read(readFromResource(resourceName), ResponseMessage.class);
+        final ResponseMessage recycled = read(write(fromStatic, HashMap.class, resourceName), ResponseMessage.class);
         assertNotSame(fromStatic, recycled);
         assertResponseMessage(resource, fromStatic, recycled);
     }

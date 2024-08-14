@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -228,7 +228,7 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
-     * List of {@link MessageSerializerV4} to configure. If no serializers are specified then default serializers for
+     * List of {@link MessageSerializer} to configure. If no serializers are specified then default serializers for
      * the most current versions of "application/json" and "application/vnd.gremlin-v1.0+gryo" are applied.
      */
     public List<SerializerSettings> serializers = Collections.emptyList();
@@ -378,7 +378,7 @@ public class Settings {
     }
 
     /**
-     * Settings for the {@link MessageSerializerV4} implementations.
+     * Settings for the {@link MessageSerializer} implementations.
      */
     public static class SerializerSettings {
 
@@ -390,14 +390,14 @@ public class Settings {
         }
 
         /**
-         * The fully qualified class name of the {@link MessageSerializerV4} implementation. This class name will be
+         * The fully qualified class name of the {@link MessageSerializer} implementation. This class name will be
          * used to load the implementation from the classpath.
          */
         public String className;
 
         /**
-         * A {@link Map} containing {@link MessageSerializerV4} specific configurations. Consult the
-         * {@link MessageSerializerV4} implementation for specifics on what configurations are expected.
+         * A {@link Map} containing {@link MessageSerializer} specific configurations. Consult the
+         * {@link MessageSerializer} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = Collections.emptyMap();
     }

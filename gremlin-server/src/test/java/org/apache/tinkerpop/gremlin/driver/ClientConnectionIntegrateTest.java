@@ -20,10 +20,9 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.handler.codec.TooLongFrameException;
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest;
@@ -149,7 +148,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         final ExecutorService executorServiceForTesting = cluster.executor();
 
         try {
-            final RequestMessageV4.Builder request = client.buildMessage(RequestMessageV4.build("Thread.sleep(5000)"));
+            final RequestMessage.Builder request = client.buildMessage(RequestMessage.build("Thread.sleep(5000)"));
             final Callable<Connection> sendQueryCallable = () -> client.chooseConnection(request.create());
             final List<Callable<Connection>> listOfTasks = new ArrayList<>();
             for (int i = 0; i < connPoolSize; i++) {
@@ -195,7 +194,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         final ExecutorService executorServiceForTesting = cluster.executor();
 
         try {
-            final RequestMessageV4.Builder request = client.buildMessage(RequestMessageV4.build("Thread.sleep(5000)"));
+            final RequestMessage.Builder request = client.buildMessage(RequestMessage.build("Thread.sleep(5000)"));
             final Callable<Connection> sendQueryCallable = () -> client.chooseConnection(request.create());
             final List<Callable<Connection>> listOfTasks = new ArrayList<>();
             for (int i = 0; i < operations; i++) {

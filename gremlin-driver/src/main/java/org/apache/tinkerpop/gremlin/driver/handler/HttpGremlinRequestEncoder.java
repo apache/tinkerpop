@@ -34,9 +34,8 @@ import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.net.InetSocketAddress;
@@ -45,23 +44,23 @@ import java.util.List;
 import static org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler.REQUEST_SENT;
 
 /**
- * Converts {@link RequestMessageV4} to a {@code HttpRequest}.
+ * Converts {@link RequestMessage} to a {@code HttpRequest}.
  */
 @ChannelHandler.Sharable
-public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessageV4> {
+public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
 
-    private final MessageSerializerV4<?> serializer;
+    private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final List<RequestInterceptor> interceptors;
 
-    public HttpGremlinRequestEncoder(final MessageSerializerV4<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
     }
 
     @Override
-    protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessageV4 requestMessage, final List<Object> objects) throws Exception {
+    protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
         final String mimeType = serializer.mimeTypesSupported()[0];
         if (requestMessage.getField("gremlin") instanceof GremlinLang) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(

@@ -24,14 +24,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -46,22 +46,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class MessageSerializerV4Test {
+public class MessageSerializerTest {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {SerializersV4.GRAPHBINARY_V4, new GraphBinaryMessageSerializerV4()},
-                {SerializersV4.GRAPHSON_V4, new GraphSONMessageSerializerV4()}
+                {Serializers.GRAPHBINARY_V4, new GraphBinaryMessageSerializerV4()},
+                {Serializers.GRAPHSON_V4, new GraphSONMessageSerializerV4()}
         });
     }
 
     @Parameterized.Parameter(0)
-    public SerializersV4 serializerType;
+    public Serializers serializerType;
 
     @Parameterized.Parameter(1)
-    public MessageSerializerV4 serializer;
+    public MessageSerializer serializer;
 
     @Test
     public void shouldSerializeAndDeserializeRequest() throws SerializationException {
@@ -71,8 +71,8 @@ public class MessageSerializerV4Test {
         final Map<String, String> aliases = new HashMap<>();
         aliases.put("g","g");
 
-        final RequestMessageV4 request = RequestMessageV4.build(t.getGremlinLang().getGremlin())
-                .addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_TOKENS)
+        final RequestMessage request = RequestMessage.build(t.getGremlinLang().getGremlin())
+                .addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
                 .addTimeoutMillis(500)
                 .addG("g1")
                 .addLanguage("some-lang")
@@ -80,69 +80,69 @@ public class MessageSerializerV4Test {
                 .create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
-        final RequestMessageV4 deserialized = serializer.deserializeBinaryRequest(buffer);
+        final RequestMessage deserialized = serializer.deserializeBinaryRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test
     public void shouldSerializeAndDeserializeRequestWithoutArgs() throws SerializationException {
-        final RequestMessageV4 request = RequestMessageV4.build("query").create();
+        final RequestMessage request = RequestMessage.build("query").create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
-        final RequestMessageV4 deserialized = serializer.deserializeBinaryRequest(buffer);
+        final RequestMessage deserialized = serializer.deserializeBinaryRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponse() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .statusMessage("Found")
                 .result(Collections.singletonList("This is a fine message with a string"))
                 .create();
 
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(buffer);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutStatusMessage() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Collections.singletonList(123.3))
                 .create();
 
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(buffer);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutStatusAttributes() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Collections.singletonList(123.3))
                 .create();
 
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(buffer);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponseWithoutResult() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("Something happened on the server")
                 .create();
 
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(buffer);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
 
-    private static void assertResponseEquals(ResponseMessageV4 expected, ResponseMessageV4 actual) {
+    private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {
         // Status
         assertEquals(expected.getStatus().getCode(), actual.getStatus().getCode());
         assertEquals(expected.getStatus().getMessage(), actual.getStatus().getMessage());
