@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -151,6 +151,6 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 public class GraphBinaryRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
 
     public GraphBinaryRemoteGraphComputerProvider() {
-        super(createClusterBuilder(SerializersV4.GRAPHBINARY_V4).create(), true, "groovy-test");
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V4).create(), true, "groovy-test");
     }
 }

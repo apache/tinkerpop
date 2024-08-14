@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AssumptionViolatedException;
 
 import java.io.File;
@@ -49,7 +49,7 @@ public abstract class RemoteWorld implements World {
      * Helper method to create a test cluster based on the type of serializer. Can be used by implementations to help
      * construct a RemoteWorld.
      */
-    public static Cluster createTestCluster(final SerializersV4 serializer) {
+    public static Cluster createTestCluster(final Serializers serializer) {
         return TestClientFactory.build().serializer(serializer).create();
     }
 
@@ -160,7 +160,7 @@ public abstract class RemoteWorld implements World {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryLangRemoteWorld extends RemoteWorld {
-        public GraphBinaryLangRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+        public GraphBinaryLangRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V4)); }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
@@ -170,7 +170,7 @@ public abstract class RemoteWorld implements World {
     }
 
     public static class GraphBinaryGroovyRemoteWorld extends RemoteWorld {
-        public GraphBinaryGroovyRemoteWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+        public GraphBinaryGroovyRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V4)); }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
@@ -182,7 +182,7 @@ public abstract class RemoteWorld implements World {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(SerializersV4.GRAPHBINARY_V4)); }
+        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V4)); }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {

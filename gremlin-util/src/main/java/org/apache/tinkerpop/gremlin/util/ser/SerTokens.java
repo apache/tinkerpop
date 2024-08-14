@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.util.ser;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class SerTokensV4 {
-    private SerTokensV4() {}
+public final class SerTokens {
+    private SerTokens() {}
 
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_STATUS = "status";

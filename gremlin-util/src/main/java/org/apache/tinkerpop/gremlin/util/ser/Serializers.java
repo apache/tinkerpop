@@ -18,38 +18,38 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 
 /**
  * An enum of the default serializers available starting in v4.0.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public enum SerializersV4 {
+public enum Serializers {
 
     /**
      * GraphSON 4.0.
      */
-    GRAPHSON(SerTokensV4.MIME_JSON),
+    GRAPHSON(SerTokens.MIME_JSON),
 
     /**
      * GraphSON 4.0 with types.
      */
-    GRAPHSON_V4(SerTokensV4.MIME_GRAPHSON_V4),
+    GRAPHSON_V4(SerTokens.MIME_GRAPHSON_V4),
 
     /**
      * GraphSON 4.0 without types.
      */
-    GRAPHSON_V4_UNTYPED(SerTokensV4.MIME_GRAPHSON_V4_UNTYPED),
+    GRAPHSON_V4_UNTYPED(SerTokens.MIME_GRAPHSON_V4_UNTYPED),
 
     /**
      * GraphBinary 4.0.
      */
-    GRAPHBINARY_V4(SerTokensV4.MIME_GRAPHBINARY_V4);
+    GRAPHBINARY_V4(SerTokens.MIME_GRAPHBINARY_V4);
 
     private String value;
 
-    SerializersV4(final String mimeType) {
+    Serializers(final String mimeType) {
         this.value = mimeType;
     }
 
@@ -57,14 +57,14 @@ public enum SerializersV4 {
         return value;
     }
 
-    public MessageSerializerV4<?> simpleInstance() {
+    public MessageSerializer<?> simpleInstance() {
         switch (value) {
-            case SerTokensV4.MIME_JSON:
-            case SerTokensV4.MIME_GRAPHSON_V4:
+            case SerTokens.MIME_JSON:
+            case SerTokens.MIME_GRAPHSON_V4:
                 return new GraphSONMessageSerializerV4();
-            case SerTokensV4.MIME_GRAPHSON_V4_UNTYPED:
+            case SerTokens.MIME_GRAPHSON_V4_UNTYPED:
                 return new GraphSONUntypedMessageSerializerV4();
-            case SerTokensV4.MIME_GRAPHBINARY_V4:
+            case SerTokens.MIME_GRAPHBINARY_V4:
                 return new GraphBinaryMessageSerializerV4();
             default:
                 throw new RuntimeException("Could not create a simple MessageSerializer instance of " + value);

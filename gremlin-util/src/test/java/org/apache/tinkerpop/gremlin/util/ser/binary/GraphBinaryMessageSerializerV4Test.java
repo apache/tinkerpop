@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
@@ -54,24 +54,24 @@ public class GraphBinaryMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeAndDeserializeResponseInSingleChunk() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Arrays.asList(1, "test"))
                 .create();
 
         final ByteBuf buffer = serializer.writeHeader(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.readChunk(buffer, true);
+        final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponseInHeaderChunk() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .result(Arrays.asList(1, "test"))
                 .create();
 
         final ByteBuf buffer = serializer.writeHeader(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.readChunk(buffer, true);
+        final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
 
@@ -79,40 +79,40 @@ public class GraphBinaryMessageSerializerV4Test {
     public void shouldSerializeAndDeserializeResponseInDataChunk() throws SerializationException {
         final List data = Arrays.asList(1, "test");
         final ByteBuf buffer = serializer.writeChunk(data, allocator);
-        final ResponseMessageV4 deserialized = serializer.readChunk(buffer, false);
+        final ResponseMessage deserialized = serializer.readChunk(buffer, false);
 
         assertEquals(data, deserialized.getResult().getData());
     }
 
     @Test
     public void shouldSerializeAndDeserializeResponseInFooterChunk() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .result(Arrays.asList(1, "test"))
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
 
         final ByteBuf buffer = serializer.writeFooter(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.readChunk(buffer, false);
+        final ResponseMessage deserialized = serializer.readChunk(buffer, false);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeErrorResponseWithEmptyData() throws SerializationException {
-        final ResponseMessageV4 response = ResponseMessageV4.build()
+        final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.FORBIDDEN)
                 .statusMessage("FORBIDDEN")
                 .create();
 
         final ByteBuf buffer = serializer.writeHeader(response, allocator);
-        final ResponseMessageV4 deserialized = serializer.readChunk(buffer, true);
+        final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
 
     @Test
     public void shouldSerializeAndDeserializeCompositeResponse() throws SerializationException {
         final List headerData = Arrays.asList(0, "header");
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(headerData)
                 .create();
 
@@ -120,7 +120,7 @@ public class GraphBinaryMessageSerializerV4Test {
         final List chunkData2 = Arrays.asList(2, "data2");
 
         final List footerData = Arrays.asList(0xFF, "footer");
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(footerData)
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -133,7 +133,7 @@ public class GraphBinaryMessageSerializerV4Test {
 
         final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
-        final ResponseMessageV4 deserialized = serializer.readChunk(bbCombined, true);
+        final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
 
         // Status
         assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
@@ -147,7 +147,7 @@ public class GraphBinaryMessageSerializerV4Test {
     @Test
     public void shouldSerializeAndDeserializeCompositeResponseWithError() throws SerializationException {
         final List headerData = Arrays.asList(0, "header");
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(headerData)
                 .create();
 
@@ -155,7 +155,7 @@ public class GraphBinaryMessageSerializerV4Test {
         final List chunkData2 = Arrays.asList(2, "data2");
 
         final List footerData = Arrays.asList(0xFF, "footer");
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(footerData)
                 .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
@@ -169,7 +169,7 @@ public class GraphBinaryMessageSerializerV4Test {
 
         final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
 
-        final ResponseMessageV4 deserialized = serializer.readChunk(bbCombined, true);
+        final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
 
         // Status
         assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
@@ -203,7 +203,7 @@ public class GraphBinaryMessageSerializerV4Test {
     }
 
     // copy-paste because response format will be different
-    private static void assertResponseEquals(final ResponseMessageV4 expected, final ResponseMessageV4 actual) {
+    private static void assertResponseEquals(final ResponseMessage expected, final ResponseMessage actual) {
         // Status
         if (expected.getStatus() != null && actual.getStatus() != null) {
             assertEquals(expected.getStatus().getCode(), actual.getStatus().getCode());
@@ -216,7 +216,7 @@ public class GraphBinaryMessageSerializerV4Test {
         }
     }
 
-    private static boolean isEmptyData(final ResponseMessageV4 responseMessage) {
+    private static boolean isEmptyData(final ResponseMessage responseMessage) {
         return responseMessage.getResult() == null || responseMessage.getResult().getData() == null ||
                 responseMessage.getResult().getData().isEmpty();
     }

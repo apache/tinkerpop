@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class TokensV4 {
-    private TokensV4() {}
+public final class Tokens {
+    private Tokens() {}
 
     /**
      * Argument name that allows definition of the number of iterations each HTTP chunk should contain -

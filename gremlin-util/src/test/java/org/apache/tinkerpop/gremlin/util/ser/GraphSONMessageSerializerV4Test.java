@@ -29,9 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseResultV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseResult;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
@@ -59,18 +59,18 @@ import static org.junit.Assert.assertEquals;
 public class GraphSONMessageSerializerV4Test {
 
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
-    private final ResponseMessageV4.Builder responseMessageBuilder = ResponseMessageV4.build();
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
     private final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void shouldSerializeChunkedResponseMessage() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -95,7 +95,7 @@ public class GraphSONMessageSerializerV4Test {
 
         // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
@@ -103,7 +103,7 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
                 .create();
@@ -119,7 +119,7 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -127,7 +127,7 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithEmptyData() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(new ArrayList<>())
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -144,7 +144,7 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -152,11 +152,11 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithError() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
@@ -180,7 +180,7 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(500, node.get("status").get("code").asInt());
 
         bbCombined.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
@@ -190,14 +190,14 @@ public class GraphSONMessageSerializerV4Test {
     public void shouldConfigureIoRegistry() throws Exception {
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final Map<String, Object> config = new HashMap<String, Object>() {{
-            put(AbstractMessageSerializerV4.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+            put(AbstractMessageSerializer.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
         }};
 
         serializer.configure(config, null);
 
-        final ResponseMessageV4 toSerialize = ResponseMessageV4.build().result(Collections.singletonList(Color.RED)).code(HttpResponseStatus.OK).create();
+        final ResponseMessage toSerialize = ResponseMessage.build().result(Collections.singletonList(Color.RED)).code(HttpResponseStatus.OK).create();
         final ByteBuf buffer = serializer.serializeResponseAsBinary(toSerialize, allocator);
-        ResponseResultV4 results = serializer.deserializeBinaryResponse(buffer).getResult();
+        ResponseResult results = serializer.deserializeBinaryResponse(buffer).getResult();
 
         assertEquals(Color.RED, results.getData().get(0));
     }
@@ -265,11 +265,11 @@ public class GraphSONMessageSerializerV4Test {
         GraphSONMapper.Builder builder = GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV3.build());
         GraphSONMessageSerializerV4 graphSONMessageSerializerV4 = new GraphSONMessageSerializerV4(builder);
 
-        ResponseMessageV4 rm = convert("hello", graphSONMessageSerializerV4);
+        ResponseMessage rm = convert("hello", graphSONMessageSerializerV4);
         assertEquals(rm.getResult().getData().get(0), "hello");
     }
 
-    private ResponseMessageV4 convert(final Object toSerialize, MessageSerializerV4<?> serializer) throws SerializationException {
+    private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(
                 responseMessageBuilder.result(Collections.singletonList(toSerialize)).code(HttpResponseStatus.OK).create(), allocator);
         return serializer.deserializeBinaryResponse(bb);

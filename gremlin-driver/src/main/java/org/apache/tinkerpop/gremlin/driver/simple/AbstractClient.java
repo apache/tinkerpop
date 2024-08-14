@@ -22,14 +22,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -45,27 +42,27 @@ public abstract class AbstractClient implements SimpleClient {
         group = new NioEventLoopGroup(1, threadFactory);
     }
 
-    public abstract void writeAndFlush(final RequestMessageV4 requestMessage) throws Exception;
+    public abstract void writeAndFlush(final RequestMessage requestMessage) throws Exception;
 
     @Override
-    public void submit(final RequestMessageV4 requestMessage, final Consumer<ResponseMessageV4> callback) throws Exception {
+    public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
         callbackResponseHandler.callback = callback;
         writeAndFlush(requestMessage);
     }
 
     @Override
-    public List<ResponseMessageV4> submit(final RequestMessageV4 requestMessage) throws Exception {
+    public List<ResponseMessage> submit(final RequestMessage requestMessage) throws Exception {
         // this is just a test client to force certain behaviors of the server. hanging tests are a pain to deal with
         // especially in travis as it's not always clear where the hang is. a few reasonable timeouts might help
         // make debugging easier when we look at logs
         return submitAsync(requestMessage).get(180, TimeUnit.SECONDS);
     }
 
-    static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessageV4> {
-        public Consumer<ResponseMessageV4> callback;
+    static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+        public Consumer<ResponseMessage> callback;
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessageV4 response) throws Exception {
+        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             callback.accept(response);
         }
     }

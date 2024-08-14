@@ -25,9 +25,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 
 import java.io.File;
 import java.io.IOException;
@@ -121,8 +121,8 @@ public abstract class AbstractCompatibilityTest {
         assertEquals(expected.value(), actual.value());
     }
 
-    protected static void assertResponseMessage(final ResponseMessageV4 resource, final ResponseMessageV4 fromStatic,
-                                              final ResponseMessageV4 recycled) {
+    protected static void assertResponseMessage(final ResponseMessage resource, final ResponseMessage fromStatic,
+                                                final ResponseMessage recycled) {
         assertEquals(resource.getStatus().getCode().code(), recycled.getStatus().getCode().code());
         assertEquals(resource.getStatus().getMessage(), recycled.getStatus().getMessage());
         assertEquals(resource.getStatus().getException(), recycled.getStatus().getException());
@@ -134,21 +134,21 @@ public abstract class AbstractCompatibilityTest {
         assertEquals(resource.getResult().getData(), fromStatic.getResult().getData());
     }
 
-    protected static void assertRequestMessage(final RequestMessageV4 resource, final RequestMessageV4 fromStatic,
-                                             final RequestMessageV4 recycled) {
+    protected static void assertRequestMessage(final RequestMessage resource, final RequestMessage fromStatic,
+                                               final RequestMessage recycled) {
         // Check per field rather than map equals since a new field may get added later.
         assertEquals(resource.getGremlin(), recycled.getGremlin());
-        assertEquals(resource.<Map>getField(SerTokensV4.TOKEN_BINDINGS), recycled.getField(SerTokensV4.TOKEN_BINDINGS));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_LANGUAGE), recycled.getField(SerTokensV4.TOKEN_LANGUAGE));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_G), recycled.getField(SerTokensV4.TOKEN_G));
-        assertEquals(resource.<Long>getField(SerTokensV4.TOKEN_TIMEOUT_MS), recycled.getField(SerTokensV4.TOKEN_TIMEOUT_MS));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_MATERIALIZE_PROPERTIES), recycled.getField(SerTokensV4.TOKEN_MATERIALIZE_PROPERTIES));
+        assertEquals(resource.<Map>getField(SerTokens.TOKEN_BINDINGS), recycled.getField(SerTokens.TOKEN_BINDINGS));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), recycled.getField(SerTokens.TOKEN_LANGUAGE));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_G), recycled.getField(SerTokens.TOKEN_G));
+        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), recycled.getField(SerTokens.TOKEN_TIMEOUT_MS));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES), recycled.getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES));
 
         assertEquals(resource.getGremlin(), fromStatic.getGremlin());
-        assertEquals(resource.<Map>getField(SerTokensV4.TOKEN_BINDINGS), fromStatic.getField(SerTokensV4.TOKEN_BINDINGS));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_LANGUAGE), fromStatic.getField(SerTokensV4.TOKEN_LANGUAGE));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_G), fromStatic.getField(SerTokensV4.TOKEN_G));
-        assertEquals(resource.<Long>getField(SerTokensV4.TOKEN_TIMEOUT_MS), fromStatic.getField(SerTokensV4.TOKEN_TIMEOUT_MS));
-        assertEquals(resource.<String>getField(SerTokensV4.TOKEN_MATERIALIZE_PROPERTIES), fromStatic.getField(SerTokensV4.TOKEN_MATERIALIZE_PROPERTIES));
+        assertEquals(resource.<Map>getField(SerTokens.TOKEN_BINDINGS), fromStatic.getField(SerTokens.TOKEN_BINDINGS));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), fromStatic.getField(SerTokens.TOKEN_LANGUAGE));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_G), fromStatic.getField(SerTokens.TOKEN_G));
+        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), fromStatic.getField(SerTokens.TOKEN_TIMEOUT_MS));
+        assertEquals(resource.<String>getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES), fromStatic.getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES));
     }
 }

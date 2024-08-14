@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
 
 import javax.script.Bindings;
 import java.util.Map;

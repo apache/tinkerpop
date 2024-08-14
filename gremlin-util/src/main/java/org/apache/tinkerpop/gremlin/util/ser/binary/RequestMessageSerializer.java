@@ -22,19 +22,19 @@ import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.io.IOException;
 import java.util.Map;
 
-public class RequestMessageSerializerV4 {
+public class RequestMessageSerializer {
     private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
-    public RequestMessageV4 readValue(final ByteBuf byteBuf, final GraphBinaryReader context) throws SerializationException {
+    public RequestMessage readValue(final ByteBuf byteBuf, final GraphBinaryReader context) throws SerializationException {
         // Wrap netty's buffer
         final Buffer buffer = bufferFactory.create(byteBuf);
 
@@ -51,24 +51,24 @@ public class RequestMessageSerializerV4 {
 
             final String gremlin = context.readValue(buffer, String.class, false);
 
-            final RequestMessageV4.Builder builder = RequestMessageV4.build(gremlin);
-            if (fields.containsKey(SerTokensV4.TOKEN_LANGUAGE)) {
-                builder.addLanguage(fields.get(SerTokensV4.TOKEN_LANGUAGE).toString());
+            final RequestMessage.Builder builder = RequestMessage.build(gremlin);
+            if (fields.containsKey(SerTokens.TOKEN_LANGUAGE)) {
+                builder.addLanguage(fields.get(SerTokens.TOKEN_LANGUAGE).toString());
             }
-            if (fields.containsKey(SerTokensV4.TOKEN_G)) {
-                builder.addG(fields.get(SerTokensV4.TOKEN_G).toString());
+            if (fields.containsKey(SerTokens.TOKEN_G)) {
+                builder.addG(fields.get(SerTokens.TOKEN_G).toString());
             }
-            if (fields.containsKey(SerTokensV4.TOKEN_BINDINGS)) {
-                builder.addBindings((Map<String, Object>) fields.get(SerTokensV4.TOKEN_BINDINGS));
+            if (fields.containsKey(SerTokens.TOKEN_BINDINGS)) {
+                builder.addBindings((Map<String, Object>) fields.get(SerTokens.TOKEN_BINDINGS));
             }
-            if (fields.containsKey(TokensV4.TIMEOUT_MS)) {
-                builder.addTimeoutMillis((long) fields.get(TokensV4.TIMEOUT_MS));
+            if (fields.containsKey(Tokens.TIMEOUT_MS)) {
+                builder.addTimeoutMillis((long) fields.get(Tokens.TIMEOUT_MS));
             }
-            if (fields.containsKey(TokensV4.ARGS_MATERIALIZE_PROPERTIES)) {
-                builder.addMaterializeProperties(fields.get(TokensV4.ARGS_MATERIALIZE_PROPERTIES).toString());
+            if (fields.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
+                builder.addMaterializeProperties(fields.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
             }
-            if (fields.containsKey(TokensV4.ARGS_BATCH_SIZE)) {
-                builder.addChunkSize((int) fields.get(TokensV4.ARGS_BATCH_SIZE));
+            if (fields.containsKey(Tokens.ARGS_BATCH_SIZE)) {
+                builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
             }
 
             return builder.create();
@@ -77,7 +77,7 @@ public class RequestMessageSerializerV4 {
         }
     }
 
-    public void writeValue(final RequestMessageV4 value, final ByteBuf byteBuf, final GraphBinaryWriter context) throws SerializationException {
+    public void writeValue(final RequestMessage value, final ByteBuf byteBuf, final GraphBinaryWriter context) throws SerializationException {
         // Wrap netty's buffer
         final Buffer buffer = bufferFactory.create(byteBuf);
 

@@ -19,7 +19,6 @@ under the License.
 
 package examples;
 
-import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
@@ -29,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -95,7 +94,7 @@ public class Connections {
     private static void withSerializer() throws Exception {
         IoRegistry registry = new FakeIoRegistry(); // an IoRegistry instance exposed by a specific graph provider
         TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
-        MessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
+        MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
         Cluster cluster = Cluster.build("localhost").
             serializer(serializer).
             create();

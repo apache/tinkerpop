@@ -26,8 +26,8 @@ import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -100,12 +100,12 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final UUID id = UUID.randomUUID();
 
-    private static final ResponseMessageV4 response = ResponseMessageV4
+    private static final ResponseMessage response = ResponseMessage
             .build().code(HttpResponseStatus.OK).result(Collections.singletonList(new ReferenceVertex(1, "person")))
             .create();
 
     private static final GremlinLang gremlinLang = new GremlinLang();
-    private static final RequestMessageV4 request = RequestMessageV4
+    private static final RequestMessage request = RequestMessage
             .build(gremlinLang.getGremlin())
             .create();
 
@@ -120,26 +120,26 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public RequestMessageV4 testReadMessage1Binary() throws SerializationException {
+    public RequestMessage testReadMessage1Binary() throws SerializationException {
         RequestMessageBinaryBuffer1.readerIndex(0);
 
         return binarySerializer.deserializeBinaryRequest(RequestMessageBinaryBuffer1);
     }
 
     @Benchmark
-    public RequestMessageV4 testReadMessage2Binary() throws SerializationException {
+    public RequestMessage testReadMessage2Binary() throws SerializationException {
         RequestMessageBinaryBuffer2.readerIndex(0);
         return binarySerializer.deserializeBinaryRequest(RequestMessageBinaryBuffer2);
     }
 
     @Benchmark
-    public RequestMessageV4 testReadMessage1GraphSON() throws SerializationException {
+    public RequestMessage testReadMessage1GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer1.readerIndex(0);
         return graphsonSerializer.deserializeBinaryRequest(RequestMessageGraphSONBuffer1);
     }
 
     @Benchmark
-    public RequestMessageV4 testReadMessage2GraphSON() throws SerializationException {
+    public RequestMessage testReadMessage2GraphSON() throws SerializationException {
         RequestMessageGraphSONBuffer2.readerIndex(0);
         return graphsonSerializer.deserializeBinaryRequest(RequestMessageGraphSONBuffer2);
     }
@@ -169,7 +169,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
     }
 
     @Benchmark
-    public RequestMessageV4 testInstanceCreation() {
-        return RequestMessageV4.build("a").addLanguage("gremlin-groovy").addG("g").create();
+    public RequestMessage testInstanceCreation() {
+        return RequestMessage.build("a").addLanguage("gremlin-groovy").addG("g").create();
     }
 }

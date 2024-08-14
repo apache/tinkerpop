@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +43,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
 
 /**
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
@@ -71,11 +69,11 @@ public abstract class Client {
     }
 
     /**
-     * Makes any initial changes to the builder and returns the constructed {@link RequestMessageV4}.  Implementers
+     * Makes any initial changes to the builder and returns the constructed {@link RequestMessage}.  Implementers
      * may choose to override this message to append data to the request before sending.  By default, this method
      * will simply return the {@code builder} passed in by the caller.
      */
-    public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
+    public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
         return builder;
     }
 
@@ -87,7 +85,7 @@ public abstract class Client {
     /**
      * Chooses a {@link Connection} to write the message to.
      */
-    protected abstract Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException;
+    protected abstract Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException;
 
     /**
      * Asynchronous close of the {@code Client}.
@@ -231,7 +229,7 @@ public abstract class Client {
 
         // need to call buildMessage() right away to get client specific configurations, that way request specific
         // ones can override as needed
-        final RequestMessageV4.Builder request = buildMessage(RequestMessageV4.build(gremlin))
+        final RequestMessage.Builder request = buildMessage(RequestMessage.build(gremlin))
                 .addChunkSize(batchSize);
 
         // apply settings if they were made available
@@ -245,9 +243,9 @@ public abstract class Client {
     }
 
     /**
-     * A low-level method that allows the submission of a manually constructed {@link RequestMessageV4}.
+     * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
      */
-    public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
+    public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
         if (isClosing()) throw new IllegalStateException("Client is closed");
 
         if (!initialized)
@@ -349,7 +347,7 @@ public abstract class Client {
          * from that host's connection pool.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException {
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
 
             // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
@@ -483,8 +481,8 @@ public abstract class Client {
         }
 
         @Override
-        public CompletableFuture<ResultSet> submitAsync(final RequestMessageV4 msg) {
-            final RequestMessageV4.Builder builder = RequestMessageV4.from(msg);
+        public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+            final RequestMessage.Builder builder = RequestMessage.from(msg);
 
             builder.addG(graphOrTraversalSource);
 
@@ -502,7 +500,7 @@ public abstract class Client {
         }
 
         @Override
-        public RequestMessageV4.Builder buildMessage(final RequestMessageV4.Builder builder) {
+        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             builder.addG(graphOrTraversalSource);
 
@@ -523,7 +521,7 @@ public abstract class Client {
          * Delegates to the underlying {@link Client.ClusteredClient}.
          */
         @Override
-        protected Connection chooseConnection(final RequestMessageV4 msg) throws TimeoutException, ConnectionException {
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             return client.chooseConnection(msg);
         }
