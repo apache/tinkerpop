@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -38,18 +38,18 @@ import static org.junit.Assert.assertNull;
 
 public class GraphSONUntypedMessageSerializerV4Test {
 
-    private final ResponseMessageV4.Builder responseMessageBuilder = ResponseMessageV4.build();
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
     private final GraphSONUntypedMessageSerializerV4 serializer = new GraphSONUntypedMessageSerializerV4();
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void shouldSerializeChunkedResponseMessage() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.OK)
                 .create();
@@ -73,7 +73,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
 
         // a message composed of all chunks must be deserialized
         bbCombined.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals(null, deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
@@ -81,7 +81,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeResponseMessageWithoutData() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .create();
 
@@ -96,7 +96,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals(null, deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -104,7 +104,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithEmptyData() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(new ArrayList<>())
                 .code(HttpResponseStatus.OK)
                 .statusMessage("OK")
@@ -121,7 +121,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         bb0.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bb0);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -129,11 +129,11 @@ public class GraphSONUntypedMessageSerializerV4Test {
 
     @Test
     public void shouldSerializeChunkedResponseMessageWithError() throws SerializationException, JsonProcessingException {
-        final ResponseMessageV4 header = ResponseMessageV4.build()
+        final ResponseMessage header = ResponseMessage.build()
                 .result(Arrays.asList("header", 0))
                 .create();
 
-        final ResponseMessageV4 footer = ResponseMessageV4.build()
+        final ResponseMessage footer = ResponseMessage.build()
                 .result(Arrays.asList("footer", 3))
                 .code(HttpResponseStatus.INTERNAL_SERVER_ERROR)
                 .statusMessage("SERVER_ERROR")
@@ -157,7 +157,7 @@ public class GraphSONUntypedMessageSerializerV4Test {
         assertEquals(500, node.get("status").get("code").asInt());
 
         bbCombined.resetReaderIndex();
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
         assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());

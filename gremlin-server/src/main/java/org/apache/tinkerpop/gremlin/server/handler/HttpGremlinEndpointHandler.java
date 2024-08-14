@@ -27,7 +27,6 @@ import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -56,11 +55,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -105,13 +104,13 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.sendTr
 import static org.apache.tinkerpop.gremlin.server.handler.HttpHandlerUtil.writeError;
 
 /**
- * Handler that processes RequestMessageV4. This handler will attempt to execute the query and stream the results back
+ * Handler that processes RequestMessage. This handler will attempt to execute the query and stream the results back
  * in HTTP chunks to the client.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<RequestMessageV4> {
+public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
@@ -162,9 +161,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx, final RequestMessageV4 requestMessage) {
+    public void channelRead0(final ChannelHandlerContext ctx, final RequestMessage requestMessage) {
         ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(false);
-        final Pair<String, MessageSerializerV4<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
+        final Pair<String, MessageSerializer<?>> serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
 
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
                 gremlinExecutor.getScheduledExecutorService(), NOT_STARTED);
@@ -172,7 +171,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
-        final Long timeoutMs = requestMessage.getField(TokensV4.TIMEOUT_MS);
+        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
         final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -180,8 +179,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
-                        requestMessage.getFieldOrDefault(TokensV4.ARGS_GREMLIN, ""),
-                        requestMessage.getFieldOrDefault(TokensV4.ARGS_BINDINGS, Collections.emptyMap()),
+                        requestMessage.getFieldOrDefault(Tokens.ARGS_GREMLIN, ""),
+                        requestMessage.getFieldOrDefault(Tokens.ARGS_BINDINGS, Collections.emptyMap()),
                         Thread.currentThread().getName());
                 if (settings.enableAuditLog) {
                     AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -239,7 +238,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
     }
 
-    private GremlinError formErrorResponseMessage(Throwable t, RequestMessageV4 requestMessage) {
+    private GremlinError formErrorResponseMessage(Throwable t, RequestMessage requestMessage) {
         if (t instanceof UndeclaredThrowableException) t = t.getCause();
 
         // if any exception in the chain is TemporaryException or Failure then we should respond with the
@@ -286,10 +285,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return GremlinError.general(t);
     }
 
-    private void iterateScriptEvalResult(final Context context, MessageSerializerV4<?> serializer, final RequestMessageV4 message)
+    private void iterateScriptEvalResult(final Context context, MessageSerializer<?> serializer, final RequestMessage message)
             throws ProcessingException, InterruptedException, ScriptException {
-        if (message.optionalField(TokensV4.ARGS_BINDINGS).isPresent()) {
-            final Map bindings = (Map) message.getFields().get(TokensV4.ARGS_BINDINGS);
+        if (message.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
+            final Map bindings = (Map) message.getFields().get(Tokens.ARGS_BINDINGS);
             if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
                 throw new ProcessingException(GremlinError.binding());
             }
@@ -306,7 +305,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final Map<String, Object> args = message.getFields();
-        final String language = args.containsKey(TokensV4.ARGS_LANGUAGE) ? (String) args.get(TokensV4.ARGS_LANGUAGE) : "gremlin-groovy";
+        final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-groovy";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
@@ -326,19 +325,19 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     private Bindings mergeBindingsFromRequest(final Context ctx, final Bindings bindings) throws ProcessingException {
         // alias any global bindings to a different variable.
-        final RequestMessageV4 msg = ctx.getRequestMessage();
+        final RequestMessage msg = ctx.getRequestMessage();
 
         // add any bindings to override any other supplied
-        Optional.ofNullable((Map<String, Object>) msg.getFields().get(TokensV4.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+        Optional.ofNullable((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
 
-        if (msg.getFields().containsKey(TokensV4.ARGS_G)) {
-            final String aliased = msg.getField(TokensV4.ARGS_G);
+        if (msg.getFields().containsKey(Tokens.ARGS_G)) {
+            final String aliased = msg.getField(Tokens.ARGS_G);
             boolean found = false;
 
             // first check if the alias refers to a Graph instance
             final Graph graph = ctx.getGraphManager().getGraph(aliased);
             if (null != graph) {
-                bindings.put(TokensV4.ARGS_G, graph);
+                bindings.put(Tokens.ARGS_G, graph);
                 found = true;
             }
 
@@ -347,7 +346,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             if (!found) {
                 final TraversalSource ts = ctx.getGraphManager().getTraversalSource(aliased);
                 if (null != ts) {
-                    bindings.put(TokensV4.ARGS_G, ts);
+                    bindings.put(Tokens.ARGS_G, ts);
                     found = true;
                 }
             }
@@ -362,7 +361,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return bindings;
     }
 
-    private void iterateTraversal(final Context context, MessageSerializerV4<?> serializer, Traversal.Admin<?, ?> traversal)
+    private void iterateTraversal(final Context context, MessageSerializer<?> serializer, Traversal.Admin<?, ?> traversal)
             throws InterruptedException {
         final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
         logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
@@ -372,9 +371,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         handleIterator(context, new TraverserIterator(traversal), serializer);
     }
 
-    private void handleIterator(final Context context, final Iterator itty, final MessageSerializerV4<?> serializer) throws InterruptedException {
+    private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
-        final RequestMessageV4 msg = context.getRequestMessage();
+        final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
         boolean warnOnce = false;
 
@@ -394,7 +393,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         // the batch size can be overridden by the request
-        final int resultIterationBatchSize = (Integer) msg.optionalField(TokensV4.ARGS_BATCH_SIZE)
+        final int resultIterationBatchSize = (Integer) msg.optionalField(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
 
@@ -506,8 +505,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return false;
     }
 
-    private static ByteBuf makeChunk(final Context ctx, final RequestMessageV4 msg,
-                                     final MessageSerializerV4<?> serializer, final List<Object> aggregate,
+    private static ByteBuf makeChunk(final Context ctx, final RequestMessage msg,
+                                     final MessageSerializer<?> serializer, final List<Object> aggregate,
                                      final boolean hasMore) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
@@ -518,11 +517,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 ctx.setRequestState(FINISHING);
             }
 
-            ResponseMessageV4 responseMessage = null;
+            ResponseMessage responseMessage = null;
 
             // for this state no need to build full ResponseMessage
             if (ctx.getRequestState() != STREAMING) {
-                final ResponseMessageV4.Builder builder = ResponseMessageV4.build().result(aggregate);
+                final ResponseMessage.Builder builder = ResponseMessage.build().result(aggregate);
 
                 // need to put status in last message
                 if (ctx.getRequestState() == FINISHING) {
@@ -540,7 +539,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     }
                     ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessageV4.build()
+                    return serializer.serializeResponseAsBinary(ResponseMessage.build()
                             .result(aggregate)
                             .code(HttpResponseStatus.OK)
                             .create(), nettyContext.alloc());

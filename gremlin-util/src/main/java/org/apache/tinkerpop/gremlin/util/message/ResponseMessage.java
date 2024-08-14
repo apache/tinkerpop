@@ -24,27 +24,27 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The model for a response message that is sent to the server beginning in 4.0.0. ResponseMessageV4 is designed to be
+ * The model for a response message that is sent to the server beginning in 4.0.0. ResponseMessage is designed to be
  * streamed back the client in parts so depending on the state of the transfer, certain parts may be null at different
  * times.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ResponseMessageV4 {
-    private final ResponseStatusV4 responseStatus;
-    private final ResponseResultV4 responseResult;
+public final class ResponseMessage {
+    private final ResponseStatus responseStatus;
+    private final ResponseResult responseResult;
 
-    private ResponseMessageV4(final ResponseStatusV4 responseStatus,
-                            final ResponseResultV4 responseResult) {
+    private ResponseMessage(final ResponseStatus responseStatus,
+                            final ResponseResult responseResult) {
         this.responseResult = responseResult;
         this.responseStatus = responseStatus;
     }
 
-    public ResponseStatusV4 getStatus() {
+    public ResponseStatus getStatus() {
         return responseStatus;
     }
 
-    public ResponseResultV4 getResult() {
+    public ResponseResult getResult() {
         return responseResult;
     }
 
@@ -57,15 +57,15 @@ public final class ResponseMessageV4 {
     }
 
     public static class ResponseMessageHeader {
-        private final ResponseMessageV4 responseMessage;
+        private final ResponseMessage responseMessage;
         private final boolean typed;
 
-        public ResponseMessageHeader(final ResponseMessageV4 responseMessage, final boolean typed) {
+        public ResponseMessageHeader(final ResponseMessage responseMessage, final boolean typed) {
             this.responseMessage = responseMessage;
             this.typed = typed;
         }
 
-        public ResponseMessageV4 getResponseMessage() {
+        public ResponseMessage getResponseMessage() {
             return responseMessage;
         }
 
@@ -75,15 +75,15 @@ public final class ResponseMessageV4 {
     }
 
     public static class ResponseMessageFooter {
-        private final ResponseMessageV4 responseMessage;
+        private final ResponseMessage responseMessage;
         private final boolean typed;
 
-        public ResponseMessageFooter(final ResponseMessageV4 responseMessage, final boolean typed) {
+        public ResponseMessageFooter(final ResponseMessage responseMessage, final boolean typed) {
             this.responseMessage = responseMessage;
             this.typed = typed;
         }
 
-        public ResponseMessageV4 getResponseMessage() {
+        public ResponseMessage getResponseMessage() {
             return responseMessage;
         }
 
@@ -124,14 +124,14 @@ public final class ResponseMessageV4 {
             return this;
         }
 
-        public ResponseMessageV4 create() {
-            final ResponseResultV4 responseResult = new ResponseResultV4(result);
+        public ResponseMessage create() {
+            final ResponseResult responseResult = new ResponseResult(result);
             // skip null values
             if (code == null && statusMessage == null) {
-                return new ResponseMessageV4(null, responseResult);
+                return new ResponseMessage(null, responseResult);
             }
-            final ResponseStatusV4 responseStatus = new ResponseStatusV4(code, statusMessage, exception);
-            return new ResponseMessageV4(responseStatus, responseResult);
+            final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, exception);
+            return new ResponseMessage(responseStatus, responseResult);
         }
     }
 }

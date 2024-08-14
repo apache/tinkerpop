@@ -50,8 +50,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -78,7 +78,7 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPl
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.util.TokensV4.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -475,7 +475,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(resultCountToGenerate);
             final AtomicBoolean expected = new AtomicBoolean(false);
             final AtomicBoolean faulty = new AtomicBoolean(false);
-            final RequestMessageV4 request = RequestMessageV4.build(fattyX)
+            final RequestMessage request = RequestMessage.build(fattyX)
                     .addChunkSize(batchSize).create();
 
             client.submitAsync(request).thenAcceptAsync(r -> {
@@ -511,7 +511,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
-            final RequestMessageV4 request = RequestMessageV4.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -530,7 +530,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("id", "123");
-            final RequestMessageV4 request = RequestMessageV4.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -553,7 +553,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 123);
             bindings.put("y", 123);
-            final RequestMessageV4 request = RequestMessageV4.build("x+y")
+            final RequestMessage request = RequestMessage.build("x+y")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -572,7 +572,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 123);
-            final RequestMessageV4 request = RequestMessageV4.build("x+123")
+            final RequestMessage request = RequestMessage.build("x+123")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -594,7 +594,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(null, "123");
-            final RequestMessageV4 request = RequestMessageV4.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -615,9 +615,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build("[0,1,2,3,4,5,6,7,8,9]").create();
+            final RequestMessage request = RequestMessage.build("[0,1,2,3,4,5,6,7,8,9]").create();
 
-            final List<ResponseMessageV4> msgs = client.submit(request);
+            final List<ResponseMessage> msgs = client.submit(request);
             assertEquals(0, (int) msgs.get(0).getResult().getData().get(0));
             assertEquals(1, (int) msgs.get(0).getResult().getData().get(1));
             assertEquals(2, (int) msgs.get(1).getResult().getData().get(0));
@@ -628,7 +628,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(7, (int) msgs.get(3).getResult().getData().get(1));
             assertEquals(8, (int) msgs.get(4).getResult().getData().get(0));
             assertEquals(9, (int) msgs.get(4).getResult().getData().get(1));
-            for (ResponseMessageV4 resp : msgs.subList(5, msgs.size())) {
+            for (ResponseMessage resp : msgs.subList(5, msgs.size())) {
                 assertEquals(0, resp.getResult().getData().size());
             }
         }
@@ -653,7 +653,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldNotThrowNoSuchElementException() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // this should return "nothing" - there should be no exception
-            final List<ResponseMessageV4> responses = client.submit("g.V().has('name','kadfjaldjfla')");
+            final List<ResponseMessage> responses = client.submit("g.V().has('name','kadfjaldjfla')");
             assertTrue(((List) responses.get(0).getResult().getData()).isEmpty());
         }
     }
@@ -662,7 +662,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            final List<ResponseMessageV4> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
+            final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
             assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
@@ -674,10 +674,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnEvalUsingOverride() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 msg = RequestMessageV4.build("Thread.sleep(3000);'some-stuff-that-should not return'")
+            final RequestMessage msg = RequestMessage.build("Thread.sleep(3000);'some-stuff-that-should not return'")
                     .addTimeoutMillis(100L)
                     .create();
-            final List<ResponseMessageV4> responses = client.submit(msg);
+            final List<ResponseMessage> responses = client.submit(msg);
             assertThat(responses.get(0).getStatus().getMessage(), containsString("A timeout occurred during traversal evaluation"));
 
             // validate that we can still send messages to the server
@@ -690,7 +690,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // timeout configured for 1 second so the timed interrupt should trigger prior to the
             // evaluationTimeout which is at 30 seconds by default
-            final List<ResponseMessageV4> responses = client.submit("while(true){}");
+            final List<ResponseMessage> responses = client.submit("while(true){}");
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
@@ -813,10 +813,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldNotHavePartialContentWithOneResult() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build("10").create();
-            final List<ResponseMessageV4> responses = client.submit(request);
+            final RequestMessage request = RequestMessage.build("10").create();
+            final List<ResponseMessage> responses = client.submit(request);
             assertEquals(10, responses.get(0).getResult().getData().get(0));
-            for (ResponseMessageV4 resp : responses.subList(1, responses.size())) {
+            for (ResponseMessage resp : responses.subList(1, responses.size())) {
                 assertEquals(0, resp.getResult().getData().size());
             }
         }
@@ -825,8 +825,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build("new String[100]").create();
-            final List<ResponseMessageV4> responses = client.submit(request);
+            final RequestMessage request = RequestMessage.build("new String[100]").create();
+            final List<ResponseMessage> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
 
             // first message have no status
@@ -839,10 +839,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldFailWithBadScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessageV4 request = RequestMessageV4.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
-            final List<ResponseMessageV4> responses = client.submit(request);
+            final RequestMessage request = RequestMessage.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
+            final List<ResponseMessage> responses = client.submit(request);
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, responses.get(0).getStatus().getCode());
-            for (ResponseMessageV4 resp : responses.subList(1, responses.size())) {
+            for (ResponseMessage resp : responses.subList(1, responses.size())) {
                 assertEquals(0, resp.getResult().getData().size());
             }
         }

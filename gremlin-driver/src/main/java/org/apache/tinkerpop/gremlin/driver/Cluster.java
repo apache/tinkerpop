@@ -30,9 +30,9 @@ import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,7 +279,7 @@ public final class Cluster {
     }
 
     /**
-     * Get the {@link MessageSerializerV4} MIME types supported.
+     * Get the {@link MessageSerializer} MIME types supported.
      */
     public String[] getSerializers() {
         return getSerializer().mimeTypesSupported();
@@ -359,7 +359,7 @@ public final class Cluster {
         return manager.factory;
     }
 
-    MessageSerializerV4<?> getSerializer() {
+    MessageSerializer<?> getSerializer() {
         return manager.serializer;
     }
 
@@ -387,7 +387,7 @@ public final class Cluster {
         return manager.loadBalancingStrategy;
     }
 
-    RequestMessageV4.Builder validationRequest() {
+    RequestMessage.Builder validationRequest() {
         return manager.validationRequest.get();
     }
 
@@ -468,7 +468,7 @@ public final class Cluster {
         private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
-        private MessageSerializerV4<?> serializer = null;
+        private MessageSerializer<?> serializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
@@ -529,28 +529,28 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializerV4} to use given the exact name of a {@link SerializersV4} enum.  Note that
+         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
          * setting this value this way will not allow specific configuration of the serializer itself.  If specific
-         * configuration is required * please use {@link #serializer(MessageSerializerV4)}.
+         * configuration is required * please use {@link #serializer(MessageSerializer)}.
          */
         public Builder serializer(final String mimeType) {
-            serializer = SerializersV4.valueOf(mimeType).simpleInstance();
+            serializer = Serializers.valueOf(mimeType).simpleInstance();
             return this;
         }
 
         /**
-         * Set the {@link MessageSerializerV4} to use via the {@link SerializersV4} enum. If specific configuration is
-         * required please use {@link #serializer(MessageSerializerV4)}.
+         * Set the {@link MessageSerializer} to use via the {@link Serializers} enum. If specific configuration is
+         * required please use {@link #serializer(MessageSerializer)}.
          */
-        public Builder serializer(final SerializersV4 mimeType) {
+        public Builder serializer(final Serializers mimeType) {
             serializer = mimeType.simpleInstance();
             return this;
         }
 
         /**
-         * Sets the {@link MessageSerializerV4} to use.
+         * Sets the {@link MessageSerializer} to use.
          */
-        public Builder serializer(final MessageSerializerV4<?> serializer) {
+        public Builder serializer(final MessageSerializer<?> serializer) {
             this.serializer = serializer;
             return this;
         }
@@ -804,7 +804,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.isEmpty()) addContactPoint("localhost");
-            if (null == serializer) serializer = SerializersV4.GRAPHBINARY_V4.simpleInstance();
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
             return new Cluster(this);
         }
     }
@@ -839,11 +839,11 @@ public final class Cluster {
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
         private final Factory factory;
-        private final MessageSerializerV4<?> serializer;
+        private final MessageSerializer<?> serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final Optional<SslContext> sslContextOptional;
-        private final Supplier<RequestMessageV4.Builder> validationRequest;
+        private final Supplier<RequestMessage.Builder> validationRequest;
         private final List<RequestInterceptor> interceptor;
 
         /**
@@ -926,7 +926,7 @@ public final class Cluster {
             this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
-            validationRequest = () -> RequestMessageV4.build(builder.validationRequest);
+            validationRequest = () -> RequestMessage.build(builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {

@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -38,13 +36,11 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
-import org.hamcrest.CoreMatchers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -71,18 +67,18 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        final MessageSerializerV4<GraphBinaryMapper> graphBinaryMessageSerializerV4 = new GraphBinaryMessageSerializerV4();
+        final MessageSerializer<GraphBinaryMapper> graphBinaryMessageSerializerV4 = new GraphBinaryMessageSerializerV4();
 
         return Arrays.asList(new Object[][]{
-                {SerializersV4.GRAPHBINARY_V4, graphBinaryMessageSerializerV4}
+                {Serializers.GRAPHBINARY_V4, graphBinaryMessageSerializerV4}
         });
     }
 
     @Parameterized.Parameter(value = 0)
-    public SerializersV4 name;
+    public Serializers name;
 
     @Parameterized.Parameter(value = 1)
-    public MessageSerializerV4<?> messageSerializer;
+    public MessageSerializer<?> messageSerializer;
 
     @Before
     public void beforeTest() {

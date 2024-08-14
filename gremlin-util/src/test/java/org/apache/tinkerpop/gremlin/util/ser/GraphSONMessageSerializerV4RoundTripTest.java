@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertEquals;
 
 public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripTest {
-    private final ResponseMessageV4.Builder responseMessageBuilder = ResponseMessageV4.build();
+    private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();

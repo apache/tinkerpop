@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
-import static org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializerV4.TOKEN_IO_REGISTRIES;
+import static org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer.TOKEN_IO_REGISTRIES;
 import static org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4.TOKEN_CUSTOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -103,9 +103,9 @@ public class SamplePersonSerializerTest {
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
         final ByteBuf serialized = serializer.serializeResponseAsBinary(
-                ResponseMessageV4.build().result(Collections.singletonList(person)).code(HttpResponseStatus.OK).create(), allocator);
+                ResponseMessage.build().result(Collections.singletonList(person)).code(HttpResponseStatus.OK).create(), allocator);
 
-        final ResponseMessageV4 deserialized = serializer.deserializeBinaryResponse(serialized);
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(serialized);
 
         final SamplePerson actual = (SamplePerson) deserialized.getResult().getData().get(0);
         assertThat(actual, reflectionEquals(person));

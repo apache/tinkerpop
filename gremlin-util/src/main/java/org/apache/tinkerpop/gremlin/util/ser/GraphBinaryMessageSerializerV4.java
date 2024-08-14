@@ -31,10 +31,10 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusV4;
-import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
+import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializer;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
@@ -47,17 +47,17 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<GraphBinaryMapper> {
+public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<GraphBinaryMapper> {
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_BUILDER = "builder";
 
     private GraphBinaryReader reader;
     private GraphBinaryWriter writer;
-    private RequestMessageSerializerV4 requestSerializer;
+    private RequestMessageSerializer requestSerializer;
     private final GraphBinaryMapper mapper;
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
-    private static final String MIME_TYPE = SerTokensV4.MIME_GRAPHBINARY_V4;
+    private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
 
     /**
      * Creates a new instance of the message serializer using the default type serializers.
@@ -71,7 +71,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         writer = new GraphBinaryWriter(registry);
         mapper = new GraphBinaryMapper(writer, reader);
 
-        requestSerializer = new RequestMessageSerializerV4();
+        requestSerializer = new RequestMessageSerializer();
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry.Builder builder) {
@@ -125,7 +125,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
 
-        requestSerializer = new RequestMessageSerializerV4();
+        requestSerializer = new RequestMessageSerializer();
     }
 
     @Override
@@ -162,7 +162,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(RequestMessageV4 requestMessage, ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
         final ByteBuf buffer = allocator.buffer();
 
         try {
@@ -176,14 +176,14 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     }
 
     @Override
-    public RequestMessageV4 deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
+    public RequestMessage deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
         return requestSerializer.readValue(msg, reader);
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         if (null == responseMessage.getStatus()) {
-            throw new SerializationException("ResponseStatusV4 can't be null when serializing a full ResponseMessageV4.");
+            throw new SerializationException("ResponseStatus can't be null when serializing a full ResponseMessage.");
         }
 
         return writeHeader(responseMessage, allocator);
@@ -191,7 +191,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
 
     //////////////// chunked write
     @Override
-    public ByteBuf writeHeader(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         final EnumSet<MessageParts> parts = responseMessage.getStatus() != null ? MessageParts.ALL : MessageParts.START;
 
         return write(responseMessage, null, allocator, parts);
@@ -203,16 +203,16 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     }
 
     @Override
-    public ByteBuf writeFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return write(responseMessage, null, allocator, MessageParts.END);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         return write(responseMessage, null, allocator, MessageParts.ERROR);
     }
 
-    private ByteBuf write(final ResponseMessageV4 responseMessage, final Object aggregate,
+    private ByteBuf write(final ResponseMessage responseMessage, final Object aggregate,
                           final ByteBufAllocator allocator, final EnumSet<MessageParts> parts) throws SerializationException {
         final ByteBuf byteBuf = allocator.buffer();
         final Buffer buffer = bufferFactory.create(byteBuf);
@@ -235,7 +235,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
             }
 
             if (parts.contains(MessageParts.FOOTER)) {
-                final ResponseStatusV4 status = responseMessage.getStatus();
+                final ResponseStatus status = responseMessage.getStatus();
 
                 // we don't know how much data we have, so need a special object
                 writer.write(Marker.END_OF_STREAM, buffer);
@@ -255,7 +255,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     //////////////// read message methods
 
     @Override
-    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
+    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
         return readChunk(msg, true);
     }
 
@@ -280,13 +280,13 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
     }
 
     @Override
-    public ResponseMessageV4 readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
         final Buffer buffer = bufferFactory.create(byteBuf);
 
         try {
             // empty input buffer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessageV4.build().result(Collections.emptyList()).create();
+                return ResponseMessage.build().result(Collections.emptyList()).create();
             }
 
             if (isFirstChunk) {
@@ -303,13 +303,13 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializerV4<
 
             // no footer
             if (buffer.readableBytes() == 0) {
-                return ResponseMessageV4.build()
+                return ResponseMessage.build()
                         .result(result)
                         .create();
             }
 
             final Triplet<HttpResponseStatus, String, String> footer = readFooter(buffer);
-            return ResponseMessageV4.build()
+            return ResponseMessage.build()
                     .result(result)
                     .code(footer.getValue0())
                     .statusMessage(footer.getValue1())

@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.authz.AuthorizationException;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +57,8 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-        if (msg instanceof RequestMessageV4) {
-            final RequestMessageV4 requestMessage = (RequestMessageV4) msg;
+        if (msg instanceof RequestMessage) {
+            final RequestMessage requestMessage = (RequestMessage) msg;
 
             try {
                 user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -68,9 +68,9 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
 
                 final String gremlin = requestMessage.getGremlin();
                 final Map<String, String> aliases = new HashMap<>();
-                aliases.put(TokensV4.ARGS_G, requestMessage.getField(TokensV4.ARGS_G));
+                aliases.put(Tokens.ARGS_G, requestMessage.getField(Tokens.ARGS_G));
                 final String restrictedGremlin = authorizer.authorize(user, gremlin, aliases);
-                final RequestMessageV4 restrictedMsg = RequestMessageV4.from(requestMessage, restrictedGremlin).create();
+                final RequestMessage restrictedMsg = RequestMessage.from(requestMessage, restrictedGremlin).create();
                 ctx.fireChannelRead(restrictedMsg);
 
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests

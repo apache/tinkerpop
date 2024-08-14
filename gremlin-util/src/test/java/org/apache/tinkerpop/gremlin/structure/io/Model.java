@@ -40,9 +40,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.TokensV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -158,20 +158,20 @@ public class Model {
         final Map<String,Object> requestBindings = new HashMap<>();
         requestBindings.put("x", 1);
 
-        RequestMessageV4 requestMessage = RequestMessageV4.build("social.V(x)").
+        RequestMessage requestMessage = RequestMessage.build("social.V(x)").
                 addBindings(requestBindings).
                 addLanguage("gremlin-groovy").
                 addG("social").
                 addTimeoutMillis(100).
-                addMaterializeProperties(TokensV4.MATERIALIZE_PROPERTIES_ALL).create();
-        addRequestMessageEntry(requestMessage, "Standard Request", "The following `RequestMessageV4` is an example of a request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+                addMaterializeProperties(Tokens.MATERIALIZE_PROPERTIES_ALL).create();
+        addRequestMessageEntry(requestMessage, "Standard Request", "The following `RequestMessage` is an example of a request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
 
-        ResponseMessageV4 responseMessage;
-        responseMessage = ResponseMessageV4.build().
+        ResponseMessage responseMessage;
+        responseMessage = ResponseMessage.build().
                 code(HttpResponseStatus.OK).
                 result(Collections.singletonList(graph.vertices().next())).create();
         addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
-        responseMessage = ResponseMessageV4.build().
+        responseMessage = ResponseMessage.build().
                 code(HttpResponseStatus.INTERNAL_SERVER_ERROR).
                 statusMessage("some error").
                 exception("ServerFailStepException").

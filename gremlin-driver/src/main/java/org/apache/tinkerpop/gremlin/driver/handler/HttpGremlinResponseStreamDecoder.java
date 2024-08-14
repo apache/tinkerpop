@@ -25,7 +25,6 @@ import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.DefaultHttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
@@ -33,16 +32,14 @@ import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.AttributeMap;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerTokensV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
 
@@ -53,11 +50,11 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     private static final AttributeKey<String> RESPONSE_ENCODING = AttributeKey.valueOf("responseSerializer");
     private static final AttributeKey<Integer> BYTES_READ = AttributeKey.valueOf("bytesRead");
 
-    private final MessageSerializerV4<?> serializer;
+    private final MessageSerializer<?> serializer;
     private final int maxContentLength;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public HttpGremlinResponseStreamDecoder(final MessageSerializerV4<?> serializer, final int maxContentLength) {
+    public HttpGremlinResponseStreamDecoder(final MessageSerializer<?> serializer, final int maxContentLength) {
         this.serializer = serializer;
         this.maxContentLength = maxContentLength;
     }
@@ -88,16 +85,16 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
             try {
                 // no more chunks expected
-                if (isError(responseStatus.get()) && !SerTokensV4.MIME_GRAPHBINARY_V4.equals(responseEncoding.get())) {
+                if (isError(responseStatus.get()) && !SerTokens.MIME_GRAPHBINARY_V4.equals(responseEncoding.get())) {
                     final JsonNode node = mapper.readTree(content.toString(CharsetUtil.UTF_8));
                     final String message = node.get("message").asText();
-                    final ResponseMessageV4 response = ResponseMessageV4.build()
+                    final ResponseMessage response = ResponseMessage.build()
                             .code(responseStatus.get()).statusMessage(message)
                             .create();
 
                     out.add(response);
                 } else {
-                    final ResponseMessageV4 chunk = serializer.readChunk(content, isFirstChunk.get());
+                    final ResponseMessage chunk = serializer.readChunk(content, isFirstChunk.get());
                     isFirstChunk.set(false);
                     out.add(chunk);
                 }

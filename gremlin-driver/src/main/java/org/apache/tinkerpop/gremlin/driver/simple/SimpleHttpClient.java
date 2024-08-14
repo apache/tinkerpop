@@ -20,17 +20,15 @@ package org.apache.tinkerpop.gremlin.driver.simple;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
-import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.util.MessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -38,7 +36,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.slf4j.Logger;
@@ -94,7 +92,7 @@ public class SimpleHttpClient extends AbstractClient {
                 sslCtx = null;
             }
 
-            final MessageSerializerV4<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
+            final MessageSerializer<GraphBinaryMapper> serializer = new GraphBinaryMessageSerializerV4();
             b.channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
@@ -119,9 +117,9 @@ public class SimpleHttpClient extends AbstractClient {
     }
 
     @Override
-    public CompletableFuture<List<ResponseMessageV4>> submitAsync(final RequestMessageV4 requestMessage) throws Exception {
-        final List<ResponseMessageV4> results = new ArrayList<>();
-        final CompletableFuture<List<ResponseMessageV4>> f = new CompletableFuture<>();
+    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception {
+        final List<ResponseMessage> results = new ArrayList<>();
+        final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
         callbackResponseHandler.callback = response -> {
             // message with trailers
             if (f.isDone())
@@ -141,7 +139,7 @@ public class SimpleHttpClient extends AbstractClient {
     }
 
     @Override
-    public void writeAndFlush(final RequestMessageV4 requestMessage) throws Exception {
+    public void writeAndFlush(final RequestMessage requestMessage) throws Exception {
         channel.writeAndFlush(requestMessage);
     }
 

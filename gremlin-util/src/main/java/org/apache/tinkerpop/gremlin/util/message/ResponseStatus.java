@@ -20,18 +20,15 @@ package org.apache.tinkerpop.gremlin.util.message;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-import java.util.Collections;
-import java.util.Map;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ResponseStatusV4 {
+public final class ResponseStatus {
     private final HttpResponseStatus code;
     private final String message;
     private final String exception;
 
-    public ResponseStatusV4(final HttpResponseStatus code, final String message, final String exception) {
+    public ResponseStatus(final HttpResponseStatus code, final String message, final String exception) {
         this.code = code;
         this.message = message;
         this.exception = exception;

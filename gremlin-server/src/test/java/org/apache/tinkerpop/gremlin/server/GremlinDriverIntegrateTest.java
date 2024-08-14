@@ -37,7 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.ser.SerializersV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -207,7 +207,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("Reading for streaming GraphSON is not supported")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHSON_V4).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
         try {
             final Client client = cluster.connect().alias("g");
 
@@ -731,7 +731,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphBinaryV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
 
         try {
@@ -973,7 +973,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(SerializersV4.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
         try {
             try {

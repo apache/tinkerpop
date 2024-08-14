@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,9 +89,9 @@ public class AuthorizerTest {
         }
     }
 
-    private RequestMessageV4 buildRequestMessage(final String traversalSource) {
+    private RequestMessage buildRequestMessage(final String traversalSource) {
         final String script = String.format("1+1; %s.V().map{it.get()}", traversalSource);
-        return RequestMessageV4.build(script).create();
+        return RequestMessage.build(script).create();
     }
 
     private static class SubgraphTraversals implements Supplier<GremlinLang> {

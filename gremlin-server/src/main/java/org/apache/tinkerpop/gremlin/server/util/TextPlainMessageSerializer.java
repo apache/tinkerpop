@@ -22,10 +22,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessageV4;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessageV4;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +34,7 @@ import java.util.function.Function;
  * A highly use-case specific serializer that only has context for HTTP where results simply need to be converted
  * to string in a line by line fashion for text based returns.
  */
-public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Function<Object, String>> {
+public class TextPlainMessageSerializer extends AbstractMessageSerializer<Function<Object, String>> {
 
     @Override
     public Function<Object, String> getMapper() {
@@ -43,14 +42,14 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessageV4 responseMessage, final ByteBufAllocator allocator) {
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
         return (responseMessage.getStatus().getCode() == HttpResponseStatus.OK)
                 ? convertStringData(responseMessage.getResult().getData(), false, allocator)
                 : convertErrorString(responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
-    public ByteBuf writeHeader(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
+    public ByteBuf writeHeader(ResponseMessage responseMessage, ByteBufAllocator allocator) {
         return convertStringData(responseMessage.getResult().getData(), false, allocator);
     }
 
@@ -60,32 +59,32 @@ public class TextPlainMessageSerializerV4 extends AbstractMessageSerializerV4<Fu
     }
 
     @Override
-    public ByteBuf writeFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
+    public ByteBuf writeFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
         return convertStringData(responseMessage.getResult().getData(), true, allocator);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(ResponseMessageV4 responseMessage, ByteBufAllocator allocator) {
+    public ByteBuf writeErrorFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
         return convertErrorString(System.lineSeparator() + responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
-    public ResponseMessageV4 readChunk(ByteBuf byteBuf, boolean isFirstChunk) {
+    public ResponseMessage readChunk(ByteBuf byteBuf, boolean isFirstChunk) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(final RequestMessageV4 requestMessage, final ByteBufAllocator allocator) {
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
         throw new UnsupportedOperationException("text/plain does not produce binary");
     }
 
     @Override
-    public RequestMessageV4 deserializeBinaryRequest(final ByteBuf msg) {
+    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ResponseMessageV4 deserializeBinaryResponse(final ByteBuf msg) {
+    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
