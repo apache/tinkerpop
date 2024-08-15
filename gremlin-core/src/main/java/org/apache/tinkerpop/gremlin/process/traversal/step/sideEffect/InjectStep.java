@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 
 /**
@@ -26,29 +27,32 @@ import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
  */
 public final class InjectStep<S> extends StartStep<S> {
 
-    private final S[] injections;
+    private final GValue<S>[] injections;
 
     @SafeVarargs
     public InjectStep(final Traversal.Admin traversal, final S... injections) {
         super(traversal);
-        this.injections = injections;
-        this.start = new ArrayIterator<>(this.injections);
+        this.injections = convertToGValues(injections);
+        this.start = new ArrayIterator<>(resolveToValues(this.injections));
     }
 
     @Override
     public InjectStep<S> clone() {
         final InjectStep<S> clone = (InjectStep<S>) super.clone();
-        clone.start = new ArrayIterator<>(clone.injections);
+        clone.start = new ArrayIterator<>(resolveToValues(clone.injections));
         return clone;
     }
 
     @Override
     public void reset() {
         super.reset();
-        this.start = new ArrayIterator<>(this.injections);
+        this.start = new ArrayIterator<>(resolveToValues(this.injections));
     }
 
-    public S[] getInjections() {
+    /**
+     * Get the injections of the step.
+     */
+    public GValue<S>[] getInjections() {
         return this.injections;
     }
 }

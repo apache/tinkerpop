@@ -54,7 +54,7 @@ public class GValueTest {
         final GValue<Integer> gValue = GValue.of("varName", 123);
         assertEquals(123, gValue.get().intValue());
         assertEquals(GType.INTEGER, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -71,7 +71,7 @@ public class GValueTest {
         final GValue<String> gValue = GValue.ofString("varName", "test");
         assertEquals("test", gValue.get());
         assertEquals(GType.STRING, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -88,7 +88,7 @@ public class GValueTest {
         final GValue<Integer> gValue = GValue.ofInteger("varName", 123);
         assertEquals(123, gValue.get().intValue());
         assertEquals(GType.INTEGER, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -105,7 +105,7 @@ public class GValueTest {
         final GValue<Boolean> gValue = GValue.ofBoolean("varName", true);
         assertEquals(true, gValue.get());
         assertEquals(GType.BOOLEAN, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -122,7 +122,7 @@ public class GValueTest {
         final GValue<Double> gValue = GValue.ofDouble("varName", 123.45);
         assertEquals(123.45, gValue.get(), 0.0);
         assertEquals(GType.DOUBLE, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -139,7 +139,7 @@ public class GValueTest {
         final GValue<BigInteger> gValue = GValue.ofBigInteger("varName", BigInteger.ONE);
         assertEquals(BigInteger.ONE, gValue.get());
         assertEquals(GType.BIG_INTEGER, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -156,7 +156,7 @@ public class GValueTest {
         final GValue<BigDecimal> gValue = GValue.ofBigDecimal("varName", BigDecimal.ONE);
         assertEquals(BigDecimal.ONE, gValue.get());
         assertEquals(GType.BIG_DECIMAL, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -173,7 +173,7 @@ public class GValueTest {
         final GValue<Long> gValue = GValue.ofLong("varName", 123L);
         assertEquals(123L, gValue.get().longValue());
         assertEquals(GType.LONG, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -196,14 +196,14 @@ public class GValueTest {
         final GValue<Map> gValue = GValue.ofMap("varName", map);
         assertEquals(map, gValue.get());
         assertEquals(GType.MAP, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
     @Test
     public void shouldCreateGValueFromList() {
         final List<String> list = Arrays.asList("value1", "value2");
-        final GValue<List> gValue = GValue.ofList(list);
+        final GValue<List<String>> gValue = GValue.ofList(list);
         assertEquals(list, gValue.get());
         assertEquals(GType.LIST, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
@@ -212,10 +212,10 @@ public class GValueTest {
     @Test
     public void shouldCreateGValueFromListWithName() {
         final List<String> list = Arrays.asList("value1", "value2");
-        final GValue<List> gValue = GValue.ofList("varName", list);
+        final GValue<List<String>> gValue = GValue.ofList("varName", list);
         assertEquals(list, gValue.get());
         assertEquals(GType.LIST, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -234,7 +234,7 @@ public class GValueTest {
         final GValue<Set> gValue = GValue.ofSet("varName", set);
         assertEquals(set, gValue.get());
         assertEquals(GType.SET, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -253,7 +253,7 @@ public class GValueTest {
         final GValue<Vertex> gValue = GValue.ofVertex("varName", vertex);
         assertEquals(vertex, gValue.get());
         assertEquals(GType.VERTEX, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -272,7 +272,7 @@ public class GValueTest {
         final GValue<Edge> gValue = GValue.ofEdge("varName", edge);
         assertEquals(edge, gValue.get());
         assertEquals(GType.EDGE, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -291,7 +291,7 @@ public class GValueTest {
         final GValue<Path> gValue = GValue.ofPath("varName", path);
         assertEquals(path, gValue.get());
         assertEquals(GType.PATH, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 
@@ -310,7 +310,7 @@ public class GValueTest {
         final GValue<Property> gValue = GValue.ofProperty("varName", property);
         assertEquals(property, gValue.get());
         assertEquals(GType.PROPERTY, gValue.getType());
-        assertEquals("varName", gValue.getName().get());
+        assertEquals("varName", gValue.getName());
         assertThat(gValue.isVariable(), is(true));
     }
 }

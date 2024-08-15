@@ -66,8 +66,8 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Gets the name of the variable if it was defined as such and returns empty if the value was a literal.
      */
-    public Optional<String> getName() {
-        return Optional.ofNullable(this.name);
+    public String getName() {
+        return this.name;
     }
 
     /**
@@ -77,6 +77,13 @@ public class GValue<V> implements Cloneable, Serializable {
      */
     public GType getType() {
         return this.type;
+    }
+
+    /**
+     * Determines if the value held is of a {@code null} value.
+     */
+    public boolean isNull() {
+        return this.value == null;
     }
 
     /**
@@ -96,7 +103,7 @@ public class GValue<V> implements Cloneable, Serializable {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GValue<?> gValue = (GValue<?>) o;
+        final GValue<?> gValue = (GValue<?>) o;
         return Objects.equals(name, gValue.name) && type == gValue.type && Objects.equals(value, gValue.value);
     }
 
@@ -123,6 +130,7 @@ public class GValue<V> implements Cloneable, Serializable {
     public static <V> GValue<V> of(final String name, final V value) {
         return new GValue<>(name, GType.getType(value), value);
     }
+
     /**
      * Create a new {@code GValue} for a string value.
      */
@@ -238,14 +246,14 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a list value.
      */
-    public static GValue<List> ofList(final List value) {
+    public static <T> GValue<List<T>> ofList(final List<T> value) {
         return new GValue<>(GType.LIST, value);
     }
 
     /**
      * Create a new {@code GValue} for a list value with a specified name.
      */
-    public static GValue<List> ofList(final String name, final List value) {
+    public static <T> GValue<List<T>> ofList(final String name, final List<T> value) {
         return new GValue<>(name, GType.LIST, value);
     }
 

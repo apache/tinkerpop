@@ -52,10 +52,24 @@ public enum GType {
     GType() {}
 
     /**
-     * Returns true if the type is a number.
+     * Returns {@code true} if the type is a number.
      */
     public boolean isNumeric() {
         return this == INTEGER || this == DOUBLE || this == LONG || this == BIG_INTEGER || this == BIG_DECIMAL;
+    }
+
+    /**
+     * Returns {@code true} if the type is a collection.v
+     */
+    public boolean isCollection() {
+        return this == LIST || this == SET;
+    }
+
+    /**
+     * Returns {@code true} if the type is an element.
+     */
+    public boolean isElement() {
+        return this == VERTEX || this == EDGE;
     }
 
     /**

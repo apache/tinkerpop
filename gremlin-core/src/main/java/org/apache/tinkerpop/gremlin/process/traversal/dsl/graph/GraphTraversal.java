@@ -463,6 +463,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
          * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
          * the documentation of such steps to understand the usage context.
          *
+         * @param token       the token that would trigger this option which may be a {@link Pick}, {@link Merge},
+         *                    a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.
+         * @param traversalOption the option as a traversal
+         * @return the traversal with the modulated step
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+         * @since 3.0.0-incubating
+         */
+        public default <M, E2> GraphTraversal<S, E> option(final GValue<M> token, final Traversal<?, E2> traversalOption) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.option, token, traversalOption);
+
+            // handle null similar to how option() with Map handles it, otherwise we get a NPE if this one gets used
+            final Traversal.Admin<E,E2> t = null == traversalOption ?
+                    new ConstantTraversal<>(null) : (Traversal.Admin<E, E2>) traversalOption.asAdmin();
+            ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token.get(), t);
+            return this;
+        }
+
+        /**
+         * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+         * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+         * the documentation of such steps to understand the usage context.
+         *
          * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
          * @return the traversal with the modulated step
          * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
@@ -498,6 +522,46 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                     map.put(k, new CardinalityValueTraversal(cardinality, o));
             }
             ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
+            return this;
+        }
+
+        /**
+         * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+         * incoming vertex of the newly added {@link Edge}.
+         *
+         * @param toVertex the vertex for selecting the incoming vertex
+         * @return the traversal with the modified {@link AddEdgeStep}
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
+         * @since 4.0.0
+         */
+        public default GraphTraversal<S, E> to(final GValue<Vertex> toVertex) {
+            final Step<?,?> prev = this.asAdmin().getEndStep();
+            if (!(prev instanceof FromToModulating))
+                throw new IllegalArgumentException(String.format(
+                        "The to() step cannot follow %s", prev.getClass().getSimpleName()));
+
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.to, toVertex);
+            ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
+            return this;
+        }
+
+        /**
+         * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
+         * outgoing vertex of the newly added {@link Edge}.
+         *
+         * @param fromVertex the vertex for selecting the outgoing vertex
+         * @return the traversal with the modified {@link AddEdgeStep}
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
+         * @since 4.0.0
+         */
+        public default GraphTraversal<S, E> from(final GValue<Vertex> fromVertex) {
+            final Step<?,?> prev = this.asAdmin().getEndStep();
+            if (!(prev instanceof FromToModulating))
+                throw new IllegalArgumentException(String.format(
+                        "The from() step cannot follow %s", prev.getClass().getSimpleName()));
+
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.from, fromVertex);
+            ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
             return this;
         }
 
