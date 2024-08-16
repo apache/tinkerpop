@@ -170,7 +170,7 @@ limitations under the License.
         <jbcrypt.version>0.4</jbcrypt.version>
         <junit.version>4.13.1</junit.version>
         <kerby.version>2.0.1</kerby.version>
-        <logback.version>1.2.11</logback.version>
+        <logback.version>1.5.7</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.3.3</mockito.version>
         <netty.version>4.1.96.Final</netty.version>
