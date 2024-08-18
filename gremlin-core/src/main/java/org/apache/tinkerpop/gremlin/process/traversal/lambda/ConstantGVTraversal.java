@@ -16,41 +16,48 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.ConstantStepStructure;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValue;
 
 import java.util.Objects;
 
-public class ConstantStep<S, E> extends ScalarMapStep<S, E> implements ConstantStepStructure<E> {
+/**
+ * A {@link Traversal} that always returns a constant value.
+ *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
+public final class ConstantGVTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
-    private final E constant;
+    private final GValue<E> end;
 
-    public ConstantStep(final Traversal.Admin traversal, final E constant) {
-        super(traversal);
-        this.constant = constant;
+    public ConstantGVTraversal(final GValue<E> end) {
+        this.end = end;
     }
 
-    public E getConstant() {
-        return this.constant;
+    public GValue<E> getEnd() {
+        return end;
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
-        return this.constant;
+    public E next() {
+        throw new UnsupportedOperationException("Constant traversals with a GValue are not meant to be executed");
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.constant);
+        return "(" + Objects.toString(this.end) + ")";
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(this.constant);
+        return this.getClass().hashCode() ^ Objects.hashCode(this.end);
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof ConstantGVTraversal
+                && Objects.equals(((ConstantGVTraversal) other).end, this.end);
+    }
 }

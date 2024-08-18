@@ -36,6 +36,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.GraphStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeEdgeStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeVertexStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.sideEffect.InjectStepGV;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -68,6 +73,7 @@ public class GraphTraversalSource implements TraversalSource {
     protected final Graph graph;
     protected TraversalStrategies strategies;
     protected Bytecode bytecode = new Bytecode();
+    protected Admin admin;
 
     ////////////////
 
@@ -98,6 +104,12 @@ public class GraphTraversalSource implements TraversalSource {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
         this.connection = connection;
         this.strategies.addStrategies(new RemoteStrategy(connection));
+    }
+
+    public GraphTraversalSource.Admin asAdmin() {
+        if (null == this.admin)
+            this.admin = new Admin();
+        return this.admin;
     }
 
     @Override
@@ -447,7 +459,12 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.inject, s);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new InjectStep<S>(traversal, s));
+
+        if (GValue.hasGValue(s)) {
+            return traversal.addStep(new InjectStepGV<S>(traversal, GValue.promoteGValues(s)));
+        } else {
+            return traversal.addStep(new InjectStep<>(traversal, s));
+        }
     }
 
     /**
@@ -462,7 +479,12 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, ids));
+
+        if (GValue.hasGValue(ids)) {
+            return traversal.addStep(new GraphStepGV<>(traversal, Vertex.class, true, GValue.promoteGValues(ids)));
+        } else {
+            return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, ids));
+        }
     }
 
     /**
@@ -477,7 +499,12 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
+
+        if (GValue.hasGValue(ids)) {
+            return traversal.addStep(new GraphStepGV<>(traversal, Edge.class, true, GValue.promoteGValues(ids)));
+        } else {
+            return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
+        }
     }
 
     /**
@@ -622,6 +649,41 @@ public class GraphTraversalSource implements TraversalSource {
     @Override
     public String toString() {
         return StringFactory.traversalSourceString(this);
+    }
+
+    /**
+     * This class masks spawn steps that are more reserved for advanced usage.
+     */
+    public class Admin {
+        /**
+         * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+         * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+         * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+         * made it will use that search criteria to create the new {@link Vertex}.
+         *
+         * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+         * @since 4.0.0
+         */
+        public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+            final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+            clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new MergeVertexStepGV(traversal, true, searchCreate));
+        }
+
+        /**
+         * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+         * {@code Map} as an argument.
+         *
+         * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+         * @since 4.0.0
+         */
+        public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
+            final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+            clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+            final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new MergeEdgeStepGV(traversal, true, searchCreate));
+        }
     }
 
 }

@@ -47,14 +47,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.filter.HasStepGV;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -296,8 +298,8 @@ public final class TraversalHelper {
     /**
      * Get steps of the specified classes throughout the traversal.
      */
-    public static List<Step<?,?>> getStepsOfAssignableClassRecursively(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
-        final List<Step<?,?>> list = new ArrayList<>();
+    public static List<Step<?, ?>> getStepsOfAssignableClassRecursively(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?, ?>> list = new ArrayList<>();
         for (final Step<?, ?> step : traversal.getSteps()) {
             for (Class<?> stepClass : stepClasses) {
                 if (stepClass.isAssignableFrom(step.getClass()))
@@ -320,14 +322,14 @@ public final class TraversalHelper {
      * Get steps of the specified classes throughout the traversal, collecting them in a fashion that orders them
      * from the deepest steps first.
      */
-    public static List<Step<?,?>> getStepsOfAssignableClassRecursivelyFromDepth(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
-        final List<Step<?,?>> list = new ArrayList<>();
-        final Stack<Step<?,?>> stack = new Stack<>();
+    public static List<Step<?, ?>> getStepsOfAssignableClassRecursivelyFromDepth(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
+        final List<Step<?, ?>> list = new ArrayList<>();
+        final Stack<Step<?, ?>> stack = new Stack<>();
 
         traversal.getSteps().forEach(stack::push);
 
         while (!stack.isEmpty()) {
-            final Step<?,?> current = stack.pop();
+            final Step<?, ?> current = stack.pop();
             list.add(current);
 
             if (current instanceof TraversalParent) {
@@ -782,10 +784,24 @@ public final class TraversalHelper {
      * @return the has container folded or appended traversal
      */
     public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
-        if (traversal.getEndStep() instanceof HasContainerHolder) {
-            ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
-            return traversal;
-        } else
-            return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
+        final boolean containsGValue = GValue.hasGValueInP(hasContainer.getPredicate());
+        final Step<?, ?> endStep = traversal.getEndStep();
+
+        // when there is a GValue in the hasContainer then it cannot be folded into the previous HasContainerHolder
+        // unless it too held GValue objects.
+        if (containsGValue) {
+            if (endStep instanceof HasContainerHolder && endStep instanceof GValueStep) {
+                ((HasContainerHolder) endStep).addHasContainer(hasContainer);
+                return traversal;
+            } else
+                return (T) traversal.addStep(new HasStepGV<>(traversal, hasContainer));
+        } else {
+            if (traversal.getEndStep() instanceof HasContainerHolder) {
+                ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
+                return traversal;
+            } else
+                return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
+        }
+
     }
 }

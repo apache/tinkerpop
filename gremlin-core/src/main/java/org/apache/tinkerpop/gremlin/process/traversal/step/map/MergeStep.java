@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeElementStepStructure;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -58,13 +59,13 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C> {
+        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, MergeElementStepStructure<S> {
 
     protected final boolean isStart;
     protected boolean first = true;
     protected Traversal.Admin<S, Map> mergeTraversal;
     protected Traversal.Admin<S, Map> onCreateTraversal = null;
-    protected Traversal.Admin<S, Map<String, ?>> onMatchTraversal = null;
+    protected Traversal.Admin<S, Map> onMatchTraversal = null;
 
     protected CallbackRegistry<Event> callbackRegistry;
 
@@ -116,7 +117,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * Gets the traversal that will be used to provide the {@code Map} that will be used to modify elements that
      * match the search criteria of {@link #getMergeTraversal()}.
      */
-    public Traversal.Admin<S, Map<String, ?>> getOnMatchTraversal() {
+    public Traversal.Admin<S, Map> getOnMatchTraversal() {
         return onMatchTraversal;
     }
 

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.connected.ConnectedComponentVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ConnectedComponentVertexProgramStep;
@@ -39,6 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantGVTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
@@ -126,6 +128,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinLocalStep;
@@ -186,9 +189,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateL
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.filter.IsStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.ConstantStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.GraphStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeEdgeStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeElementStepStructure;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.MergeVertexStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.map.VertexStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.sideEffect.AddPropertyStepGV;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.sideEffect.InjectStepGV;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -230,6 +244,208 @@ import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
+
+        /**
+         * Map the {@link Vertex} to its adjacent vertices given a direction and edge labels. The arguments for the
+         * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param direction  the direction to traverse from the current vertex
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Vertex> to(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.to, direction, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Vertex.class, direction, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its outgoing adjacent vertices given the edge labels. The arguments for the
+         * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Vertex> out(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.out, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Vertex.class, Direction.OUT, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its incoming adjacent vertices given the edge labels. The arguments for the
+         * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Vertex> in(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.in, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Vertex.class, Direction.IN, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its adjacent vertices given the edge labels. The arguments for the labels must be
+         * either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Vertex> both(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.both, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Vertex.class, Direction.BOTH, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its incident edges given the direction and edge labels. The arguments for the
+         * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param direction  the direction to traverse from the current vertex
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Edge> toE(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.toE, direction, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Edge.class, direction, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its outgoing incident edges given the edge labels. The arguments for the labels
+         * must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Edge> outE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.outE, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Edge.class, Direction.OUT, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its incoming incident edges given the edge labels. The arguments for the labels
+         * must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Edge> inE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.inE, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Edge.class, Direction.IN, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Map the {@link Vertex} to its incident edges given the edge labels. The arguments for the labels must be
+         * either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+         *
+         * @param edgeLabels the edge labels to traverse
+         * @return the traversal with an appended {@link VertexStep}.
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+         * @since 3.7.3
+         */
+        public default GraphTraversal<S, Edge> bothE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.bothE, edgeLabels);
+            return this.asAdmin().addStep(new VertexStepGV<>(this.asAdmin(), Edge.class, Direction.BOTH, ArrayUtils.addFirst(edgeLabels, edgeLabel)));
+        }
+
+        /**
+         * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+         * {@code Map} as an argument.
+         *
+         * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+         * @since 3.6.0
+         */
+        public default GraphTraversal<S, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
+            // get a construction time exception if the Map is bad
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+            final MergeEdgeStepGV<S> step = new MergeEdgeStepGV(this.asAdmin(), false, searchCreate);
+            return this.asAdmin().addStep(step);
+        }
+
+        /**
+         * Performs a merge (i.e. upsert) style operation for an {@link Vertex} using a {@code Map} as an argument.
+         * The {@code Map} represents search criteria and will match each of the supplied key/value pairs where the keys
+         * may be {@code String} property values or a value of {@link T}. If a match is not made it will use that search
+         * criteria to create the new {@link Vertex}.
+         *
+         * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+         * @since 3.6.0
+         */
+        public default GraphTraversal<S, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+            final MergeVertexStepGV step = new MergeVertexStepGV(this.asAdmin(), false, searchCreate);
+            return this.asAdmin().addStep(step);
+        }
+
+        /**
+         * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+         * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+         * the documentation of such steps to understand the usage context.
+         *
+         * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
+         * @return the traversal with the modulated step
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+         * @since 3.6.0
+         */
+        public default <M, E2> GraphTraversal<S, E> option(final M token, final GValue<Map<Object, Object>> m) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.option, token, m);
+
+            // handle case where the MergeStep was added instead of a MergeVertexStepGV. in this case, mergeV/E was
+            // called such that it did not have a GValue so a standard step was added. leave it ot hte
+            // GValueReplacementStrategy to resolve this
+            final Step endStep = this.asAdmin().getEndStep();
+            if (endStep instanceof MergeStep) {
+                this.asAdmin().addStep(new GValueStep.MergeOptionStep(this.asAdmin(), (Merge) token, GValue.of(m.getName(), m)));
+            } else {
+                ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantGVTraversal<>(m).asAdmin());
+            }
+            return this;
+        }
+
+        /**
+         * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
+         * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
+         * the documentation of such steps to understand the usage context.
+         *
+         * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
+         * @return the traversal with the modulated step
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
+         * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
+         * @since 3.7.0
+         */
+        public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final GValue<Map<Object, Object>> m, final VertexProperty.Cardinality cardinality) {
+            this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.option, merge, m, cardinality);
+            // do explicit cardinality for every single pair in the map
+            final Map<Object,Object> m1 = m.get();
+            for (Object k : m1.keySet()) {
+                final Object o = m1.get(k);
+                if (!(o instanceof CardinalityValueTraversal))
+                    m1.put(k, new CardinalityValueTraversal(cardinality, o));
+            }
+
+            // handle case where the MergeStep was added instead of a MergeVertexStepGV. in this case, mergeV/E was
+            // called such that it did not have a GValue so a standard step was added. leave it ot hte
+            // GValueReplacementStrategy to resolve this
+            final Step endStep = this.asAdmin().getEndStep();
+            if (endStep instanceof MergeStep) {
+                this.asAdmin().addStep(new GValueStep.MergeOptionStep(this.asAdmin(), merge, GValue.of(m.getName(), m1)));
+            } else {
+                ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantGVTraversal<>(m).asAdmin());
+            }
+            return this;
+        }
 
         @Override
         public default <E2> GraphTraversal.Admin<S, E2> addStep(final Step<?, E2> step) {
@@ -352,7 +568,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
         this.asAdmin().getBytecode().addStep(Symbols.constant, e);
-        return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
+
+        if (e instanceof GValue) {
+            return this.asAdmin().addStep(new ConstantStepGV<>(this.asAdmin(), (GValue) e));
+        } else {
+            return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
+        }
     }
 
     /**
@@ -367,7 +588,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // a single null is [null]
         final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
         this.asAdmin().getBytecode().addStep(Symbols.V, ids);
-        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
+
+        if (GValue.hasGValue(ids)) {
+            return this.asAdmin().addStep(new GraphStepGV<>(this.asAdmin(), Vertex.class, false, GValue.promoteGValues(ids)));
+        } else {
+            return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
+        }
     }
 
     /**
@@ -382,7 +608,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // a single null is [null]
         final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
         this.asAdmin().getBytecode().addStep(Symbols.E, ids);
-        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
+
+        if (GValue.hasGValue(ids)) {
+            return this.asAdmin().addStep(new GraphStepGV<>(this.asAdmin(), Edge.class, false, GValue.promoteGValues(ids)));
+        } else {
+            return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
+        }
     }
 
     /**
@@ -772,11 +1003,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.2.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> project(final String projectKey, final String... otherProjectKeys) {
-        final String[] projectKeys = new String[otherProjectKeys.length + 1];
-        projectKeys[0] = projectKey;
-        System.arraycopy(otherProjectKeys, 0, projectKeys, 1, otherProjectKeys.length);
         this.asAdmin().getBytecode().addStep(Symbols.project, projectKey, otherProjectKeys);
-        return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), projectKeys));
+        return this.asAdmin().addStep(new ProjectStep<>(this.asAdmin(), ArrayUtils.addFirst(otherProjectKeys, projectKey)));
     }
 
     /**
@@ -792,12 +1020,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
-        final String[] selectKeys = new String[otherSelectKeys.length + 2];
-        selectKeys[0] = selectKey1;
-        selectKeys[1] = selectKey2;
-        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        String[] args = ArrayUtils.addFirst(otherSelectKeys, selectKey2);
+        args = ArrayUtils.addFirst(args, selectKey1);
         this.asAdmin().getBytecode().addStep(Symbols.select, pop, selectKey1, selectKey2, otherSelectKeys);
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, args));
     }
 
     /**
@@ -812,12 +1038,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
-        final String[] selectKeys = new String[otherSelectKeys.length + 2];
-        selectKeys[0] = selectKey1;
-        selectKeys[1] = selectKey2;
-        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        String[] args = ArrayUtils.addFirst(otherSelectKeys, selectKey2);
+        args = ArrayUtils.addFirst(args, selectKey1);
         this.asAdmin().getBytecode().addStep(Symbols.select, selectKey1, selectKey2, otherSelectKeys);
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.last, selectKeys));
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), Pop.last, args));
     }
 
     /**
@@ -2051,7 +2275,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // a single null is [null]
         final E[] s = null == injections ? (E[]) new Object[] { null } : injections;
         this.asAdmin().getBytecode().addStep(Symbols.inject, s);
-        return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), s));
+        if (GValue.hasGValue(s))
+            return this.asAdmin().addStep(new InjectStepGV<>(this.asAdmin(), GValue.promoteGValues(s)));
+        else
+            return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), s));
     }
 
     /**
@@ -2539,7 +2766,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> is(final P<E> predicate) {
         this.asAdmin().getBytecode().addStep(Symbols.is, predicate);
-        return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
+        if (GValue.hasGValueInP(predicate))
+            return this.asAdmin().addStep(new IsStepGV<>(this.asAdmin(), predicate));
+        else
+            return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
 
     /**
@@ -3123,9 +3353,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                   (key instanceof T || (key instanceof String && null == cardinality) || key instanceof Traversal))) {
             ((Mutating) endStep).configure(key, value);
         } else {
-            final AddPropertyStep<Element> addPropertyStep = new AddPropertyStep<>(this.asAdmin(), cardinality, key, value);
-            this.asAdmin().addStep(addPropertyStep);
-            addPropertyStep.configure(keyValues);
+            if (value instanceof GValue || GValue.hasGValue(keyValues)) {
+                final AddPropertyStepGV addPropertyStep = new AddPropertyStepGV(this.asAdmin(), cardinality, key, GValue.of(value));
+                this.asAdmin().addStep(addPropertyStep);
+                addPropertyStep.configure(keyValues);
+            } else {
+                final AddPropertyStep<Element> addPropertyStep = new AddPropertyStep<>(this.asAdmin(), cardinality, key, value);
+                this.asAdmin().addStep(addPropertyStep);
+                addPropertyStep.configure(keyValues);
+            }
         }
         return this;
     }

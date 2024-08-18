@@ -19,12 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.structure.sideEffect.InjectStepStructure;
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class InjectStep<S> extends StartStep<S> {
+public final class InjectStep<S> extends StartStep<S> implements InjectStepStructure<S> {
 
     private final S[] injections;
 

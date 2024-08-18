@@ -134,6 +134,10 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         return this.predicate;
     }
 
+    public void setPredicate(final P predicate) {
+        this.predicate = predicate;
+    }
+
     public final BiPredicate<?, ?> getBiPredicate() {
         return this.predicate.getBiPredicate();
     }
