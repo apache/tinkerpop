@@ -163,7 +163,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperGlobalStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMergeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimGlobalStep;
@@ -1939,13 +1939,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Merges the list traverser and list argument. Also known as union.
      *
-     * @return the traversal with an appended {@link TraversalMergeStep}.
+     * @return the traversal with an appended {@link MergeStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#merge-step" target="_blank">Reference Documentation - Merge Step</a>
      * @since 3.7.1
      */
     public default <E2> GraphTraversal<S, E2> merge(final Object values) {
         this.asAdmin().getBytecode().addStep(Symbols.merge, values);
-        return this.asAdmin().addStep(new TraversalMergeStep<>(this.asAdmin(), values));
+        return this.asAdmin().addStep(new MergeStep<>(this.asAdmin(), values));
     }
 
     /**
