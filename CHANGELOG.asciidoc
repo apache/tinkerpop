@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
-*
+* Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
