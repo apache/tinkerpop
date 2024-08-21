@@ -102,8 +102,9 @@ limitations under the License.
                                         <!-- setting this env variable is needed to be cross-platform compatible -->
                                         <HOME>${user.home}</HOME>
                                     </environmentVariables>
-                                    <executable>docker-compose</executable>
+                                    <executable>docker</executable>
                                     <arguments>
+                                        <argument>compose</argument>
                                         <argument>up</argument>
                                         <argument>--build</argument>
                                         <argument>--exit-code-from</argument>
@@ -120,8 +121,9 @@ limitations under the License.
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <!-- don't need to set env variables for container tear down -->
-                                    <executable>docker-compose</executable>
+                                    <executable>docker</executable>
                                     <arguments>
+                                        <argument>compose</argument>
                                         <argument>down</argument>
                                     </arguments>
                                 </configuration>

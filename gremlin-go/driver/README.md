@@ -132,11 +132,11 @@ The docker compose environment variable `HOME` specifies the user home directory
 There are different ways to launch the test suite and set the `GREMLIN_SERVER` environment variable depending on your Platform:
 - Run Maven commands, e.g. `mvn clean install` inside of `tinkerpop/gremlin-go`, or `mvn clean install -pl gremlin-go` inside of `tinkerpop` (platform-agnostic - recommended)
 - Run the `run.sh` script, which sets `GREMLIN_SERVER` by default. Run `./run.sh -h` for usage information (Unix/Linux - recommended).
-- Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside `gremlin-go` and run `docker-compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
-- Run `GREMLIN_SERVER=<server-image-version> docker-compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
-- Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker-compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
+- Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside `gremlin-go` and run `docker compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
+- Run `GREMLIN_SERVER=<server-image-version> docker compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
+- Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
 
-You should see exit code 0 upon successful completion of the test suites. Run `docker-compose down` to remove the service containers (not needed if you executed Maven commands or `run.sh`), or `docker-compose down --rmi all` to remove the service containers while deleting all used images.
+You should see exit code 0 upon successful completion of the test suites. Run `docker compose down` to remove the service containers (not needed if you executed Maven commands or `run.sh`), or `docker compose down --rmi all` to remove the service containers while deleting all used images.
 
 [go]: https://go.dev/dl/
 [gomods]: https://go.dev/blog/using-go-modules
