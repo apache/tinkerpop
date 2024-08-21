@@ -18,15 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.util.StringUtil;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -57,7 +55,7 @@ public final class SplitGlobalStep<S, E> extends ScalarMapStep<S, E> implements 
         }
 
         // we will pass null values to next step
-        return null == item? null : (E) Arrays.asList(StringUtils.splitByWholeSeparator((String) item, this.separator));
+        return null == item? null : (E) StringUtil.split((String)item, this.separator);
     }
 
     public String getSeparator() {
@@ -75,4 +73,5 @@ public final class SplitGlobalStep<S, E> extends ScalarMapStep<S, E> implements 
         result = 31 * result + (null != this.separator ? this.separator.hashCode() : 0);
         return result;
     }
+
 }
