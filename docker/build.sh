@@ -106,7 +106,7 @@ EOF
 
 function check_status {
   status=$?
-  [ "$1" == "down" ] && docker-compose down
+  [ "$1" == "down" ] && docker compose down
   popd > /dev/null
   [ $status -ne 0 ] && exit $status
 }
@@ -128,7 +128,7 @@ docker run -p 80:80 ${TINKERPOP_DOCKER_OPTS} ${REMOVE_CONTAINER} \
 check_status
 
 if [ -n "${RUN_TESTS}" ]; then
-  # If testing, then build base server which is required by the following docker-compose.
+  # If testing, then build base server which is required by the following docker compose.
   pushd ${ABS_PROJECT_HOME}/gremlin-server > /dev/null
   docker build -f ./Dockerfile --build-arg GREMLIN_SERVER_DIR=target/apache-tinkerpop-gremlin-server-${GREMLIN_SERVER}-standalone -t tinkerpop/gremlin-server:${GREMLIN_SERVER} .
   check_status
@@ -136,7 +136,7 @@ fi
 
 if [ -n "${INCLUDE_GO}" ] && [ -n "${RUN_TESTS}" ]; then
   pushd ${ABS_PROJECT_HOME}/gremlin-go > /dev/null
-  docker-compose up --build --exit-code-from gremlin-go-integration-tests
+  docker compose up --build --exit-code-from gremlin-go-integration-tests
   check_status "down"
 fi
 
@@ -145,19 +145,19 @@ if [ -n "${INCLUDE_PYTHON}" ] && [ -n "${RUN_TESTS}" ]; then
   export BUILD_DIR=$(pwd)/target/python3/
   mkdir -p ${BUILD_DIR}
   cp -r ./src/main/python/* ${BUILD_DIR}
-  docker-compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests
+  docker compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests
   check_status "down"
 fi
 
 if [ -n "${INCLUDE_DOTNET}" ] && [ -n "${RUN_TESTS}" ]; then
   pushd ${ABS_PROJECT_HOME}/gremlin-dotnet/test > /dev/null
-  docker-compose up --build --exit-code-from gremlin-dotnet-integration-tests
+  docker compose up --build --exit-code-from gremlin-dotnet-integration-tests
   check_status "down"
 fi
 
 if [ -n "${INCLUDE_JAVASCRIPT}" ] && [ -n "${RUN_TESTS}" ]; then
   pushd ${ABS_PROJECT_HOME}/gremlin-javascript/src/main/javascript/gremlin-javascript > /dev/null
-  docker-compose up --build --exit-code-from gremlin-js-integration-tests
+  docker compose up --build --exit-code-from gremlin-js-integration-tests
   check_status "down"
 fi
 

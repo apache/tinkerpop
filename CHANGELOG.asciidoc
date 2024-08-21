@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
 * Raised handshake exceptions for Java driver for `NoHostAvailableException` situations.
 * The default logging level for Gremlin Console in Windows is set to the same WARN level as for Linux.
+* Updated to Docker Compose V2 with `docker-compose` changed to `docker compose` in pom and script files.
 * Add command line option `-l` to change logging level for Gremlin Console in Windows.
 
 [[release-3-6-7]]

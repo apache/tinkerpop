@@ -136,16 +136,16 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <exec executable="docker-compose" failonerror="true">
+                                        <exec executable="docker" failonerror="true">
                                             <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
                                             <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
-                                            <arg line="up --build --abort-on-container-exit gremlin-python-package"/>
+                                            <arg line="compose up --build --abort-on-container-exit gremlin-python-package"/>
                                         </exec>
-                                        <exec executable="docker-compose" failonerror="true">
+                                        <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
-                                            <arg line="down"/>
+                                            <arg line="compose down"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
@@ -157,7 +157,7 @@ limitations under the License.
                             </execution>
 
                             <!--
-                            use docker-compose to run unit tests, radish, and integration tests.
+                            use docker compose to run unit tests, radish, and integration tests.
                             -->
                             <execution>
                                 <id>python-tests</id>
@@ -168,18 +168,18 @@ limitations under the License.
                                 <configuration>
                                     <skip>${skipTests}</skip>
                                     <target>
-                                        <exec executable="docker-compose" failonerror="true">
+                                        <exec executable="docker" failonerror="true">
                                             <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="GREMLIN_SERVER" value="${project.version}"/>
                                             <env key="ABS_PROJECT_HOME" value="${project.basedir}/../"/>
                                             <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
-                                            <arg line="up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests"/>
+                                            <arg line="compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests"/>
                                         </exec>
-                                        <exec executable="docker-compose" failonerror="true">
+                                        <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
-                                            <arg line="down"/>
+                                            <arg line="compose down"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>

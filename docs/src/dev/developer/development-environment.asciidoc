@@ -341,7 +341,7 @@ go build
 Docker allows you to test the driver without installing any dependencies. The following command can be used to run docker:
 
 [source,text]
-docker-compose up --exit-code-from gremlin-go-integration-tests
+docker compose up --exit-code-from gremlin-go-integration-tests
 
 See the <<release-environment,Release Environment>> section for more information on release manager configurations.
 
@@ -624,12 +624,12 @@ your Platform:
 
 * Run Maven commands, e.g. `mvn clean install` inside of project folder e.g. `tinkerpop/gremlin-go`, or `mvn clean install -pl gremlin-go`
 inside of `tinkerpop` (platform-agnostic - recommended)
-* Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside project folder and run `docker-compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
-* Run `GREMLIN_SERVER=<server-image-version> docker-compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
-* Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker-compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
+* Add `GREMLIN_SERVER=<server-image-version>` and `HOME=<user-home-directory>` to an `.env` file inside project folder and run `docker compose up --exit-code-from gremlin-go-integration-tests` (Platform-agnostic).
+* Run `GREMLIN_SERVER=<server-image-version> docker compose up --exit-code-from gremlin-go-integration-tests` in Unix/Linux.
+* Run `$env:GREMLIN_SERVER="<server-image-version>";$env:HOME=$env:USERPROFILE;docker compose up --exit-code-from gremlin-go-integration-tests` in Windows PowerShell.
 
-You should see exit code 0 upon successful completion of the test suites. Run `docker-compose down` to remove the
-service containers (not needed if you executed Maven commands or `run.sh`), or `docker-compose down --rmi all` to
+You should see exit code 0 upon successful completion of the test suites. Run `docker compose down` to remove the
+service containers (not needed if you executed Maven commands or `run.sh`), or `docker compose down --rmi all` to
 remove the service containers while deleting all used images.
 
 Note for running docker with MacOS on ARM processors: Docker's performance is extremely poor on ARM Mac's in its
