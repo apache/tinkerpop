@@ -48,8 +48,8 @@ ABS_PROJECT_HOME=$(dirname $(realpath "$0"))/..
 export ABS_PROJECT_HOME
 
 # Passes current gremlin server version into docker compose as environment variable
-docker-compose up --build --exit-code-from gremlin-go-integration-tests
+docker compose up --build --exit-code-from gremlin-go-integration-tests
 EXIT_CODE=$?
 # Removes all service containers
-docker-compose down
+docker compose down
 exit $EXIT_CODE
