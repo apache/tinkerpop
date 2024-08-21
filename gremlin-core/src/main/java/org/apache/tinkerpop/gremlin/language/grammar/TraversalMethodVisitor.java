@@ -42,11 +42,11 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     /**
      * This object is used to append the traversal methods.
      */
-    private final GraphTraversal graphTraversal;
+    private final GraphTraversal.Admin graphTraversal;
 
     public TraversalMethodVisitor(final GremlinAntlrToJava antlr, final GraphTraversal graphTraversal) {
         super(antlr, graphTraversal);
-        this.graphTraversal = graphTraversal;
+        this.graphTraversal = graphTraversal.asAdmin();
     }
 
     /**
