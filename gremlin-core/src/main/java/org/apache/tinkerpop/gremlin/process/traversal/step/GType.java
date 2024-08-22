@@ -33,23 +33,31 @@ import java.util.Set;
  * An enum that describes types that are used in the Gremlin language.
  */
 public enum GType {
-    BIG_DECIMAL,
-    BIG_INTEGER,
-    BOOLEAN,
-    DOUBLE,
-    EDGE,
-    INTEGER,
-    LIST,
-    LONG,
-    MAP,
-    PATH,
-    PROPERTY,
-    SET,
-    STRING,
-    UNKNOWN,
-    VERTEX;
+    BIG_DECIMAL(BigDecimal.class),
+    BIG_INTEGER(BigInteger.class),
+    BOOLEAN(Boolean.class),
+    DOUBLE(Double.class),
+    EDGE(Edge.class),
+    INTEGER(Integer.class),
+    LIST(List.class),
+    LONG(Long.class),
+    MAP(Map.class),
+    PATH(Path.class),
+    PROPERTY(Property.class),
+    SET(Set.class),
+    STRING(String.class),
+    UNKNOWN(null),
+    VERTEX(Vertex.class);
 
-    GType() {}
+    private Class<?> javaType;
+
+    GType(final Class<?> javaType) {
+        this.javaType = javaType;
+    }
+
+    public Class<?> getJavaType() {
+        return this.javaType;
+    }
 
     /**
      * Returns {@code true} if the type is a number.

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -721,10 +722,30 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         if (ctx.getChildCount() == 4) {
-            return graphTraversal.hasLabel(antlr.argumentVisitor.parseString(ctx.stringNullableArgument()));
+            final Object literalOrVar = antlr.argumentVisitor.visitStringNullableArgument(ctx.stringNullableArgument());
+            if (GValue.valueInstanceOf(literalOrVar, GType.STRING))
+                return graphTraversal.hasLabel((GValue) literalOrVar);
+            else
+                return graphTraversal.hasLabel((String) literalOrVar);
         } else {
-            return graphTraversal.hasLabel(antlr.argumentVisitor.parseString(ctx.stringNullableArgument()),
-                    antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+            Object literalOrVar = antlr.argumentVisitor.visitStringNullableArgument(ctx.stringNullableArgument());
+            Object[] literalOrVars = antlr.genericVisitor.visitStringLiteralVarargs(ctx.stringLiteralVarargs());
+
+            // if any are GValue then they all need to be GValue to call hasLabel
+            if (literalOrVar instanceof GValue || Arrays.stream(literalOrVars).anyMatch(lov -> lov instanceof GValue)) {
+                literalOrVar = GValue.of(literalOrVar);
+                literalOrVars = Arrays.stream(literalOrVars).map(GValue::of).toArray();
+            }
+
+            // since we normalized above to gvalue or literal we can just test the first arg for gvalue-ness
+            if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+                final GValue[] gvalueLiteralOrVars = literalOrVars == null ? null : Arrays.stream(literalOrVars).map(o -> (GValue) o).toArray(GValue[]::new);
+                return graphTraversal.hasLabel((GValue) literalOrVar, gvalueLiteralOrVars);
+            } else {
+                // convert object array to string array
+                final String[] stringLiteralOrVars = literalOrVars == null ? null : Arrays.stream(literalOrVars).map(o -> (String) o).toArray(String[]::new);
+                return graphTraversal.hasLabel((String) literalOrVar, stringLiteralOrVars);
+            }
         }
     }
 

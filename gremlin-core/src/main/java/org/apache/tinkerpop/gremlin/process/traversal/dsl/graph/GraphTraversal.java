@@ -445,7 +445,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
          * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
          * @since 3.2.2
          */
-        public default GraphTraversal<S, E> hasLabel(final Object label, final Object... otherLabels) {
+        public default GraphTraversal<S, E> hasLabel(final GValue<String> label, final GValue<String>... otherLabels) {
             this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.hasLabel, label, otherLabels);
 
             // groovy evaluation seems to do strange things with varargs given hasLabel(null, null). odd someone would

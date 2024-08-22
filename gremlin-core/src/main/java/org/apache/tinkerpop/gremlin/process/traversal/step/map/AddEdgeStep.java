@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -113,7 +114,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theTo instanceof Vertex))
+        if (!(theTo instanceof Vertex) || (theTo instanceof GValue && ((GValue) theTo).getType() != GType.VERTEX))
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theTo ? "null" : theTo.getClass().getSimpleName()));
@@ -127,7 +128,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theFrom instanceof Vertex))
+        if (!(theFrom instanceof Vertex) || (theFrom instanceof GValue && ((GValue) theTo).getType() != GType.VERTEX))
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
