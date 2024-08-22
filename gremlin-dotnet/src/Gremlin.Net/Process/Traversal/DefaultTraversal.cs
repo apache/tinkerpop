@@ -198,9 +198,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <returns>The result.</returns>
         public E Next()
-        {
-            MoveNext();
-            return Current;
+        { 
+            return MoveNext() 
+                ? Current 
+                : default;
         }
 
         /// <summary>
