@@ -98,6 +98,17 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             Assert.Null(drainedTraversal.Next());
         }
+        
+        [Fact]
+        public void ShouldReturnNullWhenTraverserIsEmpty()
+        {
+            var someObjs = new List<object?>();
+            var traversal = new TestTraversal(someObjs);
+
+            var emptyTraversal = traversal.Iterate();
+
+            Assert.Null(emptyTraversal.Next());
+        }
 
         [Fact]
         public void ShouldReturnNullWhenNextIsCalledAndNoTraverserIsAvailable()

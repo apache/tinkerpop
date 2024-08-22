@@ -207,9 +207,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <returns>The result.</returns>
         public TEnd? Next()
-        {
-            MoveNext();
-            return Current;
+        { 
+            return MoveNext() 
+                ? Current 
+                : default;
         }
 
         /// <summary>
