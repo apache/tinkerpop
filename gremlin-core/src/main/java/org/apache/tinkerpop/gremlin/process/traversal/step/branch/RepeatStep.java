@@ -74,6 +74,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         this.loopName = loopName;
     }
 
+    public String getLoopName() {
+        return this.loopName;
+    }
+
     public void setUntilTraversal(final Traversal.Admin<S, ?> untilTraversal) {
         if (null != this.untilTraversal)
             throw new IllegalStateException("The repeat()-step already has its until()-modulator declared: " + this);
