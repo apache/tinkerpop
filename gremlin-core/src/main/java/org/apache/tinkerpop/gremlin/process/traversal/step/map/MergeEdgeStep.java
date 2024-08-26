@@ -52,12 +52,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 /**
  * Implementation for the {@code mergeE()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
+public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
     private Traversal.Admin<S, Object> outVTraversal = null;
