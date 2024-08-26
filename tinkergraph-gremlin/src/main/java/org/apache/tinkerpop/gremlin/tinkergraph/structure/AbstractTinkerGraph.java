@@ -579,6 +579,9 @@ public abstract class AbstractTinkerGraph implements Graph {
                 if (null == id)
                     return null;
                 else  if (id instanceof String) {
+                    if (((String)id).isEmpty())
+                        throw new IllegalArgumentException("Expected a non-empty string but received an empty string.");
+
                     return id;
                 } else
                     throw new IllegalArgumentException(createErrorMessage(java.lang.String.class, id));

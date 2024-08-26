@@ -94,4 +94,12 @@ public class IdManagerTest {
         final TinkerGraph.IdManager manager = TinkerGraph.DefaultIdManager.STRING;
         manager.convert(UUID.randomUUID());
     }
+
+    @Test
+    public void shouldGenerateNiceErrorOnConversionOfEmptyStringToString() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Expected a non-empty string but received an empty string.");
+        final TinkerGraph.IdManager manager = TinkerGraph.DefaultIdManager.STRING;
+        manager.convert("");
+    }
 }
