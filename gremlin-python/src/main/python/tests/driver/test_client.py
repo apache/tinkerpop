@@ -175,7 +175,20 @@ def test_client_gremlin(client):
     assert 1 == len(result)
     vertex = result[0]
     assert 1 == vertex.id
-    assert 0 == len(vertex.properties)
+    assert vertex.properties is None
+    ##
+    result_set = client.submit('g.with("materializeProperties", "tokens").E(7)')
+    result = result_set.all().result()
+    assert 1 == len(result)
+    edge = result[0]
+    assert 7 == edge.id
+    assert edge.properties is None
+    ##
+    result_set = client.submit('g.with("materializeProperties", "tokens").V(1).properties()')
+    result = result_set.all().result()
+    assert 2 == len(result)
+    for vp in result:
+        assert vp.properties is None
 
 
 def test_client_bytecode(client):

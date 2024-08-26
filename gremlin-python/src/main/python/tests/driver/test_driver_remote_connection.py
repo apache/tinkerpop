@@ -109,6 +109,21 @@ class TestDriverRemoteConnection(object):
         if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
             results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
             assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
+        # #
+        # test materializeProperties in V
+        results = g.with_("materializeProperties", "tokens").V().to_list()
+        for v in results:
+            assert v.properties is None
+        # #
+        # test materializeProperties in E
+        results = g.with_("materializeProperties", "tokens").E().to_list()
+        for e in results:
+            assert e.properties is None
+        # #
+        # test materializeProperties in E
+        results = g.with_("materializeProperties", "tokens").V().properties().to_list()
+        for vp in results:
+            assert vp.properties is None
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())

@@ -1230,4 +1230,35 @@ func TestConnection(t *testing.T) {
 
 		AssertMarkoVertexWithProperties(t, r)
 	})
+
+	t.Run("Test DriverRemoteConnection Traversal With materializeProperties in Modern Graph", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		vertices, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().ToList()
+		assert.Nil(t, err)
+		for _, res := range vertices {
+			v, _ := res.GetVertex()
+			assert.Nil(t, err)
+			assert.Nil(t, v.Properties)
+		}
+
+		edges, err := g.With("materializeProperties", MaterializeProperties.Tokens).E().ToList()
+		assert.Nil(t, err)
+		for _, res := range edges {
+			e, _ := res.GetEdge()
+			assert.Nil(t, err)
+			assert.Nil(t, e.Properties)
+		}
+
+		vps, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Properties().ToList()
+		assert.Nil(t, err)
+		for _, res := range vps {
+			vp, _ := res.GetVertexProperty()
+			assert.Nil(t, err)
+			assert.Nil(t, vp.Properties)
+		}
+	})
 }

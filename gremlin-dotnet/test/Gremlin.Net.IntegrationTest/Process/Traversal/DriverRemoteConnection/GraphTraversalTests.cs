@@ -291,5 +291,41 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.RollbackAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
         }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInV()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vertices = g.With("materializeProperties", "tokens").V().ToList();
+            foreach (var v in vertices)
+            {
+                Assert.Null(v.Properties);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInE()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var edges = g.With("materializeProperties", "tokens").E().ToList();
+            foreach (var e in edges)
+            {
+                Assert.Null(e.Properties);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInVP()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vps = g.With("materializeProperties", "tokens").V().Properties<VertexProperty>().ToList();
+            foreach (var vp in vps)
+            {
+                Assert.Null(vp.Properties);
+            }
+        }
     }
 }

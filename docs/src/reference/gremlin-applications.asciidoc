@@ -2336,6 +2336,44 @@ List<Vertex> results = g.V().hasLabel("person").elementMap('name').toList();
 
 Both of the above requests return a list of `Map` instances that contain the `id`, `label` and the "name" property.
 
+*Compatibility*
+
+*It is not recommended to use older driver versions with 3.7.x Gremlin Server*, as some older drivers do not construct
+graph elements with properties and thus are not designed to handle the returned properties by default; however, compatibility
+can be achieved by configuring `ReferenceElementStrategy` in the server such that properties are not returned.
+Per-request configuration option `materializeProperties` is not supported older driver versions.
+
+Also note that older drivers of different language variants will handle incoming properties differently with different
+serializers used. Drivers using `GraphSON` serializers will remain compatible, but may encounter deserialization errors
+with `GraphBinary`. Below is a table documenting GLV behaviors using `GraphBinary` when properties are returned by the
+default 3.7.x server, as well as if `ReferenceElementStrategy` is configured on the server (i.e. the expected behavior
+from a 3.6.x server). This behavior can be observed with the results of `g.V().next()`.
+
+[cols="1,1,1"]
+|===
+|3.6.x drivers with `GraphBinary` |Behavior with default 3.7.x Server | Behavior with `ReferenceElementStrategy`
+
+|`gremlin-driver`
+|Returns empty iterator
+|Returns empty iterator
+
+|`gremlin-dotnet`
+|Skips properties in Elements
+|Skips properties in Elements
+
+|`gremlin-javascript`
+|Deserialization error
+|Returns null
+
+|`gremlin-python`
+|Deserialization error
+|Skips properties in Elements
+
+|`gremlin-go`
+|Deserialization error
+|Skips properties in Elements
+|===
+
 TIP: Consider utilizing `ReferenceElementStrategy` whenever creating a `GraphTraversalSource` in Java to ensure 
 the most portable Gremlin.
 

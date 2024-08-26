@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 
 import java.io.IOException;
 import java.util.List;
@@ -81,7 +82,7 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
 
         // we don't serialize the parent Vertex for edges.
         context.write(null, buffer);
-        if (value.properties() == null) {
+        if (value instanceof ReferenceEdge) {
             context.write(null, buffer);
         }
         else {

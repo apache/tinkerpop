@@ -102,7 +102,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+          assert.ok(vertex.properties === undefined || vertex.properties === null);
         });
     });
 
@@ -133,7 +133,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+          assert.ok(vertex.properties === undefined || vertex.properties === null);
         });
     });
 
