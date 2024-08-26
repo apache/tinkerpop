@@ -589,7 +589,7 @@ public abstract class AbstractTinkerGraph implements Graph {
 
             @Override
             public boolean allow(final Object id) {
-                return id instanceof String;
+                return id instanceof String && !((String)id).isEmpty();
             }
         };
 
