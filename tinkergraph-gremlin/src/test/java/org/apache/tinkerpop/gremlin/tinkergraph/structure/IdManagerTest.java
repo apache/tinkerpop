@@ -78,4 +78,20 @@ public class IdManagerTest {
         final TinkerGraph.IdManager manager = TinkerGraph.DefaultIdManager.UUID;
         manager.convert(Double.NaN);
     }
+
+    @Test
+    public void shouldGenerateNiceErrorOnConversionOfJunkToString() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Expected an id that is convertible to");
+        final TinkerGraph.IdManager manager = TinkerGraph.DefaultIdManager.STRING;
+        manager.convert(Double.NaN);
+    }
+
+    @Test
+    public void shouldGenerateNiceErrorOnConversionOfUUIDToString() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Expected an id that is convertible to");
+        final TinkerGraph.IdManager manager = TinkerGraph.DefaultIdManager.STRING;
+        manager.convert(UUID.randomUUID());
+    }
 }
