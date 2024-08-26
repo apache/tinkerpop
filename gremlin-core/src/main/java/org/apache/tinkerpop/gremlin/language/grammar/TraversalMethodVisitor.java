@@ -805,9 +805,16 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_has_String_String_Object(final GremlinParser.TraversalMethod_has_String_String_ObjectContext ctx) {
-        return graphTraversal.has(antlr.argumentVisitor.parseString(ctx.stringNullableArgument(0)),
-                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)),
-                antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        final Object literalOrVar = antlr.argumentVisitor.visitStringNullableArgument(ctx.stringNullableArgument(0));
+        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+            return graphTraversal.has((GValue) literalOrVar,
+                    antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)),
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        } else {
+            return graphTraversal.has((String) literalOrVar,
+                    antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)),
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        }
     }
 
     /**
