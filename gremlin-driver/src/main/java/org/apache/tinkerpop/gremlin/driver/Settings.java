@@ -194,8 +194,8 @@ public final class Settings {
             if (connectionPoolConf.containsKey("maxWaitForClose"))
                 cpSettings.maxWaitForClose = connectionPoolConf.getInt("maxWaitForClose");
 
-            if (connectionPoolConf.containsKey("maxContentLength"))
-                cpSettings.maxContentLength = connectionPoolConf.getInt("maxContentLength");
+            if (connectionPoolConf.containsKey("maxResponseContentLength"))
+                cpSettings.maxResponseContentLength = connectionPoolConf.getInt("maxResponseContentLength");
 
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
@@ -316,10 +316,10 @@ public final class Settings {
         public int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
 
         /**
-         * The maximum length in bytes that a message can be sent to the server. This number can be no greater than
-         * the setting of the same name in the server configuration. The default value is 65536.
+         * The maximum length in bytes of a response message that can be received from the server. The default value is
+         * {@link Integer#MAX_VALUE}.
          */
-        public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        public long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is

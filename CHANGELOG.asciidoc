@@ -61,6 +61,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `auth` module in `gremlin-python` for pluggable authentication.
 * Fixed `GremlinLangScriptEngine` handling for some strategies.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
+* The `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
+* The `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

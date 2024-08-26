@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 final class Connection {
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
-    public static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
+    public static final long MAX_RESPONSE_CONTENT_LENGTH = Integer.MAX_VALUE;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
     public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
