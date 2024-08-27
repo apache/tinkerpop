@@ -71,11 +71,11 @@ public final class CoinStep<S> extends FilterStep<S> implements Seedable {
         long newBulk = 0l;
         if (traverser.bulk() < 100) {
             for (int i = 0; i < traverser.bulk(); i++) {
-                if (this.probability.get() >= random.nextDouble())
+                if (this.getProbability() >= random.nextDouble())
                     newBulk++;
             }
         } else {
-            newBulk = Math.round(this.probability.get() * traverser.bulk());
+            newBulk = Math.round(this.getProbability() * traverser.bulk());
         }
         if (0 == newBulk) return false;
         traverser.setBulk(newBulk);
@@ -89,7 +89,7 @@ public final class CoinStep<S> extends FilterStep<S> implements Seedable {
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Double.hashCode(this.probability.get());
+        return super.hashCode() ^ Double.hashCode(this.getProbability());
     }
 
     @Override

@@ -43,7 +43,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -54,7 +56,8 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
-    protected Object[] ids;
+    protected GValue<?>[] ids;
+    protected boolean legacyLogicForPassingNoIds = false;
     protected transient Supplier<Iterator<E>> iteratorSupplier;
     protected boolean isStart;
     protected boolean done = false;
@@ -65,29 +68,45 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     public GraphStep(final Traversal.Admin traversal, final Class<E> returnClass, final boolean isStart, final Object... ids) {
         super(traversal);
         this.returnClass = returnClass;
-        this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
+
+        // if ids is a single collection like g.V(['a','b','c']), then unroll it into an array of ids
+        this.ids = convertToGValues(tryUnrollSingleCollectionArgument(ids));
+
         this.isStart = isStart;
 
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.getTraversal().getGraph().get().vertices(convertGValuesToIds()) :
-                this.getTraversal().getGraph().get().edges(convertGValuesToIds()));
+                this.getTraversal().getGraph().get().vertices(resolveToValues(this.ids)) :
+                this.getTraversal().getGraph().get().edges(resolveToValues(this.ids)));
     }
 
     /**
-     * Converts {@link GValue} objects the ids array to their values to prevent them from leaking to the Graph API.
+     * Unrolls a single collection argument into an array of ids. This is useful for steps like
+     * {@code g.V(['a','b','c'])}.
      */
-    private Object[] convertGValuesToIds() {
-        final Object[] newIds = new Object[this.ids.length];
-        for (int i = 0; i < this.ids.length; i++) {
-            if (newIds[i] instanceof GValue) {
-                newIds[i] = ((GValue) this.ids[i]).get();
-            } else {
-                newIds[i] = this.ids[i];
-            }
+    protected static Object[] tryUnrollSingleCollectionArgument(final Object[] ids) {
+        final Object[] tempIds;
+        if (ids != null && ids.length == 1) {
+            final Optional<Collection> opt;
+            if (ids[0] instanceof GValue && ((GValue<?>) ids[0]).getType().isCollection())
+                opt = Optional.of((Collection) ((GValue) ids[0]).get());
+            else if (ids[0] instanceof Collection)
+                opt = Optional.of((Collection) ids[0]);
+            else
+                opt = Optional.empty();
+
+            if (opt.isPresent()) {
+                tempIds = opt.get().toArray(new Object[opt.get().size()]);
+            } else
+                tempIds = ids;
+        } else {
+            tempIds = ids;
         }
-        return newIds;
+        return tempIds;
     }
 
+    public GValue[] getIdsGValue() {
+        return this.ids;
+    }
 
     public String toString() {
         return StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
@@ -128,23 +147,27 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     }
 
     public Object[] getIds() {
-        return this.ids;
+        if (legacyLogicForPassingNoIds) return null;
+        return resolveToValues(this.ids);
     }
 
     public void addIds(final Object... newIds) {
-        if ((this.ids == null || this.ids.length == 0) &&
-                newIds.length == 1 &&
-                newIds[0] instanceof Collection && ((Collection) newIds[0]).isEmpty())
-            this.ids = null;
-        else
-            this.ids = ArrayUtils.addAll(this.ids,
-                    (newIds.length == 1 && newIds[0] instanceof Collection) ?
-                            ((Collection) newIds[0]).toArray(new Object[((Collection) newIds[0]).size()]) :
-                            newIds);
+        // there is some logic that has been around for a long time that used to set ids to null. it only happened here
+        // in this method and only occurred when the ids were already null or empty and the newIds were length 1 and
+        // an instance of List and that list was empty. so basically it would trigger for something like g.V().hasId([])
+        // which in turn would trigger an empty iterator in TinkerGraphStep and zero results. trying to maintain that
+        // logic now with GValue in the mix is tough because the context of what the meaning is gets lost by the time
+        // you get to calling getResolvedIds(). using a flag to try to maintain that legacy logic, but ultimately, all
+        // this needs to be rethought.
+        this.legacyLogicForPassingNoIds = newIds.length == 1 && ((newIds[0] instanceof List && ((List) newIds[0]).isEmpty()) ||
+                (newIds[0] instanceof GValue && ((GValue) newIds[0]).getType().isCollection() && ((List) ((GValue) newIds[0]).get()).isEmpty()));
+
+        final GValue[] gvalues = convertToGValues(tryUnrollSingleCollectionArgument(newIds));
+        this.ids = ArrayUtils.addAll(this.ids, gvalues);
     }
 
     public void clearIds() {
-        this.ids = new Object[0];
+        this.ids = new GValue[0];
     }
 
     @Override
@@ -157,13 +180,10 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         if (null != this.ids) {
             // if this is going to OLAP, convert to ids so you don't serialize elements
             for (int i = 0; i < this.ids.length; i++) {
-
-                // spare the Graph API from GValue objects, as they are Gremlin level objects
-                if (this.ids[i] instanceof GValue)
-                    this.ids[i] = ((GValue) this.ids[i]).get();
-
-                if (this.ids[i] instanceof Element)
-                    this.ids[i] = ((Element) this.ids[i]).id();
+                final GValue<?> current = this.ids[i];
+                if (current.getType().isElement()) {
+                    this.ids[i] = GValue.of(current.getName(), ((Element) current.get()).id());
+                }
             }
         }
     }

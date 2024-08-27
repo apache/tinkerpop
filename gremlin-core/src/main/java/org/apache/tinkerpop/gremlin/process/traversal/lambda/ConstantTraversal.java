@@ -45,7 +45,7 @@ public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E>
         return this.end.get();
     }
 
-    public GValue<E> getEnd() {
+    public GValue<E> getEndGValue() {
         return end;
     }
 
