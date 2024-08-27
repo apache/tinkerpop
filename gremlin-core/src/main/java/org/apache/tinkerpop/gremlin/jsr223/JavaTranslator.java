@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
@@ -38,6 +39,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -336,8 +338,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     private synchronized static void buildMethodCache(final Object delegate, final Map<String, List<ReflectedMethod>> methodCache) {
         if (methodCache.isEmpty()) {
             for (final Method method : delegate.getClass().getMethods()) {
-                final List<ReflectedMethod> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
-                list.add(new ReflectedMethod(method));
+                final boolean freeOfGValue = Arrays.stream(method.getParameters()).
+                        noneMatch(p -> p.getType() == GValue.class || p.getType().getComponentType() == GValue.class);
+                if (freeOfGValue) {
+                    final List<ReflectedMethod> list = methodCache.computeIfAbsent(method.getName(), k -> new ArrayList<>());
+                    list.add(new ReflectedMethod(method));
+                }
             }
             GLOBAL_METHOD_CACHE.put(delegate.getClass(), methodCache);
         }
