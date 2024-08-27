@@ -54,24 +54,14 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     private final Class<E> returnClass;
 
     public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
-        this(traversal, returnClass, direction, (Object[]) edgeLabels);
+        this(traversal, returnClass, direction, GValue.convertToGValues(edgeLabels));
     }
 
-    public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final Object... edgeLabels) {
+    public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final GValue<String>... edgeLabels) {
         super(traversal);
         this.direction = direction;
         this.returnClass = returnClass;
-
-        // check each edgeLabel to ensure it is a string or a GValue with a GType.STRING in it. if it is just a string
-        // then convert edgeLabels to a GValue<String> or otherwise throw an exception
-        this.edgeLabelsGValue = Arrays.stream(edgeLabels).map(edgeLabel -> {
-            if (edgeLabel instanceof String)
-                return GValue.ofString((String) edgeLabel);
-            else if (edgeLabel instanceof GValue && ((GValue<String>) edgeLabel).get().getClass().equals(String.class))
-                return (GValue<String>) edgeLabel;
-            else
-                throw new IllegalArgumentException("All edge labels must be strings");
-        }).toArray(GValue[]::new);
+        this.edgeLabelsGValue = edgeLabels;
 
         // convert the GValue<String> to a String[] for the edgeLabels field to cache the values
         this.edgeLabels = Arrays.stream(this.edgeLabelsGValue).map(GValue::get).toArray(String[]::new);

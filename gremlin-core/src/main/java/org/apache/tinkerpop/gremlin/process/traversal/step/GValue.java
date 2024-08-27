@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * A {@code GValue} is a variable or literal value that is used in a {@link Traversal}. It is composed of a key-value
@@ -55,6 +56,47 @@ public class GValue<V> implements Cloneable, Serializable {
         this.name = name;
         this.type = type;
         this.value = value;
+    }
+
+    /**
+     * The elements in object array argument are examined to see if they are {@link GValue} objects. If they are, they
+     * are preserved as is. If they are not then they are wrapped in a {@link GValue} object.
+     */
+    public static <T> GValue<T>[] convertToGValues(final Object[] args) {
+        return Stream.of(args).map(id -> {
+            if (id instanceof GValue)
+                return (GValue<?>) id;
+            else
+                return of(id);
+        }).toArray(GValue[]::new);
+    }
+
+    /**
+     * Converts {@link GValue} objects arguments to their values to prevent them from leaking to the Graph API.
+     * Providers extending from this step should use this method to get actual values to prevent any {@link GValue}
+     * objects from leaking to the Graph API.
+     */
+    public static Object[] resolveToValues(final List<GValue<?>> gvalues) {
+        // convert gvalues to array
+        final Object[] newIds = new Object[gvalues.size()];
+        int i = 0;
+        for (final GValue<?> gvalue : gvalues) {
+            newIds[i++] = gvalue.get();
+        }
+        return newIds;
+    }
+
+    /**
+     * Converts {@link GValue} objects argument array to their values to prevent them from leaking to the Graph API.
+     * Providers extending from this step should use this method to get actual values to prevent any {@link GValue}
+     * objects from leaking to the Graph API.
+     */
+    public static Object[] resolveToValues(final GValue<?>[] gvalues) {
+        final Object[] newIds = new Object[gvalues.length];
+        for (int i = 0; i < gvalues.length; i++) {
+            newIds[i] = gvalues[i].get();
+        }
+        return newIds;
     }
 
     /**

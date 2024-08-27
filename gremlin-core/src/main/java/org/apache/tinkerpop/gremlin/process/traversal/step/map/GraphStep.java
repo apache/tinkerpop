@@ -70,13 +70,13 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.returnClass = returnClass;
 
         // if ids is a single collection like g.V(['a','b','c']), then unroll it into an array of ids
-        this.ids = convertToGValues(tryUnrollSingleCollectionArgument(ids));
+        this.ids = GValue.convertToGValues(tryUnrollSingleCollectionArgument(ids));
 
         this.isStart = isStart;
 
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.getTraversal().getGraph().get().vertices(resolveToValues(this.ids)) :
-                this.getTraversal().getGraph().get().edges(resolveToValues(this.ids)));
+                this.getTraversal().getGraph().get().vertices(GValue.resolveToValues(this.ids)) :
+                this.getTraversal().getGraph().get().edges(GValue.resolveToValues(this.ids)));
     }
 
     /**
@@ -148,7 +148,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
     public Object[] getIds() {
         if (legacyLogicForPassingNoIds) return null;
-        return resolveToValues(this.ids);
+        return GValue.resolveToValues(this.ids);
     }
 
     public void addIds(final Object... newIds) {
@@ -162,7 +162,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.legacyLogicForPassingNoIds = newIds.length == 1 && ((newIds[0] instanceof List && ((List) newIds[0]).isEmpty()) ||
                 (newIds[0] instanceof GValue && ((GValue) newIds[0]).getType().isCollection() && ((List) ((GValue) newIds[0]).get()).isEmpty()));
 
-        final GValue[] gvalues = convertToGValues(tryUnrollSingleCollectionArgument(newIds));
+        final GValue[] gvalues = GValue.convertToGValues(tryUnrollSingleCollectionArgument(newIds));
         this.ids = ArrayUtils.addAll(this.ids, gvalues);
     }
 

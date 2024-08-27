@@ -19,6 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,5 +76,23 @@ public final class CollectionUtil {
         }
 
         return result;
+    }
+
+    /**
+     * Adds the element argument to the start of the supplied array argument, but if the array is null then return the
+     * element as a new array with just that item in it.
+     */
+    public static <T> T[] addFirst(final T[] array, final T element, final Class<T> clazz) {
+        if (null == array && null == element) {
+            final T[] singleElementArray = (T[]) Array.newInstance(clazz, 1);
+            singleElementArray[0] = null;
+            return singleElementArray;
+        } else if (null == array) {
+            final T[] singleElementArray = (T[]) Array.newInstance(clazz, 1);
+            singleElementArray[0] = element;
+            return singleElementArray;
+        } else {
+            return ArrayUtils.addFirst(array, element);
+        }
     }
 }

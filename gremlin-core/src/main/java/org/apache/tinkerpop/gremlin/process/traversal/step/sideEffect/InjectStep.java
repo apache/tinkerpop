@@ -32,28 +32,28 @@ public final class InjectStep<S> extends StartStep<S> {
     @SafeVarargs
     public InjectStep(final Traversal.Admin traversal, final S... injections) {
         super(traversal);
-        this.injections = convertToGValues(injections);
-        this.start = new ArrayIterator<>(resolveToValues(this.injections));
+        this.injections = GValue.convertToGValues(injections);
+        this.start = new ArrayIterator<>(GValue.resolveToValues(this.injections));
     }
 
     @Override
     public InjectStep<S> clone() {
         final InjectStep<S> clone = (InjectStep<S>) super.clone();
-        clone.start = new ArrayIterator<>(resolveToValues(clone.injections));
+        clone.start = new ArrayIterator<>(GValue.resolveToValues(clone.injections));
         return clone;
     }
 
     @Override
     public void reset() {
         super.reset();
-        this.start = new ArrayIterator<>(resolveToValues(this.injections));
+        this.start = new ArrayIterator<>(GValue.resolveToValues(this.injections));
     }
 
     /**
      * Get the injections of the step.
      */
     public S[] getInjections() {
-        return (S[]) resolveToValues(injections);
+        return (S[]) GValue.resolveToValues(injections);
     }
 
     public GValue<S>[] getInjectionsGValue() {

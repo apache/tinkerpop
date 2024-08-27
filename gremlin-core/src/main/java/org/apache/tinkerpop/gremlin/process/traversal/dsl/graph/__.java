@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FormatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -111,6 +112,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#constant(GValue)
+     */
+    public static <A> GraphTraversal<A, A> constant(final GValue<A> a) {
+        return __.<A>start().constant(a);
+    }
+
+    /**
      * @see GraphTraversal#label()
      */
     public static <A extends Element> GraphTraversal<A, String> label() {
@@ -146,10 +154,24 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#to(Direction, GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Vertex> to(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().to(direction, edgeLabel, edgeLabels);
+    }
+
+    /**
      * @see GraphTraversal#out(String...)
      */
     public static GraphTraversal<Vertex, Vertex> out(final String... edgeLabels) {
         return __.<Vertex>start().out(edgeLabels);
+    }
+
+    /**
+     * @see GraphTraversal#out(GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Vertex> out(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().out(edgeLabel, edgeLabels);
     }
 
     /**
@@ -160,10 +182,24 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#in(String...)
+     */
+    public static GraphTraversal<Vertex, Vertex> in(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().in(edgeLabel, edgeLabels);
+    }
+
+    /**
      * @see GraphTraversal#both(String...)
      */
     public static GraphTraversal<Vertex, Vertex> both(final String... edgeLabels) {
         return __.<Vertex>start().both(edgeLabels);
+    }
+
+    /**
+     * @see GraphTraversal#both(GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Vertex> both(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().both(edgeLabel, edgeLabels);
     }
 
     /**
@@ -174,10 +210,24 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#toE(Direction, GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Edge> toE(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().toE(direction, edgeLabel, edgeLabels);
+    }
+
+    /**
      * @see GraphTraversal#outE(String...)
      */
     public static GraphTraversal<Vertex, Edge> outE(final String... edgeLabels) {
         return __.<Vertex>start().outE(edgeLabels);
+    }
+
+    /**
+     * @see GraphTraversal#outE(GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Edge> outE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().outE(edgeLabel, edgeLabels);
     }
 
     /**
@@ -188,10 +238,24 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#inE(GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Edge> inE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().inE(edgeLabel, edgeLabels);
+    }
+
+    /**
      * @see GraphTraversal#bothE(String...)
      */
     public static GraphTraversal<Vertex, Edge> bothE(final String... edgeLabels) {
         return __.<Vertex>start().bothE(edgeLabels);
+    }
+
+    /**
+     * @see GraphTraversal#bothE(GValue, GValue...)
+     */
+    public static GraphTraversal<Vertex, Edge> bothE(final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
+        return __.<Vertex>start().bothE(edgeLabel, edgeLabels);
     }
 
     /**
@@ -513,6 +577,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#addV(GValue)
+     */
+    public static <A> GraphTraversal<A, Vertex> addV(final GValue<String> vertexLabel) {
+        return __.<A>start().addV(vertexLabel);
+    }
+
+    /**
      * @see GraphTraversal#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
      */
     public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
@@ -541,6 +612,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#mergeV(GValue)
+     */
+    public static <A> GraphTraversal<A, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+        return __.<A>start().mergeV(searchCreate);
+    }
+
+    /**
      * @see GraphTraversal#mergeV(Traversal)
      */
     public static <A> GraphTraversal<A, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
@@ -551,6 +629,13 @@ public class __ {
      * @see GraphTraversal#addE(String)
      */
     public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {
+        return __.<A>start().addE(edgeLabel);
+    }
+
+    /**
+     * @see GraphTraversal#addE(GValue)
+     */
+    public static <A> GraphTraversal<A, Edge> addE(final GValue<String> edgeLabel) {
         return __.<A>start().addE(edgeLabel);
     }
 
@@ -572,6 +657,13 @@ public class __ {
      * @see GraphTraversal#mergeE(Map)
      */
     public static <A> GraphTraversal<A, Edge> mergeE(final Map<Object, Object> searchCreate) {
+        return __.<A>start().mergeE(searchCreate);
+    }
+
+    /**
+     * @see GraphTraversal#mergeE(GValue)
+     */
+    public static <A> GraphTraversal<A, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         return __.<A>start().mergeE(searchCreate);
     }
 
@@ -935,6 +1027,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#has(GValue, String, Object)
+     */
+    public static <A> GraphTraversal<A, A> has(final GValue<String> label, final String propertyKey, final Object value) {
+        return __.<A>start().has(label, propertyKey, value);
+    }
+
+    /**
      * @see GraphTraversal#has(String, String, P)
      */
     public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final P<?> predicate) {
@@ -973,6 +1072,13 @@ public class __ {
      * @see GraphTraversal#hasLabel(String, String...)
      */
     public static <A> GraphTraversal<A, A> hasLabel(final String label, String... otherLabels) {
+        return __.<A>start().hasLabel(label, otherLabels);
+    }
+
+    /**
+     * @see GraphTraversal#hasLabel(GValue, GValue...)
+     */
+    public static <A> GraphTraversal<A, A> hasLabel(final GValue<String> label, GValue<String>... otherLabels) {
         return __.<A>start().hasLabel(label, otherLabels);
     }
 
@@ -1071,6 +1177,13 @@ public class __ {
      * @see GraphTraversal#coin(double)
      */
     public static <A> GraphTraversal<A, A> coin(final double probability) {
+        return __.<A>start().coin(probability);
+    }
+
+    /**
+     * @see GraphTraversal#coin(GValue)
+     */
+    public static <A> GraphTraversal<A, A> coin(final GValue<Double> probability) {
         return __.<A>start().coin(probability);
     }
 

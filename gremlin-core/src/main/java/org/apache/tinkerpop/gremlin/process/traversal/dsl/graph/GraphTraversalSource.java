@@ -69,7 +69,6 @@ public class GraphTraversalSource implements TraversalSource {
     protected final Graph graph;
     protected TraversalStrategies strategies;
     protected Bytecode bytecode = new Bytecode();
-    protected Admin admin;
 
     ////////////////
 
@@ -100,12 +99,6 @@ public class GraphTraversalSource implements TraversalSource {
         this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class).clone());
         this.connection = connection;
         this.strategies.addStrategies(new RemoteStrategy(connection));
-    }
-
-    public GraphTraversalSource.Admin asAdmin() {
-        if (null == this.admin)
-            this.admin = new Admin();
-        return this.admin;
     }
 
     @Override
@@ -415,6 +408,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
      * {@code Map} as an argument.
      *
@@ -444,6 +453,20 @@ public class GraphTraversalSource implements TraversalSource {
                 new MergeEdgeStep(traversal, true, searchCreate.asAdmin());
 
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
     }
 
     /**
@@ -632,39 +655,4 @@ public class GraphTraversalSource implements TraversalSource {
         return StringFactory.traversalSourceString(this);
     }
 
-    /**
-     * This class masks spawn steps that are more reserved for advanced usage.
-     */
-    public class Admin {
-
-        /**
-         * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
-         * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
-         * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
-         * made it will use that search criteria to create the new {@link Vertex}.
-         *
-         * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
-         * @since 4.0.0
-         */
-        public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
-            final GraphTraversalSource clone = GraphTraversalSource.this.clone();
-            clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
-            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-            return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
-        }
-
-        /**
-         * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
-         * {@code Map} as an argument.
-         *
-         * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
-         * @since 4.0.0
-         */
-        public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
-            final GraphTraversalSource clone = GraphTraversalSource.this.clone();
-            clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
-            final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-            return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
-        }
-    }
 }

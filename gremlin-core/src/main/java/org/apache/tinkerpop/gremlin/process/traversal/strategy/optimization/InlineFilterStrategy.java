@@ -161,7 +161,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 }
             }
             if (!edgeLabels.isEmpty()) {
-                final VertexStep<Edge> newVertexStep = new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), edgeLabels.toArray(new Object[edgeLabels.size()]));
+                final VertexStep<Edge> newVertexStep = new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), GValue.convertToGValues(edgeLabels.toArray()));
                 TraversalHelper.replaceStep(previousStep, newVertexStep, traversal);
                 TraversalHelper.copyLabels(previousStep, newVertexStep, false);
                 if (step.getHasContainers().isEmpty()) {
