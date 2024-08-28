@@ -46,6 +46,7 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         self._client_session = None
         self._http_req_resp = None
         self._enable_ssl = False
+        self._url = None
 
         # Set all inner variables to parameters passed in.
         self._aiohttp_kwargs = kwargs
@@ -65,17 +66,17 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         self.close()
 
     def connect(self, url, headers=None):
+        self._url = url
         # Inner function to perform async connect.
         async def async_connect():
-            # Start client session and use it to send all HTTP requests. Base url is the endpoint, headers are set here
-            # Base url can only parse basic url with no path, see https://github.com/aio-libs/aiohttp/issues/6647
+            # Start client session and use it to send all HTTP requests. Headers can be set here.
             if self._enable_ssl:
                 # ssl context is established through tcp connector
                 tcp_conn = aiohttp.TCPConnector(ssl_context=self._ssl_context)
                 self._client_session = aiohttp.ClientSession(connector=tcp_conn,
-                                                             base_url=url, headers=headers, loop=self._loop)
+                                                             headers=headers, loop=self._loop)
             else:
-                self._client_session = aiohttp.ClientSession(base_url=url, headers=headers, loop=self._loop)
+                self._client_session = aiohttp.ClientSession(headers=headers, loop=self._loop)
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
@@ -83,13 +84,13 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
     def write(self, message):
         # Inner function to perform async write.
         async def async_write():
-            basic_auth = None
-            # basic password authentication for https connections
+            # To pass url into message for request authentication processing
+            message.update({'url': self._url})
             if message['auth']:
-                basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
+                message['auth'](message)
+
             async with async_timeout.timeout(self._write_timeout):
-                self._http_req_resp = await self._client_session.post(url="/gremlin",
-                                                                      auth=basic_auth,
+                self._http_req_resp = await self._client_session.post(url=self._url,
                                                                       data=message['payload'],
                                                                       headers=message['headers'],
                                                                       **self._aiohttp_kwargs)
