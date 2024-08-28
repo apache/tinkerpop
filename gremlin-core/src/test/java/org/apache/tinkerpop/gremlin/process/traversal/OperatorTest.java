@@ -301,4 +301,5 @@ public class OperatorTest {
             return Integer.compare(n, anotherCustomNumber.n);
         }
     }
+
 }

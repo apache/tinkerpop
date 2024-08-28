@@ -87,8 +87,15 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
      */
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withSideEffect(final GremlinParser.TraversalSourceSelfMethod_withSideEffectContext ctx) {
-        return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
-                antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        if (ctx.getChildCount() < 8) {
+            // with 4 children withSideEffect() was called without a reducer specified.
+            return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        } else {
+            return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
+                    (BinaryOperator) antlr.argumentVisitor.visitTraversalBiFunctionArgument(ctx.traversalBiFunctionArgument()));
+        }
     }
 
     @Override

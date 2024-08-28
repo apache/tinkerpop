@@ -185,7 +185,7 @@ public enum Operator implements BinaryOperator<Object> {
             }
 
             if (a instanceof Map && b instanceof Map)
-                ((Map<?,?>) a).putAll((Map) b);
+                ((Map<?, ?>) a).putAll((Map) b);
             else if (a instanceof Collection && a instanceof Collection)
                 ((Collection<?>) a).addAll((Collection) b);
             else
@@ -204,5 +204,5 @@ public enum Operator implements BinaryOperator<Object> {
         public Object apply(final Object a, final Object b) {
             return NumberHelper.add((long) a, (long) b);
         }
-    }
+    };
 }
