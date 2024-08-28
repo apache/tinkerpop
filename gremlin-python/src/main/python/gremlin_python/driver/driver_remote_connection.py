@@ -21,9 +21,8 @@ from concurrent.futures import Future
 import warnings
 
 from gremlin_python.driver import client, serializer
-from gremlin_python.driver.remote_connection import (
-    RemoteConnection, RemoteTraversal)
-from gremlin_python.driver.request import TokensV4
+from gremlin_python.driver.remote_connection import RemoteConnection, RemoteTraversal
+from gremlin_python.driver.request import Tokens
 
 log = logging.getLogger("gremlinpython")
 
@@ -34,7 +33,7 @@ class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source="g", protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 username="", password="",
+                 auth=None,
                  message_serializer=None, headers=None,
                  enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
@@ -44,8 +43,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__transport_factory = transport_factory
         self.__pool_size = pool_size
         self.__max_workers = max_workers
-        self.__username = username
-        self.__password = password
+        self.__auth = auth
         self.__message_serializer = message_serializer
         self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
@@ -59,8 +57,7 @@ class DriverRemoteConnection(RemoteConnection):
                                      pool_size=pool_size,
                                      max_workers=max_workers,
                                      message_serializer=message_serializer,
-                                     username=username,
-                                     password=password,
+                                     auth=auth,
                                      headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      **transport_kwargs)
@@ -121,7 +118,7 @@ class DriverRemoteConnection(RemoteConnection):
     def extract_request_options(gremlin_lang):
         request_options = {}
         for os in gremlin_lang.options_strategies:
-            request_options.update({token: os.configuration[token] for token in TokensV4
+            request_options.update({token: os.configuration[token] for token in Tokens
                                     if token in os.configuration})
         if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
             request_options["params"] = gremlin_lang.parameters

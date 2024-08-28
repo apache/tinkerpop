@@ -25,7 +25,7 @@ import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
-from gremlin_python.driver.request import RequestMessageV4
+from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, Parameter
 from gremlin_python.process.strategies import OptionsStrategy
@@ -41,8 +41,7 @@ test_no_auth_url = gremlin_server_url.format(45940)
 
 
 def create_basic_request_message(traversal, source='gmodern'):
-    msg = RequestMessageV4(fields={'g': source}, gremlin=traversal.gremlin_lang.get_gremlin())
-    return msg
+    return RequestMessage(fields={'g': source}, gremlin=traversal.gremlin_lang.get_gremlin())
 
 
 def test_connection(connection):
