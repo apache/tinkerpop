@@ -24,18 +24,17 @@ import pytest
 import logging
 import queue
 
-
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerHTTPProtocol
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
-
+from gremlin_python.driver.auth import basic, sigv4
 
 """HTTP server testing variables"""
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
-gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/gremlin')
+gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/gremlin')
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
 
@@ -44,7 +43,6 @@ verbose_logging = False
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
 
-
 """
 Tests below are for the HTTP server with GraphBinaryV4
 """
@@ -52,7 +50,7 @@ Tests below are for the HTTP server with GraphBinaryV4
 def connection(request):
     protocol = GremlinServerHTTPProtocol(
         GraphBinarySerializersV4(),
-        username='stephen', password='password')
+        auth=basic('stephen', 'password'))
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
@@ -91,7 +89,8 @@ def authenticated_client(request):
             # turn off certificate verification for testing purposes only
             ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_opts.verify_mode = ssl.CERT_NONE
-            client = Client(basic_url, 'gmodern', username='stephen', password='password',
+            client = Client(basic_url, 'gmodern',
+                            auth=basic('stephen', 'password'),
                             transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
         else:
             raise ValueError("Invalid authentication option - " + request.param)
@@ -144,7 +143,7 @@ def remote_connection_crew(request):
         return remote_conn
 
 
-# TODO: revisit once auth is updated
+# TODO: revisit once testing for multiple types of auth is enabled
 @pytest.fixture(params=['basic'])
 def remote_connection_authenticated(request):
     try:
@@ -153,7 +152,7 @@ def remote_connection_authenticated(request):
             ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
-                                                 username='stephen', password='password',
+                                                 auth=basic('stephen', 'password'),
                                                  transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
         else:
             raise ValueError("Invalid authentication option - " + request.param)

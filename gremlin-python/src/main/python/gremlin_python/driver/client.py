@@ -19,12 +19,9 @@
 import logging
 import warnings
 import queue
-import re
 from concurrent.futures import ThreadPoolExecutor
 
 from gremlin_python.driver import connection, protocol, request, serializer
-from gremlin_python.process import traversal
-from gremlin_python.driver.request import TokensV4
 
 log = logging.getLogger("gremlinpython")
 
@@ -44,12 +41,9 @@ class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 message_serializer=None, username="", password="", headers=None,
+                 message_serializer=None, auth=None, headers=None,
                  enable_user_agent_on_connect=True, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
-
-        # check via url that we are using http protocol
-        self._use_http = re.search('^http', url)
 
         self._closed = False
         self._url = url
@@ -62,8 +56,7 @@ class Client:
             message_serializer = serializer.GraphBinarySerializersV4()
 
         self._message_serializer = message_serializer
-        self._username = username
-        self._password = password
+        self._auth = auth
 
         if transport_factory is None:
             try:
@@ -82,8 +75,7 @@ class Client:
             def protocol_factory():
                 return protocol.GremlinServerHTTPProtocol(
                     self._message_serializer,
-                    username=self._username,
-                    password=self._password)
+                    auth=self._auth)
         self._protocol_factory = protocol_factory
 
         if pool_size is None:
@@ -163,11 +155,11 @@ class Client:
 
         if isinstance(message, str):
             log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
-            message = request.RequestMessageV4(fields=fields, gremlin=message)
+            message = request.RequestMessage(fields=fields, gremlin=message)
 
         conn = self._pool.get(True)
         if request_options:
-            message.fields.update({token: request_options[token] for token in TokensV4
+            message.fields.update({token: request_options[token] for token in request.Tokens
                                    if token in request_options and token != 'bindings'})
             if 'bindings' in request_options:
                 if 'bindings' in message.fields:
