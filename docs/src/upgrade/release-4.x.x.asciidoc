@@ -77,7 +77,7 @@ these were deserialized into arrays.
 
 ==== Gremlin Grammar Changes
 
-A number of changes have been introduce to the Gremlin grammar to help make it be more consistent and easier to use.
+A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
 
 *`new` keyword is now optional*
 
@@ -112,6 +112,20 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
 The `none()` step, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been
 renamed to `discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and
 passes lists with no elements matching the predicate.
+
+==== Splitting a string into characters using split()
+The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
+[source,groovy]
+----
+// previous implementation
+g.inject("Hello").split("")
+==>[Hello]
+
+// new implementation
+g.inject("Hello").split("")
+==>[H,e,l,l,o]
+----
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
 ==== Improved handling of integer overflows
 

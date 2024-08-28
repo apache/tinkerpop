@@ -46,6 +46,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Made `new` keyword optional in the Gremlin grammar.
 * Added TypeScript & ECMAScript module support.
 * Improved graph structures type definitions in TypeScript.
+* Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
