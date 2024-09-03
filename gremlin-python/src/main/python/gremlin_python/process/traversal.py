@@ -843,24 +843,6 @@ class Bytecode(object):
             return Bytecode._create_graph_op("tx", "rollback")
 
 
-class CardinalityValue(Bytecode):
-    def __init__(self, cardinality, val):
-        super().__init__()
-        self.add_source("CardinalityValueTraversal", cardinality, val)
-
-    @classmethod
-    def single(cls, val):
-        return CardinalityValue(Cardinality.single, val)
-
-    @classmethod
-    def list_(cls, val):
-        return CardinalityValue(Cardinality.list_, val)
-
-    @classmethod
-    def set_(cls, val):
-        return CardinalityValue(Cardinality.set_, val)
-
-
 '''
 BINDINGS
 '''
@@ -944,7 +926,7 @@ class GremlinLang(object):
 
         if string_name == 'CardinalityValueTraversal':
             self.gremlin.append(
-                f'Cardinality.{self._convert_argument(args[0][0])}({self._convert_argument(args[0][1])})')
+                f'{self._arg_as_string(args[0][0])}({self._arg_as_string(args[0][1])})')
             return
 
         self.gremlin.extend(['.', string_name, '('])
@@ -990,15 +972,23 @@ class GremlinLang(object):
             else:
                 return f'{arg}D'
         if isinstance(arg, BigDecimal):
-            # TODO double check implementation when revisiting types definition
-            return f'{arg.unscaled_value}M'
+            # TODO double check implementation when revisiting types definition.
+            if arg.scale > 0:
+                return f'{arg.unscaled_value:.{arg.scale}f}M'
+            else:
+                return f'{arg.unscaled_value}M'
 
         if isinstance(arg, datetime):
             return f'datetime("{arg.isoformat()}")'
 
         if isinstance(arg, Enum):
             tmp = str(arg)
-            return tmp[0:-1] if tmp.endswith('_') else tmp
+            if tmp.endswith('_'):
+                return tmp[0:-1]
+            elif '_' in tmp:
+                return f'{tmp.split("_")[0]}{tmp.split("_")[1].capitalize()}'
+            else:
+                return tmp
 
         if isinstance(arg, Vertex):
             return f'new ReferenceVertex({self._arg_as_string(arg.id)},\'{arg.label}\')'
@@ -1257,6 +1247,24 @@ class Parameter:
     @staticmethod
     def value(value):
         return Parameter(None, value)
+
+
+class CardinalityValue(GremlinLang):
+    def __init__(self, cardinality, val):
+        super().__init__()
+        self.add_source("CardinalityValueTraversal", cardinality, val)
+
+    @classmethod
+    def single(cls, val):
+        return CardinalityValue(Cardinality.single, val)
+
+    @classmethod
+    def list_(cls, val):
+        return CardinalityValue(Cardinality.list_, val)
+
+    @classmethod
+    def set_(cls, val):
+        return CardinalityValue(Cardinality.set_, val)
 
 
 class AtomicInteger:

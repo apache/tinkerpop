@@ -33,8 +33,8 @@ from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.auth import basic, sigv4
 
 """HTTP server testing variables"""
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/gremlin')
-gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/gremlin')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/gremlin')
+gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'https://localhost:{}/gremlin')
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
 

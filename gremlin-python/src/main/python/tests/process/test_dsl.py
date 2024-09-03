@@ -18,7 +18,7 @@
 #
 import pytest
 
-from gremlin_python.process.traversal import Bytecode, P
+from gremlin_python.process.traversal import GremlinLang, P
 from gremlin_python.process.graph_traversal import (
     GraphTraversalSource, GraphTraversal)
 from gremlin_python.process.graph_traversal import __ as AnonymousTraversal
@@ -30,13 +30,13 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class SocialTraversal(GraphTraversal):
 
     def knows(self, person_name):
-        return self.out("knows").hasLabel("person").has("name", person_name)
+        return self.out("knows").has_label("person").has("name", person_name)
 
     def youngestFriendsAge(self):
-        return self.out("knows").hasLabel("person").values("age").min_()
+        return self.out("knows").has_label("person").values("age").min_()
 
     def createdAtLeast(self, number):
-        return self.outE("created").count().is_(P.gte(number))
+        return self.out_e("created").count().is_(P.gte(number))
 
 class __(AnonymousTraversal):
 
@@ -44,15 +44,15 @@ class __(AnonymousTraversal):
 
     @classmethod
     def knows(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).knows(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).knows(*args)
 
     @classmethod
     def youngestFriendsAge(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).youngestFriendsAge(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).youngestFriendsAge(*args)
 
     @classmethod
     def createdAtLeast(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).createdAtLeast(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).createdAtLeast(*args)
 
 
 class SocialTraversalSource(GraphTraversalSource):
@@ -62,7 +62,7 @@ class SocialTraversalSource(GraphTraversalSource):
         self.graph_traversal = SocialTraversal
 
     def persons(self, *args):
-        traversal = self.get_graph_traversal().V().hasLabel("person")
+        traversal = self.get_graph_traversal().V().has_label("person")
 
         if len(args) > 0:
             traversal = traversal.has("name", P.within(*args))

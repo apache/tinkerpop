@@ -59,14 +59,7 @@ dos2unix /opt/gremlin-server/bin/gremlin-server.conf
 
 /opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml &
 
-/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml &
-
-java -cp /opt/gremlin-test/apache-tinkerpop-gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
-     -Dlogback.configurationFile="file:/opt/gremlin-server/conf/logback.xml" \
-     org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
-
-export JAVA_OPTIONS="-Xms512m -Xmx4096m -Djava.security.krb5.conf=/opt/gremlin-server/target/kdc/krb5.conf"
-/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-krb5.yaml
+/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml
 
 
 #######################################################################
