@@ -76,7 +76,9 @@ public class BytecodeHelperTest {
             if (strategy.getOptions().keySet().contains("x")) {
                 assertThat(strategy.getOptions().get("x"), is(true));
                 counter++;
-            } else if (strategy.getOptions().keySet().contains("y")) {
+            }
+
+            if (strategy.getOptions().keySet().contains("y")) {
                 assertEquals(100, strategy.getOptions().get("y"));
                 counter++;
             }

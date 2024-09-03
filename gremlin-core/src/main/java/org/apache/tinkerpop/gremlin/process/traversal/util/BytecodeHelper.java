@@ -164,6 +164,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -350,6 +351,26 @@ public final class BytecodeHelper {
                 os -> (A) os.getArguments()[0]);
     }
 
+    public static <A extends TraversalStrategy> boolean removeStrategies(final Bytecode bytecode, final String operator, final Class<TraversalStrategy>[] clazzes) {
+        return bytecode.getSourceInstructions().removeIf(
+                s -> {
+                    if (!operator.equals(s.getOperator()) || clazzes.length != s.getArguments().length) {
+                        return false;
+                    }
+                    for (int i = 0; i < clazzes.length; i++) {
+                        final Class<?> sClass =
+                                s.getArguments()[i] instanceof TraversalStrategyProxy ?
+                                        ((TraversalStrategyProxy) s.getArguments()[i]).getStrategyClass() :
+                                        s.getArguments()[i].getClass();
+                        if (!(clazzes[i].isAssignableFrom(sClass))) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+        );
+    }
+
     public static Bytecode filterInstructions(final Bytecode bytecode, final Predicate<Bytecode.Instruction> predicate) {
         final Bytecode clone = new Bytecode();
         for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
@@ -396,6 +417,8 @@ public final class BytecodeHelper {
             }
         }
     }
+
+
 
     public static void detachElements(final Bytecode bytecode) {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
