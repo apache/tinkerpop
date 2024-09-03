@@ -85,10 +85,10 @@ class TestTraversal(object):
 
     def test_enforce_anonymous_child_traversal(self):
         g = traversal().with_(None)
-        g.V(0).addE("self").to(__.V(1))
+        g.V(0).add_e("self").to(__.V(1))
 
         try:
-            g.V(0).addE("self").to(g.V(1))
+            g.V(0).add_e("self").to(g.V(1))
             assert False
         except TypeError:
             pass
@@ -367,7 +367,7 @@ def create_connection_to_gtx():
 def add_node_validate_transaction_state(g, g_add_to, g_start_count, g_add_to_start_count, tx_verify_list):
     # Add a single node to g_add_to, but not g.
     # Check that vertex count in g is g_start_count and vertex count in g_add_to is g_add_to_start_count + 1.
-    g_add_to.addV("person").property("name", "lyndon").iterate()
+    g_add_to.add_v("person").property("name", "lyndon").iterate()
     assert g_add_to.V().count().next() == g_add_to_start_count + 1
     assert g.V().count().next() == g_start_count
     verify_tx_state(tx_verify_list, True)
@@ -387,7 +387,7 @@ def verify_gtx_closed(gtx):
     try:
         # Attempt to add an additional vertex to the transaction. This should throw an exception since it
         # has been rolled back.
-        gtx().addV("failure").iterate()
+        gtx().add_v("failure").iterate()
         assert False
     except Exception as e:
         pass

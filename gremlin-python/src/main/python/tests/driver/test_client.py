@@ -36,7 +36,7 @@ from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)
 
 
@@ -55,7 +55,7 @@ def test_connection(connection):
     assert isinstance(results, list)
     assert results_set.done.done()
 
-
+# TODO: revisit after max_content_length definition/implementation is updated
 def test_client_message_too_big(client):
     try:
         client = Client(test_no_auth_url, 'g', max_content_length=4096)
@@ -456,7 +456,6 @@ def test_big_result_set(client):
     assert len(results) == 10000
 
 
-@pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
 def test_big_result_set_secure(authenticated_client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.inject(1).repeat(__.add_v('person').property('name', __.loops())).times(20000).count()

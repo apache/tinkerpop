@@ -145,6 +145,7 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().properties()"
     And the graph should return 1 for count of "g.V()"
 
+  @GremlinLangScriptOnly
   Scenario: g_V_mergeEXlabel_selfX_optionXonMatch_nullX
     Given the empty graph
     And the graph initializer of
@@ -163,6 +164,7 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().properties()"
     And the graph should return 1 for count of "g.V()"
 
+  @GremlinLangScriptOnly
   Scenario: g_V_mergeEXemptyX_optionXonCreate_nullX
     Given the empty graph
     And the graph initializer of
@@ -225,6 +227,7 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.E()"
     And the graph should return 2 for count of "g.V()"
 
+  @GremlinLangScriptOnly
   Scenario: g_mergeEXnullX
     Given the empty graph
     And the graph initializer of
@@ -239,6 +242,7 @@ Feature: Step - mergeE()
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
   # Directions not specified
+  @GremlinLangScriptOnly
   Scenario: g_V_mergeEXnullX
     Given the empty graph
     And the graph initializer of

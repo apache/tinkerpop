@@ -48,6 +48,8 @@ install_requires = [
     'aiohttp>=3.8.0,<4.0.0',
     'aenum>=1.4.5,<4.0.0',
     'isodate>=0.6.0,<1.0.0',
+    'boto3',
+    'botocore',
     'async-timeout>=4.0.3,<5.0; python_version < "3.11"',
 ]
 

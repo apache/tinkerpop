@@ -58,16 +58,16 @@ class TestDriverRemoteConnection(object):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection)
 
-        assert long(6) == g.V().count().toList()[0]
+        assert long(6) == g.V().count().to_list()[0]
         # #
         assert Vertex(1) == g.V(1).next()
         assert Vertex(1) == g.V(Vertex(1)).next()
         assert 1 == g.V(1).id_().next()
         # assert Traverser(Vertex(1)) == g.V(1).nextTraverser()  # TODO check back after bulking added back
-        assert 1 == len(g.V(1).toList())
-        assert isinstance(g.V(1).toList(), list)
+        assert 1 == len(g.V(1).to_list())
+        assert isinstance(g.V(1).to_list(), list)
         results = g.V().repeat(__.out()).times(2).name
-        results = results.toList()
+        results = results.to_list()
         assert 2 == len(results)
         assert "lop" in results
         assert "ripple" in results
@@ -78,19 +78,19 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V()[2:].count().next()
         assert 2 == g.V()[:2].count().next()
         # #
-        results = g.withSideEffect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
-            P.within('a')).toList()
+        results = g.with_side_effect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
+            P.within('a')).to_list()
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
         # #
-        results = g.V().out().profile().toList()
+        results = g.V().out().profile().to_list()
         assert 1 == len(results)
         assert 'metrics' in results[0]
         assert 'dur' in results[0]
         # #
         results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
-            __.value_map()).toList()
+            __.value_map()).to_list()
         assert 1 == len(results)
         assert 'peter' == results[0]['a']['name'][0]
         assert 35 == results[0]['a']['age'][0]
@@ -99,7 +99,7 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results[0]['a'])
         assert 2 == len(results[0]['b'])
         # #
-        results = g.V(1).inject(g.V(2).next()).values('name').toList()
+        results = g.V(1).inject(g.V(2).next()).values('name').to_list()
         assert 2 == len(results)
         assert 'marko' in results
         assert 'vadas' in results
@@ -112,9 +112,9 @@ class TestDriverRemoteConnection(object):
         # #
         # test dict keys
         # types for dict
-        results = g.V().has('person', 'name', 'marko').elementMap("name").groupCount().next()
+        results = g.V().has('person', 'name', 'marko').element_map("name").group_count().next()
         assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
-        results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
+        results = g.V().has('person', 'name', 'marko').both('knows').group_count().by(__.values('name').fold()).next()
         assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
         # #
         # test materializeProperties in V - GraphSON will deserialize into None and GraphBinary to []
@@ -137,31 +137,31 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_connection)
 
         t = g.V().count()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
         assert 6 == t.next()
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
 
         t = g.V().has('name', P.within('marko', 'peter')).values('name').order()
         assert "marko" == t.next()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
-        assert t.hasNext()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
+        assert t.has_next()
         assert "peter" == t.next()
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
-        assert not (t.hasNext())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
+        assert not (t.has_next())
 
         try:
             t.next()
@@ -169,24 +169,10 @@ class TestDriverRemoteConnection(object):
         except StopIteration:
             assert True
 
-    @pytest.mark.skip(reason="to be removed, lambda disabled in gremlin lang")
-    def test_lambda_traversals(self, remote_connection):
-        statics.load_statics(globals())
-        assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
-        g = traversal().with_(remote_connection)
-
-        assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-        assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"),
-                                  lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-
-        assert 48.0 == g.withSack(1.0, lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-        assert 48.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"),
-                                  lambda: ("x, y ->  x + y + 1", "gremlin-groovy")).V().both().sack().sum_().next()
-
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection). \
-            withStrategies(TraversalStrategy("SubgraphStrategy",
+            with_strategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.has_label("person"),
                                               "edges": __.has_label("created")},
                                              "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"))
@@ -196,40 +182,40 @@ class TestDriverRemoteConnection(object):
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection). \
-            withStrategies(SubgraphStrategy(vertices=__.has_label("person"), edges=__.has_label("created")))
+            with_strategies(SubgraphStrategy(vertices=__.has_label("person"), edges=__.has_label("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
         g = traversal().with_(remote_connection). \
-            withStrategies(SubgraphStrategy(edges=__.has_label("created")))
+            with_strategies(SubgraphStrategy(edges=__.has_label("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
         assert 1 == g.E().label().dedup().count().next()
         assert "created" == g.E().label().dedup().next()
         #
-        g = g.withoutStrategies(SubgraphStrategy). \
-            withComputer(vertices=__.has("name", "marko"), edges=__.limit(0))
+        g = g.without_strategies(SubgraphStrategy). \
+            with_computer(vertices=__.has("name", "marko"), edges=__.limit(0))
         assert 1 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
         #
-        g = traversal().with_(remote_connection).withComputer()
+        g = traversal().with_(remote_connection).with_computer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
         #
-        g = traversal().with_(remote_connection).withStrategies(SeedStrategy(12345))
-        shuffledResult = g.V().values("name").order().by(Order.shuffle).toList()
-        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
-        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
-        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
+        g = traversal().with_(remote_connection).with_strategies(SeedStrategy(12345))
+        shuffledResult = g.V().values("name").order().by(Order.shuffle).to_list()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
+        assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
 
     def test_clone(self, remote_connection):
         g = traversal().with_(remote_connection)
         t = g.V().both()
-        assert 12 == len(t.toList())
+        assert 12 == len(t.to_list())
         assert 5 == t.clone().limit(5).count().next()
         assert 10 == t.clone().limit(10).count().next()
 
@@ -244,9 +230,8 @@ class TestDriverRemoteConnection(object):
             assert ('Could not alias [g] to [does_not_exist] as [does_not_exist] not in the Graph or TraversalSource '
                     'global bindings') in err.status_message
 
-    @pytest.mark.skip(reason="enable after making sure authenticated testing server is set up in docker")
     def test_authenticated(self, remote_connection_authenticated):
         statics.load_statics(globals())
         g = traversal().with_(remote_connection_authenticated)
 
-        assert long(6) == g.V().count().toList()[0]
+        assert long(6) == g.V().count().to_list()[0]
