@@ -55,6 +55,7 @@ def test_does_not_create_new_connection_if_closed_by_server(socket_server_client
 
 # Tests that client is correctly sending user agent during web socket handshake by having the server return
 # the captured user agent.
+@pytest.mark.skip(reason="not implemented in HTTP & need to check on server side")
 def test_should_include_user_agent_in_handshake_request(socket_server_client, socket_server_settings):
     user_agent_response = socket_server_client.submit(
         "1", request_options={'requestId': socket_server_settings["USER_AGENT_REQUEST_ID"]}).one()[0]
@@ -64,6 +65,7 @@ def test_should_include_user_agent_in_handshake_request(socket_server_client, so
 
 # Tests that no user agent (other than the default one provided by aiohttp) is sent to server when that
 # behaviour is disabled.
+@pytest.mark.skip(reason="not implemented in HTTP & need to check on server side")
 def test_should_not_include_user_agent_in_handshake_request_if_disabled(socket_server_client_no_user_agent,
                                                                         socket_server_settings):
     user_agent_response = socket_server_client_no_user_agent.submit(
@@ -75,6 +77,7 @@ def test_should_not_include_user_agent_in_handshake_request_if_disabled(socket_s
 
 # Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
 # evaluationTimeout, and userAgent) to the server.
+@pytest.mark.skip(reason="not implemented in HTTP & need to check on server side")
 def test_should_send_per_request_settings_to_server(socket_server_client, socket_server_settings):
 
     result = socket_server_client.submit(

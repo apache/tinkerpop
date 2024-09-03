@@ -29,9 +29,9 @@ from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop
 from radish import given, when, then, world
 from hamcrest import *
 
-outV = __.outV
+outV = __.out_v
 label = __.label
-inV = __.inV
+inV = __.in_v
 project = __.project
 tail = __.tail
 
@@ -67,7 +67,7 @@ def initialize_graph(step):
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    result = t.toList()
+    result = t.to_list()
     assert len(result) > 0
 
 
@@ -111,7 +111,10 @@ def translate_traversal(step):
 
     tagset = [tag.name for tag in step.all_tags]
     if "GraphComputerOnly" in tagset:
-        localg = step.context.g.withComputer()
+        localg = step.context.g.with_computer()
+    if "GremlinLangScriptOnly" in tagset:
+        # temporary tag used for tests that need gremlin-lang script processing before groovy script is removed
+        localg = step.context.g.with_('language', 'gremlin-lang')
     p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
 
@@ -122,7 +125,7 @@ def iterate_the_traversal(step):
         return
 
     try:
-        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
+        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.to_list()))
         step.context.failed = False
         step.context.failed_message = ''
     except Exception as e:

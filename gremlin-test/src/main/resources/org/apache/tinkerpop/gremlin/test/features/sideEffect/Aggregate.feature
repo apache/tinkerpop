@@ -172,6 +172,7 @@ Feature: Step - aggregate()
     | lop |
     | josh |
 
+  @GremlinLangScriptOnly
   Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
     And using the parameter xx1 defined as "s[]"
@@ -184,6 +185,7 @@ Feature: Step - aggregate()
       | result |
       | s[marko,vadas,lop,josh,ripple,peter] |
 
+  @GremlinLangScriptOnly
   Scenario: g_withSideEffectXa_set_inlineX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
     And the traversal of

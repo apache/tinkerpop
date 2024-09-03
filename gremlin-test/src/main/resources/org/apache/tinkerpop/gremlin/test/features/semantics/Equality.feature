@@ -102,7 +102,7 @@ Feature: Equality
       | d[1].m |
       | d[1].b |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: Primitives_Number_eqXbigintX
     Given the empty graph
     And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
@@ -165,7 +165,7 @@ Feature: Equality
       | d[1].m |
       | d[1].b |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: Primitives_Number_eqXbigdecimalX
     Given the empty graph
     And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"

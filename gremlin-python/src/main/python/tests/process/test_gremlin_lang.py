@@ -42,7 +42,7 @@ class TestGremlinLang(object):
         tests.append([g.V('1', '2', '3', '4'),
                       "g.V('1','2','3','4')"])
         # 2
-        tests.append([g.V('3').valueMap(True),
+        tests.append([g.V('3').value_map(True),
                       "g.V('3').valueMap(true)"])
         # 3
         tests.append([g.V().constant(5),
@@ -54,28 +54,28 @@ class TestGremlinLang(object):
         tests.append([g.V().constant('Hello'),
                       "g.V().constant('Hello')"])
         # 6
-        tests.append([g.V().hasLabel('airport').limit(5),
+        tests.append([g.V().has_label('airport').limit(5),
                       "g.V().hasLabel('airport').limit(5)"])
         # 7
-        tests.append([g.V().hasLabel(within('a', 'b', 'c')),
+        tests.append([g.V().has_label(within('a', 'b', 'c')),
                       "g.V().hasLabel(within(['a','b','c']))"])
         # 8
-        tests.append([g.V().hasLabel('airport', 'continent').out().limit(5),
+        tests.append([g.V().has_label('airport', 'continent').out().limit(5),
                       "g.V().hasLabel('airport','continent').out().limit(5)"])
         # 9
-        tests.append([g.V().hasLabel('airport').out().values('code').limit(5),
+        tests.append([g.V().has_label('airport').out().values('code').limit(5),
                       "g.V().hasLabel('airport').out().values('code').limit(5)"])
         # 10
         tests.append([g.V('3').as_('a').out('route').limit(10).where(eq('a')).by('region'),
                       "g.V('3').as('a').out('route').limit(10).where(eq('a')).by('region')"])
         # 11
-        tests.append([g.V('3').repeat(__.out('route').simplePath()).times(2).path().by('code'),
+        tests.append([g.V('3').repeat(__.out('route').simple_path()).times(2).path().by('code'),
                       "g.V('3').repeat(__.out('route').simplePath()).times(2).path().by('code')"])
         # 12
-        tests.append([g.V().hasLabel('airport').out().has('region', 'US-TX').values('code').limit(5),
+        tests.append([g.V().has_label('airport').out().has('region', 'US-TX').values('code').limit(5),
                       "g.V().hasLabel('airport').out().has('region','US-TX').values('code').limit(5)"])
         # 13
-        tests.append([g.V().hasLabel('airport').union(__.values('city'), __.values('region')).limit(5),
+        tests.append([g.V().has_label('airport').union(__.values('city'), __.values('region')).limit(5),
                       "g.V().hasLabel('airport').union(__.values('city'),__.values('region')).limit(5)"])
         # 14
         tests.append([g.V('3').as_('a').out('route', 'routes'),
@@ -84,19 +84,19 @@ class TestGremlinLang(object):
         tests.append([g.V().where(__.values('runways').is_(5)),
                       "g.V().where(__.values('runways').is(5))"])
         # 16
-        tests.append([g.V('3').repeat(__.out().simplePath()).until(__.has('code', 'AGR')).path().by('code').limit(5),
+        tests.append([g.V('3').repeat(__.out().simple_path()).until(__.has('code', 'AGR')).path().by('code').limit(5),
                       "g.V('3').repeat(__.out().simplePath()).until(__.has('code','AGR')).path().by('code').limit(5)"])
         # 17
-        tests.append([g.V().hasLabel('airport').order().by(__.id_()),
+        tests.append([g.V().has_label('airport').order().by(__.id_()),
                       "g.V().hasLabel('airport').order().by(__.id())"])
         # 18
-        tests.append([g.V().hasLabel('airport').order().by(T.id),
+        tests.append([g.V().has_label('airport').order().by(T.id),
                       "g.V().hasLabel('airport').order().by(T.id)"])
         # 19
-        tests.append([g.V().hasLabel('airport').order().by(__.id_(), Order.desc),
+        tests.append([g.V().has_label('airport').order().by(__.id_(), Order.desc),
                       "g.V().hasLabel('airport').order().by(__.id(),Order.desc)"])
         # 20
-        tests.append([g.V().hasLabel('airport').order().by('code', Order.desc),
+        tests.append([g.V().has_label('airport').order().by('code', Order.desc),
                       "g.V().hasLabel('airport').order().by('code',Order.desc)"])
         # 21
         tests.append([g.V('1', '2', '3').local(__.out().out().dedup().fold()),
@@ -108,19 +108,19 @@ class TestGremlinLang(object):
         tests.append([g.E().count(),
                       "g.E().count()"])
         # 24
-        tests.append([g.V('5').outE('route').inV().path().limit(10),
+        tests.append([g.V('5').out_e('route').in_v().path().limit(10),
                       "g.V('5').outE('route').inV().path().limit(10)"])
         # 25
-        tests.append([g.V('5').propertyMap().select(Column.keys),
+        tests.append([g.V('5').property_map().select(Column.keys),
                       "g.V('5').propertyMap().select(Column.keys)"])
         # 26
-        tests.append([g.V('5').propertyMap().select(Column.values),
+        tests.append([g.V('5').property_map().select(Column.values),
                       "g.V('5').propertyMap().select(Column.values)"])
         # 27
         tests.append([g.V('3').values('runways').math('_ + 1'),
                       "g.V('3').values('runways').math('_ + 1')"])
         # 28
-        tests.append([g.V('3').emit().repeat(__.out().simplePath()).times(3).limit(5).path(),
+        tests.append([g.V('3').emit().repeat(__.out().simple_path()).times(3).limit(5).path(),
                       "g.V('3').emit().repeat(__.out().simplePath()).times(3).limit(5).path()"])
         # 29
         tests.append([g.V().match(__.as_('a').has('code', 'LHR').as_('b')).select('b').by('code'),
@@ -129,7 +129,7 @@ class TestGremlinLang(object):
         tests.append([g.V().has('test-using-keyword-as-property', 'repeat'),
                       "g.V().has('test-using-keyword-as-property','repeat')"])
         # 31
-        tests.append([g.V('1').addE('test').to(__.V('4')),
+        tests.append([g.V('1').add_e('test').to(__.V('4')),
                       "g.V('1').addE('test').to(__.V('4'))"])
         # 32
         tests.append([g.V().values('runways').max_(),
@@ -197,24 +197,24 @@ class TestGremlinLang(object):
         tests.append([g.V('3').choose(__.values('runways')).option(1.5, __.constant('one and a half')).option(2, __.constant('not three')),
                       "g.V('3').choose(__.values('runways')).option(1.5D,__.constant('one and a half')).option(2,__.constant('not three'))"])
         # 53
-        tests.append([g.V('3').repeat(__.out().simplePath()).until(__.loops().is_(1)).count(),
+        tests.append([g.V('3').repeat(__.out().simple_path()).until(__.loops().is_(1)).count(),
                       "g.V('3').repeat(__.out().simplePath()).until(__.loops().is(1)).count()"])
         # 54
         tests.append(
-            [g.V().hasLabel('airport').limit(20).group().by('region').by('code').order(Scope.local).by(Column.keys),
+            [g.V().has_label('airport').limit(20).group().by('region').by('code').order(Scope.local).by(Column.keys),
              "g.V().hasLabel('airport').limit(20).group().by('region').by('code').order(Scope.local).by(Column.keys)"])
         # 55
         tests.append([g.V('1').as_('a').V('2').as_('a').select(Pop.all_, 'a'),
                       "g.V('1').as('a').V('2').as('a').select(Pop.all,'a')"])
         # 56
-        tests.append([g.addV('test').property(Cardinality.set_, 'p1', 10),
+        tests.append([g.add_v('test').property(Cardinality.set_, 'p1', 10),
                       "g.addV('test').property(Cardinality.set,'p1',10)"])
         # 57
-        tests.append([g.addV('test').property(Cardinality.list_, 'p1', 10),
+        tests.append([g.add_v('test').property(Cardinality.list_, 'p1', 10),
                       "g.addV('test').property(Cardinality.list,'p1',10)"])
 
         # 58
-        tests.append([g.addV('test').property(Cardinality.single, 'p1', 10),
+        tests.append([g.add_v('test').property(Cardinality.single, 'p1', 10),
                       "g.addV('test').property(Cardinality.single,'p1',10)"])
         # 59
         tests.append([g.V().limit(5).order().by(T.label),
@@ -225,49 +225,49 @@ class TestGremlinLang(object):
                       "g.V().range(1,5)"])
 
         # 61
-        tests.append([g.addV('test').property('p1', 123),
+        tests.append([g.add_v('test').property('p1', 123),
                       "g.addV('test').property('p1',123)"])
 
         # 62
-        tests.append([g.addV('test').property('date', datetime(2021, 2, 1, 9, 30)),
+        tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30)),
                       "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00\"))"])
         # 63
-        tests.append([g.addV('test').property('date', datetime(2021, 2, 1)),
+        tests.append([g.add_v('test').property('date', datetime(2021, 2, 1)),
                       "g.addV('test').property('date',datetime(\"2021-02-01T00:00:00\"))"])
         # 64
-        tests.append([g.addE('route').from_(__.V('1')).to(__.V('2')),
+        tests.append([g.add_e('route').from_(__.V('1')).to(__.V('2')),
                       "g.addE('route').from(__.V('1')).to(__.V('2'))"])
         # 65
-        tests.append([g.withSideEffect('a', [1, 2]).V('3').select('a'),
+        tests.append([g.with_side_effect('a', [1, 2]).V('3').select('a'),
                       "g.withSideEffect('a',[1,2]).V('3').select('a')"])
         # 66
-        tests.append([g.withSideEffect('a', 1).V('3').select('a'),
+        tests.append([g.with_side_effect('a', 1).V('3').select('a'),
                       "g.withSideEffect('a',1).V('3').select('a')"])
         # 67
-        tests.append([g.withSideEffect('a', 'abc').V('3').select('a'),
+        tests.append([g.with_side_effect('a', 'abc').V('3').select('a'),
                       "g.withSideEffect('a','abc').V('3').select('a')"])
         # 68
         tests.append([g.V().has('airport', 'region', 'US-NM').limit(3).values('elev').fold().index(),
                       "g.V().has('airport','region','US-NM').limit(3).values('elev').fold().index()"])
         # 69
-        tests.append([g.V('3').repeat(__.timeLimit(1000).out().simplePath()).until(__.has('code', 'AGR')).path(),
+        tests.append([g.V('3').repeat(__.time_limit(1000).out().simple_path()).until(__.has('code', 'AGR')).path(),
                       "g.V('3').repeat(__.timeLimit(1000).out().simplePath()).until(__.has('code','AGR')).path()"])
 
         # 70
-        tests.append([g.V().hasLabel('airport').where(__.values('elev').is_(gt(14000))),
+        tests.append([g.V().has_label('airport').where(__.values('elev').is_(gt(14000))),
                       "g.V().hasLabel('airport').where(__.values('elev').is(gt(14000)))"])
 
         # 71
-        tests.append([g.V().hasLabel('airport').where(__.out().count().is_(gt(250))).values('code'),
+        tests.append([g.V().has_label('airport').where(__.out().count().is_(gt(250))).values('code'),
                       "g.V().hasLabel('airport').where(__.out().count().is(gt(250))).values('code')"])
 
         # 72
-        tests.append([g.V().hasLabel('airport').filter_(__.out().count().is_(gt(250))).values('code'),
+        tests.append([g.V().has_label('airport').filter_(__.out().count().is_(gt(250))).values('code'),
                       "g.V().hasLabel('airport').filter(__.out().count().is(gt(250))).values('code')"])
         # 73
-        tests.append([g.withSack(0).
+        tests.append([g.with_sack(0).
                      V('3').
-                     repeat(__.outE('route').sack(Operator.sum_).by('dist').inV()).
+                     repeat(__.out_e('route').sack(Operator.sum_).by('dist').in_v()).
                      until(__.has('code', 'AGR').or_().loops().is_(4)).
                      has('code', 'AGR').
                      local(__.union(__.path().by('code').by('dist'), __.sack()).fold()).
@@ -275,11 +275,11 @@ class TestGremlinLang(object):
                       "g.withSack(0).V('3').repeat(__.outE('route').sack(Operator.sum).by('dist').inV()).until(__.has('code','AGR').or().loops().is(4)).has('code','AGR').local(__.union(__.path().by('code').by('dist'),__.sack()).fold()).limit(10)"])
 
         # 74
-        tests.append([g.addV().as_('a').addV().as_('b').addE('knows').from_('a').to('b'),
+        tests.append([g.add_v().as_('a').add_v().as_('b').add_e('knows').from_('a').to('b'),
                       "g.addV().as('a').addV().as('b').addE('knows').from('a').to('b')"])
 
         # 75
-        tests.append([g.addV('Person').as_('a').addV('Person').as_('b').addE('knows').from_('a').to('b'),
+        tests.append([g.add_v('Person').as_('a').add_v('Person').as_('b').add_e('knows').from_('a').to('b'),
                       "g.addV('Person').as('a').addV('Person').as('b').addE('knows').from('a').to('b')"])
 
         # 76
@@ -319,47 +319,47 @@ class TestGremlinLang(object):
                       "g.V().has('runways',inside(3,5))"])
 
         # 85
-        tests.append([g.V('44').outE().elementMap(),
+        tests.append([g.V('44').out_e().element_map(),
                       "g.V('44').outE().elementMap()"])
 
         # 86
-        tests.append([g.V('44').valueMap().by(__.unfold()),
+        tests.append([g.V('44').value_map().by(__.unfold()),
                       "g.V('44').valueMap().by(__.unfold())"])
 
         # 87
-        tests.append([g.V('44').valueMap().with_(WithOptions.tokens, WithOptions.labels),
+        tests.append([g.V('44').value_map().with_(WithOptions.tokens, WithOptions.labels),
                       "g.V('44').valueMap().with('~tinkerpop.valueMap.tokens',2)"])
 
         # 88
-        tests.append([g.V('44').valueMap().with_(WithOptions.tokens),
+        tests.append([g.V('44').value_map().with_(WithOptions.tokens),
                       "g.V('44').valueMap().with('~tinkerpop.valueMap.tokens')"])
 
         # 89
-        tests.append([g.withStrategies(ReadOnlyStrategy()).addV('test'),
+        tests.append([g.with_strategies(ReadOnlyStrategy()).add_v('test'),
                       "g.withStrategies(ReadOnlyStrategy).addV('test')"])
         # 90
-        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.hasLabel('route'))
-        tests.append([g.withStrategies(strategy).V().count(),
+        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.has_label('route'))
+        tests.append([g.with_strategies(strategy).V().count(),
                       "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
 
         # 91
-        strategy = SubgraphStrategy(vertex_properties=__.hasNot('runways'))
-        tests.append([g.withStrategies(strategy).V().count(),
+        strategy = SubgraphStrategy(vertex_properties=__.has_not('runways'))
+        tests.append([g.with_strategies(strategy).V().count(),
                       "g.withStrategies(new SubgraphStrategy(vertexProperties:__.hasNot('runways'))).V().count()"])
 
         # 92
-        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), vertex_properties=__.hasNot('runways'))
-        tests.append([g.withStrategies(strategy).V().count(),
+        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), vertex_properties=__.has_not('runways'))
+        tests.append([g.with_strategies(strategy).V().count(),
                       "g.withStrategies(new SubgraphStrategy(vertices:__.has('region','US-TX'),vertexProperties:__.hasNot('runways'))).V().count()"])
 
         # 93
-        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.hasLabel('route'))
-        tests.append([g.withStrategies(ReadOnlyStrategy(), strategy).V().count(),
+        strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'), edges=__.has_label('route'))
+        tests.append([g.with_strategies(ReadOnlyStrategy(), strategy).V().count(),
                       "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'),edges:__.hasLabel('route'))).V().count()"])
 
         # 94
         strategy = SubgraphStrategy(vertices=__.has('region', 'US-TX'))
-        tests.append([g.withStrategies(ReadOnlyStrategy(), strategy).V().count(),
+        tests.append([g.with_strategies(ReadOnlyStrategy(), strategy).V().count(),
                       "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
 
         # 95 Note with_() options are now extracted into request message and is no longer sent with the script
@@ -367,20 +367,20 @@ class TestGremlinLang(object):
                       "g.V().count()"])
 
         # 96 Note OptionsStrategy are now extracted into request message and is no longer sent with the script
-        tests.append([g.withStrategies(OptionsStrategy({'evaluationTimeout': 500})).V().count(),
+        tests.append([g.with_strategies(OptionsStrategy({'evaluationTimeout': 500})).V().count(),
                       "g.V().count()"])
 
         # 97
-        tests.append([g.withStrategies(
-            PartitionStrategy(partition_key="partition", write_partition="a", read_partitions=["a"])).addV('test'),
+        tests.append([g.with_strategies(
+            PartitionStrategy(partition_key="partition", write_partition="a", read_partitions=["a"])).add_v('test'),
                       "g.withStrategies(new PartitionStrategy(partitionKey:'partition',writePartition:'a',readPartitions:['a'])).addV('test')"])
 
         # 98
-        tests.append([g.withComputer().V().shortestPath().with_(ShortestPath.target, __.has('name', 'peter')),
+        tests.append([g.with_computer().V().shortest_path().with_(ShortestPath.target, __.has('name', 'peter')),
                       "g.withStrategies(VertexProgramStrategy).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
         # 99
-        tests.append([g.V().coalesce(__.E(), __.addE('person')),
+        tests.append([g.V().coalesce(__.E(), __.add_e('person')),
                       "g.V().coalesce(__.E(),__.addE('person'))"])
 
         # 100
@@ -438,7 +438,7 @@ class TestGremlinLang(object):
                       "g.inject(1.0D).is(eq(1).or(gt(2)).or(lte(3)).or(gte(4)))"])
 
         # 111
-        tests.append([g.V().hasLabel('person').has('age', P.gt(10).or_(P.gte(11).and_(P.lt(20))).and_(
+        tests.append([g.V().has_label('person').has('age', P.gt(10).or_(P.gte(11).and_(P.lt(20))).and_(
             P.lt(29).or_(P.eq(35)))).name,
                       "g.V().hasLabel('person').has('age',gt(10).or(gte(11).and(lt(20))).and(lt(29).or(eq(35)))).values('name')"])
 
@@ -455,11 +455,11 @@ class TestGremlinLang(object):
                       "g.mergeE(null)"])
 
         # 115
-        tests.append([g.addV('\"test\"'),
+        tests.append([g.add_v('\"test\"'),
                       "g.addV('\"test\"')"])
 
         # 116
-        tests.append([g.addV('t\'"est'),
+        tests.append([g.add_v('t\'"est'),
                       "g.addV('t\\'\"est')"])
 
         # 117

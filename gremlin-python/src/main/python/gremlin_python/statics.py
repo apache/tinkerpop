@@ -83,6 +83,7 @@ class GremlinType(object):
         self.gremlin_type = gremlin_type
 
 
+# TODO scale and unscaled value implementations are not following definition, need to revisit
 class BigDecimal(object):
     def __init__(self, scale, unscaled_value):
         self.scale = scale
