@@ -47,11 +47,13 @@ services:
     volumes:
       - ${BUILD_DIR:-./src/main/python}:/python_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/python_app/gremlin-test/features
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary:/python_app/gremlin-test/graphbinary
       - ../docker/gremlin-test-server:/python_app/gremlin-test-server
     environment:
       - DEBIAN_FRONTEND=noninteractive
       - GREMLIN_SERVER_URL=http://gremlin-server-test-python:{}/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test-python:{}/gremlin
+      - IO_TEST_DIRECTORY=/python_app/gremlin-test/graphbinary/
       - VERSION=${VERSION}
     working_dir: /python_app
     command: >
