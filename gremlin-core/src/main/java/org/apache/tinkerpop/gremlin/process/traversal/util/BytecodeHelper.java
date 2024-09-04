@@ -361,7 +361,7 @@ public final class BytecodeHelper {
                         final Class<?> sClass =
                                 s.getArguments()[i] instanceof TraversalStrategyProxy ?
                                         ((TraversalStrategyProxy) s.getArguments()[i]).getStrategyClass() :
-                                        s.getArguments()[i].getClass();
+                                        ((s.getArguments()[i] instanceof Class) ? (Class<?>) s.getArguments()[i] : s.getArguments()[i].getClass());
                         if (!(clazzes[i].isAssignableFrom(sClass))) {
                             return false;
                         }
