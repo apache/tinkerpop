@@ -174,7 +174,7 @@ public final class Cluster {
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
                 .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
-                .maxContentLength(settings.connectionPool.maxContentLength)
+                .maxResponseContentLength(settings.connectionPool.maxResponseContentLength)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize)
@@ -328,10 +328,10 @@ public final class Cluster {
     }
 
     /**
-     * Gets the maximum size in bytes of any request sent to the server.
+     * Gets the maximum size in bytes of any request received from the server.
      */
-    public int getMaxContentLength() {
-        return manager.connectionPoolSettings.maxContentLength;
+    public long getMaxResponseContentLength() {
+        return manager.connectionPoolSettings.maxResponseContentLength;
     }
 
     /**
@@ -475,7 +475,7 @@ public final class Cluster {
         private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
-        private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        private long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
@@ -697,11 +697,10 @@ public final class Cluster {
         }
 
         /**
-         * The maximum size in bytes of any request sent to the server.   This number should not exceed the same
-         * setting defined on the server.
+         * The maximum size in bytes of any response received from the server.
          */
-        public Builder maxContentLength(final int maxContentLength) {
-            this.maxContentLength = maxContentLength;
+        public Builder maxResponseContentLength(final long maxResponseContentLength) {
+            this.maxResponseContentLength = maxResponseContentLength;
             return this;
         }
 
@@ -884,7 +883,7 @@ public final class Cluster {
             connectionPoolSettings.minSize = builder.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
-            connectionPoolSettings.maxContentLength = builder.maxContentLength;
+            connectionPoolSettings.maxResponseContentLength = builder.maxResponseContentLength;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
@@ -945,8 +944,8 @@ public final class Cluster {
             if (builder.maxWaitForClose < 1)
                 throw new IllegalArgumentException("maxWaitForClose must be greater than zero");
 
-            if (builder.maxContentLength < 1)
-                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+            if (builder.maxResponseContentLength < 0)
+                throw new IllegalArgumentException("maxResponseContentLength must be greater than or equal to zero");
 
             if (builder.reconnectInterval < 1)
                 throw new IllegalArgumentException("reconnectInterval must be greater than zero");

@@ -107,7 +107,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "should413OnPostWithResultTooLarge":
-                settings.maxContentLength = 31;
+                settings.maxRequestContentLength = 31;
                 break;
             case "should200OnPOSTTransactionalGraph":
                 useTinkerTransactionGraph(settings);

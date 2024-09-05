@@ -334,7 +334,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
 
     public static Cluster.Builder createClusterBuilder(final Serializers serializer) {
         // bigger buffer for some tests
-        return TestClientFactory.build().maxContentLength(10_000_000).serializer(serializer);
+        return TestClientFactory.build().maxResponseContentLength(10_000_000).serializer(serializer);
     }
 
     public static void startServer() throws Exception {
@@ -342,7 +342,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
         final Settings settings = Settings.read(stream);
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
 
-        settings.maxContentLength = 1024000;
+        settings.maxRequestContentLength = 1024000;
         settings.maxChunkSize = 1024000;
 
         server = new GremlinServer(settings);

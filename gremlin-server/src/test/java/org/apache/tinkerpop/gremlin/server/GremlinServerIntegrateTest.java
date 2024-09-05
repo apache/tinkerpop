@@ -136,7 +136,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldProvideBetterExceptionForMethodCodeTooLarge":
-                settings.maxContentLength = 4096000;
+                settings.maxRequestContentLength = 4096000;
                 settings.maxParameters = Integer.MAX_VALUE;
                 break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
@@ -147,7 +147,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.evaluationTimeout = 1000;
                 break;
             case "shouldBlockRequestWhenTooBig":
-                settings.maxContentLength = 1024;
+                settings.maxRequestContentLength = 1024;
                 break;
             case "shouldBatchResultsByTwos":
             case "shouldBatchResultsByTwosToDriver":
@@ -895,7 +895,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             b.put("x" + ix, ix);
         }
 
-        final Cluster cluster = TestClientFactory.build().maxContentLength(4096000).create();
+        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(4096000).create();
         final Client client = cluster.connect();
 
         try {

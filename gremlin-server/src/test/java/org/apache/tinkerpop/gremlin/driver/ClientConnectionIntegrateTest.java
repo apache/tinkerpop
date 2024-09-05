@@ -94,16 +94,16 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
      */
     @Test
     public void shouldCloseConnectionDeadDueToUnRecoverableError() throws Exception {
-        // Set a low value of maxContentLength to intentionally trigger CorruptedFrameException
+        // Set a low value of maxResponseContentLength to intentionally trigger CorruptedFrameException
         final Cluster cluster = TestClientFactory.build()
-                                                 .maxContentLength(64)
+                                                 .maxResponseContentLength(64)
                                                  .minConnectionPoolSize(1)
                                                  .maxConnectionPoolSize(2)
                                                  .create();
         final Client.ClusteredClient client = cluster.connect();
 
         try {
-            // Add the test data so that the g.V() response could exceed maxContentLength
+            // Add the test data so that the g.V() response could exceed maxResponseContentLength
             client.submit("g.inject(1).repeat(__.addV()).times(20).count()").all().get();
             try {
                 client.submit("g.V().fold()").all().get();
