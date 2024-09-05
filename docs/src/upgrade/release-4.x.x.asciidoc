@@ -168,12 +168,79 @@ removed. As a result, all translators in .NET, Python, Go and Javascript have be
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
+==== Changes to Serialization
+
+The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option
+that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
+types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
+
+The number of serializable types has been reduced in V4. For example, only a single temporal type remains. You have two
+options when trying to work with data types whose serializer has been removed: first, you can attempt to convert the
+data to another type that still have a serializer or, second, the type may have been too specific and therefore removed
+in which case your provider should have a Provider Defined Type (PDT) for it. See the next paragraph for information on
+PDTs.
+
+Custom serializers have also been removed so if you previously included those as part of your application, they should
+now be removed. In its place, PDTs have been introduced. In particular, there is the Primitive PDT and the Composite
+PDT. Primitive PDTs are string-based representations of a primitive type supported by your provider. Composite types
+contain a map of fields. You should consult your provider's documentation to determine what types of fields a
+particular PDT may contain.
+
 === Upgrading for Providers
 
 ==== Renaming NoneStep to DiscardStep
 NoneStep, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
 DiscardStep. In its place is a new list filtering NoneStep, which takes a predicate as an argument and passes lists with
 no elements matching the predicate.
+
+==== Changes to Serialization
+
+The V4 versions of GraphBinary and GraphSON are being introduced. Support for the older versions of GraphBinary (V1)
+and GraphSON (V1-3) is removed. Additionally, the GLVs will only use GraphBinary, the Gremlin Server, however, can
+still serialize both GraphSON and GraphBinary. The following is a list of the major changes to the GraphBinary format:
+
+* Removed type serializers:
+** Period
+** Date
+** TimeStamp
+** Instant
+** ZonedDateTime
+** OffsetTime
+** LocalDateTime
+** LocalDate
+** LocalTime
+** MonthDay
+** YearMonth
+** Year
+** ZoneOffset
+** BulkSet
+** Class
+** Binding
+** Bytecode
+** Barrier
+** Cardinality
+** Column
+** Operator
+** Order
+** Pick
+** Pop
+** Scope
+** Merge
+** DT
+** Lambda
+** P
+** Traverser
+** TextP
+** TraversalStrategy
+** Metrics
+** TraversalMetrics
+** InetAddress
+* Byte is redefined from being unsigned byte to a signed byte.
+* List has a `0x02` value_flag used to denote bulking.
+* Map has a `0x02` value_flag used to denote ordering.
+* `Element` (Vertex, Edge, VertexProperty) labels have been changed from `String` to `List` of `String`.
+* `Element` (Vertex, Edge, VertexProperty) properties are no longer null and are `List` of `Property`.
+* Custom is replaced with Provider Defined Types
 
 ==== Graph System Providers
 
