@@ -154,6 +154,14 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
+        String literal = ctx.getText();
+        literal = literal.replace("$", "\\$");
+        sb.append(literal);
+        return null;
+    }
+
+    @Override
     public Void visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
         return handleInject(ctx);
     }
