@@ -2338,7 +2338,7 @@ Both of the above requests return a list of `Map` instances that contain the `id
 
 *Compatibility*
 
-*It is not recommended to use older driver versions with 3.7.x Gremlin Server*, as some older drivers do not construct
+*It is not recommended to use 3.6.x or below driver versions with 3.7.x or above Gremlin Server*, as some older drivers do not construct
 graph elements with properties and thus are not designed to handle the returned properties by default; however, compatibility
 can be achieved by configuring `ReferenceElementStrategy` in the server such that properties are not returned.
 Per-request configuration option `materializeProperties` is not supported older driver versions.
@@ -2346,16 +2346,17 @@ Per-request configuration option `materializeProperties` is not supported older 
 Also note that older drivers of different language variants will handle incoming properties differently with different
 serializers used. Drivers using `GraphSON` serializers will remain compatible, but may encounter deserialization errors
 with `GraphBinary`. Below is a table documenting GLV behaviors using `GraphBinary` when properties are returned by the
-default 3.7.x server, as well as if `ReferenceElementStrategy` is configured on the server (i.e. the expected behavior
-from a 3.6.x server). This behavior can be observed with the results of `g.V().next()`.
+default 3.7.x server, as well as if `ReferenceElementStrategy` is configured (i.e. mimic the behavior
+of a 3.6.x server). This can be observed with the results of `g.V().next()`. Note that only `gremlin-driver`
+and `gremlin-javacript` have the `properties` attribute in the Element objects, all other GLVs only have `id` and `label`.
 
 [cols="1,1,1"]
 |===
 |3.6.x drivers with `GraphBinary` |Behavior with default 3.7.x Server | Behavior with `ReferenceElementStrategy`
 
 |`gremlin-driver`
-|Returns empty iterator
-|Returns empty iterator
+|Properties returned as empty iterator
+|Properties returned as empty iterator
 
 |`gremlin-dotnet`
 |Skips properties in Elements
@@ -2363,7 +2364,7 @@ from a 3.6.x server). This behavior can be observed with the results of `g.V().n
 
 |`gremlin-javascript`
 |Deserialization error
-|Returns null
+|Properties returned as empty list
 
 |`gremlin-python`
 |Deserialization error

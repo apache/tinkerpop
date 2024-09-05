@@ -136,7 +136,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
         list.forEach(v => assert.ok(v instanceof Vertex));
-        list.forEach(v => assert.ok(v.properties === undefined || v.properties === null));
+        list.forEach(v => assert.ok(v.properties === undefined || v.properties.length === 0));
       });
     });
     it('should skip edge properties when tokens is set', function () {
@@ -145,6 +145,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
         list.forEach(e => assert.ok(e instanceof Edge));
+        // due to the way edge is constructed, edge properties will be {} regardless if it's null or []
         list.forEach(e => assert.strictEqual(Object.keys(e.properties).length, 0));
       });
     });
@@ -154,7 +155,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 12);
         list.forEach(vp => assert.ok(vp instanceof VertexProperty));
-        list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties === null));
+        list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties.length === 0));
       });
     });
   });

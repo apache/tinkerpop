@@ -300,7 +300,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var vertices = g.With("materializeProperties", "tokens").V().ToList();
             foreach (var v in vertices)
             {
-                Assert.Null(v.Properties);
+                Assert.NotNull(v);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(v.Properties == null || v.Properties.Length == 0);
             }
         }
         
@@ -312,7 +314,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var edges = g.With("materializeProperties", "tokens").E().ToList();
             foreach (var e in edges)
             {
-                Assert.Null(e.Properties);
+                Assert.NotNull(e);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(e.Properties == null || e.Properties.Length == 0);
             }
         }
         
@@ -324,7 +328,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var vps = g.With("materializeProperties", "tokens").V().Properties<VertexProperty>().ToList();
             foreach (var vp in vps)
             {
-                Assert.Null(vp.Properties);
+                Assert.NotNull(vp);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(vp.Properties == null || vp.Properties.Length == 0);
             }
         }
     }

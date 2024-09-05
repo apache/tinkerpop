@@ -110,20 +110,20 @@ class TestDriverRemoteConnection(object):
             results = g.V().has('person', 'name', 'marko').both('knows').groupCount().by(__.values('name').fold()).next()
             assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
         # #
-        # test materializeProperties in V
+        # test materializeProperties in V - GraphSON will deserialize into None and GraphBinary to []
         results = g.with_("materializeProperties", "tokens").V().to_list()
         for v in results:
-            assert v.properties is None
+            assert v.properties is None or len(v.properties) == 0
         # #
-        # test materializeProperties in E
+        # test materializeProperties in E - GraphSON will deserialize into None and GraphBinary to []
         results = g.with_("materializeProperties", "tokens").E().to_list()
         for e in results:
-            assert e.properties is None
+            assert e.properties is None or len(e.properties) == 0
         # #
-        # test materializeProperties in E
+        # test materializeProperties in VP - GraphSON will deserialize into None and GraphBinary to []
         results = g.with_("materializeProperties", "tokens").V().properties().to_list()
         for vp in results:
-            assert vp.properties is None
+            assert vp.properties is None or len(vp.properties) == 0
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())

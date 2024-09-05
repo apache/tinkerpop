@@ -202,7 +202,9 @@ func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
 	assert.NoError(t, err)
 	assert.NotNil(t, vertex)
 
-	assert.Nil(t, vertex.Properties)
+	properties, ok := vertex.Properties.([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(properties))
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.

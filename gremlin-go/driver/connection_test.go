@@ -1242,7 +1242,9 @@ func TestConnection(t *testing.T) {
 		for _, res := range vertices {
 			v, _ := res.GetVertex()
 			assert.Nil(t, err)
-			assert.Nil(t, v.Properties)
+			properties, ok := v.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(properties))
 		}
 
 		edges, err := g.With("materializeProperties", MaterializeProperties.Tokens).E().ToList()
@@ -1250,7 +1252,9 @@ func TestConnection(t *testing.T) {
 		for _, res := range edges {
 			e, _ := res.GetEdge()
 			assert.Nil(t, err)
-			assert.Nil(t, e.Properties)
+			properties, ok := e.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(properties))
 		}
 
 		vps, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Properties().ToList()
@@ -1258,7 +1262,9 @@ func TestConnection(t *testing.T) {
 		for _, res := range vps {
 			vp, _ := res.GetVertexProperty()
 			assert.Nil(t, err)
-			assert.Nil(t, vp.Properties)
+			properties, ok := vp.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(properties))
 		}
 	})
 }
