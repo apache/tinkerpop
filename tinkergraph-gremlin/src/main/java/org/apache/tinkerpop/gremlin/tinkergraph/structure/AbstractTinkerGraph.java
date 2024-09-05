@@ -563,6 +563,34 @@ public abstract class AbstractTinkerGraph implements Graph {
             public boolean allow(final Object id) {
                 return true;
             }
+        },
+        
+        /**
+         * Manages identifiers of type {@code String}.
+         */
+        STRING {
+            @Override
+            public String getNextId(final AbstractTinkerGraph graph) {
+                return java.util.UUID.randomUUID().toString();
+            }
+
+            @Override
+            public Object convert(final Object id) {
+                if (null == id)
+                    return null;
+                else  if (id instanceof String) {
+                    if (((String)id).isEmpty())
+                        throw new IllegalArgumentException("Expected a non-empty string but received an empty string.");
+
+                    return id;
+                } else
+                    throw new IllegalArgumentException(createErrorMessage(java.lang.String.class, id));
+            }
+
+            @Override
+            public boolean allow(final Object id) {
+                return id instanceof String && !((String)id).isEmpty();
+            }
         };
 
         private static String createErrorMessage(final Class<?> expectedType, final Object id) {
