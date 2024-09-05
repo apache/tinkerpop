@@ -351,7 +351,7 @@ public final class BytecodeHelper {
                 os -> (A) os.getArguments()[0]);
     }
 
-    public static <A extends TraversalStrategy> boolean removeStrategies(final Bytecode bytecode, final String operator, final Class<TraversalStrategy>[] clazzes) {
+    public static boolean removeStrategies(final Bytecode bytecode, final String operator, final Class<TraversalStrategy>[] clazzes) {
         return bytecode.getSourceInstructions().removeIf(
                 s -> {
                     if (!operator.equals(s.getOperator()) || clazzes.length != s.getArguments().length) {
@@ -417,8 +417,6 @@ public final class BytecodeHelper {
             }
         }
     }
-
-
 
     public static void detachElements(final Bytecode bytecode) {
         for (final Bytecode.Instruction instruction : bytecode.getInstructions()) {
