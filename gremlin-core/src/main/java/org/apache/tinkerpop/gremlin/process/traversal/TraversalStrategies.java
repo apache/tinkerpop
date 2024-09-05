@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
@@ -246,6 +247,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             put(PartitionStrategy.class.getSimpleName(), PartitionStrategy.class);
             put(SeedStrategy.class.getSimpleName(), SeedStrategy.class);
             put(SubgraphStrategy.class.getSimpleName(), SubgraphStrategy.class);
+            put(VertexProgramStrategy.class.getSimpleName(), VertexProgramStrategy.class);
 
             // finalization
             put(MatchAlgorithmStrategy.class.getSimpleName(), MatchAlgorithmStrategy.class);
