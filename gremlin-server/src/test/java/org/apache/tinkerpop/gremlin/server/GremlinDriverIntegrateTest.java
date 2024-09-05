@@ -267,7 +267,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldEventuallySucceedAfterChannelLevelError() {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
-                .maxContentLength(64).create();
+                .maxResponseContentLength(64).create();
         final Client client = cluster.connect();
 
         try {
@@ -748,7 +748,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = TestClientFactory.build().maxContentLength(1).create();
+        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(1).create();
         final Client client = cluster.connect();
 
         try {
@@ -758,6 +758,19 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
             assertTrue(root.getMessage().equals("Response exceeded 1 bytes."));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSucceedClientSideWithLargeResponseIfMaxResponseContentLengthZero() throws Exception {
+        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(0).create();
+        final Client client = cluster.connect();
+
+        try {
+            final String fatty = IntStream.range(0, 10000).mapToObj(String::valueOf).collect(Collectors.joining());
+            assertEquals(fatty, client.submit("'" + fatty + "'").all().get().get(0).getString());
         } finally {
             cluster.close();
         }

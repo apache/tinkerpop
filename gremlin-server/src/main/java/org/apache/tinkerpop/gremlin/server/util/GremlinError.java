@@ -115,7 +115,7 @@ public class GremlinError {
     }
 
     public static GremlinError longFrame(Throwable t) {
-        final String message = t.getMessage() + " - increase the maxContentLength";
+        final String message = t.getMessage() + " - increase the maxRequestContentLength";
         // todo: ResponseEntityTooLargeException? !!!
         return new GremlinError(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE, message, "RequestEntityTooLargeException");
     }

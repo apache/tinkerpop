@@ -797,7 +797,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
-|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
+|connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
 |connectionPool.maxSize |The maximum size of a connection pool for a host. |8
@@ -1166,11 +1166,10 @@ paths to the generated code automatically.
 [[gremlin-java-troubleshooting]]
 === Troubleshooting
 
-*Max frame length of 65536 has been exceeded*
+*Response exceeded X bytes.*
 
-This error occurs when the driver attempts to process a request/response that exceeds the configured maximum size.
-The most direct way to fix this problem is to increase the `maxContentLength` setting in the driver. Ideally, the
-`maxContentLength` set for the driver should match the setting defined on the server.
+This error occurs when the driver attempts to process a response that exceeds the configured maximum response size.
+The most direct way to fix this problem is to increase the `maxResponseContentLength` setting in the driver.
 
 *TimeoutException*
 

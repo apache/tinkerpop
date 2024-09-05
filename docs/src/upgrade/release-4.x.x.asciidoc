@@ -30,6 +30,12 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Configuration changes
+This is a placeholder to summarize configuration-related changes.
+
+* `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
+* `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
+
 ==== Simplification to g creation
 
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
