@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -31,10 +32,13 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -143,6 +147,65 @@ public class BytecodeTest {
         binding = (Bytecode.Binding) bytecode.getStepInstructions().get(6).getArguments()[0];
         assertEquals("a", binding.variable());
         assertEquals("created", binding.value());
+    }
+
+
+    @Test
+    public void testOnlySingleInstructionPerStrategyOnBytecode() throws Exception {
+        GraphTraversalSource g = EmptyGraph.instance().traversal();
+        assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        g = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put("vertices", __.hasLabel("person"));
+            put("vertexProperties", __.limit(0));
+            put("edges", __.hasLabel("knows"));
+        }})));
+        assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        Bytecode bytecode = g.getBytecode();
+        assertEquals(1, bytecode.getSourceInstructions().get(0).getArguments().length);
+        assertEquals(SubgraphStrategy.class, bytecode.getSourceInstructions().get(0).getArguments()[0].getClass());
+
+        // Test applying another withStrategies with same strategy does not add a new entry.
+        g = g.withStrategies(SubgraphStrategy.create(new MapConfiguration(new HashMap<String, Object>() {{
+            put("vertices", __.hasLabel("person"));
+            put("vertexProperties", __.limit(0));
+            put("edges", __.hasLabel("knows"));
+        }})));
+        assertEquals(1, bytecode.getSourceInstructions().get(0).getArguments().length);
+        assertEquals(SubgraphStrategy.class, bytecode.getSourceInstructions().get(0).getArguments()[0].getClass());
+
+        g = g.withoutStrategies(SubgraphStrategy.class);
+        assertFalse(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        bytecode = g.getBytecode();
+        assertEquals(2, bytecode.getSourceInstructions().size());
+        // 1 withStrategies instruction
+        assertEquals(1, bytecode.getSourceInstructions().get(0).getArguments().length);
+        // 1 withoutStrategies instruction
+        assertEquals(1, bytecode.getSourceInstructions().get(1).getArguments().length);
+
+        // Reset everything
+        g = EmptyGraph.instance().traversal();
+        assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+        g = g.withStrategies(ReadOnlyStrategy.instance())
+                .withStrategies(ReadOnlyStrategy.instance())
+                .withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create())
+                .withStrategies(SubgraphStrategy.build().edges(__.hasLabel("knows")).create());
+        assertTrue(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+        assertTrue(g.getStrategies().getStrategy(SubgraphStrategy.class).isPresent());
+        bytecode = g.getBytecode();
+        // Two instructions for two unique withStrategies() steps
+        assertEquals(2, bytecode.getSourceInstructions().size());
+        assertEquals(1, bytecode.getSourceInstructions().get(0).getArguments().length);
+        assertEquals(1, bytecode.getSourceInstructions().get(1).getArguments().length);
+        assertEquals(2, g.getStrategies().toList().size());
+
+        g = g.withoutStrategies(ReadOnlyStrategy.class).withoutStrategies(ReadOnlyStrategy.class);
+        assertFalse(g.getStrategies().getStrategy(ReadOnlyStrategy.class).isPresent());
+        assertEquals(1, g.getStrategies().toList().size());
+        bytecode = g.getBytecode();
+        // 2 withStrategies instructions above, 1 withoutStrategies instruction
+        assertEquals(3, bytecode.getSourceInstructions().size());
+        // 1 withoutStrategies instruction, no duplicates
+        assertEquals(1, bytecode.getSourceInstructions().get(2).getArguments().length);
     }
 
     @Test

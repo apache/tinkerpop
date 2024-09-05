@@ -39,6 +39,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Gremlin Server docker containers shutdown gracefully when receiving a SIGTERM.
 * Added DefaultIdManager.STRING for proper string id creation/handling.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
+* Fixed bug in Bytecode build logic where duplicate strategies were added instead of replacing the existing ones.
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
