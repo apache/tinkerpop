@@ -48,15 +48,15 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     private static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
     private static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
     private static final AttributeKey<String> RESPONSE_ENCODING = AttributeKey.valueOf("responseSerializer");
-    private static final AttributeKey<Integer> BYTES_READ = AttributeKey.valueOf("bytesRead");
+    private static final AttributeKey<Long> BYTES_READ = AttributeKey.valueOf("bytesRead");
 
     private final MessageSerializer<?> serializer;
-    private final int maxContentLength;
+    private final long maxResponseContentLength;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public HttpGremlinResponseStreamDecoder(final MessageSerializer<?> serializer, final int maxContentLength) {
+    public HttpGremlinResponseStreamDecoder(final MessageSerializer<?> serializer, final long maxResponseContentLength) {
         this.serializer = serializer;
-        this.maxContentLength = maxContentLength;
+        this.maxResponseContentLength = maxResponseContentLength;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
         final Attribute<String> responseEncoding = ((AttributeMap) ctx).attr(RESPONSE_ENCODING);
 
         if (msg instanceof HttpResponse) {
-            ctx.channel().attr(BYTES_READ).set(0);
+            ctx.channel().attr(BYTES_READ).set(0L);
 
             final HttpResponse resp = (HttpResponse) msg;
             responseStatus.set(resp.status());
@@ -77,10 +77,10 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
 
         if (msg instanceof HttpContent) {
             ByteBuf content = ((HttpContent) msg).content();
-            Attribute<Integer> bytesRead = ctx.channel().attr(BYTES_READ);
+            Attribute<Long> bytesRead = ctx.channel().attr(BYTES_READ);
             bytesRead.set(bytesRead.get() + content.readableBytes());
-            if (bytesRead.get() > maxContentLength) {
-                throw new TooLongFrameException("Response exceeded " + maxContentLength + " bytes.");
+            if (maxResponseContentLength > 0 && bytesRead.get() > maxResponseContentLength) {
+                throw new TooLongFrameException("Response exceeded " + maxResponseContentLength + " bytes.");
             }
 
             try {

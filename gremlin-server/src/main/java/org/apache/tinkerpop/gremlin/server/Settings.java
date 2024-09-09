@@ -135,12 +135,11 @@ public class Settings {
     public int maxChunkSize = 8192;
 
     /**
-     * The maximum length of the aggregated content for a message.  Works in concert with {@link #maxChunkSize} where
+     * The maximum length of the aggregated content for a request message.  Works in concert with {@link #maxChunkSize} where
      * chunked requests are accumulated back into a single message.  A request exceeding this size will
-     * return a 413 - Request Entity Too Large status code.  A response exceeding this size will raise an internal
-     * exception.
+     * return a 413 - Request Entity Too Large status code.
      */
-    public int maxContentLength = 1024 * 1024 * 10;
+    public int maxRequestContentLength = 1024 * 1024 * 10;
 
     /**
      * Maximum number of request components that can be aggregated for a message.

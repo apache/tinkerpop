@@ -78,7 +78,7 @@ public class HttpChannelizer extends AbstractChannelizer {
         pipeline.addLast("http-keepalive-handler", new HttpServerKeepAliveHandler());
         pipeline.addLast("http-cors-handler", new CorsHandler(CorsConfigBuilder.forAnyOrigin().build()));
 
-        final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
+        final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxRequestContentLength);
         aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
         pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
         pipeline.addLast("http-request-checker", httpRequestCheckingHandler);

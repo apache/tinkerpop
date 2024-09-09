@@ -1,0 +1,25 @@
+{
+  "@type" : "g:Map",
+  "@value" : [ null, null, {
+    "@type" : "g:List",
+    "@value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 3
+    } ]
+  }, {
+    "@type" : "g:Date",
+    "@value" : 1481295
+  }, "test", {
+    "@type" : "g:Int32",
+    "@value" : 123
+  }, {
+    "@type" : "g:Date",
+    "@value" : 1481295
+  }, "red" ]
+}

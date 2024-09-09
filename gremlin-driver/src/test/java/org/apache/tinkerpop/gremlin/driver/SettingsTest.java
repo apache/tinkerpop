@@ -63,7 +63,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.maxInProcessPerConnection", 500);
         conf.setProperty("connectionPool.minInProcessPerConnection", 600);
         conf.setProperty("connectionPool.maxWaitForConnection", 700);
-        conf.setProperty("connectionPool.maxContentLength", 800);
+        conf.setProperty("connectionPool.maxResponseContentLength", 800);
         conf.setProperty("connectionPool.reconnectInterval", 900);
         conf.setProperty("connectionPool.resultIterationBatchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
@@ -95,7 +95,7 @@ public class SettingsTest {
         assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
-        assertEquals(800, settings.connectionPool.maxContentLength);
+        assertEquals(800, settings.connectionPool.maxResponseContentLength);
         assertEquals(900, settings.connectionPool.reconnectInterval);
         assertEquals(15000, settings.connectionPool.connectionSetupTimeoutMillis);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);

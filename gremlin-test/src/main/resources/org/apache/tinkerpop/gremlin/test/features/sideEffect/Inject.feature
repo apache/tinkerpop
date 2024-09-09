@@ -112,7 +112,7 @@ Feature: Step - inject()
       | result |
       | m[{"name":"marko", "age":null}] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_injectXnull_nullX
     Given the modern graph
     And the traversal of
@@ -147,7 +147,7 @@ Feature: Step - inject()
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_VX1X_valuesXageX_injectXnull_nullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"
@@ -231,7 +231,7 @@ Feature: Step - inject()
       | result |
       | l[d[1].i,d[3].i,d[100].i,d[300].i] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_injectX1_3_100_300X_set
     Given the modern graph
     And the traversal of
@@ -243,7 +243,7 @@ Feature: Step - inject()
       | result |
       | s[d[100].i,d[300].i,d[1].i,d[3].i] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_injectX1_1X_set
     Given the modern graph
     And the traversal of
