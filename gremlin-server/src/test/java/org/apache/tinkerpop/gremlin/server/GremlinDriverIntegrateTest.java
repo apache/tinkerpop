@@ -19,11 +19,15 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
@@ -35,8 +39,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -162,7 +169,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger httpRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                requestInterceptor(r -> {
+                addInterceptor("counter", r -> {
                     httpRequests.incrementAndGet();
                     return r;
                 }).create();
@@ -180,16 +187,38 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldRunInterceptorsInOrder() throws Exception {
+        AtomicReference<Object> body = new AtomicReference<>();
+        final Cluster cluster = TestClientFactory.build().
+                addInterceptor("first", r -> {
+                    body.set(r.getBody());
+                    r.setBody(null);
+                    return r;
+                }).
+                addInterceptor("second", r -> {
+                    r.setBody(body.get());
+                    return r;
+                }).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldInterceptRequestsWithHandshake() throws Exception {
         final int requestsToMake = 32;
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
                 minConnectionPoolSize(1).maxConnectionPoolSize(1).
-                requestInterceptor(r -> {
-            handshakeRequests.incrementAndGet();
-            return r;
-        }).create();
+                addInterceptor("counter", r -> {
+                    handshakeRequests.incrementAndGet();
+                    return r;
+                }).create();
 
         try {
             final Client client = cluster.connect();

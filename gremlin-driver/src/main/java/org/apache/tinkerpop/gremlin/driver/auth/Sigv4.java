@@ -33,6 +33,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.http.entity.StringEntity;
+import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,19 +49,16 @@ import static com.amazonaws.auth.internal.SignerConstants.HOST;
 import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_DATE;
 import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_SECURITY_TOKEN;
 
+/**
+ * A {@link org.apache.tinkerpop.gremlin.driver.RequestInterceptor} that provides headers required for SigV4. Because
+ * the signing process requires final header and body data, this interceptor should almost always be last.
+ */
 public class Sigv4 implements Auth {
-
-    static final String NEPTUNE_SERVICE_NAME = "neptune-db";
     private final AWSCredentialsProvider awsCredentialsProvider;
     private final AWS4Signer aws4Signer;
 
-
-    public Sigv4(final String regionName) {
-        this(regionName, new DefaultAWSCredentialsProviderChain(), NEPTUNE_SERVICE_NAME);
-    }
-
-    public Sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider) {
-        this(regionName, awsCredentialsProvider, NEPTUNE_SERVICE_NAME);
+    public Sigv4(final String regionName, final String serviceName) {
+        this(regionName, new DefaultAWSCredentialsProviderChain(), serviceName);
     }
 
     public Sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider, final String serviceName) {
@@ -72,10 +70,10 @@ public class Sigv4 implements Auth {
     }
 
     @Override
-    public FullHttpRequest apply(final FullHttpRequest fullHttpRequest) {
+    public HttpRequest apply(final HttpRequest httpRequest) {
         try {
             // Convert Http request into an AWS SDK signable request
-            final SignableRequest<?> awsSignableRequest = toSignableRequest(fullHttpRequest);
+            final SignableRequest<?> awsSignableRequest = toSignableRequest(httpRequest);
 
             // Sign the AWS SDK signable request (which internally adds some HTTP headers)
             final AWSCredentials credentials = awsCredentialsProvider.getCredentials();
@@ -87,82 +85,54 @@ public class Sigv4 implements Auth {
                 sessionToken = ((BasicSessionCredentials) credentials).getSessionToken();
             }
 
-            // todo: confirm is needed to replace header `Host` with `host`
-            fullHttpRequest.headers().remove(HttpHeaderNames.HOST);
-            fullHttpRequest.headers().add(HOST, awsSignableRequest.getHeaders().get(HOST));
-            fullHttpRequest.headers().add(X_AMZ_DATE, awsSignableRequest.getHeaders().get(X_AMZ_DATE));
-            fullHttpRequest.headers().add(AUTHORIZATION, awsSignableRequest.getHeaders().get(AUTHORIZATION));
+            final Map<String, String> headers = httpRequest.headers();
+            headers.remove(HttpRequest.Headers.HOST);
+            headers.put(HOST, awsSignableRequest.getHeaders().get(HOST));
+            headers.put(X_AMZ_DATE, awsSignableRequest.getHeaders().get(X_AMZ_DATE));
+            headers.put(AUTHORIZATION, awsSignableRequest.getHeaders().get(AUTHORIZATION));
 
             if (!sessionToken.isEmpty()) {
-                fullHttpRequest.headers().add(X_AMZ_SECURITY_TOKEN, sessionToken);
+                headers.put(X_AMZ_SECURITY_TOKEN, sessionToken);
             }
         } catch (final Exception ex) {
             throw new AuthenticationException(ex);
         }
-        return fullHttpRequest;
+        return httpRequest;
     }
 
-    private SignableRequest<?> toSignableRequest(final FullHttpRequest request) throws IOException {
+    private SignableRequest<?> toSignableRequest(final HttpRequest request) throws IOException {
 
         // make sure the request contains the minimal required set of information
-        checkNotNull(request.uri(), "The request URI must not be null");
-        checkNotNull(request.method(), "The request method must not be null");
+        checkNotNull(request.getUri(), "The request URI must not be null");
+        checkNotNull(request.getMethod(), "The request method must not be null");
 
         // convert the headers to the internal API format
-        final HttpHeaders headers = request.headers();
+        final Map<String, String> headers = request.headers();
         final Map<String, String> headersInternal = new HashMap<>();
 
-        String hostName = "";
-
         // we don't want to add the Host header as the Signer always adds the host header.
-        for (String header : headers.names()) {
+        for (Map.Entry<String, String> header : headers.entrySet()) {
             // Skip adding the Host header as the signing process will add one.
-            if (!header.equalsIgnoreCase(HOST)) {
-                headersInternal.put(header, headers.get(header));
-            } else {
-                hostName = headers.get(header);
+            if (!header.getKey().equalsIgnoreCase(HttpRequest.Headers.HOST)) {
+                headersInternal.put(header.getKey(), header.getValue());
             }
         }
 
         // convert the parameters to the internal API format
-        final URI uri = URI.create(request.uri());
+        final URI uri = request.getUri();
         final Map<String, List<String>> parametersInternal = extractParametersFromQueryString(uri.getQuery());
 
         // carry over the entity (or an empty entity, if no entity is provided)
-        final InputStream content;
-        final ByteBuf contentBuffer = request.content();
-        boolean hasContent = false;
-        try {
-            if (contentBuffer != null && contentBuffer.isReadable()) {
-                hasContent = true;
-                contentBuffer.retain();
-                final byte[] bytes = new byte[contentBuffer.readableBytes()];
-                contentBuffer.getBytes(contentBuffer.readerIndex(), bytes);
-                content = new ByteArrayInputStream(bytes);
-            } else {
-                content = new StringEntity("").getContent();
-            }
-        } finally {
-            if (hasContent) {
-                contentBuffer.release();
-            }
+        if (!(request.getBody() instanceof byte[])) {
+            throw new IllegalArgumentException("Expected byte[] in HttpRequest body but got " + request.getBody().getClass());
         }
 
-        if (StringUtils.isNullOrEmpty(hostName)) {
-            // try to extract hostname from the uri since hostname was not provided in the header.
-            final String authority = uri.getAuthority();
-            if (authority == null) {
-                throw new IllegalArgumentException("Unable to identify host information,"
-                        + " either hostname should be provided in the uri or should be passed as a header");
-            }
-
-            hostName = authority;
-        }
-
-        final URI endpointUri = URI.create("http://" + hostName);
+        final byte[] body = (byte[]) request.getBody();
+        final InputStream content = (body.length != 0) ? new ByteArrayInputStream(body) : new StringEntity("").getContent();
+        final URI endpointUri = URI.create(uri.getScheme() + "://" + uri.getHost());
 
         return convertToSignableRequest(
-                request.method().name(),
+                request.getMethod(),
                 endpointUri,
                 uri.getPath(),
                 headersInternal,
@@ -216,7 +186,7 @@ public class Sigv4 implements Auth {
             final InputStream httpContent) {
 
         // create the HTTP AWS SDK Signable Request and carry over information
-        final DefaultRequest<?> awsRequest = new DefaultRequest<>(NEPTUNE_SERVICE_NAME);
+        final DefaultRequest<?> awsRequest = new DefaultRequest<>(aws4Signer.getServiceName());
         awsRequest.setHttpMethod(HttpMethodName.fromValue(httpMethodName));
         awsRequest.setEndpoint(httpEndpointUri);
         awsRequest.setResourcePath(resourcePath);

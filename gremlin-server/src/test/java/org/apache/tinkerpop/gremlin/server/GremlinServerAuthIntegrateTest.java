@@ -23,6 +23,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import io.netty.handler.codec.http.FullHttpRequest;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
@@ -94,22 +95,22 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         when(credentials.getAWSAccessKeyId()).thenReturn("I am AWSAccessKeyId");
         when(credentials.getAWSSecretKey()).thenReturn("I am AWSSecretKey");
 
-        final AtomicReference<FullHttpRequest> fullHttpRequest = new AtomicReference<>();
+        final AtomicReference<HttpRequest> httpRequest = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build()
-                .auth(sigv4("us-west2", credentialsProvider))
-                .requestInterceptor(r -> {
-                    fullHttpRequest.set(r);
+                .auth(sigv4("us-west2", credentialsProvider, "service-name"))
+                .addInterceptor("header-checker", r -> {
+                    httpRequest.set(r);
                     return r;
                 })
                 .create();
         final Client client = cluster.connect();
         client.submit("1+1").all().get();
 
-        assertNotNull(fullHttpRequest.get().headers().get("X-Amz-Date"));
-        assertThat(fullHttpRequest.get().headers().get("Authorization"),
-                startsWith("AWS4-HMAC-SHA256 Credential=I am AWSAccessKeyId"));
-        assertThat(fullHttpRequest.get().headers().get("Authorization"),
-                allOf(containsString("/us-west2/neptune-db/aws4_request"), containsString("Signature=")));
+        Map<String, String> headers = httpRequest.get().headers();
+        assertNotNull(headers.get("X-Amz-Date"));
+        assertThat(headers.get("Authorization"), startsWith("AWS4-HMAC-SHA256 Credential=I am AWSAccessKeyId"));
+        assertThat(headers.get("Authorization"),
+                allOf(containsString("/us-west2/service-name/aws4_request"), containsString("Signature=")));
 
         cluster.close();
     }
