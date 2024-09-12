@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
@@ -87,6 +88,7 @@ public interface Channelizer extends ChannelHandler {
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
+        protected SslHandler sslHandler;
         private AtomicReference<ResultQueue> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
@@ -96,6 +98,10 @@ public interface Channelizer extends ChannelHandler {
         protected static final String PIPELINE_HTTP_ENCODER = "gremlin-encoder";
         protected static final String PIPELINE_HTTP_DECODER = "gremlin-decoder";
         protected static final String PIPELINE_HTTP_DECOMPRESSION_HANDLER = "http-decompression-handler";
+        
+        private static final String HANDSHAKE_ERROR = "Could not complete connection setup to the server. Ensure that SSL is correctly " +
+                "configured at both the client and the server. Ensure that client http handshake " +
+                "protocol matches the server. Ensure that the server is still reachable.";
 
         private static final SslCheckHandler sslCheckHandler = new SslCheckHandler();
 
@@ -136,7 +142,7 @@ public interface Channelizer extends ChannelHandler {
             }
 
             if (sslCtx.isPresent()) {
-                final SslHandler sslHandler = sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort());
+                sslHandler = sslCtx.get().newHandler(socketChannel.alloc(), connection.getUri().getHost(), connection.getUri().getPort());
                 // TINKERPOP-2814. Remove the SSL handshake timeout so that handshakes that take longer than 10000ms
                 // (Netty default) but less than connectionSetupTimeoutMillis can succeed. This means the SSL handshake
                 // will instead be capped by connectionSetupTimeoutMillis.
@@ -148,6 +154,18 @@ public interface Channelizer extends ChannelHandler {
 
             configure(pipeline);
             pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending));
+        }
+
+        @Override
+        public void connected() {
+            if (supportsSsl()) {
+                try {
+                    // Block until the handshake is complete either successfully or with an error.
+                    sslHandler.handshakeFuture().sync();
+                } catch (Exception ex) {
+                    throw new ConnectionException(connection.getUri(), HANDSHAKE_ERROR, ex);
+                }
+            }
         }
     }
 
