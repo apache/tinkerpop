@@ -35,7 +35,8 @@ Where:
 * `{type_code}` is a single unsigned byte representing the type number.
 * `{type_info}` is an optional sequence of bytes providing additional information of the type represented. This is
 specially useful for representing complex and custom types.
-* `{value_flag}` is a single byte providing information about the value. Flags have the following meaning:
+* `{value_flag}` is a single byte providing information about the value. Each type may have its own specific flags so
+see each type for more details. Generally, flags have the following meaning:
 ** `0x01` The value is `null`. When this flag is set, no bytes for `{value}` will be provided.
 * `{value}` is a sequence of bytes which content is determined by the type.
 
@@ -50,7 +51,7 @@ type_code `0x01`, and empty flag value `0x00` and four bytes to describe the val
 - `02 00 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02`, empty flags and
 eight bytes to describe the value.
 
-== Version 1.0
+== Version 4.0
 
 === Forward Compatibility
 
@@ -65,9 +66,7 @@ Changes to existing types require new revision.
 - `0x01`: Int
 - `0x02`: Long
 - `0x03`: String
-- `0x04`: Date
-- `0x05`: Timestamp
-- `0x06`: Class
+- `0x04`: DateTime
 - `0x07`: Double
 - `0x08`: Float
 - `0x09`: List
@@ -80,55 +79,24 @@ Changes to existing types require new revision.
 - `0x10`: TinkerGraph
 - `0x11`: Vertex
 - `0x12`: VertexProperty
-- `0x13`: Barrier
-- `0x14`: Binding
-- `0x15`: Bytecode
-- `0x16`: Cardinality
-- `0x17`: Column
 - `0x18`: Direction
-- `0x19`: Operator
-- `0x1a`: Order
-- `0x1b`: Pick
-- `0x1c`: Pop
-- `0x1d`: Lambda
-- `0x1e`: P
-- `0x1f`: Scope
 - `0x20`: T
-- `0x21`: Traverser
 - `0x22`: BigDecimal
 - `0x23`: BigInteger
 - `0x24`: Byte
-- `0x25`: ByteBuffer
+- `0x25`: Binary
 - `0x26`: Short
 - `0x27`: Boolean
-- `0x28`: TextP
-- `0x29`: TraversalStrategy
-- `0x2a`: BulkSet
 - `0x2b`: Tree
-- `0x2c`: Metrics
-- `0x2d`: TraversalMetrics
-- `0x2e`: Merge
-- `0x2f`: DT
+- `0xf0`: CompositePDT
+- `0xf1`: PrimitivePDT
+- `0xfd`: Marker
 - `0xfe`: Unspecified null object
-- `0x00`: Custom
 
 ==== Extended Types
 
 - `0x80`: Char
 - `0x81`: Duration
-- `0x82`: InetAddress
-- `0x83`: Instant
-- `0x84`: LocalDate
-- `0x85`: LocalDateTime
-- `0x86`: LocalTime
-- `0x87`: MonthDay
-- `0x88`: OffsetDateTime
-- `0x89`: OffsetTime
-- `0x8a`: Period
-- `0x8b`: Year
-- `0x8c`: YearMonth
-- `0x8d`: ZonedDateTime
-- `0x8e`: ZoneOffset
 
 === Null handling
 
@@ -181,22 +149,19 @@ Example values
 - `00 00 00 04 61 62 63 64`: the string 'abcd'.
 - `00 00 00 00`: the empty string ''.
 
-==== Date
+==== DateTime
 
-Format: An 8-byte two's complement signed integer representing a millisecond-precision offset from the unix epoch.
+A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as 2007-12-03T10:15:30+01:00.
 
-Example values
+Format: `{year}{month}{day}{time}{offset}`
 
-- `00 00 00 00 00 00 00 00`: The moment in time 1970-01-01T00:00:00.000Z.
-- `ff ff ff ff ff ff ff ff`: The moment in time 1969-12-31T23:59:59.999Z.
+Where:
 
-==== Timestamp
-
-Format: The same as `Date`.
-
-==== Class
-
-Format: A `String` containing the fqcn.
+- `{year}` is an `Int` from -999,999,999 to 999,999,999.
+- `{month}` is a `Byte` to represent the month, from 1 (January) to 12 (December)
+- `{day}` is a `Byte` from 1 to 31.
+- `{time}` is a `Long` to represent nanoseconds since midnight, from 0 to 86399999999999
+- `{offset}` is an `Int` to represent total zone offset in seconds, from -64800 (-18:00) to 64800 (+18:00).
 
 ==== Double
 
@@ -219,15 +184,24 @@ Example values
 
 ==== List
 
-An ordered collection of items.
+An ordered collection of items. The format depends on the {value_flag}.
 
-Format: `{length}{item_0}...{item_n}`
+Format (value_flag=0x00): `{length}{item_0}...{item_n}`
 
 Where:
 
 - `{length}` is an `Int` describing the length of the collection.
 - `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
 `{type_code}{type_info}{value_flag}{value}`.
+
+Format (value_flag=0x02): `{length}{item_0}{bulk_0}...{item_n}{bulk_n}`
+
+Where:
+
+- `{length}` is an `Int` describing the length of the collection.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
+`{type_code}{type_info}{value_flag}{value}`.
+- `{bulk_0}...{bulk_n}` are `Int` that represent how many times that item should be repeated in the expanded list.
 
 ==== Set
 
@@ -237,7 +211,7 @@ Format: Same as `List`.
 
 ==== Map
 
-A dictionary of keys to values.
+A dictionary of keys to values. A {value_flag} equal to 0x02 means that the map is ordered.
 
 Format: `{length}{item_0}...{item_n}`
 
@@ -265,15 +239,29 @@ Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
 Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `String` value.
+- `{label}` is a `List` {value}.
 - `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{inVLabel}` is a `String` value.
+- `{inVLabel}` is a `List` {value}.
 - `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{outVLabel}` is a `String` value.
+- `{outVLabel}` is a `List` {value}.
 - `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
 the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
-- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
-the properties for the edge.
+- `{properties}` is a `List` of `Property` objects.
+
+Example values:
+
+[source,text]
+----
+01 00  00 00 00 0d                                            id is 13
+00 00 00 01  03 00  00 00 00 08  64 65 76 65 6c 6f 70 73      label is a size 1 list with string 'develops'
+01 00  00 00 00 0a                                            inVId is 10
+00 00 00 01  03 00  00 00 00 08  73 6f 66 74 77 61 72 65      inVLabel is a size 1 list with string 'software'
+01 00  00 00 00 01                                            outVId is 1
+00 00 00 01  03 00  00 00 00 06  70 65 72 73 6f 6e            outVLabel is a size 1 list with string 'person'
+fe 01                                                         parent is always null
+09 00  00 00 00 01                                            properties is a size 1 list
+0f 00 00 00 00 05  73 69 6e 63 65  01 00  00 00 07 d9  fe 01  property with key 'since' and value 2009 and null parent
+----
 
 ==== Path
 
@@ -338,9 +326,23 @@ Format: `{id}{label}{properties}`
 Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `String` value.
-- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
-properties.
+- `{label}` is a `List` {value}.
+- `{properties}` is a `List` of `VertexProperty` values.
+
+Example values:
+
+[source,text]
+----
+01 00  00 00 00 01                                        id is int 1
+00 00 00 01  03 00  00 00 00 06  70 65 72 73 6f 6e        label is size 1 list with string 'person'
+09 00  00 00 00 01  12 00  02 00  00 00 00 00 00 00 00 09 properties is a size 1 list with VertexProperty id 9
+00 00 00 01  03 00  00 00 00 08  6c 6f 63 61 74 69 6f 6e  VertexProperty label is string 'location'
+03 00  00 00 00 08  73 61 6e 74 61 20 66 65               VertexProperty value is string 'santa fe'
+fe 01                                                     VertexProperty parent is always null
+09 00  00 00 00 01                                        VertexProperty has a size 1 list
+0f 00  00 00 00 09 73 74 61 72 74 54 69 6d 65             metaproperty with string key 'startTime'
+01 00  00 00 07 d5  fe 01                                 VertexProperty metaproperty value is 2005 with null parent
+----
 
 ==== VertexProperty
 
@@ -349,106 +351,40 @@ Format: `{id}{label}{value}{parent}{properties}`
 Where:
 
 - `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `String` value.
+- `{label}` is a `List` {value}.
 - `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
 the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
-- `{properties}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
-properties.
+- `{properties}` is a `List` of `Property` objects.
 
-==== Barrier
+Example values:
 
-Format: a fully qualified single `String` representing the enum value.
-
-==== Binding
-
-Format: `{key}{value}`
-
-Where:
-
-- `{key}` is a `String` value.
-- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-==== Bytecode
-
-Format: `{steps_length}{step_0}...{step_n}{sources_length}{source_0}...{source_n}`
-
-Where:
-
-* `{steps_length}` is an `Int` value describing the amount of steps.
-* `{step_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
-** `{name}` is a String.
-** `{values_length}` is an `Int` describing the amount values.
-** `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` describing the step argument.
-* `{sources_length}` is an `Int` value describing the amount of source instructions.
-* `{source_i}` is composed of `{name}{values_length}{value_0}...{value_n}`, where:
-** `{name}` is a `String`.
-** `{values_length}` is an `Int` describing the amount values.
-** `{value_i}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-==== Cardinality
-
-Format: a fully qualified single `String` representing the enum value.
-
-==== Column
-
-Format: a fully qualified single `String` representing the enum value.
+[source,text]
+----
+02 00  00 00 00 00 00 00 00 00                id is Long 0
+00 00 00 01  03 00  00 00 00 04  6e 61 6d 65  label is size 1 list with string 'name'
+03 00  00 00 00 05  6d 61 72 6b 6f            value is string 'marko'
+fe 01                                         parent is always null
+09 00  00 00 00 00                            metaproperties is empty list
+----
 
 ==== Direction
 
 Format: a fully qualified single `String` representing the enum value.
 
-==== Operator
+Example values:
 
-Format: a fully qualified single `String` representing the enum value.
-
-==== Order
-
-Format: a fully qualified single `String` representing the enum value.
-
-==== Pick
-
-Format: a fully qualified single `String` representing the enum value.
-
-==== Pop
-
-Format: a fully qualified single `String` representing the enum value.
-
-==== Lambda
-
-Format: `{language}{script}{arguments_length}`
-Where:
-
-- `{language}` is a `String`.
-- `{script}` is a `String`.
-- `{arguments_length}` is an `Int`.
-
-==== P
-
-Format: `{name}{values_length}{value_0}...{value_n}`
-
-Where:
-
-- `{name}` is a String.
-- `{values_length}` is an `Int` describing the amount values.
-- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-==== Scope
-
-Format: a fully qualified single `String` representing the enum value.
+- `00 00 00 03 4F 55 54`: OUT
+- `00 00 00 02 49 4E`: IN
 
 ==== T
 
 Format: a fully qualified single `String` representing the enum value.
 
-==== Traverser
+Example values:
 
-Format: `{bulk}{value}`
-
-Where:
-
-- `{bulk}` is a `Long`.
-- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `00 00 00 05 6C 61 62 65 6C`: label
+- `00 00 00 02 69 64`: id
 
 ==== BigDecimal
 
@@ -485,9 +421,14 @@ Example values of the two's complement `{value}`:
 
 ==== Byte
 
-An unsigned 8-bit integer.
+Format: 1-byte two's complement integer.
 
-==== ByteBuffer
+Example values:
+
+- `01`: 8-bit integer number 1.
+- `ff`: 8-bit integer number -1.
+
+==== Binary
 
 Format: `{length}{value}`
 
@@ -500,42 +441,14 @@ Where:
 
 Format: 2-byte two's complement integer.
 
+Example values:
+
+- `00 01`: 16-bit integer number 1.
+- `01 02`: 16-bit integer number 258.
+
 ==== Boolean
 
 Format: A single byte containing the value `0x01` when it's `true` and `0` otherwise.
-
-==== TextP
-
-Format: `{predicate}{values_length}{value_0}...{value_n}`
-
-Where:
-
-- `{name}` is a String.
-- `{values_length}` is an `Int` describing the amount values.
-- `{value_i}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-
-==== TraversalStrategy
-
-Format: `{strategy_class}{configuration}`
-
-Where:
-
-- `{strategy_class}` is a `Class` that is of type `TraversalStrategy`.
-- `{configuration}` is a `Map` of data used to configure the strategy that will be given to a `TraversalStrategy` `create(Configuration)` method.
-
-==== BulkSet
-
-Format: `{length}{item_0}...{item_n}`
-
-Where:
-
-- `{length}` is an `Int` describing the length of the `BulkSet`.
-- `{item_0}...{item_n}` are the items of the `BulkSet`. `{item_i}` is a sequence of a fully qualified typed value composed of
-`{type_code}{type_info}{value_flag}{value}` followed by the "bulk" which is a `Long` value.
-
-If the implementing language does not have a `BulkSet` object to deserialize into, this format can be coerced to a
-`List` and still be considered compliant with Gremlin. Simply "expand the bulk" by adding the item to the `List` the
-number of times specified by the bulk.
 
 ==== Tree
 
@@ -547,59 +460,58 @@ Where:
 - `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of a `{key}` which is a fully-qualified typed value
 followed by a `{Tree}`.
 
-==== Metrics
+==== Marker
 
-Format: `{id}{name}{duration}{counts}{annotations}{nested_metrics}`
+A 1-byte marker used to separate the end of the data and the beginning of the status of a `ResponseMessage`. This is
+mainly used by language variants during deserialization.
 
-Where:
+Format: 1-byte integer with a value of `00`.
 
-- `{id}` is a `String` representing the identifier.
-- `{name}` is a `String` representing the name.
-- `{duration}` is a `Long` describing the duration in nanoseconds.
-- `{counts}` is a `Map` composed by `String` keys and `Long` values.
-- `{annotations}` is a `Map` composed by `String` keys and a value of any type.
-- `{nested_metrics}` is a `List` composed by `Metrics` items.
+==== CompositePDT
 
-==== TraversalMetrics
+A composite custom type, represented as a type and a map of values.
 
-Format: `{duration}{metrics}`
+Format: `{type}{fields}`
 
 Where:
 
-- `{duration}` is a `Long` describing the duration in nanoseconds.
-- `{metrics}` is a `List` composed by `Metrics` items.
+- `{type}` is a `String` containing the implementation specific text identifier of the custom type.
+- `{fields}` is a `Map` representing the fields of the composite type.
 
-==== Merge
+Example values:
 
-Format: a single `String` representing the enum value.
+[source,text]
+----
+03 00 00 00 00 05 50 6F 69 6E 74: the string "Point"
+0A 00 00 00 00 02 31 30: length 2 map header
+03 00 00 00 00 01 78 01 00 00 00 00 01: {x:1}
+03 00 00 00 00 01 79 01 00 00 00 00 02: {y:2}
+----
 
-==== DT
+==== PrimitivePDT
 
-Format: a single `String` representing the enum value.
+A primitive custom type, represented as a type and the stringified value.
 
-==== Custom
-
-A custom type, represented as a blob value.
-
-Type Info: `{name}{custom_type_info}`
-
-Where:
-
-- `{name}` is a `String` containing the implementation specific text identifier of the custom type.
-- `{custom_type_info}` is a `ByteBuffer` representing the additional type information, specially useful
-for complex custom types.
-
-Value format: `{blob}`
+Format: `{type}{value}`
 
 Where:
 
-- `{blob}` is a `ByteBuffer`.
+- `{type}` is a `String` containing the implementation specific text identifier of the custom type.
+- `{value}` is a `String` representing the string version of the value.
+
+Example values:
+
+[source,text]
+----
+03 00 00 00 00 05 55 69 6E 74 38: the string "Uint8"
+03 00 00 00 00 02 31 30: the string "10"
+----
 
 ==== Unspecified Null Object
 
 A `null` value for an unspecified Object value.
 
-It's represented using the null `{value_flag}` set and no sequence of bytes.
+It's represented using the null `{value_flag}` set and no sequence of bytes (which is `FE 01`).
 
 ==== Char
 
@@ -630,126 +542,6 @@ Where:
 - `{seconds}` is a `Long`.
 - `{nanos}` is an `Int`.
 
-==== InetAddress
-
-Format: Same as `ByteBuffer`, having only 4 byte or 16 byte sequences allowed.
-
-==== Instant
-
-An instantaneous point on the time-line.
-
-Format: `{seconds}{nanos}`
-
-Where:
-
-- `{seconds}` is a `Long`.
-- `{nanos}` is an `Int`.
-
-==== LocalDate
-
-A date without a time-zone in the ISO-8601 calendar system.
-
-Format: `{year}{month}{day}`
-
-Where:
-
-- `{year}` is an `Int` from -999,999,999 to 999,999,999.
-- `{month}` is a `Byte` to represent the month, from 1 (January) to 12 (December)
-- `{day}` is a `Byte` from 1 to 31.
-
-==== LocalDateTime
-
-Format: `{date}{time}`
-
-Where:
-
-- `{date}` is `LocalDate`.
-- `{time}` is a `LocalTime`.
-
-==== LocalTime
-A time without a time-zone in the ISO-8601 calendar system.
-
-Format: An 8 byte two's complement long representing nanoseconds since midnight.
-
-Valid values are in the range 0 to 86399999999999
-
-==== MonthDay
-
-A month-day in the ISO-8601 calendar system.
-
-Format: `{month}{day}`
-
-Where:
-
-- `{month}` is `Byte` value from 1 to 12.
-- `{day}` is `Byte` value from 1 to 31.
-
-==== OffsetDateTime
-
-A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as 2007-12-03T10:15:30+01:00.
-
-Format: `{local_date_time}{offset}`
-
-Where:
-
-- `{local_date_time}` is `LocalDateTime`.
-- `{offset}` is `ZoneOffset`.
-
-==== OffsetTime
-
-A time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as 10:15:30+01:00.
-
-Format: `{local_time}{offset}`
-
-Where:
-
-- `{local_time}` is `LocalTime`.
-- `{offset}` is `ZoneOffset`.
-
-==== Period
-
-A date-based amount of time in the ISO-8601 calendar system, such as '2 years, 3 months and 4 days'.
-
-Format: `{years}{month}{days}`
-
-Where:
-
-`{years}`, `{month}` and `{days}` are `Int` values.
-
-==== Year
-
-A year in the ISO-8601 calendar system, such as 2018.
-
-Format: An `Int` representing the years.
-
-==== YearMonth
-
-A year-month in the ISO-8601 calendar system, such as 2007-12.
-
-Format: `{year}{month}`
-
-Where:
-
-- `{year}` is an `Int`.
-- `{month}` is a `Byte` from 1 to 12.
-
-==== ZonedDateTime
-
-A date-time with a time-zone in the ISO-8601 calendar system.
-
-Format: `{local_date_time}{zone_offset}`
-
-Where:
-
-- `{local_date_time}` is `LocalDateTime`.
-- `{zone_offset}` is a `ZoneOffset`.
-
-==== ZoneOffset
-
-A time-zone offset from Greenwich/UTC, such as +02:00.
-
-Format: An `Int` representing total zone offset in seconds.
-
 === Request and Response Messages
 
 Request and response messages are special container types used to represent messages from client to the server and the
@@ -759,33 +551,32 @@ other way around. These messages are independent from the transport layer.
 
 Represents a message from the client to the server.
 
-Format: `{version}{request_id}{op}{processor}{args}`
+Format: `{version}{fields}{gremlin}`
 
 Where:
 
 - `{version}` is a `Byte` representing the specification version, with the most significant bit set to one. For this
-version of the format, the value expected is `0x81` (`10000001`).
-- `{request_id}` is a `UUID`.
-- `{op}` is a `String`.
-- `{processor}` is a `String`.
-- `{args}` is a `Map`.
+version of the format, the value expected is `0x84` (`10000004`).
+- `{fields}` is a `Map`.
+- `{gremlin}` is a `String`.
 
-The total length is not part of the message as the transport layer will provide it. For example: WebSockets,
-as a framing protocol, defines payload length.
+The total length is not part of the message as the transport layer will provide it. For example: in HTTP, there is the
+`Content-Length` header which defines the payload size.
 
 ==== Response Message
 
-Format: `{version}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}`
+Format: `{version}{bulked}{result_data}{marker}{status_code}{status_message}{exception}`
 
 Where:
 
 - `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
-of the protocol, the value expected is `0x81` (`10000001`).
-- `{request_id}` is a nullable `UUID`.
+of the protocol, the value expected is `0x84` (`10000004`).
+- `{bulked}` is a `Byte` representing whether `{result_data}` is bulked. `00` is false and `01` is true.
+- `{result_data}` is a sequence of fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+If `{bulked}` is `01` then each value is followed by an 8-byte integer denoting the bulk of the preceding value.
+- `{marker}` is a `Marker`.
 - `{status_code}` is an `Int`.
 - `{status_message}` is a nullable `String`.
-- `{status_attributes}` is a `Map`.
-- `{result_meta}` is a `Map`.
-- `{result_data}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{exception}` is a nullable `String`.
 
 The total length is not part of the message as the transport layer will provide it.
