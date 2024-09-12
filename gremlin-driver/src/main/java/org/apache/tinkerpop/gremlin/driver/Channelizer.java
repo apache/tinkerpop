@@ -191,7 +191,8 @@ public interface Channelizer extends ChannelHandler {
             super.init(connection);
 
             httpCompressionDecoder = new HttpContentDecompressionHandler();
-            gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptor(), cluster.isUserAgentOnConnectEnabled(), cluster.isBulkingEnabled());
+            gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
+                    cluster.isUserAgentOnConnectEnabled(), cluster.isBulkingEnabled(), connection.getUri());
             gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder(cluster.getSerializer(), cluster.getMaxResponseContentLength());
         }
 

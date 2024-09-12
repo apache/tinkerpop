@@ -393,5 +393,10 @@ public final class Settings {
          * The region setting for sigv4 authentication.
          */
         public String region = null;
+
+        /**
+         * The service name setting for sigv4 authentication.
+         */
+        public String serviceName = null;
     }
 }

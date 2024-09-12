@@ -23,10 +23,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
+import org.apache.tinkerpop.gremlin.driver.interceptor.GraphBinarySerializationInterceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -105,7 +108,10 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpClientCodec(),
                                     new HttpContentDecompressionHandler(),
                                     new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
-                                    new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false, false),
+                                    new HttpGremlinRequestEncoder(serializer,
+                                            Collections.singletonList(
+                                                    Pair.of("serializer", new GraphBinarySerializationInterceptor())),
+                                            false, false, uri),
                                     callbackResponseHandler);
                         }
                     });
