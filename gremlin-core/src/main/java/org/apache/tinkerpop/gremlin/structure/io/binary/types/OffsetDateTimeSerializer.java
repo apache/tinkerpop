@@ -38,6 +38,7 @@ public class OffsetDateTimeSerializer extends SimpleTypeSerializer<OffsetDateTim
 
     @Override
     protected OffsetDateTime readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        // todo: Updates needed for deserializing these values as their serializers are removed
         final LocalDateTime ldt = context.readValue(buffer, LocalDateTime.class, false);
         final ZoneOffset zo = context.readValue(buffer, ZoneOffset.class, false);
         return OffsetDateTime.of(ldt, zo);

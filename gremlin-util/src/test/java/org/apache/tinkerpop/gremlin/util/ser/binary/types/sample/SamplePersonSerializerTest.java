@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,6 +46,8 @@ import static org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer.TO
 import static org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4.TOKEN_CUSTOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+// todo: person contains removed date type, revisit after datetime is properly implemented
+@Ignore
 public class SamplePersonSerializerTest {
 
     private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;

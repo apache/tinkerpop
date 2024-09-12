@@ -81,7 +81,7 @@ def test_vertex_vertex_properties(remote_connection_crew):
     assert vertex.properties[1].properties[1].value == 2000
 
 
-@pytest.mark.skip(reason="proposing to be removed in GraphBinaryV4")
+@pytest.mark.skip(reason="timestamp replaced by datetime in GraphBinaryV4, revisit to update after implementation")
 def test_timestamp(remote_connection):
     g = traversal().with_(remote_connection)
     ts = timestamp(1481750076295 / 1000)
@@ -96,6 +96,7 @@ def test_timestamp(remote_connection):
         g.V(vid).drop().iterate()
 
 
+@pytest.mark.skip(reason="timestamp replaced by datetime in GraphBinaryV4, revisit to update after implementation")
 def test_datetime(remote_connection):
     g = traversal().with_(remote_connection)
     dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -177,6 +178,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      * Mixed type values including list, set, map, uuid, date, boolean, numeric, string, null.
      */
     @Test
+    @Ignore // todo: re-enable after datetime serialization is implemented
     @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_inject_order() {
         final Traversal traversal = get_g_inject_order();

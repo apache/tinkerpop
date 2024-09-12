@@ -16,27 +16,21 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-
-import datetime
 import calendar
-import uuid
-import math
+import datetime
 import io
-import struct
-from collections import OrderedDict
 import logging
-
-from struct import pack, unpack
-from aenum import Enum
+import math
+import struct
+import uuid
+from collections import OrderedDict
 from datetime import timedelta
-from gremlin_python import statics
-from gremlin_python.statics import FloatType, BigDecimal, FunctionType, ShortType, IntType, LongType, BigIntType, \
-                                   TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, GremlinType, \
-                                   SingleChar
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, DT, Merge, \
-                                             Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
-                                             TraversalStrategy, T
-from gremlin_python.process.graph_traversal import GraphTraversal
+from struct import pack, unpack
+
+from aenum import Enum
+from gremlin_python.process.traversal import Direction, T
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
+    DictType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
@@ -54,9 +48,7 @@ class DataType(Enum):
     int = 0x01
     long = 0x02
     string = 0x03
-    date = 0x04
-    timestamp = 0x05
-    clazz = 0x06
+    # date = 0x04
     double = 0x07
     float = 0x08
     list = 0x09
@@ -69,51 +61,20 @@ class DataType(Enum):
     graph = 0x10                  # not supported - no graph object in python yet
     vertex = 0x11
     vertexproperty = 0x12
-    barrier = 0x13
-    binding = 0x14
-    bytecode = 0x15
-    cardinality = 0x16
-    column = 0x17
     direction = 0x18
-    operator = 0x19
-    order = 0x1a
-    pick = 0x1b
-    pop = 0x1c
-    lambda_ = 0x1d
-    p = 0x1e
-    scope = 0x1f
     t = 0x20
-    traverser = 0x21
     bigdecimal = 0x22
     biginteger = 0x23
     byte = 0x24
     bytebuffer = 0x25
     short = 0x26
     boolean = 0x27
-    textp = 0x28
-    traversalstrategy = 0x29
-    bulkset = 0x2a
+    bulkset = 0x2a                # todo: to be removed when bulk is implemented in list
     tree = 0x2b                   # not supported - no tree object in Python yet
-    metrics = 0x2c
-    traversalmetrics = 0x2d
-    merge = 0x2e
-    dt = 0x2f
     char = 0x80
     duration = 0x81
     marker = 0xfd
-    inetaddress = 0x82            # todo
-    instant = 0x83                # todo
-    localdate = 0x84              # todo
-    localdatetime = 0x85          # todo
-    localtime = 0x86              # todo
-    monthday = 0x87               # todo
-    offsetdatetime = 0x88         # todo
-    offsettime = 0x89             # todo
-    period = 0x8a                 # todo
-    year = 0x8b                   # todo
-    yearmonth = 0x8c              # todo
-    zonedatetime = 0x8d           # todo
-    zoneoffset = 0x8e             # todo
+    offsetdatetime = 0x88         # todo: will need to update to datetime
     custom = 0x00                 # todo
 
 
@@ -318,52 +279,6 @@ class BigIntIO(_GraphBinaryTypeIO):
     def objectify(cls, buff, reader, nullable=False):
         return cls.is_null(buff, reader, lambda b, r: cls.read_bigint(b), nullable)
 
-
-class DateIO(_GraphBinaryTypeIO):
-
-    python_type = datetime.datetime
-    graphbinary_type = DataType.date
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        try:
-            timestamp_seconds = calendar.timegm(obj.utctimetuple())
-            pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
-        except AttributeError:
-            pts = calendar.timegm(obj.timetuple()) * 1e3
-
-        ts = int(round(pts))
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(int64_pack(ts))
-        return to_extend
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader,
-                           lambda b, r: datetime.datetime.utcfromtimestamp(int64_unpack(b.read(8)) / 1000.0),
-                           nullable)
-
-
-# Based on current implementation, this class must always be declared before FloatIO.
-# Seems pretty fragile for future maintainers. Maybe look into this.
-class TimestampIO(_GraphBinaryTypeIO):
-    python_type = statics.timestamp
-    graphbinary_type = DataType.timestamp
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        # Java timestamp expects milliseconds integer - Have to use int because of legacy Python
-        ts = int(round(obj * 1000))
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(int64_pack(ts))
-        return to_extend
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        # Python timestamp expects seconds
-        return cls.is_null(buff, reader, lambda b, r: statics.timestamp(int64_unpack(b.read(8)) / 1000.0),
-                           nullable)
-    
 
 def _long_bits_to_double(bits):
     return unpack('d', pack('Q', bits))[0]
@@ -732,21 +647,6 @@ class _EnumIO(_GraphBinaryTypeIO):
         return cls.python_type[SymbolUtil.to_snake_case(enum_name)]
 
 
-class BarrierIO(_EnumIO):
-    graphbinary_type = DataType.barrier
-    python_type = Barrier
-
-
-class CardinalityIO(_EnumIO):
-    graphbinary_type = DataType.cardinality
-    python_type = Cardinality
-
-
-class ColumnIO(_EnumIO):
-    graphbinary_type = DataType.column
-    python_type = Column
-
-
 class DirectionIO(_EnumIO):
     graphbinary_type = DataType.direction
     python_type = Direction
@@ -759,208 +659,9 @@ class DirectionIO(_EnumIO):
         return cls.python_type[enum_name]
 
 
-class OperatorIO(_EnumIO):
-    graphbinary_type = DataType.operator
-    python_type = Operator
-
-
-class OrderIO(_EnumIO):
-    graphbinary_type = DataType.order
-    python_type = Order
-
-
-class PickIO(_EnumIO):
-    graphbinary_type = DataType.pick
-    python_type = Pick
-
-
-class PopIO(_EnumIO):
-    graphbinary_type = DataType.pop
-    python_type = Pop
-
-
-class BindingIO(_GraphBinaryTypeIO):
-
-    python_type = Binding
-    graphbinary_type = DataType.binding
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        StringIO.dictify(obj.key, writer, to_extend, True, False)
-        writer.to_dict(obj.value, to_extend)
-        return to_extend
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, lambda b, r: Binding(r.to_object(b, DataType.string, False),
-                                                              reader.read_object(b)), nullable)
-
-
-class BytecodeIO(_GraphBinaryTypeIO):
-    python_type = Bytecode
-    graphbinary_type = DataType.bytecode
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        bc = obj.bytecode if isinstance(obj, Traversal) else obj
-        to_extend.extend(int32_pack(len(bc.step_instructions)))
-        for inst in bc.step_instructions:
-            inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
-            StringIO.dictify(inst_name, writer, to_extend, True, False)
-            to_extend.extend(int32_pack(len(inst_args)))
-            for arg in inst_args:
-                writer.to_dict(arg, to_extend)
-
-        to_extend.extend(int32_pack(len(bc.source_instructions)))
-        for inst in bc.source_instructions:
-            inst_name, inst_args = inst[0], inst[1:] if len(inst) > 1 else []
-            StringIO.dictify(inst_name, writer, to_extend, True, False)
-            to_extend.extend(int32_pack(len(inst_args)))
-            for arg in inst_args:
-                if isinstance(arg, TypeType):
-                    writer.to_dict(GremlinType(arg().fqcn), to_extend)
-                else:
-                    writer.to_dict(arg, to_extend)
-        return to_extend
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_bytecode, nullable)
-
-    @classmethod
-    def _read_bytecode(cls, b, r):
-        bytecode = Bytecode()
-
-        step_count = cls.read_int(b)
-        ix = 0
-        while ix < step_count:
-            inst = [r.to_object(b, DataType.string, False)]
-            inst_ct = cls.read_int(b)
-            iy = 0
-            while iy < inst_ct:
-                inst.append(r.read_object(b))
-                iy += 1
-            bytecode.step_instructions.append(inst)
-            ix += 1
-
-        source_count = cls.read_int(b)
-        ix = 0
-        while ix < source_count:
-            inst = [r.to_object(b, DataType.string, False)]
-            inst_ct = cls.read_int(b)
-            iy = 0
-            while iy < inst_ct:
-                inst.append(r.read_object(b))
-                iy += 1
-            bytecode.source_instructions.append(inst)
-            ix += 1
-
-        return bytecode
-
-
-class TraversalIO(BytecodeIO):
-    python_type = GraphTraversal
-
-
-class LambdaSerializer(_GraphBinaryTypeIO):
-
-    python_type = FunctionType
-    graphbinary_type = DataType.lambda_
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-
-        lambda_result = obj()
-        script = lambda_result if isinstance(lambda_result, str) else lambda_result[0]
-        language = statics.default_lambda_language if isinstance(lambda_result, str) else lambda_result[1]
-
-        StringIO.dictify(language, writer, to_extend, True, False)
-
-        script_cleaned = script
-        script_args = -1
-
-        if language == "gremlin-groovy" and "->" in script:
-            # if the user has explicitly added parameters to the groovy closure then we can easily detect one or two
-            # arg lambdas - if we can't detect 1 or 2 then we just go with "unknown"
-            args = script[0:script.find("->")]
-            script_args = 2 if "," in args else 1
-
-        StringIO.dictify(script_cleaned, writer, to_extend, True, False)
-        to_extend.extend(int32_pack(script_args))
-
-        return to_extend
-
-
-class PSerializer(_GraphBinaryTypeIO):
-    graphbinary_type = DataType.p
-    python_type = P
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-
-        StringIO.dictify(obj.operator, writer, to_extend, True, False)
-
-        args = []
-        if obj.other is None:
-            if isinstance(obj.value, ListType):
-                args = obj.value
-            else:
-                args.append(obj.value)
-        else:
-            args.append(obj.value)
-            args.append(obj.other)
-
-        to_extend.extend(int32_pack(len(args)))
-        for a in args:
-            writer.to_dict(a, to_extend)
-
-        return to_extend
-
-
-class DTIO(_EnumIO):
-    graphbinary_type = DataType.dt
-    python_type = DT
-
-
-class MergeIO(_EnumIO):
-    graphbinary_type = DataType.merge
-    python_type = Merge
-
-
-class ScopeIO(_EnumIO):
-    graphbinary_type = DataType.scope
-    python_type = Scope
-
-
 class TIO(_EnumIO):
     graphbinary_type = DataType.t
     python_type = T
-
-
-class TraverserIO(_GraphBinaryTypeIO):
-    graphbinary_type = DataType.traverser
-    python_type = Traverser
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(int64_pack(obj.bulk))
-        writer.to_dict(obj.object, to_extend)
-        return to_extend
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_traverser, nullable)
-
-    @classmethod
-    def _read_traverser(cls, b, r):
-        bulk = int64_unpack(b.read(8))
-        obj = r.read_object(b)
-        return Traverser(obj, bulk=bulk)
 
 
 class ByteIO(_GraphBinaryTypeIO):
@@ -1018,33 +719,7 @@ class BooleanIO(_GraphBinaryTypeIO):
                            nullable)
 
 
-class TextPSerializer(_GraphBinaryTypeIO):
-    graphbinary_type = DataType.textp
-    python_type = TextP
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-
-        StringIO.dictify(obj.operator, writer, to_extend, True, False)
-
-        args = []
-        if obj.other is None:
-            if isinstance(obj.value, ListType):
-                args = obj.value
-            else:
-                args.append(obj.value)
-        else:
-            args.append(obj.value)
-            args.append(obj.other)
-
-        to_extend.extend(int32_pack(len(args)))
-        for a in args:
-            writer.to_dict(a, to_extend)
-
-        return to_extend
-
-
+# todo: to be removed when updated with bulking in list
 class BulkSetDeserializer(_GraphBinaryTypeIO):
 
     graphbinary_type = DataType.bulkset
@@ -1065,78 +740,6 @@ class BulkSetDeserializer(_GraphBinaryTypeIO):
             size = size - 1
 
         return the_list
-
-
-class MetricsDeserializer(_GraphBinaryTypeIO):
-
-    graphbinary_type = DataType.metrics
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_metrics, nullable)
-
-    @classmethod
-    def _read_metrics(cls, b, r):
-        metricid = r.to_object(b, DataType.string, False)
-        name = r.to_object(b, DataType.string, False)
-        duration = r.to_object(b, DataType.long, nullable=False)
-        counts = r.to_object(b, DataType.map, nullable=False)
-        annotations = r.to_object(b, DataType.map, nullable=False)
-        metrics = r.to_object(b, DataType.list, nullable=False)
-
-        return {"id": metricid,
-                "name": name,
-                "dur": duration,
-                "counts": counts,
-                "annotations": annotations,
-                "metrics": metrics}
-
-
-class TraversalMetricsDeserializer(_GraphBinaryTypeIO):
-
-    graphbinary_type = DataType.traversalmetrics
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_traversalmetrics, nullable)
-
-    @classmethod
-    def _read_traversalmetrics(cls, b, r):
-        duration = r.to_object(b, DataType.long, nullable=False)
-        metrics = r.to_object(b, DataType.list, nullable=False)
-
-        return {"dur": duration,
-                "metrics": metrics}
-
-
-class ClassSerializer(_GraphBinaryTypeIO):
-    graphbinary_type = DataType.clazz
-    python_type = GremlinType
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        StringIO.dictify(obj.gremlin_type, writer, to_extend, True, False)
-        return to_extend
-
-
-class TraversalStrategySerializer(_GraphBinaryTypeIO):
-    graphbinary_type = DataType.traversalstrategy
-    python_type = TraversalStrategy
-
-    @classmethod
-    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-
-        ClassSerializer.dictify(GremlinType(obj.fqcn), writer, to_extend, True, False)
-        conf = {k: cls._convert(v) for k, v in obj.configuration.items()}
-        MapIO.dictify(conf, writer, to_extend, True, False)
-
-        return to_extend
-
-    @classmethod
-    def _convert(cls, v):
-        return v.bytecode if isinstance(v, Traversal) else v
 
 
 class DurationIO(_GraphBinaryTypeIO):
