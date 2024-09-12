@@ -28,7 +28,7 @@ public enum DataType {
     INT(0x01),
     LONG(0x02),
     STRING(0X03),
-    DATETIME(0X04),  // todo: to be updated from OffsetDateTime
+    DATETIME(0X04),
     DOUBLE(0X07),
     FLOAT(0X08),
     LIST(0X09),
@@ -55,7 +55,6 @@ public enum DataType {
 
     CHAR(0X80),
     DURATION(0X81),
-    OFFSETDATETIME(0X88),
 
     CUSTOM(0),
     MARKER(0XFD),

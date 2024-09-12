@@ -52,7 +52,6 @@ public class OrderTest {
     @RunWith(Parameterized.class)
     public static class OrderListTest {
 
-        // todo: re-enable date-related tests after implementing datetime
         private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
 
         @Parameterized.Parameters(name = "{0}.sort({1}) = {2}")
@@ -62,10 +61,10 @@ public class OrderTest {
                     {Order.asc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("a", "b", "c", "d")},
                     {Order.desc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("d", "c", "b", "a")},
                     {Order.desc, Arrays.asList("c", "a", null, "d"), Arrays.asList("d", "c", "a", null)},
-//                    {Order.asc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-//                            Arrays.asList(formatter.parse("1-Jan-2008"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"))},
-//                    {Order.desc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-//                            Arrays.asList(formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2008"))},
+                    {Order.asc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
+                            Arrays.asList(formatter.parse("1-Jan-2008"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"))},
+                    {Order.desc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
+                            Arrays.asList(formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2008"))},
                     {Order.desc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L, null)},
                     {Order.desc, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
                     {Order.asc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(null, -1L, 0L, 1L, 100L)},

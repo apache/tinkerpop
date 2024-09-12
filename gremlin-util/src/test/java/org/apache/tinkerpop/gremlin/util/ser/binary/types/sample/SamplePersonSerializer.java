@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializ
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * A sample custom type serializer.
@@ -78,7 +78,7 @@ public final class SamplePersonSerializer implements CustomTypeSerializer<Sample
         }
 
         final String name = context.readValue(buffer, String.class, false);
-        final Date birthDate = context.readValue(buffer, Date.class, false);
+        final OffsetDateTime birthDate = context.readValue(buffer, OffsetDateTime.class, false);
 
         return new SamplePerson(name, birthDate);
     }

@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,8 +161,8 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final Date dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        sb.append("datetime.datetime.utcfromtimestamp(" + dt.getTime() + " / 1000.0)");
+        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        sb.append("datetime.datetime.fromtimestamp(" + dt.toEpochSecond() + ").astimezone(datetime.timezone.utc)");
         return null;
     }
 

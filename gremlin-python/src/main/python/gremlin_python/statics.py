@@ -45,14 +45,6 @@ SetType = set
 ByteBufferType = bytes
 
 
-class timestamp(float):
-    """
-    In Python a timestamp is simply a float. This dummy class (similar to long), allows users to wrap a float
-    in a GLV script to make sure the value is serialized as a Gremlin timestamp.
-    """
-    pass
-
-
 class SingleByte(int):
     """
     Provides a way to pass a single byte via Gremlin.

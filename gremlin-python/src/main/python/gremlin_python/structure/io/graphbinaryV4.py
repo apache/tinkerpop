@@ -17,14 +17,13 @@ specific language governing permissions and limitations
 under the License.
 """
 import calendar
-import datetime
 import io
 import logging
 import math
 import struct
 import uuid
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from struct import pack, unpack
 
 from aenum import Enum
@@ -48,7 +47,7 @@ class DataType(Enum):
     int = 0x01
     long = 0x02
     string = 0x03
-    # date = 0x04
+    datetime = 0x04
     double = 0x07
     float = 0x08
     list = 0x09
@@ -74,7 +73,6 @@ class DataType(Enum):
     char = 0x80
     duration = 0x81
     marker = 0xfd
-    offsetdatetime = 0x88         # todo: will need to update to datetime
     custom = 0x00                 # todo
 
 
@@ -354,6 +352,45 @@ class BigDecimalIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=False):
         return cls.is_null(buff, reader, lambda b, r: cls._read(b), nullable)
+
+
+class DateTimeIO(_GraphBinaryTypeIO):
+
+    python_type = datetime
+    graphbinary_type = DataType.datetime
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        if obj.tzinfo is None:
+            raise AttributeError("Timezone information is required when constructing datetime")
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        IntIO.dictify(obj.year, writer, to_extend, True, False)
+        ByteIO.dictify(obj.month, writer, to_extend, True, False)
+        ByteIO.dictify(obj.day, writer, to_extend, True, False)
+        # construct time of day in nanoseconds
+        h = obj.time().hour
+        m = obj.time().minute
+        s = obj.time().second
+        ms = obj.time().microsecond
+        ns = round((h*60*60*1e9) + (m*60*1e9) + (s*1e9) + (ms*1e3))
+        LongIO.dictify(ns, writer, to_extend, True, False)
+        os = round(obj.utcoffset().total_seconds())
+        IntIO.dictify(os, writer, to_extend, True, False)
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_dt, nullable)
+
+    @classmethod
+    def _read_dt(cls, b, r):
+        year = r.to_object(b, DataType.int, False)
+        month = r.to_object(b, DataType.byte, False)
+        day = r.to_object(b, DataType.byte, False)
+        ns = r.to_object(b, DataType.long, False)
+        offset = r.to_object(b, DataType.int, False)
+        tz = timezone(timedelta(seconds=offset))
+        return datetime(year, month, day, tzinfo=tz) + timedelta(microseconds=ns/1000)
 
 
 class CharIO(_GraphBinaryTypeIO):

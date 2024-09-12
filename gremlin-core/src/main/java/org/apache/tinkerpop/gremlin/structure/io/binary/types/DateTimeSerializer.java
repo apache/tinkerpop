@@ -24,29 +24,33 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class OffsetDateTimeSerializer extends SimpleTypeSerializer<OffsetDateTime> {
-    public OffsetDateTimeSerializer() {
-        super(DataType.OFFSETDATETIME);
+public class DateTimeSerializer extends SimpleTypeSerializer<OffsetDateTime> {
+    public DateTimeSerializer() {
+        super(DataType.DATETIME);
     }
 
     @Override
     protected OffsetDateTime readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        // todo: Updates needed for deserializing these values as their serializers are removed
-        final LocalDateTime ldt = context.readValue(buffer, LocalDateTime.class, false);
-        final ZoneOffset zo = context.readValue(buffer, ZoneOffset.class, false);
+        final LocalDate localDate = LocalDate.of(buffer.readInt(), buffer.readByte(), buffer.readByte());
+        final LocalTime localTime = LocalTime.ofNanoOfDay(buffer.readLong());
+        final LocalDateTime ldt = LocalDateTime.of(localDate, localTime);
+        final ZoneOffset zo = ZoneOffset.ofTotalSeconds(buffer.readInt());
         return OffsetDateTime.of(ldt, zo);
     }
 
     @Override
     protected void writeValue(final OffsetDateTime value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        context.writeValue(value.toLocalDateTime(), buffer, false);
-        context.writeValue(value.getOffset(), buffer, false);
+        buffer.writeInt(value.getYear()).writeByte(value.getMonthValue()).writeByte(value.getDayOfMonth());
+        buffer.writeLong(value.toLocalTime().toNanoOfDay());
+        buffer.writeInt(value.getOffset().getTotalSeconds());
     }
 }

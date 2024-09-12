@@ -44,7 +44,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.GraphSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetDateTimeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
@@ -120,8 +120,7 @@ public class TypeSerializerRegistry {
 
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
-            new RegistryEntry<>(OffsetDateTime.class, new OffsetDateTimeSerializer()),  //todo: to be updated to DateTime serializer
-
+            new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer())
     };
 
     public static final TypeSerializerRegistry INSTANCE = build().create();
