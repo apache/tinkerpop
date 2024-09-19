@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
@@ -263,6 +265,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             put(LambdaRestrictionStrategy.class.getSimpleName(), LambdaRestrictionStrategy.class);
             put(ReadOnlyStrategy.class.getSimpleName(), ReadOnlyStrategy.class);
             put(ReservedKeysVerificationStrategy.class.getSimpleName(), ReservedKeysVerificationStrategy.class);
+            put(VertexProgramRestrictionStrategy.class.getSimpleName(), VertexProgramRestrictionStrategy.class);
         }};
 
         static {
@@ -328,7 +331,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
         /**
          * Unregisters a strategy by its simple name. If the strategy is not in the registry then the grammar cannot
          * reference it which means that it cannot be removed from execution using
-         * {{@link GraphTraversalSource#withoutStrategies(Class[])}}..
+         * {{@link GraphTraversalSource#withoutStrategies(Class[])}}.
          */
         public static void unregisterStrategy(final Class<? extends TraversalStrategy> clazz) {
             GLOBAL_REGISTRY.remove(clazz.getSimpleName());
