@@ -67,7 +67,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
                         .addCustomModule(GraphSONXModuleV3.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0)
-                        .addCustomModule(GraphSONXModuleV3.build())
+                        .addCustomModule(GraphSONXModuleV4.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }

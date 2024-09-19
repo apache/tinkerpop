@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser;
 
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
 
 /**
  * Serialize results to JSON with version 4.0.x schema and the extended module.
@@ -32,7 +32,7 @@ public final class GraphSONMessageSerializerV4 extends AbstractGraphSONMessageSe
      * Creates a default GraphSONMessageSerializer.
      * <p>
      * By default this will internally instantiate a {@link GraphSONMapper} and register
-     * a {@link GremlinServerModuleV4} and {@link GraphSONXModuleV3} to the mapper.
+     * a {@link GremlinServerModuleV4} and {@link GraphSONXModuleV4} to the mapper.
      *
      * @see #GraphSONMessageSerializerV4(GraphSONMapper.Builder)
      */
