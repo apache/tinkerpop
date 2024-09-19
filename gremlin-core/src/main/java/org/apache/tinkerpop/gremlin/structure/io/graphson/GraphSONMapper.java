@@ -323,8 +323,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 } else if (this.version == GraphSONVersion.V3_0) {
                     this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
                 } else if (this.version == GraphSONVersion.V4_0) {
-                    // todo:
-                    this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
+                    this.addCustomModule(GraphSONXModuleV4.build().create(this.normalize, typeInfo));
                 }
             }
 
