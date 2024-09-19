@@ -168,7 +168,7 @@ JSON String representing ISO-8601 format for datetime with offset.
 [source,json]
 ----
 {
-  "@type" : "gx:DateTime",
+  "@type" : "g:DateTime",
   "@value" : "2007-12-03T10:15:30+01:00"
 }
 ----
@@ -308,7 +308,7 @@ version converts complex types to JSON String.
       "@value": 123
     },
     {
-      "@type": "gx:OffsetDateTime",
+      "@type": "g:OffsetDateTime",
       "@value": "2024-09-02T10:30Z"
     },
     "red"
@@ -427,7 +427,7 @@ JSON String form of UUID.
 JSON Object (required keys are: id, label, inVLabel, outVLabel, inV, outV, properties) +
 "id", "inV", "outV" is any GraphSON 4.0 type +
 "label", "inVLabel", "outVLabel" value is a `g:List` of `String` +
-"properties" is an Object containing "name" to `g:Property` mappings
+"properties" is an Object containing Arrays of `g:Property`
 
 The untyped version has one additional required key "type" which is always "vertex".
 
@@ -440,24 +440,15 @@ The untyped version has one additional required key "type" which is always "vert
       "@type": "g:Int32",
       "@value": 13
     },
-    "label": {
-      "@type": "g:List",
-      "@value": [
-        "develops"
-      ]
-    },
-    "inVLabel": {
-      "@type": "g:List",
-      "@value": [
-        "software"
-      ]
-    },
-    "outVLabel": {
-      "@type": "g:List",
-      "@value": [
-        "person"
-      ]
-    },
+    "label": [
+      "develops"
+    ],
+    "inVLabel": [
+      "software"
+    ],
+    "outVLabel": [
+      "person"
+    ],
     "inV": {
       "@type": "g:Int32",
       "@value": 10
@@ -467,16 +458,18 @@ The untyped version has one additional required key "type" which is always "vert
       "@value": 1
     },
     "properties": {
-      "since": {
-        "@type": "g:Property",
-        "@value": {
-          "key": "since",
-          "value": {
-            "@type": "g:Int32",
-            "@value": 2009
+      "since": [
+        {
+          "@type": "g:Property",
+          "@value": {
+            "key": "since",
+            "value": {
+              "@type": "g:Int32",
+              "@value": 2009
+            }
           }
         }
-      }
+      ]
     }
   }
 }
@@ -499,7 +492,9 @@ The untyped version has one additional required key "type" which is always "vert
   "inV": 10,
   "outV": 1,
   "properties": {
-    "since": 2009
+    "since": [
+      2009
+    ]
   }
 }
 ----
@@ -514,7 +509,7 @@ two required keys: "vertices" and "edges" +
 [source,json]
 ----
 {
-  "@type": "tinker:graph",
+  "@type": "g:graph",
   "@value": {
     "vertices": [
       {
@@ -524,12 +519,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 1
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "person"
+          ],
           "properties": {
             "name": [
               {
@@ -540,12 +532,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 0
                   },
                   "value": "marko",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ],
@@ -558,12 +548,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 6
                   },
                   "value": "san diego",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -584,12 +571,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 7
                   },
                   "value": "santa cruz",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -610,12 +594,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 8
                   },
                   "value": "brussels",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -636,12 +617,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 9
                   },
                   "value": "santa fe",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -661,12 +639,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 7
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "person"
+          ],
           "properties": {
             "name": [
               {
@@ -677,12 +652,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 1
                   },
                   "value": "stephen",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ],
@@ -695,12 +668,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 10
                   },
                   "value": "centreville",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -721,12 +691,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 11
                   },
                   "value": "dulles",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -747,12 +714,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 12
                   },
                   "value": "purcellville",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -772,12 +736,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 8
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "person"
+          ],
           "properties": {
             "name": [
               {
@@ -788,12 +749,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 2
                   },
                   "value": "matthias",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ],
@@ -806,12 +765,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 13
                   },
                   "value": "bremen",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -832,12 +788,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 14
                   },
                   "value": "baltimore",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -858,12 +811,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 15
                   },
                   "value": "oakland",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -884,12 +834,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 16
                   },
                   "value": "seattle",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -909,12 +856,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 9
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "person"
+          ],
           "properties": {
             "name": [
               {
@@ -925,12 +869,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 3
                   },
                   "value": "daniel",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ],
@@ -943,12 +885,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 17
                   },
                   "value": "spremberg",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -969,12 +908,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 18
                   },
                   "value": "kaiserslautern",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -995,12 +931,9 @@ two required keys: "vertices" and "edges" +
                     "@value": 19
                   },
                   "value": "aachen",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "location"
-                    ]
-                  },
+                  "label": [
+                    "location"
+                  ],
                   "properties": {
                     "startTime": {
                       "@type": "g:Int32",
@@ -1020,12 +953,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 10
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
+          "label": [
+            "software"
+          ],
           "properties": {
             "name": [
               {
@@ -1036,12 +966,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 4
                   },
                   "value": "gremlin",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ]
@@ -1055,12 +983,9 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 11
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
+          "label": [
+            "software"
+          ],
           "properties": {
             "name": [
               {
@@ -1071,12 +996,10 @@ two required keys: "vertices" and "edges" +
                     "@value": 5
                   },
                   "value": "tinkergraph",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ]
@@ -1092,24 +1015,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 13
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "develops"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "develops"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1119,16 +1033,18 @@ two required keys: "vertices" and "edges" +
             "@value": 1
           },
           "properties": {
-            "since": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "since",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 2009
+            "since": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "since",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 2009
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1139,24 +1055,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 14
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "develops"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "develops"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1166,16 +1073,18 @@ two required keys: "vertices" and "edges" +
             "@value": 1
           },
           "properties": {
-            "since": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "since",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 2010
+            "since": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "since",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 2010
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1186,24 +1095,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 15
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1213,16 +1113,18 @@ two required keys: "vertices" and "edges" +
             "@value": 1
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 4
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 4
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1233,24 +1135,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 16
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1260,16 +1153,18 @@ two required keys: "vertices" and "edges" +
             "@value": 1
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 5
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 5
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1280,24 +1175,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 17
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "develops"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "develops"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1307,16 +1193,18 @@ two required keys: "vertices" and "edges" +
             "@value": 7
           },
           "properties": {
-            "since": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "since",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 2010
+            "since": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "since",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 2010
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1327,24 +1215,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 18
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "develops"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "develops"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1354,16 +1233,18 @@ two required keys: "vertices" and "edges" +
             "@value": 7
           },
           "properties": {
-            "since": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "since",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 2011
+            "since": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "since",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 2011
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1374,24 +1255,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 19
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1401,16 +1273,18 @@ two required keys: "vertices" and "edges" +
             "@value": 7
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 5
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 5
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1421,24 +1295,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 20
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1448,16 +1313,18 @@ two required keys: "vertices" and "edges" +
             "@value": 7
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 4
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 4
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1468,24 +1335,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 21
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "develops"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "develops"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1495,16 +1353,18 @@ two required keys: "vertices" and "edges" +
             "@value": 8
           },
           "properties": {
-            "since": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "since",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 2012
+            "since": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "since",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 2012
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1515,24 +1375,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 22
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1542,16 +1393,18 @@ two required keys: "vertices" and "edges" +
             "@value": 8
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 3
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 3
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1562,24 +1415,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 23
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1589,16 +1433,18 @@ two required keys: "vertices" and "edges" +
             "@value": 8
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 3
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 3
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1609,24 +1455,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 24
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 10
@@ -1636,16 +1473,18 @@ two required keys: "vertices" and "edges" +
             "@value": 9
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 5
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 5
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1656,24 +1495,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 25
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "uses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "person"
-            ]
-          },
+          "label": [
+            "uses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "person"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1683,16 +1513,18 @@ two required keys: "vertices" and "edges" +
             "@value": 9
           },
           "properties": {
-            "skill": {
-              "@type": "g:Property",
-              "@value": {
-                "key": "skill",
-                "value": {
-                  "@type": "g:Int32",
-                  "@value": 3
+            "skill": [
+              {
+                "@type": "g:Property",
+                "@value": {
+                  "key": "skill",
+                  "value": {
+                    "@type": "g:Int32",
+                    "@value": 3
+                  }
                 }
               }
-            }
+            ]
           }
         }
       },
@@ -1703,24 +1535,15 @@ two required keys: "vertices" and "edges" +
             "@type": "g:Int32",
             "@value": 26
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "traverses"
-            ]
-          },
-          "inVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
-          "outVLabel": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
+          "label": [
+            "traverses"
+          ],
+          "inVLabel": [
+            "software"
+          ],
+          "outVLabel": [
+            "software"
+          ],
           "inV": {
             "@type": "g:Int32",
             "@value": 11
@@ -1728,7 +1551,8 @@ two required keys: "vertices" and "edges" +
           "outV": {
             "@type": "g:Int32",
             "@value": 10
-          }
+          },
+          "properties": {}
         }
       }
     ]
@@ -1750,7 +1574,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 0,
-            "value": "marko"
+            "value": "marko",
+            "properties": {}
           }
         ],
         "location": [
@@ -1798,7 +1623,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 1,
-            "value": "stephen"
+            "value": "stephen",
+            "properties": {}
           }
         ],
         "location": [
@@ -1838,7 +1664,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 2,
-            "value": "matthias"
+            "value": "matthias",
+            "properties": {}
           }
         ],
         "location": [
@@ -1886,7 +1713,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 3,
-            "value": "daniel"
+            "value": "daniel",
+            "properties": {}
           }
         ],
         "location": [
@@ -1926,7 +1754,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 4,
-            "value": "gremlin"
+            "value": "gremlin",
+            "properties": {}
           }
         ]
       }
@@ -1941,7 +1770,8 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 5,
-            "value": "tinkergraph"
+            "value": "tinkergraph",
+            "properties": {}
           }
         ]
       }
@@ -1963,7 +1793,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 1,
       "properties": {
-        "since": 2009
+        "since": [
+          2009
+        ]
       }
     },
     {
@@ -1981,7 +1813,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 1,
       "properties": {
-        "since": 2010
+        "since": [
+          2010
+        ]
       }
     },
     {
@@ -1999,7 +1833,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 1,
       "properties": {
-        "skill": 4
+        "skill": [
+          4
+        ]
       }
     },
     {
@@ -2017,7 +1853,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 1,
       "properties": {
-        "skill": 5
+        "skill": [
+          5
+        ]
       }
     },
     {
@@ -2035,7 +1873,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 7,
       "properties": {
-        "since": 2010
+        "since": [
+          2010
+        ]
       }
     },
     {
@@ -2053,7 +1893,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 7,
       "properties": {
-        "since": 2011
+        "since": [
+          2011
+        ]
       }
     },
     {
@@ -2071,7 +1913,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 7,
       "properties": {
-        "skill": 5
+        "skill": [
+          5
+        ]
       }
     },
     {
@@ -2089,7 +1933,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 7,
       "properties": {
-        "skill": 4
+        "skill": [
+          4
+        ]
       }
     },
     {
@@ -2107,7 +1953,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 8,
       "properties": {
-        "since": 2012
+        "since": [
+          2012
+        ]
       }
     },
     {
@@ -2125,7 +1973,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 8,
       "properties": {
-        "skill": 3
+        "skill": [
+          3
+        ]
       }
     },
     {
@@ -2143,7 +1993,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 8,
       "properties": {
-        "skill": 3
+        "skill": [
+          3
+        ]
       }
     },
     {
@@ -2161,7 +2013,9 @@ two required keys: "vertices" and "edges" +
       "inV": 10,
       "outV": 9,
       "properties": {
-        "skill": 5
+        "skill": [
+          5
+        ]
       }
     },
     {
@@ -2179,7 +2033,9 @@ two required keys: "vertices" and "edges" +
       "inV": 11,
       "outV": 9,
       "properties": {
-        "skill": 3
+        "skill": [
+          3
+        ]
       }
     },
     {
@@ -2195,7 +2051,8 @@ two required keys: "vertices" and "edges" +
         "software"
       ],
       "inV": 11,
-      "outV": 10
+      "outV": 10,
+      "properties": {}
     }
   ]
 }
@@ -2239,12 +2096,10 @@ Object with two required keys: "labels" and "objects" +
               "@type": "g:Int32",
               "@value": 1
             },
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "person"
-              ]
-            }
+            "label": [
+              "person"
+            ],
+            "properties": {}
           }
         },
         {
@@ -2254,12 +2109,10 @@ Object with two required keys: "labels" and "objects" +
               "@type": "g:Int32",
               "@value": 10
             },
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "software"
-              ]
-            }
+            "label": [
+              "software"
+            ],
+            "properties": {}
           }
         },
         {
@@ -2269,12 +2122,10 @@ Object with two required keys: "labels" and "objects" +
               "@type": "g:Int32",
               "@value": 11
             },
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "software"
-              ]
-            }
+            "label": [
+              "software"
+            ],
+            "properties": {}
           }
         }
       ]
@@ -2297,21 +2148,24 @@ Object with two required keys: "labels" and "objects" +
       "label": [
         "person"
       ],
-      "type": "vertex"
+      "type": "vertex",
+      "properties": {}
     },
     {
       "id": 10,
       "label": [
         "software"
       ],
-      "type": "vertex"
+      "type": "vertex",
+      "properties": {}
     },
     {
       "id": 11,
       "label": [
         "software"
       ],
-      "type": "vertex"
+      "type": "vertex",
+      "properties": {}
     }
   ]
 }
@@ -2364,12 +2218,9 @@ JSON Object with one or more possibly nested "key" "value" pairs
             "@type": "g:Int32",
             "@value": 10
           },
-          "label": {
-            "@type": "g:List",
-            "@value": [
-              "software"
-            ]
-          },
+          "label": [
+            "software"
+          ],
           "properties": {
             "name": [
               {
@@ -2380,12 +2231,10 @@ JSON Object with one or more possibly nested "key" "value" pairs
                     "@value": 4
                   },
                   "value": "gremlin",
-                  "label": {
-                    "@type": "g:List",
-                    "@value": [
-                      "name"
-                    ]
-                  }
+                  "label": [
+                    "name"
+                  ],
+                  "properties": {}
                 }
               }
             ]
@@ -2403,12 +2252,9 @@ JSON Object with one or more possibly nested "key" "value" pairs
                   "@type": "g:Int32",
                   "@value": 11
                 },
-                "label": {
-                  "@type": "g:List",
-                  "@value": [
-                    "software"
-                  ]
-                },
+                "label": [
+                  "software"
+                ],
                 "properties": {
                   "name": [
                     {
@@ -2419,12 +2265,10 @@ JSON Object with one or more possibly nested "key" "value" pairs
                           "@value": 5
                         },
                         "value": "tinkergraph",
-                        "label": {
-                          "@type": "g:List",
-                          "@value": [
-                            "name"
-                          ]
-                        }
+                        "label": [
+                          "name"
+                        ],
+                        "properties": {}
                       }
                     }
                   ]
@@ -2457,7 +2301,8 @@ JSON Object with one or more possibly nested "key" "value" pairs
         "name": [
           {
             "id": 4,
-            "value": "gremlin"
+            "value": "gremlin",
+            "properties": {}
           }
         ]
       }
@@ -2474,7 +2319,8 @@ JSON Object with one or more possibly nested "key" "value" pairs
             "name": [
               {
                 "id": 5,
-                "value": "tinkergraph"
+                "value": "tinkergraph",
+                "properties": {}
               }
             ]
           }
@@ -2504,12 +2350,9 @@ The untyped version has one additional required key "type" which is always "vert
       "@type": "g:Int32",
       "@value": 1
     },
-    "label": {
-      "@type": "g:List",
-      "@value": [
-        "person"
-      ]
-    },
+    "label": [
+      "person"
+    ],
     "properties": {
       "name": [
         {
@@ -2520,12 +2363,10 @@ The untyped version has one additional required key "type" which is always "vert
               "@value": 0
             },
             "value": "marko",
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "name"
-              ]
-            }
+            "label": [
+              "name"
+            ],
+            "properties": {}
           }
         }
       ],
@@ -2538,12 +2379,9 @@ The untyped version has one additional required key "type" which is always "vert
               "@value": 6
             },
             "value": "san diego",
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "location"
-              ]
-            },
+            "label": [
+              "location"
+            ],
             "properties": {
               "startTime": {
                 "@type": "g:Int32",
@@ -2564,12 +2402,9 @@ The untyped version has one additional required key "type" which is always "vert
               "@value": 7
             },
             "value": "santa cruz",
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "location"
-              ]
-            },
+            "label": [
+              "location"
+            ],
             "properties": {
               "startTime": {
                 "@type": "g:Int32",
@@ -2590,12 +2425,9 @@ The untyped version has one additional required key "type" which is always "vert
               "@value": 8
             },
             "value": "brussels",
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "location"
-              ]
-            },
+            "label": [
+              "location"
+            ],
             "properties": {
               "startTime": {
                 "@type": "g:Int32",
@@ -2616,12 +2448,9 @@ The untyped version has one additional required key "type" which is always "vert
               "@value": 9
             },
             "value": "santa fe",
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "location"
-              ]
-            },
+            "label": [
+              "location"
+            ],
             "properties": {
               "startTime": {
                 "@type": "g:Int32",
@@ -2648,7 +2477,8 @@ The untyped version has one additional required key "type" which is always "vert
     "name": [
       {
         "id": 0,
-        "value": "marko"
+        "value": "marko",
+        "properties": {}
       }
     ],
     "location": [
@@ -2694,7 +2524,7 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
 "id" is any type GraphSON 4.0 type +
 "value" is any type GraphSON 4.0 type +
 "label" is a `g:List` of `String` +
-"properties" contains an Array of "g:Property" (metaproperties)
+"properties" is an Object containing Arrays of "g:Property" (metaproperties)
 
 [source,json]
 ----
@@ -2706,12 +2536,10 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
       "@value": 0
     },
     "value": "marko",
-    "label": {
-      "@type": "g:List",
-      "@value": [
-        "name"
-      ]
-    }
+    "label": [
+      "name"
+    ],
+    "properties": {}
   }
 }
 ----
@@ -2723,7 +2551,8 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
   "value": "marko",
   "label": [
     "name"
-  ]
+  ],
+  "properties": {}
 }
 ----
 
@@ -2839,12 +2668,9 @@ The following `ResponseMessage` is a typical example of the typical successful r
               "@type": "g:Int32",
               "@value": 1
             },
-            "label": {
-              "@type": "g:List",
-              "@value": [
-                "person"
-              ]
-            },
+            "label": [
+              "person"
+            ],
             "properties": {
               "name": [
                 {
@@ -2855,12 +2681,10 @@ The following `ResponseMessage` is a typical example of the typical successful r
                       "@value": 0
                     },
                     "value": "marko",
-                    "label": {
-                      "@type": "g:List",
-                      "@value": [
-                        "name"
-                      ]
-                    }
+                    "label": [
+                      "name"
+                    ],
+                    "properties": {}
                   }
                 }
               ],
@@ -2873,12 +2697,9 @@ The following `ResponseMessage` is a typical example of the typical successful r
                       "@value": 6
                     },
                     "value": "san diego",
-                    "label": {
-                      "@type": "g:List",
-                      "@value": [
-                        "location"
-                      ]
-                    },
+                    "label": [
+                      "location"
+                    ],
                     "properties": {
                       "startTime": {
                         "@type": "g:Int32",
@@ -2899,12 +2720,9 @@ The following `ResponseMessage` is a typical example of the typical successful r
                       "@value": 7
                     },
                     "value": "santa cruz",
-                    "label": {
-                      "@type": "g:List",
-                      "@value": [
-                        "location"
-                      ]
-                    },
+                    "label": [
+                      "location"
+                    ],
                     "properties": {
                       "startTime": {
                         "@type": "g:Int32",
@@ -2925,12 +2743,9 @@ The following `ResponseMessage` is a typical example of the typical successful r
                       "@value": 8
                     },
                     "value": "brussels",
-                    "label": {
-                      "@type": "g:List",
-                      "@value": [
-                        "location"
-                      ]
-                    },
+                    "label": [
+                      "location"
+                    ],
                     "properties": {
                       "startTime": {
                         "@type": "g:Int32",
@@ -2951,12 +2766,9 @@ The following `ResponseMessage` is a typical example of the typical successful r
                       "@value": 9
                     },
                     "value": "santa fe",
-                    "label": {
-                      "@type": "g:List",
-                      "@value": [
-                        "location"
-                      ]
-                    },
+                    "label": [
+                      "location"
+                    ],
                     "properties": {
                       "startTime": {
                         "@type": "g:Int32",
@@ -2973,9 +2785,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     }
   },
   "status": {
-    "code": "200 OK",
-    "message": "",
-    "exception": ""
+    "code": "200 OK"
   }
 }
 ----
@@ -2995,7 +2805,8 @@ The following `ResponseMessage` is a typical example of the typical successful r
           "name": [
             {
               "id": 0,
-              "value": "marko"
+              "value": "marko",
+              "properties": {}
             }
           ],
           "location": [
@@ -3036,9 +2847,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     ]
   },
   "status": {
-    "code": "200 OK",
-    "message": "",
-    "exception": ""
+    "code": "200 OK"
   }
 }
 ----
@@ -3097,7 +2906,7 @@ A JSON Number.
 [source,json]
 ----
 {
-  "@type" : "gx:BigDecimal",
+  "@type" : "g:BigDecimal",
   "@value" : 123456789987654321123456789987654321
 }
 ----
@@ -3114,7 +2923,7 @@ A JSON Number.
 [source,json]
 ----
 {
-  "@type" : "gx:BigInteger",
+  "@type" : "g:BigInteger",
   "@value" : 123456789987654321123456789987654321
 }
 ----
@@ -3131,7 +2940,7 @@ A JSON Number with the same range as a 1-byte signed integer.
 [source,json]
 ----
 {
-  "@type" : "gx:Byte",
+  "@type" : "g:Byte",
   "@value" : 1
 }
 ----
@@ -3148,7 +2957,7 @@ JSON String containing base64-encoded bytes
 [source,json]
 ----
 {
-  "@type" : "gx:Binary",
+  "@type" : "g:Binary",
   "@value" : "c29tZSBieXRlcyBmb3IgeW91"
 }
 ----
@@ -3165,7 +2974,7 @@ A JSON String containing a single UTF-8 encoded character.
 [source,json]
 ----
 {
-  "@type" : "gx:Char",
+  "@type" : "g:Char",
   "@value" : "x"
 }
 ----
@@ -3182,7 +2991,7 @@ JSON String with ISO-8601 seconds based representation. The following example is
 [source,json]
 ----
 {
-  "@type" : "gx:Duration",
+  "@type" : "g:Duration",
   "@value" : "PT120H"
 }
 ----
@@ -3199,7 +3008,7 @@ A JSON Number with the same range as a 2-byte signed integer.
 [source,json]
 ----
 {
-  "@type" : "gx:Int16",
+  "@type" : "g:Int16",
   "@value" : 100
 }
 ----
