@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -173,7 +174,11 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         final Map<String, Object> map = new HashMap<>();
         map.put(STRATEGY, ElementIdStrategy.class.getCanonicalName());
         map.put(ID_PROPERTY_KEY, this.idPropertyKey);
-        map.put(ID_MAKER, this.idMaker);
+//        map.put(ID_MAKER, this.idMaker);
         return new MapConfiguration(map);
+    }
+
+    public static ElementIdStrategy instance() {
+        return build().create();
     }
 }
