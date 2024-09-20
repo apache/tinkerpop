@@ -18,12 +18,12 @@
 @StepClassIntegrated
 Feature: Step - ProductiveByStrategy
 
-  @WithProductiveByStrategy
+  @WithProductiveByStrategy @InsertionOrderingRequired
   Scenario: g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX
     Given the modern graph
     And the traversal of
       """
-      g.withStrategies(ProductiveByStrategy).V().order().by("name").group().by("age").by("name")
+      g.withStrategies(ProductiveByStrategy).V().group().by("age").by("name")
       """
     When iterated to list
     Then the result should be unordered

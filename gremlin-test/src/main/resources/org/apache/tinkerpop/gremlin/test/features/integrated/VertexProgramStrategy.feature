@@ -18,7 +18,7 @@
 @StepClassIntegrated
 Feature: Step - VertexProgramStrategy
 
-  @WithVertexProgramStrategy
+  @WithVertexProgramStrategy @GraphComputerOnly
   Scenario: g_withStrategiesXVertexProgramStrategyX_V
     Given the modern graph
     And the traversal of
