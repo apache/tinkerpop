@@ -45,7 +45,7 @@ Feature: Step - VertexProgramRestrictionStrategy
     When iterated to list
     Then the traversal will raise an error with message containing text of "The TraversalSource does not allow the use of a GraphComputer"
 
-  @WithVertexProgramStrategy
+  @WithVertexProgramStrategy @GraphComputerOnly
   Scenario: g_withoutStrategiesXVertexProgramRestrictionStrategyX_V
     Given the modern graph
     And the traversal of
