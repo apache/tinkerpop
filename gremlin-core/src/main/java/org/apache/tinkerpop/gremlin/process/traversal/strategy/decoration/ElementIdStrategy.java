@@ -62,6 +62,8 @@ import java.util.function.Supplier;
  */
 public final class ElementIdStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
+    public static final ElementIdStrategy INSTANCE = ElementIdStrategy.build().create();
+
     private final String idPropertyKey;
 
     private final Supplier<Object> idMaker;
@@ -178,6 +180,6 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
     }
 
     public static ElementIdStrategy instance() {
-        return build().create();
+        return INSTANCE;
     }
 }
