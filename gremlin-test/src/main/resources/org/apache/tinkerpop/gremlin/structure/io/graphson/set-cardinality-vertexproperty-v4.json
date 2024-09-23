@@ -9,7 +9,7 @@
       "@type" : "g:Set",
       "@value" : [ "stephen", "marko" ]
     },
-    "label" : "person",
+    "label" : [ "person" ],
     "properties" : {
       "a" : "b"
     }

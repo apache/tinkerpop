@@ -134,7 +134,7 @@ public final class TinkerIoRegistryV4 extends AbstractIoRegistry {
 
         @Override
         public String getTypeNamespace() {
-            return "tinker";
+            return GraphSONTokens.GREMLIN_TYPE_NAMESPACE;
         }
     }
 

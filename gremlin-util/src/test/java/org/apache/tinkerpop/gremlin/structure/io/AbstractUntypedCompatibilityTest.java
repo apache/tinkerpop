@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,17 +57,17 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         final HashMap recycled = read(bytes, HashMap.class);
         assertNotSame(fromStatic, recycled);
         assertEquals(resource.id(), fromStatic.get("id"));
-        assertEquals(resource.label(), fromStatic.get("label"));
+        assertEquals(Collections.singletonList(resource.label()), fromStatic.get("label"));
         assertEquals(resource.id(), fromStatic.get("id"));
-        assertEquals(resource.inVertex().label(), fromStatic.get("inVLabel"));
-        assertEquals(resource.outVertex().label(), fromStatic.get("outVLabel"));
+        assertEquals(Collections.singletonList(resource.inVertex().label()), fromStatic.get("inVLabel"));
+        assertEquals(Collections.singletonList(resource.outVertex().label()), fromStatic.get("outVLabel"));
         assertEquals(resource.inVertex().id(), fromStatic.get("inV"));
         assertEquals(resource.outVertex().id(), fromStatic.get("outV"));
         assertEquals(resource.id(), recycled.get("id"));
-        assertEquals(resource.label(), recycled.get("label"));
+        assertEquals(Collections.singletonList(resource.label()), recycled.get("label"));
         assertEquals(resource.id(), recycled.get("id"));
-        assertEquals(resource.inVertex().label(), recycled.get("inVLabel"));
-        assertEquals(resource.outVertex().label(), recycled.get("outVLabel"));
+        assertEquals(Collections.singletonList(resource.inVertex().label()), recycled.get("inVLabel"));
+        assertEquals(Collections.singletonList(resource.outVertex().label()), recycled.get("outVLabel"));
         assertEquals(resource.inVertex().id(), recycled.get("inV"));
         assertEquals(resource.outVertex().id(), recycled.get("outV"));
 
@@ -103,22 +104,22 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(resource.labels().get(2).size(), ((List) ((List) fromStatic.get("labels")).get(2)).size());
         assertEquals(resource.objects().size(), ((List) fromStatic.get("objects")).size());
         assertEquals(((Vertex) resource.objects().get(0)).id(), ((Map) ((List) fromStatic.get("objects")).get(0)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(0)).label(), ((Map) ((List) fromStatic.get("objects")).get(0)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(0)).label()), ((Map) ((List) fromStatic.get("objects")).get(0)).get("label"));
         assertEquals(((Vertex) resource.objects().get(1)).id(), ((Map) ((List) fromStatic.get("objects")).get(1)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(1)).label(), ((Map) ((List) fromStatic.get("objects")).get(1)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(1)).label()), ((Map) ((List) fromStatic.get("objects")).get(1)).get("label"));
         assertEquals(((Vertex) resource.objects().get(2)).id(), ((Map) ((List) fromStatic.get("objects")).get(2)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(2)).label(), ((Map) ((List) fromStatic.get("objects")).get(2)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(2)).label()), ((Map) ((List) fromStatic.get("objects")).get(2)).get("label"));
         assertEquals(resource.labels().size(), ((List) recycled.get("labels")).size());
         assertEquals(resource.labels().get(0).size(), ((List) ((List) recycled.get("labels")).get(0)).size());
         assertEquals(resource.labels().get(1).size(), ((List) ((List) recycled.get("labels")).get(1)).size());
         assertEquals(resource.labels().get(2).size(), ((List) ((List) recycled.get("labels")).get(2)).size());
         assertEquals(resource.objects().size(), ((List) recycled.get("objects")).size());
         assertEquals(((Vertex) resource.objects().get(0)).id(), ((Map) ((List) recycled.get("objects")).get(0)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(0)).label(), ((Map) ((List) recycled.get("objects")).get(0)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(0)).label()), ((Map) ((List) recycled.get("objects")).get(0)).get("label"));
         assertEquals(((Vertex) resource.objects().get(1)).id(), ((Map) ((List) recycled.get("objects")).get(1)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(1)).label(), ((Map) ((List) recycled.get("objects")).get(1)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(1)).label()), ((Map) ((List) recycled.get("objects")).get(1)).get("label"));
         assertEquals(((Vertex) resource.objects().get(2)).id(), ((Map) ((List) recycled.get("objects")).get(2)).get("id"));
-        assertEquals(((Vertex) resource.objects().get(2)).label(), ((Map) ((List) recycled.get("objects")).get(2)).get("label"));
+        assertEquals(Collections.singletonList(((Vertex) resource.objects().get(2)).label()), ((Map) ((List) recycled.get("objects")).get(2)).get("label"));
     }
 
     @Test
@@ -148,10 +149,10 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         final HashMap recycled = read(bytes, HashMap.class);
         assertNotSame(fromStatic, recycled);
         assertEquals(resource.id(), fromStatic.get("id"));
-        assertEquals(resource.label(), fromStatic.get("label"));
+        assertEquals(Collections.singletonList(resource.label()), fromStatic.get("label"));
         assertEquals(resource.id(), fromStatic.get("id"));
         assertEquals(resource.id(), recycled.get("id"));
-        assertEquals(resource.label(), recycled.get("label"));
+        assertEquals(Collections.singletonList(resource.label()), recycled.get("label"));
         assertEquals(resource.id(), recycled.get("id"));
         assertEquals(IteratorUtils.count(resource.keys()), ((Map) fromStatic.get("properties")).size());
         assertEquals(resource.value("name"), ((Map) ((List) ((Map) fromStatic.get("properties")).get("name")).get(0)).get("value"));
@@ -193,13 +194,15 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
         final HashMap recycled = read(bytes, HashMap.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(3, fromStatic.size());
+        assertEquals(4, fromStatic.size());
         assertEquals(resource.id().toString(), fromStatic.get("id").toString());
-        assertEquals(resource.key(), fromStatic.get("label"));
+        assertEquals(Collections.singletonList(resource.key()), fromStatic.get("label"));
         assertEquals(resource.value(), fromStatic.get("value"));
-        assertEquals(3, recycled.size());
+        assertEquals(Collections.emptyMap(), fromStatic.get("properties"));
+        assertEquals(4, recycled.size());
         assertEquals(resource.id().toString(), fromStatic.get("id").toString());
-        assertEquals(resource.key(), recycled.get("label"));
+        assertEquals(Collections.singletonList(resource.key()), recycled.get("label"));
         assertEquals(resource.value(), recycled.get("value"));
+        assertEquals(Collections.emptyMap(), recycled.get("properties"));
     }
 }

@@ -69,8 +69,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil.safeWriteObjectField;
-
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
  * present a generalized way to serialize the implementations of core interfaces.
@@ -101,7 +99,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.id());
-            jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.label());
+            writeLabel(jsonGenerator, GraphSONTokens.LABEL, vertex.label());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.VERTEX);
             writeProperties(vertex, jsonGenerator, serializerProvider);
 
@@ -110,8 +108,6 @@ class GraphSONSerializersV4 {
         }
 
         private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
-            if (vertex.keys().size() == 0)
-                return;
             jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
             jsonGenerator.writeStartObject();
 
@@ -161,10 +157,10 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
-            jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.label());
+            writeLabel(jsonGenerator, GraphSONTokens.LABEL, edge.label());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.EDGE);
-            jsonGenerator.writeStringField(GraphSONTokens.IN_LABEL, edge.inVertex().label());
-            jsonGenerator.writeStringField(GraphSONTokens.OUT_LABEL, edge.outVertex().label());
+            writeLabel(jsonGenerator, GraphSONTokens.IN_LABEL, edge.inVertex().label());
+            writeLabel(jsonGenerator, GraphSONTokens.OUT_LABEL, edge.outVertex().label());
             jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.inVertex().id());
             jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.outVertex().id());
             writeProperties(edge, jsonGenerator);
@@ -175,16 +171,24 @@ class GraphSONSerializersV4 {
         private void writeProperties(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
             final Iterator<Property<Object>> elementProperties = normalize ?
                     IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
-            if (elementProperties.hasNext()) {
-                jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
 
-                jsonGenerator.writeStartObject();
-                if (typeInfo == TypeInfo.NO_TYPES)
-                    elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop.value()));
-                else
-                    elementProperties.forEachRemaining(prop -> safeWriteObjectField(jsonGenerator, prop.key(), prop));
-                jsonGenerator.writeEndObject();
+            jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
+            jsonGenerator.writeStartObject();
+
+            while (elementProperties.hasNext()) {
+                final Property prop = elementProperties.next();
+                jsonGenerator.writeFieldName(prop.key());
+                jsonGenerator.writeStartArray();
+
+                if (typeInfo == TypeInfo.NO_TYPES) {
+                    jsonGenerator.writeObject(prop.value());
+                } else {
+                    jsonGenerator.writeObject(prop);
+                }
+
+                jsonGenerator.writeEndArray();
             }
+            jsonGenerator.writeEndObject();
         }
     }
 
@@ -229,8 +233,9 @@ class GraphSONSerializersV4 {
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, property.id());
             jsonGenerator.writeObjectField(GraphSONTokens.VALUE, property.value());
-            if (includeLabel)
-                jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
+            if (includeLabel) {
+                writeLabel(jsonGenerator, GraphSONTokens.LABEL, property.label());
+            }
             tryWriteMetaProperties(property, jsonGenerator, normalize);
 
             jsonGenerator.writeEndObject();
@@ -241,14 +246,11 @@ class GraphSONSerializersV4 {
             // when "detached" you can't check features of the graph it detached from so it has to be
             // treated differently from a regular VertexProperty implementation.
             if (property instanceof DetachedVertexProperty) {
-                // only write meta properties key if they exist
-                if (property.properties().hasNext()) {
-                    writeMetaProperties(property, jsonGenerator, normalize);
-                }
+                writeMetaProperties(property, jsonGenerator, normalize);
             } else {
                 // still attached - so we can check the features to see if it's worth even trying to write the
                 // meta properties key
-                if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
+                if (property.graph().features().vertex().supportsMetaProperties()) {
                     writeMetaProperties(property, jsonGenerator, normalize);
                 }
             }
@@ -460,7 +462,9 @@ class GraphSONSerializersV4 {
                     v.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    v.setLabel(jsonParser.getText());
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        v.setLabel(jsonParser.getText());
+                    }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
@@ -498,24 +502,32 @@ class GraphSONSerializersV4 {
                     e.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    e.setLabel(jsonParser.getText());
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        e.setLabel(jsonParser.getText());
+                    }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
                     jsonParser.nextToken();
                     outV.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT_LABEL)) {
                     jsonParser.nextToken();
-                    outV.setLabel(jsonParser.getText());
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        outV.setLabel(jsonParser.getText());
+                    }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN)) {
                     jsonParser.nextToken();
                     inV.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN_LABEL)) {
                     jsonParser.nextToken();
-                    inV.setLabel(jsonParser.getText());
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        inV.setLabel(jsonParser.getText());
+                    }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                         jsonParser.nextToken();
-                        e.addProperty(deserializationContext.readValue(jsonParser, Property.class));
+                        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                            e.addProperty(deserializationContext.readValue(jsonParser, Property.class));
+                        }
                     }
                 }
             }
@@ -614,7 +626,9 @@ class GraphSONSerializersV4 {
                     vp.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
-                    vp.setLabel(jsonParser.getText());
+                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                        vp.setLabel(jsonParser.getText());
+                    }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
                     jsonParser.nextToken();
                     vp.setValue(deserializationContext.readValue(jsonParser, Object.class));
@@ -792,5 +806,16 @@ class GraphSONSerializersV4 {
         if (typeInfo == TypeInfo.NO_TYPES) {
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, type);
         }
+    }
+
+    /**
+     * Helper method for writing a label. Starting in v4, the label is an array of String that is inside an object. Only
+     * writes the array portion; that is, it assumes the object has already started.
+     */
+    private static void writeLabel(final JsonGenerator jsonGenerator, final String labelName, final String labelValue) throws IOException {
+        jsonGenerator.writeFieldName(labelName);
+        jsonGenerator.writeStartArray();
+        jsonGenerator.writeString(labelValue);
+        jsonGenerator.writeEndArray();
     }
 }
