@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +37,9 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeature
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -51,7 +53,7 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
 
     private interface Constants {
         UUID uuid = UUID.randomUUID();
-        Date date = new Date();
+        OffsetDateTime date = OffsetDateTime.now(ZoneOffset.UTC);
         List list1 = Arrays.asList(1, 2, 3);
         List list2 = Arrays.asList(1, 2, 3, 4);
         Set set1 = CollectionUtil.asSet(list1);
@@ -178,7 +180,6 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
      * Mixed type values including list, set, map, uuid, date, boolean, numeric, string, null.
      */
     @Test
-    @Ignore // todo: re-enable after datetime serialization is implemented
     @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     public void g_inject_order() {
         final Traversal traversal = get_g_inject_order();
@@ -187,12 +188,12 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
                 null,
                 false, true,
                 1, 2.0,
-                Constants.date,
                 "bar", "foo",
                 Constants.uuid,
                 Constants.set1, Constants.set2,
                 Constants.list1, Constants.list2,
-                Constants.map1, Constants.map2
+                Constants.map1, Constants.map2,
+                Constants.date
         ), traversal);
     }
 
@@ -213,13 +214,13 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
                 null,
                 false, true,
                 1, 2.0,
-                Constants.date,
                 "bar", "foo",
                 Constants.uuid,
                 Constants.set1, Constants.set2,
                 Constants.list1, Constants.list2,
                 Constants.map1, Constants.map2,
-                unknown
+                unknown,
+                Constants.date
         ), traversal);
     }
 

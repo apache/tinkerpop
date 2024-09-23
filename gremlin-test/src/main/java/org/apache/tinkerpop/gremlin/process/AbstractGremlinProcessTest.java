@@ -108,6 +108,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     public static <T> void checkOrderedResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
         assertFalse(traversal.hasNext());
+        System.out.println(results);
         if (expectedResults.size() != results.size()) {
             logger.error("Expected results: " + expectedResults);
             logger.error("Actual results:   " + results);

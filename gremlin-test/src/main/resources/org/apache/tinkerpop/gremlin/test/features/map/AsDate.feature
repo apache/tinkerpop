@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# todo: re-enable after datetime is implemented
 @StepClassMap @StepAsDate
 Feature: Step - asDate()
 

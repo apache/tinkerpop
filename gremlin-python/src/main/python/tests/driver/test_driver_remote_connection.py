@@ -35,10 +35,6 @@ test_no_auth_url = gremlin_server_url.format(45940)
 
 class TestDriverRemoteConnection(object):
 
-    # def test_test(self, remote_connection):
-    #     g = traversal().with_(remote_connection)
-    #     print(g.inject(datetime.utcfromtimestamp(1690934400000 / 1000.0)).date_add(DT.hour, 2).to_list())
-
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
         t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
