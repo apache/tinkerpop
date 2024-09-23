@@ -1069,9 +1069,14 @@ func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (i
 	}
 	v.Label = label.(string)
 	if readProperties {
-		v.Properties, err = readFullyQualifiedNullable(data, i, true)
+		props, err := readFullyQualifiedNullable(data, i, true)
 		if err != nil {
 			return nil, err
+		}
+		// null properties are returned as empty slices
+		v.Properties = make([]interface{}, 0)
+		if props != nil {
+			v.Properties = props
 		}
 	}
 	return v, nil
@@ -1101,9 +1106,14 @@ func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	}
 	e.OutV = *v.(*Vertex)
 	*i += 2
-	e.Properties, err = readFullyQualifiedNullable(data, i, true)
+	props, err := readFullyQualifiedNullable(data, i, true)
 	if err != nil {
 		return nil, err
+	}
+	// null properties are returned as empty slices
+	e.Properties = make([]interface{}, 0)
+	if props != nil {
+		e.Properties = props
 	}
 	return e, nil
 }
@@ -1149,7 +1159,11 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 
-	vp.Properties = props
+	// null properties are returned as empty slices
+	vp.Properties = make([]interface{}, 0)
+	if props != nil {
+		vp.Properties = props
+	}
 
 	return vp, nil
 }

@@ -21,7 +21,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *Gremfir Master of the Pan Flute*
 
-=== TinkerPop 3.7.3
+== TinkerPop 3.7.3
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
@@ -29,6 +29,25 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.3/CHANGELOG.asc
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== GraphBinary Deserialization of Reference Element Properties with ReferenceElementStrategy
+When properties on element were introduced and returned as default in 3.7.0, setting ReferenceElementStrategy on the
+server meant as a way to send reference element without properties, for lightweight wire transfer and compatibility
+reasons. However, an issue was discovered where using GraphBinary, the 3.7.x server were not serializing properties as
+`null` as per IO spec, but as empty lists instead. This caused deserialization failures in Python, JavaScript and Go
+driver versions 3.6.x or below.
+
+A fix was introduced to correct such error, where Gremlin Server versions 3.7.3 and above will return element properties
+as `null` when ReferenceElementStrategy is applied, or when `token` is used with `materializedProperties` option in 3.7.x
+drivers. However, this also led to a change in 3.7.x driver behavior, where all non-Java drivers returns `null` instead
+of empty list. As such, an additional change was introduced in these GLVs, where `null` properties from reference elements
+will now deserialized into an empty list, to maintain such behavior with older 3.7.x drivers. This should minimize impact for users.
+
+One caveat is that when using 3.7.0 to 3.7.2 drivers to connect to 3.7.3 and above server, these drivers will not contain
+the deserialization change and return `null` as properties. In these cases, it is recommended to upgrade to 3.7.3 drivers.
+
+See: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#_properties_of_elements[Properties of Elements],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3105[TINKERPOP-3105]
 
 == TinkerPop 3.7.2
 
@@ -705,7 +724,7 @@ For 3.7:
 ===== Enabling the previous behavior
 
 Note that drivers from earlier versions like 3.5 and 3.6 will not be able to retrieve properties on elements. Older
-drivers connecting to 3.7.x servers should disable this functionality server-side in one of two ways:
+drivers connecting to 3.7.x servers should disable this functionality server-side:
 
 *Configure Gremlin Server to not return properties* - update Gremlin Server initialization script with
 `ReferenceElementStrategy`. This configuration is essentially the one used in older versions of the server by default.
@@ -715,7 +734,7 @@ drivers connecting to 3.7.x servers should disable this functionality server-sid
 globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 ----
 
-*Disable property inclusion per request* - the `materializeProperties` has a `tokens` option for this purpose.
+For 3.7 drivers, properties on elements can also be disabled per request using the `tokens` option with `materializeProperties`.
 
 [source,csharp]
 ----

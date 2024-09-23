@@ -291,5 +291,47 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.RollbackAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
         }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInV()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vertices = g.With("materializeProperties", "tokens").V().ToList();
+            foreach (var v in vertices)
+            {
+                Assert.NotNull(v);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(v.Properties == null || v.Properties.Length == 0);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInE()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var edges = g.With("materializeProperties", "tokens").E().ToList();
+            foreach (var e in edges)
+            {
+                Assert.NotNull(e);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(e.Properties == null || e.Properties.Length == 0);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInVP()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vps = g.With("materializeProperties", "tokens").V().Properties<VertexProperty>().ToList();
+            foreach (var vp in vps)
+            {
+                Assert.NotNull(vp);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(vp.Properties == null || vp.Properties.Length == 0);
+            }
+        }
     }
 }

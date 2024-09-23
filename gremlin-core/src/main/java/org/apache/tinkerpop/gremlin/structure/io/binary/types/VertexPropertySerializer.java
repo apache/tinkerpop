@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -67,9 +68,14 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
         // we don't serialize the parent vertex, let's hold a place for it
         context.write(null, buffer);
 
-        final List<?> asList = value.graph().features().vertex().supportsMetaProperties() ?
-                IteratorUtils.toList(value.properties()) :
-                Collections.emptyList();
-        context.write(asList, buffer);
+        if (value instanceof ReferenceVertexProperty) {
+            context.write(null, buffer);
+        }
+        else {
+            final List<?> asList = value.graph().features().vertex().supportsMetaProperties() ?
+                    IteratorUtils.toList(value.properties()) :
+                    Collections.emptyList();
+            context.write(asList, buffer);
+        }
     }
 }

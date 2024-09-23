@@ -36,6 +36,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Fix cases where Map keys of incomparable types could panic in `gremlin-go`.
 * Fixed an issue where missing necessary parameters for logging, resulting in '%!x(MISSING)' output in `gremlin-go`.
 * Added getter method to `ConcatStep`, `ConjoinStep`, `SplitGlobalStep` and `SplitLocalStep` for their private fields.
+* When using `ReferenceElementStrategy` with `GraphBinaryV1`, properties on elements will be returned as `null` instead of empty list, to stay compatible with older drivers.
 * Gremlin Server docker containers shutdown gracefully when receiving a SIGTERM.
 * Added DefaultIdManager.STRING for proper string id creation/handling.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
