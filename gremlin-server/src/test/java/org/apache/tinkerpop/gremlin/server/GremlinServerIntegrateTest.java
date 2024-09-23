@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpTestChannelizer;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -63,6 +64,7 @@ import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -107,6 +109,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
@@ -1372,5 +1375,27 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals("make it stop", t.getMessage());
             assertEquals(ResponseStatusCode.SERVER_ERROR_FAIL_STEP, ((ResponseException) t).getResponseStatusCode());
         }
+    }
+
+    @Test
+    public void shouldReturnEmptyPropertiesWithMaterializeProperties() {
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        final Vertex v1 = g.addV("person").property("name", "marko").next();
+        final Vertex r1 = g.V().next();
+        assertEquals(v1.properties().next(), r1.properties().next());
+        final Vertex r1_tokens = g.with("materializeProperties", "tokens").V().next();
+        assertFalse(r1_tokens.properties().hasNext());
+
+        final VertexProperty vp1 = (VertexProperty) g.with("materializeProperties", "tokens").V().properties().next();
+        assertFalse(vp1.properties().hasNext());
+
+        final Vertex v2 = g.addV("person").property("name", "stephen").next();
+        g.V(v1).addE("knows").to(v2).property("weight", 0.75).iterate();
+        final Edge r2 = g.E().next();
+        assertEquals(r2.properties().next(), r2.properties().next());
+        final Edge r2_tokens = g.with("materializeProperties", "tokens").E().next();
+        assertFalse(r2_tokens.properties().hasNext());
     }
 }

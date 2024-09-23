@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -76,7 +77,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var propertiesAsArray = (properties as List<object>)?.ToArray();
+            var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();
 
             return new Edge(id, outV, label, inV, propertiesAsArray);
         }

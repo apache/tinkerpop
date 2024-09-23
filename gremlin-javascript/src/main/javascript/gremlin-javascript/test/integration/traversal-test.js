@@ -125,6 +125,36 @@ describe('Traversal', function () {
         });
     });
   });
+  describe('#materializeProperties()', function () {
+    it('should skip vertex properties when tokens is set', function () {
+      var g = anon.traversal().with_(connection);
+      return g.with_("materializeProperties", "tokens").V().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 6);
+        list.forEach(v => assert.ok(v instanceof Vertex));
+        list.forEach(v => assert.ok(v.properties === undefined || v.properties.length === 0));
+      });
+    });
+    it('should skip edge properties when tokens is set', function () {
+      var g = anon.traversal().with_(connection);
+      return g.with_("materializeProperties", "tokens").E().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 6);
+        list.forEach(e => assert.ok(e instanceof Edge));
+        // due to the way edge is constructed, edge properties will be {} regardless if it's null or []
+        list.forEach(e => assert.strictEqual(Object.keys(e.properties).length, 0));
+      });
+    });
+    it('should skip vertex property properties when tokens is set', function () {
+      var g = anon.traversal().with_(connection);
+      return g.with_("materializeProperties", "tokens").V().properties().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 12);
+        list.forEach(vp => assert.ok(vp instanceof VertexProperty));
+        list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties.length === 0));
+      });
+    });
+  });
   describe('lambdas', function() {
     it('should handle 1-arg lambdas', function() {
       const g = anon.traversal().with_(connection);

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -57,7 +58,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false);
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var propertiesAsArray = (properties as List<object>)?.ToArray();
+            var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();
 
             return new Vertex(id, label, propertiesAsArray);
         }

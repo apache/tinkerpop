@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,7 +60,7 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     protected void writeValue(final Vertex value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.id(), buffer);
         context.writeValue(value.label(), buffer, false);
-        if (value.properties() == null) {
+        if (value instanceof ReferenceVertex) {
             context.write(null, buffer);
         }
         else {
