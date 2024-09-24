@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @GraphComputerVerificationElementSupported
+@StepClassMap @StepElement @GraphComputerVerificationElementSupported
 Feature: Step - element()
 
   # VertexProperty -> Vertex

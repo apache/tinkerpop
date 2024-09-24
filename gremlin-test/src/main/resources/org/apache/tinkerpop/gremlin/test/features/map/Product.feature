@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @Product
+@StepClassMap @StepProduct
 Feature: Step - product()
 
   @GraphComputerVerificationInjectionNotSupported
