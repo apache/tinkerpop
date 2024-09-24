@@ -22,10 +22,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeKey;
+import javax.net.ssl.SSLException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -42,6 +44,7 @@ import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LA
  * as the {@link ResponseMessage} objects are deserialized.
  */
 public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+    public static final AttributeKey<Throwable> INBOUND_SSL_EXCEPTION = AttributeKey.valueOf("inboundSslException");
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
     private static final AttributeKey<ResponseException> CAUGHT_EXCEPTION = AttributeKey.valueOf("caughtException");
     private final AtomicReference<ResultQueue> pending;
@@ -105,6 +108,12 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         final ResultQueue pendingQueue = pending.getAndSet(null);
         if (pendingQueue != null) pendingQueue.markError(cause);
+
+        if (ExceptionHelper.getRootCause(cause) instanceof SSLException) {
+            // inbound ssl error can happen with tls 1.3 because client certification auth can fail after the handshake completes
+            // store the inbound ssl error so that outbound can retrieve it
+            ctx.channel().attr(INBOUND_SSL_EXCEPTION).set(cause);
+        }
 
         // serialization exceptions should not close the channel - that's worth a retry
         if (!IteratorUtils.anyMatch(ExceptionUtils.getThrowableList(cause).iterator(), t -> t instanceof SerializationException))
