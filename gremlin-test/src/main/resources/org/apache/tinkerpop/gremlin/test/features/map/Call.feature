@@ -16,7 +16,7 @@
 # under the License.
 
 @StepClassMap @StepCall @TinkerServiceRegistry
-Feature: Step - Call
+Feature: Step - call()
 
   Scenario: g_call
     Given the empty graph

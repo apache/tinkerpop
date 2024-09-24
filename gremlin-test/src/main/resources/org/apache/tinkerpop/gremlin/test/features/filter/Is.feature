@@ -16,7 +16,7 @@
 # under the License.
 
 @StepClassFilter @StepIs
-Feature: Step - coin()
+Feature: Step - is()
 
   Scenario: g_V_valuesXageX_isX32X
     Given the modern graph
