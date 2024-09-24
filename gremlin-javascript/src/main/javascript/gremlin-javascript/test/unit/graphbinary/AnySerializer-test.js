@@ -202,7 +202,7 @@ describe('GraphBinary.AnySerializer', () => {
       },
 
       // EdgeSerializer
-      { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), null),
+      { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), []),
         b:[
           DataType.EDGE,0x00,
           DataType.STRING,0x00, 0x00,0x00,0x00,0x01, 0x41, // id
@@ -404,7 +404,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // EDGE
       { v:null,                                   b:[0x0D,0x01] },
-      { v:new Edge(1, new Vertex(2,'Person',null), 'has', new Vertex(3,'Pet',null), null),
+      { v:new Edge(1, new Vertex(2,'Person',null), 'has', new Vertex(3,'Pet',null), []),
         b:[
           0x0D,0x00,
           0x01,0x00, 0x00,0x00,0x00,0x01, // id

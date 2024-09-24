@@ -47,7 +47,7 @@ describe('GraphBinary.EdgeSerializer', () => {
         0xFE,0x01, // parent
         0xFE,0x01, // properties
       ],
-      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), null),
+      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), []),
     },
     { v:null, fq:1, b:[0x0D,0x01] },
     { v:null, fq:0,
@@ -61,10 +61,10 @@ describe('GraphBinary.EdgeSerializer', () => {
         0xFE,0x01, // parent
         0xFE,0x01, // properties
       ],
-      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), null),
+      av:new Edge('', new Vertex('','',null), '', new Vertex('','',null), []),
     },
 
-    { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), null),
+    { v:new Edge('A', new Vertex('B','Person',null), 'has', new Vertex('C','Pet',null), []),
       b:[
         0x03,0x00, 0x00,0x00,0x00,0x01, 0x41, // id
         0x00,0x00,0x00,0x03, ...from('has'), // label

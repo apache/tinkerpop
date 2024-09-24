@@ -23,7 +23,7 @@
 
 import assert from 'assert';
 import { AssertionError } from 'assert';
-import { Vertex } from '../../lib/structure/graph.js';
+import {Edge, Vertex, VertexProperty} from '../../lib/structure/graph.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
 import { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } from '../../lib/process/traversal-strategy.js';
@@ -141,7 +141,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
         list.forEach(e => assert.ok(e instanceof Edge));
-        // due to the way edge is constructed, edge properties will be {} regardless if it's null or []
+        // due to the way edge is constructed, edge properties will be {} or []
         list.forEach(e => assert.strictEqual(Object.keys(e.properties).length, 0));
       });
     });

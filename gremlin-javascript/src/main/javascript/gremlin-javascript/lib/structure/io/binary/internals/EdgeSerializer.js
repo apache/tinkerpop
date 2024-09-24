@@ -200,7 +200,10 @@ export default class EdgeSerializer {
       }
       cursor = cursor.slice(properties_len);
 
-      const v = new Edge(id, new Vertex(outVId, outVLabel, null), label, new Vertex(inVId, inVLabel, null), properties);
+      // null properties are deserialized into empty lists
+      const edge_props = properties ? properties : [];
+
+      const v = new Edge(id, new Vertex(outVId, outVLabel, null), label, new Vertex(inVId, inVLabel, null), edge_props);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
