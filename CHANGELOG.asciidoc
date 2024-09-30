@@ -26,18 +26,19 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 This release also includes changes from <<release-3-6-8, 3.6.8>>.
 
 * Refactored mutation events registration by moving reusable code from relevant steps to `EventUtil`
-* Open `NoOpBarrierStep` for extensibility (removed `final` keyword).
+* Opened `NoOpBarrierStep` for extensibility (removed `final` keyword).
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
-* Allow specifying a customized Spark app name.
+* Allowed specification of a customized Spark app name.
 * Added getter method to `CoinStep` for its probability field.
 * Attempted to detect JDK version for Gremlin Console to avoid problems with Java 17 if `neo4j-gremlin` is used.
 * Fixed so that `TrimGlobalStep` and `TrimLocalStep` have the same character control handling as `Ltrim` and `Rtrim`
-* Fix a bug in `MaxLocalStep`, `MinLocalStep`, `MeanLocalStep` and `SumLocalStep` that it throws `NoSuchElementException` when encounters an empty iterator as input.
-* Fix cases where Map keys of incomparable types could panic in `gremlin-go`.
+* Fixed a bug in `MaxLocalStep`, `MinLocalStep`, `MeanLocalStep` and `SumLocalStep` that it throws `NoSuchElementException` when encounters an empty iterator as input.
+* Fixed cases where Map keys of incomparable types could panic in `gremlin-go`.
 * Fixed an issue where missing necessary parameters for logging, resulting in '%!x(MISSING)' output in `gremlin-go`.
 * Added getter method to `ConcatStep`, `ConjoinStep`, `SplitGlobalStep` and `SplitLocalStep` for their private fields.
-* When using `ReferenceElementStrategy` with `GraphBinaryV1`, properties on elements will be returned as `null` instead of empty list, to stay compatible with older drivers.
+* Fixed older driver GraphBinary compatibility problems where using `ReferenceElementStrategy`, properties on elements returned as `null` instead of empty `List`.
 * Gremlin Server docker containers shutdown gracefully when receiving a SIGTERM.
+* Bumped to ANTLR 4.13.2.
 * Added DefaultIdManager.STRING for proper string id creation/handling.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
 * Fixed bug in Bytecode build logic where duplicate strategies were added instead of replacing the existing ones.
