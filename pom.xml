@@ -151,7 +151,7 @@ limitations under the License.
         <url>https://github.com/apache/tinkerpop</url>
     </scm>
     <properties>
-        <antlr4.version>4.13.2</antlr4.version>
+        <antlr4.version>4.9.1</antlr4.version>
         <caffeine.version>2.3.1</caffeine.version>
         <commons.collections.version>3.2.2</commons.collections.version>
         <commons.configuration.version>2.9.0</commons.configuration.version>

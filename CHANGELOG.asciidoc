@@ -38,7 +38,6 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Added getter method to `ConcatStep`, `ConjoinStep`, `SplitGlobalStep` and `SplitLocalStep` for their private fields.
 * Fixed older driver GraphBinary compatibility problems where using `ReferenceElementStrategy`, properties on elements returned as `null` instead of empty `List`.
 * Gremlin Server docker containers shutdown gracefully when receiving a SIGTERM.
-* Bumped to ANTLR 4.13.2.
 * Added DefaultIdManager.STRING for proper string id creation/handling.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
 * Fixed bug in Bytecode build logic where duplicate strategies were added instead of replacing the existing ones.
