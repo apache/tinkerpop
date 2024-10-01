@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -372,13 +373,23 @@ public class GremlinLang implements Cloneable, Serializable {
                 break;
             }
 
-            final Configuration configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
+            Configuration configuration;
+            String strategyName;
+
+            // special handling for TraversalStrategyProxy
+            if (arguments[i] instanceof TraversalStrategyProxy) {
+                configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
+                strategyName = ((TraversalStrategyProxy) arguments[i]).getStrategyName();
+            } else {
+                configuration = ((TraversalStrategy) arguments[i]).getConfiguration();
+                strategyName = arguments[i].getClass().getSimpleName();
+            }
 
             if (configuration.isEmpty()) {
-                sb.append(arguments[i].getClass().getSimpleName());
+                sb.append(strategyName);
             } else {
                 sb.append("new ")
-                        .append(arguments[i].getClass().getSimpleName())
+                        .append(strategyName)
                         .append("(");
 
                 configuration.getKeys().forEachRemaining(key -> {
