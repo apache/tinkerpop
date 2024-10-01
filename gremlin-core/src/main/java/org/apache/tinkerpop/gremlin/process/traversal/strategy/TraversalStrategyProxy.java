@@ -52,11 +52,16 @@ public final class TraversalStrategyProxy<T extends TraversalStrategy> implement
         this.strategyName = strategyName;
     }
 
-    @Deprecated
     public TraversalStrategyProxy(final T traversalStrategy) {
         this(traversalStrategy.getClass().getSimpleName(), traversalStrategy.getConfiguration());
     }
 
+    /**
+     * @deprecated
+     * This constructor has been deprecated since 4.0.0 as TraversalStrategyProxy is now based around strategy names,
+     * instead of strategy classes. Use {@link TraversalStrategyProxy#TraversalStrategyProxy(String, Configuration)}
+     * instead.
+     */
     @Deprecated
     public TraversalStrategyProxy(final Class<T> strategyClass, final Configuration configuration) {
         this(strategyClass.getSimpleName(), configuration);
@@ -70,6 +75,13 @@ public final class TraversalStrategyProxy<T extends TraversalStrategy> implement
         return this.strategyName;
     }
 
+    /**
+     * @deprecated
+     * As of 4.0.0, TraversalStrategyProxy is now based around strategy names, instead of strategy classes. For
+     * compatibility, this method will attempt to lookup the strategy name in {@link TraversalStrategies.GlobalCache}.
+     * Use of {@link TraversalStrategyProxy#getStrategyName()} is preferred. If a class object is needed, users should
+     * utilize a mapping of strategy name to strategy class which is appropriate for their environment.
+     */
     @Deprecated
     public Class<T> getStrategyClass() {
         return (Class<T>) TraversalStrategies.GlobalCache.getRegisteredStrategyClass(strategyName).get();
