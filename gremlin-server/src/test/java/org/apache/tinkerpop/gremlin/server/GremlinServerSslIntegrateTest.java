@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
@@ -302,8 +301,6 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
-    // TODO: Add client-side SSL checking.
-    @Ignore("No client side SSL checking")
     @Test
     public void shouldEnableSslAndFailIfCiphersDontMatch() {
         final Cluster cluster = TestClientFactory.build().enableSsl(true).keyStore(JKS_SERVER_KEY).keyStorePassword(KEY_PASS)

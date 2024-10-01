@@ -20,9 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractUntypedCompatibilityTest;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV4;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV4;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
@@ -40,9 +38,9 @@ import java.util.Arrays;
 public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibilityTest {
 
     private static final ObjectMapper mapperV4 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV3.instance()).
+            addRegistry(TinkerIoRegistryV4.instance()).
             typeInfo(TypeInfo.NO_TYPES).
-            addCustomModule(GraphSONXModuleV3.build()).
+            addCustomModule(GraphSONXModuleV4.build()).
             addCustomModule(new AbstractGraphSONMessageSerializerV4.GremlinServerModuleV4()).
         version(GraphSONVersion.V4_0).create().createMapper();
 

@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV4;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
@@ -57,6 +58,7 @@ public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
                     TinkerIoRegistryV1.class,
                     TinkerIoRegistryV2.class,
                     TinkerIoRegistryV3.class,
+                    TinkerIoRegistryV4.class,
                     TinkerProperty.class,
                     TinkerVertex.class,
                     TinkerVertexProperty.class,

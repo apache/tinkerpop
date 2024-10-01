@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TinkerPopJacksonModule;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -262,7 +262,7 @@ public class GraphSONMessageSerializerV4Test {
 
     @Test
     public void shouldRegisterGremlinServerModuleAutomaticallyWithMapper() throws SerializationException {
-        GraphSONMapper.Builder builder = GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV3.build());
+        GraphSONMapper.Builder builder = GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV4.build());
         GraphSONMessageSerializerV4 graphSONMessageSerializerV4 = new GraphSONMessageSerializerV4(builder);
 
         ResponseMessage rm = convert("hello", graphSONMessageSerializerV4);

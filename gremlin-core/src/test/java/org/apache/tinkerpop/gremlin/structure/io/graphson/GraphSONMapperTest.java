@@ -68,7 +68,7 @@ public class GraphSONMapperTest {
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0).addCustomModule(GraphSONXModuleV2.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
                 {"v2-default", GraphSONMapper.build().version(GraphSONVersion.V2_0).addDefaultXModule(true).typeInfo(TypeInfo.NO_TYPES).create().createMapper()}, // alternate construction of v2
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0).addCustomModule(GraphSONXModuleV3.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
-                {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV3.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
+                {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0).addCustomModule(GraphSONXModuleV4.build()).typeInfo(TypeInfo.NO_TYPES).create().createMapper()},
         });
     }
 
