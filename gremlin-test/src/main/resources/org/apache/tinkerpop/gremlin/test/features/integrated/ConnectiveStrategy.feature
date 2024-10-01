@@ -32,15 +32,12 @@ Feature: Step - ConnectiveStrategy
       | v[vadas] |
       | v[josh]  |
 
-#  Scenario: g_withoutStrategiesXConnectiveStrategyX_V_hasXname_markoX_or_whereXinXknowsX_hasXname_markoXX
-#    Given the modern graph
-#    And the traversal of
-#      """
-#      g.withoutStrategies(ConnectiveStrategy).V().has("name","marko").or().where(in("knows").has("name","marko"))
-#      """
-#    When iterated to list
-#    Then the result should be unordered
-#      | result |
-#      | v[marko] |
-#      | v[vadas] |
-#      | v[josh]  |
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withoutStrategiesXConnectiveStrategyX_V_hasXname_markoX_or_whereXinXknowsX_hasXname_markoXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withoutStrategies(ConnectiveStrategy).V().has("name","marko").or().where(in("knows").has("name","marko"))
+      """
+    When iterated to list
+    Then the result should be empty
