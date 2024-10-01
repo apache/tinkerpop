@@ -61,21 +61,4 @@ public class TraversalStrategyProxyTest {
 
         assertEquals("g.withStrategies(new TestStrategy(stringKey:\"stringValue\",intKey:1,booleanKey:true)).V()", traversal.asAdmin().getGremlinLang().getGremlin());
     }
-
-    @Test
-    public void gremlinLangShouldReconstructRegisteredCustomStrategyFromScript() {
-        TraversalStrategies.GlobalCache.registerStrategy(TestStrategy.class);
-
-        Map<String, Object> configMap = new LinkedHashMap<>();
-        configMap.put("stringKey", "stringValue");
-        configMap.put("intKey", 1);
-        configMap.put("booleanKey", true);
-        TraversalStrategyProxy strategyProxy = new TraversalStrategyProxy("TestStrategy", new MapConfiguration(configMap));
-
-        GraphTraversalSource g = EmptyGraph.instance().traversal();
-        GraphTraversal traversal = g.withStrategies(strategyProxy).V();
-
-        //GremlinLangScriptEngine
-    }
-
 }
