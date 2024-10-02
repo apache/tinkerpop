@@ -726,10 +726,11 @@ class TraversalStrategies(object):
 
 
 class TraversalStrategy(object):
-    def __init__(self, strategy_name=None, configuration=None, fqcn=None):
+    def __init__(self, strategy_name=None, configuration=None, fqcn=None, **kwargs):
         self.fqcn = fqcn
         self.strategy_name = type(self).__name__ if strategy_name is None else strategy_name
         self.configuration = {} if configuration is None else configuration
+        self.configuration = {**kwargs, **self.configuration}  # merge additional kwargs into strategy configuration
 
     def apply(self, traversal):
         return

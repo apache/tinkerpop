@@ -21,15 +21,19 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -47,9 +51,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -519,5 +525,61 @@ public class GremlinGroovyScriptEngineTest {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Object values = engine.eval("values");
         assertEquals(Column.values, values);
+    }
+
+    public static class TestStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
+        private final Configuration configuration;
+
+        public TestStrategy(final Map configuration) {
+            this(new MapConfiguration(configuration));
+        }
+
+        private TestStrategy(final Configuration configuration) {
+            this.configuration = configuration;
+        }
+        @Override
+        public void apply(Traversal.Admin traversal) {
+            // Do nothing
+        }
+
+        @Override
+        public Configuration getConfiguration() {
+            return configuration;
+        }
+
+        public static TestStrategy create(Configuration configuration) {
+            return new TestStrategy(configuration);
+        }
+    }
+
+    @Test
+    public void shouldReconstructCustomRegisteredStrategy() throws ScriptException {
+        GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(DefaultImportCustomizer.build().addClassImports(TestStrategy.class).create());
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+
+        GraphTraversal traversal = (GraphTraversal) scriptEngine.eval("g.withStrategies(new TestStrategy(stringKey:\"stringValue\",intKey:1,booleanKey:true)).V()", bindings);
+
+        TestStrategy reconstructedStrategy = traversal.asAdmin().getStrategies().getStrategy(TestStrategy.class).get();
+
+        assertNotNull(reconstructedStrategy);
+
+        MapConfiguration expectedConfig = new MapConfiguration(new HashMap<String, Object>() {{
+            put("stringKey", "stringValue");
+            put("intKey", 1);
+            put("booleanKey", true);
+        }});
+
+        Set<String> expectedKeys = new HashSet<>();
+        Set<String> actualKeys = new HashSet<>();
+        expectedConfig.getKeys().forEachRemaining((key) -> expectedKeys.add(key));
+        reconstructedStrategy.getConfiguration().getKeys().forEachRemaining((key) -> actualKeys.add(key));
+
+        assertEquals(expectedKeys, actualKeys);
+
+        expectedKeys.forEach((key) -> {
+            assertEquals(expectedConfig.get(Object.class, key), reconstructedStrategy.getConfiguration().get(Object.class, key));
+        });
     }
 }
