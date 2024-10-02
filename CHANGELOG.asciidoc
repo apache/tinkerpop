@@ -33,6 +33,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bump Netty to 4.1.100
 * Bump Logback to 1.2.13
 * Bump Ivy to 2.5.2
+* Fixed a memory leak in the Javascript driver when there is a server error response.
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
