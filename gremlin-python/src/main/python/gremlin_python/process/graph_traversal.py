@@ -135,7 +135,7 @@ class GraphTraversalSource(object):
 
         val = True if v is None else v
         if options_strategy is None:
-            options_strategy = OptionsStrategy({k: val})
+            options_strategy = OptionsStrategy(**{k: val})
             source = self.with_strategies(options_strategy)
         else:
             options_strategy[1].configuration[k] = val

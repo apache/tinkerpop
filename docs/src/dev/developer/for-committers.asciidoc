@@ -563,6 +563,7 @@ tag when one is necessary will cause provider tests to fail:
 
 * `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `true` (meaning that it can store `null` values).
+* `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
 * `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the
@@ -583,7 +584,7 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
-* `@With*` - The scenario uses some `with()` based configuration like strategies:
+* `@With*` - The scenario uses some `with()` based configuration like strategies. This includes but is not limited to the following:
 ** `@WithPartitionStrategy`
 ** `@WithProductiveByStrategy`
 ** `@WithReadOnlyStrategy`

@@ -58,7 +58,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'import datetime\n' +
                     'from gremlin_python.statics import long, GremlinType\n' +
                     'from gremlin_python.process.anonymous_traversal import traversal\n' +
-                    'from gremlin_python.process.strategies import SeedStrategy, SubgraphStrategy, PartitionStrategy, ProductiveByStrategy, ReadOnlyStrategy\n' +
+                    'from gremlin_python.process.strategies import *\n' +
                     'from gremlin_python.process.traversal import TraversalStrategy\n' +
                     'from gremlin_python.process.graph_traversal import __\n' +
                     'from gremlin_python.structure.graph import Graph\n' +

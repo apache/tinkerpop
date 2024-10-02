@@ -194,8 +194,9 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append(GO_PACKAGE_NAME).append(ctx.getText()).append("()");
         else {
-            sb.append(GO_PACKAGE_NAME).append(ctx.getChild(1).getText()).append("(");
-            sb.append(GO_PACKAGE_NAME + ctx.getChild(1).getText() + "Config{");
+            String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
+            sb.append(GO_PACKAGE_NAME).append(strategyName).append("(");
+            sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
 
             // get a list of all the arguments to the strategy - i.e. anything not a terminal node
             final List<ParseTree> configs = ctx.children.stream().
