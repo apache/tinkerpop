@@ -2785,7 +2785,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     }
   },
   "status": {
-    "code": "200 OK"
+    "code": 200
   }
 }
 ----
@@ -2847,7 +2847,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     ]
   },
   "status": {
-    "code": "200 OK"
+    "code": 200
   }
 }
 ----
@@ -2866,7 +2866,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     }
   },
   "status": {
-    "code": "500 Internal Server Error",
+    "code": 500,
     "message": "A timeout occurred during traversal evaluation",
     "exception": "ServerTimeoutExceededException"
   }
@@ -2880,7 +2880,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
     "data": []
   },
   "status": {
-    "code": "500 Internal Server Error",
+    "code": 500,
     "message": "A timeout occurred during traversal evaluation",
     "exception": "ServerTimeoutExceededException"
   }
