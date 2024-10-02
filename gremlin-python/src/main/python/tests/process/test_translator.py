@@ -348,7 +348,7 @@ class TestTranslator(object):
         tests.append([g.with_('evaluationTimeout', 500).V().count(),
                       "g.withStrategies(new OptionsStrategy(evaluationTimeout:500)).V().count()"])
         # 96
-        tests.append([g.withStrategies(OptionsStrategy({'evaluationTimeout': 500})).V().count(),
+        tests.append([g.withStrategies(OptionsStrategy(evaluationTimeout=500)).V().count(),
                       "g.withStrategies(new OptionsStrategy(evaluationTimeout:500)).V().count()"])
         # 97
         tests.append([g.withStrategies(

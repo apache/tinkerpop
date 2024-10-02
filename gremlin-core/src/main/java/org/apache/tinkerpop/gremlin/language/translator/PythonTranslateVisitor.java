@@ -78,7 +78,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append(ctx.getText()).append("()");
         else {
-            sb.append(ctx.getChild(1).getText()).append("(");
+            sb.append(ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText()).append("(");
 
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());

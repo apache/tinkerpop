@@ -50,7 +50,9 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressure;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
@@ -77,6 +79,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Connec
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
@@ -89,6 +92,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Earl
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
@@ -99,6 +103,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Comp
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
@@ -251,10 +256,15 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Configurations.class);
         // strategies
         CLASS_IMPORTS.add(ConnectiveStrategy.class);
+        CLASS_IMPORTS.add(ComputerFinalizationStrategy.class);
         CLASS_IMPORTS.add(ElementIdStrategy.class);
         CLASS_IMPORTS.add(EventStrategy.class);
         CLASS_IMPORTS.add(HaltedTraverserStrategy.class);
+        CLASS_IMPORTS.add(InlineFilterStrategy.class);
+        CLASS_IMPORTS.add(MessagePassingReductionStrategy.class);
+        CLASS_IMPORTS.add(OptionsStrategy.class);
         CLASS_IMPORTS.add(PartitionStrategy.class);
+        CLASS_IMPORTS.add(ReservedKeysVerificationStrategy.class);
         CLASS_IMPORTS.add(SubgraphStrategy.class);
         CLASS_IMPORTS.add(LazyBarrierStrategy.class);
         CLASS_IMPORTS.add(MatchAlgorithmStrategy.class);

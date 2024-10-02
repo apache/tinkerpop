@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.translator;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
@@ -112,5 +113,102 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
                 break;
         }
         return null;
+    }
+
+    @Override
+    public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
+        if (ctx.SignedInfLiteral().getText().equals("-Infinity")) {
+            sb.append("Double.NEGATIVE_INFINITY");
+        } else {
+            sb.append("Double.POSITIVE_INFINITY");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
+        if (ctx.getParent() instanceof GremlinParser.GenericLiteralMapNullableArgumentContext) {
+            sb.append("null as Map");
+            return null;
+        }
+
+        sb.append(ctx.getText());
+        return null;
+    }
+
+    @Override
+    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
+        sb.append("[");
+        for (int i = 0; i < ctx.genericLiteral().size(); i++) {
+            final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
+            visit(genericLiteralContext);
+            if (i < ctx.genericLiteral().size() - 1)
+                sb.append(", ");
+        }
+        sb.append("] as Set");
+        return null;
+    }
+
+    @Override
+    public Void visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
+        String literal = ctx.getText();
+        literal = literal.replace("$", "\\$");
+        sb.append(literal);
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
+        if (ctx.getChildCount() == 1) {
+            sb.append(ctx.getText());
+        }
+        else {
+            // 'new' token is optional for gremlin-lang strategy construction, but required in gremlin-groovy
+            if(!ctx.getChild(0).getText().equals("new")) {
+                sb.append("new ");
+            }
+            visitChildren(ctx);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
+        return handleInject(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_inject(final GremlinParser.TraversalMethod_injectContext ctx) {
+        return handleInject(ctx);
+    }
+
+    /*
+    * very special handling for inject with second `null` argument like g.inject(1, null)
+    * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
+    */
+    private Void handleInject(final ParserRuleContext ctx) {
+        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GremlinParser.GenericLiteralVarargsContext) {
+            final GremlinParser.GenericLiteralVarargsContext varArgs = (GremlinParser.GenericLiteralVarargsContext) ctx.getChild(2);
+            if (varArgs.getChildCount() > 2 && "null".equals(varArgs.getChild(2).getText())) {
+                sb.append(ctx.getChild(0).getText());
+                sb.append("(");
+                for (int i = 0; i < varArgs.getChildCount(); i += 2) {
+                    if (i == 2) {
+                        sb.append("(Object) null");
+                    } else {
+                        visit(varArgs.getChild(i));
+                    }
+
+                    if (i < varArgs.getChildCount() - 1) {
+                        sb.append(", ");
+                    }
+                }
+
+                sb.append(")");
+                return null;
+            }
+        }
+
+        return visitChildren(ctx);
     }
 }

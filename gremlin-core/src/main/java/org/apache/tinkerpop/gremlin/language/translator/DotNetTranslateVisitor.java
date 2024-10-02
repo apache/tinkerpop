@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
@@ -244,16 +245,26 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append("new ").append(ctx.getText()).append("()");
         else {
-            sb.append("new ").append(ctx.getChild(1).getText()).append("(");
+            sb.append("new ").append(ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText()).append("(");
 
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
-
-            // the rest are the arguments to the strategy
-            for (int ix = 0; ix < configs.size(); ix++) {
-                visit(configs.get(ix));
-                if (ix < configs.size() - 1)
-                    sb.append(", ");
+            if (configs.size() > 0 && ctx.children.stream().anyMatch(t -> t.getText().equals(OptionsStrategy.class.getSimpleName()))) {
+                sb.append("new Dictionary<string, object> {");
+                for (int ix = 0; ix < configs.size(); ix++) {
+                    sb.append("{\"").append(configs.get(ix).getChild(0).getText());
+                    sb.append("\",");
+                    visit(configs.get(ix).getChild(2));
+                    sb.append("},");
+                }
+                sb.append("}");
+            } else {
+                // the rest are the arguments to the strategy
+                for (int ix = 0; ix < configs.size(); ix++) {
+                    visit(configs.get(ix));
+                    if (ix < configs.size() - 1)
+                        sb.append(", ");
+                }
             }
 
             sb.append(")");;
@@ -268,11 +279,16 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         sb.append(": ");
         visit(ctx.getChild(2));
 
-        // need to convert List to Set for readPartitions until TINKERPOP-3032
+        // need to convert List as needed to deal with fussy things in strategy construction inconsistencies
+        // TINKERPOP-3032 - so messy
         if (ctx.getChild(0).getText().equals("readPartitions")) {
             // find the last "List" in sb and replace it with "HashSet"
             final int ix = sb.lastIndexOf("List<object>");
             sb.replace(ix, ix + 12, "HashSet<string>");
+        } else if (ctx.getChild(0).getText().equals("keys")) {
+            // find the last "List" in sb and replace it with "HashSet"
+            final int ix = sb.lastIndexOf("List<object>");
+            sb.replace(ix, ix + 12, "List<string>");
         }
 
         return null;

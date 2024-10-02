@@ -204,7 +204,7 @@ def test_client_bytecode_options(client):
     # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
     # test perspective because there's no way to access the internals of the strategy via bytecode
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    t = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).V()
+    t = g.withStrategies(OptionsStrategy(**{"x": "test", "y": True})).V()
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6

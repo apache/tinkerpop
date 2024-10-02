@@ -19,7 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -46,6 +49,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
@@ -216,6 +221,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             EarlyLimitStrategy.class,
                             EdgeLabelVerificationStrategy.class,
                             ReservedKeysVerificationStrategy.class,
+                            ReferenceElementStrategy.class,
+                            ComputerFinalizationStrategy.class,
+                            MessagePassingReductionStrategy.class,
+                            ProfileStrategy.class,
+                            VertexProgramRestrictionStrategy.class,
                             //
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
@@ -353,6 +363,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     EarlyLimitStrategy.class,
                     EdgeLabelVerificationStrategy.class,
                     ReservedKeysVerificationStrategy.class,
+                    ReferenceElementStrategy.class,
+                    ComputerFinalizationStrategy.class,
+                    MessagePassingReductionStrategy.class,
+                    ProfileStrategy.class,
+                    VertexProgramRestrictionStrategy.class,
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
@@ -464,6 +479,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             EarlyLimitStrategy.class,
                             EdgeLabelVerificationStrategy.class,
                             ReservedKeysVerificationStrategy.class,
+                            ReferenceElementStrategy.class,
+                            ComputerFinalizationStrategy.class,
+                            MessagePassingReductionStrategy.class,
+                            ProfileStrategy.class,
+                            VertexProgramRestrictionStrategy.class,
                             //
                             GraphFilterStrategy.class,
                             VertexProgramStrategy.class
@@ -587,6 +607,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     EarlyLimitStrategy.class,
                     EdgeLabelVerificationStrategy.class,
                     ReservedKeysVerificationStrategy.class,
+                    ReferenceElementStrategy.class,
+                    ComputerFinalizationStrategy.class,
+                    MessagePassingReductionStrategy.class,
+                    ProfileStrategy.class,
+                    VertexProgramRestrictionStrategy.class,
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class

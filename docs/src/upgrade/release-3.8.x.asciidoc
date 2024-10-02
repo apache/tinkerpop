@@ -140,6 +140,34 @@ removed. As a result, all translators in .NET, Python, Go and Javascript have be
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
+==== Change to `OptionsStrategy` in `gremlin-python`
+
+The `\\__init__()` syntax has been updated to be both more pythonic and more aligned to the `gremlin-lang` syntax.
+Previously, `OptionsStrategy()` took a single argument `options` which was a `dict` of all options to be set.
+Now, all options should be set directly as keyword arguments.
+
+For example:
+
+[source,python]
+----
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options={'key1': 'value1', 'key2': True}))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(key1='value1', key2=True))
+
+myOptions = {'key1': 'value1', 'key2': True}
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options=myOptions))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(**myOptions))
+----
+
+==== Changes to Serialization
+
+The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option
+that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
+types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
+
 ==== Improved handling of integer overflows
 
 Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
