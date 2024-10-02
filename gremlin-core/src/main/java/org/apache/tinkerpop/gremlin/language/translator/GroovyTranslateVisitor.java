@@ -154,6 +154,29 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
+        String literal = ctx.getText();
+        literal = literal.replace("$", "\\$");
+        sb.append(literal);
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
+        if (ctx.getChildCount() == 1) {
+            sb.append(ctx.getText());
+        }
+        else {
+            // 'new' token is optional for gremlin-lang strategy construction, but required in gremlin-groovy
+            if(!ctx.getChild(0).getText().equals("new")) {
+                sb.append("new ");
+            }
+            visitChildren(ctx);
+        }
+        return null;
+    }
+
+    @Override
     public Void visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
         return handleInject(ctx);
     }

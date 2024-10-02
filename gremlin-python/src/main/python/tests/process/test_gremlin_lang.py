@@ -367,7 +367,7 @@ class TestGremlinLang(object):
                       "g.V().count()"])
 
         # 96 Note OptionsStrategy are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_strategies(OptionsStrategy({'evaluationTimeout': 500})).V().count(),
+        tests.append([g.with_strategies(OptionsStrategy(evaluationTimeout=500)).V().count(),
                       "g.V().count()"])
 
         # 97
