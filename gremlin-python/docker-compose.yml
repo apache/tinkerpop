@@ -78,7 +78,7 @@ services:
 
   gremlin-python-package:
     container_name: gremlin-python-package
-    image: python:3.9-bullseye
+    image: python:3.9
     volumes:
       - ${PACKAGE_DIR:-./src/main/python}:/python_package
     working_dir: /python_package
