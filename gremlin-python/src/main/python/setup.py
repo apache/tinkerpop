@@ -60,6 +60,8 @@ setup(
     license='Apache 2',
     url='https://tinkerpop.apache.org',
     description='Gremlin-Python for Apache TinkerPop',
+    maintainer='Apache TinkerPop',
+    maintainer_email='dev@tinkerpop.apache.org',
     long_description=codecs.open("README.rst", "r", "UTF-8").read(),
     long_description_content_type='text/x-rst',
     test_suite="tests",
@@ -83,5 +85,6 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3"
-    ]
+    ],
+    python_requires='>=3.9'
 )
