@@ -424,10 +424,10 @@ JSON String form of UUID.
 
 ==== Edge
 
-JSON Object (required keys are: id, label, inVLabel, outVLabel, inV, outV, properties) +
+JSON Object (required keys are: id, label, inVLabel, outVLabel, inV, outV) +
 "id", "inV", "outV" is any GraphSON 4.0 type +
 "label", "inVLabel", "outVLabel" value is a `g:List` of `String` +
-"properties" is an Object containing Arrays of `g:Property`
+"properties" is an optional Object containing Arrays of `g:Property`
 
 The untyped version has one additional required key "type" which is always "vertex".
 
@@ -534,8 +534,7 @@ two required keys: "vertices" and "edges" +
                   "value": "marko",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ],
@@ -654,8 +653,7 @@ two required keys: "vertices" and "edges" +
                   "value": "stephen",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ],
@@ -751,8 +749,7 @@ two required keys: "vertices" and "edges" +
                   "value": "matthias",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ],
@@ -871,8 +868,7 @@ two required keys: "vertices" and "edges" +
                   "value": "daniel",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ],
@@ -968,8 +964,7 @@ two required keys: "vertices" and "edges" +
                   "value": "gremlin",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ]
@@ -998,8 +993,7 @@ two required keys: "vertices" and "edges" +
                   "value": "tinkergraph",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ]
@@ -1551,8 +1545,7 @@ two required keys: "vertices" and "edges" +
           "outV": {
             "@type": "g:Int32",
             "@value": 10
-          },
-          "properties": {}
+          }
         }
       }
     ]
@@ -1574,8 +1567,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 0,
-            "value": "marko",
-            "properties": {}
+            "value": "marko"
           }
         ],
         "location": [
@@ -1623,8 +1615,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 1,
-            "value": "stephen",
-            "properties": {}
+            "value": "stephen"
           }
         ],
         "location": [
@@ -1664,8 +1655,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 2,
-            "value": "matthias",
-            "properties": {}
+            "value": "matthias"
           }
         ],
         "location": [
@@ -1713,8 +1703,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 3,
-            "value": "daniel",
-            "properties": {}
+            "value": "daniel"
           }
         ],
         "location": [
@@ -1754,8 +1743,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 4,
-            "value": "gremlin",
-            "properties": {}
+            "value": "gremlin"
           }
         ]
       }
@@ -1770,8 +1758,7 @@ two required keys: "vertices" and "edges" +
         "name": [
           {
             "id": 5,
-            "value": "tinkergraph",
-            "properties": {}
+            "value": "tinkergraph"
           }
         ]
       }
@@ -2051,8 +2038,7 @@ two required keys: "vertices" and "edges" +
         "software"
       ],
       "inV": 11,
-      "outV": 10,
-      "properties": {}
+      "outV": 10
     }
   ]
 }
@@ -2098,8 +2084,7 @@ Object with two required keys: "labels" and "objects" +
             },
             "label": [
               "person"
-            ],
-            "properties": {}
+            ]
           }
         },
         {
@@ -2111,8 +2096,7 @@ Object with two required keys: "labels" and "objects" +
             },
             "label": [
               "software"
-            ],
-            "properties": {}
+            ]
           }
         },
         {
@@ -2124,8 +2108,7 @@ Object with two required keys: "labels" and "objects" +
             },
             "label": [
               "software"
-            ],
-            "properties": {}
+            ]
           }
         }
       ]
@@ -2148,24 +2131,21 @@ Object with two required keys: "labels" and "objects" +
       "label": [
         "person"
       ],
-      "type": "vertex",
-      "properties": {}
+      "type": "vertex"
     },
     {
       "id": 10,
       "label": [
         "software"
       ],
-      "type": "vertex",
-      "properties": {}
+      "type": "vertex"
     },
     {
       "id": 11,
       "label": [
         "software"
       ],
-      "type": "vertex",
-      "properties": {}
+      "type": "vertex"
     }
   ]
 }
@@ -2233,8 +2213,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
                   "value": "gremlin",
                   "label": [
                     "name"
-                  ],
-                  "properties": {}
+                  ]
                 }
               }
             ]
@@ -2267,8 +2246,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
                         "value": "tinkergraph",
                         "label": [
                           "name"
-                        ],
-                        "properties": {}
+                        ]
                       }
                     }
                   ]
@@ -2301,8 +2279,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
         "name": [
           {
             "id": 4,
-            "value": "gremlin",
-            "properties": {}
+            "value": "gremlin"
           }
         ]
       }
@@ -2319,8 +2296,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
             "name": [
               {
                 "id": 5,
-                "value": "tinkergraph",
-                "properties": {}
+                "value": "tinkergraph"
               }
             ]
           }
@@ -2337,7 +2313,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
 JSON Object with required keys: "id", "label", "properties" +
 "id" is any GraphSON 4.0 type +
 "label" is a `g:List` of `String` +
-"properties" is an Object containing Arrays of `g:VertexProperty`
+"properties" is an optional Object containing Arrays of `g:VertexProperty`
 
 The untyped version has one additional required key "type" which is always "vertex".
 
@@ -2365,8 +2341,7 @@ The untyped version has one additional required key "type" which is always "vert
             "value": "marko",
             "label": [
               "name"
-            ],
-            "properties": {}
+            ]
           }
         }
       ],
@@ -2477,8 +2452,7 @@ The untyped version has one additional required key "type" which is always "vert
     "name": [
       {
         "id": 0,
-        "value": "marko",
-        "properties": {}
+        "value": "marko"
       }
     ],
     "location": [
@@ -2524,7 +2498,7 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
 "id" is any type GraphSON 4.0 type +
 "value" is any type GraphSON 4.0 type +
 "label" is a `g:List` of `String` +
-"properties" is an Object containing Arrays of "g:Property" (metaproperties)
+"properties" is an optional Object containing Arrays of "g:Property" (metaproperties)
 
 [source,json]
 ----
@@ -2538,8 +2512,7 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
     "value": "marko",
     "label": [
       "name"
-    ],
-    "properties": {}
+    ]
   }
 }
 ----
@@ -2551,8 +2524,7 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
   "value": "marko",
   "label": [
     "name"
-  ],
-  "properties": {}
+  ]
 }
 ----
 
@@ -2683,8 +2655,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
                     "value": "marko",
                     "label": [
                       "name"
-                    ],
-                    "properties": {}
+                    ]
                   }
                 }
               ],
@@ -2805,8 +2776,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
           "name": [
             {
               "id": 0,
-              "value": "marko",
-              "properties": {}
+              "value": "marko"
             }
           ],
           "location": [

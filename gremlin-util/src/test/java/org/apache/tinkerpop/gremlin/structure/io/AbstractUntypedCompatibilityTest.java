@@ -194,15 +194,13 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         final HashMap fromStatic = read(readFromResource(resourceName), HashMap.class);
         final HashMap recycled = read(bytes, HashMap.class);
         assertNotSame(fromStatic, recycled);
-        assertEquals(4, fromStatic.size());
+        assertEquals(3, fromStatic.size());
         assertEquals(resource.id().toString(), fromStatic.get("id").toString());
         assertEquals(Collections.singletonList(resource.key()), fromStatic.get("label"));
         assertEquals(resource.value(), fromStatic.get("value"));
-        assertEquals(Collections.emptyMap(), fromStatic.get("properties"));
-        assertEquals(4, recycled.size());
+        assertEquals(3, recycled.size());
         assertEquals(resource.id().toString(), fromStatic.get("id").toString());
         assertEquals(Collections.singletonList(resource.key()), recycled.get("label"));
         assertEquals(resource.value(), recycled.get("value"));
-        assertEquals(Collections.emptyMap(), recycled.get("properties"));
     }
 }

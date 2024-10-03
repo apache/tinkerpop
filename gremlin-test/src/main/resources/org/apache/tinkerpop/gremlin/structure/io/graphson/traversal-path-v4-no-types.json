@@ -3,17 +3,14 @@
   "objects" : [ {
     "id" : 1,
     "label" : [ "person" ],
-    "type" : "vertex",
-    "properties" : { }
+    "type" : "vertex"
   }, {
     "id" : 10,
     "label" : [ "software" ],
-    "type" : "vertex",
-    "properties" : { }
+    "type" : "vertex"
   }, {
     "id" : 11,
     "label" : [ "software" ],
-    "type" : "vertex",
-    "properties" : { }
+    "type" : "vertex"
   } ]
 }

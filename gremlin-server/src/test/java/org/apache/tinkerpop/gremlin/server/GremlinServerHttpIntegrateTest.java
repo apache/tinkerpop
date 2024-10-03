@@ -1277,7 +1277,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertTrue(node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES).isEmpty());
+            assertNull(node.get("result").get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
         }
     }
 

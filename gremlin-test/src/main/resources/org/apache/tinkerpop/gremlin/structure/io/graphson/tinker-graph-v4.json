@@ -18,8 +18,7 @@
                 "@value" : 0
               },
               "value" : "marko",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -118,8 +117,7 @@
                 "@value" : 1
               },
               "value" : "stephen",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -198,8 +196,7 @@
                 "@value" : 2
               },
               "value" : "matthias",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -298,8 +295,7 @@
                 "@value" : 3
               },
               "value" : "daniel",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -378,8 +374,7 @@
                 "@value" : 4
               },
               "value" : "gremlin",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ]
         }
@@ -401,8 +396,7 @@
                 "@value" : 5
               },
               "value" : "tinkergraph",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ]
         }
@@ -828,8 +822,7 @@
         "outV" : {
           "@type" : "g:Int32",
           "@value" : 10
-        },
-        "properties" : { }
+        }
       }
     } ]
   }

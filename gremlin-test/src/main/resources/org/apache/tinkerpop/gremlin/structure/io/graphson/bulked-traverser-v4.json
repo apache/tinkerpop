@@ -22,8 +22,7 @@
                 "@value" : 5
               },
               "value" : "tinkergraph",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ]
         }

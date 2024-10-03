@@ -15,8 +15,7 @@
             "@value" : 0
           },
           "value" : "marko",
-          "label" : [ "name" ],
-          "properties" : { }
+          "label" : [ "name" ]
         }
       } ],
       "location" : [ {
