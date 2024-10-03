@@ -340,7 +340,11 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         assumeThat(version, not(startsWith("v1")));
 
         final BigInteger o = new BigInteger("123456789987654321123456789987654321");
-        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+        if (version.startsWith("v4")) {
+            assertEquals(o, mapper.readValue("{\"@type\": \"g:BigInteger\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+        } else {
+            assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+        }
     }
 
     @Test
@@ -352,7 +356,11 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         // enforces this approach but leaves open the opportunity to accept either. at some point in the future
         // perhaps it can switch fully - TINKERPOP-2156
         final BigInteger o = new BigInteger("123456789987654321123456789987654321");
-        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        if (version.startsWith("v4")) {
+            assertEquals(o, mapper.readValue("{\"@type\": \"g:BigInteger\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        } else {
+            assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigInteger\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        }
     }
 
     @Test
@@ -426,7 +434,12 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         assumeThat(version, not(startsWith("v1")));
 
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
-        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+
+        if (version.startsWith("v4")) {
+            assertEquals(o, mapper.readValue("{\"@type\": \"g:BigDecimal\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+        } else {
+            assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": \"123456789987654321123456789987654321\"}", Object.class));
+        }
     }
 
     @Test
@@ -438,7 +451,11 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
         // enforces this approach but leaves open the opportunity to accept either. at some point in the future
         // perhaps it can switch fully - TINKERPOP-2156
         final BigDecimal o = new BigDecimal("123456789987654321123456789987654321");
-        assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        if (version.startsWith("v4")) {
+            assertEquals(o, mapper.readValue("{\"@type\": \"g:BigDecimal\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        } else {
+            assertEquals(o, mapper.readValue("{\"@type\": \"gx:BigDecimal\", \"@value\": 123456789987654321123456789987654321}", Object.class));
+        }
     }
 
     @Test

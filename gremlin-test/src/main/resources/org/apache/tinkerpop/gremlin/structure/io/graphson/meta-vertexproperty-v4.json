@@ -6,7 +6,7 @@
       "@value" : 1
     },
     "value" : "stephen",
-    "label" : "person",
+    "label" : [ "person" ],
     "properties" : {
       "a" : "b"
     }
