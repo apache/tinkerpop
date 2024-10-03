@@ -108,6 +108,8 @@ class GraphSONSerializersV4 {
         }
 
         private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
+            if (vertex.keys().size() == 0)
+                return;
             jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
             jsonGenerator.writeStartObject();
 
@@ -172,23 +174,25 @@ class GraphSONSerializersV4 {
             final Iterator<Property<Object>> elementProperties = normalize ?
                     IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
 
-            jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
-            jsonGenerator.writeStartObject();
+            if (elementProperties.hasNext()) {
+                jsonGenerator.writeFieldName(GraphSONTokens.PROPERTIES);
+                jsonGenerator.writeStartObject();
 
-            while (elementProperties.hasNext()) {
-                final Property prop = elementProperties.next();
-                jsonGenerator.writeFieldName(prop.key());
-                jsonGenerator.writeStartArray();
+                while (elementProperties.hasNext()) {
+                    final Property prop = elementProperties.next();
+                    jsonGenerator.writeFieldName(prop.key());
+                    jsonGenerator.writeStartArray();
 
-                if (typeInfo == TypeInfo.NO_TYPES) {
-                    jsonGenerator.writeObject(prop.value());
-                } else {
-                    jsonGenerator.writeObject(prop);
+                    if (typeInfo == TypeInfo.NO_TYPES) {
+                        jsonGenerator.writeObject(prop.value());
+                    } else {
+                        jsonGenerator.writeObject(prop);
+                    }
+
+                    jsonGenerator.writeEndArray();
                 }
-
-                jsonGenerator.writeEndArray();
+                jsonGenerator.writeEndObject();
             }
-            jsonGenerator.writeEndObject();
         }
     }
 
@@ -246,11 +250,14 @@ class GraphSONSerializersV4 {
             // when "detached" you can't check features of the graph it detached from so it has to be
             // treated differently from a regular VertexProperty implementation.
             if (property instanceof DetachedVertexProperty) {
-                writeMetaProperties(property, jsonGenerator, normalize);
+                // only write meta properties key if they exist
+                if (property.properties().hasNext()) {
+                    writeMetaProperties(property, jsonGenerator, normalize);
+                }
             } else {
                 // still attached - so we can check the features to see if it's worth even trying to write the
                 // meta properties key
-                if (property.graph().features().vertex().supportsMetaProperties()) {
+                if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
                     writeMetaProperties(property, jsonGenerator, normalize);
                 }
             }

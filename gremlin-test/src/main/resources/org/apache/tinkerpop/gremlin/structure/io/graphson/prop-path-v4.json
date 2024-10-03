@@ -33,8 +33,7 @@
                   "@value" : 0
                 },
                 "value" : "marko",
-                "label" : [ "name" ],
-                "properties" : { }
+                "label" : [ "name" ]
               }
             } ],
             "location" : [ {
@@ -133,8 +132,7 @@
                   "@value" : 4
                 },
                 "value" : "gremlin",
-                "label" : [ "name" ],
-                "properties" : { }
+                "label" : [ "name" ]
               }
             } ]
           }
@@ -156,8 +154,7 @@
                   "@value" : 5
                 },
                 "value" : "tinkergraph",
-                "label" : [ "name" ],
-                "properties" : { }
+                "label" : [ "name" ]
               }
             } ]
           }

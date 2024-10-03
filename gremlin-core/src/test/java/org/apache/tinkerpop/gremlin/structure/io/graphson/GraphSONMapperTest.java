@@ -93,7 +93,7 @@ public class GraphSONMapperTest {
         else if (version.startsWith("v2"))
             assertEquals("{\"id\":123,\"label\":\"person\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"label\":\"name\"}],\"age\":[{\"id\":1,\"value\":\"31\",\"label\":\"age\"}]}}", json);
         else if (version.startsWith("v4"))
-            assertEquals("{\"id\":123,\"label\":[\"person\"],\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"properties\":{}}],\"age\":[{\"id\":1,\"value\":\"31\",\"properties\":{}}]}}", json);
+            assertEquals("{\"id\":123,\"label\":[\"person\"],\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\"}],\"age\":[{\"id\":1,\"value\":\"31\"}]}}", json);
         else
             throw new IllegalStateException("Version not accounted for in asserts");
     }
@@ -146,7 +146,7 @@ public class GraphSONMapperTest {
         final VertexProperty p = new DetachedVertexProperty(123L, "name", "alice", Collections.emptyMap(), v);
         final String json = mapper.writeValueAsString(p);
         if (version.startsWith("v4")) {
-            assertEquals("{\"id\":123,\"value\":\"alice\",\"label\":[\"name\"],\"properties\":{}}", json);
+            assertEquals("{\"id\":123,\"value\":\"alice\",\"label\":[\"name\"]}", json);
         } else {
             assertEquals("{\"id\":123,\"value\":\"alice\",\"label\":\"name\"}", json);
         }
@@ -165,7 +165,7 @@ public class GraphSONMapperTest {
         if (version.startsWith("v1") || version.startsWith("v3"))
             assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":\"person\",\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\"}],\"age\":[{\"id\":1,\"value\":\"31\"}]}},123,\"alice\"]}", json);
         else if (version.startsWith("v4"))
-            assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":[\"person\"],\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"properties\":{}}],\"age\":[{\"id\":1,\"value\":\"31\",\"properties\":{}}]}},123,\"alice\"]}", json);
+            assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":[\"person\"],\"type\":\"vertex\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\"}],\"age\":[{\"id\":1,\"value\":\"31\"}]}},123,\"alice\"]}", json);
         else
             assertEquals("{\"labels\":[[\"a\"],[\"b\"],[\"c\"]],\"objects\":[{\"id\":123,\"label\":\"person\",\"properties\":{\"name\":[{\"id\":1,\"value\":\"alice\",\"label\":\"name\"}],\"age\":[{\"id\":1,\"value\":\"31\",\"label\":\"age\"}]}},123,\"alice\"]}", json);
     }

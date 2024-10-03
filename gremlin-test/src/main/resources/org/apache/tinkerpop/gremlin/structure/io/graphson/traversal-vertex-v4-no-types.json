@@ -5,8 +5,7 @@
   "properties" : {
     "name" : [ {
       "id" : 0,
-      "value" : "marko",
-      "properties" : { }
+      "value" : "marko"
     } ],
     "location" : [ {
       "id" : 6,

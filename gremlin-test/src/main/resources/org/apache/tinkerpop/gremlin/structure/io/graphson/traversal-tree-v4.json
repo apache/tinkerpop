@@ -18,8 +18,7 @@
                 "@value" : 4
               },
               "value" : "gremlin",
-              "label" : [ "name" ],
-              "properties" : { }
+              "label" : [ "name" ]
             }
           } ]
         }
@@ -45,8 +44,7 @@
                     "@value" : 5
                   },
                   "value" : "tinkergraph",
-                  "label" : [ "name" ],
-                  "properties" : { }
+                  "label" : [ "name" ]
                 }
               } ]
             }
