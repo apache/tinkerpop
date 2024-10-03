@@ -45,15 +45,22 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
+    private boolean userProvidedLabel;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
         this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
+        userProvidedLabel = label != null;
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
         super(traversal);
         this.parameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
+        userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    public boolean hasUserProvidedLabel() {
+        return userProvidedLabel;
     }
 
     @Override
@@ -73,6 +80,8 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     @Override
     public void configure(final Object... keyValues) {
+        if (keyValues[0] == T.label) userProvidedLabel = true;
+
         if (keyValues[0] == T.label && this.parameters.contains(T.label)) {
             if (this.parameters.contains(T.label, Vertex.DEFAULT_LABEL)) {
                 this.parameters.remove(T.label);
@@ -127,6 +136,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     public AddVertexStep<S> clone() {
         final AddVertexStep<S> clone = (AddVertexStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
+        clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
     }
 }

@@ -50,15 +50,22 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     private Parameters parameters = new Parameters();
     private boolean first = true;
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
+    private boolean userProvidedLabel;
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
         this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
+        userProvidedLabel = label != null;
     }
 
     public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, String> vertexLabelTraversal) {
         super(traversal);
         this.parameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
+        userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    public boolean hasUserProvidedLabel() {
+        return userProvidedLabel;
     }
 
     @Override
@@ -142,6 +149,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     public AddVertexStartStep clone() {
         final AddVertexStartStep clone = (AddVertexStartStep) super.clone();
         clone.parameters = this.parameters.clone();
+        clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
     }
 }
