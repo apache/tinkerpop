@@ -1,11 +1,12 @@
 {
   "id" : 1,
-  "label" : "person",
+  "label" : [ "person" ],
   "type" : "vertex",
   "properties" : {
     "name" : [ {
       "id" : 0,
-      "value" : "marko"
+      "value" : "marko",
+      "properties" : { }
     } ],
     "location" : [ {
       "id" : 6,

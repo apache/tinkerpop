@@ -1,4 +1,4 @@
 {
-  "@type" : "gx:OffsetDateTime",
+  "@type" : "g:OffsetDateTime",
   "@value" : "+999999999-12-31T23:59:59.999999999-18:00"
 }

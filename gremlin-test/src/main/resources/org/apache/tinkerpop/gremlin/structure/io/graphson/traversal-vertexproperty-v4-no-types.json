@@ -1,5 +1,6 @@
 {
   "id" : 0,
   "value" : "marko",
-  "label" : "name"
+  "label" : [ "name" ],
+  "properties" : { }
 }
