@@ -19,7 +19,7 @@
 Feature: Step - SeedStrategy
 
   @WithSeedStrategy @InsertionOrderingRequired
-  Scenario: g_withStrategiesXSeedStrategyX_V
+  Scenario: g_withStrategiesXSeedStrategyX_V_coinX0.5X
     Given the modern graph
     And the traversal of
       """
