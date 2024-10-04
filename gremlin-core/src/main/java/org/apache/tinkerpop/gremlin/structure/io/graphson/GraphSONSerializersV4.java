@@ -161,12 +161,19 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
             writeLabel(jsonGenerator, GraphSONTokens.LABEL, edge.label());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.EDGE);
-            writeLabel(jsonGenerator, GraphSONTokens.IN_LABEL, edge.inVertex().label());
-            writeLabel(jsonGenerator, GraphSONTokens.OUT_LABEL, edge.outVertex().label());
-            jsonGenerator.writeObjectField(GraphSONTokens.IN, edge.inVertex().id());
-            jsonGenerator.writeObjectField(GraphSONTokens.OUT, edge.outVertex().id());
+            writeVertex(GraphSONTokens.IN, edge.inVertex(), jsonGenerator);
+            writeVertex(GraphSONTokens.OUT, edge.outVertex(), jsonGenerator);
             writeProperties(edge, jsonGenerator);
 
+            jsonGenerator.writeEndObject();
+        }
+
+        private static void writeVertex(final String vertexDirection, final Vertex v, final JsonGenerator jsonGenerator)
+                throws IOException {
+            jsonGenerator.writeFieldName(vertexDirection);
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField(GraphSONTokens.ID, v.id());
+            writeLabel(jsonGenerator, GraphSONTokens.LABEL, v.label());
             jsonGenerator.writeEndObject();
         }
 
@@ -501,8 +508,6 @@ class GraphSONSerializersV4 {
         @Override
         public Edge deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
             final DetachedEdge.Builder e = DetachedEdge.build();
-            final DetachedVertex.Builder inV = DetachedVertex.build();
-            final DetachedVertex.Builder outV = DetachedVertex.build();
             while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals(GraphSONTokens.ID)) {
                     jsonParser.nextToken();
@@ -514,20 +519,10 @@ class GraphSONSerializersV4 {
                     }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
                     jsonParser.nextToken();
-                    outV.setId(deserializationContext.readValue(jsonParser, Object.class));
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT_LABEL)) {
-                    jsonParser.nextToken();
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                        outV.setLabel(jsonParser.getText());
-                    }
+                    e.setOutV((DetachedVertex) deserializationContext.readValue(jsonParser, Vertex.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN)) {
                     jsonParser.nextToken();
-                    inV.setId(deserializationContext.readValue(jsonParser, Object.class));
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.IN_LABEL)) {
-                    jsonParser.nextToken();
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                        inV.setLabel(jsonParser.getText());
-                    }
+                    e.setInV((DetachedVertex) deserializationContext.readValue(jsonParser, Vertex.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
                     while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
@@ -538,9 +533,6 @@ class GraphSONSerializersV4 {
                     }
                 }
             }
-
-            e.setInV(inV.create());
-            e.setOutV(outV.create());
 
             return e.create();
         }
