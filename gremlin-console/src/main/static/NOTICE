@@ -29,7 +29,7 @@ Licensed under the Creative Commons Attribution Licence v2.5
 http://creativecommons.org/licenses/by/2.5/
 
 ------------------------------------------------------------------------
-Apache Ivy 2.5.1 (AL ASF)
+Apache Ivy 2.5.2 (AL ASF)
 ------------------------------------------------------------------------
 Portions of Ivy were originally developed by
 Jayasoft SARL (http://www.jayasoft.fr/)
@@ -91,7 +91,7 @@ JavaTuples 1.2
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty 4.1.96
+Netty 4.1.100
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
