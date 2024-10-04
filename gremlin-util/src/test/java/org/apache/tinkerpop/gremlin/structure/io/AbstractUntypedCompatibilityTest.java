@@ -59,17 +59,17 @@ public abstract class AbstractUntypedCompatibilityTest extends AbstractCompatibi
         assertEquals(resource.id(), fromStatic.get("id"));
         assertEquals(Collections.singletonList(resource.label()), fromStatic.get("label"));
         assertEquals(resource.id(), fromStatic.get("id"));
-        assertEquals(Collections.singletonList(resource.inVertex().label()), fromStatic.get("inVLabel"));
-        assertEquals(Collections.singletonList(resource.outVertex().label()), fromStatic.get("outVLabel"));
-        assertEquals(resource.inVertex().id(), fromStatic.get("inV"));
-        assertEquals(resource.outVertex().id(), fromStatic.get("outV"));
+        assertEquals(Collections.singletonList(resource.inVertex().label()), ((Map) fromStatic.get("inV")).get("label"));
+        assertEquals(Collections.singletonList(resource.outVertex().label()), ((Map) fromStatic.get("outV")).get("label"));
+        assertEquals(resource.inVertex().id(), ((Map) fromStatic.get("inV")).get("id"));
+        assertEquals(resource.outVertex().id(), ((Map) fromStatic.get("outV")).get("id"));
         assertEquals(resource.id(), recycled.get("id"));
         assertEquals(Collections.singletonList(resource.label()), recycled.get("label"));
         assertEquals(resource.id(), recycled.get("id"));
-        assertEquals(Collections.singletonList(resource.inVertex().label()), recycled.get("inVLabel"));
-        assertEquals(Collections.singletonList(resource.outVertex().label()), recycled.get("outVLabel"));
-        assertEquals(resource.inVertex().id(), recycled.get("inV"));
-        assertEquals(resource.outVertex().id(), recycled.get("outV"));
+        assertEquals(Collections.singletonList(resource.inVertex().label()), ((Map) recycled.get("inV")).get("label"));
+        assertEquals(Collections.singletonList(resource.outVertex().label()), ((Map) recycled.get("outV")).get("label"));
+        assertEquals(resource.inVertex().id(), ((Map) recycled.get("inV")).get("id"));
+        assertEquals(resource.outVertex().id(), ((Map) recycled.get("outV")).get("id"));
 
         // deal with incompatibilities
         if (getCompatibility().equals("v1-no-types") || getCompatibility().equals("v3-no-types")) {
