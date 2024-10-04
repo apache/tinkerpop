@@ -74,6 +74,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Added DefaultIdManager.STRING for proper string id creation/handling.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
 * Fixed bug in Bytecode build logic where duplicate strategies were added instead of replacing the existing ones.
+* Bump Groovy to 4.0.23
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
@@ -373,7 +374,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * The default logging level for Gremlin Console in Windows is set to the same WARN level as for Linux.
 * Updated to Docker Compose V2 with `docker-compose` changed to `docker compose` in pom and script files.
 * Add command line option `-l` to change logging level for Gremlin Console in Windows.
-* * Upgraded `gremlin-go` to Go 1.22.
+* Upgraded `gremlin-go` to Go 1.22.
+* Bump Netty to 4.1.100
+* Bump Logback to 1.2.13
+* Bump Ivy to 2.5.2
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
