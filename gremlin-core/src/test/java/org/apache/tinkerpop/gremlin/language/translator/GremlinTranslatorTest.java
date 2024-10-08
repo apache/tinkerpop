@@ -657,7 +657,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy)",  // javascript needs TINKERPOP-3055
-                            "g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy')])"},
+                            "g.without_strategies(ReadOnlyStrategy)"},
                     {"g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",
                             null,
                             null,
@@ -666,7 +666,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class, PathRetractionStrategy.class, FilterRankingStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",  // javascript - needs TINKERPOP-3055
-                            "g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'), GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy'), GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy')])"},
+                            "g.without_strategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)"},
                     {"g.inject(0..5)",
                             null,
                             "g.inject(number0..number1)",
