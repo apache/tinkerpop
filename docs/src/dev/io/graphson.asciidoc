@@ -308,7 +308,7 @@ version converts complex types to JSON String.
       "@value": 123
     },
     {
-      "@type": "g:OffsetDateTime",
+      "@type": "g:DateTime",
       "@value": "2024-09-02T10:30Z"
     },
     "red"
