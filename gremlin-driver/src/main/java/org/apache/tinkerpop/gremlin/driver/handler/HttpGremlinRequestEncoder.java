@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -68,6 +69,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                     requestMessage));
         }
 
+        final InetSocketAddress remoteAddress = getRemoteAddress(channelHandlerContext.channel());
         try {
             final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
             FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
@@ -75,7 +77,7 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
             request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
             request.headers().add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.DEFLATE);
-            request.headers().add(HttpHeaderNames.HOST, ((InetSocketAddress) channelHandlerContext.channel().remoteAddress()).getAddress().getHostAddress());
+            request.headers().add(HttpHeaderNames.HOST, remoteAddress.getAddress().getHostAddress());
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
             }
@@ -94,5 +96,17 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
                     "An error occurred during authentication [%s] - it could not be sent to the server - Reason: %s",
                     requestMessage, ex));
         }
+    }
+
+    private static InetSocketAddress getRemoteAddress(Channel channel) {
+        final InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        if (remoteAddress == null) {
+            final Throwable sslException = channel.attr(GremlinResponseHandler.INBOUND_SSL_EXCEPTION).get();
+            if (sslException != null) {
+                throw new RuntimeException("Request cannot be serialized because the channel is not connected due to an ssl error.", sslException);
+            }
+            throw new RuntimeException("Request cannot be serialized because the channel is not connected");
+        }
+        return remoteAddress;
     }
 }
