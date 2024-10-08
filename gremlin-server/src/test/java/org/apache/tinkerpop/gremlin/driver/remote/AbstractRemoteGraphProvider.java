@@ -334,7 +334,7 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
 
     public static Cluster.Builder createClusterBuilder(final Serializers serializer) {
         // bigger buffer for some tests
-        return TestClientFactory.build().maxResponseContentLength(10_000_000).serializer(serializer);
+        return TestClientFactory.build().maxResponseContentLength(12_000_000).serializer(serializer);
     }
 
     public static void startServer() throws Exception {
