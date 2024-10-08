@@ -81,6 +81,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -106,6 +107,10 @@ public abstract class AbstractRoundTripTest {
 
         final Map<String, Map<String, Integer>> nestedMap = new HashMap<>();
         nestedMap.put("first", map);
+
+        final Map<String, Integer> orderedMap = new LinkedHashMap<>();
+        map.put("one", 1);
+        map.put("two", 2);
 
         final List<Object> list = new ArrayList<>();
         list.add("string 1");
@@ -214,7 +219,8 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"ListSingle", list, null},
                 new Object[] {"ListNested", nestedList, null},
                 new Object[] {"Map", map, null},
-                new Object[] {"Map", nestedMap, null},
+                new Object[] {"MapNested", nestedMap, null},
+                new Object[] {"OrderedMap", orderedMap, null},
                 new Object[] {"Set", set, null},
                 new Object[] {"SetNested", nestedSet, null});
     }
