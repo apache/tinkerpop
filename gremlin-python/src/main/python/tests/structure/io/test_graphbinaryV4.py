@@ -19,6 +19,7 @@ under the License.
 
 import uuid
 import math
+from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
@@ -146,6 +147,13 @@ class TestGraphBinaryV4(object):
 
         x = {"ripple": [], "peter": ["created"], "noone": ["blah"], "vadas": [],
              "josh": ["created", "created"], "lop": [], "marko": [666, "created", "knows", "knows"]}
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_ordered_dict(self):
+        x = OrderedDict()
+        x['a'] = 1
+        x['b'] = 2
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 

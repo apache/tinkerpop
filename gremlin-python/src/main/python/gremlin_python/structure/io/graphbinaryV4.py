@@ -171,7 +171,7 @@ class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
     graphbinary_type = None
 
     @classmethod
-    def prefix_bytes(cls, graphbin_type, as_value=False, nullable=True, to_extend=None):
+    def prefix_bytes(cls, graphbin_type, as_value=False, nullable=True, to_extend=None, ordered=False):
         if to_extend is None:
             to_extend = bytearray()
 
@@ -179,7 +179,10 @@ class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
             to_extend += uint8_pack(graphbin_type.value)
 
         if nullable:
-            to_extend += int8_pack(0)
+            if ordered:
+                to_extend += int8_pack(2)
+            else:
+                to_extend += int8_pack(0)
 
         return to_extend
 
@@ -483,7 +486,7 @@ class MapIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend, ordered=isinstance(obj, OrderedDict))
 
         to_extend.extend(int32_pack(len(obj)))
         for k, v in obj.items():
@@ -494,12 +497,19 @@ class MapIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_map, nullable)
+        flag = 0x00
+        if nullable:
+            flag = buff.read(1)[0]
+            if flag == 0x01:
+                return None
+            else:
+                return cls._read_map(buff, reader, flag)
+        return cls._read_map(buff, reader, flag)
 
     @classmethod
-    def _read_map(cls, b, r):
+    def _read_map(cls, b, r, flag):
         size = cls.read_int(b)
-        the_dict = {}
+        the_dict = OrderedDict() if flag == 0x02 else {}
         while size > 0:
             k = HashableDict.of(r.read_object(b))
             v = r.read_object(b)
