@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -36,15 +37,15 @@ import java.util.Set;
  */
 public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements TraversalParent {
 
-    private Date value;
-    private Traversal.Admin<S, Date> dateTraversal;
+    private OffsetDateTime value;
+    private Traversal.Admin<S, OffsetDateTime> dateTraversal;
 
-    public DateDiffStep(final Traversal.Admin traversal, final Date value) {
+    public DateDiffStep(final Traversal.Admin traversal, final OffsetDateTime value) {
         super(traversal);
         this.value = value;
     }
 
-    public DateDiffStep(final Traversal.Admin traversal, final Traversal<?, Date> dateTraversal) {
+    public DateDiffStep(final Traversal.Admin traversal, final Traversal<?, OffsetDateTime> dateTraversal) {
         super(traversal);
         this.dateTraversal = this.integrateChild(dateTraversal.asAdmin());
     }
@@ -53,17 +54,17 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     protected Long map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
 
-        if (!(object instanceof Date))
+        if (!(object instanceof OffsetDateTime))
             throw new IllegalArgumentException(
-                    String.format("DateDiff can only take Date as argument, encountered %s", object.getClass()));
+                    String.format("DateDiff can only take DateTime as argument, encountered %s", object.getClass()));
 
-        final Date otherDate = value != null ? value :
+        final OffsetDateTime otherDate = value != null ? value :
                 dateTraversal != null ? TraversalUtil.apply(traverser, dateTraversal) : null;
 
         // let's not throw exception and assume null date == 0
-        final long otherDateMs = otherDate == null ? 0 : otherDate.getTime();
+        final long otherDateMs = otherDate == null ? 0 : otherDate.toEpochSecond();
 
-        return (((Date) object).getTime() - otherDateMs) / 1000;
+        return (((OffsetDateTime) object).toEpochSecond() - otherDateMs);
     }
 
     @Override
@@ -96,11 +97,11 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
         return StringFactory.stepString(this);
     }
 
-    public Date getValue() {
+    public OffsetDateTime getValue() {
         return this.value;
     }
 
-    public Traversal.Admin<S, Date> getDateTraversal() {
+    public Traversal.Admin<S, OffsetDateTime> getDateTraversal() {
         return this.dateTraversal;
     }
 }

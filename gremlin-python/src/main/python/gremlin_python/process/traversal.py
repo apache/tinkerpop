@@ -19,16 +19,11 @@
 
 import copy
 import math
-import numbers
-import re
 import threading
 import warnings
-from io import StringIO
 
 from aenum import Enum
-# from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Vertex
-# from gremlin_python.process.gremlin_lang import GremlinLang
 
 from .. import statics
 from ..statics import long, SingleByte, short, bigint, BigDecimal
@@ -746,132 +741,6 @@ class TraversalStrategy(object):
 
     def __repr__(self):
         return self.strategy_name
-
-
-'''
-BYTECODE
-'''
-
-
-# TODO to be removed
-class Bytecode(object):
-    def __init__(self, bytecode=None):
-        self.source_instructions = []
-        self.step_instructions = []
-        self.bindings = {}
-        if bytecode is not None:
-            self.source_instructions = list(bytecode.source_instructions)
-            self.step_instructions = list(bytecode.step_instructions)
-
-    def add_source(self, source_name, *args):
-        instruction = [source_name]
-        for arg in args:
-            instruction.append(self.__convertArgument(arg))
-        self.source_instructions.append(instruction)
-
-    def add_step(self, step_name, *args):
-        instruction = [step_name]
-        for arg in args:
-            instruction.append(self.__convertArgument(arg))
-        self.step_instructions.append(instruction)
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.source_instructions == other.source_instructions and self.step_instructions == other.step_instructions
-        else:
-            return False
-
-    def __copy__(self):
-        bb = Bytecode()
-        bb.source_instructions = self.source_instructions
-        bb.step_instructions = self.step_instructions
-        bb.bindings = self.bindings
-        return bb
-
-    def __deepcopy__(self, memo={}):
-        bb = Bytecode()
-        bb.source_instructions = copy.deepcopy(self.source_instructions, memo)
-        bb.step_instructions = copy.deepcopy(self.step_instructions, memo)
-        bb.bindings = copy.deepcopy(self.bindings, memo)
-        return bb
-
-    def __convertArgument(self, arg):
-        if isinstance(arg, Traversal):
-            if arg.graph is not None:
-                raise TypeError("The child traversal of " + str(
-                    arg) + " was not spawned anonymously - use the __ class rather than a TraversalSource to construct the child traversal")
-            self.bindings.update(arg.bytecode.bindings)
-            return arg.bytecode
-        elif isinstance(arg, dict):
-            newDict = {}
-            for key in arg:
-                newDict[self.__convertArgument(key)] = self.__convertArgument(arg[key])
-            return newDict
-        elif isinstance(arg, list):
-            newList = []
-            for item in arg:
-                newList.append(self.__convertArgument(item))
-            return newList
-        elif isinstance(arg, set):
-            newSet = set()
-            for item in arg:
-                newSet.add(self.__convertArgument(item))
-            return newSet
-        elif isinstance(arg, Binding):
-            self.bindings[arg.key] = arg.value
-            return Binding(arg.key, self.__convertArgument(arg.value))
-        else:
-            return arg
-
-    def __repr__(self):
-        return (str(self.source_instructions) if len(self.source_instructions) > 0 else "") + \
-            (str(self.step_instructions) if len(self.step_instructions) > 0 else "")
-
-    @staticmethod
-    def _create_graph_op(name, *values):
-        bc = Bytecode()
-        bc.add_source(name, *values)
-        return bc
-
-    @staticmethod
-    class GraphOp:
-        @staticmethod
-        def commit():
-            return Bytecode._create_graph_op("tx", "commit")
-
-        @staticmethod
-        def rollback():
-            return Bytecode._create_graph_op("tx", "rollback")
-
-
-'''
-BINDINGS
-'''
-
-
-# TODO to be removed
-class Bindings(object):
-
-    @staticmethod
-    def of(key, value):
-        if not isinstance(key, str):
-            raise TypeError("Key must be str")
-        return Binding(key, value)
-
-
-class Binding(object):
-    def __init__(self, key, value):
-        self.key = key
-        self.value = value
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.key == other.key and self.value == other.value
-
-    def __hash__(self):
-        return hash(self.key) + hash(self.value)
-
-    def __repr__(self):
-        return "binding[" + self.key + "=" + str(self.value) + "]"
 
 
 '''

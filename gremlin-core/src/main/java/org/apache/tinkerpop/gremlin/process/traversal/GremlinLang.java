@@ -35,6 +35,7 @@ import javax.lang.model.SourceVersion;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -135,8 +136,8 @@ public class GremlinLang implements Cloneable, Serializable {
         if (arg instanceof BigDecimal)
             return String.format("%sM", arg);
 
-        if (arg instanceof Date)
-            return String.format("datetime(\"%s\")", format(((Date) arg).toInstant()));
+        if (arg instanceof OffsetDateTime)
+            return String.format("datetime(\"%s\")", format(((OffsetDateTime) arg).toInstant()));
 
         if (arg instanceof Enum) {
             // special handling for enums with additional interfaces

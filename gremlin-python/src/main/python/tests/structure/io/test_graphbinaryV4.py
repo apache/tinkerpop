@@ -17,14 +17,14 @@ specific language governing permissions and limitations
 under the License.
 """
 
-import datetime
 import uuid
 import math
 
-from gremlin_python.statics import timestamp, long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
+from datetime import datetime, timedelta, timezone
+from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge, Direction
+from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
 
 
@@ -79,13 +79,25 @@ class TestGraphBinaryV4(object):
         assert x.scale == output.scale
         assert x.unscaled_value == output.unscaled_value
 
-    def test_date(self):
-        x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
+    def test_datetime(self):
+        tz = timezone(timedelta(seconds=36000))
+        ms = 12345678912
+        x = datetime(2022, 5, 20, tzinfo=tz) + timedelta(microseconds=ms)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
-    def test_timestamp(self):
-        x = timestamp(1481750076295 / 1000)
+    def test_datetime_format(self):
+        x = datetime.strptime('2022-05-20T03:25:45.678912Z', '%Y-%m-%dT%H:%M:%S.%f%z')
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_datetime_local(self):
+        x = datetime.now().astimezone()
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_datetime_epoch(self):
+        x = datetime.fromtimestamp(1690934400).astimezone(timezone.utc)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
@@ -168,16 +180,6 @@ class TestGraphBinaryV4(object):
         x = VertexProperty(123, "name", "stephen", None)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
-        
-    def test_barrier(self):
-        x = Barrier.norm_sack
-        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
-        assert x == output
-
-    def test_merge(self):
-        x = Merge.on_match
-        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
-        assert x == output
 
     def test_direction(self):
         x = Direction.OUT
@@ -185,19 +187,6 @@ class TestGraphBinaryV4(object):
         assert x == output
 
         x = Direction.from_
-        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
-        assert x == output
-
-    def test_binding(self):
-        x = Binding("name", "marko")
-        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
-        assert x == output
-
-    def test_bytecode(self):
-        x = Bytecode()
-        x.source_instructions.append(["withStrategies", "SubgraphStrategy"])
-        x.step_instructions.append(["V", 1, 2, 3])
-        x.step_instructions.append(["out"])
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
@@ -230,7 +219,7 @@ class TestGraphBinaryV4(object):
         assert x == output
 
     def test_duration(self):
-        x = datetime.timedelta(seconds=1000, microseconds=1000)
+        x = timedelta(seconds=1000, microseconds=1000)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 

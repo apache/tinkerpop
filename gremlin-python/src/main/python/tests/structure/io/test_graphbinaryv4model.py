@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+import pytest
 
 """
 Round trip testing of GraphBinaryV4 compared to a correct "model".
@@ -145,6 +146,7 @@ def test_var_type_list():
 def test_empty_list():
     run("empty-list")
 
+@pytest.mark.skip(reason="Date has been removed in GraphBinary, need to update test files")
 def test_var_type_map():
     # can't write tuple
     run_read("var-type-map")

@@ -933,6 +933,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
      * Reproducer for TINKERPOP-2765.
      */
     @Test
+    @Ignore("Lambda is no longer supported in serialization")
     public void shouldHandleMultipleLambdaTranslationsInParallel() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
