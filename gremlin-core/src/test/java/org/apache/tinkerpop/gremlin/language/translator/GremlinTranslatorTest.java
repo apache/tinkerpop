@@ -469,12 +469,12 @@ public class GremlinTranslatorTest {
                     {"g.with('x', datetime('2023-08-02T00:00:00Z'))",
                             null,
                             "g.with(string0, date0)",
-                            "g.With(\"x\", DateTimeOffset.FromUnixTimeMilliseconds(1690934400000))",
-                            "g.With(\"x\", time.UnixMilli(1690934400000))",
+                            "g.With(\"x\", DateTimeOffset.FromUnixTimeMilliseconds(1690934400000))", // todo: .net need update
+                            "g.With(\"x\", time.UnixMilli(1690934400000))", // todo: go need update
                             null,
-                            "g.with(\"x\", new Date(1690934400000))",
-                            "g.with_(\"x\", new Date(1690934400000))",
-                            "g.with_('x', datetime.datetime.utcfromtimestamp(1690934400000 / 1000.0))"},
+                            "g.with(\"x\", OffsetDateTime.parse(\"2023-08-02T00:00Z\"))",
+                            "g.with_(\"x\", new Date(1690934400000))",   // todo: js need update
+                            "g.with_('x', datetime.datetime.fromtimestamp(1690934400).astimezone(datetime.timezone.utc))"},
                     {"g.with('x', [x: 1])",
                             "g.with('x', [x:1])",
                             "g.with(string0, map0)",

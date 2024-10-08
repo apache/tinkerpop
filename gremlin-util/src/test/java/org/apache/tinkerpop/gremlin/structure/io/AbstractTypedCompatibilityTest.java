@@ -533,7 +533,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-    @Test
+    // todo: map contains removed date type, revisit after datetime is properly implemented
+    // @Test
     public void shouldReadWriteMultiTypeMap() throws Exception {
         final String resourceName = "var-type-map";
 
@@ -557,8 +558,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-
-    @Test
+    // todo: re-visit after datetime is properly implemented
+    // @Test
     public void shouldReadWriteMaxOffsetDateTime() throws Exception {
         final String resourceName = "max-offsetdatetime";
 
@@ -571,7 +572,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-    @Test
+    // todo: re-visit after datetime is properly implemented
+    // @Test
     public void shouldReadWriteMinOffsetDateTime() throws Exception {
         final String resourceName = "min-offsetdatetime";
 

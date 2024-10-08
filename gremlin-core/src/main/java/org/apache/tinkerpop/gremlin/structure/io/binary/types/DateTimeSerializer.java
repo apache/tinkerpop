@@ -24,23 +24,33 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
-import java.time.YearMonth;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class YearMonthSerializer extends SimpleTypeSerializer<YearMonth> {
-    public YearMonthSerializer() {
-        super(DataType.YEARMONTH);
+public class DateTimeSerializer extends SimpleTypeSerializer<OffsetDateTime> {
+    public DateTimeSerializer() {
+        super(DataType.DATETIME);
     }
 
     @Override
-    protected YearMonth readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        return YearMonth.of(buffer.readInt(), buffer.readByte());
+    protected OffsetDateTime readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        final LocalDate localDate = LocalDate.of(buffer.readInt(), buffer.readByte(), buffer.readByte());
+        final LocalTime localTime = LocalTime.ofNanoOfDay(buffer.readLong());
+        final LocalDateTime ldt = LocalDateTime.of(localDate, localTime);
+        final ZoneOffset zo = ZoneOffset.ofTotalSeconds(buffer.readInt());
+        return OffsetDateTime.of(ldt, zo);
     }
 
     @Override
-    protected void writeValue(final YearMonth value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        buffer.writeInt(value.getYear()).writeByte(value.getMonthValue());
+    protected void writeValue(final OffsetDateTime value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+        buffer.writeInt(value.getYear()).writeByte(value.getMonthValue()).writeByte(value.getDayOfMonth());
+        buffer.writeLong(value.toLocalTime().toNanoOfDay());
+        buffer.writeInt(value.getOffset().getTotalSeconds());
     }
 }

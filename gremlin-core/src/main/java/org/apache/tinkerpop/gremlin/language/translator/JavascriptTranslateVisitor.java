@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,9 +133,10 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final Date dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        // todo: update when javascript datetime serializer is implemented
         sb.append("new Date(");
-        sb.append(dt.getTime());
+        sb.append(dt.toInstant().toEpochMilli());
         sb.append(")");
         return null;
     }

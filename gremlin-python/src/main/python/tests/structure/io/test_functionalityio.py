@@ -17,10 +17,10 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-import datetime
 import uuid
-
 import pytest
+
+from datetime import datetime, timedelta, timezone
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.statics import *
@@ -81,29 +81,16 @@ def test_vertex_vertex_properties(remote_connection_crew):
     assert vertex.properties[1].properties[1].value == 2000
 
 
-@pytest.mark.skip(reason="proposing to be removed in GraphBinaryV4")
-def test_timestamp(remote_connection):
-    g = traversal().with_(remote_connection)
-    ts = timestamp(1481750076295 / 1000)
-    resp = g.add_v('test_vertex').property('ts', ts)
-    resp = resp.to_list()
-    vid = resp[0].id
-    try:
-        ts_prop = g.V(vid).properties('ts').to_list()[0]
-        assert isinstance(ts_prop.value, timestamp)
-        assert ts_prop.value == ts
-    finally:
-        g.V(vid).drop().iterate()
-
-
 def test_datetime(remote_connection):
     g = traversal().with_(remote_connection)
-    dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
+    tz = timezone(timedelta(seconds=36000))
+    ms = 12345678912
+    dt = datetime(2022, 5, 20, tzinfo=tz) + timedelta(microseconds=ms)
     resp = g.add_v('test_vertex').property('dt', dt).to_list()
     vid = resp[0].id
     try:
         dt_prop = g.V(vid).properties('dt').to_list()[0]
-        assert isinstance(dt_prop.value, datetime.datetime)
+        assert isinstance(dt_prop.value, datetime)
         assert dt_prop.value == dt
     finally:
         g.V(vid).drop().iterate()
@@ -208,7 +195,7 @@ def test_odd_bits(remote_connection):
     finally:
         g.V(vid).drop().iterate()
 
-    dur = datetime.timedelta(seconds=1000, microseconds=1000)
+    dur = timedelta(seconds=1000, microseconds=1000)
     resp = g.add_v('test_vertex').property('dur', dur).to_list()
     vid = resp[0].id
     try:
