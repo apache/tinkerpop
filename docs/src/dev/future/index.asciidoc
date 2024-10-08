@@ -58,10 +58,13 @@ Additional details on each feature can be found in the Appendix.
 * <<http-support>>
 ** Replacement of WebSocket with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread])
 * <<http-support-glv>> - Switching from WebSocket to HTTP in GLVs relies on community contribution in each language,
-it is expected that Java and Python will be the two guaranteed languages for the 4.0 release.
 ** `gremlin-java`
 ** `gremlin-python`
-* <<type-system>> (link:https://lists.apache.org/thread/rpdq3ywk6vqpyv512to36ot8yqvjo3dv[DISCUSS thread])
+** `gremlin-javascript`
+** `gremlin-dotnet`
+** `gremlin-go`
+* <<io-updates>> (link:https://lists.apache.org/thread/q7h5yzd2r064lv82njbmt6lmty4s24y7[DISCUSS thread])
+* <<bytecode-removal>> (link:https://lists.apache.org/thread/7m3govzsqtmmj224xs7k5vv1ycnmocjn[DISCUSS thread])
 * <<gremlin-lang-default>>
 * <<console-rework>>
 * <<multi-label>>
@@ -70,13 +73,8 @@ it is expected that Java and Python will be the two guaranteed languages for the
 ** Adding support for these APIs in GLVs sets it up for the implementation in the next iteration
 * <<neo4-removal>>
 * <<sparql-deprecate>>
-* <<bytecode-removal>> (link:https://lists.apache.org/thread/7m3govzsqtmmj224xs7k5vv1ycnmocjn[DISCUSS thread])
 
 === 4.1...4.x
-* <<http-support-glv>>
-** `gremlin-javascript`
-** `gremlin-dotnet`
-** `gremlin-go`
 * <<tx-redesign>> - Implementation
 ** Full API implementation in TinkerGraph
 * <<io-step-improve>>
@@ -92,6 +90,7 @@ it is expected that Java and Python will be the two guaranteed languages for the
 
 == TinkerPop 5.x
 * <<groovy-removal>>
+* <<type-system>>
 * <<schema-support>>
 * <<pluggable-explain>>
 * <<io-olap>>
@@ -159,9 +158,9 @@ options should be simplified with HTTP compared to WebSocket, and should be unif
 language's library availability. This will also include implementing interface for pluggable request interceptor for authentication,
 as raised in the link:https://lists.apache.org/thread/cpsdd7gjmr1yb6c5kkm6v2bcfpp6fqq5[DISCUSS thread].
 
-==== Type System [[type-system]]
-TinkerPop has not had one's own type system defined and has been relying on the JVM types, which becomes a problem especially in
-GLVs that doesn't have corresponding types defined in their language. (link:https://lists.apache.org/thread/rpdq3ywk6vqpyv512to36ot8yqvjo3dv[DISCUSS thread])
+==== IO serialization updates [[io-updates]]
+TinkerPop's serialization IO has not been updated for quite a long time, there are serializers that can and should likely be
+removed, and definition updated to make the IO overall more simple and maintainable. (link:https://lists.apache.org/thread/q7h5yzd2r064lv82njbmt6lmty4s24y7[DISCUSS thread])
 
 ==== Switch default from `GremlinGroovyScriptEngine` to `GremlinLangScriptEngine` [[gremlin-lang-default]]
 Switching the default script processing from `GremlinGroovyScriptEngine` to `GremlinLangScriptEngine` is a step towards removing
@@ -171,6 +170,7 @@ a major portion of the work will involve updating the tests.
 ==== Gremlin Console rework [[console-rework]]
 As a result of sessions removal and switch to `gremlin-lang`, the Gremlin Console remote mode will be affected, and users
 may notice a difference in the interactive experience on the Console. Additional discussions may be needed on the impact and acceptable changes.
+(link:https://lists.apache.org/thread/rd70smb8jntws1kvz19pyxz23qdgtc2o[DISCUSS thread])
 
 ==== Transaction redesign [[tx-redesign]]
 As transaction will have to be implemented over HTTP, this is an opportunity to improve the usability of the transaction APIs.
@@ -193,7 +193,7 @@ Each GLV will also have to be updated to switch from bytecode based to string ba
 3. Add missing types to GLVs and rework traversal generation
 4. Ensure Feature tests work properly
 
-*Type System update needed*
+*I/O serialization update needed*
 
 One important note for this proposed plan is that currently `gremlin-lang` does not cover all types supported via Bytecode,
 which means either _all missing types need to be fully defined and implemented in the `gremlin-lang` parser for parity
@@ -223,7 +223,7 @@ Currently, meta-properties only exists on vertices, this extends to allowing met
 
 ==== Pluggable System for explain/profile() [[pluggable-explain]]
 While TinkerPop provides explain() and profile() steps, switching to a pluggable architecture would increase flexibility for
-providers who wish to customize the amount and format of information they return.
+providers who wish to customize the amount and format of information they return. (link:https://lists.apache.org/thread/y8zbyx1jm5whbsw5kmo5vp58l8z815qc[DISCUSS Thread])
 
 An extension of this is for explain() to work in remote fashion, see link:https://issues.apache.org/jira/browse/TINKERPOP-2128[TINKERPOP-2128]
 
@@ -310,6 +310,10 @@ and to make sure API contracts are not broken unintentionally.
 ==== Improved telemetry in driver/server [[telemerty]]
 This is a less well-defined area, aimed at improved metrics collection that can better aid debugging for users and providers.
 Work may include adding the ability to debug queries and traversals, adding OpenTelemetry support, etc.
+
+==== Type System [[type-system]]
+TinkerPop has not had one's own type system defined and has been relying on the JVM types, which becomes a problem especially in
+GLVs that doesn't have corresponding types defined in their language. (link:https://lists.apache.org/thread/rpdq3ywk6vqpyv512to36ot8yqvjo3dv[DISCUSS thread])
 
 === 4.x Branching Methodology
 
