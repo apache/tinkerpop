@@ -89,8 +89,8 @@ model["var-type-list"] = [1, "person", True, None]
 model["empty-list"] = []
 model["var-type-map"] = {
     "test": 123,
-    datetime.datetime(1970, 1, 1, 0, 24, 41, 295000): "red",
-    (1,2,3): datetime.datetime(1970, 1, 1, 0, 24, 41, 295000),
+    datetime.datetime(1970, 1, 1, 0, 24, 41, 295000, tzinfo=datetime.timezone.utc): "red",
+    (1,2,3): datetime.datetime(1970, 1, 1, 0, 24, 41, 295000, tzinfo=datetime.timezone.utc),
     None: None
 }
 model["empty-map"] = {}

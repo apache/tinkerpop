@@ -45,7 +45,7 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     protected VertexProperty readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final DetachedVertexProperty.Builder builder = DetachedVertexProperty.build()
                 .setId(context.read(buffer))
-                .setLabel(context.readValue(buffer, String.class, false))
+                .setLabel((String) context.readValue(buffer, List.class, false).get(0))
                 .setValue(context.read(buffer));
 
         // discard the parent vertex - we only send "references"
@@ -62,7 +62,11 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
     @Override
     protected void writeValue(final VertexProperty value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.id(), buffer);
-        context.writeValue(value.label(), buffer, false);
+        // wrapping label into list here for now according to GraphBinaryV4, but we aren't allowing null label yet
+        if (value.label() == null) {
+            throw new IOException("Unexpected null value when nullable is false");
+        }
+        context.writeValue(Collections.singletonList(value.label()), buffer, false);
         context.write(value.value(), buffer);
 
         // we don't serialize the parent vertex, let's hold a place for it

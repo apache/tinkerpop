@@ -535,11 +535,12 @@ class EdgeIO(_GraphBinaryTypeIO):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
         writer.to_dict(obj.id, to_extend)
-        StringIO.dictify(obj.label, writer, to_extend, True, False)
+        # serializing label as list here for now according to GraphBinaryV4
+        ListIO.dictify([obj.label], writer, to_extend, True, False)
         writer.to_dict(obj.inV.id, to_extend)
-        StringIO.dictify(obj.inV.label, writer, to_extend, True, False)
+        ListIO.dictify([obj.inV.label], writer, to_extend, True, False)
         writer.to_dict(obj.outV.id, to_extend)
-        StringIO.dictify(obj.outV.label, writer, to_extend, True, False)
+        ListIO.dictify([obj.outV.label], writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
 
@@ -552,9 +553,10 @@ class EdgeIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_edge(cls, b, r):
         edgeid = r.read_object(b)
-        edgelbl = r.to_object(b, DataType.string, False)
-        inv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
-        outv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
+        # reading single string value for now according to GraphBinaryV4
+        edgelbl = r.to_object(b, DataType.list, False)[0]
+        inv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
+        outv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
         b.read(2)
         props = r.read_object(b)
         # null properties are returned as empty lists
@@ -627,7 +629,8 @@ class VertexIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         writer.to_dict(obj.id, to_extend)
-        StringIO.dictify(obj.label, writer, to_extend, True, False)
+        # serializing label as list here for now according to GraphBinaryV4
+        ListIO.dictify([obj.label], writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         return to_extend
 
@@ -638,7 +641,8 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertex(cls, b, r):
         vertex_id = r.read_object(b)
-        vertex_label = r.to_object(b, DataType.string, False)
+        # reading single string value for now according to GraphBinaryV4
+        vertex_label = r.to_object(b, DataType.list, False)[0]
         props = r.read_object(b)
         # null properties are returned as empty lists
         properties = [] if props is None else props
@@ -655,7 +659,8 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         writer.to_dict(obj.id, to_extend)
-        StringIO.dictify(obj.label, writer, to_extend, True, False)
+        # serializing label as list here for now according to GraphBinaryV4
+        ListIO.dictify([obj.label], writer, to_extend, True, False)
         writer.to_dict(obj.value, to_extend)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
@@ -667,7 +672,8 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertexproperty(cls, b, r):
-        vp = VertexProperty(r.read_object(b), r.to_object(b, DataType.string, False), r.read_object(b), None)
+        # reading single string value for now according to GraphBinaryV4
+        vp = VertexProperty(r.read_object(b), r.to_object(b, DataType.list, False)[0], r.read_object(b), None)
         b.read(2)
         properties = r.read_object(b)
         # null properties are returned as empty lists

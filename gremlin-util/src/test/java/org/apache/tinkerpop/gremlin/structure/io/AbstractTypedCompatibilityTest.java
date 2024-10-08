@@ -47,6 +47,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -533,8 +534,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-    // todo: map contains removed date type, revisit after datetime is properly implemented
-    // @Test
+    @Test
+    @Ignore("re-enable after GraphSONV4 datetime is implemented")
     public void shouldReadWriteMultiTypeMap() throws Exception {
         final String resourceName = "var-type-map";
 
@@ -558,8 +559,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-    // todo: re-visit after datetime is properly implemented
-    // @Test
+    @Test
     public void shouldReadWriteMaxOffsetDateTime() throws Exception {
         final String resourceName = "max-offsetdatetime";
 
@@ -572,8 +572,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
         assertEquals(resource, recycled);
     }
 
-    // todo: re-visit after datetime is properly implemented
-    // @Test
+    @Test
     public void shouldReadWriteMinOffsetDateTime() throws Exception {
         final String resourceName = "min-offsetdatetime";
 
