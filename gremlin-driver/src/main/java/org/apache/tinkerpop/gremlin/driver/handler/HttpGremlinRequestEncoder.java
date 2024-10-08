@@ -52,12 +52,14 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
+    private final boolean bulkingEnabled;
     private final List<RequestInterceptor> interceptors;
 
-    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled, boolean bulkingEnabled) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
+        this.bulkingEnabled = bulkingEnabled;
     }
 
     @Override
@@ -80,6 +82,9 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.HOST, remoteAddress.getAddress().getHostAddress());
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
+            }
+            if (bulkingEnabled) {
+                request.headers().add("bulking", "true");
             }
 
             for (final RequestInterceptor interceptor : interceptors) {

@@ -91,6 +91,11 @@ public final class Settings {
     public boolean enableUserAgentOnConnect = true;
 
     /**
+     * Toggles if result bulking should be enabled. Default is false.
+     */
+    public boolean enableBulking = false;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -126,6 +131,9 @@ public final class Settings {
 
         if (conf.containsKey("enableUserAgentOnConnect"))
             settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
+
+        if (conf.containsKey("enableBulking"))
+            settings.enableBulking = conf.getBoolean("enableBulking");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());

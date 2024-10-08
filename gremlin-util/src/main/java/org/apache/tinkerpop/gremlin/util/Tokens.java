@@ -85,6 +85,11 @@ public final class Tokens {
     public static final String TIMEOUT_MS = "timeoutMs";
 
     /**
+     * Argument name that turns on bulking optimization for driver requests.
+     */
+    public static final String ARGS_BULKING = "bulking";
+
+    /**
      * A value that is a custom string that the user can pass to a server that might accept it for purpose of
      * identifying the kind of client it came from.
      */

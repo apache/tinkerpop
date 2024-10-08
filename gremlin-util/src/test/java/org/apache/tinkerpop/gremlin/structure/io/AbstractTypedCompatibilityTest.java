@@ -535,6 +535,31 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("currently pass in GraphBinary only, re-enable when graphSON bulklist is implemented")
+    public void shouldReadWriteVarBulkList() throws Exception {
+        final String resourceName = "var-bulklist";
+
+        final BulkSet resource = findModelEntryObject(resourceName);
+        final BulkSet fromStatic = read(readFromResource(resourceName), BulkSet.class);
+        final BulkSet recycled = read(write(fromStatic, BulkSet.class, resourceName), BulkSet.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    @Ignore("currently pass in GraphBinary only, re-enable when graphSON bulklist is implemented")
+    public void shouldReadWriteEmptyBulkList() throws Exception {
+        final String resourceName = "empty-bulklist";
+
+        final BulkSet resource = findModelEntryObject(resourceName);
+        final BulkSet fromStatic = read(readFromResource(resourceName), BulkSet.class);
+        final BulkSet recycled = read(write(fromStatic, BulkSet.class, resourceName), BulkSet.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
     @Ignore("re-enable after GraphSONV4 datetime is implemented")
     public void shouldReadWriteMultiTypeMap() throws Exception {
         final String resourceName = "var-type-map";
@@ -709,6 +734,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("to be removed as traverser is removed from IO V4")
     public void shouldReadWriteVertexTraverser() throws Exception {
         final String resourceName = "vertex-traverser";
 
@@ -725,6 +751,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("to be removed as traverser is removed from IO V4")
     public void shouldReadWriteBulkedTraverser() throws Exception {
         final String resourceName = "bulked-traverser";
 
@@ -741,6 +768,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("to be removed as traverser is removed from IO V4")
     public void shouldReadWriteEmptyTraverser() throws Exception {
         final String resourceName = "empty-traverser";
 
@@ -882,6 +910,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("to be removed as traverser is removed from IO V4")
     public void shouldReadWriteVarBulkSet() throws Exception {
         final String resourceName = "var-bulkset";
 
@@ -894,6 +923,7 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    @Ignore("to be removed as traverser is removed from IO V4")
     public void shouldReadWriteEmptyBulkSet() throws Exception {
         final String resourceName = "empty-bulkset";
 

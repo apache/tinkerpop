@@ -65,8 +65,10 @@ model["true-boolean"] = True
 model["false-boolean"] = False
 model["single-byte-string"] = "abc"
 model["mixed-string"] = "abc\u0391\u0392\u0393"
-model["var-bulkset"] = ["marko", "josh", "josh"]
-model["empty-bulkset"] = []
+model["var-bulklist"] = ["marko", "josh", "josh"]
+model["empty-bulklist"] = []
+# model["var-bulkset"] = ["marko", "josh", "josh"]
+# model["empty-bulkset"] = []
 model["zero-duration"] = datetime.timedelta()
 model["traversal-edge"] = Edge(
     13,
@@ -89,8 +91,8 @@ model["var-type-list"] = [1, "person", True, None]
 model["empty-list"] = []
 model["var-type-map"] = {
     "test": 123,
-    datetime.datetime(1970, 1, 1, 0, 24, 41, 295000, tzinfo=datetime.timezone.utc): "red",
-    (1,2,3): datetime.datetime(1970, 1, 1, 0, 24, 41, 295000, tzinfo=datetime.timezone.utc),
+    datetime.datetime(1970, 1, 1, 0, 24, 41, 295000): "red",
+    (1,2,3): datetime.datetime(1970, 1, 1, 0, 24, 41, 295000),
     None: None
 }
 model["empty-map"] = {}

@@ -146,6 +146,14 @@ def test_var_type_list():
 def test_empty_list():
     run("empty-list")
 
+def test_var_bulklist():
+    # bulklist is only serialized from server via header setting
+    run_read("var-bulklist")
+
+def test_empty_bulklist():
+    # bulklist is only serialized from server via header setting
+    run_read("empty-bulklist")
+
 @pytest.mark.skip(reason="Date has been removed in GraphBinary, need to update test files")
 def test_var_type_map():
     # can't write tuple
@@ -214,13 +222,13 @@ def test_id_t():
 def test_out_direction():
     run("out-direction")
 
-def test_var_bulkset():
-    # no serializer for BulkSet
-    run_read("var-bulkset")
+# def test_var_bulkset():
+#     # no serializer for BulkSet
+#     run_read("var-bulkset")
 
-def test_empty_bulkset():
-    # no serializer for BulkSet
-    run_read("empty-bulkset")
+# def test_empty_bulkset():
+#     # no serializer for BulkSet
+#     run_read("empty-bulkset")
 
 def test_single_byte_char():
     # char is serialized as string

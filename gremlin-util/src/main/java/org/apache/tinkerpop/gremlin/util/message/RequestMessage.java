@@ -161,6 +161,11 @@ public final class RequestMessage {
             return this;
         }
 
+        public Builder addBulking(final boolean bulking) {
+            this.fields.put(Tokens.ARGS_BULKING, bulking);
+            return this;
+        }
+
         /**
          * Create the request message given the settings provided to the {@link Builder}.
          */

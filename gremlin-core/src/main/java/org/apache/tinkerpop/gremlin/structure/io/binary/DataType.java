@@ -43,14 +43,14 @@ public enum DataType {
     VERTEXPROPERTY(0X12),
     DIRECTION(0X18),
     T(0X20),
-    TRAVERSER(0X21),
+    TRAVERSER(0X21), // todo: to be removed
     BIGDECIMAL(0X22),
     BIGINTEGER(0X23),
     BYTE(0X24),
     BYTEBUFFER(0X25),
     SHORT(0X26),
     BOOLEAN(0x27),
-    BULKSET(0X2A),  // todo:
+    BULKSET(0X2A),  // todo: to be removed
     TREE(0X2B),
 
     CHAR(0X80),

@@ -46,6 +46,7 @@ public class GraphBinaryWriter {
     private final static byte VALUE_FLAG_NULL = 1;
     private final static byte VALUE_FLAG_NONE = 0;
     private final static byte VALUE_FLAG_ORDERED = 2;
+    private final static byte VALUE_FLAG_BULK = 2;
     public final static byte VERSION_BYTE = (byte)0x81;
     private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
     private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
@@ -142,6 +143,14 @@ public class GraphBinaryWriter {
      */
     public void writeValueFlagOrdered(Buffer buffer) {
         buffer.writeByte(VALUE_FLAG_ORDERED);
+    }
+
+
+    /**
+     * Writes a single byte with value 2, representing an ordered value_flag.
+     */
+    public void writeValueFlagBulk(Buffer buffer) {
+        buffer.writeByte(VALUE_FLAG_BULK);
     }
 
 

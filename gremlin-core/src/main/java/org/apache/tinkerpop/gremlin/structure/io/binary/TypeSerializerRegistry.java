@@ -103,14 +103,14 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Vertex.class, new VertexSerializer()),
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
-            new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
+            new RegistryEntry<>(Traverser.class, new ListSerializer<>()),  //Traverser is serialized through List using bulk flag
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
             new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
             new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
             new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
-            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),  //todo: to be removed when bulk implemented in list
+            new RegistryEntry<>(BulkSet.class, new ListSerializer()),  //BulkSet is serialized into List using bulk flag
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Marker.class, SingleTypeSerializer.MarkerSerializer),
 

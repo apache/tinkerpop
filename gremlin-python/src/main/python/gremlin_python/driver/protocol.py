@@ -71,6 +71,7 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
         message = {
             'headers': {'content-type': content_type,
+                        # 'bulking': 'true',            # do we configure this header via interceptor?
                         'accept': content_type},
             'payload': self._message_serializer.serialize_message(request_message),
             'auth': self._auth

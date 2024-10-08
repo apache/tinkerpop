@@ -40,6 +40,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -76,6 +79,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -310,8 +314,16 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
+        final boolean bulking = (Objects.equals(context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get("bulking"), "true")
+                && result instanceof Traversal) || (args.containsKey(Tokens.ARGS_BULKING) && (boolean) args.get(Tokens.ARGS_BULKING));
 
-        handleIterator(context, IteratorUtils.asIterator(result), serializer);
+        if (bulking) {
+            // optimization for driver requests
+            ((Traversal.Admin<?, ?>) result).applyStrategies();
+            handleIterator(context, new TraverserIterator((Traversal.Admin<?, ?>) result), serializer, true);
+        } else {
+            handleIterator(context, IteratorUtils.asIterator(result), serializer, false);
+        }
     }
 
     @Override
@@ -361,17 +373,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return bindings;
     }
 
-    private void iterateTraversal(final Context context, MessageSerializer<?> serializer, Traversal.Admin<?, ?> traversal)
-            throws InterruptedException {
-        final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
-        logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
-
-        // compile the traversal - without it getEndStep() has nothing in it
-        traversal.applyStrategies();
-        handleIterator(context, new TraverserIterator(traversal), serializer);
-    }
-
-    private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer) throws InterruptedException {
+    private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer, final boolean bulking) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -395,7 +397,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalField(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
-        List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
+
+        // for bulking, bulked results will be grouped into a single bulkset?
+        List<Object> aggregate = bulking ? new ArrayList<>(1) : new ArrayList<>(resultIterationBatchSize);
+        if (bulking) {
+            BulkSet<Object> bulkedTraverser = new BulkSet<>();
+            aggregate.add(bulkedTraverser);
+        }
 
         // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
         // prevent situations where auto transactions create a new transaction after calls to commit() withing
@@ -418,7 +426,16 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) aggregate.add(itty.next());
+            if (bulking) {
+                if (((BulkSet) aggregate.get(0)).size() < resultIterationBatchSize && itty.hasNext()) {
+                    Traverser traverser = (Traverser) itty.next();
+                    ((BulkSet) aggregate.get(0)).add(traverser.get(), traverser.bulk());
+                }
+            } else {
+                if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) {
+                    aggregate.add(itty.next());
+                }
+            }
 
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
@@ -435,7 +452,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // already given up on these requests. This leads to these executors waiting for the client to consume
             // results till the timeout. checking for isActive() should help prevent that.
             if (nettyContext.channel().isActive() && nettyContext.channel().isWritable()) {
-                if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                if (((bulking && ((BulkSet) aggregate.get(0)).size() == resultIterationBatchSize)) ||
+                        aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     ByteBuf chunk = null;
                     try {
                         chunk = makeChunk(context, msg, serializer, aggregate, itty.hasNext());
@@ -457,7 +475,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     try {
                         // only need to reset the aggregation list if there's more stuff to write
                         if (hasMore) {
-                            aggregate = new ArrayList<>(resultIterationBatchSize);
+                            aggregate = bulking ? new ArrayList<>(1) : new ArrayList<>(resultIterationBatchSize);
                         }
                     } catch (Exception ex) {
                         // Bytebuf is a countable release - if it does not get written downstream
@@ -512,6 +530,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
             ctx.handleDetachment(aggregate);
+
+            System.out.println(aggregate);
+            System.out.println(aggregate.get(0).getClass());
 
             if (!hasMore && ctx.getRequestState() == STREAMING) {
                 ctx.setRequestState(FINISHING);

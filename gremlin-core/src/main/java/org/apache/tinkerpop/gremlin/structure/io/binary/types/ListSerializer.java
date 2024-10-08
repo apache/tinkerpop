@@ -18,15 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class ListSerializer extends SimpleTypeSerializer<List> {
+public class ListSerializer<T> extends SimpleTypeSerializer<T> {
+
+    // todo to be updated after map serializer changes
+    private byte valueFlag = (byte)0x00;
     private static final CollectionSerializer collectionSerializer = new CollectionSerializer(DataType.LIST);
 
     public ListSerializer() {
@@ -34,13 +42,84 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
     }
 
     @Override
-    protected List readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        // The collection is a List<>
-        return (List) collectionSerializer.readValue(buffer, context);
+    public T readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws IOException {
+        if (nullable) {
+            valueFlag = buffer.readByte();
+            if ((valueFlag & 1) == 1) {
+                return null;
+            }
+        }
+
+        return readValue(buffer, context);
     }
 
     @Override
-    protected void writeValue(final List value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        collectionSerializer.writeValue(value, buffer, context);
+    protected T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        if ((valueFlag & 2) == 2) {
+            final int length = buffer.readInt();
+
+//            if (length == 1) {
+//                Object item = context.read(buffer);
+//                long bulk = buffer.readLong();
+//                return (T) new DefaultRemoteTraverser<>(item, bulk);
+//            }
+
+            // need to know that we are bulking traversers in order to deser into traversers else things are expanded
+            if (true) {
+                final ArrayList result = new ArrayList(length);
+                for (int i = 0; i < length; i++) {
+                    Object item = context.read(buffer);
+                    long bulk = buffer.readLong();
+                    result.add(new DefaultRemoteTraverser<>(item, bulk));
+                }
+
+                System.out.println("---bulked traverser");
+                return (T) result;
+            }
+
+            // expanding all bulked results into a list
+            final ArrayList result = new ArrayList(length);
+            for (int i = 0; i < length; i++) {
+                Object item = context.read(buffer);
+                long bulk = buffer.readLong();
+                for (int j = 0; j < bulk; j++) {
+                    result.add(item);
+                }
+            }
+
+            // return result as bulkset for round tripping? or expand into lists?
+//            final BulkSet result = new BulkSet();
+//            for (int i = 0; i < length; i++) {
+//                result.add(context.read(buffer), buffer.readLong());
+//            }
+
+            return (T) result;
+        } else {
+            // The collection is a List<>
+            return (T) collectionSerializer.readValue(buffer, context);
+        }
+    }
+
+    @Override
+    protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+//        if (value instanceof Traverser) {
+//            Traverser traverser = (Traverser) value;
+//            // traverser is single item, so write 1 for size
+//            buffer.writeInt(1);
+//            context.write(traverser.get(), buffer);
+//            buffer.writeLong(traverser.bulk());
+//        } else
+        if (value instanceof BulkSet) {
+            BulkSet bulkSet = (BulkSet) value;
+            final Map<Object,Long> raw = bulkSet.asBulk();
+            buffer.writeInt(raw.size());
+
+            for (Object key : raw.keySet()) {
+                context.write(key, buffer);
+                buffer.writeLong(bulkSet.get(key));
+            }
+        } else {
+            collectionSerializer.writeValue((List) value, buffer, context);
+        }
     }
 }

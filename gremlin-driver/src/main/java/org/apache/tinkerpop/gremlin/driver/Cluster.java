@@ -180,6 +180,7 @@ public final class Cluster {
                 .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
+                .enableBulking(settings.enableBulking)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (!settings.auth.type.isEmpty()) {
@@ -464,6 +465,14 @@ public final class Cluster {
         return manager.isUserAgentOnConnectEnabled();
     }
 
+    /**
+     * Checks if cluster is configured to send bulked results
+     * in the web socket handshake
+     */
+    public boolean isBulkingEnabled() {
+        return manager.isBulkingEnabled();
+    }
+
     public final static class Builder {
         private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -494,6 +503,7 @@ public final class Cluster {
         private List<RequestInterceptor> interceptors = new ArrayList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
+        private boolean enableResultBulking = false;
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -797,6 +807,15 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * Configures whether cluster will enable result bulking to optimize performance.
+         * @param enableResultBulking true enables bulking.
+         */
+        public Builder enableBulking(final boolean enableResultBulking) {
+            this.enableResultBulking = enableResultBulking;
+            return this;
+        }
+
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -865,6 +884,7 @@ public final class Cluster {
         private final int port;
         private final String path;
         private final boolean enableUserAgentOnConnect;
+        private final boolean enableResultBulking;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -877,6 +897,7 @@ public final class Cluster {
             this.contactPoints = builder.getContactPoints();
             this.interceptor = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
+            this.enableResultBulking = builder.enableResultBulking;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
@@ -1039,6 +1060,13 @@ public final class Cluster {
          */
         public boolean isUserAgentOnConnectEnabled() {
             return enableUserAgentOnConnect;
+        }
+
+        /**
+         * Checks if cluster is configured to send bulked results
+         */
+        public boolean isBulkingEnabled() {
+            return enableResultBulking;
         }
     }
 }

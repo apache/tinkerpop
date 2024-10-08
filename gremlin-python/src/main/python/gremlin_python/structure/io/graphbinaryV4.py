@@ -27,7 +27,7 @@ from datetime import datetime, timedelta, timezone
 from struct import pack, unpack
 
 from aenum import Enum
-from gremlin_python.process.traversal import Direction, T
+from gremlin_python.process.traversal import Direction, T, Traverser
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
@@ -459,12 +459,26 @@ class ListIO(_GraphBinaryTypeIO):
         return cls.is_null(buff, reader, cls._read_list, nullable)
 
     @classmethod
-    def _read_list(cls, b, r):
+    def _read_list(cls, b, r, flag):
         size = cls.read_int(b)
         the_list = []
-        while size > 0:
-            the_list.append(r.read_object(b))
-            size = size - 1
+        if flag == 0x02:
+            # can't distinguish with bulkset, reading all size 1 into traverser
+            if size == 1:
+                obj = r.read_object(b)
+                bulk = int64_unpack(b.read(8))
+                return Traverser(obj, bulk=bulk)
+            # expanding all bulkset into lists (until bulkset is implemented python)
+            while size > 0:
+                itm = r.read_object(b)
+                bulk = int64_unpack(b.read(8))
+                for y in range(bulk):
+                    the_list.append(itm)
+                size = size - 1
+        else:
+            while size > 0:
+                the_list.append(r.read_object(b))
+                size = size - 1
 
         return the_list
 
@@ -773,26 +787,26 @@ class BooleanIO(_GraphBinaryTypeIO):
 
 
 # todo: to be removed when updated with bulking in list
-class BulkSetDeserializer(_GraphBinaryTypeIO):
-
-    graphbinary_type = DataType.bulkset
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_bulkset, nullable)
-
-    @classmethod
-    def _read_bulkset(cls, b, r):
-        size = cls.read_int(b)
-        the_list = []
-        while size > 0:
-            itm = r.read_object(b)
-            bulk = int64_unpack(b.read(8))
-            for y in range(bulk):
-                the_list.append(itm)            
-            size = size - 1
-
-        return the_list
+# class BulkSetDeserializer(_GraphBinaryTypeIO):
+#
+#     graphbinary_type = DataType.bulkset
+#
+#     @classmethod
+#     def objectify(cls, buff, reader, nullable=True):
+#         return cls.is_null(buff, reader, cls._read_bulkset, nullable)
+#
+#     @classmethod
+#     def _read_bulkset(cls, b, r, flag):
+#         size = cls.read_int(b)
+#         the_list = []
+#         while size > 0:
+#             itm = r.read_object(b)
+#             bulk = int64_unpack(b.read(8))
+#             for y in range(bulk):
+#                 the_list.append(itm)
+#             size = size - 1
+#
+#         return the_list
 
 
 class DurationIO(_GraphBinaryTypeIO):
