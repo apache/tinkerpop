@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -50,6 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinServerSslIntegrateTest.class);
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -257,9 +260,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             client.submit("'test'").one();
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
-            assertThat(root.getMessage(), containsString("bad_certificate"));
+            assertSslException(x, "bad_certificate");
         } finally {
             cluster.close();
         }
@@ -275,9 +276,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             client.submit("'test'").one();
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
-            assertThat(root.getMessage(), containsString("bad_certificate"));
+            assertSslException(x, "bad_certificate");
         } finally {
             cluster.close();
         }
@@ -293,9 +292,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             client.submit("'test'").one();
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
-            assertThat(root.getMessage(), containsString("protocol_version"));
+            assertSslException(x ,"protocol_version");
         } finally {
             cluster.close();
         }
@@ -343,5 +340,12 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         } finally {
             cluster2.close();
         }
+    }
+
+    private static void assertSslException(Exception x, String expectedSubstring) {
+        logger.warn("Exception caught: {}", x.getMessage(), x);
+        final Throwable root = ExceptionHelper.getRootCause(x);
+        assertThat(root, instanceOf(SSLException.class));
+        assertThat(root.getMessage(), containsString(expectedSubstring));
     }
 }
