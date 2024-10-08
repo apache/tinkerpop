@@ -1,6 +1,6 @@
 {
   "id" : 1,
-  "label" : "person",
+  "label" : [ "person" ],
   "type" : "vertex",
   "properties" : {
     "name" : [ {

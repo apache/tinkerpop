@@ -1,4 +1,4 @@
 {
-  "@type" : "gx:ByteBuffer",
+  "@type" : "g:Binary",
   "@value" : ""
 }

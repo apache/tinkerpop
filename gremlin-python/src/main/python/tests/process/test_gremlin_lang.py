@@ -144,7 +144,7 @@ class TestGremlinLang(object):
         tests.append([g.V().values('runways').mean(),
                       "g.V().values('runways').mean()"])
         # 36
-        tests.append([g.withSack(0).V('3', '5').sack(Operator.sum_).by('runways').sack(),
+        tests.append([g.with_sack(0).V('3', '5').sack(Operator.sum_).by('runways').sack(),
                       "g.withSack(0).V('3','5').sack(Operator.sum).by('runways').sack()"])
         # 37
         tests.append([g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V(
@@ -367,7 +367,7 @@ class TestGremlinLang(object):
                       "g.V().count()"])
 
         # 96 Note OptionsStrategy are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_strategies(OptionsStrategy({'evaluationTimeout': 500})).V().count(),
+        tests.append([g.with_strategies(OptionsStrategy(evaluationTimeout=500)).V().count(),
                       "g.V().count()"])
 
         # 97

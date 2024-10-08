@@ -1,5 +1,5 @@
 {
-  "@type" : "tinker:graph",
+  "@type" : "g:graph",
   "@value" : {
     "vertices" : [ {
       "@type" : "g:Vertex",
@@ -8,7 +8,7 @@
           "@type" : "g:Int32",
           "@value" : 1
         },
-        "label" : "person",
+        "label" : [ "person" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -18,7 +18,7 @@
                 "@value" : 0
               },
               "value" : "marko",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -29,7 +29,7 @@
                 "@value" : 6
               },
               "value" : "san diego",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -49,7 +49,7 @@
                 "@value" : 7
               },
               "value" : "santa cruz",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -69,7 +69,7 @@
                 "@value" : 8
               },
               "value" : "brussels",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -89,7 +89,7 @@
                 "@value" : 9
               },
               "value" : "santa fe",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -107,7 +107,7 @@
           "@type" : "g:Int32",
           "@value" : 7
         },
-        "label" : "person",
+        "label" : [ "person" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -117,7 +117,7 @@
                 "@value" : 1
               },
               "value" : "stephen",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -128,7 +128,7 @@
                 "@value" : 10
               },
               "value" : "centreville",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -148,7 +148,7 @@
                 "@value" : 11
               },
               "value" : "dulles",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -168,7 +168,7 @@
                 "@value" : 12
               },
               "value" : "purcellville",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -186,7 +186,7 @@
           "@type" : "g:Int32",
           "@value" : 8
         },
-        "label" : "person",
+        "label" : [ "person" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -196,7 +196,7 @@
                 "@value" : 2
               },
               "value" : "matthias",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -207,7 +207,7 @@
                 "@value" : 13
               },
               "value" : "bremen",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -227,7 +227,7 @@
                 "@value" : 14
               },
               "value" : "baltimore",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -247,7 +247,7 @@
                 "@value" : 15
               },
               "value" : "oakland",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -267,7 +267,7 @@
                 "@value" : 16
               },
               "value" : "seattle",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -285,7 +285,7 @@
           "@type" : "g:Int32",
           "@value" : 9
         },
-        "label" : "person",
+        "label" : [ "person" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -295,7 +295,7 @@
                 "@value" : 3
               },
               "value" : "daniel",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -306,7 +306,7 @@
                 "@value" : 17
               },
               "value" : "spremberg",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -326,7 +326,7 @@
                 "@value" : 18
               },
               "value" : "kaiserslautern",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -346,7 +346,7 @@
                 "@value" : 19
               },
               "value" : "aachen",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -364,7 +364,7 @@
           "@type" : "g:Int32",
           "@value" : 10
         },
-        "label" : "software",
+        "label" : [ "software" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -374,7 +374,7 @@
                 "@value" : 4
               },
               "value" : "gremlin",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ]
         }
@@ -386,7 +386,7 @@
           "@type" : "g:Int32",
           "@value" : 11
         },
-        "label" : "software",
+        "label" : [ "software" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -396,7 +396,7 @@
                 "@value" : 5
               },
               "value" : "tinkergraph",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ]
         }
@@ -409,9 +409,9 @@
           "@type" : "g:Int32",
           "@value" : 13
         },
-        "label" : "develops",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "develops" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -421,7 +421,7 @@
           "@value" : 1
         },
         "properties" : {
-          "since" : {
+          "since" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "since",
@@ -430,7 +430,7 @@
                 "@value" : 2009
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -440,9 +440,9 @@
           "@type" : "g:Int32",
           "@value" : 14
         },
-        "label" : "develops",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "develops" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -452,7 +452,7 @@
           "@value" : 1
         },
         "properties" : {
-          "since" : {
+          "since" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "since",
@@ -461,7 +461,7 @@
                 "@value" : 2010
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -471,9 +471,9 @@
           "@type" : "g:Int32",
           "@value" : 15
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -483,7 +483,7 @@
           "@value" : 1
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -492,7 +492,7 @@
                 "@value" : 4
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -502,9 +502,9 @@
           "@type" : "g:Int32",
           "@value" : 16
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -514,7 +514,7 @@
           "@value" : 1
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -523,7 +523,7 @@
                 "@value" : 5
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -533,9 +533,9 @@
           "@type" : "g:Int32",
           "@value" : 17
         },
-        "label" : "develops",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "develops" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -545,7 +545,7 @@
           "@value" : 7
         },
         "properties" : {
-          "since" : {
+          "since" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "since",
@@ -554,7 +554,7 @@
                 "@value" : 2010
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -564,9 +564,9 @@
           "@type" : "g:Int32",
           "@value" : 18
         },
-        "label" : "develops",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "develops" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -576,7 +576,7 @@
           "@value" : 7
         },
         "properties" : {
-          "since" : {
+          "since" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "since",
@@ -585,7 +585,7 @@
                 "@value" : 2011
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -595,9 +595,9 @@
           "@type" : "g:Int32",
           "@value" : 19
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -607,7 +607,7 @@
           "@value" : 7
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -616,7 +616,7 @@
                 "@value" : 5
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -626,9 +626,9 @@
           "@type" : "g:Int32",
           "@value" : 20
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -638,7 +638,7 @@
           "@value" : 7
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -647,7 +647,7 @@
                 "@value" : 4
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -657,9 +657,9 @@
           "@type" : "g:Int32",
           "@value" : 21
         },
-        "label" : "develops",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "develops" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -669,7 +669,7 @@
           "@value" : 8
         },
         "properties" : {
-          "since" : {
+          "since" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "since",
@@ -678,7 +678,7 @@
                 "@value" : 2012
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -688,9 +688,9 @@
           "@type" : "g:Int32",
           "@value" : 22
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -700,7 +700,7 @@
           "@value" : 8
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -709,7 +709,7 @@
                 "@value" : 3
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -719,9 +719,9 @@
           "@type" : "g:Int32",
           "@value" : 23
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -731,7 +731,7 @@
           "@value" : 8
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -740,7 +740,7 @@
                 "@value" : 3
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -750,9 +750,9 @@
           "@type" : "g:Int32",
           "@value" : 24
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 10
@@ -762,7 +762,7 @@
           "@value" : 9
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -771,7 +771,7 @@
                 "@value" : 5
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -781,9 +781,9 @@
           "@type" : "g:Int32",
           "@value" : 25
         },
-        "label" : "uses",
-        "inVLabel" : "software",
-        "outVLabel" : "person",
+        "label" : [ "uses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "person" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11
@@ -793,7 +793,7 @@
           "@value" : 9
         },
         "properties" : {
-          "skill" : {
+          "skill" : [ {
             "@type" : "g:Property",
             "@value" : {
               "key" : "skill",
@@ -802,7 +802,7 @@
                 "@value" : 3
               }
             }
-          }
+          } ]
         }
       }
     }, {
@@ -812,9 +812,9 @@
           "@type" : "g:Int32",
           "@value" : 26
         },
-        "label" : "traverses",
-        "inVLabel" : "software",
-        "outVLabel" : "software",
+        "label" : [ "traverses" ],
+        "inVLabel" : [ "software" ],
+        "outVLabel" : [ "software" ],
         "inV" : {
           "@type" : "g:Int32",
           "@value" : 11

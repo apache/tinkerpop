@@ -174,6 +174,56 @@ removed. As a result, all translators in .NET, Python, Go and Javascript have be
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
+==== Change to `OptionsStrategy` in `gremlin-python`
+
+The `\\__init__()` syntax has been updated to be both more pythonic and more aligned to the `gremlin-lang` syntax.
+Previously, `OptionsStrategy()` took a single argument `options` which was a `dict` of all options to be set.
+Now, all options should be set directly as keyword arguments.
+
+For example:
+
+[source,python]
+----
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options={'key1': 'value1', 'key2': True}))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(key1='value1', key2=True))
+
+myOptions = {'key1': 'value1', 'key2': True}
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options=myOptions))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(**myOptions))
+----
+
+==== Custom Traversal Strategy Construction
+
+Traversal strategy construction has been updated such that it is no longer required to have concrete classes for each
+strategy being added to a graph traversal (use of concrete classes remains viable and is recommended for "native"
+TinkerPop strategies). To use strategies without a concrete class, `TraversalStrategyProxy` can be used in Java, and
+`TraversalStrategy` in Python.
+
+All the following examples will produce the script `g.withStrategies(new MyStrategy(config1:'my value',config2:123))`:
+
+[source,java]
+----
+Map<String, Object> configMap = new LinkedHashMap<>();
+        configMap.put("config1", "my value");
+        configMap.put("config2", 123);
+        TraversalStrategy strategyProxy = new TraversalStrategyProxy("MyStrategy", new MapConfiguration(configMap));
+
+        GraphTraversal traversal = g.withStrategies(strategyProxy);
+----
+
+[source,python]
+----
+g.with_strategies(TraversalStrategy(
+            strategy_name='MyStrategy',
+            config1='my value',
+            config2=123
+        ))
+----
+
 ==== Changes to Serialization
 
 The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option

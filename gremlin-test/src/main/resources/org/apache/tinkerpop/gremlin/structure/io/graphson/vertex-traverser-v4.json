@@ -12,7 +12,7 @@
           "@type" : "g:Int32",
           "@value" : 1
         },
-        "label" : "person",
+        "label" : [ "person" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -22,7 +22,7 @@
                 "@value" : 0
               },
               "value" : "marko",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ],
           "location" : [ {
@@ -33,7 +33,7 @@
                 "@value" : 6
               },
               "value" : "san diego",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -53,7 +53,7 @@
                 "@value" : 7
               },
               "value" : "santa cruz",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -73,7 +73,7 @@
                 "@value" : 8
               },
               "value" : "brussels",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",
@@ -93,7 +93,7 @@
                 "@value" : 9
               },
               "value" : "santa fe",
-              "label" : "location",
+              "label" : [ "location" ],
               "properties" : {
                 "startTime" : {
                   "@type" : "g:Int32",

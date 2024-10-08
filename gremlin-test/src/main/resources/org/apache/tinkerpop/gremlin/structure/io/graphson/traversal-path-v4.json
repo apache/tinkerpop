@@ -23,7 +23,7 @@
             "@type" : "g:Int32",
             "@value" : 1
           },
-          "label" : "person"
+          "label" : [ "person" ]
         }
       }, {
         "@type" : "g:Vertex",
@@ -32,7 +32,7 @@
             "@type" : "g:Int32",
             "@value" : 10
           },
-          "label" : "software"
+          "label" : [ "software" ]
         }
       }, {
         "@type" : "g:Vertex",
@@ -41,7 +41,7 @@
             "@type" : "g:Int32",
             "@value" : 11
           },
-          "label" : "software"
+          "label" : [ "software" ]
         }
       } ]
     }

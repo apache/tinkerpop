@@ -5,9 +5,9 @@
       "@type" : "g:Int32",
       "@value" : 13
     },
-    "label" : "develops",
-    "inVLabel" : "software",
-    "outVLabel" : "person",
+    "label" : [ "develops" ],
+    "inVLabel" : [ "software" ],
+    "outVLabel" : [ "person" ],
     "inV" : {
       "@type" : "g:Int32",
       "@value" : 10

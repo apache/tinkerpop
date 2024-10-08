@@ -81,6 +81,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -106,6 +107,10 @@ public abstract class AbstractRoundTripTest {
 
         final Map<String, Map<String, Integer>> nestedMap = new HashMap<>();
         nestedMap.put("first", map);
+
+        final Map<String, Integer> orderedMap = new LinkedHashMap<>();
+        map.put("one", 1);
+        map.put("two", 2);
 
         final List<Object> list = new ArrayList<>();
         list.add("string 1");
@@ -179,56 +184,14 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"BigDecimalNeg", new BigDecimal("-1234567890987654321.1232132"), null},
 
                 // date+time
-                new Object[] {"Date", DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.US).parse("Jan 12, 1952"), null},
-                new Object[] {"Timestamp", Timestamp.valueOf("2016-01-15 12:01:02"), null},
                 new Object[] {"Duration", Duration.ofSeconds(213123213, 400), null},
-                new Object[] {"Instant", Instant.ofEpochSecond(213123213, 400), null},
-                new Object[] {"LocalDate", LocalDate.of(2016, 10, 21), null},
-                new Object[] {"LocalTime", LocalTime.of(12, 20, 30, 300), null},
-                new Object[] {"LocalDateTime", LocalDateTime.of(2016, 10, 21, 12, 20, 30, 300), null},
-                new Object[] {"MonthDay", MonthDay.of(12, 28), null},
-                new Object[] {"OffsetDateTime", OffsetDateTime.of(2017, 11, 15, 12, 30, 45, 300, ZoneOffset.ofTotalSeconds(400)), null},
-                new Object[] {"OffsetTime", OffsetTime.of(12, 30, 45, 300, ZoneOffset.ofTotalSeconds(400)), null},
-                new Object[] {"Period", Period.of(1, 6, 15), null},
-                new Object[] {"Year", Year.of(1996), null},
-                new Object[] {"YearMonth", YearMonth.of(2016, 11), null},
-                new Object[] {"ZonedDateTime", ZonedDateTime.of(2016, 11, 15, 12, 30, 45, 300, ZoneOffset.ofTotalSeconds(200)), null},
-                new Object[] {"ZoneOffset", ZoneOffset.ofTotalSeconds(100), null},
 
                 new Object[] {"UUID", UUID.randomUUID(), null},
-                new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
-                new Object[] {"Class", GremlinLang.class, null},
                 new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},
-                new Object[] {"InetAddressV4", InetAddress.getByName("localhost"), null},
-                new Object[] {"InetAddressV6", InetAddress.getByName("::1"), null},
-                new Object[] {"Lambda0", Lambda.supplier("return 1"), null},
-                new Object[] {"Lambda1", Lambda.consumer("it"), null},
-                new Object[] {"Lambda2", Lambda.biFunction("x,y -> x + y"), null},
-                new Object[] {"LambdaN", new Lambda.UnknownArgLambda("x,y,z -> x + y + z", "gremlin-groovy", 3), null},
 
                 // enums
-                new Object[] {"Barrier", SackFunctions.Barrier.normSack, null},
-                new Object[] {"Cardinality", VertexProperty.Cardinality.list, null},
-                new Object[] {"Columns", Column.values, null},
                 new Object[] {"Direction", Direction.BOTH, null},
-                new Object[] {"Operator", Operator.sum, null},
-                new Object[] {"Operator", Operator.div, null},
-                new Object[] {"Order", Order.desc, null},
-                new Object[] {"Pick", Pick.any, null},
-                new Object[] {"Pop", Pop.mixed, null},
-                new Object[] {"Scope", Scope.global, null},
                 new Object[] {"T", T.label, null},
-                new Object[] {"Pgt", P.gt(0), null},
-                new Object[] {"Pgte", P.gte(0), null},
-                new Object[] {"Pbetween", P.between(0,1), null},
-                new Object[] {"Pand", P.gt(1).and(P.lt(2)), null},
-                new Object[] {"Por", P.gt(1).or(P.lt(2)), null},
-                new Object[] {"Pnot", P.not(P.lte(1)), null},
-                new Object[] {"Pwithout", P.without(1,2,3,4,null), null},
-                new Object[] {"Pinside", P.inside(0.0d, 0.6d), null},
-                new Object[] {"TextPstartingWith", TextP.startingWith("mark"), null},
-                new Object[] {"TextPregex", TextP.regex("^meh"), null},
-                new Object[] {"TextPnotRegex", TextP.notRegex("^meh"), null},
 
                 // graph
                 new Object[] {"ReferenceEdge", new ReferenceEdge(123, "person", new ReferenceVertex(123, "person"), new ReferenceVertex(321, "person")), null},
@@ -249,33 +212,15 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"Graph", g.E().subgraph("k").cap("k").next(), (Consumer<Graph>) graph -> {
                     IoTest.assertModernGraph(graph, true, false);
                 }},
-                new Object[] {"TraversalStrategyVertexProgram", new VertexProgramStrategy(Computer.compute()), (Consumer<TraversalStrategyProxy>) strategy -> {
-                    assertEquals(VertexProgramStrategy.class, strategy.getStrategyClass());
-                    assertEquals("org.apache.tinkerpop.gremlin.process.computer.GraphComputer", strategy.getConfiguration().getProperty(VertexProgramStrategy.GRAPH_COMPUTER));
-                }},
                 new Object[] {"BulkSet", bulkSet, null},
                 new Object[] {"Tree", tree, null},
-                new Object[] {"EmptyMetrics", new MutableMetrics("idEmpty", "nameEmpty"), (Consumer<Metrics>) m -> {
-                    assertThat(m, reflectionEquals(new MutableMetrics("idEmpty", "nameEmpty")));
-                }},
-                new Object[] {"Metrics", metrics, (Consumer<Metrics>) m -> {
-                    assertThat(m, reflectionEquals(metrics, "nested", "counts"));
-                    assertEquals(new ArrayList(metrics.getCounts().values()), new ArrayList(m.getCounts().values()));
-                    assertThat(m.getNested(), reflectionEquals(metrics.getNested()));
-                }},
-                new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<TraversalMetrics>) m -> {
-                    assertThat(m, reflectionEquals(emptyTraversalMetrics));
-                }},
-                new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<TraversalMetrics>) m -> {
-                    assertEquals(m.toString(), traversalMetrics.toString());
-                    assertThat(m, reflectionEquals(traversalMetrics, "stepIndexedMetrics", "positionIndexedMetrics"));
-                }},
 
                 // collections
                 new Object[] {"ListSingle", list, null},
                 new Object[] {"ListNested", nestedList, null},
                 new Object[] {"Map", map, null},
-                new Object[] {"Map", nestedMap, null},
+                new Object[] {"MapNested", nestedMap, null},
+                new Object[] {"OrderedMap", orderedMap, null},
                 new Object[] {"Set", set, null},
                 new Object[] {"SetNested", nestedSet, null});
     }

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,7 +42,8 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     @Override
     protected Vertex readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final Object id = context.read(buffer);
-        final String label = context.readValue(buffer, String.class, false);
+        // reading single string value for now according to GraphBinaryV4
+        final String label = (String) context.readValue(buffer, List.class, false).get(0);
         final List<DetachedVertexProperty> properties = context.read(buffer);
 
         final DetachedVertex.Builder builder = DetachedVertex.build().setId(id).setLabel(label);
@@ -58,7 +60,11 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     @Override
     protected void writeValue(final Vertex value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.id(), buffer);
-        context.writeValue(value.label(), buffer, false);
+        // wrapping label into list here for now according to GraphBinaryV4, but we aren't allowing null label yet
+        if (value.label() == null) {
+            throw new IOException("Unexpected null value when nullable is false");
+        }
+        context.writeValue(Collections.singletonList(value.label()), buffer, false);
         if (value.properties() == null) {
             context.write(null, buffer);
         }

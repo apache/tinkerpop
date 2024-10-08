@@ -89,7 +89,21 @@ class TestTraversalStrategies(object):
         assert "SubgraphStrategy" in str(gremlin_script)
         assert "__.has('name','marko')" in str(gremlin_script)
         ###
-        gremlin_script = g.with_strategies(OptionsStrategy(options={"x": "test", "y": True})).gremlin_lang
+        gremlin_script = g.with_strategies(OptionsStrategy(x="test", y=True)).gremlin_lang
         options = gremlin_script.options_strategies
         assert "test" == options[0].configuration["x"]
         assert options[0].configuration["y"]
+
+    def test_custom_strategies(self):
+        g = traversal().with_(None)
+
+        gremlin_script = g.with_strategies(TraversalStrategy(strategy_name='CustomSingletonStrategy')).gremlin_lang
+        assert "withStrategies(CustomSingletonStrategy)" in str(gremlin_script)
+
+        gremlin_script = g.with_strategies(TraversalStrategy(
+            strategy_name='CustomConfigurableStrategy',
+            stringKey='string value',
+            intKey=5,
+            booleanKey=True
+        )).gremlin_lang
+        assert "withStrategies(new CustomConfigurableStrategy(stringKey:'string value',intKey:5,booleanKey:true))" in str(gremlin_script)

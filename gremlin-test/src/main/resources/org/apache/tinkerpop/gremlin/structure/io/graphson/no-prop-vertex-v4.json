@@ -5,6 +5,6 @@
       "@type" : "g:Int32",
       "@value" : 1
     },
-    "label" : "person"
+    "label" : [ "person" ]
   }
 }

@@ -48,7 +48,7 @@ public final class GraphSONXModuleV4 extends GraphSONModule {
 
     private static final Map<Class, String> TYPE_DEFINITIONS = Collections.unmodifiableMap(
             new LinkedHashMap<Class, String>() {{
-                put(ByteBuffer.class, "ByteBuffer");
+                put(ByteBuffer.class, "Binary");
                 put(Short.class, "Int16");
                 put(BigInteger.class, "BigInteger");
                 put(BigDecimal.class, "BigDecimal");
@@ -124,7 +124,7 @@ public final class GraphSONXModuleV4 extends GraphSONModule {
 
     @Override
     public String getTypeNamespace() {
-        return GraphSONTokens.GREMLINX_TYPE_NAMESPACE;
+        return GraphSONTokens.GREMLIN_TYPE_NAMESPACE;
     }
 
     public static final class Builder implements GraphSONModuleBuilder {

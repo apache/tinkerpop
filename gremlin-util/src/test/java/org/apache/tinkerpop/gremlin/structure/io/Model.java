@@ -38,7 +38,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,8 +107,8 @@ public class Model {
 
         final Map<Object,Object> map = new HashMap<>();
         map.put("test", 123);
-        map.put(new Date(1481295L), "red");
-        map.put(Arrays.asList(1,2,3), new Date(1481295L));
+        map.put(OffsetDateTime.ofInstant(Instant.ofEpochMilli(1481295L), ZoneOffset.UTC), "red");
+        map.put(Arrays.asList(1,2,3), OffsetDateTime.ofInstant(Instant.ofEpochMilli(1481295L), ZoneOffset.UTC));
         map.put(null, null);
         addCoreEntry(map, "var-type-map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.");
         addCoreEntry(Collections.EMPTY_MAP, "empty-map");

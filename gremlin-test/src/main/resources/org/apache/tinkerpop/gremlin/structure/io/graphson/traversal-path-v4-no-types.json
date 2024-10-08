@@ -2,15 +2,15 @@
   "labels" : [ [ ], [ ], [ ] ],
   "objects" : [ {
     "id" : 1,
-    "label" : "person",
+    "label" : [ "person" ],
     "type" : "vertex"
   }, {
     "id" : 10,
-    "label" : "software",
+    "label" : [ "software" ],
     "type" : "vertex"
   }, {
     "id" : 11,
-    "label" : "software",
+    "label" : [ "software" ],
     "type" : "vertex"
   } ]
 }

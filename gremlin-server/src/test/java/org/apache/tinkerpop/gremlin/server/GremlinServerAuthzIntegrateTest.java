@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.AfterClass;
@@ -117,20 +116,6 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
                 DriverRemoteConnection.using(cluster, "gmodern"));
         try {
             assertEquals(6, (long) g.V().count().next());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldAuthorizeGremlinLangRequestWithLambda() {
-        final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
-        final GraphTraversalSource g = AnonymousTraversalSource.traversal().with(
-                DriverRemoteConnection.using(cluster, "gclassic"));
-
-        try {
-            assertEquals(6, (long) g.V().count().next());
-            assertEquals(6, (long) g.V().map(Lambda.function("it.get().value('name')")).count().next());
         } finally {
             cluster.close();
         }

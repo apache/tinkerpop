@@ -237,7 +237,7 @@ def test_client_gremlin_lang_options(client):
     # smoke test to validate serialization of OptionsStrategy. no way to really validate this from an integration
     # test perspective because there's no way to access the internals of the strategy via bytecode
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    t = g.with_strategies(OptionsStrategy(options={"x": "test", "y": True})).V()
+    t = g.with_strategies(OptionsStrategy(**{"x": "test", "y": True})).V()
     message = create_basic_request_message(t)
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6

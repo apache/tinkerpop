@@ -12,7 +12,7 @@
           "@type" : "g:Int32",
           "@value" : 11
         },
-        "label" : "software",
+        "label" : [ "software" ],
         "properties" : {
           "name" : [ {
             "@type" : "g:VertexProperty",
@@ -22,7 +22,7 @@
                 "@value" : 5
               },
               "value" : "tinkergraph",
-              "label" : "name"
+              "label" : [ "name" ]
             }
           } ]
         }

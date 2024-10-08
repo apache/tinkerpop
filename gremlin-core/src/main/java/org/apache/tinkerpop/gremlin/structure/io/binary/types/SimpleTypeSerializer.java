@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 /**
  * Base class for serialization of types that don't contain type specific information only {type_code}, {value_flag}
@@ -61,10 +62,11 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
 
     /**
      * Reads a non-nullable value according to the type format.
-     * @param buffer A buffer which reader index has been set to the beginning of the {value}.
+     *
+     * @param buffer  A buffer which reader index has been set to the beginning of the {value}.
      * @param context The binary reader.
-     * @return
      * @throws IOException
+     * @since 4.0.0
      */
     protected abstract T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException;
 
@@ -85,7 +87,11 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
         }
 
         if (nullable) {
-            context.writeValueFlagNone(buffer);
+            if (value instanceof LinkedHashMap) {
+                context.writeValueFlagOrdered(buffer);
+            } else {
+                context.writeValueFlagNone(buffer);
+            }
         }
 
         writeValue(value, buffer, context);

@@ -31,8 +31,8 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,8 +86,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Parse a Date based literal context and return the Date.
      */
-    public Date parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
-        return (Date) visitDateLiteral(dateLiteral);
+    public OffsetDateTime parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
+        return (OffsetDateTime) visitDateLiteral(dateLiteral);
     }
 
     /**

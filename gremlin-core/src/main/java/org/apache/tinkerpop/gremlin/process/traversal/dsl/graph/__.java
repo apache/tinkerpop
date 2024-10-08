@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -773,28 +774,28 @@ public class __ {
     /**
      * @see GraphTraversal#asDate()
      */
-    public static <A> GraphTraversal<A, Date> asDate() {
+    public static <A> GraphTraversal<A, OffsetDateTime> asDate() {
         return __.<A>start().asDate();
     }
 
     /**
      * @see GraphTraversal#dateAdd(DT, int)
      */
-    public static <A> GraphTraversal<A, Date> dateAdd(final DT dateToken, final int value) {
+    public static <A> GraphTraversal<A, OffsetDateTime> dateAdd(final DT dateToken, final int value) {
         return __.<A>start().dateAdd(dateToken, value);
     }
 
     /**
-     * @see GraphTraversal#dateDiff(Date)
+     * @see GraphTraversal#dateDiff(OffsetDateTime)
      */
-    public static <A> GraphTraversal<A, Long> dateDiff(final Date value) {
+    public static <A> GraphTraversal<A, Long> dateDiff(final OffsetDateTime value) {
         return __.<A>start().dateDiff(value);
     }
 
     /**
      * @see GraphTraversal#dateDiff(Traversal)
      */
-    public static <A> GraphTraversal<A, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
+    public static <A> GraphTraversal<A, Long> dateDiff(final Traversal<?, OffsetDateTime> dateTraversal) {
         return __.<A>start().dateDiff(dateTraversal);
     }
 
