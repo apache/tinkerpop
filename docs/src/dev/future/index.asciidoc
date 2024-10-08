@@ -215,7 +215,7 @@ Schema support relies on a well-defined type system.
 
 ==== Multi-label, no label, mutable label support [[multi-label]]
 TinkerPop only support single, immutable labels for its Elements. Various providers have implemented their own mechanisms
-for multi-label, no label, and/or mutable label support. Neo4j also allows multiple labels in their graphs. It is time to consider
+for multi-label, no label, and/or mutable label support. Many popular non-TinkerPop graph models also allow for multiple labels. It is time to consider
 bringing these functionalities into parity.
 
 ==== Multi/meta properties on edges [[meta-props-on-edge]]
@@ -233,13 +233,12 @@ manipulation steps in 3.7 further blurred some definitions of local execution in
 a redesign or improved design of the `local()` step.
 
 ==== Type conversion with `cast()` step [[type-casts]]
-We have introduced `aoString()` and `asDate()` in 3.7, this would be to introduce additional casting steps like `toInt()`, which
+We have introduced `asString()` and `asDate()` in 3.7, this would be to introduce additional casting steps like `toInt()`, which
 should rely on a well-defined type system.
 
-==== New Gremlin language elements for geospatial, vector, and pattern matching [[geo-vector-patterns]]
+==== New Gremlin language elements for geospatial and vector computation [[geo-vector-patterns]]
 Similar to how string and list manipulation steps were introduced, there is room for creating first-class steps for vector computation
-and geospatial steps (link:https://lists.apache.org/thread/mxg3kopgj9h9v8j299qjhdhopzpdkfow[DISCUSS Thread]). Pattern matching is also another area is the long due for revision, which ties into the current
-implementation of `match()` step.
+and geospatial steps (link:https://lists.apache.org/thread/mxg3kopgj9h9v8j299qjhdhopzpdkfow[DISCUSS Thread]).
 
 ==== Rework `match()` step [[match-step-improve]]
 The `match()` step has been an attempt to introduce a way of declarative form of querying in TinkerPop based on pattern matching.
