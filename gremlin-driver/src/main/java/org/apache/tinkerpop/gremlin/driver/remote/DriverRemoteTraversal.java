@@ -53,7 +53,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
     private final Iterator<Traverser.Admin<E>> traversers;
     private Traverser.Admin<E> lastTraverser = EmptyTraverser.instance();
 
-    public DriverRemoteTraversal(final ResultSet rs, final Client client, final boolean attach, final Optional<Configuration> conf) {
+    public DriverRemoteTraversal(final ResultSet rs, final boolean attach, final Optional<Configuration> conf) {
         // attaching is really just for testing purposes. it doesn't make sense in any real-world scenario as it would
         // require that the client have access to the Graph instance that produced the result. tests need that
         // attachment process to properly execute in full hence this little hack.
@@ -113,7 +113,10 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            return new DefaultRemoteTraverser<>((E)inner.next().getObject(), 1);
+            Object next = inner.next().getObject();
+            return next instanceof RemoteTraverser
+                    ? (RemoteTraverser<E>) next
+                    : new DefaultRemoteTraverser<>((E) next, 1);
         }
     }
 

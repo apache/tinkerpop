@@ -221,6 +221,11 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
             if (parts.contains(MessageParts.HEADER)) {
                 // Version
                 buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
+                if (responseMessage.getResult().isBulked()) {
+                    buffer.writeByte(GraphBinaryWriter.BULKED_BYTE);
+                } else {
+                    buffer.writeByte((byte) 0);
+                }
             }
 
             if (parts.contains(MessageParts.DATA)) {
@@ -282,6 +287,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     @Override
     public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
         final Buffer buffer = bufferFactory.create(byteBuf);
+        boolean bulking = false;
 
         try {
             // empty input buffer
@@ -297,6 +303,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
                     // Or the buffer offsets are wrong
                     throw new SerializationException("The most significant bit should be set according to the format");
                 }
+                bulking = (buffer.readByte() & 1) == 1;
             }
 
             final List<Object> result = readPayload(buffer);
@@ -305,12 +312,14 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
             if (buffer.readableBytes() == 0) {
                 return ResponseMessage.build()
                         .result(result)
+                        .bulked(bulking)
                         .create();
             }
 
             final Triplet<HttpResponseStatus, String, String> footer = readFooter(buffer);
             return ResponseMessage.build()
                     .result(result)
+                    .bulked(bulking)
                     .code(footer.getValue0())
                     .statusMessage(footer.getValue1())
                     .exception(footer.getValue2())

@@ -62,6 +62,7 @@ public final class Tokens {
      * request to execute on the server.
      */
     public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
+
     /**
      * The name of the argument that allows to control the serialization of properties on the server.
      */
@@ -73,6 +74,7 @@ public final class Tokens {
      */
 
     public static final String MATERIALIZE_PROPERTIES_ALL = "all";
+
     /**
      * The name of the value denoting that only `ID` and `Label` of Element should be returned.
      * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
@@ -83,6 +85,11 @@ public final class Tokens {
      * The key for the per request server-side timeout in milliseconds.
      */
     public static final String TIMEOUT_MS = "timeoutMs";
+
+    /**
+     * The key for turning on bulked result optimization for driver requests.
+     */
+    public static final String BULKED = "bulked";
 
     /**
      * A value that is a custom string that the user can pass to a server that might accept it for purpose of

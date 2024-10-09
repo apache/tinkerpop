@@ -99,6 +99,7 @@ public final class ResponseMessage {
     public final static class Builder {
         private HttpResponseStatus code = null;
         private List<Object> result = Collections.emptyList();
+        private boolean bulked = false;
         private String statusMessage = null;
         private String exception = null;
 
@@ -124,8 +125,13 @@ public final class ResponseMessage {
             return this;
         }
 
+        public Builder bulked(final boolean bulked) {
+            this.bulked = bulked;
+            return this;
+        }
+
         public ResponseMessage create() {
-            final ResponseResult responseResult = new ResponseResult(result);
+            final ResponseResult responseResult = new ResponseResult(result, bulked);
             // skip null values
             if (code == null && statusMessage == null) {
                 return new ResponseMessage(null, responseResult);

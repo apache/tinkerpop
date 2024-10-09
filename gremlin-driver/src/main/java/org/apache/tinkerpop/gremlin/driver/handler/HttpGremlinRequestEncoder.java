@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
@@ -52,12 +53,14 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
+    private final boolean bulkedResultEnabled;
     private final List<RequestInterceptor> interceptors;
 
-    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled, boolean bulkedResultEnabled) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
+        this.bulkedResultEnabled = bulkedResultEnabled;
     }
 
     @Override
@@ -80,6 +83,9 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             request.headers().add(HttpHeaderNames.HOST, remoteAddress.getAddress().getHostAddress());
             if (userAgentEnabled) {
                 request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
+            }
+            if (bulkedResultEnabled) {
+                request.headers().add(Tokens.BULKED, "true");
             }
 
             for (final RequestInterceptor interceptor : interceptors) {
