@@ -30,12 +30,8 @@ public interface Auth extends RequestInterceptor {
         return new Basic(username, password);
     }
 
-    static Auth sigv4(final String regionName) {
-        return new Sigv4(regionName);
-    }
-
-    static Auth sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider) {
-        return new Sigv4(regionName, awsCredentialsProvider);
+    static Auth sigv4(final String regionName, final String serviceName) {
+        return new Sigv4(regionName, serviceName);
     }
 
     static Auth sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider, final String serviceName) {
@@ -47,7 +43,7 @@ public interface Auth extends RequestInterceptor {
             return basic(settings.username, settings.password);
         }
         if (settings.type.equals(AUTH_SIGV4)) {
-            return sigv4(settings.region);
+            return sigv4(settings.region, settings.serviceName);
         }
         throw new IllegalArgumentException("Unknown auth type: " + settings.type);
     }
