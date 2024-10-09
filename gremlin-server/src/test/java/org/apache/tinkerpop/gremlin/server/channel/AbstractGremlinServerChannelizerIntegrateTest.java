@@ -38,6 +38,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -230,7 +231,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
                     assertEquals("application/json", response.getEntity().getContentType().getValue());
                     final String json = EntityUtils.toString(response.getEntity());
                     final JsonNode node = mapper.readTree(json);
-                    assertEquals(result, node.get("result").get("@value").get(0).get("@value").intValue());
+                    assertEquals(result, node.get("result").get(SerTokens.TOKEN_DATA).get("@value").get(0).get("@value").intValue());
                 }
             }
         }
