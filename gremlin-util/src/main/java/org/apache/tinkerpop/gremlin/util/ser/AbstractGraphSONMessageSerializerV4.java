@@ -130,7 +130,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                     ? mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()))
                     : new byte[0];
             // skip closing }
-            final int headerLen = header.length - (isTyped() ? 3 : 2);
+            final int headerLen = header.length - (isTyped() ? 4 : 3);
             final int bufSize = headerLen + data.length + (writeFullMessage ? footer.length - 1 : 0);
 
             encodedMessage = allocator.buffer(bufSize).writeBytes(header, 0, headerLen).writeBytes(data);
@@ -378,6 +378,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
+
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+            jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
+
             final List<Object> result = responseMessage.getResult().getData();
             if (result != null) {
                 serializerProvider.findTypedValueSerializer(result.getClass(), true, null).serialize(result, jsonGenerator, serializerProvider);
@@ -385,6 +389,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                 serializerProvider.findTypedValueSerializer(List.class, true, null).serialize(Collections.emptyList(), jsonGenerator, serializerProvider);
             }
 
+            GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
             GraphSONUtil.writeEndObject(responseMessage, jsonGenerator, typeSerializer);
         }
     }
@@ -413,8 +418,11 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             final ResponseMessage responseMessage = responseMessageHeader.getResponseMessage();
 
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
-
             jsonGenerator.writeFieldName(SerTokens.TOKEN_RESULT);
+
+            GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
+            jsonGenerator.writeFieldName(SerTokens.TOKEN_DATA);
+
             jsonGenerator.writeObject(Collections.emptyList());
 
             // jsonGenerator will add 2 closing }
@@ -449,7 +457,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
 
             // close result field. array inside object for types, just array for untyped
-            jsonGenerator.writeRaw(responseMessageFooter.getTyped() ? "]}," : "],");
+            jsonGenerator.writeRaw(responseMessageFooter.getTyped() ? "]}}," : "]},");
 
             jsonGenerator.writeFieldName(SerTokens.TOKEN_STATUS);
             GraphSONUtil.writeStartObject(responseMessage, jsonGenerator, typeSerializer);
@@ -476,7 +484,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             final Map<String, Object> status = (Map<String, Object>) data.get(SerTokens.TOKEN_STATUS);
             ResponseMessage.Builder response = ResponseMessage.build()
                     .code(HttpResponseStatus.valueOf((Integer) status.get(SerTokens.TOKEN_CODE)))
-                    .result((List) data.get(SerTokens.TOKEN_RESULT));
+                    .result((List) ((Map) data.get(SerTokens.TOKEN_RESULT)).get(SerTokens.TOKEN_DATA));
 
             if (null != status.get(SerTokens.TOKEN_EXCEPTION)) {
                 response.exception(String.valueOf(status.get(SerTokens.TOKEN_EXCEPTION)));
