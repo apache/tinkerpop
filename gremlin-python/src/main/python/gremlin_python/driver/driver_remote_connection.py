@@ -35,7 +35,7 @@ class DriverRemoteConnection(RemoteConnection):
                  transport_factory=None, pool_size=None, max_workers=None,
                  auth=None,
                  message_serializer=None, headers=None,
-                 enable_user_agent_on_connect=True, **transport_kwargs):
+                 enable_user_agent_on_connect=True, enable_bulked_result=False, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
@@ -47,6 +47,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__message_serializer = message_serializer
         self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
+        self.__enable_bulked_result = enable_bulked_result
         self.__transport_kwargs = transport_kwargs
 
         if message_serializer is None:
@@ -60,6 +61,7 @@ class DriverRemoteConnection(RemoteConnection):
                                      auth=auth,
                                      headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
+                                     enable_bulked_result=enable_bulked_result,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source

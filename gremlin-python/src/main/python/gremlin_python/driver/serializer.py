@@ -21,6 +21,10 @@ import base64
 import logging
 import struct
 import io
+
+from gremlin_python.process.traversal import Traverser
+from numpy.lib.utils import source
+
 try:
     import ujson as json
     if int(json.__version__[0]) < 2:
@@ -95,6 +99,7 @@ class GraphBinarySerializersV4(object):
         return bytes(ba)
 
     def deserialize_message(self, message, is_first_chunk=False):
+        bulking = False
         if len(message) == 0:
             return {'status': {'code': 204},
                     'result': {'meta': {},
@@ -105,8 +110,9 @@ class GraphBinarySerializersV4(object):
 
         if is_first_chunk:
             b.read(1)  # version
+            bulking = b.read(1)[0] == 0x01
 
-        result, readable = self.read_payload(b)
+        result, readable = self.read_payload(b, bulking)
         if not readable:
             return {
                 'result': {'meta': {},
@@ -125,18 +131,28 @@ class GraphBinarySerializersV4(object):
                'result': {'meta': {},
                           'data': result}}
 
+        print('raw result')
+        print(result)
+
         return msg
 
-    def read_payload(self, buffer):
+    def read_payload(self, buffer, bulking):
         results = []
         readable = True
         while buffer.readable():  # find method or way to access readable bytes without using buffer.getvalue()
             if buffer.tell() == len(buffer.getvalue()):
                 readable = False
                 break
-            data = self._graphbinary_reader.to_object(buffer)
-            if data == Marker.end_of_stream():
-                break
-            results.append(data)
+            if bulking:
+                item = self._graphbinary_reader.to_object(buffer)
+                if item == Marker.end_of_stream():
+                    break
+                bulk = self._graphbinary_reader.to_object(buffer)
+                results.append(Traverser(item, bulk))
+            else:
+                data = self._graphbinary_reader.to_object(buffer)
+                if data == Marker.end_of_stream():
+                    break
+                results.append(data)
 
         return results, readable
