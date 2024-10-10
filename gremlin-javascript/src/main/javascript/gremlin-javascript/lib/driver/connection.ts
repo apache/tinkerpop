@@ -356,6 +356,7 @@ export default class Connection extends EventEmitter {
 
       return;
     } else if (response.status.code >= 400) {
+      this.#clearHandler(response.requestId);
       // callback in error
       return handler.callback(
         // TINKERPOP-2285: keep the old server error message in case folks are parsing that - fix in a future breaking version
