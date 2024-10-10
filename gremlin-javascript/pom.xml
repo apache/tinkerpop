@@ -135,6 +135,13 @@ limitations under the License.
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/main/javascript/gremlin-javascript/build</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>

@@ -17,15 +17,15 @@
 
 module github.com/apache/tinkerpop/gremlin-go/v3
 
-go 1.21
+go 1.22
 
 require (
 	github.com/cucumber/godog v0.14.1
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/websocket v1.5.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/text v0.17.0
+	golang.org/x/text v0.19.0
 )
 
 require (
@@ -39,6 +39,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	golang.org/x/net v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

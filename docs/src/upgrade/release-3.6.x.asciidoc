@@ -30,9 +30,11 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Upgrade to Python 3.9
+==== Runtime Updates
 
-As Python 3.8 has reached end of life, gremlin python now requires python >= 3.9.
+`gremlin-python` has upgraded to Python 3.9 as Python 3.8 has passed end of life.
+`gremlin-go` has upgraded to Go 1.22 as Go 1.21 has passed end of life.
+
 
 === Upgrading for Providers
 
