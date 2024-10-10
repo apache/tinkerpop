@@ -32,7 +32,9 @@ complete list of all the modifications that are part of this release.
 
 ==== Runtime Updates
 
+`gremlin-python` has upgraded to Python 3.9 as Python 3.8 has passed end of life.
 `gremlin-go` has upgraded to Go 1.22 as Go 1.21 has passed end of life.
+
 
 === Upgrading for Providers
 
