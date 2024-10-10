@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
+import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,10 +58,15 @@ public class ParametersTest {
 
         final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class));
         assertEquals(6, params.length);
-        Object[] expected = new Object[] {"a", null, "b", "bat", "c", "cat"};
-        Arrays.sort(params, Comparator.nullsFirst(Comparator.comparing(Object::toString)));
-        Arrays.sort(expected, Comparator.nullsFirst(Comparator.comparing(Object::toString)));
-        assertThat(Arrays.equals(expected, params), is(true));
+        Map<Object, Object> paramsMap = new HashMap<>();
+        for (int i = 0; i < params.length; i += 2) {
+            paramsMap.put(params[i], params[i + 1]);
+        }
+        Map<Object, Object> expectedMap = new HashMap<>();
+        expectedMap.put("a", null);
+        expectedMap.put("b", "bat");
+        expectedMap.put("c", "cat");
+        assertThat(paramsMap.equals(expectedMap), is(true));
     }
 
     @Test
