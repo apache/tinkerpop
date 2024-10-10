@@ -313,8 +313,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-        final boolean bulking = Objects.equals(context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED), "true")
-                || (args.containsKey(Tokens.BULKED) && (boolean) args.get(Tokens.BULKED));
+        final boolean bulking = ((Objects.equals(context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED), "true")
+                && result instanceof Traversal)
+                || (args.containsKey(Tokens.BULKED) && (boolean) args.get(Tokens.BULKED))
+                && Objects.equals(language, "gremlin-lang"));
 
         if (bulking) {
             // optimization for driver requests
@@ -421,7 +423,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // while waiting for the client to catch up
             if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) {
                 if (bulking) {
-                    // bulking will return
                     Traverser traverser = (Traverser) itty.next();
                     aggregate.add(traverser.get());
                     aggregate.add(traverser.bulk());
