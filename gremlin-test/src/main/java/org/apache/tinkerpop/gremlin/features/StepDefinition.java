@@ -407,15 +407,17 @@ public final class StepDefinition {
     public void theTraversalWillRaiseAnErrorWithMessage(final String comparison, final String expectedMessage) {
         assertNotNull(error);
 
+        final String msg = world.mapErrorMessage(expectedMessage);
+
         switch (comparison) {
             case "containing":
-                assertThat(error.getMessage(), containsStringIgnoringCase(expectedMessage));
+                assertThat(error.getMessage(), containsStringIgnoringCase(msg));
                 break;
             case "starting":
-                assertThat(error.getMessage(), startsWithIgnoringCase(expectedMessage));
+                assertThat(error.getMessage(), startsWithIgnoringCase(msg));
                 break;
             case "ending":
-                assertThat(error.getMessage(), endsWithIgnoringCase(expectedMessage));
+                assertThat(error.getMessage(), endsWithIgnoringCase(msg));
                 break;
             default:
                 throw new IllegalStateException(String.format(

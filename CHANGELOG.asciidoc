@@ -62,6 +62,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Deprecated public constructor for `SeedStrategy` in favor of builder pattern to be consistent with other strategies.
 * Allowed specification of a customized Spark app name.
 * Added getter method to `CoinStep` for its probability field.
+* Exposed a mechanism for providers to customize the assertion of error messages in feature tests.
 * Attempted to detect JDK version for Gremlin Console to avoid problems with Java 17 if `neo4j-gremlin` is used.
 * Fixed so that `TrimGlobalStep` and `TrimLocalStep` have the same character control handling as `Ltrim` and `Rtrim`
 * Fixed a bug in `MaxLocalStep`, `MinLocalStep`, `MeanLocalStep` and `SumLocalStep` that it throws `NoSuchElementException` when encounters an empty iterator as input.
