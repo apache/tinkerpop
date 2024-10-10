@@ -6,15 +6,19 @@
       "@value" : 13
     },
     "label" : [ "develops" ],
-    "inVLabel" : [ "software" ],
-    "outVLabel" : [ "person" ],
     "inV" : {
-      "@type" : "g:Int32",
-      "@value" : 10
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 10
+      },
+      "label" : [ "software" ]
     },
     "outV" : {
-      "@type" : "g:Int32",
-      "@value" : 1
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      },
+      "label" : [ "person" ]
     }
   }
 }

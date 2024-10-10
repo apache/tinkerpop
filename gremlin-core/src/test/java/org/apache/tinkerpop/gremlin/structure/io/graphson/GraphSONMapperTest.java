@@ -113,7 +113,7 @@ public class GraphSONMapperTest {
         else if (version.startsWith("v2"))
             assertEquals("{\"id\":123,\"label\":\"knows\",\"inVLabel\":\"person\",\"outVLabel\":\"person\",\"inV\":2,\"outV\":1,\"properties\":{\"weight\":{\"key\":\"weight\",\"value\":0.5}}}", json);
         else if (version.startsWith("v4"))
-            assertEquals("{\"id\":123,\"label\":[\"knows\"],\"type\":\"edge\",\"inVLabel\":[\"person\"],\"outVLabel\":[\"person\"],\"inV\":2,\"outV\":1,\"properties\":{\"weight\":[0.5]}}", json);
+            assertEquals("{\"id\":123,\"label\":[\"knows\"],\"type\":\"edge\",\"inV\":{\"id\":2,\"label\":[\"person\"]},\"outV\":{\"id\":1,\"label\":[\"person\"]},\"properties\":{\"weight\":[0.5]}}", json);
         else
             throw new IllegalStateException("Version not accounted for in asserts");
     }

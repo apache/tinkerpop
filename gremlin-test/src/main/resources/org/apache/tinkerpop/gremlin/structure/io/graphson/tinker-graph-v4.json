@@ -410,15 +410,19 @@
           "@value" : 13
         },
         "label" : [ "develops" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 1
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "since" : [ {
@@ -441,15 +445,19 @@
           "@value" : 14
         },
         "label" : [ "develops" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 1
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "since" : [ {
@@ -472,15 +480,19 @@
           "@value" : 15
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 1
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -503,15 +515,19 @@
           "@value" : 16
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 1
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 1
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -534,15 +550,19 @@
           "@value" : 17
         },
         "label" : [ "develops" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 7
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 7
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "since" : [ {
@@ -565,15 +585,19 @@
           "@value" : 18
         },
         "label" : [ "develops" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 7
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 7
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "since" : [ {
@@ -596,15 +620,19 @@
           "@value" : 19
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 7
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 7
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -627,15 +655,19 @@
           "@value" : 20
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 7
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 7
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -658,15 +690,19 @@
           "@value" : 21
         },
         "label" : [ "develops" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 8
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 8
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "since" : [ {
@@ -689,15 +725,19 @@
           "@value" : 22
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 8
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 8
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -720,15 +760,19 @@
           "@value" : 23
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 8
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 8
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -751,15 +795,19 @@
           "@value" : 24
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 9
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 9
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -782,15 +830,19 @@
           "@value" : 25
         },
         "label" : [ "uses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "person" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 9
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 9
+          },
+          "label" : [ "person" ]
         },
         "properties" : {
           "skill" : [ {
@@ -813,15 +865,19 @@
           "@value" : 26
         },
         "label" : [ "traverses" ],
-        "inVLabel" : [ "software" ],
-        "outVLabel" : [ "software" ],
         "inV" : {
-          "@type" : "g:Int32",
-          "@value" : 11
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 11
+          },
+          "label" : [ "software" ]
         },
         "outV" : {
-          "@type" : "g:Int32",
-          "@value" : 10
+          "id" : {
+            "@type" : "g:Int32",
+            "@value" : 10
+          },
+          "label" : [ "software" ]
         }
       }
     } ]
