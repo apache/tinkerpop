@@ -32,19 +32,12 @@ import java.util.Map;
  */
 public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
     public BulkSetSerializer() {
-        super(DataType.BULKSET);
+        super(DataType.LIST);
     }
 
     @Override
     protected BulkSet readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int length = buffer.readInt();
-
-        final BulkSet result = new BulkSet();
-        for (int i = 0; i < length; i++) {
-            result.add(context.read(buffer), buffer.readLong());
-        }
-
-        return result;
+        throw new UnsupportedOperationException("BulkSet is used as an internal serializer for bulk lists, deserializing into BulkSet is not supported");
     }
 
     @Override

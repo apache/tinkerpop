@@ -69,6 +69,7 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -882,27 +883,35 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    public void shouldReadWriteVarBulkSet() throws Exception {
-        final String resourceName = "var-bulkset";
+    @Ignore("re-enable after GraphSONV4 bulklist is implemented")
+    public void shouldReadWriteVarBulkList() throws Exception {
+        final String resourceName = "var-bulklist";
 
         final BulkSet resource = findModelEntryObject(resourceName);
-        final BulkSet fromStatic = read(readFromResource(resourceName), BulkSet.class);
-        final BulkSet recycled = read(write(fromStatic, BulkSet.class, resourceName), BulkSet.class);
+        final List fromStatic = read(readFromResource(resourceName), List.class);
+        final List recycled = read(write(fromStatic, BulkSet.class, resourceName), List.class);
         assertEquals(fromStatic, recycled);
-        assertEquals(resource, fromStatic);
-        assertEquals(resource, recycled);
+        // we no longer deserialize into BulkSets, needs the expanded list
+        List expandedResource = new ArrayList<>();
+        resource.spliterator().forEachRemaining(expandedResource::add);
+        assertEquals(expandedResource, fromStatic);
+        assertEquals(expandedResource, recycled);
     }
 
     @Test
-    public void shouldReadWriteEmptyBulkSet() throws Exception {
-        final String resourceName = "empty-bulkset";
+    @Ignore("re-enable after GraphSONV4 bulklist is implemented")
+    public void shouldReadWriteEmptyBulkList() throws Exception {
+        final String resourceName = "empty-bulklist";
 
         final BulkSet resource = findModelEntryObject(resourceName);
-        final BulkSet fromStatic = read(readFromResource(resourceName), BulkSet.class);
-        final BulkSet recycled = read(write(fromStatic, BulkSet.class, resourceName), BulkSet.class);
+        final List fromStatic = read(readFromResource(resourceName), List.class);
+        final List recycled = read(write(fromStatic, BulkSet.class, resourceName), List.class);
         assertEquals(fromStatic, recycled);
-        assertEquals(resource, fromStatic);
-        assertEquals(resource, recycled);
+        // we no longer deserialize into BulkSets, needs the expanded list
+        List expandedResource = new ArrayList<>();
+        resource.spliterator().forEachRemaining(expandedResource::add);
+        assertEquals(expandedResource, fromStatic);
+        assertEquals(expandedResource, recycled);
     }
 
     @Test

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -89,6 +90,8 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
         if (nullable) {
             if (value instanceof LinkedHashMap) {
                 context.writeValueFlagOrdered(buffer);
+            } else if (value instanceof BulkSet) {
+                context.writeValueFlagBulk(buffer);
             } else {
                 context.writeValueFlagNone(buffer);
             }
