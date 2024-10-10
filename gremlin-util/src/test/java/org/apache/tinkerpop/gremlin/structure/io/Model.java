@@ -162,8 +162,8 @@ public class Model {
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);
         bulkSet.add("josh", 2);
-        addGraphProcessEntry(bulkSet, "var-bulkset", "");
-        addGraphProcessEntry(new BulkSet(), "empty-bulkset", "");
+        addGraphProcessEntry(bulkSet, "var-bulklist", "");
+        addGraphProcessEntry(new BulkSet(), "empty-bulklist", "");
 
         addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "vertex-traverser", "");
         addGraphProcessEntry(g.V().both().barrier().asAdmin().nextTraverser(), "bulked-traverser", "");
