@@ -81,4 +81,12 @@ public interface World {
     public default String convertIdToScript(final Object id, final Class<? extends Element> type) {
         return id.toString();
     }
+
+    /**
+     * Allows for some flexibility in error message assertion, where the provider can supply their
+     * own error message that they find more suitable for a given test.
+     */
+    public default String mapErrorMessage(final String expectedErrorMessage) {
+        return expectedErrorMessage;
+    }
 }
