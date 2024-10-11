@@ -104,13 +104,17 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
                 sb.append(integerLiteral, 0, lastCharIndex);
                 break;
             case 'i':
-            case 'n':
-                // parse I/i as integer. no BigInteger so just remove the N/n
+                // parse I/i as integer.
                 sb.append(integerLiteral, 0, lastCharIndex);
                 break;
             case 'l':
                 // parse L/l as long
                 sb.append(integerLiteral);
+                break;
+            case 'n':
+                sb.append("new BigInteger(");
+                sb.append(integerLiteral, 0, lastCharIndex);
+                sb.append(")");
                 break;
             default:
                 // everything else just goes as specified

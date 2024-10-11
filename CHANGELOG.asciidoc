@@ -30,6 +30,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
 * Added `Set` syntax in `gremlin-language`.
+* Changed `sum()` to retain the type common to the stream rather than always promoting to `long` given the need for it to multiple by the `long` bulk value for the traverser.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.

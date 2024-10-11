@@ -381,13 +381,6 @@ public final class StepDefinition {
         assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
     }
 
-    @Then("debug the graph should return {int} for count of {string}")
-    public void debugTheGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
-        assertThatNoErrorWasThrown();
-
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
-    }
-
     @Then("the result should be empty")
     public void theResultShouldBeEmpty() {
         assertThatNoErrorWasThrown();
@@ -598,7 +591,7 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(final T... items) {
         return new IsIterableContainingInAnyOrder(getMatchers(items));
     }
 
@@ -606,25 +599,25 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(final T... items) {
         return new IsIterableContainingInOrder(getMatchers(items));
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(Collection<T> collection) {
+    public static <T> org.hamcrest.Matcher<T> in(final Collection<T> collection) {
         return new IsInMatcher(collection);
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(T[] elements) {
+    public static <T> org.hamcrest.Matcher<T> in(final T[] elements) {
         return new IsInMatcher(elements);
     }
 
-    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(T[] items) {
+    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(final T[] items) {
         final List<org.hamcrest.Matcher<? super T>> matchers = new ArrayList<>();
 
         for (int ix = 0; ix < items.length; ix++) {
