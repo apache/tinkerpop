@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.interceptor.GraphBinarySerializationInterceptor;
+import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -110,7 +110,8 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
                                     new HttpGremlinRequestEncoder(serializer,
                                             Collections.singletonList(
-                                                    Pair.of("serializer", new GraphBinarySerializationInterceptor())),
+                                                    Pair.of("serializer", new PayloadSerializingInterceptor(
+                                                            new GraphBinaryMessageSerializerV4()))),
                                             false, false, uri),
                                     callbackResponseHandler);
                         }
