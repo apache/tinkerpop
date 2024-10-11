@@ -105,7 +105,7 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpClientCodec(),
                                     new HttpContentDecompressionHandler(),
                                     new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
-                                    new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false),
+                                    new HttpGremlinRequestEncoder(serializer, new ArrayList<>(), false, false),
                                     callbackResponseHandler);
                         }
                     });

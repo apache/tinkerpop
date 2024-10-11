@@ -55,15 +55,16 @@ class Traversal(object):
             self.traversal_strategies.apply_strategies(self)
         if self.last_traverser is None:
             self.last_traverser = next(self.traversers)
-        # TODO affected by bulking, revisit after bulking is added back
-        # object = self.last_traverser.object
-        # self.last_traverser.bulk = self.last_traverser.bulk - 1
-        # if self.last_traverser.bulk <= 0:
-        #     self.last_traverser = None
-        # return object
         res = self.last_traverser
-        self.last_traverser = None
-        return res
+        if isinstance(res, Traverser):
+            obj = res.object
+            self.last_traverser.bulk = self.last_traverser.bulk - 1
+            if self.last_traverser.bulk <= 0:
+                self.last_traverser = None
+            return obj
+        else:
+            self.last_traverser = None
+            return res
 
     def toList(self):
         warnings.warn(
@@ -100,7 +101,6 @@ class Traversal(object):
             DeprecationWarning)
         return self.next_traverser()
 
-    # TODO: affected by bulking, revisit after bulking is added back
     def next_traverser(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
@@ -118,7 +118,6 @@ class Traversal(object):
             DeprecationWarning)
         return self.has_next()
 
-    # TODO: revisit after bulking is added back
     def has_next(self):
         if self.traversers is None:
             self.traversal_strategies.apply_strategies(self)
@@ -127,7 +126,7 @@ class Traversal(object):
                 self.last_traverser = next(self.traversers)
             except StopIteration:
                 return False
-        return not (self.last_traverser is None)  # and self.last_traverser.bulk > 0
+        return not (self.last_traverser is None) and self.last_traverser.bulk > 0 if isinstance(self.last_traverser, Traverser) else True
 
     def next(self, amount=None):
         if amount is None:

@@ -83,7 +83,7 @@ public class HttpGremlinResponseStreamDecoderTest {
             testChannel.writeInbound(httpResponse);
             fail("Expected TooLongFrameException");
         } catch (TooLongFrameException e) {
-            assertEquals("Response exceeded 59 bytes.", e.getMessage());
+            assertEquals("Response exceeded 60 bytes.", e.getMessage());
         }
     }
 

@@ -99,4 +99,6 @@ def __create_remote(server_graph_name):
     else:
         raise ValueError('serializer not found - ' + world.config.user_data["serializer"])
 
-    return DriverRemoteConnection(test_no_auth_url, server_graph_name, message_serializer=s)
+    bulked = world.config.user_data["bulked"] == "true" if "bulked" in world.config.user_data else False
+
+    return DriverRemoteConnection(test_no_auth_url, server_graph_name, message_serializer=s, enable_bulked_result=bulked)

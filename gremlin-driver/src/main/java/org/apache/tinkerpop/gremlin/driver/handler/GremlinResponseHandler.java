@@ -27,6 +27,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultQueue;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -72,8 +74,19 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         if ((null == statusCode) || (statusCode == HttpResponseStatus.OK)) {
             final List<Object> data = response.getResult().getData();
+            final boolean bulked = (boolean) channelHandlerContext.channel().attr(AttributeKey.valueOf("isBulked")).get();
             // unrolls the collection into individual results to be handled by the queue.
-            data.forEach(item -> queue.add(new Result(item)));
+            if (bulked) {
+                for (Iterator<Object> iter = data.iterator(); iter.hasNext(); ) {
+                    Object obj = iter.next();
+                    long bulk = (long) iter.next();
+                    DefaultRemoteTraverser<Object> item = new DefaultRemoteTraverser<>(obj, bulk);
+                    queue.add(new Result(item));
+                }
+            } else {
+                data.forEach(item -> queue.add(new Result(item)));
+            }
+
         } else {
             // this is a "success" but represents no results otherwise it is an error
             if (statusCode != HttpResponseStatus.NO_CONTENT) {

@@ -35,6 +35,14 @@ test_no_auth_url = gremlin_server_url.format(45940)
 
 class TestDriverRemoteConnection(object):
 
+    def test_bulked_request_option(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        result = g.inject(1,2,3,2,1).to_list()
+        assert 5 == len(result)
+        bulked_results = g.with_("bulked", True).inject(1,2,3,2,1).to_list()
+        assert 5 == len(bulked_results)
+        print(g.with_("bulked", True).inject(1,2,3,2,1).to_list())
+
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
         t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()

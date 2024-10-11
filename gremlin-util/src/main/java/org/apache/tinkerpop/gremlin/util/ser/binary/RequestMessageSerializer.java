@@ -70,6 +70,9 @@ public class RequestMessageSerializer {
             if (fields.containsKey(Tokens.ARGS_BATCH_SIZE)) {
                 builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
             }
+            if (fields.containsKey(Tokens.BULKED)) {
+                builder.addBulkedResult((boolean) fields.get(Tokens.BULKED));
+            }
 
             return builder.create();
         } catch (IOException ex) {

@@ -49,6 +49,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     private static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
     private static final AttributeKey<String> RESPONSE_ENCODING = AttributeKey.valueOf("responseSerializer");
     private static final AttributeKey<Long> BYTES_READ = AttributeKey.valueOf("bytesRead");
+    private static final AttributeKey<Boolean> IS_BULKED = AttributeKey.valueOf("isBulked");
 
     private final MessageSerializer<?> serializer;
     private final long maxResponseContentLength;
@@ -62,6 +63,7 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
     @Override
     protected void decode(ChannelHandlerContext ctx, DefaultHttpObject msg, List<Object> out) throws Exception {
         final Attribute<Boolean> isFirstChunk = ((AttributeMap) ctx).attr(IS_FIRST_CHUNK);
+        final Attribute<Boolean> isBulked = ((AttributeMap) ctx).attr(IS_BULKED);
         final Attribute<HttpResponseStatus> responseStatus = ((AttributeMap) ctx).attr(RESPONSE_STATUS);
         final Attribute<String> responseEncoding = ((AttributeMap) ctx).attr(RESPONSE_ENCODING);
 
@@ -95,6 +97,9 @@ public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<De
                     out.add(response);
                 } else {
                     final ResponseMessage chunk = serializer.readChunk(content, isFirstChunk.get());
+                    if (isFirstChunk.get()){
+                        isBulked.set(chunk.getResult().isBulked());
+                    }
                     isFirstChunk.set(false);
                     out.add(chunk);
                 }

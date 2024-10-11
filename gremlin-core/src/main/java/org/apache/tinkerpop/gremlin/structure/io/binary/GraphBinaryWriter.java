@@ -47,6 +47,7 @@ public class GraphBinaryWriter {
     private final static byte VALUE_FLAG_NONE = 0;
     private final static byte VALUE_FLAG_ORDERED = 2;
     public final static byte VERSION_BYTE = (byte)0x81;
+    public final static byte BULKED_BYTE = (byte)0x01;
     private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
     private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
 
