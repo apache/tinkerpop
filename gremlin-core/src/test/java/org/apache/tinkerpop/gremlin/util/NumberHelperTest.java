@@ -479,4 +479,100 @@ public class NumberHelperTest {
             }
         }
     }
+
+    @Test
+    public void shouldCoerceToReturnSameInstanceForSameClass() {
+        final Integer value = 42;
+        assertEquals(value, NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToByte() {
+        final Integer value = 42;
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToShort() {
+        final Integer value = 42;
+        assertEquals(Short.valueOf((short) 42), NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToLong() {
+        final Integer value = 42;
+        assertEquals(Long.valueOf(42L), NumberHelper.coerceTo(value, Long.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToFloat() {
+        final Integer value = 42;
+        assertEquals(Float.valueOf(42.0f), NumberHelper.coerceTo(value, Float.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToDouble() {
+        final Integer value = 42;
+        assertEquals(Double.valueOf(42.0), NumberHelper.coerceTo(value, Double.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToBigInteger() {
+        final Integer value = 42;
+        assertEquals(BigInteger.valueOf(42), NumberHelper.coerceTo(value, BigInteger.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToBigDecimal() {
+        final Integer value = 42;
+        assertEquals(BigDecimal.valueOf(42), NumberHelper.coerceTo(value, BigDecimal.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInByte() {
+        final Integer value = 128;
+        assertEquals(value, NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInShort() {
+        final Integer value = 32768;
+        assertEquals(value, NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInInteger() {
+        final Long value = 2147483648L;
+        assertEquals(value, NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInFloat() {
+        final Double value = Double.MAX_VALUE;
+        assertEquals(value, NumberHelper.coerceTo(value, Float.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToByteIfCanFit() {
+        final Integer value = 42;
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToShortIfCanFit() {
+        final Integer value = 42;
+        assertEquals(Short.valueOf((short) 42), NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToIntegerIfCanFit() {
+        final Long value = 42L;
+        assertEquals(Integer.valueOf(42), NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToFloatIfCanFit() {
+        final Double value = 42.0;
+        assertEquals(Float.valueOf(42.0f), NumberHelper.coerceTo(value, Float.class));
+    }
 }

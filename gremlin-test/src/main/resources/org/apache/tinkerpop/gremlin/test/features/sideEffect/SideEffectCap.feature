@@ -128,7 +128,7 @@ Feature: Step - cap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
+      | m[{"ripple":"d[32].i", "lop":"d[96].i"}] |
 
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX

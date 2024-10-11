@@ -518,8 +518,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertEquals(2, map.size());
         assertTrue(map.containsKey("ripple"));
         assertTrue(map.containsKey("lop"));
-        assertEquals(32L, map.get("ripple"));
-        assertEquals(96L, map.get("lop"));
+        assertEquals(32, map.get("ripple"));
+        assertEquals(96, map.get("lop"));
         assertFalse(traversal.hasNext());
     }
 
