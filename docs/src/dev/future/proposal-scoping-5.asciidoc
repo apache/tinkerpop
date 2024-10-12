@@ -1,0 +1,157 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 5*
+
+== Lazy vs. Eager Evaluation in TP4 ==
+
+=== Introduction ===
+
+Gremlin comes with conventions and mechanisms to control the flow strategy for traversal processing: _lazy evaluation_ is conceptually a depth-first evaluation paradigm that follows as a natural result from the pull-based stacked iterator model (as implemented in the Apache Tinkerpop OLTP engine), whereas _eager evaluation_ enforces a Gremlin step to process all its incoming traversers before passing any results to the subsequent step.
+
+In many cases, switching between a lazy vs. eager flow strategy merely affects the internal order in which the engine processes traversers, yet there is no observable difference for end users in the final query result. However, there exist quite a few common use cases where lazy vs. eager evaluation may cause observable differences in the query results. These scenarios include (1) queries with side effects — where side effect variables are written and read, and the order in which these variables are updated and accessed changes observed values in these variables, (2) cases where queries aim to visit and return results in a given order — particularly queries with `limit()` steps to achieve top-k behavior, and (3) certain classes of update queries where the order in which updates are being applied affects the final state of the database. 
+
+To illustrate the difference between lazy and eager evaluation, consider the following simple query over the modern graph:
+
+[code]
+----
+gremlin> g.V().hasLabel('person').groupCount('x').select('x')
+----
+
+If a lazy flow strategy is used, the observed `x` values are reported incrementally in the output:
+
+[code]
+----
+==>[v[1]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[4]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+----
+
+In contrast, an eager evaluation strategy would store the complete set of solutions in the side effect variable `x` before proceeding, in which case the output would change to the following:
+
+[code]
+----
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+----
+
+While there are select Gremlin steps that provide explicit control over lazy vs. eager flow — for instance, switching the `Scope.local` default to `Scope.global` in the https://tinkerpop.apache.org/docs/current/reference/#aggregate-step[the side effect version of the aggregate step] allows users to enforce eager evaluation — the https://tinkerpop.apache.org/gremlin.html[Apache Tinkerpop documentation] is rather vague when it comes to providing guarantees regarding the flow strategy that is used in the general case (the https://tinkerpop.apache.org/docs/current/dev/provider/#gremlin-semantics[Gremlin Semantics] section currently does not talk about this distinction). On the other hand, the Apache Tinkerpop Gremlin OLTP processor as the de facto reference implementation, leverages a pull-based execution engine that typically (though not always) results in a lazy evaluation semantics -- yet it is not clear whether the Gremlin language as such aims to impose a _strong guarantee_ that queries have to be evaluated lazily or whether the observed lazy evaluation in the Tinkerpop OLTP processor is just an implementation artifact. From our perspective, it is important for Gremlin users — who often seek to run queries and workloads across different engines and appreciate the freedom to switch implementations — to have a concise answer on the design intent and be explicit about guarantees that Gremlin implementations do vs. do not have to provide in order to be considered compliant with the language spec. 
+
+In fact, when looking at the specific question of lazy vs. eager flow guarantees, different Gremlin processors today come with different “degrees of compatibility” with the lazy execution behavior observed in the Tinkerpop OLTP processor. The key reason for deviating from a rigorous lazy execution paradigm usually is performance: the problem with lazy evaluation is that it prescribes serial execution order, which in many cases complicates (or even prevents) common optimization techniques such as bulking, vectored execution, and parallelization. As a matter of fact, even the Tinkerpop Gremlin OLAP graph processor breaks with the lazy evaluation paradigm that is implemented in the traditional OLTP processor in order to achieve efficient parallel execution. 
+
+=== A unified control mechanism for lazy vs. eager evaluation ===
+
+In this proposal we argue that guarantees for and control over lazy vs. eager evaluation order should be a well-defined aspect of the Gremlin language that has to strike the right balance between (a) imposing a minimal set of constraints by default, as to leave implementers the freedom to apply optimizations for the general cases (and account for the variety of approaches that Gremlin engines implement today) while (b) providing Gremlin users the freedom to specify and constrain flow control whenever they depend on it. With these goals in mind, our proposal is as follows.
+
+===== Proposal 1: By default, the Gremlin semantics shall NOT prescribe lazy vs. eager evaluation order =====
+Of course, this does not prevent implementations from opting into a specific evaluation order (the Apache Tinkerpop OLTP processor, for instance, would likely continue to implement a lazy evaluation paradigm and hence may provide more specific guarantees than what is prescribed by Gremlin as a query language). Concretely, the required changes for TP4 in this regard would be to update the documentation, to be explicit about the fact that Gremlin as a language does neither prescribe eager nor lazy evaluation order in the general case, and review (and, where necessary, relax) some existing test cases to be less constraining when it comes to enforcing lazy evaluation.
+
+
+[code]
+----
+Example:
+========
+
+# In the absence of lazy vs. eager evaluation guarantees as proposed above, the  
+# sample query from the Introduction may return different results, depending on
+# the control flow strategy chosen by a specific Gremlin processor:
+gremlin> g.V().hasLabel('person').groupCount('x').select('x')
+
+## Sample result 1:
+# An implementation that internally implements a lazy execution approach may
+# choose to execute traversers sequentially and return the following result
+# (this is the result returned by the Tinkerpop OLTP processor today):
+==>[v[1]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[4]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+
+## Sample result 2:
+# An implementation that internally implements an eager execution approach may
+# choose to batch process results and would return the following result:
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+
+## Sample result 3:
+# Implementations are also free to do vectored processing, e.g. implement "partial 
+# batching" of the results, in which case the following result might be observed:
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1] 
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1] 
+----
+
+
+===== Proposal 2: The recipe to achieve lazy evaluation is to wrap the relevant part of the query into a local() step =====
+This already works today and could be documented as a __general pattern__ to enforce lazy evaluation for certain parts of the query.
+
+[code]
+----
+Example:
+========
+
+# By wrapping the groupCount() and select() into a local() step, users can enforce lazy
+# execution behavior:
+gremlin> g.V().hasLabel('person').local(groupCount('x').select('x'))
+
+# The observed result will be guaranteed "incremental", i.e. the local() wrapping
+# of the subquery groupCount('x').select('x') now provides a guarantee that the subquery
+# is evaluated lazily, one solution at a time:
+==>[v[1]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[4]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+----
+
+===== Proposal 3: Vice versa, as a generic mechanism to enforce eager evaluation, it is possible to use an explicit barrier() step =====
+Again, this already works in Gremlin today and could just be documented as a _general pattern_ to achieve lazy evaluation for subqueries.
+
+[code]
+----
+Example:
+========
+
+# When using an explicit barrier step, our sample query will be guaranteed to switch to
+# eager evaluation and group-count all the results before proceeding on to result selection:
+gremlin> g.V().hasLabel('person').groupCount('x').barrier().select('x')
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[4]:1,v[6]:1]
+----
+
+
+
+== Proposed further simplifications ==
+
+The previous section does not suggest any semantical changes compared to the way the Gremlin language is implemented in Tinkerpop today — it only proposes improving documentation to clarify guarantees that Gremlin as a language does vs. does not provide (which helps to set boundaries around the “degree of freedom” that implementers have when it comes to flow strategy) and highlights already-existing mechanisms that are available in the language to _explicitly_ control lazy vs. eager control flow. Complementary, in this section we propose small simplifications to Gremlin as language, with the goal to eliminate redundant mechanisms to control lazy vs. eager evaluation behavior and streamline / align the behavior of existing Tinkerpop steps. 
+
+===== Proposal 4: Alignment of side effect steps w.r.t. lazy vs. eager evaluation =====
+Today, Gremlin uses the `Scope` keyword with two different “meanings”:
+
+1. For `aggregate('x')`, the `Scope` argument defines https://tinkerpop.apache.org/docs/current/reference/#aggregate-step[lazy vs. eager evaluation semantics], where a global scope enforces eager semantics (no object continues until all previous objects have been fully seen), providing a guarantee that each subsequent inspection of the side effect variable `x` contains the complete list of all values stored, whereas the `Scope.local` variant does not provide such a guarantee.    
+2. Various steps like `dedup()`, `order()`, `sample()`, and predicates (e.g., `count()`, `toLower()`, `toUpper()`, etc.) accept the same `Scope` enum as an argument to control whether the step is applied across traversers or relative to each value in the traverser. As an example, `count(Scope.global)` counts the traversers, whereas `count(Scope.local)` expects a collection type input and counts, for each traverser, the number of elements in the collection. 
+
+From a conceptual perspective, these are two different use cases: case 1. is affecting the flow strategy, whereas case 2. is about specifying that a step applies "per element" rather than "across traversers". Given that `aggregate('x')` currently is the only side effect step that takes an explicit `Scope` as argument and that we proposed alternative, already existing mechanisms in the language for flow control in the previous section, we propose to fix this inconsistency and remove the `Scope` parameter from `aggregate('x')`. This would (a) align the structure and behavior of all side effect steps (none of them would carry an argument to enforce the scope) and (b) would leave the `Scope` enum reserved for the “traverser-local” application usage pattern discussed in case 2, as to eliminate confusion around the different contexts in which the `Scope` parameter is used today. 
+
+The key idea with that change is that side effect steps in TP4 would *neither* prescribe lazy evaluation (local scope) *nor* prescribe eager evaluation (global scope) — which is inline with the main theme postulated earlier in this proposal: by default, Gremlin semantics shall not prescribe the evaluation order. Whenever flow control is required, Gremlin queries would need to be explicit about this, via `local()` or `barrier()` steps, as exemplified in the previous section.

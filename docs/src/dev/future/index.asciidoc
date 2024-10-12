@@ -99,6 +99,7 @@ story.
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |Future |N
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-transaction-4[Proposal 4] |TinkerGraph Transaction Support |3.7.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-scoping-5[Proposal 5] |Lazy vs. Eager Evaluation|4.0 |N
 |=========================================================
 
 = Appendix
