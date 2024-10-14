@@ -19,6 +19,7 @@
 import os
 
 from gremlin_python import statics
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import Traverser
@@ -33,6 +34,8 @@ from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+
+from tests.conftest import anonymous_url
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)
@@ -271,3 +274,22 @@ class TestDriverRemoteConnection(object):
         g = traversal().withRemote(remote_connection_authenticated)
 
         assert long(6) == g.V().count().toList()[0]
+
+    def test_should_propagate_use_compression(self):
+        # Use Compression
+        drc = DriverRemoteConnection(anonymous_url, use_compression=True)
+
+        aiohttp_kwargs = drc._client._transport_factory()._aiohttp_kwargs
+        assert aiohttp_kwargs.get("compress") != 0
+
+        # Disable Compression
+        drc = DriverRemoteConnection(anonymous_url, use_compression=False)
+
+        aiohttp_kwargs = drc._client._transport_factory()._aiohttp_kwargs
+        assert aiohttp_kwargs.get("compress") is None or aiohttp_kwargs.get("compress") == 0
+
+        # Default (no compression)
+        drc = DriverRemoteConnection(anonymous_url)
+
+        aiohttp_kwargs = drc._client._transport_factory()._aiohttp_kwargs
+        assert aiohttp_kwargs.get("compress") is None or aiohttp_kwargs.get("compress") == 0

@@ -44,7 +44,8 @@ class Client:
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, username="", password="",
                  kerberized_service="", headers=None, session=None,
-                 enable_user_agent_on_connect=True, **transport_kwargs):
+                 enable_user_agent_on_connect=True, use_compression=False,
+                 **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
 
         # check via url that we are using http protocol
@@ -55,8 +56,11 @@ class Client:
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
+        self._use_compression = use_compression
         if not self._use_http and "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
+        if self._use_compression and "compress" not in transport_kwargs:
+            transport_kwargs["compress"] = 15  # enable per-message deflate compression with max 32k sliding window size
         if message_serializer is None:
             message_serializer = serializer.GraphBinarySerializersV1()
 

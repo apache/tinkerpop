@@ -46,6 +46,7 @@ class Client {
    * @param {Boolean} [options.pingEnabled] Setup ping interval. Defaults to: true.
    * @param {Number} [options.pingInterval] Ping request interval in ms if ping enabled. Defaults to: 60000.
    * @param {Number} [options.pongTimeout] Timeout of pong response in ms after sending a ping. Defaults to: 30000.
+   * @param {Boolean} [options.useCompression] Enable per-message deflate compression. Defaults to: false.
    * @constructor
    */
   constructor(url, options = {}) {
