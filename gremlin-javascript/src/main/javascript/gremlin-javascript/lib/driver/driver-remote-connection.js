@@ -50,6 +50,7 @@ class DriverRemoteConnection extends RemoteConnection {
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
+   * @param {Boolean} [options.useCompression] Enable per-message deflate compression. Defaults to: false.
    * @constructor
    */
   constructor(url, options = {}) {
