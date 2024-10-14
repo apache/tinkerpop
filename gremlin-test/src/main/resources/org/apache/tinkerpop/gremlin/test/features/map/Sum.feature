@@ -27,7 +27,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123].l |
+      | d[123].i |
 
   Scenario: g_V_foo_sum
     Given the modern graph
@@ -104,7 +104,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123].l |
+      | d[123].i |
 
   # null values are ignored in sum() which is similar to sum aggregation works in SQL
   @WithProductiveByStrategy
@@ -117,7 +117,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[123].l |
+      | d[123].i |
 
   Scenario: g_V_aggregateXaX_byXfooX_sumXlocalX
     Given the modern graph
@@ -176,7 +176,7 @@ Feature: Step - sum()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[15].l |
+      | d[15].i |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlistXnull_10_5_nullXX_sumXlocalX
@@ -217,3 +217,123 @@ Feature: Step - sum()
       | d[27].i |
       | d[33.4].d |
       | d[35.2].d |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_age_injectX1000nX_sum
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").inject(1000n).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1123].n |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_2b_3bX_sum
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3b).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].b |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_2b_3sX_sum
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3s).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].s |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_26b_3iX_sum
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3i).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1f_26f_3fX_sum
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1f,2f,3f).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].f |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_age_injectX1000nX_fold_sumXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").inject(1000n).fold().sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1123].n |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_2b_3bX_fold_sumXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3b).fold().sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].b |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_2b_3sX_fold_sumXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3s).fold().sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].s |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1b_26b_3iX_fold_sumXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1b,2b,3i).fold().sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1f_26f_3fX_fold_sumXlocalX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1f,2f,3f).fold().sum(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].f |

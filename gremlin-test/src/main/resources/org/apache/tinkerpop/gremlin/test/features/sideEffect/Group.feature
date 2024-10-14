@@ -171,7 +171,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"cover":{"followedBy":"d[777982].l"}, "":{"followedBy":"d[179350].l"}, "original":{"followedBy":"d[2185613].l"}}] |
+      | m[{"cover":{"followedBy":"d[777982].i"}, "":{"followedBy":"d[179350].i"}, "original":{"followedBy":"d[2185613].i"}}] |
 
   Scenario: g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX
     Given the modern graph
@@ -212,7 +212,7 @@ Feature: Step - group()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"ripple":"d[32].l", "lop":"d[96].l"}] |
+      | m[{"ripple":"d[32].i", "lop":"d[96].i"}] |
 
 
   Scenario: g_V_group_byXlabelX_byXlabel_countX

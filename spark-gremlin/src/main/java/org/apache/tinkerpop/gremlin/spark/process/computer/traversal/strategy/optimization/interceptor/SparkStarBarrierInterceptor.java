@@ -101,8 +101,11 @@ public final class SparkStarBarrierInterceptor implements SparkVertexProgramInte
             result = nextRDD.map(Traverser::bulk).fold(0L, (a, b) -> a + b);
         else if (endStep instanceof SumGlobalStep) {
             result = nextRDD.isEmpty() ? null : nextRDD
-                    .map(traverser -> NumberHelper.mul(traverser.bulk(), (Number) traverser.get()))
-                    .fold(0, NumberHelper::add);
+                    .map(traverser -> {
+                        final Number n = (Number) traverser.get();
+                        final Class<? extends Number> clazz = null == n ? Long.class : n.getClass();
+                        return NumberHelper.mul(n, NumberHelper.coerceTo(traverser.bulk(), clazz));
+                    }).fold(0, NumberHelper::add);
         } else if (endStep instanceof MeanGlobalStep) {
             result = nextRDD.isEmpty() ? null : nextRDD
                     .map(traverser -> new MeanGlobalStep.MeanNumber((Number) traverser.get(), traverser.bulk()))
