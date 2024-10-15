@@ -74,7 +74,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         if ((null == statusCode) || (statusCode == HttpResponseStatus.OK)) {
             final List<Object> data = response.getResult().getData();
-            final boolean bulked = (boolean) channelHandlerContext.channel().attr(AttributeKey.valueOf("isBulked")).get();
+            final boolean bulked = channelHandlerContext.channel().attr(HttpGremlinResponseStreamDecoder.IS_BULKED).get();
             // unrolls the collection into individual results to be handled by the queue.
             if (bulked) {
                 for (Iterator<Object> iter = data.iterator(); iter.hasNext(); ) {

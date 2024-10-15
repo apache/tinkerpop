@@ -45,11 +45,11 @@ import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LA
 
 public class HttpGremlinResponseStreamDecoder extends MessageToMessageDecoder<DefaultHttpObject> {
 
+    public static final AttributeKey<Boolean> IS_BULKED = AttributeKey.valueOf("isBulked");
     private static final AttributeKey<Boolean> IS_FIRST_CHUNK = AttributeKey.valueOf("isFirstChunk");
     private static final AttributeKey<HttpResponseStatus> RESPONSE_STATUS = AttributeKey.valueOf("responseStatus");
     private static final AttributeKey<String> RESPONSE_ENCODING = AttributeKey.valueOf("responseSerializer");
     private static final AttributeKey<Long> BYTES_READ = AttributeKey.valueOf("bytesRead");
-    private static final AttributeKey<Boolean> IS_BULKED = AttributeKey.valueOf("isBulked");
 
     private final MessageSerializer<?> serializer;
     private final long maxResponseContentLength;

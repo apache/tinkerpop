@@ -317,9 +317,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
         final boolean bulking = Objects.equals(language, "gremlin-lang") ?
                 (args.containsKey(Tokens.BULKED) ?
-                        Objects.equals(args.get(Tokens.BULKED), "true")
-                        : Objects.equals(bulkingSetting, "true"))
-                : false;
+                        Objects.equals(args.get(Tokens.BULKED), "true") :
+                        Objects.equals(bulkingSetting, "true")) :
+                false;
 
         if (bulking) {
             // optimization for driver requests
