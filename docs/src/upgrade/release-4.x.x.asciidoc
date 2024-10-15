@@ -30,6 +30,15 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== BulkSet Behavior Changes
+Starting with 4.0, steps which return BulkSet (e.g. `aggregate()`) will have results returned in different format
+depending on embedded or remote usage.
+
+For embedded cases, a BulkSet will be returned as before.
+
+For remote cases, BulkSets will now be expanded into Lists upon deserialization with `gremlin-driver`. All other GLVs already expanded BulkSet to List prior to TinkerPop 4.
+Each element in the BulkSet will appear in the list the same number of times as specified by its bulk value.
+
 ==== Configuration changes
 This is a placeholder to summarize configuration-related changes.
 

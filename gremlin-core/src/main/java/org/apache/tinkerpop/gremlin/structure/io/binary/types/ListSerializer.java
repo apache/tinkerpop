@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListSerializer extends SimpleTypeSerializer<List> {
@@ -31,6 +32,30 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
 
     public ListSerializer() {
         super(DataType.LIST);
+    }
+
+    @Override
+    public List readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws IOException {
+        if (nullable) {
+            final byte valueFlag = buffer.readByte();
+            if ((valueFlag & 1) == 1) {
+                return null;
+            }
+            if ((valueFlag & 2) == 2) {
+                final int length = buffer.readInt();
+                final ArrayList result = new ArrayList(length);
+                for (int i = 0; i < length; i++) {
+                    Object item = context.read(buffer);
+                    long bulk = buffer.readLong();
+                    for (int j = 0; j < bulk; j++) {
+                        result.add(item);
+                    }
+                }
+                return result;
+            }
+        }
+
+        return readValue(buffer, context);
     }
 
     @Override
