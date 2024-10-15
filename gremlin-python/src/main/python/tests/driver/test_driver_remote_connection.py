@@ -39,9 +39,8 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_connection)
         result = g.inject(1,2,3,2,1).to_list()
         assert 5 == len(result)
-        bulked_results = g.with_("bulked", True).inject(1,2,3,2,1).to_list()
+        bulked_results = g.with_("language", "gremlin-lang").with_("bulked", True).inject(1,2,3,2,1).to_list()
         assert 5 == len(bulked_results)
-        print(g.with_("bulked", True).inject(1,2,3,2,1).to_list())
 
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
