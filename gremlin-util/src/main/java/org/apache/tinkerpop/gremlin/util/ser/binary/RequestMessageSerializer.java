@@ -71,7 +71,7 @@ public class RequestMessageSerializer {
                 builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
             }
             if (fields.containsKey(Tokens.BULKED)) {
-                builder.addBulkedResult((boolean) fields.get(Tokens.BULKED));
+                builder.addBulkedResult(Boolean.parseBoolean(fields.get(Tokens.BULKED).toString()));
             }
 
             return builder.create();

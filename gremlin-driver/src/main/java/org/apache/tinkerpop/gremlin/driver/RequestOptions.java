@@ -49,7 +49,7 @@ public final class RequestOptions {
     private final Long timeout;
     private final String language;
     private final String materializeProperties;
-    private final boolean bulkedResult;
+    private final String bulkedResult;
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
@@ -83,7 +83,7 @@ public final class RequestOptions {
 
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
-    public boolean isBulkedResult() { return bulkedResult; }
+    public Optional<String> getBulked() { return Optional.ofNullable(bulkedResult); }
 
     public static Builder build() {
         return new Builder();
@@ -122,7 +122,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private String materializeProperties = null;
         private String language = null;
-        private boolean bulkedResult = false;
+        private String bulkedResult;
 
         /**
          * The aliases to set on the request.
@@ -186,8 +186,11 @@ public final class RequestOptions {
             return this;
         }
 
+        /**
+         * Enables or disables bulked result on the server.
+         */
         public Builder withBulkedResult(final boolean bulked) {
-            this.bulkedResult = bulked;
+            this.bulkedResult = String.valueOf(bulked);
             return this;
         }
 

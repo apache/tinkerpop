@@ -162,7 +162,7 @@ public final class RequestMessage {
         }
 
         public Builder addBulkedResult(final boolean bulked) {
-            this.fields.put(Tokens.BULKED, bulked);
+            this.fields.put(Tokens.BULKED, String.valueOf(bulked));
             return this;
         }
 

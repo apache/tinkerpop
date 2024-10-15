@@ -467,7 +467,6 @@ public final class Cluster {
 
     /**
      * Checks if cluster is configured to send bulked results
-     * in the web socket handshake
      */
     public boolean isBulkingEnabled() {
         return manager.isBulkedResultEnabled();

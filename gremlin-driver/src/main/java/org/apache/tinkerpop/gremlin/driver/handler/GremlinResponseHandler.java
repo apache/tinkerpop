@@ -78,8 +78,8 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
             // unrolls the collection into individual results to be handled by the queue.
             if (bulked) {
                 for (Iterator<Object> iter = data.iterator(); iter.hasNext(); ) {
-                    Object obj = iter.next();
-                    long bulk = (long) iter.next();
+                    final Object obj = iter.next();
+                    final long bulk = (long) iter.next();
                     DefaultRemoteTraverser<Object> item = new DefaultRemoteTraverser<>(obj, bulk);
                     queue.add(new Result(item));
                 }

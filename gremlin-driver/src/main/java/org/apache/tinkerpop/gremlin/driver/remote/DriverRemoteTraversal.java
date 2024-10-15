@@ -113,7 +113,7 @@ public class DriverRemoteTraversal<S, E> extends AbstractRemoteTraversal<S, E> {
 
         @Override
         public Traverser.Admin<E> next() {
-            Object next = inner.next().getObject();
+            final Object next = inner.next().getObject();
             return next instanceof RemoteTraverser
                     ? (RemoteTraverser<E>) next
                     : new DefaultRemoteTraverser<>((E) next, 1);

@@ -313,10 +313,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-        final boolean bulking = ((Objects.equals(context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED), "true")
-                && result instanceof Traversal)
-                || (args.containsKey(Tokens.BULKED) && (boolean) args.get(Tokens.BULKED))
-                && Objects.equals(language, "gremlin-lang"));
+        final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED);
+        // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
+        final boolean bulking = Objects.equals(language, "gremlin-lang") ?
+                (args.containsKey(Tokens.BULKED) ?
+                        Objects.equals(args.get(Tokens.BULKED), "true")
+                        : Objects.equals(bulkingSetting, "true"))
+                : false;
 
         if (bulking) {
             // optimization for driver requests
