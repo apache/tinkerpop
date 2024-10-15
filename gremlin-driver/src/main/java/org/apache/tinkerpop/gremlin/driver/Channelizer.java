@@ -210,7 +210,7 @@ public interface Channelizer extends ChannelHandler {
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
-            if (connection.getCluster().useCompression()) {
+            if (connection.getCluster().enableCompression()) {
                 // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
                 pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
             }
