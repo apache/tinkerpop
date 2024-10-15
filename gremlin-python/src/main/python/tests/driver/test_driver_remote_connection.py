@@ -290,15 +290,15 @@ class TestDriverRemoteConnection(object):
 
         assert long(6) == g.V().count().toList()[0]
 
-    def test_should_propagate_use_compression(self):
+    def test_should_propagate_enable_compression(self):
         # Use Compression
-        drc = DriverRemoteConnection(anonymous_url, use_compression=True)
+        drc = DriverRemoteConnection(anonymous_url, enable_compression=True)
 
         aiohttp_kwargs = drc._client._transport_factory()._aiohttp_kwargs
         assert aiohttp_kwargs.get("compress") != 0
 
         # Disable Compression
-        drc = DriverRemoteConnection(anonymous_url, use_compression=False)
+        drc = DriverRemoteConnection(anonymous_url, enable_compression=False)
 
         aiohttp_kwargs = drc._client._transport_factory()._aiohttp_kwargs
         assert aiohttp_kwargs.get("compress") is None or aiohttp_kwargs.get("compress") == 0

@@ -23,6 +23,11 @@ __author__ = 'Cole Greer (cole@colegreer.ca)'
 import re
 import operator
 from functools import reduce
+
+import pytest
+
+from tests import conftest
+
 from gremlin_python.driver import useragent
 
 
@@ -68,6 +73,33 @@ def test_should_not_include_user_agent_in_handshake_request_if_disabled(socket_s
     # If the gremlin user agent is disabled, the underlying web socket library reverts to sending its default user agent
     # during connection requests.
     assert re.search("^Python/(\d\.)*\d aiohttp/(\d\.)*\d", user_agent_response)
+
+
+# Tests that client does not request permessage deflate compression by default
+def test_should_not_request_compression_by_default(socket_server_client, socket_server_settings):
+    response = socket_server_client.submit(
+        "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
+
+    assert 'permessage-deflate;' not in response
+
+
+# Tests that client does not request permessage deflate compression when disabled
+@pytest.mark.client_kwargs({'enable_compression': False})
+def test_should_not_request_compression_when_disabled(socket_server_client, socket_server_settings):
+    response = socket_server_client.submit(
+        "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
+
+    assert 'permessage-deflate;' not in response
+
+
+# Tests that client requests permessage deflate compression when enabled
+@pytest.mark.client_kwargs({'enable_compression': True})
+def test_should_request_compression_when_enabled(socket_server_client, socket_server_settings,):
+    response = socket_server_client.submit(
+        "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
+
+    assert 'permessage-deflate;' in response
+
 
 # Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
 # evaluationTimeout, and userAgent) to the server.

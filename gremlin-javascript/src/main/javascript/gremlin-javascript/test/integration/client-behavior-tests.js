@@ -63,6 +63,33 @@ describe('Client', function () {
 
             await noUserAgentClient.close();
         });
+        it('should not request permessage deflate compression by default', async function () {
+            let result = await client.submit('1', null, {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
+            let returnedExtensions = result.first()
+            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
+        });
+        it('should not request permessage deflate compression when disabled', async function () {
+            let noCompressionClient = helper.getGremlinSocketServerClientWithOptions('gmodern',
+                {enableCompression: false});
+            let result = await noCompressionClient.submit('1', null,
+                {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
+
+            let returnedExtensions = result.first()
+            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
+
+            await noCompressionClient.close();
+        });
+        it('should request permessage deflate compression when enabled', async function () {
+            let compressionClient = helper.getGremlinSocketServerClientWithOptions('gmodern',
+                {enableCompression: true});
+            let result = await compressionClient.submit('1', null,
+                {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
+
+            let returnedExtensions = result.first()
+            assert.ok(returnedExtensions.includes("permessage-deflate;"))
+
+            await compressionClient.close();
+        });
         it('should send per request settings to server', async function () {
             const resultSet = await client.submit('1', null, {
                 requestId: settings.PER_REQUEST_SETTINGS_REQUEST_ID,
