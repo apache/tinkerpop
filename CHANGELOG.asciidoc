@@ -344,12 +344,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * The default logging level for Gremlin Console in Windows is set to the same WARN level as for Linux.
 * Updated to Docker Compose V2 with `docker-compose` changed to `docker compose` in pom and script files.
 * Add command line option `-l` to change logging level for Gremlin Console in Windows.
+* Add `enableCompression` connection setting to Java, Python, and JS GLVs.
 * Increased minimum python version from 3.8 to 3.9
 * Upgraded `gremlin-go` to Go 1.22.
 * Bump Netty to 4.1.100
 * Bump Logback to 1.2.13
 * Bump Ivy to 2.5.2
 * Fixed a memory leak in the Javascript driver when there is a server error response.
+* Throw more descriptive error in `gremlin-go` when request size exceeds `WriteBufferSize`
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)

@@ -100,6 +100,9 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 			return err
 		}
 	}
+	if len(data) > transporter.connSettings.writeBufferSize {
+		return newError(err1201RequestSizeExceedsWriteBufferError)
+	}
 	transporter.writeChannel <- data
 	return nil
 }
