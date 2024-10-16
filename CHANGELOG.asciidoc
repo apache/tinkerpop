@@ -68,6 +68,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Update serializers for `label` as a singleton list of string according to GraphBinaryV4 IO spec.
 * Added `bulked` byte to `Response Message` serialization according to GraphBinaryV4 IO spec.
 * Added a `bulked` header set by cluster setting, as well as a with `bulked` request option to turn on the bulking of result data.
+* Updated List and BulkSet serializers in Java and Python to implement `bulk` value flag for List according to GraphBinaryV4 IO spec.
 * The `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
 * The `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
 * Add missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.

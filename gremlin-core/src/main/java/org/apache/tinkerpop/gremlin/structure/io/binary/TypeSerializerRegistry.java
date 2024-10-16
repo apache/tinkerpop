@@ -91,6 +91,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(String.class, new StringSerializer()),
             new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
             new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),
+            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),  // needs to register before list so ListSerializer is registered as LIST by overwrite
             new RegistryEntry<>(List.class, new ListSerializer()),
             new RegistryEntry<>(Map.class, new MapSerializer()),
             new RegistryEntry<>(Set.class, new SetSerializer()),
@@ -110,7 +111,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
             new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
             new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
-            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),  //todo: to be removed when bulk implemented in list
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Marker.class, SingleTypeSerializer.MarkerSerializer),
 
