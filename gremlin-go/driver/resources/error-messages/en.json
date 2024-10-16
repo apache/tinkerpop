@@ -51,5 +51,7 @@
   "E1101_TRANSACTION_REPEATED_OPEN_ERROR": "E1101: transaction already started on this object",
   "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR": "E1102: cannot rollback a transaction that is not started",
   "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR": "E1103: cannot commit a transaction that is not started",
-  "E1104_TRANSACTION_REPEATED_CLOSE_ERROR": "E1104: cannot close a transaction that has previously been closed"
+  "E1104_TRANSACTION_REPEATED_CLOSE_ERROR": "E1104: cannot close a transaction that has previously been closed",
+
+  "E1201_REQUEST_SIZE_EXCEEDS_WRITE_BUFFER_ERROR": "E1201: Request size cannot exceed the configured WriteBufferSize. Consider increasing WriteBufferSize or splitting into smaller requests"
 }
