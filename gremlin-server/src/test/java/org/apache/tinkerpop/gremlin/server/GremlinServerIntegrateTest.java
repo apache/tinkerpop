@@ -83,10 +83,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -964,4 +961,53 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) t).getResponseStatusCode());
         }
     }
+
+    @Test
+    public void shouldEnableBulkedResultWithClusterOptions() {
+        final Cluster cluster = TestClientFactory.build().enableBulkedResult(true).create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final List resultBulked = g.with("language", "gremlin-lang").inject(1, 2, 3, 2, 1).toList();
+            assertTrue(cluster.isBulkingEnabled());
+            assertEquals(5, resultBulked.size());
+
+            // the result itself should not be affected by bulking through the wire
+            final List result = g.with("language", "gremlin-lang").with("bulked", false).inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, result.size());
+
+            assertTrue(cluster.isBulkingEnabled());
+
+            // the result itself should not be affected by bulking through the wire
+            final List resultBulked2 = g.with("language", "gremlin-lang").with("bulked", true).inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, resultBulked2.size());
+
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEnableBulkedResultWithRequestOptions() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final List result = g.inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, result.size());
+            assertFalse(cluster.isBulkingEnabled());
+
+            // the result itself should not be affected by bulking through the wire
+            final List resultBulked = g.with("language", "gremlin-lang").with("bulked", true).inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, resultBulked.size());
+
+            assertFalse(cluster.isBulkingEnabled());
+
+            // the result itself should not be affected by bulking through the wire
+            final List result2 = g.with("language", "gremlin-lang").with("bulked", false).inject(1, 2, 3, 2, 1).toList();
+            assertEquals(5, result2.size());
+
+        } finally {
+            cluster.close();
+        }
+    }
+
 }

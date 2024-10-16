@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -46,6 +47,7 @@ public class SettingsTest {
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("enableUserAgentOnConnect", false);
+        conf.setProperty("enableBulkedResult", true);
         conf.setProperty("connectionPool.enableSsl", true);
         conf.setProperty("connectionPool.keyStore", "server.jks");
         conf.setProperty("connectionPool.keyStorePassword", "password2");
@@ -82,6 +84,7 @@ public class SettingsTest {
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
         assertEquals(false, settings.enableUserAgentOnConnect);
+        assertTrue(settings.enableBulkedResult);
         assertThat(settings.connectionPool.enableSsl, is(true));
         assertEquals("server.jks", settings.connectionPool.keyStore);
         assertEquals("password2", settings.connectionPool.keyStorePassword);

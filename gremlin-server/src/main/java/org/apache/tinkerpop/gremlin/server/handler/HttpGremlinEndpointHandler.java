@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -76,6 +77,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -311,7 +313,21 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-        handleIterator(context, IteratorUtils.asIterator(result), serializer);
+        final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED);
+        // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
+        final boolean bulking = Objects.equals(language, "gremlin-lang") ?
+                (args.containsKey(Tokens.BULKED) ?
+                        Objects.equals(args.get(Tokens.BULKED), "true") :
+                        Objects.equals(bulkingSetting, "true")) :
+                false;
+
+        if (bulking) {
+            // optimization for driver requests
+            ((Traversal.Admin<?, ?>) result).applyStrategies();
+            handleIterator(context, new TraverserIterator((Traversal.Admin<?, ?>) result), serializer, true);
+        } else {
+            handleIterator(context, IteratorUtils.asIterator(result), serializer, false);
+        }
     }
 
     @Override
@@ -361,17 +377,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return bindings;
     }
 
-    private void iterateTraversal(final Context context, MessageSerializer<?> serializer, Traversal.Admin<?, ?> traversal)
-            throws InterruptedException {
-        final UUID requestId = context.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();
-        logger.debug("Traversal request {} for in thread {}", requestId, Thread.currentThread().getName());
-
-        // compile the traversal - without it getEndStep() has nothing in it
-        traversal.applyStrategies();
-        handleIterator(context, new TraverserIterator(traversal), serializer);
-    }
-
-    private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer) throws InterruptedException {
+    private void handleIterator(final Context context, final Iterator itty, final MessageSerializer<?> serializer, final boolean bulking) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -381,7 +387,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         if (!itty.hasNext()) {
             ByteBuf chunk = null;
             try {
-                chunk = makeChunk(context, msg, serializer, new ArrayList<>(), false);
+                chunk = makeChunk(context, serializer, new ArrayList<>(), false, bulking);
                 nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
             } catch (Exception ex) {
                 // Bytebuf is a countable release - if it does not get written downstream
@@ -418,7 +424,15 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) aggregate.add(itty.next());
+            if (aggregate.size() < resultIterationBatchSize && itty.hasNext()) {
+                if (bulking) {
+                    Traverser traverser = (Traverser) itty.next();
+                    aggregate.add(traverser.get());
+                    aggregate.add(traverser.bulk());
+                } else {
+                    aggregate.add(itty.next());
+                }
+            }
 
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
@@ -438,7 +452,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     ByteBuf chunk = null;
                     try {
-                        chunk = makeChunk(context, msg, serializer, aggregate, itty.hasNext());
+                        chunk = makeChunk(context, serializer, aggregate, itty.hasNext(), bulking);
                     } catch (Exception ex) {
                         // Bytebuf is a countable release - if it does not get written downstream
                         // it needs to be released here
@@ -505,9 +519,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return false;
     }
 
-    private static ByteBuf makeChunk(final Context ctx, final RequestMessage msg,
-                                     final MessageSerializer<?> serializer, final List<Object> aggregate,
-                                     final boolean hasMore) throws Exception {
+    private static ByteBuf makeChunk(final Context ctx, final MessageSerializer<?> serializer,
+                                     final List<Object> aggregate, final boolean hasMore,
+                                     final boolean bulking) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 
@@ -528,6 +542,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     builder.code(HttpResponseStatus.OK);
                 }
 
+                builder.bulked(bulking);
+
                 responseMessage = builder.create();
             }
 
@@ -541,6 +557,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                     return serializer.serializeResponseAsBinary(ResponseMessage.build()
                             .result(aggregate)
+                            .bulked(bulking)
                             .code(HttpResponseStatus.OK)
                             .create(), nettyContext.alloc());
 

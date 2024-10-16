@@ -25,13 +25,19 @@ import java.util.List;
  */
 public final class ResponseResult {
     private final List<Object> data;
+    private final boolean bulked;
 
-    public ResponseResult(final List<Object> data) {
+    public ResponseResult(final List<Object> data, final boolean bulked) {
+        this.bulked = bulked;
         this.data = data;
     }
 
     public List<Object> getData() {
         return data;
+    }
+
+    public boolean isBulked() {
+        return bulked;
     }
 
     @Override

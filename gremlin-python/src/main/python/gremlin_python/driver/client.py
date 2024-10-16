@@ -42,13 +42,14 @@ class Client:
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
                  message_serializer=None, auth=None, headers=None,
-                 enable_user_agent_on_connect=True, **transport_kwargs):
+                 enable_user_agent_on_connect=True, enable_bulked_result=False, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
 
         self._closed = False
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
+        self._enable_bulked_result = enable_bulked_result
         self._traversal_source = traversal_source
         if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
