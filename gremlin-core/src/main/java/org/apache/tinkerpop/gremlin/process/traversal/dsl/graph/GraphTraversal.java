@@ -3903,15 +3903,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.6.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final M token, final Map<Object, Object> m) {
+        final Step<?, ?> lastStep = this.asAdmin().getEndStep();
+
+        // CardinalityValueTraversal doesn't make sense for any prior step other than mergeV()
+        if (!(lastStep instanceof MergeVertexStep) && m != null) {
+            for (Object k : m.keySet()) {
+                final Object o = m.get(k);
+                if (o instanceof CardinalityValueTraversal)
+                    throw new IllegalStateException("option() with the Cardinality argument can only be used following mergeV()");
+            }
+        }
+
         this.asAdmin().getBytecode().addStep(Symbols.option, token, m);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
 
     /**
-     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
-     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
-     * the documentation of such steps to understand the usage context.
+     * This is a step modulator to {@link #mergeV()} where the provided argument associated to the {@code token} is
+     * applied according to the semantics of the step. Please see the documentation of such steps to understand the
+     * usage context.
      *
      * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
      * @return the traversal with the modulated step
@@ -3920,6 +3931,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.7.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final Map<Object, Object> m, final VertexProperty.Cardinality cardinality) {
+        final Step<?, ?> lastStep = this.asAdmin().getEndStep();
+
+        // CardinalityValueTraversal doesn't make sense for any prior step other than mergeV()
+        if (!(lastStep instanceof MergeVertexStep)) {
+            throw new IllegalStateException("option() with the Cardinality argument can only be used following mergeV()");
+        }
+
         this.asAdmin().getBytecode().addStep(Symbols.option, merge, m, cardinality);
         // do explicit cardinality for every single pair in the map
         for (Object k : m.keySet()) {
@@ -3927,7 +3945,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             if (!(o instanceof CardinalityValueTraversal))
                 m.put(k, new CardinalityValueTraversal(cardinality, o));
         }
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
+        ((TraversalOptionParent<M, E, E2>) lastStep).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
 
