@@ -25,7 +25,8 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class Connection:
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool, headers=None, enable_user_agent_on_connect=True):
+                 executor, pool, headers=None, enable_user_agent_on_connect=True,
+                 enable_bulked_result=False):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -39,6 +40,11 @@ class Connection:
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
             self.__add_header(useragent.userAgentHeader, useragent.userAgent)
+        self._enable_bulked_result = enable_bulked_result
+        if self._enable_bulked_result:
+            if self._headers is None:
+                self._headers = dict()
+            self._headers["bulked"] = "true"
 
     def connect(self):
         if self._transport:

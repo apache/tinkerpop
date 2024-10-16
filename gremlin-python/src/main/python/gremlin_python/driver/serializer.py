@@ -21,6 +21,9 @@ import base64
 import logging
 import struct
 import io
+
+from gremlin_python.process.traversal import Traverser
+
 try:
     import ujson as json
     if int(json.__version__[0]) < 2:
@@ -58,6 +61,7 @@ class GraphBinarySerializersV4(object):
         if not writer:
             writer = self.DEFAULT_WRITER_CLASS()
         self._graphbinary_writer = writer
+        self._bulked = False
 
     @property
     def version(self):
@@ -105,6 +109,7 @@ class GraphBinarySerializersV4(object):
 
         if is_first_chunk:
             b.read(1)  # version
+            self._bulked = b.read(1)[0] == 0x01
 
         result, readable = self.read_payload(b)
         if not readable:
@@ -134,9 +139,17 @@ class GraphBinarySerializersV4(object):
             if buffer.tell() == len(buffer.getvalue()):
                 readable = False
                 break
-            data = self._graphbinary_reader.to_object(buffer)
-            if data == Marker.end_of_stream():
-                break
-            results.append(data)
+            if self._bulked:
+                item = self._graphbinary_reader.to_object(buffer)
+                if item == Marker.end_of_stream():
+                    self._bulked = False  # no more data expected, reset bulked flag
+                    break
+                bulk = self._graphbinary_reader.to_object(buffer)
+                results.append(Traverser(item, bulk))
+            else:
+                data = self._graphbinary_reader.to_object(buffer)
+                if data == Marker.end_of_stream():
+                    break
+                results.append(data)
 
         return results, readable

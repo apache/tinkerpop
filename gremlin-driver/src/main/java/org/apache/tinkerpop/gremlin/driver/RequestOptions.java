@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.BULKED;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_G;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_LANGUAGE;
@@ -48,6 +49,7 @@ public final class RequestOptions {
     private final Long timeout;
     private final String language;
     private final String materializeProperties;
+    private final String bulkedResult;
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
@@ -56,6 +58,7 @@ public final class RequestOptions {
         this.timeout = builder.timeout;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
+        this.bulkedResult = builder.bulkedResult;
     }
 
     public Optional<String> getG() {
@@ -80,6 +83,8 @@ public final class RequestOptions {
 
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
+    public Optional<String> getBulked() { return Optional.ofNullable(bulkedResult); }
+
     public static Builder build() {
         return new Builder();
     }
@@ -98,6 +103,9 @@ public final class RequestOptions {
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
             if (options.containsKey(ARGS_LANGUAGE))
                 builder.language((String) options.get(ARGS_LANGUAGE));
+            if (options.containsKey(BULKED))
+                builder.withBulkedResult((boolean) options.get(BULKED));
+
         }
 
         final Map<String, Object> parameters = gremlinLang.getParameters();
@@ -114,6 +122,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private String materializeProperties = null;
         private String language = null;
+        private String bulkedResult;
 
         /**
          * The aliases to set on the request.
@@ -174,6 +183,14 @@ public final class RequestOptions {
          */
         public Builder materializeProperties(final String materializeProperties) {
             this.materializeProperties = materializeProperties;
+            return this;
+        }
+
+        /**
+         * Enables or disables bulked result on the server.
+         */
+        public Builder withBulkedResult(final boolean bulked) {
+            this.bulkedResult = String.valueOf(bulked);
             return this;
         }
 
