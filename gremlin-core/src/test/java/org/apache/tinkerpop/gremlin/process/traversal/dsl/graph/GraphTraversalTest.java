@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -33,8 +34,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -62,6 +65,22 @@ public class GraphTraversalTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailPropertyWithNullVertexLabel() {
         g.addV().property(T.label, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldFailWhenUsingOptionAndCardinalityArgumentWithoutMergeV() {
+        final Map<Object, Object> m = new HashMap<Object,Object>() {{
+            put("k", 1);
+        }};
+        g.mergeE(new HashMap<>()).option(Merge.onMatch, m, VertexProperty.Cardinality.list);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldFailWhenUsingOptionAndCardinalityFunctionWithoutMergeV() {
+        final Map<Object, Object> m = new HashMap<Object,Object>() {{
+            put("k", VertexProperty.Cardinality.list(1));
+        }};
+        g.mergeE(new HashMap<>()).option(Merge.onMatch, m);
     }
 
     @Test(expected = IllegalArgumentException.class)
