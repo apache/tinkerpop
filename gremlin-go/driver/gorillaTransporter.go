@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"sync"
@@ -99,6 +100,9 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 		if err != nil {
 			return err
 		}
+	}
+	if len(data) > transporter.connSettings.writeBufferSize {
+		return errors.New("request too large, consider increasing 'WriteBufferSize' configuration or split into smaller requests")
 	}
 	transporter.writeChannel <- data
 	return nil
