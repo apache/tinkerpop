@@ -151,7 +151,7 @@ func TestGorillaTransporter(t *testing.T) {
 		t.Run("Large message should error", func(t *testing.T) {
 			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(nil)
 			err := transporter.Write(make([]byte, 31))
-			assert.ErrorContains(t, err, "request too large")
+			assert.Equal(t, newError(err1201RequestSizeExceedsWriteBufferError), err)
 		})
 
 		t.Run("Exact size should succeed", func(t *testing.T) {
