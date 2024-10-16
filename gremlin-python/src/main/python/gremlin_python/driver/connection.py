@@ -39,9 +39,7 @@ class Connection:
         self._inited = False
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
-            if self._headers is None:
-                self._headers = dict()
-            self._headers[useragent.userAgentHeader] = useragent.userAgent
+            self.__add_header(useragent.userAgentHeader, useragent.userAgent)
 
     def connect(self):
         if self._transport:
@@ -94,3 +92,15 @@ class Connection:
                     break
         finally:
             self._pool.put_nowait(self)
+
+    def __add_header(self, key, value):
+        if self._headers is None:
+            self._headers = dict()
+        # Headers may be a list of pairs
+        if isinstance(self._headers, list):
+            for pair in self._headers:
+                if pair[0] == key:
+                    self._headers.remove(pair)
+            self._headers.append((key, value))
+        else:
+            self._headers[key] = value
