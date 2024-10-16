@@ -214,7 +214,7 @@ final class Connection {
             throw new IllegalStateException(String.format("There is already a request pending with an id of: %s", requestMessage.getRequestId()));
 
         // once there is a completed write, then create a traverser for the result set and complete
-        // the promise so that the client knows that that it can start checking for results.
+        // the promise so that the client knows that it can start checking for results.
         final Connection thisConnection = this;
 
         final ChannelPromise requestPromise = channel.newPromise()

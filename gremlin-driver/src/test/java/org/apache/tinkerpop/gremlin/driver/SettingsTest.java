@@ -47,6 +47,7 @@ public class SettingsTest {
         conf.setProperty("serializer.className", "my.serializers.MySerializer");
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("enableUserAgentOnConnect", false);
+        conf.setProperty("enableCompression", false);
         conf.setProperty("connectionPool.enableSsl", true);
         conf.setProperty("connectionPool.keyStore", "server.jks");
         conf.setProperty("connectionPool.keyStorePassword", "password2");
@@ -84,6 +85,7 @@ public class SettingsTest {
         assertEquals("my.serializers.MySerializer", settings.serializer.className);
         assertEquals("thing", settings.serializer.config.get("any"));
         assertEquals(false, settings.enableUserAgentOnConnect);
+        assertEquals(false, settings.enableCompression);
         assertThat(settings.connectionPool.enableSsl, is(true));
         assertEquals("server.jks", settings.connectionPool.keyStore);
         assertEquals("password2", settings.connectionPool.keyStorePassword);
