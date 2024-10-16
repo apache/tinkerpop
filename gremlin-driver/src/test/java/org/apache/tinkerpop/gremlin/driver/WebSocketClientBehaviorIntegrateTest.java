@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -140,6 +141,62 @@ public class WebSocketClientBehaviorIntegrateTest {
         String returnedUserAgent = client.submit("1", RequestOptions.build()
                 .overrideRequestId(settings.USER_AGENT_REQUEST_ID).create()).one().getString();
         assertEquals("", returnedUserAgent);
+    }
+
+    /**
+     * Tests that client is correctly requesting permessage deflate compression is used
+     */
+    @Test
+    public void shouldRequestCompressionByDefault() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+    }
+
+    /**
+     * Tests that client is correctly requesting permessage deflate compression is used
+     */
+    @Test
+    public void shouldRequestCompressionWhenEnabled() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .enableCompression(true)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+    }
+
+    /**
+     * Tests that no user agent is sent to server when that behaviour is disabled.
+     */
+    @Test
+    public void shouldNotRequestCompressionWhenDisabled() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .enableCompression(false)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertFalse(returnedWsExtensions.contains("permessage-deflate;"));
     }
 
     /**
