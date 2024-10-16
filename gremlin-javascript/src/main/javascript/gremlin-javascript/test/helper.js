@@ -105,7 +105,7 @@ exports.getGremlinSocketServerClient = function getGremlinSocketServerClient(tra
 exports.getGremlinSocketServerClientWithOptions = function getGremlinSocketServerClient(traversalSource, options) {
   const settings = exports.getGremlinSocketServerSettings();
   const url = socketServerUrl + settings.PORT + '/gremlin';
-  let mimeType = getMimeTypeFromSocketServerSettings(settings)
+  const mimeType = getMimeTypeFromSocketServerSettings(settings)
   return new Client(url, { traversalSource, mimeType, ...options});
 };
 
