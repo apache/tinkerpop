@@ -68,7 +68,6 @@ class DataType(Enum):
     bytebuffer = 0x25
     short = 0x26
     boolean = 0x27
-    bulkset = 0x2a                # todo: to be removed when bulk is implemented in list
     tree = 0x2b                   # not supported - no tree object in Python yet
     char = 0x80
     duration = 0x81
@@ -199,7 +198,7 @@ class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
 
     def objectify(self, d, reader, nullable=True):
         raise NotImplementedError()
-        
+
 
 class LongIO(_GraphBinaryTypeIO):
 
@@ -456,15 +455,30 @@ class ListIO(_GraphBinaryTypeIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_list, nullable)
+        flag = 0x00
+        if nullable:
+            flag = buff.read(1)[0]
+            if flag == 0x01:
+                return None
+            else:
+                return cls._read_list(buff, reader, flag)
+        return cls._read_list(buff, reader, flag)
 
     @classmethod
-    def _read_list(cls, b, r):
+    def _read_list(cls, b, r, flag):
         size = cls.read_int(b)
         the_list = []
-        while size > 0:
-            the_list.append(r.read_object(b))
-            size = size - 1
+        if flag == 0x02:
+            while size > 0:
+                itm = r.read_object(b)
+                bulk = int64_unpack(b.read(8))
+                for y in range(bulk):
+                    the_list.append(itm)
+                size = size - 1
+        else:
+            while size > 0:
+                the_list.append(r.read_object(b))
+                size = size - 1
 
         return the_list
 
@@ -779,29 +793,6 @@ class BooleanIO(_GraphBinaryTypeIO):
         return cls.is_null(buff, reader,
                            lambda b, r: True if int8_unpack(b.read(1)) == 0x01 else False,
                            nullable)
-
-
-# todo: to be removed when updated with bulking in list
-class BulkSetDeserializer(_GraphBinaryTypeIO):
-
-    graphbinary_type = DataType.bulkset
-
-    @classmethod
-    def objectify(cls, buff, reader, nullable=True):
-        return cls.is_null(buff, reader, cls._read_bulkset, nullable)
-
-    @classmethod
-    def _read_bulkset(cls, b, r):
-        size = cls.read_int(b)
-        the_list = []
-        while size > 0:
-            itm = r.read_object(b)
-            bulk = int64_unpack(b.read(8))
-            for y in range(bulk):
-                the_list.append(itm)            
-            size = size - 1
-
-        return the_list
 
 
 class DurationIO(_GraphBinaryTypeIO):
