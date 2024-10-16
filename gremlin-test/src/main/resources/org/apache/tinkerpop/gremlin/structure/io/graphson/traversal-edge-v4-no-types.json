@@ -2,10 +2,14 @@
   "id" : 13,
   "label" : [ "develops" ],
   "type" : "edge",
-  "inVLabel" : [ "software" ],
-  "outVLabel" : [ "person" ],
-  "inV" : 10,
-  "outV" : 1,
+  "inV" : {
+    "id" : 10,
+    "label" : [ "software" ]
+  },
+  "outV" : {
+    "id" : 1,
+    "label" : [ "person" ]
+  },
   "properties" : {
     "since" : [ 2009 ]
   }

@@ -425,8 +425,9 @@ JSON String form of UUID.
 ==== Edge
 
 JSON Object (required keys are: id, label, inVLabel, outVLabel, inV, outV) +
-"id", "inV", "outV" is any GraphSON 4.0 type +
-"label", "inVLabel", "outVLabel" value is a `g:List` of `String` +
+"id" is any GraphSON 4.0 type +
+"inV", "outV" is an Object that contains "id" which is any GraphSON 4.0 type and "label" which is a `g:List` of `String`
+"label" is a `g:List` of `String` +
 "properties" is an optional Object containing Arrays of `g:Property`
 
 The untyped version has one additional required key "type" which is always "vertex".
@@ -443,19 +444,23 @@ The untyped version has one additional required key "type" which is always "vert
     "label": [
       "develops"
     ],
-    "inVLabel": [
-      "software"
-    ],
-    "outVLabel": [
-      "person"
-    ],
     "inV": {
-      "@type": "g:Int32",
-      "@value": 10
+      "id": {
+        "@type": "g:Int32",
+        "@value": 10
+      },
+      "label": [
+        "software"
+      ]
     },
     "outV": {
-      "@type": "g:Int32",
-      "@value": 1
+      "id": {
+        "@type": "g:Int32",
+        "@value": 1
+      },
+      "label": [
+        "person"
+      ]
     },
     "properties": {
       "since": [
@@ -483,14 +488,18 @@ The untyped version has one additional required key "type" which is always "vert
     "develops"
   ],
   "type": "edge",
-  "inVLabel": [
-    "software"
-  ],
-  "outVLabel": [
-    "person"
-  ],
-  "inV": 10,
-  "outV": 1,
+  "inV": {
+    "id": 10,
+    "label": [
+      "software"
+    ]
+  },
+  "outV": {
+    "id": 1,
+    "label": [
+      "person"
+    ]
+  },
   "properties": {
     "since": [
       2009
@@ -1012,19 +1021,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "develops"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 1
+            "id": {
+              "@type": "g:Int32",
+              "@value": 1
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "since": [
@@ -1052,19 +1065,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "develops"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 1
+            "id": {
+              "@type": "g:Int32",
+              "@value": 1
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "since": [
@@ -1092,19 +1109,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 1
+            "id": {
+              "@type": "g:Int32",
+              "@value": 1
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1132,19 +1153,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 1
+            "id": {
+              "@type": "g:Int32",
+              "@value": 1
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1172,19 +1197,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "develops"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 7
+            "id": {
+              "@type": "g:Int32",
+              "@value": 7
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "since": [
@@ -1212,19 +1241,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "develops"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 7
+            "id": {
+              "@type": "g:Int32",
+              "@value": 7
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "since": [
@@ -1252,19 +1285,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 7
+            "id": {
+              "@type": "g:Int32",
+              "@value": 7
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1292,19 +1329,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 7
+            "id": {
+              "@type": "g:Int32",
+              "@value": 7
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1332,19 +1373,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "develops"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 8
+            "id": {
+              "@type": "g:Int32",
+              "@value": 8
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "since": [
@@ -1372,19 +1417,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 8
+            "id": {
+              "@type": "g:Int32",
+              "@value": 8
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1412,19 +1461,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 8
+            "id": {
+              "@type": "g:Int32",
+              "@value": 8
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1452,19 +1505,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 9
+            "id": {
+              "@type": "g:Int32",
+              "@value": 9
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1492,19 +1549,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "uses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "person"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 9
+            "id": {
+              "@type": "g:Int32",
+              "@value": 9
+            },
+            "label": [
+              "person"
+            ]
           },
           "properties": {
             "skill": [
@@ -1532,19 +1593,23 @@ two required keys: "vertices" and "edges" +
           "label": [
             "traverses"
           ],
-          "inVLabel": [
-            "software"
-          ],
-          "outVLabel": [
-            "software"
-          ],
           "inV": {
-            "@type": "g:Int32",
-            "@value": 11
+            "id": {
+              "@type": "g:Int32",
+              "@value": 11
+            },
+            "label": [
+              "software"
+            ]
           },
           "outV": {
-            "@type": "g:Int32",
-            "@value": 10
+            "id": {
+              "@type": "g:Int32",
+              "@value": 10
+            },
+            "label": [
+              "software"
+            ]
           }
         }
       }
@@ -1771,14 +1836,18 @@ two required keys: "vertices" and "edges" +
         "develops"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 1,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 1,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "since": [
           2009
@@ -1791,14 +1860,18 @@ two required keys: "vertices" and "edges" +
         "develops"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 1,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 1,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "since": [
           2010
@@ -1811,14 +1884,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 1,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 1,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           4
@@ -1831,14 +1908,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 1,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 1,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           5
@@ -1851,14 +1932,18 @@ two required keys: "vertices" and "edges" +
         "develops"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 7,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 7,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "since": [
           2010
@@ -1871,14 +1956,18 @@ two required keys: "vertices" and "edges" +
         "develops"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 7,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 7,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "since": [
           2011
@@ -1891,14 +1980,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 7,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 7,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           5
@@ -1911,14 +2004,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 7,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 7,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           4
@@ -1931,14 +2028,18 @@ two required keys: "vertices" and "edges" +
         "develops"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 8,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 8,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "since": [
           2012
@@ -1951,14 +2052,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 8,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 8,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           3
@@ -1971,14 +2076,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 8,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 8,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           3
@@ -1991,14 +2100,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 10,
-      "outV": 9,
+      "inV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 9,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           5
@@ -2011,14 +2124,18 @@ two required keys: "vertices" and "edges" +
         "uses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "person"
-      ],
-      "inV": 11,
-      "outV": 9,
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 9,
+        "label": [
+          "person"
+        ]
+      },
       "properties": {
         "skill": [
           3
@@ -2031,14 +2148,18 @@ two required keys: "vertices" and "edges" +
         "traverses"
       ],
       "type": "edge",
-      "inVLabel": [
-        "software"
-      ],
-      "outVLabel": [
-        "software"
-      ],
-      "inV": 11,
-      "outV": 10
+      "inV": {
+        "id": 11,
+        "label": [
+          "software"
+        ]
+      },
+      "outV": {
+        "id": 10,
+        "label": [
+          "software"
+        ]
+      }
     }
   ]
 }
