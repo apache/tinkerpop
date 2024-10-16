@@ -29,7 +29,9 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
+import org.apache.tinkerpop.gremlin.driver.interceptor.GraphBinarySerializationInterceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
@@ -57,6 +59,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -75,6 +78,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Cluster {
+    public static final String SERIALIZER_INTERCEPTOR_NAME = "serializer";
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
     private final Manager manager;
@@ -364,8 +368,8 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    List<RequestInterceptor> getRequestInterceptor() {
-        return manager.interceptor;
+    List<Pair<String, ? extends RequestInterceptor>> getRequestInterceptors() {
+        return manager.interceptors;
     }
 
     ScheduledExecutorService executor() {
@@ -473,6 +477,8 @@ public final class Cluster {
     }
 
     public final static class Builder {
+        private static int INTERCEPTOR_NOT_FOUND = -1;
+
         private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
@@ -499,17 +505,18 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private List<RequestInterceptor> interceptors = new ArrayList<>();
+        private LinkedList<Pair<String, ? extends RequestInterceptor>> interceptors = new LinkedList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
         private boolean enableBulkedResult = false;
 
         private Builder() {
-            // empty to prevent direct instantiation
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, new GraphBinarySerializationInterceptor());
         }
 
         private Builder(final String address) {
             addContactPoint(address);
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, new GraphBinarySerializationInterceptor());
         }
 
         /**
@@ -741,16 +748,82 @@ public final class Cluster {
         }
 
         /**
-         * Specifies an {@link RequestInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
-         * to its being sent to the server. For websockets the interceptor is only called on the handshake.
+         * Adds a {@link RequestInterceptor} after another one that will allow manipulation of the {@code HttpRequest}
+         * prior to its being sent to the server.
          */
-        public Builder requestInterceptor(final RequestInterceptor interceptor) {
-            interceptors.add(interceptor);
+        public Builder addInterceptorAfter(final String priorInterceptorName, final String nameOfInterceptor,
+                                           final RequestInterceptor interceptor) {
+            final int index = getInterceptorIndex(priorInterceptorName);
+            if (INTERCEPTOR_NOT_FOUND == index) {
+                throw new IllegalArgumentException(priorInterceptorName + " interceptor not found");
+            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
+            }
+            interceptors.add(index + 1, Pair.of(nameOfInterceptor, interceptor));
+
             return this;
         }
 
+        /**
+         * Adds a {@link RequestInterceptor} before another one that will allow manipulation of the {@code HttpRequest}
+         * prior to its being sent to the server.
+         */
+        public Builder addInterceptorBefore(final String subsequentInterceptorName, final String nameOfInterceptor,
+                                            final RequestInterceptor interceptor) {
+            final int index = getInterceptorIndex(subsequentInterceptorName);
+            if (INTERCEPTOR_NOT_FOUND == index) {
+                throw new IllegalArgumentException(subsequentInterceptorName + " interceptor not found");
+            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
+            } else if (index == 0) {
+                interceptors.addFirst(Pair.of(nameOfInterceptor, interceptor));
+            } else {
+                interceptors.add(index - 1, Pair.of(nameOfInterceptor, interceptor));
+            }
+
+            return this;
+        }
+
+        /**
+         * Adds a {@link RequestInterceptor} to the end of the list that will allow manipulation of the
+         * {@code HttpRequest} prior to its being sent to the server.
+         */
+        public Builder addInterceptor(final String name, final RequestInterceptor interceptor) {
+            if (getInterceptorIndex(name) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(name + " interceptor already exists");
+            }
+            interceptors.add(Pair.of(name, interceptor));
+            return this;
+        }
+
+        /**
+         * Removes a {@link RequestInterceptor} from the list. This can be used to remove the default interceptors that
+         * aren't needed.
+         */
+        public Builder removeInterceptor(final String name) {
+            final int index = getInterceptorIndex(name);
+            if (index == INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(name + " interceptor not found");
+            }
+            interceptors.remove(index);
+            return this;
+        }
+
+        private int getInterceptorIndex(final String name) {
+            for (int i = 0; i < interceptors.size(); i++) {
+                if (interceptors.get(i).getLeft().equals(name)) {
+                    return i;
+                }
+            }
+
+            return INTERCEPTOR_NOT_FOUND;
+        }
+
+        /**
+         * Adds an Auth {@link RequestInterceptor} to the end of list of interceptors.
+         */
         public Builder auth(final Auth auth) {
-            interceptors.add(auth);
+            addInterceptor(auth.getClass().getSimpleName().toLowerCase() + "-auth", auth);
             return this;
         }
 
@@ -861,7 +934,7 @@ public final class Cluster {
         private final LoadBalancingStrategy loadBalancingStrategy;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessage.Builder> validationRequest;
-        private final List<RequestInterceptor> interceptor;
+        private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
 
         /**
          * Thread pool for requests.
@@ -894,7 +967,7 @@ public final class Cluster {
 
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
             this.contactPoints = builder.getContactPoints();
-            this.interceptor = builder.interceptors;
+            this.interceptors = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
             this.enableBulkedResult = builder.enableBulkedResult;
 
