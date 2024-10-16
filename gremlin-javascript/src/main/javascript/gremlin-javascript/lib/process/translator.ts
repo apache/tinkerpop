@@ -103,12 +103,12 @@ export default class Translator {
       } else {
         script += anyObject.toString();
       }
-    } else if (anyObject === undefined) {
-      script += '';
+    } else if (anyObject === undefined || anyObject === null) {
+      script += 'null';
     } else if (typeof anyObject === 'number' || typeof anyObject === 'boolean') {
       script += anyObject;
     } else {
-      script += `'${anyObject}'`;
+      script += `'${`${anyObject}`.replace("'", "\\'")}'`; // eslint-disable-line quotes
     }
 
     return script;
