@@ -59,8 +59,6 @@ class Client:
         self._enable_compression = enable_compression
         if not self._use_http and "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
-        if self._enable_compression and "compress" not in transport_kwargs:
-            transport_kwargs["compress"] = 15  # enable per-message deflate compression with max 32k sliding window size
         if message_serializer is None:
             message_serializer = serializer.GraphBinarySerializersV1()
 
@@ -81,7 +79,7 @@ class Client:
                     if self._use_http:
                         return AiohttpHTTPTransport(**transport_kwargs)
                     else:
-                        return AiohttpTransport(**transport_kwargs)
+                        return AiohttpTransport(enable_compression=enable_compression, **transport_kwargs)
         self._transport_factory = transport_factory
         if protocol_factory is None:
             def protocol_factory():
