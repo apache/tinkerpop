@@ -49,6 +49,7 @@ install_requires = [
     'aiohttp>=3.8.0,<4.0.0',
     'aenum>=1.4.5,<4.0.0',
     'isodate>=0.6.0,<1.0.0',
+    'yarl<1.15.3,>=1.0', # dependency of aiohttp, pinned to 3.8-supported version, remove after upgrading python
     'boto3',
     'botocore'
 ]
