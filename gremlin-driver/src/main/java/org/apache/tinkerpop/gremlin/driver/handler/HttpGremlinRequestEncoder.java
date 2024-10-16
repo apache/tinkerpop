@@ -19,17 +19,18 @@
 package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth.AuthenticationException;
@@ -38,10 +39,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler.REQUEST_SENT;
 
@@ -54,13 +57,17 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final boolean bulkedResultEnabled;
-    private final List<RequestInterceptor> interceptors;
+    private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
+    private final URI uri;
 
-    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer, final List<RequestInterceptor> interceptors, boolean userAgentEnabled, boolean bulkedResultEnabled) {
+    public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer,
+                                     final List<Pair<String, ? extends RequestInterceptor>> interceptors,
+                                     final boolean userAgentEnabled, boolean bulkedResultEnabled, final URI uri) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
         this.bulkedResultEnabled = bulkedResultEnabled;
+        this.uri = uri;
     }
 
     @Override
@@ -74,29 +81,28 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
         final InetSocketAddress remoteAddress = getRemoteAddress(channelHandlerContext.channel());
         try {
-            final ByteBuf buffer = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
-            FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", buffer);
-            request.headers().add(HttpHeaderNames.CONTENT_TYPE, mimeType);
-            request.headers().add(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
-            request.headers().add(HttpHeaderNames.ACCEPT, mimeType);
-            request.headers().add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.DEFLATE);
-            request.headers().add(HttpHeaderNames.HOST, remoteAddress.getAddress().getHostAddress());
+            Map<String, String> headersMap = new HashMap<>();
+            headersMap.put(HttpRequest.Headers.HOST, remoteAddress.getAddress().getHostAddress());
+            headersMap.put(HttpRequest.Headers.ACCEPT, mimeType);
+            headersMap.put(HttpRequest.Headers.ACCEPT_ENCODING, HttpRequest.Headers.DEFLATE);
             if (userAgentEnabled) {
-                request.headers().add(HttpHeaderNames.USER_AGENT, UserAgent.USER_AGENT);
+                headersMap.put(HttpRequest.Headers.USER_AGENT, UserAgent.USER_AGENT);
             }
             if (bulkedResultEnabled) {
-                request.headers().add(Tokens.BULKED, "true");
+                headersMap.put(Tokens.BULKED, "true");
+            }
+            HttpRequest gremlinRequest = new HttpRequest(headersMap, requestMessage, uri);
+
+            for (final Pair<String, ? extends RequestInterceptor> interceptor : interceptors) {
+                gremlinRequest = interceptor.getRight().apply(gremlinRequest);
             }
 
-            for (final RequestInterceptor interceptor : interceptors) {
-                request = interceptor.apply(request);
-            }
-            objects.add(request);
+            final FullHttpRequest finalRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                    uri.getPath(), convertBody(gremlinRequest));
+            gremlinRequest.headers().forEach((k, v) -> finalRequest.headers().add(k, v));
+
+            objects.add(finalRequest);
             channelHandlerContext.channel().attr(REQUEST_SENT).set(true);
-        } catch (SerializationException ex) {
-            throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
-                    "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
-                    requestMessage, ex));
         } catch (AuthenticationException ex) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during authentication [%s] - it could not be sent to the server - Reason: %s",
@@ -114,5 +120,16 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             throw new RuntimeException("Request cannot be serialized because the channel is not connected");
         }
         return remoteAddress;
+    }
+    
+    private static ByteBuf convertBody(final HttpRequest request) {
+        final Object body = request.getBody();
+        if (body instanceof byte[]) {
+            request.headers().put(HttpRequest.Headers.CONTENT_LENGTH, String.valueOf(((byte[]) body).length));
+            return Unpooled.wrappedBuffer((byte[]) body);
+        } else {
+            throw new IllegalArgumentException("Final body must be byte[] but found "
+                    + body.getClass().getSimpleName());
+        }
     }
 }

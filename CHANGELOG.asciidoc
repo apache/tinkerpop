@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `sum()` to retain the type common to the stream rather than always promoting to `long` given the need for it to multiple by the `long` bulk value for the traverser.
 * Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
 * Added `Set` syntax in `gremlin-language`.
+* Modified RequestInterceptor to be a `UnaryOperator<HttpRequest>` to abstract the underlying implementation.
 * Renamed `MergeStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `TraversalMergeStep` of `merge()` to `MergeStep` for consistency.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
