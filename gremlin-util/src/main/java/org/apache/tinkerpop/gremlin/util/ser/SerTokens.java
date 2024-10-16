@@ -27,6 +27,7 @@ public final class SerTokens {
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_STATUS = "status";
     public static final String TOKEN_CODE = "code";
+    public static final String TOKEN_DATA = "data";
     public static final String TOKEN_EXCEPTION = "exception";
     public static final String TOKEN_MESSAGE = "message";
     public static final String TOKEN_GREMLIN = "gremlin";

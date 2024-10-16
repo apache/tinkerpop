@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.util.ser.SerTokens.TOKEN_DATA;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("unchecked")
@@ -87,9 +88,9 @@ public class GraphSONMessageSerializerV4Test {
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("header", node.get("result").get("@value").get(0).textValue());
-        assertEquals("footer", node.get("result").get("@value").get(6).textValue());
-        assertEquals(8, node.get("result").get("@value").size());
+        assertEquals("header", node.get("result").get(TOKEN_DATA).get("@value").get(0).textValue());
+        assertEquals("footer", node.get("result").get(TOKEN_DATA).get("@value").get(6).textValue());
+        assertEquals(8, node.get("result").get(TOKEN_DATA).get("@value").size());
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
@@ -114,7 +115,7 @@ public class GraphSONMessageSerializerV4Test {
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals(0, node.get("result").get("@value").size());
+        assertEquals(0, node.get("result").get(TOKEN_DATA).get("@value").size());
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
@@ -139,7 +140,7 @@ public class GraphSONMessageSerializerV4Test {
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals(0, node.get("result").get("@value").size());
+        assertEquals(0, node.get("result").get(TOKEN_DATA).get("@value").size());
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
@@ -173,9 +174,9 @@ public class GraphSONMessageSerializerV4Test {
 
         final JsonNode node = mapper.readTree(json);
 
-        assertEquals("header", node.get("result").get("@value").get(0).textValue());
+        assertEquals("header", node.get("result").get(TOKEN_DATA).get("@value").get(0).textValue());
         // 6 items in first 3 chunks
-        assertEquals(6, node.get("result").get("@value").size());
+        assertEquals(6, node.get("result").get(TOKEN_DATA).get("@value").size());
         assertEquals("SERVER_ERROR", node.get("status").get("message").asText());
         assertEquals(500, node.get("status").get("code").asInt());
 
