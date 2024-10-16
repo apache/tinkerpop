@@ -600,13 +600,7 @@ public class GraphTraversalSource implements TraversalSource {
         if (null == this.connection)
             return this.graph.tx();
         else {
-            // prevent child transactions and let the current Transaction object be bound to the
-            // TraversalSource that spawned it
-            final Transaction tx = this.connection.tx();
-            if (tx == Transaction.NO_OP && this.connection instanceof Transaction)
-                return (Transaction) this.connection;
-            else
-                return tx;
+            throw new UnsupportedOperationException("TinkerPop 4 does not yet support remote transactions");
         }
 
     }
