@@ -157,10 +157,10 @@ limitations under the License.
                                         <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
                                         <!-- update docfx if necessary -->
                                         <exec executable="dotnet" failonerror="true">
-                                            <arg line="dotnet tool update -g docfx"/>
+                                            <arg line="dotnet tool restore"/>
                                         </exec>
-                                        <exec executable="docfx" failonerror="true">
-                                            <arg line="docfx.json"/>
+                                        <exec executable="dotnet" failonerror="true">
+                                            <arg line="docfx docfx.json"/>
                                         </exec>
                                     </target>
                                 </configuration>
