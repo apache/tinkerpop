@@ -163,7 +163,7 @@ JSON Object with two required keys: "type" and "fields" +
 
 ==== DateTime
 
-JSON String representing ISO-8601 format for datetime with offset.
+JSON String representing a datetime in the ISO-8601 format.
 
 [source,json]
 ----
