@@ -31,9 +31,10 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
-import org.apache.tinkerpop.gremlin.driver.interceptor.GraphBinarySerializationInterceptor;
+import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +150,10 @@ public final class Cluster {
 
     public static Builder build(final String address) {
         return new Builder(address);
+    }
+
+    public static Builder build(final RequestInterceptor serializingInterceptor) {
+        return new Builder(serializingInterceptor);
     }
 
     public static Builder build(final File configurationFile) throws FileNotFoundException {
@@ -511,12 +516,18 @@ public final class Cluster {
         private boolean enableBulkedResult = false;
 
         private Builder() {
-            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, new GraphBinarySerializationInterceptor());
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
+                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
         }
 
         private Builder(final String address) {
             addContactPoint(address);
-            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, new GraphBinarySerializationInterceptor());
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
+                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
+        }
+
+        private Builder(final RequestInterceptor bodySerializer) {
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, bodySerializer);
         }
 
         /**

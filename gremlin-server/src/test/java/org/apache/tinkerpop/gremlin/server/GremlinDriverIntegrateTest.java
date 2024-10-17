@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -44,6 +45,7 @@ import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -209,6 +211,45 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldWorkWithGraphSONSerializer() throws Exception {
+        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
+                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONRequestAndGraphBinaryResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
+                .serializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphBinaryRequestAndGraphSONResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()))
+                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(5, client.submit("g.inject(5)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldInterceptRequestsWithHandshake() throws Exception {
         final int requestsToMake = 32;
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
@@ -296,7 +337,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldEventuallySucceedAfterChannelLevelError() {
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
-                .maxResponseContentLength(64).create();
+                .maxResponseContentLength(32).create(); // Warning: compression can change the content length. Adjust as needed.
         final Client client = cluster.connect();
 
         try {
@@ -305,7 +346,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Response exceeded 64 bytes."));
+                assertThat(root.getMessage(), containsString("Response entity too large"));
             }
 
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
@@ -786,7 +827,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (Exception re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
-            assertTrue(root.getMessage().equals("Response exceeded 1 bytes."));
+            assertTrue(root.getMessage().contains("Response entity too large"));
         } finally {
             cluster.close();
         }

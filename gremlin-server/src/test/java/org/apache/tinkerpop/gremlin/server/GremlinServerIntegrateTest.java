@@ -749,9 +749,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
 
-            // went with two possible error messages here as i think that there is some either non-deterministic
-            // behavior around the error message or it's environmentally dependent (e.g. different jdk, versions, etc)
-            assertThat(root.getMessage(), Matchers.anyOf(is("Connection to server is no longer active"), is("Connection reset by peer")));
+            // the server sends back a 413 Request Entity Too Large now in HTTP so detect that rather than the
+            // underlying connection closing due to error.
+            assertThat(root.getMessage(), Matchers.anyOf(is("Request Entity Too Large")));
 
             // validate that we can still send messages to the server
             assertEquals(2, client.submit("1+1").all().join().get(0).getInt());

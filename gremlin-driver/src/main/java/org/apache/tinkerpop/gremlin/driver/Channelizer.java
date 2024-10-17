@@ -24,6 +24,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
@@ -31,7 +32,7 @@ import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
@@ -95,6 +96,7 @@ public interface Channelizer extends ChannelHandler {
         public static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
 
         protected static final String PIPELINE_HTTP_CODEC = "http-codec";
+        protected static final String PIPELINE_HTTP_AGGREGATOR = "http-aggregator";
         protected static final String PIPELINE_HTTP_ENCODER = "gremlin-encoder";
         protected static final String PIPELINE_HTTP_DECODER = "gremlin-decoder";
         protected static final String PIPELINE_HTTP_DECOMPRESSION_HANDLER = "http-decompression-handler";
@@ -182,7 +184,7 @@ public interface Channelizer extends ChannelHandler {
                 ResponseMessage.build().code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
 
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
-        private HttpGremlinResponseStreamDecoder gremlinResponseDecoder;
+        private HttpGremlinResponseDecoder gremlinResponseDecoder;
 
         private HttpContentDecompressionHandler httpCompressionDecoder;
 
@@ -193,7 +195,7 @@ public interface Channelizer extends ChannelHandler {
             httpCompressionDecoder = new HttpContentDecompressionHandler();
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
                     cluster.isUserAgentOnConnectEnabled(), cluster.isBulkingEnabled(), connection.getUri());
-            gremlinResponseDecoder = new HttpGremlinResponseStreamDecoder(cluster.getSerializer(), cluster.getMaxResponseContentLength());
+            gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
         }
 
         @Override
@@ -222,6 +224,8 @@ public interface Channelizer extends ChannelHandler {
                     DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS, false);
 
             pipeline.addLast(PIPELINE_HTTP_CODEC, handler);
+            pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, new HttpObjectAggregator(cluster.getMaxResponseContentLength() > 0
+                    ? (int) cluster.getMaxResponseContentLength() : Integer.MAX_VALUE));
             pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
             pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
             pipeline.addLast(PIPELINE_HTTP_DECODER, gremlinResponseDecoder);
