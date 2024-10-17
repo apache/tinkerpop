@@ -32,12 +32,8 @@ complete list of all the modifications that are part of this release.
 
 ==== Runtime Updates
 
-`gremlin-python` has upgraded to Python 3.9 as Python 3.8 has passed end of life.
-`gremlin-go` has upgraded to Go 1.22 as Go 1.21 has passed end of life.
-
-
-=== Upgrading for Providers
-
+`gremlin-python` has upgraded to Python 3.9 as Python 3.8 has passed end of life. `gremlin-go` has upgraded to Go 1.22
+as Go 1.21 has passed end of life.
 
 == TinkerPop 3.6.7
 
@@ -745,7 +741,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2652[TINKERPOP-2652]
 ==== gremlin-annotations
 
 There is a new module called `gremlin-annotations` and it holds the annotations used to construct
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-java-dsl[Java-based Gremlin DSLs]. These annotations
+link:https://tinkerpop.apache.org/docs/3.6.0/reference/#gremlin-java-dsl[Java-based Gremlin DSLs]. These annotations
 were formerly in `gremlin-core` and therefore it will be necessary to modify dependencies accordingly when upgrading
 to 3.6.0. Package and class names have remained the same and general usage is unchanged.
 
