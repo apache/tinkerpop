@@ -536,7 +536,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    @Ignore("re-enable after GraphSONV4 datetime is implemented")
     public void shouldReadWriteMultiTypeMap() throws Exception {
         final String resourceName = "var-type-map";
 

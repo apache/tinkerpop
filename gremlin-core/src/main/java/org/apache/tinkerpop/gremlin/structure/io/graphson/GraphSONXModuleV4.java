@@ -63,7 +63,7 @@ public final class GraphSONXModuleV4 extends GraphSONModule {
                 put(LocalDateTime.class, "LocalDateTime");
                 put(LocalTime.class, "LocalTime");
                 put(MonthDay.class, "MonthDay");
-                put(OffsetDateTime.class, "OffsetDateTime");
+                put(OffsetDateTime.class, "DateTime");
                 put(OffsetTime.class, "OffsetTime");
                 put(Period.class, "Period");
                 put(Year.class, "Year");
