@@ -98,6 +98,9 @@ const (
 	err1102TransactionRollbackNotOpenedError errorCode = "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR"
 	err1103TransactionCommitNotOpenedError   errorCode = "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR"
 	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"
+
+	// gorillaTransporter.go errors
+	err1201RequestSizeExceedsWriteBufferError errorCode = "E1201_REQUEST_SIZE_EXCEEDS_WRITE_BUFFER_ERROR"
 )
 
 var localizer *i18n.Localizer

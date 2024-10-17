@@ -47,23 +47,88 @@ in each release line represent unreleased changes only. Once an official release
 are removed with new items taking their place as they are planned. The release line is removed from the roadmap
 completely when it is no longer maintained.
 
-== 3.7.x - Target 2023H1
+== TinkerPop 4.x
+TinkerPop 4 marks the beginning of the move into semantic versioning, as discussed in the link:https://lists.apache.org/thread/g85tbsocmpv5oksq0xs425cgrw8xkdnn[DISCUSS thread].
+Development has begun with the switch from WebSocket to HTTP/1.1 for the underlying transport of Gremlin Server, along
+with many new features that have been proposed. Here is a rough outline of where new features are expected to land, with
+major breaking features lined for 4.0, and additional features lined up for minor versions.
+Additional details on each feature can be found in the Appendix.
 
-The development of the 3.7.x release line is currently under way with a target release date for the initial release of
-the line of 23H1.
+=== 4.0 Milestone Release (2024Q4)
+As discussed in the link:https://lists.apache.org/thread/hh58k28qy49lb9k7b9j4mnqvpxj0xf85[DISCUSS thread], we are looking
+to release a milestone build of what is done so far to gather feedback.
+
+This milestone would roughly offer the opportunity to try Gremlin Server HTTP with the revised GraphSON and GraphBinary
+serialization formats for TinkerPop 4.0, using Java and Python drivers. These drivers will initially continue to support
+GraphSON as it can help with debugging (given its human-readable format)  and offers wider serialization options for users
+in these early days, we should expect to just have GraphBinary support for drivers in the future for simplicity.
+
+This milestone release would include the following list of features for preview:
+
+* <<http-support>>
+** Replacement of WebSocket with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread])
+* <<http-support-glv>> - Switching from WebSocket to HTTP in GLVs relies on community contribution in each language
+** `gremlin-java`
+** `gremlin-python`
+* <<io-updates>> (link:https://lists.apache.org/thread/q7h5yzd2r064lv82njbmt6lmty4s24y7[DISCUSS thread])
+* <<bytecode-removal>> (link:https://lists.apache.org/thread/7m3govzsqtmmj224xs7k5vv1ycnmocjn[DISCUSS thread])
+* <<console-rework>>
+
+=== 4.0 (2025H1)
+
+Full GA release of TinkerPop 4.0.
+
+* <<http-support>>
+** Replacement of WebSocket with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread])
+* <<http-support-glv>> - Switching from WebSocket to HTTP in GLVs relies on community contribution in each language
+** `gremlin-java`
+** `gremlin-python`
+** `gremlin-javascript`
+** `gremlin-dotnet`
+** `gremlin-go`
+* <<io-updates>> (link:https://lists.apache.org/thread/q7h5yzd2r064lv82njbmt6lmty4s24y7[DISCUSS thread])
+* <<bytecode-removal>> (link:https://lists.apache.org/thread/7m3govzsqtmmj224xs7k5vv1ycnmocjn[DISCUSS thread])
+* <<gremlin-lang-default>>
+* <<console-rework>>
+* <<multi-label>>
+* <<tx-redesign>> - API
+** The design of the API with server/core implementations would be viable for the initial release
+** Adding support for these APIs in GLVs sets it up for the implementation in the next iteration
+* <<neo4-removal>>
+* <<sparql-deprecate>>
+
+=== 4.1...4.x
+* <<tx-redesign>> - Implementation
+** Full API implementation in TinkerGraph
+* <<io-step-improve>>
+* <<proxy>>
+* <<geo-vector-patterns>>
+* <<local-step-improve>>
+* <<type-casts>>
+* <<match-step-improve>>
+* <<has-traversal>>
+* <<algorithm-steps>>
+* <<matrix-test>>
+* <<query-cancel>>
+
+== TinkerPop 5.x
+* <<groovy-removal>>
+* <<type-system>>
+* <<schema-support>>
+* <<pluggable-explain>>
+* <<io-olap>>
+* <<docs-reorg>>
+* <<telemerty>>
+* <<meta-props-on-edge>>
+
+---
+*Features originally planned for 3.7.x.*
 
 * Add support for traversals as parameters for `V()`, `is()`, and `has()` (includes `Traversal` arguments to `P`)
-* Geospatial support for TinkerPop (link:++https://lists.apache.org/list?dev@tinkerpop.apache.org:2021-7:DISCUSS%20geo-spatial++[DISCUSS Thread])
-* Add mid-traversal `E()` support (link:https://issues.apache.org/jira/browse/TINKERPOP-2798[TINKERPOP-2798])
-* Allow properties on elements (as opposed to just references) for remote traversals
 * Add subgraph/tree structure in all GLVs
-* List functions (`concat()`/etc.)
 * Define semantics for query federation across Gremlin servers (depends on `call()` step)
 * Gremlin debug support
-* Date/Time manipulation functions (`dateAdd()`, `dateDiff()`, etc.)
-* Add string manipulation functions (`split()`, `substring()` etc.) (link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672])
 * Case-insensitive search (link:https://issues.apache.org/jira/browse/TINKERPOP-2673[TINKERPOP-2673])
-* Type conversion with `cast()` step
 * Mutation steps for `clone()` of an `Element` and for `moveE()` for edges.
 * Add a language element to merge `Map` objects more easily.
 
@@ -103,21 +168,175 @@ story.
 
 = Appendix
 
-== TinkerPop4
+== TinkerPop 4.x Feature Details
 
-This space is currently a bit of a scratchpad for ideas and changes that might not fit well into TinkerPop3 and
-therefore might be best left to TinkerPop4.
+==== HTTP support - Server [[http-support]]
+Currently under development in the `master-http` branch. This body of work aims to replace the WebSocket protocol in Gremlin Server
+with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread]).
+For API design, see link:https://issues.apache.org/jira/browse/TINKERPOP-3065[TINKERPOP-3065
+Implement a new HTTP API].
 
-* *Transactions* - Redesign the transaction model so that it is better suited for all graphs.
-** Ensure that TinkerPop has a native implementation for transactions in TinkerGraph so that all tests can run from it.
-** Ensure that there is no difference between remote and embedded transaction usage and that the API is less tangled
-than it is today.
-* *Groovy* - Reconsider all dependencies on Groovy throughout TinkerPop
-** Remove Groovy support from Gremlin Server which should be possible now that `gremlin-language` and `call()` are
-available.
-** Investigate options for using JShell as a replacement for `groovysh` in Gremlin Console.
-** Investigate options for removing `ScriptEngine` support in general, which would include support from
-`gremlin-language`.
+==== HTTP support - GLVs [[http-support-glv]]
+As server will no longer support WebSocket, each GLVs will also switch to HTTP protocol. Connection
+options should be simplified with HTTP compared to WebSocket, and should be unified across all GLVs to the best of each
+language's library availability. This will also include implementing interface for pluggable request interceptor for authentication,
+as raised in the link:https://lists.apache.org/thread/cpsdd7gjmr1yb6c5kkm6v2bcfpp6fqq5[DISCUSS thread].
+
+==== IO serialization updates [[io-updates]]
+TinkerPop's serialization IO has not been updated for quite a long time, there are serializers that can and should likely be
+removed, and definition updated to make the IO overall more simple and maintainable. (link:https://lists.apache.org/thread/q7h5yzd2r064lv82njbmt6lmty4s24y7[DISCUSS thread])
+
+==== Switch default from `GremlinGroovyScriptEngine` to `GremlinLangScriptEngine` [[gremlin-lang-default]]
+Switching the default script processing from `GremlinGroovyScriptEngine` to `GremlinLangScriptEngine` is a step towards removing
+dependency on Groovy in the Gremlin Server. Currently, the TinkerPop testing system make heavy use of the Groovy script engine, and
+a major portion of the work will involve updating the tests.
+
+==== Gremlin Console rework [[console-rework]]
+As a result of sessions removal and switch to `gremlin-lang`, the Gremlin Console remote mode will be affected, and users
+may notice a difference in the interactive experience on the Console. Additional discussions may be needed on the impact and acceptable changes.
+(link:https://lists.apache.org/thread/rd70smb8jntws1kvz19pyxz23qdgtc2o[DISCUSS thread])
+
+==== Transaction redesign [[tx-redesign]]
+As transaction will have to be implemented over HTTP, this is an opportunity to improve the usability of the transaction APIs.
+This potentially mean redesigning the transaction model so that it is better suited for all graphs, align remote and embedded
+transaction usages, and ensure transaction support in GLVs.
+Such API redesign will be a breaking change that needs to be introduced in the initial release of TP4, which can include
+stub implementations only, with full implementation added iteratively in minor releases.
+
+==== Bytecode removal [[bytecode-removal]]
+One of the purposes that bytecode served was to provide a universal way to translate a Traversal. However, with the introduction of
+the `gremlin-lang` parser this need can be fulfilled differently. Any Gremlin script can be converted into a Traversal in a uniform way which reduces the
+need for bytecode. Now, we are left with two systems that serve a similar purpose, it is probably time to remove one of them during a major
+version upgrade, see (link:https://lists.apache.org/thread/7m3govzsqtmmj224xs7k5vv1ycnmocjn[DISCUSS thread]).
+
+Before the full removal can be implemented, a few updates will be needed in `gremlin-lang` to ensure appropriate types are covered.
+Each GLV will also have to be updated to switch from bytecode based to string based traversal construction. A proposed plan includes:
+
+1. Extract interface from Bytecode, and implement string based traversals and request options
+2. Add support for missing types, such as UUID, Set, Edge, ByteBuffer, etc. in `gremlin-lang` (link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023])
+3. Add missing types to GLVs and rework traversal generation
+4. Ensure Feature tests work properly
+
+*I/O serialization update needed*
+
+One important note for this proposed plan is that currently `gremlin-lang` does not cover all types supported via Bytecode,
+which means either _all missing types need to be fully defined and implemented in the `gremlin-lang` parser for parity
+(related to <<type-system>>)_, or _consensus have to be reached in the community on if reduced type support
+is acceptable, and if so, which types can be omitted at this point._
+
+==== Groovy removal in Gremlin Server [[groovy-removal]]
+Removing Groovy from Gremlin Server implies:
+
+1. Revising the configuration system to avoid the init script through Groovy. This is also an opportunity to simply server set-up.
+2. Deprecate `GremlinGroovyScriptEngine` for `GremlinLangScriptEngine` for script processing
+3. Remove/replace all the Groovy based plugin infrastructure from the server
+
+One main impact of how Groovy allows arbitrary code to be executed on the server is security vulnerabilities.
+However, the removal of this system itself has overreaching affects in the community that should be discussed.
+
+==== Schema support [[schema-support]]
+Schema support relies on a well-defined type system.
+
+==== Multi-label, no label, mutable label support [[multi-label]]
+TinkerPop only support single, immutable labels for its Elements. Various providers have implemented their own mechanisms
+for multi-label, no label, and/or mutable label support. Many popular non-TinkerPop graph models also allow for multiple labels. It is time to consider
+bringing these functionalities into parity.
+
+==== Multi/meta properties on edges [[meta-props-on-edge]]
+Currently, meta-properties only exists on vertices, this extends to allowing meta-properties on edges.
+
+==== Pluggable System for explain/profile() [[pluggable-explain]]
+While TinkerPop provides explain() and profile() steps, switching to a pluggable architecture would increase flexibility for
+providers who wish to customize the amount and format of information they return. (link:https://lists.apache.org/thread/y8zbyx1jm5whbsw5kmo5vp58l8z815qc[DISCUSS Thread])
+
+An extension of this is for explain() to work in remote fashion, see link:https://issues.apache.org/jira/browse/TINKERPOP-2128[TINKERPOP-2128]
+
+==== Improve `local()` step [[local-step-improve]]
+The concept and application of the `local()` step has been somewhat confusing to users, and the addition of the string and list
+manipulation steps in 3.7 further blurred some definitions of local execution in a traversal. It is a good time to start considering
+a redesign or improved design of the `local()` step.
+
+==== Type conversion with `cast()` step [[type-casts]]
+We have introduced `asString()` and `asDate()` in 3.7, this would be to introduce additional casting steps like `toInt()`, which
+should rely on a well-defined type system.
+
+==== New Gremlin language elements for geospatial and vector computation [[geo-vector-patterns]]
+Similar to how string and list manipulation steps were introduced, there is room for creating first-class steps for vector computation
+and geospatial steps (link:https://lists.apache.org/thread/mxg3kopgj9h9v8j299qjhdhopzpdkfow[DISCUSS Thread]).
+
+==== Rework `match()` step [[match-step-improve]]
+The `match()` step has been an attempt to introduce a way of declarative form of querying in TinkerPop based on pattern matching.
+There exists various issues with the step, and rework is due for improvements.
+
+Unresolved issues related to current `match()`:
+
+* link:https://issues.apache.org/jira/browse/TINKERPOP-2961[TINKERPOP-2961 Missing exceptions for unsolvable match pattern]
+* link:https://issues.apache.org/jira/browse/TINKERPOP-2528[TINKERPOP-2528 Improve match() step to generate traversals that uses indexes]
+* link:https://issues.apache.org/jira/browse/TINKERPOP-2503[TINKERPOP-2503 Implement look-ahead on PathRetractionStrategy]
+* link:https://issues.apache.org/jira/browse/TINKERPOP-2340[TINKERPOP-2340 MatchStep with VertexStep Exceptions]
+* link:https://issues.apache.org/jira/browse/TINKERPOP-940[TINKERPOP-940 Convert LocalTraversals to MatchSteps in OLAP]
+* link:https://issues.apache.org/jira/browse/TINKERPOP-736[TINKERPOP-736 Automatic Traversal rewriting]
+
+==== `has()` accepting Traversal [[has-traversal]]
+This is a body of work that was in the roadmap for 3.7.x, which is to add support of traversals as parameters to `has()`,
+which should expand the usability of the Gremlin language.
+
+==== Query status/query cancellation [[query-cancel]]
+These are useful features for debugging and improved resource management that have been implemented by providers, but would now be
+a good time to bring parity into TinkerPop.
+
+Related issue: link:https://issues.apache.org/jira/browse/TINKERPOP-2210[TINKERPOP-2210 Support cancellation of remote traversals].
+
+==== Unify algorithm steps [[algorithm-steps]]
+Moving the algorithm steps into `call()` step or generify them in some way.
+
+==== Modernize IO for OLAP [[io-olap]]
+As name suggests, we should remove old file serialization formats, and introduce more modernized format for IO. One possible
+candidate is link:https://github.com/apache/incubator-graphar[GraphAR], which is a standard data file format for graph data
+storage and retrieval, currently an incubating Apache project.
+
+A potential large extension of this work, which may not be included for this version yet, is revisiting OLAP in general to resolve
+link:https://issues.apache.org/jira/browse/TINKERPOP-1298?jql=project%20%3D%20TINKERPOP%20AND%20status%20%3D%20Open%20AND%20text%20~%20%22OLAP%22[open JIRA issues].
+
+==== Remove `neo4j-gremlin` [[neo4-removal]]
+As discussed inside (link:https://lists.apache.org/thread/lxn4s9fs8rzggm0jlnffnphfpqnpn3h8[DISCUSS thread]), `neo4j-gremlin` was deprecated in 3.7
+with the introduction of native transaction in TinkerGraph. TP4 would be the place to remove the module.
+
+==== Documentation reorganization [[docs-reorg]]
+In addition to the necessary documentation updates needed for new TP4 feature implementations, this entails more major rework
+to the documentation structure.
+
+The current documentation is very thorough in certain areas, but lacking in many others. The accumulation of the features and functionalities
+over the past years likely mean that certain information are outdated, and/or should be reworded for clarity. While we have a generous
+amount of reference material, there tend to lack implementation guidelines for contributors and providers. TP4 is an opportunity to rework
+the documentations to be more thorough, concise, clear, and easy to update when new features are implemented.
+
+Another implication of this is to revisit the current documentation generation process. We have a very complex scripting structure that we use to
+orchestrate the generation of documentations, combined with Maven plugins for language specific docs. This process maybe affected by
+any major alterations to documentation structure, which would need some effort to revise.
+
+==== Deprecate `sparql-gremlin` [[sparql-deprecate]]
+This module of TinkerPop has been largely unmaintained and likely unused for many years. Unless we receive fresh interest and contribution,
+it would be the time to deprecate and remove in a future version.
+
+==== Proxy implementation [[proxy]]
+Implementing a proxy for Gremlin Server might be a viable alternative to implementing clustering in the client, for
+orchestrating multiple Gremlin Server instances, and/or rerouting WebSocket/HTTP requests for compatibility.
+
+==== `io()` step improvements [[io-step-improve]]
+Simply `io()` for data ingestion and export in both embedded and remote usage in some way, and add support for CSV format.
+
+==== Matrix testing [[matrix-test]]
+This aims to create an automated testing set up, which helps to ensure compatibility between drivers and server across minor releases,
+and to make sure API contracts are not broken unintentionally.
+
+==== Improved telemetry in driver/server [[telemerty]]
+This is a less well-defined area, aimed at improved metrics collection that can better aid debugging for users and providers.
+Work may include adding the ability to debug queries and traversals, adding OpenTelemetry support, etc.
+
+==== Type System [[type-system]]
+TinkerPop has not had one's own type system defined and has been relying on the JVM types, which becomes a problem especially in
+GLVs that doesn't have corresponding types defined in their language. (link:https://lists.apache.org/thread/rpdq3ywk6vqpyv512to36ot8yqvjo3dv[DISCUSS thread])
 
 === 4.x Branching Methodology
 

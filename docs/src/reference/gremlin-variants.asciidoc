@@ -815,6 +815,8 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
 |connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
+|enableCompression |Enables permessage-deflate compression. Note that use of compression may increase vulnerability to attacks such as CRIME/BREACH.|true
+|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
@@ -826,7 +828,6 @@ The following table describes the various configuration options for the Gremlin 
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
-|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
@@ -1370,6 +1371,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.authenticator |Authenticator |The authentication handler to use. |undefined
 |options.processor |String |The name of the opProcessor to use, leave it undefined or set 'session' when session mode. |undefined
 |options.session |String |The sessionId of Client in session mode. undefined means session-less Client. |undefined
+|options.enableCompression |Boolean |Enables permessage-deflate compression. Note that use of compression may increase vulnerability to attacks such as CRIME/BREACH.|false
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent will be sent during connection handshake. |true
 |options.headers |Object |An associative array containing the additional header key/values for the initial request. |undefined
 |options.pingEnabled |Boolean |Setup ping interval. |true
@@ -2248,19 +2250,19 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
+|enable_compression |Enables sending a user agent to the server during connection requests. |False
+|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |headers |Additional headers that will be added to each request message. |`None`
+|kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |max_workers |Maximum number of worker threads. |Number of CPUs * 5
 |message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV1`
 |password |The password to submit on requests that require authentication. |""
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
+|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
 |username |The username to submit on requests that require authentication. |""
-|kerberized_service |the first part of the principal name configured for the gremlin service|"""
-|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
-|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
-More details can be found in provider docs
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows

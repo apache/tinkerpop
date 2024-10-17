@@ -96,6 +96,7 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
     static class ClientTestConfigurableHandler extends MessageToMessageDecoder<BinaryWebSocketFrame> {
         private SocketServerSettings settings;
         private String userAgent = "";
+        private String secWebsocketExtensions = "";
 
         public ClientTestConfigurableHandler(SocketServerSettings settings) { this.settings = settings; }
 
@@ -139,6 +140,8 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 ctx.channel().writeAndFlush(new CloseWebSocketFrame());
             } else if (msg.getRequestId().equals(settings.USER_AGENT_REQUEST_ID)) {
                 ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSimpleBinaryResponse(settings.USER_AGENT_REQUEST_ID, userAgent)));
+            } else if (msg.getRequestId().equals(settings.SEC_WEBSOCKET_EXTENSIONS)) {
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(returnSimpleBinaryResponse(settings.SEC_WEBSOCKET_EXTENSIONS, secWebsocketExtensions)));
             } else if (msg.getRequestId().equals(settings.PER_REQUEST_SETTINGS_REQUEST_ID)) {
                 String response = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s, materializeProperties=%s",
                         msg.getRequestId(), msg.getArgs().get("evaluationTimeout"),
@@ -185,6 +188,9 @@ public class TestWSGremlinInitializer extends TestChannelizers.TestWebSocketServ
                 HttpHeaders requestHeaders = handshake.requestHeaders();
                 if(requestHeaders.contains(USER_AGENT_HEADER)) {
                     userAgent = requestHeaders.get(USER_AGENT_HEADER);
+                }
+                if(requestHeaders.contains("sec-websocket-extensions")) {
+                    secWebsocketExtensions = requestHeaders.get("sec-websocket-extensions");
                 }
                 else {
                     ctx.fireUserEventTriggered(evt);
