@@ -29,14 +29,21 @@ import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+
+import java.util.Map;
 
 /**
- * A {@link RequestInterceptor} that serializes the request body to the {@code GraphBinary} format. This interceptor
- * should be run before other interceptors that need to calculate values based on the request body.
+ * A {@link RequestInterceptor} that serializes the request body usng the provided {@link MessageSerializer}. This
+ * interceptor should be run before other interceptors that need to calculate values based on the request body.
  */
-public class GraphBinarySerializationInterceptor implements RequestInterceptor {
-    // Should be thread-safe as the GraphBinaryWriter doesn't maintain state.
-    private static final MessageSerializer serializer = new GraphBinaryMessageSerializerV4();
+public class PayloadSerializingInterceptor implements RequestInterceptor {
+    // Should be thread-safe as the GraphBinaryWriter/GraphSONMessageSerializer doesn't maintain state.
+    private final MessageSerializer serializer;
+
+    public PayloadSerializingInterceptor(final MessageSerializer serializer) {
+        this.serializer = serializer;
+    }
 
     @Override
     public HttpRequest apply(HttpRequest httpRequest) {

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.driver.interceptor.GraphBinarySerializationInterceptor;
+import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.junit.Test;
 
 import java.util.List;
@@ -132,7 +132,7 @@ public class ClusterTest {
     public void shouldContainBodySerializerByDefault() {
         final List<Pair<String, ? extends RequestInterceptor>> interceptors = Cluster.build().create().getRequestInterceptors();
         assertEquals(1, interceptors.size());
-        assertTrue(interceptors.get(0).getRight() instanceof GraphBinarySerializationInterceptor);
+        assertTrue(interceptors.get(0).getRight() instanceof PayloadSerializingInterceptor);
     }
 
     @Test
