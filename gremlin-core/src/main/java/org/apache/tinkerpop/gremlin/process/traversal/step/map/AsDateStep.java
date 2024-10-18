@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
+import java.math.BigInteger;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Date;
@@ -51,9 +52,17 @@ public final class AsDateStep<S> extends ScalarMapStep<S, Date> {
             throw new IllegalArgumentException("Can't parse null as Date.");
         if (object instanceof Date)
             return (Date) object;
-        if (object instanceof Number)
+        if (object instanceof Byte || object instanceof Short || object instanceof Integer || object instanceof Long)
             // numbers handled as milliseconds since January 1, 1970, 00:00:00 GMT.
             return new Date(((Number) object).longValue());
+        if (object instanceof BigInteger) {
+            try {
+                return new Date(((BigInteger) object).longValueExact());
+            } catch (ArithmeticException ae) {
+                throw new IllegalArgumentException("Can't parse " + object + " as Date.");
+            }
+        }
+
         if (object instanceof String) {
             try {
                 return DatetimeHelper.parse((String) object);

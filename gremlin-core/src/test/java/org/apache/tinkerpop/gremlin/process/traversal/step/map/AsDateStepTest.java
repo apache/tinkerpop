@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -48,8 +49,8 @@ public class AsDateStepTest extends StepTest {
         final Date testDate = new Date(testInstant.getEpochSecond() * 1000);
 
         assertEquals(new Date(1), __.__(1).asDate().next());
-        assertEquals(new Date(2), __.__(2.0).asDate().next());
         assertEquals(new Date(3), __.__(3L).asDate().next());
+        assertEquals(new Date(6), __.__(new BigInteger("6")).asDate().next());
         assertEquals(testDate, __.__(testDate.getTime()).asDate().next());
 
         assertEquals(testDate, __.__("2023-08-02T00:00:00Z").asDate().next());
@@ -69,6 +70,16 @@ public class AsDateStepTest extends StepTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenUUIDInput() {
         __.__(UUID.randomUUID()).asDate().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenDecimalInput() {
+        __.__(2.2d).asDate().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenBigIntegerOutOfLongInput() {
+        __.__(new BigInteger("1000000000000000000000")).asDate().next();
     }
 
     @Test(expected = IllegalArgumentException.class)
