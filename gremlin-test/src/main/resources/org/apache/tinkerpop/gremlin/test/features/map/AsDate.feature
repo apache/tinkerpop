@@ -64,9 +64,7 @@ Feature: Step - asDate()
       g.inject(xx1).asDate()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | dt[2023-09-06T16:28:29Z] |
+    Then the traversal will raise an error with message containing text of "Can't parse"
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asDate
