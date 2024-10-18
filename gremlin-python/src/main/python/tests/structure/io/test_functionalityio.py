@@ -110,7 +110,7 @@ def test_uuid(remote_connection):
 
 
 def test_short(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV4):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
@@ -126,7 +126,7 @@ def test_short(remote_connection):
 
 
 def test_bigint_positive(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV4):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
@@ -142,7 +142,7 @@ def test_bigint_positive(remote_connection):
 
 
 def test_bigint_negative(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV4):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
@@ -159,7 +159,7 @@ def test_bigint_negative(remote_connection):
 
 @pytest.mark.skip(reason="BigDecimal implementation needs revisiting")
 def test_bigdecimal(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV4):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)

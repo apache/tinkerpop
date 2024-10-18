@@ -26,6 +26,7 @@ from gremlin_python.driver.client import Client
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, Parameter
 from gremlin_python.process.strategies import OptionsStrategy
@@ -551,3 +552,13 @@ def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
 def test_client_custom_valid_request_id_bytecode(client):
     query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
     assert len(client.submit(query).all().result()) == 6
+
+def test_response_serializer_never_None():
+    client = Client('url', 'g', response_serializer=None)
+    resp_ser = client.response_serializer()
+    assert resp_ser is not None
+
+
+def test_serializer_and_interceptor_forwarded(client_with_interceptor):
+    result = client_with_interceptor.submit("g.inject(1)").next()
+    assert [2] == result # interceptor changes request to g.inject(2)
