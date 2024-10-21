@@ -2695,33 +2695,23 @@ The following `RequestMessage` is an example of a simple sessionless request for
 ----
 {
   "gremlin": "g.V(x)",
-  "fields": {
+  "materializeProperties": "tokens",
+  "timeoutMs": {
+    "@type": "g:Int64",
+    "@value": 1000
+  },
+  "g": "g",
+  "bindings": {
     "@type": "g:Map",
     "@value": [
-      "materializeProperties",
-      "tokens",
-      "timeoutMs",
+      "x",
       {
-        "@type": "g:Int64",
-        "@value": 1000
-      },
-      "g",
-      "g",
-      "bindings",
-      {
-        "@type": "g:Map",
-        "@value": [
-          "x",
-          {
-            "@type": "g:Int32",
-            "@value": 1
-          }
-        ]
-      },
-      "language",
-      "gremlin-groovy"
+        "@type": "g:Int32",
+        "@value": 1
+      }
     ]
-  }
+  },
+  "language": "gremlin-groovy"
 }
 ----
 
@@ -2729,15 +2719,13 @@ The following `RequestMessage` is an example of a simple sessionless request for
 ----
 {
   "gremlin": "g.V(x)",
-  "fields": {
-    "materializeProperties": "tokens",
-    "timeoutMs": 1000,
-    "g": "g",
-    "bindings": {
-      "x": 1
-    },
-    "language": "gremlin-groovy"
-  }
+  "materializeProperties": "tokens",
+  "timeoutMs": 1000,
+  "g": "g",
+  "bindings": {
+    "x": 1
+  },
+  "language": "gremlin-groovy"
 }
 ----
 
