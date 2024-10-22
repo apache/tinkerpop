@@ -37,6 +37,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Bump Ivy to 2.5.2
 * Fixed a memory leak in the Javascript driver when there is a server error response.
 * Throw more descriptive error in `gremlin-go` when request size exceeds `WriteBufferSize`
+* Fixed a missing runtime dependency in `gremlin-python`
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)
