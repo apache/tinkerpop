@@ -20,6 +20,7 @@ import os
 from datetime import datetime
 
 from gremlin_python import statics
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, Parameter, Cardinality
 from gremlin_python.process.graph_traversal import __
@@ -28,12 +29,33 @@ from gremlin_python.structure.graph import Vertex
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.protocol import GremlinServerError
+from gremlin_python.driver import serializer
 
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/')
 test_no_auth_url = gremlin_server_url.format(45940)
 
 
 class TestDriverRemoteConnection(object):
+
+    # this is a temporary test for basic graphSONV4 connectivity, once all types are implemented, enable graphSON testing
+    # in conftest.py and remove this
+    def test_graphSONV4_temp(self):
+        remote_conn = DriverRemoteConnection(test_no_auth_url, 'gmodern',
+                                             message_serializer=serializer.GraphSONSerializerV4())
+        g = traversal().with_(remote_conn)
+        assert long(6) == g.V().count().to_list()[0]
+        # #
+        assert 10 == g.V().repeat(__.both()).times(5)[0:10].count().next()
+        assert 1 == g.V().repeat(__.both()).times(5)[0:1].count().next()
+        assert 0 == g.V().repeat(__.both()).times(5)[0:0].count().next()
+        assert 4 == g.V()[2:].count().next()
+        assert 2 == g.V()[:2].count().next()
+        # #
+        results = g.with_side_effect('a', ['josh', 'peter']).V(1).out('created').in_('created').values('name').where(
+            P.within('a')).to_list()
+        assert 2 == len(results)
+        assert 'josh' in results
+        assert 'peter' in results
 
     def test_bulked_request_option(self, remote_connection):
         g = traversal().with_(remote_connection)
