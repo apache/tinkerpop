@@ -18,7 +18,6 @@ under the License.
 """
 import codecs
 import os
-import sys
 import time
 from setuptools import setup
 
@@ -48,7 +47,8 @@ install_requires = [
     'nest_asyncio',
     'aiohttp>=3.8.0,<4.0.0',
     'aenum>=1.4.5,<4.0.0',
-    'isodate>=0.6.0,<1.0.0'
+    'isodate>=0.6.0,<1.0.0',
+    'async-timeout>=4.0.3,<5.0.0'
 ]
 
 setup(
