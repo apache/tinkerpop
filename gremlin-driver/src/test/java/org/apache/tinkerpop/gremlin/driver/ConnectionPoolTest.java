@@ -63,10 +63,9 @@ public class ConnectionPoolTest {
 
         final Client client = new Client.ClusteredClient(cluster);
 
-        // create pool with 1 connection
-        final ConnectionPool connectionPool = new ConnectionPool(host, client,
-                Optional.of(1), Optional.of(2), connectionFactory);
-        // try to borrow this connection.
+        // create pool - starts with 1 connection
+        final ConnectionPool connectionPool = new ConnectionPool(host, client, Optional.of(2), connectionFactory);
+        // try to borrow a connection.
         final Connection conn0 = connectionPool.borrowConnection(100, TimeUnit.MILLISECONDS);
 
         assertNotNull(connectionPool);
@@ -90,6 +89,7 @@ public class ConnectionPoolTest {
         }
 
         // return conn0 to pool, can be borrowed again
+        connectionPool.returnConnection(conn0);
         when(mockConn0.isBorrowed()).thenReturn(new AtomicBoolean(false));
         final Connection conn00 = connectionPool.borrowConnection(100, TimeUnit.MILLISECONDS);
 

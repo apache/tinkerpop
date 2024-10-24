@@ -260,7 +260,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                minConnectionPoolSize(1).maxConnectionPoolSize(1).
+                maxConnectionPoolSize(1).
                 addInterceptor("counter", r -> {
                     handshakeRequests.incrementAndGet();
                     return r;
@@ -964,8 +964,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxConnectionPoolSize(16)
-                .minConnectionPoolSize(8).create();
+                .maxConnectionPoolSize(16).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
@@ -1168,8 +1167,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
      */
     @Test
     public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
+        int maxSize = 1;
         final Cluster cluster = TestClientFactory.build()
-                .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .connectionSetupTimeoutMillis(100)
                 .maxWaitForConnection(150)
@@ -1183,7 +1182,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception e) {
                 final Throwable root = ExceptionHelper.getRootCause(e);
                 assertTrue(root instanceof TimeoutException);
-                assertTrue(root.getMessage().contains(Client.TOO_MANY_IN_FLIGHT_REQUESTS));
+                assertTrue(root.getMessage().contains(String.format(Client.TOO_MANY_IN_FLIGHT_REQUESTS, maxSize, maxSize)));
             }
         }
 

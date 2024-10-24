@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.hamcrest.core.Is;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,7 +63,8 @@ import static org.junit.Assert.*;
 public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     private static LogCaptor logCaptor;
-    private Level previousLevel;
+    private Level previousConnectionLevel;
+    private Level previousConnectionPoolLevel;
 
     @BeforeClass
     public static void setupLogCaptor() {
@@ -77,8 +79,11 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     @Before
     public void setupForEachTest() {
         final Logger lc = (Logger) LoggerFactory.getLogger(Connection.class);
-        previousLevel = lc.getLevel();
+        previousConnectionLevel = lc.getLevel();
         lc.setLevel(Level.DEBUG);
+        final Logger lcp = (Logger) LoggerFactory.getLogger(ConnectionPool.class);
+        previousConnectionPoolLevel = lcp.getLevel();
+        lcp.setLevel(Level.DEBUG);
 
         logCaptor.clearLogs();
     }
@@ -86,7 +91,9 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     @After
     public void afterEachTest() {
         final Logger lc = (Logger) LoggerFactory.getLogger(Connection.class);
-        lc.setLevel(previousLevel);
+        lc.setLevel(previousConnectionLevel);
+        final Logger lcp = (Logger) LoggerFactory.getLogger(ConnectionPool.class);
+        lcp.setLevel(previousConnectionPoolLevel);
     }
 
     /**
@@ -97,7 +104,6 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         // Set a low value of maxResponseContentLength to intentionally trigger CorruptedFrameException
         final Cluster cluster = TestClientFactory.build()
                                                  .maxResponseContentLength(64)
-                                                 .minConnectionPoolSize(1)
                                                  .maxConnectionPoolSize(2)
                                                  .create();
         final Client.ClusteredClient client = cluster.connect();
@@ -140,7 +146,6 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldBalanceConcurrentRequestsAcrossConnections() throws InterruptedException {
         final int connPoolSize = 16;
         final Cluster cluster = TestClientFactory.build()
-                .minConnectionPoolSize(connPoolSize)
                 .maxConnectionPoolSize(connPoolSize)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
@@ -183,10 +188,9 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
-    public void overLimitOperationsShouldCreateNewHttpConnectionPerRequestAsNeeded() throws InterruptedException {
+    public void shouldCreateNewHttpConnectionPerRequestAsNeeded() throws InterruptedException {
         final int operations = 6;
         final Cluster cluster = TestClientFactory.build()
-                .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(operations)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
@@ -236,7 +240,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
      */
     @Test
     public void shouldSucceedWithJitteryConnection() throws Exception {
-        final Cluster cluster = TestClientFactory.build().minConnectionPoolSize(1).maxConnectionPoolSize(128).
+        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(128).
                 reconnectInterval(1000).
                 maxWaitForConnection(4000).validationRequest("g.inject()").create();
         final Client.ClusteredClient client = cluster.connect();
@@ -290,6 +294,74 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         assertThat(hadFailOtherThanTimeout.get(), is(false));
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldCloseIdleConnectionsAndRecreateNewConnections() throws InterruptedException {
+        int idleMillis = 3000;
+        final Cluster cluster = TestClientFactory.build()
+                .idleConnectionTimeoutMillis(idleMillis)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+        client.init();
+        final ExecutorService executorServiceForTesting = cluster.executor();
+
+        try {
+            // create or reuse some connections
+            chooseConnections(3, client, executorServiceForTesting);
+
+            // simulate downtime where there is no traffic so that all connections become idle
+            TimeUnit.MILLISECONDS.sleep(idleMillis * 3);
+            assertEquals(1, client.hostConnectionPools.size());
+            // all connections should have been closed due to idle timeout
+            assertTrue(client.hostConnectionPools.values().iterator().next().getPoolInfo().contains("no connections in pool"));
+
+            // create or reuse some more connections
+            chooseConnections(4, client, executorServiceForTesting);
+
+        } finally {
+            executorServiceForTesting.shutdown();
+            client.close();
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldThrowErrorWithHelpfulMessageWhenIdleTimeoutReachedBeforeResponseReceived() throws InterruptedException {
+        int idleMillis = 1000;
+        final Cluster cluster = TestClientFactory.build()
+                .idleConnectionTimeoutMillis(idleMillis)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        try {
+            client.submit("Thread.sleep(" + idleMillis * 3 + ")").all().get();
+            fail("Expected exception due to idle timeout");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Idle timeout occurred before response could be received from server - consider increasing idleConnectionTimeout"));
+        } finally {
+            client.close();
+            cluster.close();
+        }
+    }
+
+    private static void chooseConnections(int operations, Client.ClusteredClient client, ExecutorService executorServiceForTesting) throws InterruptedException {
+        final RequestMessage.Builder request = client.buildMessage(RequestMessage.build("g.inject(1)"));
+        final Callable<Connection> sendQueryCallable = () -> client.chooseConnection(request.create());
+        final List<Callable<Connection>> listOfTasks = new ArrayList<>();
+        for (int i = 0; i < operations; i++) {
+            listOfTasks.add(sendQueryCallable);
+        }
+
+        final List<Future<Connection>> executorSubmitFutures = executorServiceForTesting.invokeAll(listOfTasks);
+        executorSubmitFutures.parallelStream().map(fut -> {
+            try {
+                return fut.get();
+            } catch (InterruptedException | ExecutionException e) {
+                fail(e.getMessage());
+                return null;
+            }
+        }).forEach(Assert::assertNotNull);
     }
 
     /**

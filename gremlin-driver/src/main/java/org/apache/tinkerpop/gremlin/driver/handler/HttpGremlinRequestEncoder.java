@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler.REQUEST_SENT;
+import static org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler.REQUEST_SENT;
 
 /**
  * Converts {@link RequestMessage} to a {@code HttpRequest}.

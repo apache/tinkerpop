@@ -24,10 +24,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
 
 /**
- * Handler used to detect if the server requires TLS when the client is sending plain HTTP.
+ * Handler used to detect if the channel has become inactive and throw an error in certain scenarios.
  */
 @ChannelHandler.Sharable
-public class SslCheckHandler extends ChannelInboundHandlerAdapter {
+public class InactiveChannelHandler extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<Integer> BYTES_READ = AttributeKey.valueOf("bytesRead");
     public static final AttributeKey<Boolean> REQUEST_SENT = AttributeKey.valueOf("requestSent");
 
@@ -40,8 +40,13 @@ public class SslCheckHandler extends ChannelInboundHandlerAdapter {
         if ((null == ctx.channel().attr(BYTES_READ).get()) && (null != ctx.channel().attr(REQUEST_SENT).get())) {
             // BYTES_READ is set by the HttpGremlinResponseStreamDecoder when any data is received. If it isn't set,
             // it can be assumed that no bytes were received when the connection closed.
-            final String errMsg = "Connection to server closed unexpectedly. Ensure that the server is still" +
-                    " reachable. The server may be expecting SSL to be enabled.";
+            String errMsg;
+            if (ctx.channel().hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT)) {
+                errMsg = "Idle timeout occurred before response could be received from server - consider increasing idleConnectionTimeout";
+            } else {
+                errMsg = "Connection to server closed unexpectedly. Ensure that the server is still" +
+                        " reachable. The server may be expecting SSL to be enabled.";
+            }
             ctx.fireExceptionCaught(new RuntimeException(errMsg));
         } else {
             super.channelInactive(ctx);

@@ -58,7 +58,6 @@ public class SettingsTest {
         conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
         conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
         conf.setProperty("connectionPool.sslSkipCertValidation", true);
-        conf.setProperty("connectionPool.minSize", 100);
         conf.setProperty("connectionPool.maxSize", 200);
         conf.setProperty("connectionPool.minSimultaneousUsagePerConnection", 300);
         conf.setProperty("connectionPool.maxSimultaneousUsagePerConnection", 400);
@@ -71,6 +70,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.channelizer", "channelizer0");
         conf.setProperty("connectionPool.validationRequest", "g.inject()");
         conf.setProperty("connectionPool.connectionSetupTimeoutMillis", 15000);
+        conf.setProperty("connectionPool.idleConnectionTimeout", 160000);
 
         final Settings settings = Settings.from(conf);
 
@@ -95,12 +95,12 @@ public class SettingsTest {
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
-        assertEquals(100, settings.connectionPool.minSize);
         assertEquals(200, settings.connectionPool.maxSize);
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
         assertEquals(800, settings.connectionPool.maxResponseContentLength);
         assertEquals(900, settings.connectionPool.reconnectInterval);
         assertEquals(15000, settings.connectionPool.connectionSetupTimeoutMillis);
+        assertEquals(160000, settings.connectionPool.idleConnectionTimeout);
         assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
