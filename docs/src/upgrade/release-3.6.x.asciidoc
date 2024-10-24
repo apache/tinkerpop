@@ -23,7 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 == TinkerPop 3.6.8
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: October 23, 2024*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.6.8/CHANGELOG.asciidoc#release-3-6-8[changelog] for a
 complete list of all the modifications that are part of this release.
@@ -34,9 +34,6 @@ complete list of all the modifications that are part of this release.
 
 `gremlin-python` has upgraded to Python 3.9 as Python 3.8 has passed end of life.
 `gremlin-go` has upgraded to Go 1.22 as Go 1.21 has passed end of life.
-
-
-=== Upgrading for Providers
 
 
 == TinkerPop 3.6.7

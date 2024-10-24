@@ -18,7 +18,7 @@
 #
 import platform
 
-gremlin_version = "3.6.8-SNAPSHOT"  # DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+gremlin_version = "3.6.8"  # DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 def _generate_user_agent():
     application_name = "NotAvailable"
