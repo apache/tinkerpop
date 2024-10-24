@@ -370,7 +370,7 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-8]]
-=== TinkerPop 3.6.8 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.6.8 (October 23, 2024)
 
 * Fixed a bug in GremlinServer not properly propagating arguments when authentication is enabled.
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
@@ -387,6 +387,25 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed a memory leak in the Javascript driver when there is a server error response.
 * Throw more descriptive error in `gremlin-go` when request size exceeds `WriteBufferSize`
 * Fixed a missing runtime dependency in `gremlin-python`
+
+==== Bugs
+
+* TINKERPOP-3035 Add explicit property(IDictionary) for .NET
+* TINKERPOP-3050 security vulnerability in logback-core
+* TINKERPOP-3051 security vulnerability in logback-classic
+* TINKERPOP-3052 security vulnerability in ivy
+* TINKERPOP-3053 security vulnerability in netty-codec-http2
+* TINKERPOP-3076 Incorrect handling of large requests in Go GLV
+* TINKERPOP-3077 Javascript translator incorrectly handle quotes, null and undefined values
+* TINKERPOP-3079 The test `TraversalStrategiesTest#shouldAllowUserManipulationOfGlobalCache` is not idempotent, as it passes in the first run and fails in repeated runs in the same environment.
+* TINKERPOP-3081 When using authentication, evaluationTimeout is ignored
+* TINKERPOP-3116 async_timeout not declared in gremlinpython dependencies
+
+==== Improvements
+
+* TINKERPOP-2700 WebSocket compression may lead to attacks (CRIME / BREACH)
+* TINKERPOP-3086 Upgrade gremlin-python to newer Python interpreter
+* TINKERPOP-3098 Gremlin Console bat file is missing log level configuration option
 
 [[release-3-6-7]]
 === TinkerPop 3.6.7 (April 8, 2024)

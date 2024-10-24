@@ -378,8 +378,12 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 
 * `addE()` - Adds an `Edge` to start the traversal (<<addedge-step, example>>).
 * `addV()` - Adds a `Vertex` to start the traversal (<<addvertex-step, example>>).
-* `E()` - Reads edges from the graph to start the traversal (<<graph-step, example>>).
+* `call()` - Makes a provider-specific service call to start the traversal (<<call-step, example>>).
+* `E()` - Reads edges from the graph to start the traversal (<<e-step, example>>).
 * `inject()` - Inserts arbitrary objects to start the traversal (<<inject-step, example>>).
+* `mergeE()` - Adds an `Edge` in a "create if not exist" fashion to start the traversal (<<mergeedge-step, example>>)
+* `mergeV()` - Adds a `Vertex` in a "create if not exist" fashion to start the traversal (<<mergevertex-step, example>>)
+* `union()` - Merges the results of an arbitrary number of child traversals to start the traversal (<<union-step, example>>).
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
