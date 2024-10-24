@@ -16,22 +16,37 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+from aiohttp import ClientResponseError
 import aiohttp
 import asyncio
-import async_timeout
-from aiohttp import ClientResponseError
+import sys
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
-__author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
+if sys.version_info >= (3, 11):
+    import asyncio as async_timeout
+else:
+    import async_timeout
+
+__author__ = "Lyndon Bauto (lyndonb@bitquilltech.com)"
 
 
 class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
-    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, enable_compression=False,
-                 **kwargs):
-        if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
+    def __init__(
+        self,
+        call_from_event_loop=None,
+        read_timeout=None,
+        write_timeout=None,
+        enable_compression=False,
+        **kwargs,
+    ):
+        if (
+            call_from_event_loop is not None
+            and call_from_event_loop
+            and not AiohttpTransport.nest_asyncio_applied
+        ):
             """ 
                 The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called 
                 within an event loop without nest_asyncio. If the code is ever refactored so that it can be called 
@@ -39,6 +54,7 @@ class AiohttpTransport(AbstractBaseTransport):
                 event loop to call gremlin-python (such as Jupyter) will not work.
             """
             import nest_asyncio
+
             nest_asyncio.apply()
             AiohttpTransport.nest_asyncio_applied = True
 
@@ -53,11 +69,15 @@ class AiohttpTransport(AbstractBaseTransport):
         self._read_timeout = read_timeout
         self._enable_compression = enable_compression
         if "max_content_length" in self._aiohttp_kwargs:
-            self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop("max_content_length")
+            self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop(
+                "max_content_length"
+            )
         if "ssl_options" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
         if self._enable_compression and "compress" not in self._aiohttp_kwargs:
-            self._aiohttp_kwargs["compress"] = 15  # enable per-message deflate compression with 32k sliding window size
+            self._aiohttp_kwargs["compress"] = (
+                15  # enable per-message deflate compression with 32k sliding window size
+            )
 
     def __del__(self):
         # Close will only actually close if things are left open, so this is safe to call.
@@ -70,12 +90,16 @@ class AiohttpTransport(AbstractBaseTransport):
             # Start client session and use it to create a websocket with all the connection options provided.
             self._client_session = aiohttp.ClientSession(loop=self._loop)
             try:
-                self._websocket = await self._client_session.ws_connect(url, **self._aiohttp_kwargs, headers=headers)
+                self._websocket = await self._client_session.ws_connect(
+                    url, **self._aiohttp_kwargs, headers=headers
+                )
             except ClientResponseError as err:
                 # If 403, just send forbidden because in some cases this prints out a huge verbose message
                 # that includes credentials.
                 if err.status == 403:
-                    raise Exception('Failed to connect to server: HTTP Error code 403 - Forbidden.')
+                    raise Exception(
+                        "Failed to connect to server: HTTP Error code 403 - Forbidden."
+                    )
                 else:
                     raise
 
@@ -113,7 +137,7 @@ class AiohttpTransport(AbstractBaseTransport):
             raise RuntimeError("Received error on read: '" + str(msg.data) + "'")
         elif msg.type == aiohttp.WSMsgType.text:
             # Convert message to bytes.
-            data = msg.data.strip().encode('utf-8')
+            data = msg.data.strip().encode("utf-8")
         else:
             # General handle, return byte data.
             data = msg.data
@@ -147,8 +171,14 @@ class AiohttpTransport(AbstractBaseTransport):
 class AiohttpHTTPTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
-    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
-        if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
+    def __init__(
+        self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs
+    ):
+        if (
+            call_from_event_loop is not None
+            and call_from_event_loop
+            and not AiohttpTransport.nest_asyncio_applied
+        ):
             """ 
                 The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called 
                 within an event loop without nest_asyncio. If the code is ever refactored so that it can be called 
@@ -156,6 +186,7 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
                 event loop to call gremlin-python (such as Jupyter) will not work.
             """
             import nest_asyncio
+
             nest_asyncio.apply()
             AiohttpTransport.nest_asyncio_applied = True
 
@@ -186,10 +217,13 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
             if self._enable_ssl:
                 # ssl context is established through tcp connector
                 tcp_conn = aiohttp.TCPConnector(ssl_context=self._ssl_context)
-                self._client_session = aiohttp.ClientSession(connector=tcp_conn,
-                                                             base_url=url, headers=headers, loop=self._loop)
+                self._client_session = aiohttp.ClientSession(
+                    connector=tcp_conn, base_url=url, headers=headers, loop=self._loop
+                )
             else:
-                self._client_session = aiohttp.ClientSession(base_url=url, headers=headers, loop=self._loop)
+                self._client_session = aiohttp.ClientSession(
+                    base_url=url, headers=headers, loop=self._loop
+                )
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
@@ -199,14 +233,18 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         async def async_write():
             basic_auth = None
             # basic password authentication for https connections
-            if message['auth']:
-                basic_auth = aiohttp.BasicAuth(message['auth']['username'], message['auth']['password'])
+            if message["auth"]:
+                basic_auth = aiohttp.BasicAuth(
+                    message["auth"]["username"], message["auth"]["password"]
+                )
             async with async_timeout.timeout(self._write_timeout):
-                self._http_req_resp = await self._client_session.post(url="/gremlin",
-                                                                      auth=basic_auth,
-                                                                      data=message['payload'],
-                                                                      headers=message['headers'],
-                                                                      **self._aiohttp_kwargs)
+                self._http_req_resp = await self._client_session.post(
+                    url="/gremlin",
+                    auth=basic_auth,
+                    data=message["payload"],
+                    headers=message["headers"],
+                    **self._aiohttp_kwargs,
+                )
 
         # Execute the async write synchronously.
         self._loop.run_until_complete(async_write())
@@ -215,9 +253,11 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         # Inner function to perform async read.
         async def async_read():
             async with async_timeout.timeout(self._read_timeout):
-                return {"content": await self._http_req_resp.read(),
-                        "ok": self._http_req_resp.ok,
-                        "status": self._http_req_resp.status}
+                return {
+                    "content": await self._http_req_resp.read(),
+                    "ok": self._http_req_resp.ok,
+                    "status": self._http_req_resp.status,
+                }
 
         return self._loop.run_until_complete(async_read())
 
