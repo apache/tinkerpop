@@ -53,9 +53,19 @@ class AbstractBaseProtocol(metaclass=abc.ABCMeta):
 
 class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
-    def __init__(self, message_serializer, auth=None):
+    def __init__(self, request_serializer, response_serializer,
+                 interceptors=None, auth=None):
+        if callable(interceptors):
+            interceptors = [interceptors]
+        elif not (isinstance(interceptors, tuple)
+                  or isinstance(interceptors, list)
+                  or interceptors is None):
+            raise TypeError("interceptors must be a callable, tuple, list or None")
+
         self._auth = auth
-        self._message_serializer = message_serializer
+        self._interceptors = interceptors
+        self._request_serializer = request_serializer
+        self._response_serializer = response_serializer
         self._response_msg = {'status': {'code': 0,
                                          'message': '',
                                          'exception': ''},
@@ -67,14 +77,21 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
         super(GremlinServerHTTPProtocol, self).connection_made(transport)
 
     def write(self, request_message):
-        content_type = str(self._message_serializer.version, encoding='utf-8')
-
+        accept = str(self._response_serializer.version, encoding='utf-8')
         message = {
-            'headers': {'content-type': content_type,
-                        'accept': content_type},
-            'payload': self._message_serializer.serialize_message(request_message),
+            'headers': {'accept': accept},
+            'payload': self._request_serializer.serialize_message(request_message)
+                if self._request_serializer is not None else request_message,
             'auth': self._auth
         }
+
+        # The user may not want the payload to be serialized if they are using an interceptor.
+        if self._request_serializer is not None:
+            content_type = str(self._request_serializer.version, encoding='utf-8')
+            message['headers']['content-type'] = content_type
+
+        for interceptor in self._interceptors or []:
+            message = interceptor(message)
 
         self._transport.write(message)
 
@@ -110,7 +127,7 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
             self._is_first_chunk = False
 
     def _decode_chunk(self, message, data_buffer, is_first_chunk):
-        chunk_msg = self._message_serializer.deserialize_message(data_buffer, is_first_chunk)
+        chunk_msg = self._response_serializer.deserialize_message(data_buffer, is_first_chunk)
 
         if 'result' in chunk_msg:
             msg_data = message['result']['data']

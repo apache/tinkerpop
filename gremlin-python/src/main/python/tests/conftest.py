@@ -18,6 +18,7 @@
 #
 
 import concurrent.futures
+from json import dumps
 import os
 import ssl
 import pytest
@@ -49,7 +50,7 @@ Tests below are for the HTTP server with GraphBinaryV4
 @pytest.fixture
 def connection(request):
     protocol = GremlinServerHTTPProtocol(
-        GraphBinarySerializersV4(),
+        GraphBinarySerializersV4(), GraphBinarySerializersV4(),
         auth=basic('stephen', 'password'))
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
@@ -181,3 +182,41 @@ def invalid_alias_remote_connection(request):
 
         request.addfinalizer(fin)
         return remote_conn
+
+
+@pytest.fixture()
+def remote_connection_with_interceptor(request):
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                             request_serializer=None,
+                                             interceptors=json_interceptor)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture()
+def client_with_interceptor(request):
+    try:
+        client = Client(anonymous_url, 'gmodern', request_serializer=None,
+                        response_serializer=GraphBinarySerializersV4(),
+                        interceptors=json_interceptor)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+def json_interceptor(request):
+        request['headers']['content-type'] = "application/json"
+        request['payload'] = dumps({"gremlin": "g.inject(2)", "g": "g"})
+        return request
