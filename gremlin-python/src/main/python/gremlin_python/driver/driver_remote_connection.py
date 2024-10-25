@@ -33,9 +33,10 @@ class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source="g", protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 auth=None,
-                 message_serializer=None, headers=None,
-                 enable_user_agent_on_connect=True, enable_bulked_result=False, **transport_kwargs):
+                 request_serializer=serializer.GraphBinarySerializersV4(),
+                 response_serializer=None, interceptors=None, auth=None,
+                 headers=None, enable_user_agent_on_connect=True,
+                 enable_bulked_result=False, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
@@ -44,21 +45,21 @@ class DriverRemoteConnection(RemoteConnection):
         self.__pool_size = pool_size
         self.__max_workers = max_workers
         self.__auth = auth
-        self.__message_serializer = message_serializer
         self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
         self.__enable_bulked_result = enable_bulked_result
         self.__transport_kwargs = transport_kwargs
 
-        if message_serializer is None:
-            message_serializer = serializer.GraphBinarySerializersV4()
+        if response_serializer is None:
+            response_serializer = serializer.GraphBinarySerializersV4()
         self._client = client.Client(url, traversal_source,
                                      protocol_factory=protocol_factory,
                                      transport_factory=transport_factory,
                                      pool_size=pool_size,
                                      max_workers=max_workers,
-                                     message_serializer=message_serializer,
-                                     auth=auth,
+                                     request_serializer=request_serializer,
+                                     response_serializer=response_serializer,
+                                     interceptors=interceptors, auth=auth,
                                      headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      enable_bulked_result=enable_bulked_result,

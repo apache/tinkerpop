@@ -359,8 +359,7 @@ class TestTraversal(object):
 
 
 def create_connection_to_gtx():
-    return DriverRemoteConnection(anonymous_url, 'gtx',
-                                  message_serializer=serializer.GraphBinarySerializersV4())
+    return DriverRemoteConnection(anonymous_url, 'gtx')
 
 
 def add_node_validate_transaction_state(g, g_add_to, g_start_count, g_add_to_start_count, tx_verify_list):

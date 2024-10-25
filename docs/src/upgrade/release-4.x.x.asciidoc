@@ -85,7 +85,7 @@ The properties file in the above example can either point to a remote configurat
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 
-==== Changes to RequestInterceptor
+==== Changes to Java RequestInterceptor
 
 Because the underlying transport has been changed from WebSockets to HTTP, the usage of the `RequestInterceptor` has
 changed as well. The `RequestInterceptor` will now be run per request and will allow you to completely modify the HTTP
@@ -105,6 +105,19 @@ modified. After each `RequestInterceptor` is run, the request is updated with th
 that is sent to the endpoint. There is a default interceptor added to every `Cluster` called "serializer". This
 interceptor is responsible for serializing the request body is which what the server normally expects. This is intended
 to be an advanced customization technique that should only be used when needed.
+
+==== Addition of Python interceptor
+
+HTTP interceptors have been added to `gremlin-python` to enable capability similar to that of Java GLV. These
+interceptors can be passed into either a `DriverRemoteConnection` or a `Client` using the interceptors parameter. An
+interceptor is a `Callable` that accepts one argument which is the HTTP request (dictionary containing header, payload
+and auth) or a list/tuple of these functions. The interceptors will run after the request serializer has run but before
+any auth functions run so the HTTP request may still get modified after your interceptors are run. In situations where
+you don't want the payload to be serialized, the `message_serializer` has been split into a `request_serializer` and a
+`response_serializer`. Simply set the `request_serializer` to `None` and this will prevent the `RequestMessage` from
+being serialized. Again, this is expected to be an advanced feature so some knowledge of implementation details will be
+required to make this work. For example, you'll need to know what payload formats are accepted by `aiohttp` for the
+request to be sent.
 
 ==== Changes to deserialization for gremlin-javascript
 

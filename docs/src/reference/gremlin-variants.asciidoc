@@ -2249,7 +2249,9 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |Key |Description |Default
 |headers |Additional headers that will be added to each request message. |`None`
 |max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV1`
+|request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|interceptors |The request interceptors to run after request serialization.|`None`
 |password |The password to submit on requests that require authentication. |""
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
