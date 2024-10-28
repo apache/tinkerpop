@@ -882,7 +882,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    @Ignore("re-enable after GraphSONV4 bulklist is implemented")
     public void shouldReadWriteVarBulkList() throws Exception {
         final String resourceName = "var-bulklist";
 
@@ -898,7 +897,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    @Ignore("re-enable after GraphSONV4 bulklist is implemented")
     public void shouldReadWriteEmptyBulkList() throws Exception {
         final String resourceName = "empty-bulklist";
 

@@ -152,9 +152,8 @@ final class TraversalSerializersV4 {
         public void serialize(final BulkSet bulkSet, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartArray();
-            for (Map.Entry entry : (Set<Map.Entry>) bulkSet.asBulk().entrySet()) {
-                jsonGenerator.writeObject(entry.getKey());
-                jsonGenerator.writeObject(entry.getValue());
+            for (Object element : bulkSet) {
+                jsonGenerator.writeObject(element);
             }
             jsonGenerator.writeEndArray();
         }
@@ -393,32 +392,6 @@ final class TraversalSerializersV4 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    final static class BulkSetJacksonDeserializer extends StdDeserializer<BulkSet> {
-        public BulkSetJacksonDeserializer() {
-            super(BulkSet.class);
-        }
-
-        @Override
-        public BulkSet deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-
-            final BulkSet<Object> bulkSet = new BulkSet<>();
-
-            while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                final Object key = deserializationContext.readValue(jsonParser, Object.class);
-                jsonParser.nextToken();
-                final Long val = deserializationContext.readValue(jsonParser, Long.class);
-                bulkSet.add(key, val);
-            }
-
-            return bulkSet;
         }
 
         @Override
