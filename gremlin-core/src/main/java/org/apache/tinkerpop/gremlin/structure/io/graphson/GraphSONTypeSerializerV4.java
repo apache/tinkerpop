@@ -147,8 +147,6 @@ public class GraphSONTypeSerializerV4 extends AbstractGraphSONTypeSerializer {
             mapped = ByteBuffer.class;
         else if (InetAddress.class.isAssignableFrom(c))
             mapped = InetAddress.class;
-        else if (Traverser.class.isAssignableFrom(c))
-            mapped = Traverser.class;
         else if (Lambda.class.isAssignableFrom(c))
             mapped = Lambda.class;
         else if (VertexProperty.Cardinality.class.isAssignableFrom(c))

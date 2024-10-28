@@ -167,7 +167,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Metrics.class, "Metrics");
                     put(TraversalMetrics.class, "TraversalMetrics");
                     put(TraversalExplanation.class, "TraversalExplanation");
-                    put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
@@ -274,7 +273,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV4.EnumJacksonSerializer()));
             addSerializer(P.class, new TraversalSerializersV4.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV4.LambdaJacksonSerializer());
-            addSerializer(Traverser.class, new TraversalSerializersV4.TraverserJacksonSerializer());
             addSerializer(TraversalStrategy.class, new TraversalSerializersV4.TraversalStrategyJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
@@ -317,7 +315,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(P.class, new TraversalSerializersV4.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV4.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV4.LambdaJacksonDeserializer());
-            addDeserializer(Traverser.class, new TraversalSerializersV4.TraverserJacksonDeserializer());
             Arrays.asList(
                     ConnectiveStrategy.class,
                     ElementIdStrategy.class,
