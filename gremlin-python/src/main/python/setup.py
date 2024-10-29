@@ -46,7 +46,7 @@ version = __version__.version
 
 install_requires = [
     'nest_asyncio',
-    'aiohttp>=3.8.0,<4.0.0',
+    'aiohttp>=3.8.0,<3.11.0', # aiohttp drops 3.8 support starting 3.11, change back to <4.0.0 after upgrading python
     'aenum>=1.4.5,<4.0.0',
     'isodate>=0.6.0,<1.0.0',
     'yarl<1.15.3,>=1.0', # dependency of aiohttp, pinned to 3.8-supported version, remove after upgrading python
