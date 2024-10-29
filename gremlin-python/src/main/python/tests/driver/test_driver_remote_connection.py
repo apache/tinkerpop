@@ -17,7 +17,6 @@
 # under the License.
 #
 import os
-from datetime import datetime
 
 from gremlin_python import statics
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -46,6 +45,18 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_conn)
         assert long(6) == g.V().count().to_list()[0]
         # #
+        assert Vertex(1) == g.V(1).next()
+        assert Vertex(1) == g.V(Vertex(1)).next()
+        assert 1 == g.V(1).id_().next()
+        # assert Traverser(Vertex(1)) == g.V(1).nextTraverser()  # TODO check back after bulking added back
+        assert 1 == len(g.V(1).to_list())
+        assert isinstance(g.V(1).to_list(), list)
+        results = g.V().repeat(__.out()).times(2).name
+        results = results.to_list()
+        assert 2 == len(results)
+        assert "lop" in results
+        assert "ripple" in results
+        # #
         assert 10 == g.V().repeat(__.both()).times(5)[0:10].count().next()
         assert 1 == g.V().repeat(__.both()).times(5)[0:1].count().next()
         assert 0 == g.V().repeat(__.both()).times(5)[0:0].count().next()
@@ -57,6 +68,34 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results)
         assert 'josh' in results
         assert 'peter' in results
+        # #
+        results = g.V().has('name', 'peter').as_('a').out('created').as_('b').select('a', 'b').by(
+            __.value_map()).to_list()
+        assert 1 == len(results)
+        assert 'peter' == results[0]['a']['name'][0]
+        assert 35 == results[0]['a']['age'][0]
+        assert 'lop' == results[0]['b']['name'][0]
+        assert 'java' == results[0]['b']['lang'][0]
+        assert 2 == len(results[0]['a'])
+        assert 2 == len(results[0]['b'])
+        # #
+        results = g.V(1).inject(g.V(2).next()).values('name').to_list()
+        assert 2 == len(results)
+        assert 'marko' in results
+        assert 'vadas' in results
+        # #
+        # this test just validates that the underscored versions of steps conflicting with Gremlin work
+        # properly and can be removed when the old steps are removed - TINKERPOP-2272
+        results = g.V().filter_(__.values('age').sum_().and_(
+            __.max_().is_(P.gt(0)), __.min_().is_(P.gt(0)))).range_(0, 1).id_().next()
+        assert 1 == results
+        # #
+        # test dict keys
+        # types for dict
+        results = g.V().has('person', 'name', 'marko').element_map("name").group_count().next()
+        assert {HashableDict.of({T.id: 1, T.label: 'person', 'name': 'marko'}): 1} == results
+        results = g.V().has('person', 'name', 'marko').both('knows').group_count().by(__.values('name').fold()).next()
+        assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
 
     def test_bulked_request_option(self, remote_connection):
         g = traversal().with_(remote_connection)
