@@ -52,7 +52,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializ
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalExplanationSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
@@ -104,7 +103,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Vertex.class, new VertexSerializer()),
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
-            new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),

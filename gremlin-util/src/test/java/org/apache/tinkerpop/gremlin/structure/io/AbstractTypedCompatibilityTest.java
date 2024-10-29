@@ -709,54 +709,6 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    public void shouldReadWriteVertexTraverser() throws Exception {
-        final String resourceName = "vertex-traverser";
-
-        final Traverser resource = findModelEntryObject(resourceName);
-        final Traverser fromStatic = read(readFromResource(resourceName), Traverser.class);
-        final Traverser recycled = read(write(fromStatic, Traverser.class, resourceName), Traverser.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(resource.bulk(), recycled.bulk());
-        assertEquals(resource.bulk(), fromStatic.bulk());
-        assertEquals(resource.get(), recycled.get());
-        assertEquals(resource.get(), fromStatic.get());
-        assertVertex((Vertex) resource.get(), (Vertex) recycled.get());
-        assertVertex((Vertex) resource.get(), (Vertex) fromStatic.get());
-    }
-
-    @Test
-    public void shouldReadWriteBulkedTraverser() throws Exception {
-        final String resourceName = "bulked-traverser";
-
-        final Traverser resource = findModelEntryObject(resourceName);
-        final Traverser fromStatic = read(readFromResource(resourceName), Traverser.class);
-        final Traverser recycled = read(write(fromStatic, Traverser.class, resourceName), Traverser.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(resource.bulk(), recycled.bulk());
-        assertEquals(resource.bulk(), fromStatic.bulk());
-        assertEquals(resource.get(), recycled.get());
-        assertEquals(resource.get(), fromStatic.get());
-        assertVertex((Vertex) resource.get(), (Vertex) recycled.get());
-        assertVertex((Vertex) resource.get(), (Vertex) fromStatic.get());
-    }
-
-    @Test
-    public void shouldReadWriteEmptyTraverser() throws Exception {
-        final String resourceName = "empty-traverser";
-
-        final Traverser resource = findModelEntryObject(resourceName);
-        final Traverser fromStatic = read(readFromResource(resourceName), Traverser.class);
-        final Traverser recycled = read(write(fromStatic, Traverser.class, resourceName), Traverser.class);
-        assertNotSame(fromStatic, recycled);
-        assertEquals(resource.bulk(), recycled.bulk());
-        assertEquals(resource.bulk(), fromStatic.bulk());
-        assertEquals(resource.get(), recycled.get());
-        assertEquals(resource.get(), fromStatic.get());
-        assertEquals(recycled.bulk(), fromStatic.bulk());
-        assertEquals(recycled.get(), fromStatic.get());
-    }
-
-    @Test
     public void shouldReadWriteUUID() throws Exception {
         final String resourceName = "specified-uuid";
 
