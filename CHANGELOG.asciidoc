@@ -54,7 +54,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-3]]
-=== TinkerPop 3.7.3 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.3 (October 23, 2024)
 
 This release also includes changes from <<release-3-6-8, 3.6.8>>.
 
@@ -79,6 +79,34 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * Allowed specification of an `Operator` as a reducer in `withSideEffect` when parsing with the grammar.
 * Fixed bug in Bytecode build logic where duplicate strategies were added instead of replacing the existing ones.
 * Bump Groovy to 4.0.23
+
+==== Bugs
+
+* TINKERPOP-3035 Add explicit property(IDictionary) for .NET
+* TINKERPOP-3050 security vulnerability in logback-core
+* TINKERPOP-3051 security vulnerability in logback-classic
+* TINKERPOP-3052 security vulnerability in ivy
+* TINKERPOP-3053 security vulnerability in netty-codec-http2
+* TINKERPOP-3076 Incorrect handling of large requests in Go GLV
+* TINKERPOP-3077 Javascript translator incorrectly handle quotes, null and undefined values
+* TINKERPOP-3079 The test `TraversalStrategiesTest#shouldAllowUserManipulationOfGlobalCache` is not idempotent, as it passes in the first run and fails in repeated runs in the same environment.
+* TINKERPOP-3081 When using authentication, evaluationTimeout is ignored
+* TINKERPOP-3089 min() and max() local forms not working properly with empty iterator input
+* TINKERPOP-3090 trim() steps not handling unicode characters properly
+* TINKERPOP-3093 optimization of readmap function
+* TINKERPOP-3105 Running 3.6.x python-driver with 3.7.x server leads to deserialization errors
+* TINKERPOP-3110 Incorrect Bytecode when multiple options are used in traversal
+* TINKERPOP-3116 async_timeout not declared in gremlinpython dependencies
+
+==== Improvements
+
+* TINKERPOP-2700 WebSocket compression may lead to attacks (CRIME / BREACH)
+* TINKERPOP-3041 Consistent construction of SeedStrategy
+* TINKERPOP-3080 AggregateStep can support all Operators predefined in TinkerPop
+* TINKERPOP-3082 Tinkerpop hardcoded the Spark AppName
+* TINKERPOP-3086 Upgrade gremlin-python to newer Python interpreter
+* TINKERPOP-3098 Gremlin Console bat file is missing log level configuration option
+* TINKERPOP-3102 Cardinality input with mergeE step shouldn't be allowed.
 
 [[release-3-7-2]]
 === TinkerPop 3.7.2 (April 8, 2024)
