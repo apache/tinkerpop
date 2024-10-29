@@ -61,6 +61,7 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -315,7 +316,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
         final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED);
         // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
-        final boolean bulking = Objects.equals(language, "gremlin-lang") ?
+        // The serializer check is temporarily needed because GraphSON hasn't been removed yet and doesn't support bulking.
+        final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 ?
                 (args.containsKey(Tokens.BULKED) ?
                         Objects.equals(args.get(Tokens.BULKED), "true") :
                         Objects.equals(bulkingSetting, "true")) :

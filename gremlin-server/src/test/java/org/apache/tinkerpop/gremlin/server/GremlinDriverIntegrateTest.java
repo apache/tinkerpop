@@ -217,7 +217,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final Client client = cluster.connect();
-            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            final RequestOptions ro = RequestOptions.build()
+                    .addG("gmodern")
+                    .language("gremlin-lang")
+                    .withBulkedResult(true)
+                    .create();
+            assertEquals(6, client.submit("g.V()", ro).all().get().size());
         } finally {
             cluster.close();
         }
