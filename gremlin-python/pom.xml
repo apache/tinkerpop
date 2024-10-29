@@ -326,6 +326,10 @@ limitations under the License.
                                               failonerror="true">
                                             <arg line="install twine==4.0.2"/>
                                         </exec>
+                                        <exec dir="${project.build.directory}/python-packaged" executable="env/bin/pip"
+                                              failonerror="true">
+                                            <arg line="install importlib_metadata==7.2.1"/>
+                                        </exec>
 					                    <!-- check the dist for errors before deploying -->
                                         <exec dir="${project.build.directory}/python-packaged" executable="env/bin/twine"
                                               failonerror="true">
