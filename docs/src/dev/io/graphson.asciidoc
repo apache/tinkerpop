@@ -2615,7 +2615,7 @@ The untyped version has one additional required key "type" which is always "vert
 
 ==== VertexProperty
 
-JOSN Object with required keys: "id", "value", "label", "properties" +
+JSON Object with required keys: "id", "value", "label", "properties" +
 "id" is any type GraphSON 4.0 type +
 "value" is any type GraphSON 4.0 type +
 "label" is a `g:List` of `String` +
@@ -2650,6 +2650,28 @@ JOSN Object with required keys: "id", "value", "label", "properties" +
 ----
 
 === Graph Process
+
+==== BulkSet
+
+JSON Array that contains the expanded entries of the BulkSet.
+Note: BulkSet is serialized to g:List so there is no BulkSet deserializer.
+
+[source,json]
+----
+{
+  "@type": "g:List",
+  "@value": [
+    "marko",
+    "josh",
+    "josh"
+  ]
+}
+----
+
+[source,json]
+----
+[ "marko", "josh", "josh" ]
+----
 
 ==== Direction
 

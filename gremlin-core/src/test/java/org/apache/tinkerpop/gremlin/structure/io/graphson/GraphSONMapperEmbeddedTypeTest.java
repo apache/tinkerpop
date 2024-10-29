@@ -119,15 +119,16 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBulkSet() throws Exception {
-        // only supported on V3/V4
-        assumeThat(version, not(anyOf(startsWith("v1"), startsWith("v2"))));
+        // only supported on V4
+        assumeThat(version, not(anyOf(startsWith("v1"), startsWith("v2"), startsWith("v3"))));
 
         final BulkSet<String> bs = new BulkSet<>();
         bs.add("test1", 1);
         bs.add("test2", 2);
         bs.add("test3", 3);
 
-        assertEquals(bs, serializeDeserialize(mapper, bs, BulkSet.class));
+        final List<String> expandedBs = new ArrayList<>(bs);
+        assertEquals(expandedBs, serializeDeserializeAuto(mapper, bs));
     }
 
     @Test

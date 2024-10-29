@@ -149,6 +149,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Double.class, "Double");
                     put(Float.class, "Float");
 
+                    // BulkSet is expanded to List during serialization but we want the List deserializer to be
+                    // registered to g:List so this entry must be added before List.
+                    put(BulkSet.class, "List");
+
                     put(Map.class, "Map");
                     put(List.class, "List");
                     put(Set.class, "Set");
@@ -165,7 +169,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(TraversalExplanation.class, "TraversalExplanation");
                     put(Traverser.class, "Traverser");
                     put(Tree.class, "Tree");
-                    put(BulkSet.class, "BulkSet");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
                     put(P.class, "P");
@@ -299,7 +302,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Double.class, new GraphSONSerializersV4.DoubleJacksonDeserializer());
 
             // traversal
-            addDeserializer(BulkSet.class, new TraversalSerializersV4.BulkSetJacksonDeserializer());
             Stream.of(VertexProperty.Cardinality.values(),
                     Column.values(),
                     Direction.values(),
