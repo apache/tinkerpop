@@ -158,70 +158,15 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Set.class, "Set");
 
                     // TinkerPop Graph objects
-                    put(Lambda.class, "Lambda");
                     put(Vertex.class, "Vertex");
                     put(Edge.class, "Edge");
                     put(Property.class, "Property");
                     put(Path.class, "Path");
                     put(VertexProperty.class, "VertexProperty");
-                    put(Metrics.class, "Metrics");
-                    put(TraversalMetrics.class, "TraversalMetrics");
-                    put(TraversalExplanation.class, "TraversalExplanation");
                     put(Tree.class, "Tree");
-                    put(AndP.class, "P");
-                    put(OrP.class, "P");
-                    put(P.class, "P");
-                    put(TextP.class, "TextP");
                     Stream.of(
-                            VertexProperty.Cardinality.class,
-                            Column.class,
                             Direction.class,
-                            DT.class,
-                            Merge.class,
-                            Operator.class,
-                            Order.class,
-                            Pop.class,
-                            SackFunctions.Barrier.class,
-                            Pick.class,
-                            Scope.class,
                             T.class).forEach(e -> put(e, e.getSimpleName()));
-                    Arrays.asList(
-                            ConnectiveStrategy.class,
-                            ElementIdStrategy.class,
-                            EventStrategy.class,
-                            HaltedTraverserStrategy.class,
-                            PartitionStrategy.class,
-                            SubgraphStrategy.class,
-                            SeedStrategy.class,
-                            LazyBarrierStrategy.class,
-                            MatchAlgorithmStrategy.class,
-                            AdjacentToIncidentStrategy.class,
-                            ByModulatorOptimizationStrategy.class,
-                            ProductiveByStrategy.class,
-                            CountStrategy.class,
-                            FilterRankingStrategy.class,
-                            IdentityRemovalStrategy.class,
-                            IncidentToAdjacentStrategy.class,
-                            InlineFilterStrategy.class,
-                            MatchPredicateStrategy.class,
-                            OrderLimitStrategy.class,
-                            OptionsStrategy.class,
-                            PathProcessorStrategy.class,
-                            PathRetractionStrategy.class,
-                            RepeatUnrollStrategy.class,
-                            ComputerVerificationStrategy.class,
-                            LambdaRestrictionStrategy.class,
-                            ReadOnlyStrategy.class,
-                            StandardVerificationStrategy.class,
-                            EarlyLimitStrategy.class,
-                            EdgeLabelVerificationStrategy.class,
-                            ReservedKeysVerificationStrategy.class,
-                            //
-                            GraphFilterStrategy.class,
-                            VertexProgramStrategy.class
-                    ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
-
-                    GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> put(s, s.getSimpleName()));
                 }});
 
         /**
@@ -237,9 +182,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(Vertex.class, new GraphSONSerializersV4.VertexJacksonSerializer(normalize, typeInfo));
             addSerializer(VertexProperty.class, new GraphSONSerializersV4.VertexPropertyJacksonSerializer(normalize, true));
             addSerializer(Property.class, new GraphSONSerializersV4.PropertyJacksonSerializer());
-            addSerializer(Metrics.class, new GraphSONSerializersV4.MetricsJacksonSerializer());
-            addSerializer(TraversalMetrics.class, new GraphSONSerializersV4.TraversalMetricsJacksonSerializer());
-            addSerializer(TraversalExplanation.class, new GraphSONSerializersV4.TraversalExplanationJacksonSerializer());
             addSerializer(Path.class, new GraphSONSerializersV4.PathJacksonSerializer());
             addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV4(normalize));
             addSerializer(Tree.class, new GraphSONSerializersV4.TreeJacksonSerializer());
@@ -258,22 +200,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
             // traversal
             addSerializer(BulkSet.class, new TraversalSerializersV4.BulkSetJacksonSerializer());
-            addSerializer(Traversal.class, new TraversalSerializersV4.TraversalJacksonSerializer());
-            Stream.of(VertexProperty.Cardinality.class,
-                    Column.class,
+            Stream.of(
                     Direction.class,
-                    DT.class,
-                    Merge.class,
-                    Operator.class,
-                    Order.class,
-                    Pop.class,
-                    SackFunctions.Barrier.class,
-                    Scope.class,
-                    Pick.class,
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV4.EnumJacksonSerializer()));
-            addSerializer(P.class, new TraversalSerializersV4.PJacksonSerializer());
-            addSerializer(Lambda.class, new TraversalSerializersV4.LambdaJacksonSerializer());
-            addSerializer(TraversalStrategy.class, new TraversalSerializersV4.TraversalStrategyJacksonSerializer());
 
             /////////////////////// DESERIALIZERS ////////////////////////////
 
@@ -282,10 +211,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Edge.class, new GraphSONSerializersV4.EdgeJacksonDeserializer());
             addDeserializer(Property.class, new GraphSONSerializersV4.PropertyJacksonDeserializer());
             addDeserializer(Path.class, new GraphSONSerializersV4.PathJacksonDeserializer());
-            addDeserializer(TraversalExplanation.class, new GraphSONSerializersV4.TraversalExplanationJacksonDeserializer());
             addDeserializer(VertexProperty.class, new GraphSONSerializersV4.VertexPropertyJacksonDeserializer());
-            addDeserializer(Metrics.class, new GraphSONSerializersV4.MetricsJacksonDeserializer());
-            addDeserializer(TraversalMetrics.class, new GraphSONSerializersV4.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV4.TreeJacksonDeserializer());
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
@@ -300,58 +226,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Double.class, new GraphSONSerializersV4.DoubleJacksonDeserializer());
 
             // traversal
-            Stream.of(VertexProperty.Cardinality.values(),
-                    Column.values(),
+            Stream.of(
                     Direction.values(),
-                    DT.values(),
-                    Merge.values(),
-                    Operator.values(),
-                    Order.values(),
-                    Pop.values(),
-                    SackFunctions.Barrier.values(),
-                    Scope.values(),
-                    Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV4.EnumJacksonDeserializer(e.getDeclaringClass())));
-            addDeserializer(P.class, new TraversalSerializersV4.PJacksonDeserializer());
-            addDeserializer(TextP.class, new TraversalSerializersV4.TextPJacksonDeserializer());
-            addDeserializer(Lambda.class, new TraversalSerializersV4.LambdaJacksonDeserializer());
-            Arrays.asList(
-                    ConnectiveStrategy.class,
-                    ElementIdStrategy.class,
-                    EventStrategy.class,
-                    HaltedTraverserStrategy.class,
-                    PartitionStrategy.class,
-                    SubgraphStrategy.class,
-                    SeedStrategy.class,
-                    LazyBarrierStrategy.class,
-                    MatchAlgorithmStrategy.class,
-                    AdjacentToIncidentStrategy.class,
-                    ByModulatorOptimizationStrategy.class,
-                    ProductiveByStrategy.class,
-                    CountStrategy.class,
-                    FilterRankingStrategy.class,
-                    IdentityRemovalStrategy.class,
-                    IncidentToAdjacentStrategy.class,
-                    InlineFilterStrategy.class,
-                    MatchPredicateStrategy.class,
-                    OrderLimitStrategy.class,
-                    OptionsStrategy.class,
-                    PathProcessorStrategy.class,
-                    PathRetractionStrategy.class,
-                    RepeatUnrollStrategy.class,
-                    ComputerVerificationStrategy.class,
-                    LambdaRestrictionStrategy.class,
-                    ReadOnlyStrategy.class,
-                    StandardVerificationStrategy.class,
-                    EarlyLimitStrategy.class,
-                    EdgeLabelVerificationStrategy.class,
-                    ReservedKeysVerificationStrategy.class,
-                    //
-                    GraphFilterStrategy.class,
-                    VertexProgramStrategy.class
-            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV4.TraversalStrategyProxyJacksonDeserializer(strategy)));
-
-            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV4.TraversalStrategyProxyJacksonDeserializer(s)));
         }
 
         public static Builder build() {

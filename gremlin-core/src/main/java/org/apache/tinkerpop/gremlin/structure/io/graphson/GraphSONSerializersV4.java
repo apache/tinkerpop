@@ -326,44 +326,6 @@ class GraphSONSerializersV4 {
         }
     }
 
-    final static class TraversalExplanationJacksonSerializer extends StdScalarSerializer<TraversalExplanation> {
-        public TraversalExplanationJacksonSerializer() {
-            super(TraversalExplanation.class);
-        }
-
-        @Override
-        public void serialize(final TraversalExplanation traversalExplanation, final JsonGenerator jsonGenerator,
-                              final SerializerProvider serializerProvider) throws IOException {
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ORIGINAL, getStepsAsList(traversalExplanation.getOriginalTraversal()));
-
-            final List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = traversalExplanation.getStrategyTraversals();
-
-            final List<Map<String, Object>> intermediates = new ArrayList<>();
-            for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : strategyTraversals) {
-                final Map<String, Object> intermediate = new HashMap<>();
-                intermediate.put(GraphSONTokens.STRATEGY, pair.getValue0().toString());
-                intermediate.put(GraphSONTokens.CATEGORY, pair.getValue0().getTraversalCategory().getSimpleName());
-                intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
-                intermediates.add(intermediate);
-            }
-            m.put(GraphSONTokens.INTERMEDIATE, intermediates);
-
-            if (strategyTraversals.isEmpty())
-                m.put(GraphSONTokens.FINAL, getStepsAsList(traversalExplanation.getOriginalTraversal()));
-            else
-                m.put(GraphSONTokens.FINAL, getStepsAsList(strategyTraversals.get(strategyTraversals.size() - 1).getValue1()));
-
-            jsonGenerator.writeObject(m);
-        }
-
-        private List<String> getStepsAsList(final Traversal.Admin<?, ?> t) {
-            final List<String> steps = new ArrayList<>();
-            t.getSteps().iterator().forEachRemaining(s -> steps.add(s.toString()));
-            return steps;
-        }
-    }
-
     final static class IntegerGraphSONSerializer extends StdScalarSerializer<Integer> {
         public IntegerGraphSONSerializer() {
             super(Integer.class);
@@ -387,52 +349,6 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeNumber(doubleValue);
         }
     }
-
-    final static class TraversalMetricsJacksonSerializer extends StdScalarSerializer<TraversalMetrics> {
-        public TraversalMetricsJacksonSerializer() {
-            super(TraversalMetrics.class);
-        }
-
-        @Override
-        public void serialize(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
-            final List<Metrics> metrics = new ArrayList<>();
-            metrics.addAll(traversalMetrics.getMetrics());
-            m.put(GraphSONTokens.METRICS, metrics);
-
-            jsonGenerator.writeObject(m);
-        }
-    }
-
-    final static class MetricsJacksonSerializer extends StdScalarSerializer<Metrics> {
-        public MetricsJacksonSerializer() {
-            super(Metrics.class);
-        }
-
-        @Override
-        public void serialize(final Metrics metrics, final JsonGenerator jsonGenerator,
-                              final SerializerProvider serializerProvider) throws IOException {
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, metrics.getId());
-            m.put(GraphSONTokens.NAME, metrics.getName());
-            m.put(GraphSONTokens.COUNTS, metrics.getCounts());
-            m.put(GraphSONTokens.DURATION, metrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
-
-            if (!metrics.getAnnotations().isEmpty()) {
-                m.put(GraphSONTokens.ANNOTATIONS, metrics.getAnnotations());
-            }
-            if (!metrics.getNested().isEmpty()) {
-                final List<Metrics> nested = new ArrayList<>();
-                metrics.getNested().forEach(it -> nested.add(it));
-                m.put(GraphSONTokens.METRICS, nested);
-            }
-            jsonGenerator.writeObject(m);
-        }
-    }
-
 
     /**
      * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
@@ -643,83 +559,6 @@ class GraphSONSerializersV4 {
             }
 
             return vp.create();
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    static class TraversalExplanationJacksonDeserializer extends StdDeserializer<TraversalExplanation> {
-        public TraversalExplanationJacksonDeserializer() {
-            super(TraversalExplanation.class);
-        }
-
-        @Override
-        public TraversalExplanation deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Map<String, Object> explainData = deserializationContext.readValue(jsonParser, Map.class);
-            final String originalTraversal = explainData.get(GraphSONTokens.ORIGINAL).toString();
-            final List<Triplet<String, String, String>> intermediates = new ArrayList<>();
-            final List<Map<String,Object>> listMap = (List<Map<String,Object>>) explainData.get(GraphSONTokens.INTERMEDIATE);
-            for (Map<String,Object> m : listMap) {
-                intermediates.add(Triplet.with(m.get(GraphSONTokens.STRATEGY).toString(),
-                        m.get(GraphSONTokens.CATEGORY).toString(),
-                        m.get(GraphSONTokens.TRAVERSAL).toString()));
-            }
-
-            return new ImmutableExplanation(originalTraversal, intermediates);
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    static class MetricsJacksonDeserializer extends StdDeserializer<Metrics> {
-        public MetricsJacksonDeserializer() {
-            super(Metrics.class);
-        }
-
-        @Override
-        public Metrics deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Map<String, Object> metricsData = deserializationContext.readValue(jsonParser, Map.class);
-            final MutableMetrics m = new MutableMetrics((String)metricsData.get(GraphSONTokens.ID), (String)metricsData.get(GraphSONTokens.NAME));
-
-            m.setDuration(Math.round((Double) metricsData.get(GraphSONTokens.DURATION) * 1000000), TimeUnit.NANOSECONDS);
-            for (Map.Entry<String, Long> count : ((Map<String, Long>)metricsData.getOrDefault(GraphSONTokens.COUNTS, new LinkedHashMap<>(0))).entrySet()) {
-                m.setCount(count.getKey(), count.getValue());
-            }
-            for (Map.Entry<String, Long> count : ((Map<String, Long>) metricsData.getOrDefault(GraphSONTokens.ANNOTATIONS, new LinkedHashMap<>(0))).entrySet()) {
-                m.setAnnotation(count.getKey(), count.getValue());
-            }
-            for (MutableMetrics nested : (List<MutableMetrics>)metricsData.getOrDefault(GraphSONTokens.METRICS, new ArrayList<>(0))) {
-                m.addNested(nested);
-            }
-            return m;
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    static class TraversalMetricsJacksonDeserializer extends StdDeserializer<TraversalMetrics> {
-
-        public TraversalMetricsJacksonDeserializer() {
-            super(TraversalMetrics.class);
-        }
-
-        @Override
-        public TraversalMetrics deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Map<String, Object> traversalMetricsData = deserializationContext.readValue(jsonParser, Map.class);
-
-            return new DefaultTraversalMetrics(
-                    Math.round((Double) traversalMetricsData.get(GraphSONTokens.DURATION) * 1000000),
-                    (List<MutableMetrics>) traversalMetricsData.get(GraphSONTokens.METRICS)
-            );
         }
 
         @Override

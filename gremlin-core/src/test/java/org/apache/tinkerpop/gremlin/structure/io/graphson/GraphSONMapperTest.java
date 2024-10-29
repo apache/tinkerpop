@@ -53,7 +53,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -172,6 +175,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleTraversalExplanation() throws Exception {
+        assumeThat(version, not(startsWith("v4")));
+
         final TraversalExplanation te = __().out().outV().outE().explain();
         final String json = mapper.writeValueAsString(te);
         assertEquals("{\"original\":[\"InjectStep([])\",\"VertexStep(OUT,vertex)\",\"EdgeVertexStep(OUT)\",\"VertexStep(OUT,edge)\"],\"intermediate\":[],\"final\":[\"InjectStep([])\",\"VertexStep(OUT,vertex)\",\"EdgeVertexStep(OUT)\",\"VertexStep(OUT,edge)\"]}", json);
@@ -186,6 +191,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleInstant()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -193,6 +200,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleLocalDate()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalDate o = LocalDate.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -200,6 +209,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleLocalDateTime()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalDateTime o = LocalDateTime.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -207,6 +218,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleLocalTime()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalTime o = LocalTime.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -214,6 +227,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleMonthDay()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final MonthDay o = MonthDay.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -228,6 +243,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleOffsetTime()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final OffsetTime o = OffsetTime.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -235,6 +252,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandlePeriod()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Period o = Period.ofDays(3);
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -242,6 +261,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleYear()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Year o = Year.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -249,6 +270,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleYearMonth()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final YearMonth o = YearMonth.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -256,6 +279,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleZonedDateTime()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final ZonedDateTime o = ZonedDateTime.now();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
@@ -263,6 +288,8 @@ public class GraphSONMapperTest {
 
     @Test
     public void shouldHandleZoneOffset()throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final ZoneOffset o = ZonedDateTime.now().getOffset();
         final String json = mapper.writeValueAsString(o);
         assertEquals("\"" + o.toString() + "\"", json);
