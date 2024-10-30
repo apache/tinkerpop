@@ -200,4 +200,28 @@ public abstract class RemoteWorld implements World {
             return g.with("language", "groovy-test");
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static class GraphSONLangRemoteWorld extends RemoteWorld {
+        public GraphSONLangRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "gremlin-lang");
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static class GraphSONRemoteComputerWorld extends RemoteComputerWorld {
+        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V4)); }
+
+        @Override
+        public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
+            final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
+            return g.with("language", "groovy-test");
+        }
+    }
 }

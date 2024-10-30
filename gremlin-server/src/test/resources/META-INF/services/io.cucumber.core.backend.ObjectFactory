@@ -2,3 +2,5 @@ org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryLangRemoteFeatureTest$Remo
 org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryLangBulkedRemoteFeatureTest$RemoteGuiceFactory
 org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryGroovyRemoteFeatureTest$RemoteGuiceFactory
 org.apache.tinkerpop.gremlin.driver.remote.GraphBinaryRemoteComputerFeatureTest$RemoteGuiceFactory
+org.apache.tinkerpop.gremlin.driver.remote.GraphSONLangRemoteFeatureTest$RemoteGuiceFactory
+org.apache.tinkerpop.gremlin.driver.remote.GraphSONRemoteComputerFeatureTest$RemoteGuiceFactory
