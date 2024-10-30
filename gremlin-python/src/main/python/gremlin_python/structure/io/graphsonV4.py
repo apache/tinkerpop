@@ -29,7 +29,7 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar
 from gremlin_python.process.traversal import Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
@@ -569,21 +569,20 @@ class ByteIO(_NumberIO):
         return int.__new__(SingleByte, v)
 
 
-class ByteBufferIO(_GraphSONTypeIO):
-    python_type = ByteBufferType
+class BinaryIO(_GraphSONTypeIO):
+    python_type = bytes
     graphson_type = "g:Binary"
     graphson_base_type = "Binary"
 
     @classmethod
     def dictify(cls, n, writer):
-        # n_encoded = "".join(chr(x) for x in base64.b64encode(n))
-        return GraphSONUtil.typed_value(cls.graphson_base_type, "".join(chr(x) for x in n), "g")
+        # writes a JSON String containing base64-encoded bytes
+        n_encoded = "".join(chr(x) for x in base64.b64encode(n))
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n_encoded, "g")
 
     @classmethod
     def objectify(cls, v, _):
-        # do we return the bytebuffer/binary as it's encoded, or do we decode into string?
-        return cls.python_type(v, "utf8")
-        # return base64.b64decode(v)
+        return base64.b64decode(v)
 
 
 class CharIO(_GraphSONTypeIO):

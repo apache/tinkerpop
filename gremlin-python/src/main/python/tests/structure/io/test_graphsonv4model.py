@@ -86,7 +86,6 @@ def test_max_byte():
 def test_empty_binary():
     run("empty-binary")
 
-@pytest.mark.skip(reason="tests or implementation may need to be modified depending on how we want to deser object")
 def test_str_binary():
     run("str-binary")
 
@@ -216,11 +215,9 @@ def test_id_t():
 def test_out_direction():
     run("out-direction")
 
-@pytest.mark.skip(reason="enable after bulklist is implemented in graphSON")
 def test_var_bulklist():
     run_read("var-bulklist")
 
-@pytest.mark.skip(reason="enable after bulklist is implemented in graphSON")
 def test_empty_bulklist():
     run_read("empty-bulklist")
 

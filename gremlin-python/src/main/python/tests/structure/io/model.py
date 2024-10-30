@@ -19,7 +19,7 @@ under the License.
 
 import datetime
 import uuid
-from gremlin_python.statics import short, long, bigint, BigDecimal, SingleByte, ByteBufferType
+from gremlin_python.statics import short, long, bigint, BigDecimal, SingleByte
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.process.traversal import Direction, Traverser, T
 
@@ -48,8 +48,8 @@ model["pos-biginteger"] = bigint(123456789987654321123456789987654321)
 model["neg-biginteger"] = bigint(-123456789987654321123456789987654321)
 model["min-byte"] = SingleByte(-128)
 model["max-byte"] = SingleByte(127)
-model["empty-binary"] = ByteBufferType("", "utf8")
-model["str-binary"] = ByteBufferType("some bytes for you", "utf8")
+model["empty-binary"] = bytes("", "utf8")
+model["str-binary"] = bytes("some bytes for you", "utf8")
 model["max-double"] = 1.7976931348623157E308
 model["min-double"] = 4.9E-324
 model["neg-max-double"] = -1.7976931348623157E308

@@ -323,11 +323,11 @@ class TestGraphSONReader:
                 {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
                 ]}]
 
-    def test_bytebuffer(self):
+    def test_binary(self):
         bb = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Binary", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
-        assert isinstance(bb, ByteBufferType)
-        assert ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8") == bb
+        assert isinstance(bb, bytes)
+        assert bytes("some bytes for you", "utf8") == bb
 
     def test_char(self):
         c = self.graphson_reader.read_object(json.dumps({"@type": "g:Char", "@value": "L"}))
@@ -518,9 +518,9 @@ class TestGraphSONWriter:
         output = self.graphson_writer.write_object(prop)
         assert expected == output
 
-    def test_bytebuffer(self):
+    def test_binary(self):
         expected = json.dumps({'@type': 'g:Binary', '@value': 'c29tZSBieXRlcyBmb3IgeW91'}, separators=(',', ':'))
-        bb = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
+        bb = bytes("some bytes for you", "utf8")
         output = self.graphson_writer.write_object(bb)
         assert expected == output
 
