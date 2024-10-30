@@ -29,7 +29,7 @@ from struct import pack, unpack
 from aenum import Enum
 from gremlin_python.process.traversal import Direction, T
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
-    DictType, SetType, SingleByte, ByteBufferType, SingleChar
+    DictType, SetType, SingleByte, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
@@ -65,7 +65,7 @@ class DataType(Enum):
     bigdecimal = 0x22
     biginteger = 0x23
     byte = 0x24
-    bytebuffer = 0x25
+    binary = 0x25
     short = 0x26
     boolean = 0x27
     tree = 0x2b                   # not supported - no tree object in Python yet
@@ -757,9 +757,9 @@ class ByteIO(_GraphBinaryTypeIO):
                            nullable)
 
 
-class ByteBufferIO(_GraphBinaryTypeIO):
-    python_type = ByteBufferType
-    graphbinary_type = DataType.bytebuffer
+class BinaryIO(_GraphBinaryTypeIO):
+    python_type = bytes
+    graphbinary_type = DataType.binary
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
@@ -775,7 +775,7 @@ class ByteBufferIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_bytebuffer(cls, b, r):
         size = cls.read_int(b)
-        return ByteBufferType(b.read(size))
+        return bytes(b.read(size))
 
 
 class BooleanIO(_GraphBinaryTypeIO):

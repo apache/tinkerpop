@@ -73,8 +73,11 @@ class GraphSONSerializerV4(object):
         return message
 
     def build_message(self, fields, gremlin):
-        message = fields
-        message['gremlin'] =  gremlin
+        message = {
+            'gremlin': gremlin  # gremlin wil always be a gremlin lang string script
+        }
+        for k, v in fields.items():
+            message[k] = self._graphson_writer.to_dict(v)
         return self.finalize_message(message)
 
     def finalize_message(self, message):

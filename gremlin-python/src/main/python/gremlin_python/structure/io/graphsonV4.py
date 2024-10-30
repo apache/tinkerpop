@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import base64
 import calendar
 import datetime
 import json
@@ -29,7 +29,7 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, FunctionType, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar
 from gremlin_python.process.traversal import Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
@@ -180,7 +180,7 @@ class VertexSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, vertex, writer):
         return GraphSONUtil.typed_value("Vertex", {"id": writer.to_dict(vertex.id),
-                                                  "label": writer.to_dict([vertex.label])})
+                                                  "label": [writer.to_dict(vertex.label)]})
 
 
 class EdgeSerializer(_GraphSONTypeIO):
@@ -190,14 +190,15 @@ class EdgeSerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, edge, writer):
         return GraphSONUtil.typed_value("Edge", {"id": writer.to_dict(edge.id),
-                                                 "label": writer.to_dict([edge.label]),
-                                                 "inV": writer.to_dict(edge.inV),
-                                                 "outV": writer.to_dict(edge.outV)})
-
-                                                # "outV": writer.to_dict(edge.outV.id),
-                                                # "outVLabel": writer.to_dict([edge.outV.label]),
-                                                # "inV": writer.to_dict(edge.inV.id),
-                                                # "inVLabel": writer.to_dict([edge.inV.label])})
+                                                 "label": [writer.to_dict(edge.label)],
+                                                 "inV": {
+                                                     "id": writer.to_dict(edge.inV.id),
+                                                     "label": [writer.to_dict(edge.inV.label)]
+                                                 },
+                                                 "outV": {
+                                                     "id": writer.to_dict(edge.outV.id),
+                                                     "label": [writer.to_dict(edge.outV.label)]
+                                                 }})
 
 
 class VertexPropertySerializer(_GraphSONTypeIO):
@@ -207,9 +208,8 @@ class VertexPropertySerializer(_GraphSONTypeIO):
     @classmethod
     def dictify(cls, vertex_property, writer):
         return GraphSONUtil.typed_value("VertexProperty", {"id": writer.to_dict(vertex_property.id),
-                                                          "label": writer.to_dict([vertex_property.label]),
-                                                          "value": writer.to_dict(vertex_property.value),
-                                                          "vertex": writer.to_dict(vertex_property.vertex.id)})
+                                                           "label": [writer.to_dict(vertex_property.label)],
+                                                           "value": writer.to_dict(vertex_property.value)})
 
 
 class PropertySerializer(_GraphSONTypeIO):
@@ -218,20 +218,8 @@ class PropertySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, property, writer):
-        elementDict = writer.to_dict(property.element)
-        if elementDict is not None:
-            valueDict = elementDict["@value"]
-            if "outVLabel" in valueDict:
-                del valueDict["outVLabel"]
-            if "inVLabel" in valueDict:
-                del valueDict["inVLabel"]
-            if "properties" in valueDict:
-                del valueDict["properties"]
-            if "value" in valueDict:
-                del valueDict["value"]
         return GraphSONUtil.typed_value("Property", {"key": writer.to_dict(property.key),
-                                                    "value": writer.to_dict(property.value),
-                                                    "element": elementDict})
+                                                    "value": writer.to_dict(property.value)})
 
 
 class TraversalStrategySerializer(_GraphSONTypeIO):
@@ -313,26 +301,22 @@ class UUIDIO(_GraphSONTypeIO):
         return cls.python_type(d)
 
 
-class DateIO(_GraphSONTypeIO):
+class DateTimeIO(_GraphSONTypeIO):
     python_type = datetime.datetime
-    graphson_type = "g:Date"
-    graphson_base_type = "Date"
+    graphson_type = "g:DateTime"
+    graphson_base_type = "DateTime"
 
     @classmethod
     def dictify(cls, obj, writer):
-        try:
-            timestamp_seconds = calendar.timegm(obj.utctimetuple())
-            pts = timestamp_seconds * 1e3 + getattr(obj, 'microsecond', 0) / 1e3
-        except AttributeError:
-            pts = calendar.timegm(obj.timetuple()) * 1e3
-
-        ts = int(round(pts))
-        return GraphSONUtil.typed_value(cls.graphson_base_type, ts)
+        if obj.tzinfo is None:
+            raise AttributeError("Timezone information is required when constructing datetime")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, obj.isoformat())
 
     @classmethod
-    def objectify(cls, ts, reader):
-        # Python timestamp expects seconds
-        return datetime.datetime.utcfromtimestamp(ts / 1000.0)
+    def objectify(cls, dt, reader):
+        # specially handling as python isoformat does not support zulu until 3.11
+        dt_iso = dt[:-1] + '+00:00' if dt.endswith('Z') else dt
+        return datetime.datetime.fromisoformat(dt_iso)
 
 
 class _NumberIO(_GraphSONTypeIO):
@@ -473,7 +457,7 @@ class FloatIO(_NumberIO):
 
 class BigDecimalIO(_NumberIO):
     python_type = Decimal
-    graphson_type = "gx:BigDecimal"
+    graphson_type = "g:BigDecimal"
     graphson_base_type = "BigDecimal"
 
     @classmethod
@@ -481,13 +465,13 @@ class BigDecimalIO(_NumberIO):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
         elif math.isnan(n):
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "g")
         elif math.isinf(n) and n > 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "g")
         elif math.isinf(n) and n < 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "g")
         else:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "g")
 
     @classmethod
     def objectify(cls, v, _):
@@ -518,13 +502,13 @@ class Int64IO(_NumberIO):
         if isinstance(n, bool):
             return n
         elif n < -9223372036854775808 or n > 9223372036854775807:
-            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
+            return GraphSONUtil.typed_value("BigInteger", str(n), "g")
         else:
             return GraphSONUtil.typed_value(cls.graphson_base_type, n)
 
 
 class BigIntegerIO(Int64IO):
-    graphson_type = "gx:BigInteger"
+    graphson_type = "g:BigInteger"
 
 
 class Int32IO(Int64IO):
@@ -538,7 +522,7 @@ class Int32IO(Int64IO):
         if isinstance(n, bool):
             return n
         elif n < -9223372036854775808 or n > 9223372036854775807:
-            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
+            return GraphSONUtil.typed_value("BigInteger", str(n), "g")
         elif n < -2147483648 or n > 2147483647:
             return GraphSONUtil.typed_value("Int64", n)
         else:
@@ -547,7 +531,7 @@ class Int32IO(Int64IO):
 
 class Int16IO(Int64IO):
     python_type = ShortType
-    graphson_type = "gx:Int16"
+    graphson_type = "g:Int16"
     graphson_base_type = "Int16"
 
     @classmethod
@@ -556,13 +540,13 @@ class Int16IO(Int64IO):
         if isinstance(n, bool):
             return n
         elif n < -9223372036854775808 or n > 9223372036854775807:
-            return GraphSONUtil.typed_value("BigInteger", str(n), "gx")
+            return GraphSONUtil.typed_value("BigInteger", str(n), "g")
         elif n < -2147483648 or n > 2147483647:
             return GraphSONUtil.typed_value("Int64", n)
         elif n < -32768 or n > 32767:
             return GraphSONUtil.typed_value("Int32", n)
         else:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
+            return GraphSONUtil.typed_value(cls.graphson_base_type, n, "g")
 
     @classmethod
     def objectify(cls, v, _):
@@ -571,42 +555,44 @@ class Int16IO(Int64IO):
 
 class ByteIO(_NumberIO):
     python_type = SingleByte
-    graphson_type = "gx:Byte"
+    graphson_type = "g:Byte"
     graphson_base_type = "Byte"
 
     @classmethod
     def dictify(cls, n, writer):
         if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
             return n
-        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "g")
 
     @classmethod
     def objectify(cls, v, _):
         return int.__new__(SingleByte, v)
 
 
-class ByteBufferIO(_GraphSONTypeIO):
-    python_type = ByteBufferType
-    graphson_type = "gx:ByteBuffer"
-    graphson_base_type = "ByteBuffer"
+class BinaryIO(_GraphSONTypeIO):
+    python_type = bytes
+    graphson_type = "g:Binary"
+    graphson_base_type = "Binary"
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typed_value(cls.graphson_base_type, "".join(chr(x) for x in n), "gx")
+        # writes a JSON String containing base64-encoded bytes
+        n_encoded = "".join(chr(x) for x in base64.b64encode(n))
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n_encoded, "g")
 
     @classmethod
     def objectify(cls, v, _):
-        return cls.python_type(v, "utf8")
+        return base64.b64decode(v)
 
 
 class CharIO(_GraphSONTypeIO):
     python_type = SingleChar
-    graphson_type = "gx:Char"
+    graphson_type = "g:Char"
     graphson_base_type = "Char"
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n, "g")
 
     @classmethod
     def objectify(cls, v, _):
@@ -615,12 +601,13 @@ class CharIO(_GraphSONTypeIO):
 
 class DurationIO(_GraphSONTypeIO):
     python_type = timedelta
-    graphson_type = "gx:Duration"
+    graphson_type = "g:Duration"
     graphson_base_type = "Duration"
 
     @classmethod
     def dictify(cls, n, writer):
-        return GraphSONUtil.typed_value(cls.graphson_base_type, duration_isoformat(n), "gx")
+        n_iso = duration_isoformat(n)
+        return GraphSONUtil.typed_value(cls.graphson_base_type, n_iso[:-2] + 'T0S' if n_iso.endswith('0D') else n_iso, "g")
 
     @classmethod
     def objectify(cls, v, _):
@@ -637,7 +624,8 @@ class VertexDeserializer(_GraphSONTypeIO):
             properties = reader.to_object(d["properties"])
             if properties is not None:
                 properties = [item for sublist in properties.values() for item in sublist]
-        return Vertex(reader.to_object(d["id"]), d.get("label", "vertex")[0], properties)
+        label = d.get("label", "vertex")
+        return Vertex(reader.to_object(d["id"]), label if isinstance(label, str) else label[0], properties)
 
 
 class EdgeDeserializer(_GraphSONTypeIO):
@@ -649,11 +637,12 @@ class EdgeDeserializer(_GraphSONTypeIO):
         if "properties" in d:
             properties = reader.to_object(d["properties"])
             if properties is not None:
-                properties = list(properties.values())
+                properties = [item for sublist in properties.values() for item in sublist]
+
         return Edge(reader.to_object(d["id"]),
-                    Vertex(reader.to_object(d["outV"]), d.get("outVLabel", "vertex")[0]),
+                    Vertex(reader.to_object(d["outV"]).get("id"), reader.to_object(d["outV"]).get("label")[0]),
                     d.get("label", "edge")[0],
-                    Vertex(reader.to_object(d["inV"]), d.get("inVLabel", "vertex")[0]),
+                    Vertex(reader.to_object(d["inV"]).get("id"), reader.to_object(d["outV"]).get("label")[0]),
                     properties)
 
 

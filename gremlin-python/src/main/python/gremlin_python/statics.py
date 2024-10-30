@@ -42,7 +42,6 @@ TypeType = type
 ListType = list
 DictType = dict
 SetType = set
-ByteBufferType = bytes
 
 
 class SingleByte(int):

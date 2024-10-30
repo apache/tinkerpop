@@ -22,7 +22,7 @@ import math
 from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
-from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
+from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
@@ -203,8 +203,8 @@ class TestGraphBinaryV4(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
-    def test_bytebuffer(self):
-        x = ByteBufferType("c29tZSBieXRlcyBmb3IgeW91", "utf8")
+    def test_binary(self):
+        x = bytes("some bytes for you", "utf8")
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
