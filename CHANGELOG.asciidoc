@@ -20,6 +20,9 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
+[[release-3-7-4]]
+=== TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
+
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
 
