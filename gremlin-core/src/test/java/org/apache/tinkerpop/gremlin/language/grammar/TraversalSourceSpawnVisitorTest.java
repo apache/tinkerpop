@@ -47,6 +47,11 @@ public class TraversalSourceSpawnVisitorTest {
 
     @Test
     public void shouldParseTraversalSourceSpawnMethod_inject() {
+        compare(g.inject(), eval("g.inject()"));
+        compare(g.inject(null), eval("g.inject(null)"));
+        compare(g.inject(null, null), eval("g.inject(null, null)"));
+        compare(g.inject(null, 1), eval("g.inject(null, 1)"));
+        compare(g.inject(1, null), eval("g.inject(1, null)"));
         compare(g.inject(1), eval("g.inject(1)"));
         compare(g.inject(1, 2, 3, 4), eval("g.inject(1,2,3,4)"));
         compare(g.inject(1, 2, 3, new HashMap<>()), eval("g.inject(1,2,3,[:])"));
