@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.driver.handler.IdleConnectionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
@@ -50,6 +51,7 @@ final class Connection {
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
     public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
+    public static final long CONNECTION_IDLE_TIMEOUT_MILLIS = 180000;
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     private final Channel channel;
@@ -107,19 +109,21 @@ final class Connection {
             channel.closeFuture().addListener((ChannelFutureListener) future -> {
                 logger.debug("OnChannelClose callback called for channel {}", channel);
 
-                // if the closeFuture is not set, it means that closeAsync() wasn't called which means that the
-                // close did not come from the client side. it means the server closed the channel for some reason.
-                // it's important to distinguish that difference in debugging
+                // if the closeFuture is not set, it means that closeAsync() wasn't called
                 if (thisConnection.closeFuture.get() == null) {
-                    logger.error(String.format(
-                            "Server closed the Connection on channel %s - scheduling removal from %s",
-                            channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
+                    if (!channel.hasAttr(IdleConnectionHandler.IDLE_STATE_EVENT)) {
+                        // if idle state event is not present, it means the server closed the channel for some reason.
+                        // it's important to distinguish that difference in debugging
+                        logger.error(String.format(
+                                "Server closed the Connection on channel %s - scheduling removal from %s",
+                                channel.id().asShortText(), thisConnection.pool.getPoolInfo(thisConnection)));
+                    }
 
                     // delegate the task to scheduler thread and free up the event loop
-                    thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.definitelyDestroyConnection(thisConnection));
+                    thisConnection.cluster.connectionScheduler().submit(() -> thisConnection.pool.destroyConnection(thisConnection));
                 }
             });
-            logger.info("Created new connection for {}", uri);
+            logger.debug("Created new connection for {}", uri);
         } catch (Exception ex) {
             throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);
         }

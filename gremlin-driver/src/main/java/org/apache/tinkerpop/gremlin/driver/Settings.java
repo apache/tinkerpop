@@ -190,9 +190,6 @@ public final class Settings {
             if (connectionPoolConf.containsKey("sslSkipCertValidation"))
                 cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
-            if (connectionPoolConf.containsKey("minSize"))
-                cpSettings.minSize = connectionPoolConf.getInt("minSize");
-
             if (connectionPoolConf.containsKey("maxSize"))
                 cpSettings.maxSize = connectionPoolConf.getInt("maxSize");
 
@@ -216,6 +213,9 @@ public final class Settings {
 
             if (connectionPoolConf.containsKey("connectionSetupTimeoutMillis"))
                 cpSettings.connectionSetupTimeoutMillis = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
+
+            if (connectionPoolConf.containsKey("idleConnectionTimeout"))
+                cpSettings.idleConnectionTimeout = connectionPoolConf.getLong("idleConnectionTimeout");
 
             settings.connectionPool = cpSettings;
         }
@@ -301,12 +301,7 @@ public final class Settings {
         public boolean sslSkipCertValidation = false;
 
         /**
-         * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
-         */
-        public int minSize = ConnectionPool.MIN_POOL_SIZE;
-
-        /**
-         * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
+         * The maximum size of a connection pool for a {@link Host}. By default this is set to 500.
          */
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
 
@@ -352,6 +347,14 @@ public final class Settings {
          * complete by then.
          */
         public long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+
+        /**
+         * Time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+         * Note that while this value is to be provided as milliseconds it will resolve to
+         * second precision. Set this value to 0 to disable this feature.
+         */
+        public long idleConnectionTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+
     }
 
     public static class SerializerSettings {

@@ -80,6 +80,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Updated `TraversalStrategyProxy` to utilize strategy names instead of strategy classes
 * Use `TraversalStrategyProxy` in Java, or `TraversalStrategy` in Python to pass custom strategies in traversals
+* Removed `minSize` setting for Gremlin Driver connection pool since connections are now short-lived HTTP connections
+* Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

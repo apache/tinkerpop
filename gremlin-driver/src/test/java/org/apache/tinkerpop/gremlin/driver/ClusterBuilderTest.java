@@ -40,9 +40,6 @@ public class ClusterBuilderTest {
         return Arrays.asList(new Object[][]{
                 {"maxConnectionPoolSize0", Cluster.build().maxConnectionPoolSize(0), "maxConnectionPoolSize must be greater than zero"},
                 {"maxConnectionPoolSizeNeg1", Cluster.build().maxConnectionPoolSize(-1), "maxConnectionPoolSize must be greater than zero"},
-                {"minConnectionPoolSizeNeg1", Cluster.build().minConnectionPoolSize(-1), "minConnectionPoolSize must be greater than or equal to zero"},
-                {"minConnectionPoolSizeLteMax", Cluster.build().minConnectionPoolSize(100).maxConnectionPoolSize(99), "maxConnectionPoolSize cannot be less than minConnectionPoolSize"},
-                {"minConnectionPoolSizeLteMax", Cluster.build().minConnectionPoolSize(100).maxConnectionPoolSize(99), "maxConnectionPoolSize cannot be less than minConnectionPoolSize"},
                 {"maxConnectionPoolSize0", Cluster.build().maxWaitForConnection(0), "maxWaitForConnection must be greater than zero"},
                 {"maxWaitForClose0", Cluster.build().maxWaitForClose(0), "maxWaitForClose must be greater than zero"},
                 {"maxWaitForCloseNeg1", Cluster.build().maxWaitForClose(-1), "maxWaitForClose must be greater than zero"},
@@ -54,6 +51,9 @@ public class ClusterBuilderTest {
                 {"nioPoolSize0", Cluster.build().nioPoolSize(0), "nioPoolSize must be greater than zero"},
                 {"nioPoolSizeNeg1", Cluster.build().nioPoolSize(-1), "nioPoolSize must be greater than zero"},
                 {"connectionSetupTimeoutMillis0", Cluster.build().connectionSetupTimeoutMillis(0), "connectionSetupTimeoutMillis must be greater than zero"},
+                {"idleConnectionTimeoutMillisNeg1", Cluster.build().idleConnectionTimeoutMillis(-1), "idleConnectionTimeoutMillis must be zero or greater than or equal to 1000"},
+                {"idleConnectionTimeoutMillisOne", Cluster.build().idleConnectionTimeoutMillis(1), "idleConnectionTimeoutMillis must be zero or greater than or equal to 1000"},
+                {"idleConnectionTimeoutMillis999", Cluster.build().idleConnectionTimeoutMillis(999), "idleConnectionTimeoutMillis must be zero or greater than or equal to 1000"},
                 {"workerPoolSize0", Cluster.build().workerPoolSize(0), "workerPoolSize must be greater than zero"},
                 {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"}});
     }

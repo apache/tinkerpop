@@ -28,12 +28,14 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
-import org.apache.tinkerpop.gremlin.driver.handler.SslCheckHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.IdleConnectionHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 import java.util.Collections;
@@ -93,8 +95,9 @@ public interface Channelizer extends ChannelHandler {
         private AtomicReference<ResultQueue> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
-        public static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
-
+        protected static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
+        protected static final String PIPELINE_IDLE_STATE_HANDLER = "idle-state-handler";
+        protected static final String PIPELINE_IDLE_CONNECTION_HANDLER = "idle-connection-handler";
         protected static final String PIPELINE_HTTP_CODEC = "http-codec";
         protected static final String PIPELINE_HTTP_AGGREGATOR = "http-aggregator";
         protected static final String PIPELINE_HTTP_ENCODER = "gremlin-encoder";
@@ -105,7 +108,7 @@ public interface Channelizer extends ChannelHandler {
                 "configured at both the client and the server. Ensure that client http handshake " +
                 "protocol matches the server. Ensure that the server is still reachable.";
 
-        private static final SslCheckHandler sslCheckHandler = new SslCheckHandler();
+        private static final InactiveChannelHandler inactiveChannelHandler = new InactiveChannelHandler();
 
         public boolean supportsSsl() {
             return cluster.connectionPoolSettings().enableSsl;
@@ -151,7 +154,7 @@ public interface Channelizer extends ChannelHandler {
                 sslHandler.setHandshakeTimeoutMillis(0);
                 pipeline.addLast(PIPELINE_SSL_HANDLER, sslHandler);
             } else {
-                pipeline.addLast(PIPELINE_SSL_HANDLER, sslCheckHandler);
+                pipeline.addLast(PIPELINE_SSL_HANDLER, inactiveChannelHandler);
             }
 
             configure(pipeline);
@@ -187,6 +190,8 @@ public interface Channelizer extends ChannelHandler {
         private HttpGremlinResponseDecoder gremlinResponseDecoder;
 
         private HttpContentDecompressionHandler httpCompressionDecoder;
+        private IdleStateHandler idleStateHandler;
+        private IdleConnectionHandler idleConnectionHandler;
 
         @Override
         public void init(final Connection connection) {
@@ -196,6 +201,11 @@ public interface Channelizer extends ChannelHandler {
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
                     cluster.isUserAgentOnConnectEnabled(), cluster.isBulkingEnabled(), connection.getUri());
             gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
+            if (cluster.getIdleConnectionTimeout() > 0) {
+                final int idleConnectionTimeout = (int) (cluster.getIdleConnectionTimeout() / 1000);
+                idleStateHandler = new IdleStateHandler(idleConnectionTimeout, idleConnectionTimeout, 0);
+                idleConnectionHandler = new IdleConnectionHandler();
+            }
         }
 
         @Override
@@ -217,6 +227,12 @@ public interface Channelizer extends ChannelHandler {
 
             if (!supportsSsl() && "https".equalsIgnoreCase(scheme))
                 throw new IllegalStateException("To use https scheme ensure that enableSsl is set to true in configuration");
+
+            if (cluster.getIdleConnectionTimeout() > 0) {
+                // idle connection handling is enabled
+                pipeline.addLast(PIPELINE_IDLE_STATE_HANDLER, idleStateHandler);
+                pipeline.addLast(PIPELINE_IDLE_CONNECTION_HANDLER, idleConnectionHandler);
+            }
 
             final HttpClientCodec handler = new HttpClientCodec(DEFAULT_MAX_INITIAL_LINE_LENGTH, DEFAULT_MAX_HEADER_SIZE,
                     1024 * 1024, DEFAULT_FAIL_ON_MISSING_RESPONSE,

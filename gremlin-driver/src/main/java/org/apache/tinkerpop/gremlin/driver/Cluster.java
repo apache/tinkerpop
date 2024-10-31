@@ -186,8 +186,8 @@ public final class Cluster {
                 .maxResponseContentLength(settings.connectionPool.maxResponseContentLength)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
+                .idleConnectionTimeoutMillis(settings.connectionPool.idleConnectionTimeout)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .enableBulkedResult(settings.enableBulkedResult)
                 .validationRequest(settings.connectionPool.validationRequest);
@@ -310,13 +310,6 @@ public final class Cluster {
     }
 
     /**
-     * Gets the minimum size of the {@link ConnectionPool}.
-     */
-    public int minConnectionPoolSize() {
-        return manager.connectionPoolSettings.minSize;
-    }
-
-    /**
      * Gets the override for the server setting that determines how many results are returned per batch.
      */
     public int getResultIterationBatchSize() {
@@ -342,6 +335,13 @@ public final class Cluster {
      */
     public long getMaxResponseContentLength() {
         return manager.connectionPoolSettings.maxResponseContentLength;
+    }
+
+    /**
+     * Get time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+     */
+    public long getIdleConnectionTimeout() {
+        return manager.connectionPoolSettings.idleConnectionTimeout;
     }
 
     /**
@@ -490,7 +490,6 @@ public final class Cluster {
         private MessageSerializer<?> serializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
         private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
@@ -512,6 +511,7 @@ public final class Cluster {
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private LinkedList<Pair<String, ? extends RequestInterceptor>> interceptors = new LinkedList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private long idleConnectionTimeoutMillis = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
         private boolean enableBulkedResult = false;
 
@@ -685,15 +685,6 @@ public final class Cluster {
          */
         public Builder maxConnectionPoolSize(final int maxSize) {
             this.maxConnectionPoolSize = maxSize;
-            return this;
-        }
-
-        /**
-         * The minimum size of the {@link ConnectionPool}.  When the {@link Client} is started, {@link Connection}
-         * objects will be initially constructed to this size.
-         */
-        public Builder minConnectionPoolSize(final int minSize) {
-            this.minConnectionPoolSize = minSize;
             return this;
         }
 
@@ -881,6 +872,14 @@ public final class Cluster {
         }
 
         /**
+         * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+         */
+        public Builder idleConnectionTimeoutMillis(final long idleConnectionTimeoutMillis) {
+            this.idleConnectionTimeoutMillis = idleConnectionTimeoutMillis;
+            return this;
+        }
+
+        /**
          * Configures whether cluster will send a user agent during
          * web socket handshakes
          * @param enableUserAgentOnConnect true enables the useragent. false disables the useragent.
@@ -984,7 +983,6 @@ public final class Cluster {
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
-            connectionPoolSettings.minSize = builder.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
             connectionPoolSettings.maxResponseContentLength = builder.maxResponseContentLength;
@@ -1002,6 +1000,7 @@ public final class Cluster {
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
             connectionPoolSettings.validationRequest = builder.validationRequest;
             connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
+            connectionPoolSettings.idleConnectionTimeout = builder.idleConnectionTimeoutMillis;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
@@ -1026,21 +1025,15 @@ public final class Cluster {
 
             // we distinguish between the hostScheduler and the connectionScheduler because you can end in deadlock
             // if all the possible jobs the driver allows for go to a single thread pool.
-            this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+            this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
             validationRequest = () -> RequestMessage.build(builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {
-            if (builder.minConnectionPoolSize < 0)
-                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
-
             if (builder.maxConnectionPoolSize < 1)
                 throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
-
-            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
-                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
 
             if (builder.maxWaitForConnection < 1)
                 throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
@@ -1065,6 +1058,12 @@ public final class Cluster {
 
             if (builder.connectionSetupTimeoutMillis < 1)
                 throw new IllegalArgumentException("connectionSetupTimeoutMillis must be greater than zero");
+
+            // zero value will disable idle connection detection
+            // non-zero will be converted to seconds so any value between 1 and 999 is invalid as it will be less than 1 second
+            if (builder.idleConnectionTimeoutMillis != 0 && builder.idleConnectionTimeoutMillis < 1000)
+                throw new IllegalArgumentException("idleConnectionTimeoutMillis must be zero or greater than or equal to 1000");
+
         }
 
         synchronized void init() {
