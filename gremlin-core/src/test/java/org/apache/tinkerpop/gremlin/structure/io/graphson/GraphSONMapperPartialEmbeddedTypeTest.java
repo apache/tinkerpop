@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -145,7 +146,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
     @Test
     public void shouldFailIfTypeSpecifiedIsNotSameTypeInPayload() {
-        final ZoneOffset o = ZonedDateTime.now().getOffset();
+        final OffsetDateTime o = OffsetDateTime.now();
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             mapper.writeValue(stream, o);
@@ -155,9 +156,9 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
             fail("Should have failed decoding the value");
         } catch (Exception e) {
             if (version.startsWith("v4")) {
-                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":ZoneOffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":DateTime') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
             } else {
-                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLINX_TYPE_NAMESPACE + ":ZoneOffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLINX_TYPE_NAMESPACE + ":OffsetDateTime') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
             }
         }
     }
@@ -276,6 +277,8 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
     @Test
     public void shouldHandleVariantsOfP() throws Exception {
+        if (version.startsWith("v4")) return;
+
         final List<P> variantsOfP = Arrays.asList(
                 P.between(1,2),
                 P.eq(1),

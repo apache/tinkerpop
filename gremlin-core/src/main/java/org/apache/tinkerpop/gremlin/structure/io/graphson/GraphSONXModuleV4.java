@@ -54,22 +54,10 @@ public final class GraphSONXModuleV4 extends GraphSONModule {
                 put(BigDecimal.class, "BigDecimal");
                 put(Byte.class, "Byte");
                 put(Character.class, "Char");
-                put(InetAddress.class, "InetAddress");
 
                 // Time serializers/deserializers
                 put(Duration.class, "Duration");
-                put(Instant.class, "Instant");
-                put(LocalDate.class, "LocalDate");
-                put(LocalDateTime.class, "LocalDateTime");
-                put(LocalTime.class, "LocalTime");
-                put(MonthDay.class, "MonthDay");
                 put(OffsetDateTime.class, "DateTime");
-                put(OffsetTime.class, "OffsetTime");
-                put(Period.class, "Period");
-                put(Year.class, "Year");
-                put(YearMonth.class, "YearMonth");
-                put(ZonedDateTime.class, "ZonedDateTime");
-                put(ZoneOffset.class, "ZoneOffset");
             }});
 
     /**
@@ -82,35 +70,13 @@ public final class GraphSONXModuleV4 extends GraphSONModule {
 
         // java.time
         addSerializer(Duration.class, new JavaTimeSerializersV4.DurationJacksonSerializer());
-        addSerializer(Instant.class, new JavaTimeSerializersV4.InstantJacksonSerializer());
-        addSerializer(LocalDate.class, new JavaTimeSerializersV4.LocalDateJacksonSerializer());
-        addSerializer(LocalDateTime.class, new JavaTimeSerializersV4.LocalDateTimeJacksonSerializer());
-        addSerializer(LocalTime.class, new JavaTimeSerializersV4.LocalTimeJacksonSerializer());
-        addSerializer(MonthDay.class, new JavaTimeSerializersV4.MonthDayJacksonSerializer());
         addSerializer(OffsetDateTime.class, new JavaTimeSerializersV4.OffsetDateTimeJacksonSerializer());
-        addSerializer(OffsetTime.class, new JavaTimeSerializersV4.OffsetTimeJacksonSerializer());
-        addSerializer(Period.class, new JavaTimeSerializersV4.PeriodJacksonSerializer());
-        addSerializer(Year.class, new JavaTimeSerializersV4.YearJacksonSerializer());
-        addSerializer(YearMonth.class, new JavaTimeSerializersV4.YearMonthJacksonSerializer());
-        addSerializer(ZonedDateTime.class, new JavaTimeSerializersV4.ZonedDateTimeJacksonSerializer());
-        addSerializer(ZoneOffset.class, new JavaTimeSerializersV4.ZoneOffsetJacksonSerializer());
 
         /////////////////////// DESERIALIZERS ////////////////////////////
 
         // java.time
         addDeserializer(Duration.class, new JavaTimeSerializersV4.DurationJacksonDeserializer());
-        addDeserializer(Instant.class, new JavaTimeSerializersV4.InstantJacksonDeserializer());
-        addDeserializer(LocalDate.class, new JavaTimeSerializersV4.LocalDateJacksonDeserializer());
-        addDeserializer(LocalDateTime.class, new JavaTimeSerializersV4.LocalDateTimeJacksonDeserializer());
-        addDeserializer(LocalTime.class, new JavaTimeSerializersV4.LocalTimeJacksonDeserializer());
-        addDeserializer(MonthDay.class, new JavaTimeSerializersV4.MonthDayJacksonDeserializer());
         addDeserializer(OffsetDateTime.class, new JavaTimeSerializersV4.OffsetDateTimeJacksonDeserializer());
-        addDeserializer(OffsetTime.class, new JavaTimeSerializersV4.OffsetTimeJacksonDeserializer());
-        addDeserializer(Period.class, new JavaTimeSerializersV4.PeriodJacksonDeserializer());
-        addDeserializer(Year.class, new JavaTimeSerializersV4.YearJacksonDeserializer());
-        addDeserializer(YearMonth.class, new JavaTimeSerializersV4.YearMonthJacksonDeserializer());
-        addDeserializer(ZonedDateTime.class, new JavaTimeSerializersV4.ZonedDateTimeJacksonDeserializer());
-        addDeserializer(ZoneOffset.class, new JavaTimeSerializersV4.ZoneOffsetJacksonDeserializer());
     }
 
     public static GraphSONModuleBuilder build() {

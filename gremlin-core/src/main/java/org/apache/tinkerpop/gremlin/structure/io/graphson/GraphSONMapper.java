@@ -84,7 +84,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     @Override
     public ObjectMapper createMapper() {
         final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
-        om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        if (version != GraphSONVersion.V4_0) {
+            om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        }
 
         final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo);
         om.registerModule(graphSONModule);
@@ -141,9 +143,14 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             throw new IllegalStateException("Unknown GraphSONVersion: " + version);
         }
 
-        // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
-        final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
-        om.setSerializerProvider(provider);
+        // Starting with GraphSONv4, only types that can be returned from the result of a traversal are supported. This
+        // differs to previous versions where a gremlin-groovy script could return any type. So if an unknown type is
+        // encountered, an error should be thrown.
+        if (version != GraphSONVersion.V4_0) {
+            // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
+            final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
+            om.setSerializerProvider(provider);
+        }
 
         if (normalize)
             om.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
