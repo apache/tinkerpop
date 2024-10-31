@@ -56,6 +56,9 @@ public class HttpGremlinResponseDecoder extends MessageToMessageDecoder<FullHttp
 
     @Override
     protected void decode(ChannelHandlerContext ctx, FullHttpResponse msg, List<Object> out) throws Exception {
+        // A value must be set in order to signal to the InactiveChannelHandler that data has been received.
+        ctx.channel().attr(InactiveChannelHandler.BYTES_READ).set(0);
+
         final ByteBuf content = msg.content();
         ResponseMessage response;
         
