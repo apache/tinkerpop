@@ -32,7 +32,6 @@ import java.util.stream.Stream;
  */
 public class ConfigurationEvaluator {
 
-    private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,192,256,384,512);
     private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(16,32,64,96,128,192,256,384,512);
     private final List<Integer> workerPoolSizeRange = Arrays.asList(1,2,3,4,8,16,32);
     private final List<Integer> nioPoolSizeRange = Arrays.asList(1,2,4);
@@ -45,28 +44,23 @@ public class ConfigurationEvaluator {
         for (int ir = 0; ir < nioPoolSizeRange.size(); ir++) {
             for (int is = 0; is < parallelismSizeRange.size(); is++) {
                 for (int it = 0; it < workerPoolSizeRange.size(); it++) {
-                    for (int iw = 0; iw < minConnectionPoolSizeRange.size(); iw++) {
-                        for (int ix = 0; ix < maxConnectionPoolSizeRange.size(); ix++) {
-                            if (minConnectionPoolSizeRange.get(iw) <= maxConnectionPoolSizeRange.get(ix)) {
-                                final String s = String.join(",", String.valueOf(ir), String.valueOf(is), String.valueOf(it), String.valueOf(iw), String.valueOf(ix));
-                                if (!configsTried.contains(s)) {
-                                    final Object[] argsToProfiler =
-                                            Stream.of("nioPoolSize", nioPoolSizeRange.get(ir).toString(),
-                                                    "parallelism", parallelismSizeRange.get(is).toString(),
-                                                    "workerPoolSize", workerPoolSizeRange.get(it).toString(),
-                                                    "minConnectionPoolSize", minConnectionPoolSizeRange.get(iw).toString(),
-                                                    "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(ix).toString(),
-                                                    "noExit", Boolean.TRUE.toString()).toArray();
+                    for (int ix = 0; ix < maxConnectionPoolSizeRange.size(); ix++) {
+                        final String s = String.join(",", String.valueOf(ir), String.valueOf(is), String.valueOf(it), String.valueOf(ix));
+                        if (!configsTried.contains(s)) {
+                            final Object[] argsToProfiler =
+                                    Stream.of("nioPoolSize", nioPoolSizeRange.get(ir).toString(),
+                                            "parallelism", parallelismSizeRange.get(is).toString(),
+                                            "workerPoolSize", workerPoolSizeRange.get(it).toString(),
+                                            "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(ix).toString(),
+                                            "noExit", Boolean.TRUE.toString()).toArray();
 
-                                    final Object[] withExtraArgs = args.length > 0 ? Stream.concat(Stream.of(args), Stream.of(argsToProfiler)).toArray() : argsToProfiler;
+                            final Object[] withExtraArgs = args.length > 0 ? Stream.concat(Stream.of(args), Stream.of(argsToProfiler)).toArray() : argsToProfiler;
 
-                                    final String[] stringProfilerArgs = Arrays.copyOf(withExtraArgs, withExtraArgs.length, String[].class);
-                                    System.out.println("Testing with: " + Arrays.toString(stringProfilerArgs));
-                                    ProfilingApplication.main(stringProfilerArgs);
-                                    TimeUnit.SECONDS.sleep(5);
-                                    configsTried.add(s);
-                                }
-                            }
+                            final String[] stringProfilerArgs = Arrays.copyOf(withExtraArgs, withExtraArgs.length, String[].class);
+                            System.out.println("Testing with: " + Arrays.toString(stringProfilerArgs));
+                            ProfilingApplication.main(stringProfilerArgs);
+                            TimeUnit.SECONDS.sleep(5);
+                            configsTried.add(s);
                         }
                     }
                 }

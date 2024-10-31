@@ -800,12 +800,11 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
-|connectionPool.maxSize |The maximum size of a connection pool for a host. |8
+|connectionPool.maxSize |The maximum size of a connection pool for a host. |128
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
 |connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
-|connectionPool.minSize |The minimum size of a connection pool for a host. |2
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
@@ -815,6 +814,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
 |connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
+|connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
