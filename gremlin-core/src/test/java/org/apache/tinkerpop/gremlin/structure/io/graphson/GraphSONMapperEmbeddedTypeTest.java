@@ -109,7 +109,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleTraversalExplanation() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final TraversalExplanation o = __().out().outV().outE().explain();
         final TraversalExplanation deser = serializeDeserialize(mapper, o, TraversalExplanation.class);
@@ -195,7 +195,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleBiFunctionLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.biFunction("x,y -> 'test'");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -203,7 +203,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleComparatorLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.comparator("x,y -> x <=> y");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -211,7 +211,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleConsumerLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.consumer("x -> x");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -219,7 +219,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleFunctionLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.function("x -> x");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -227,7 +227,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePredicateLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.predicate("x -> true");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -235,7 +235,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleSupplierLambda() throws Exception {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final Lambda o = (Lambda) Lambda.supplier("'test'");
         assertEquals(o, serializeDeserialize(mapper, o, Lambda.class));
@@ -249,30 +249,40 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleInstant() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Instant o = Instant.ofEpochMilli(System.currentTimeMillis());
         assertEquals(o, serializeDeserialize(mapper, o, Instant.class));
     }
 
     @Test
     public void shouldHandleLocalDate() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalDate o = LocalDate.now();
         assertEquals(o, serializeDeserialize(mapper, o, LocalDate.class));
     }
 
     @Test
     public void shouldHandleLocalDateTime() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalDateTime o = LocalDateTime.now();
         assertEquals(o, serializeDeserialize(mapper, o, LocalDateTime.class));
     }
 
     @Test
     public void shouldHandleLocalTime() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final LocalTime o = LocalTime.now();
         assertEquals(o, serializeDeserialize(mapper, o, LocalTime.class));
     }
 
     @Test
     public void shouldHandleMonthDay() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final MonthDay o = MonthDay.now();
         assertEquals(o, serializeDeserialize(mapper, o, MonthDay.class));
     }
@@ -285,36 +295,48 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleOffsetTime() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final OffsetTime o = OffsetTime.now();
         assertEquals(o, serializeDeserialize(mapper, o, OffsetTime.class));
     }
 
     @Test
     public void shouldHandlePeriod() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Period o = Period.ofDays(3);
         assertEquals(o, serializeDeserialize(mapper, o, Period.class));
     }
 
     @Test
     public void shouldHandleYear() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final Year o = Year.now();
         assertEquals(o, serializeDeserialize(mapper, o, Year.class));
     }
 
     @Test
     public void shouldHandleYearMonth() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final YearMonth o = YearMonth.now();
         assertEquals(o, serializeDeserialize(mapper, o, YearMonth.class));
     }
 
     @Test
     public void shouldHandleZonedDateTime() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final ZonedDateTime o = ZonedDateTime.now();
         assertEquals(o, serializeDeserialize(mapper, o, ZonedDateTime.class));
     }
 
     @Test
     public void shouldHandleZonedOffset() throws Exception  {
+        assumeThat(version, not(startsWith("v4")));
+
         final ZoneOffset o  = ZonedDateTime.now().getOffset();
         assertEquals(o, serializeDeserialize(mapper, o, ZoneOffset.class));
     }
@@ -365,7 +387,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValue() throws Exception  {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.within(1,2,3,null);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -373,7 +395,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePSingleValue() throws Exception  {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.within(1);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -381,7 +403,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValueAsList() throws Exception  {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.within(Arrays.asList(1,2,3,null));
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -389,7 +411,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePMultiValueAsSet() throws Exception  {
-        assumeThat(version, either(startsWith("v3")).or(startsWith("v4")));
+        assumeThat(version, startsWith("v3"));
 
         final P o = P.within(new HashSet<>(Arrays.asList(1,2,3)));
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -397,7 +419,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePBetween() throws Exception  {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.between(1, 100);
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
@@ -407,7 +429,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldReadPWithJsonArray() throws Exception {
         // for some reason v3 is forgiving about the naked json array - leaving this here for backward compatibility,
         // but should be a g:List (i think)
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = P.within(Arrays.asList(1,2,3));
         assertEquals(o, mapper.readValue("{\"@type\": \"g:P\", \"@value\": {\"predicate\": \"within\", \"value\": [{\"@type\": \"g:Int32\", \"@value\": 1},{\"@type\": \"g:Int32\", \"@value\": 2},{\"@type\": \"g:Int32\", \"@value\": 3}]}}", Object.class));
@@ -452,7 +474,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandlePExt() throws Exception  {
-        assumeThat(version, not(startsWith("v1")));
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = PExt.mix("bah");
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
