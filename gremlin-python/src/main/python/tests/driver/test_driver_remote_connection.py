@@ -40,8 +40,8 @@ class TestDriverRemoteConnection(object):
     # in conftest.py and remove this
     def test_graphSONV4_temp(self):
         remote_conn = DriverRemoteConnection(test_no_auth_url, 'gmodern',
-                                             request_serializer=serializer.GraphSONSerializerV4(),
-                                             response_serializer=serializer.GraphSONSerializerV4())
+                                             request_serializer=serializer.GraphSONSerializersV4(),
+                                             response_serializer=serializer.GraphSONSerializersV4())
         g = traversal().with_(remote_conn)
         assert long(6) == g.V().count().to_list()[0]
         # #

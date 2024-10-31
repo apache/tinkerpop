@@ -25,6 +25,7 @@ import pytest
 import logging
 import queue
 
+from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
@@ -110,11 +111,17 @@ def graphbinary_serializer_v4(request):
     return GraphBinarySerializersV4()
 
 
-@pytest.fixture(params=['graphbinaryv4'])
+@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
 def remote_connection(request):
     try:
         if request.param == 'graphbinaryv4':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern')
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                                 request_serializer=serializer.GraphBinarySerializersV4(),
+                                                 response_serializer=serializer.GraphBinarySerializersV4())
+        elif request.param == 'graphsonv4':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                                 request_serializer=serializer.GraphSONSerializersV4(),
+                                                 response_serializer=serializer.GraphSONSerializersV4())
         else:
             raise ValueError("Invalid serializer option - " + request.param)
     except OSError:

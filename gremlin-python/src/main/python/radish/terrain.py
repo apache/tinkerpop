@@ -96,6 +96,8 @@ def __create_remote(server_graph_name):
 
     if world.config.user_data["serializer"] == "application/vnd.graphbinary-v4.0":
         s = serializer.GraphBinarySerializersV4()
+    elif world.config.user_data["serializer"] == "application/vnd.gremlin-v4.0+json":
+        s = serializer.GraphSONSerializersV4()
     else:
         raise ValueError('serializer not found - ' + world.config.user_data["serializer"])
 

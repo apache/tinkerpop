@@ -105,7 +105,27 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
 
     def read(self, stream_chunk=None):
         if not stream_chunk:
-            raise Exception('missing handling of streamed responses to protocol')
+            '''
+            GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
+             deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
+            '''
+            async def async_read():
+                async with async_timeout.timeout(self._read_timeout):
+                    data_buffer = b""
+                    async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
+                        try:
+                            data_buffer += data
+                        except ClientPayloadError:
+                            # server disconnect during streaming will cause ClientPayLoadError from aiohttp
+                            raise GremlinServerError({'code': 500,
+                                                      'message': 'Server disconnected - please try to reconnect',
+                                                      'exception': ClientPayloadError})
+                    if self._max_content_len and len(
+                            data_buffer) > self._max_content_len:
+                        raise Exception(f'Response size {len(data_buffer)} exceeds limit {self._max_content_len} bytes')
+                    return data_buffer
+            return self._loop.run_until_complete(async_read())
+            # raise Exception('missing handling of streamed responses to protocol')
 
         # Inner function to perform async read.
         async def async_read():

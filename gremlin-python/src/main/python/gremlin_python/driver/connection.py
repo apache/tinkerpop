@@ -84,7 +84,13 @@ class Connection:
 
     def _receive(self):
         try:
-            self._transport.read(self.stream_chunk)
+            '''
+            GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
+             deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
+            '''
+            self._protocol.data_received_aggregate(self._transport.read(), self._result_set)
+            # re-enable streaming after graphSON removal
+            # self._transport.read(self.stream_chunk)
         finally:
             self._pool.put_nowait(self)
 
