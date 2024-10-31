@@ -95,6 +95,37 @@ class GremlinServerHTTPProtocol(AbstractBaseProtocol):
 
         self._transport.write(message)
 
+    '''
+    GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
+     deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
+    '''
+    def data_received_aggregate(self, response, result_set):
+        response_msg = {'status': {'code': 0,
+                                         'message': '',
+                                         'exception': ''},
+                              'result': {'meta': {},
+                                         'data': []}}
+
+        response_msg = self._decode_chunk(response_msg, response, self._is_first_chunk)
+
+        self._is_first_chunk = False
+        status_code = response_msg['status']['code']
+        aggregate_to = response_msg['result']['meta'].get('aggregateTo', 'list')
+        data = response_msg['result']['data']
+        result_set.aggregate_to = aggregate_to
+        self._is_first_chunk = True
+
+        if status_code == 204 and len(data) == 0:
+            result_set.stream.put_nowait([])
+        elif status_code in [200, 204, 206]:
+            result_set.stream.put_nowait(data)
+        else:
+            log.error("\r\nReceived error message '%s'\r\n\r\nWith result set '%s'",
+                      str(self._response_msg), str(result_set))
+            raise GremlinServerError({'code': status_code,
+                                        'message': self._response_msg['status']['message'],
+                                        'exception': self._response_msg['status']['exception']})
+
     # data is received in chunks
     def data_received(self, response_chunk, result_set, read_completed=None, http_req_resp=None):
         # we shouldn't need to use the http_req_resp code as status is sent in response message, but leaving it for now

@@ -40,7 +40,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 GraphSONV4
 """
 
-class GraphSONSerializerV4(object):
+class GraphSONSerializersV4(object):
     """
     Message serializer for GraphSON. Allow users to pass custom reader,
     writer, and version kwargs for custom serialization. Otherwise,
@@ -89,7 +89,7 @@ class GraphSONSerializerV4(object):
             msg = json.loads(message if isinstance(message, str) else message.decode('utf-8'))
             return self._graphson_reader.to_object(msg)
         else:
-            # graphSON does not stream, the first chunk contains all info
+            # graphSON does not stream, all results are aggregated inside the first chunk
             return ""
 
 """
