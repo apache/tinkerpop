@@ -65,6 +65,21 @@ limitations under the License.
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-auth-aws</artifactId>
+            <version>2.29.3</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>2.29.3</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>utils</artifactId>
+            <version>2.29.3</version>
+        </dependency>
         <!-- TinkerGraph is an optional dependency that is only required if doing deserialization of Graph instances -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
