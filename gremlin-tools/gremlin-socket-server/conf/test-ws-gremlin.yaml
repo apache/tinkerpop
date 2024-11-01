@@ -50,10 +50,6 @@ CLOSE_CONNECTION_REQUEST_ID_2: 3c4cf18a-c7f2-4dad-b9bf-5c701eb33000
 # that was captured during the web socket handshake.
 USER_AGENT_REQUEST_ID: 20ad7bfb-4abf-d7f4-f9d3-9f1d55bee4ad
 
-# If a request with this ID comes to the server, the server responds with the sec-websocket-extensions header
-# included in the handshake request.
-SEC_WEBSOCKET_EXTENSIONS: 7480d3ec-e24a-424a-8148-6527378e9b35
-
 # If a request with this ID comes to the server, the server responds with a string containing all overridden
 # per request settings from the request message. String will be of the form
 # "requestId=19436d9e-f8fc-4b67-8a76-deec60918424 evaluationTimeout=1234, batchSize=12, userAgent=testUserAgent"

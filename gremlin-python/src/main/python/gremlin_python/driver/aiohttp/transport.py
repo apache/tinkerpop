@@ -34,8 +34,7 @@ __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 class AiohttpTransport(AbstractBaseTransport):
     nest_asyncio_applied = False
 
-    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, enable_compression=False,
-                 **kwargs):
+    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpTransport.nest_asyncio_applied:
             """ 
                 The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called 
@@ -56,13 +55,10 @@ class AiohttpTransport(AbstractBaseTransport):
         self._aiohttp_kwargs = kwargs
         self._write_timeout = write_timeout
         self._read_timeout = read_timeout
-        self._enable_compression = enable_compression
         if "max_content_length" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop("max_content_length")
         if "ssl_options" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
-        if self._enable_compression and "compress" not in self._aiohttp_kwargs:
-            self._aiohttp_kwargs["compress"] = 15  # enable per-message deflate compression with 32k sliding window size
 
     def __del__(self):
         # Close will only actually close if things are left open, so this is safe to call.

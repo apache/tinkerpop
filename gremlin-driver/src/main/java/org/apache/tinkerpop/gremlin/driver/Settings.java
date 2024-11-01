@@ -106,11 +106,6 @@ final class Settings {
     public boolean enableUserAgentOnConnect = true;
 
     /**
-     * Configures use of per-message deflate compression. Defaults to true.
-     */
-    public boolean enableCompression = true;
-
-    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -158,9 +153,6 @@ final class Settings {
 
         if (conf.containsKey("enableUserAgentOnConnect"))
             settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
-
-        if (conf.containsKey("enableCompression"))
-            settings.enableCompression = conf.getBoolean("enableCompression");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());

@@ -210,10 +210,8 @@ public interface Channelizer extends ChannelHandler {
 
             pipeline.addLast("http-codec", new HttpClientCodec());
             pipeline.addLast("aggregator", new HttpObjectAggregator(maxContentLength));
-            if (connection.getCluster().enableCompression()) {
-                // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
-                pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
-            }
+            // Add compression extension for WebSocket defined in https://tools.ietf.org/html/rfc7692
+            pipeline.addLast(WebSocketClientCompressionHandler.INSTANCE);
             pipeline.addLast("idle-state-Handler", new IdleStateHandler(0, keepAliveInterval, 0));
             pipeline.addLast("ws-handler", handler);
             pipeline.addLast("gremlin-encoder", gremlinRequestEncoder);

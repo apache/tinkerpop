@@ -110,11 +110,9 @@ def gremlin_socket_server_serializer(socket_server_settings):
 
 @pytest.fixture
 def socket_server_client(request, socket_server_settings, gremlin_socket_server_serializer):
-    marker = request.node.get_closest_marker("client_kwargs")
-    client_kwargs = marker.args[0] if marker is not None else dict()
     url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
     try:
-        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer, **client_kwargs)
+        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer)
     except OSError:
         pytest.skip('Gremlin Socket Server is not running')
     else:

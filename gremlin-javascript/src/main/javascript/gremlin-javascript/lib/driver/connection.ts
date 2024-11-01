@@ -69,7 +69,6 @@ export type ConnectionOptions = {
   authenticator?: Authenticator;
   headers?: Record<string, string | string[]>;
   enableUserAgentOnConnect?: boolean;
-  enableCompression?: boolean;
   agent?: Agent;
 };
 
@@ -114,7 +113,6 @@ export default class Connection extends EventEmitter {
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
-   * @param {Boolean} [options.enableCompression] Enable per-message deflate compression. Defaults to: false.
    * @constructor
    */
   constructor(
@@ -185,7 +183,6 @@ export default class Connection extends EventEmitter {
             pfx: this.options.pfx,
             rejectUnauthorized: this.options.rejectUnauthorized,
             agent: this.options.agent,
-            perMessageDeflate: this.options.enableCompression,
           }
         : undefined,
     );

@@ -210,7 +210,6 @@ public final class Cluster {
                 .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
-                .enableCompression(settings.enableCompression)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (settings.username != null && settings.password != null)
@@ -579,13 +578,6 @@ public final class Cluster {
         return manager.isUserAgentOnConnectEnabled();
     }
 
-    /**
-     * Checks if cluster is configured to use per-message deflate compression
-     */
-    public boolean enableCompression() {
-        return manager.enableCompression();
-    }
-
     public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
@@ -623,7 +615,6 @@ public final class Cluster {
         private AuthProperties authProps = new AuthProperties();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
-        private boolean enableCompression = true;
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -1040,14 +1031,6 @@ public final class Cluster {
             return this;
         }
 
-        /**
-         * Configures use of per-message deflate compression. Defaults to true.
-         */
-        public Builder enableCompression(final boolean enableCompression) {
-            this.enableCompression = enableCompression;
-            return this;
-        }
-
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -1117,7 +1100,6 @@ public final class Cluster {
         private final int port;
         private final String path;
         private final boolean enableUserAgentOnConnect;
-        private final boolean enableCompression;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -1131,7 +1113,6 @@ public final class Cluster {
             this.contactPoints = builder.getContactPoints();
             this.interceptor = builder.interceptor;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
-            this.enableCompression = builder.enableCompression;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
@@ -1325,13 +1306,6 @@ public final class Cluster {
          */
         public boolean isUserAgentOnConnectEnabled() {
             return enableUserAgentOnConnect;
-        }
-
-        /**
-         * Checks if cluster is configured to use per-message deflate compression
-         */
-        public boolean enableCompression() {
-            return enableCompression;
         }
     }
 }
