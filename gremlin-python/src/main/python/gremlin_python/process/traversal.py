@@ -841,11 +841,7 @@ class GremlinLang(object):
             else:
                 return f'{arg}D'
         if isinstance(arg, BigDecimal):
-            # TODO double check implementation when revisiting types definition.
-            if arg.scale > 0:
-                return f'{arg.unscaled_value:.{arg.scale}f}M'
-            else:
-                return f'{arg.unscaled_value}M'
+            return f'{arg.value}M'
 
         if isinstance(arg, datetime):
             return f'datetime("{arg.isoformat()}")'
