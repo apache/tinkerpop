@@ -77,15 +77,6 @@ class TestGraphSONReader:
         assert x['b'] == "marko"
         assert len(x) == 2
 
-        # BulkSet gets coerced to a List - both have the same behavior
-        x = self.graphson_reader.read_object(
-            json.dumps({"@type": "g:BulkSet",
-                        "@value": ["marko", {"@type": "g:Int64", "@value": 1}, "josh", {"@type": "g:Int64", "@value": 3}]}))
-        assert isinstance(x, list)
-        assert len(x) == 4
-        assert x.count("marko") == 1
-        assert x.count("josh") == 3
-
     def test_number_input(self):
         x = self.graphson_reader.read_object(json.dumps({
             "@type": "g:Byte",
@@ -290,18 +281,6 @@ class TestGraphSONReader:
         assert isinstance(prop, uuid.UUID)
         assert str(prop) == '41d2e28a-20a4-4ab0-b379-d810dede3786'
 
-    def test_metrics(self):
-        prop = self.graphson_reader.read_object(
-            json.dumps([{'@type': 'g:TraversalMetrics', '@value': {'dur': 1.468594, 'metrics': [
-                {'@type': 'g:Metrics', '@value': {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'}},
-                {'@type': 'g:Metrics', '@value': {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}}
-            ]}}]))
-        assert isinstance(prop, list)
-        assert prop == [{'dur': 1.468594, 'metrics': [
-                {'dur': 1.380957, 'counts': {}, 'name': 'GraphStep(__.V())', 'annotations': {'percentDur': 94.03259171697556}, 'id': '4.0.0()'},
-                {'dur': 0.087637, 'counts': {}, 'name': 'ReferenceElementStep', 'annotations': {'percentDur': 5.967408283024444}, 'id': '3.0.0()'}
-                ]}]
-
     def test_binary(self):
         bb = self.graphson_reader.read_object(
             json.dumps({"@type": "g:Binary", "@value": "c29tZSBieXRlcyBmb3IgeW91"}))
@@ -356,46 +335,8 @@ class TestGraphSONWriter:
         assert """true""" == self.graphson_writer.write_object(True)
 
     def test_enum(self):
-        assert {"@type": "g:Merge", "@value": "onMatch"} == json.loads(self.graphson_writer.write_object(Merge.on_match))
-        assert {"@type": "g:Order", "@value": "shuffle"} == json.loads(self.graphson_writer.write_object(Order.shuffle))
-        assert {"@type": "g:Barrier", "@value": "normSack"} == json.loads(self.graphson_writer.write_object(Barrier.norm_sack))
-        assert {"@type": "g:Operator", "@value": "sum"} == json.loads(self.graphson_writer.write_object(Operator.sum_))
-        assert {"@type": "g:Operator", "@value": "sumLong"} == json.loads(self.graphson_writer.write_object(Operator.sum_long))
         assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(Direction.OUT))
         assert {"@type": "g:Direction", "@value": "OUT"} == json.loads(self.graphson_writer.write_object(Direction.from_))
-
-    def test_P(self):
-        result = {'@type': 'g:P',
-                  '@value': {
-                      'predicate': 'and',
-                      'value': [{
-                          '@type': 'g:P',
-                          '@value': {
-                              'predicate': 'or',
-                              'value': [{
-                                  '@type': 'g:P',
-                                  '@value': {'predicate': 'lt', 'value': 'b'}
-                              },
-                                  {'@type': 'g:P', '@value': {'predicate': 'gt', 'value': 'c'}}
-                              ]
-                          }
-                      },
-                          {'@type': 'g:P', '@value': {'predicate': 'neq', 'value': 'd'}}]}}
-
-        assert result == json.loads(
-            self.graphson_writer.write_object(P.lt("b").or_(P.gt("c")).and_(P.neq("d"))))
-
-        result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
-            {"@type": "g:Int32", "@value": 1}, {"@type": "g:Int32", "@value": 2}]}}}
-        assert result == json.loads(self.graphson_writer.write_object(P.within([1, 2])))
-        assert result == json.loads(self.graphson_writer.write_object(P.within({1, 2})))
-        assert result == json.loads(self.graphson_writer.write_object(P.within(1, 2)))
-
-        result = {'@type': 'g:P', '@value': {'predicate': 'within', 'value': {'@type': 'g:List', '@value': [
-            {"@type": "g:Int32", "@value": 1}]}}}
-        assert result == json.loads(self.graphson_writer.write_object(P.within([1])))
-        assert result == json.loads(self.graphson_writer.write_object(P.within({1})))
-        assert result == json.loads(self.graphson_writer.write_object(P.within(1)))
 
     def test_graph(self):
         assert {"@type": "g:Vertex",
