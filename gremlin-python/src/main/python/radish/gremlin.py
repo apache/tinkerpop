@@ -26,7 +26,7 @@
 
 from radish import world
 import datetime
-from gremlin_python.statics import long, GremlinType
+from gremlin_python.statics import long, bigint, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.process.traversal import TraversalStrategy
@@ -1289,12 +1289,12 @@ world.gremlins = {
     'g_injectXlistXnull_10_5_nullXX_sumXlocalX': [(lambda g, xx1=None:g.inject(xx1).sum_(Scope.local))], 
     'g_VX1X_valuesXageX_sumXlocalX': [(lambda g, vid1=None:g.V(vid1).values('age').sum_(Scope.local))], 
     'g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX': [(lambda g:g.V().local(__.union(__.values('age'), __.out_e().values('weight')).fold()).sum_(Scope.local))], 
-    'g_V_age_injectX1000nX_sum': [(lambda g:g.V().values('age').inject(1000).sum_())], 
+    'g_V_age_injectX1000nX_sum': [(lambda g:g.V().values('age').inject(bigint(1000)).sum_())], 
     'g_injectX1b_2b_3bX_sum': [(lambda g:g.inject(1, 2, 3).sum_())], 
     'g_injectX1b_2b_3sX_sum': [(lambda g:g.inject(1, 2, 3).sum_())], 
     'g_injectX1b_26b_3iX_sum': [(lambda g:g.inject(1, 2, 3).sum_())], 
     'g_injectX1f_26f_3fX_sum': [(lambda g:g.inject(1, 2, 3).sum_())], 
-    'g_V_age_injectX1000nX_fold_sumXlocalX': [(lambda g:g.V().values('age').inject(1000).fold().sum_(Scope.local))], 
+    'g_V_age_injectX1000nX_fold_sumXlocalX': [(lambda g:g.V().values('age').inject(bigint(1000)).fold().sum_(Scope.local))], 
     'g_injectX1b_2b_3bX_fold_sumXlocalX': [(lambda g:g.inject(1, 2, 3).fold().sum_(Scope.local))], 
     'g_injectX1b_2b_3sX_fold_sumXlocalX': [(lambda g:g.inject(1, 2, 3).fold().sum_(Scope.local))], 
     'g_injectX1b_26b_3iX_fold_sumXlocalX': [(lambda g:g.inject(1, 2, 3).fold().sum_(Scope.local))], 
@@ -1604,6 +1604,8 @@ world.gremlins = {
     'g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack': [(lambda g:g.with_bulk(False).with_sack(1, Operator.sum_).V().out().barrier().sack())], 
     'g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': [(lambda g, vid1=None:g.with_sack(1.0, Operator.sum_).V(vid1).local(__.out('knows').barrier(Barrier.norm_sack)).in_('knows').barrier().sack())], 
     'g_V_sackXassignX_byXageX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').sack())], 
+    'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': [(lambda g, xx1=None:g.with_sack(xx1, Operator.assign).V().local(__.out('knows').barrier(Barrier.norm_sack)).in_('knows').barrier().sack())], 
+    'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': [(lambda g, xx1=None:g.with_sack(2).V().sack(Operator.div).by(__.constant(xx1)).sack())], 
     'g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX': [(lambda g:g.V().has('age').group_count('a').by('name').out().cap('a'))], 
     'g_V_groupXaX_byXageX_capXaX': [(lambda g:g.V().group('a').by('age').cap('a'))], 
     'g_V_groupXaX_byXnameX_capXaX': [(lambda g:g.V().group('a').by('name').cap('a'))], 

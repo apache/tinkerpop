@@ -223,8 +223,12 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
             case 'b':
             case 's':
             case 'i':
-            case 'n':
                 sb.append(integerLiteral, 0, lastCharIndex);
+                break;
+            case 'n':
+                sb.append("bigint(");
+                sb.append(integerLiteral, 0, lastCharIndex);
+                sb.append(")");
                 break;
             case 'l':
                 sb.append("long(");

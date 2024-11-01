@@ -56,7 +56,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'from radish import world\n' +
                     'import datetime\n' +
-                    'from gremlin_python.statics import long, GremlinType\n' +
+                    'from gremlin_python.statics import long, bigint, GremlinType\n' +
                     'from gremlin_python.process.anonymous_traversal import traversal\n' +
                     'from gremlin_python.process.strategies import *\n' +
                     'from gremlin_python.process.traversal import TraversalStrategy\n' +

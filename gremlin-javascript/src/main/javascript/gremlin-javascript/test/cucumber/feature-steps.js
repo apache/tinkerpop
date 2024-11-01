@@ -73,6 +73,7 @@ chai.use(function (chai, chaiUtils) {
 const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
+  floatingPointIssues: "Javascript floating point numbers not working in this case",
   needsFurtherInvestigation: '',
 };
 
@@ -83,6 +84,8 @@ const ignoredScenarios = {
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': new IgnoreError(ignoreReason.floatingPointIssues),
+  'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
   // after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
   'g_withStrategiesXAdjacentToIncidentStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withoutStrategiesXAdjacentToIncidentStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),

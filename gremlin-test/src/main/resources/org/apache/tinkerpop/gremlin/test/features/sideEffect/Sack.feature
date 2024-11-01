@@ -113,11 +113,17 @@ Feature: Step - sack()
       | d[35].i |
 
   Scenario: g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And using the parameter xx1 defined as "d[10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000].n"
+    And the traversal of
       """
-      GLV Suite does not support BigInteger assignments at this time.
+      g.withSack(xx1, Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].m |
+      | d[0.5].m |
 
   Scenario: g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack
     Given an unsupported test
@@ -127,9 +133,19 @@ Feature: Step - sack()
       withSack() method called. Not sure how that would work with a GLV.
       """
 
-  Scenario: g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack
+    Given the modern graph
+    And using the parameter xx1 defined as "d[4.0].d"
+    And the traversal of
       """
-      Something strange happens with rounding that prevents GLVs from asserting this result properly.
+      g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |

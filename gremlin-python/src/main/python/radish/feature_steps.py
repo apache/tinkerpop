@@ -37,6 +37,9 @@ tail = __.tail
 
 ignores = [
     "g.withoutStrategies(CountStrategy).V().count()" # serialization issues with Class in GraphSON
+    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
+    "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()" # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
 ]
 
 
