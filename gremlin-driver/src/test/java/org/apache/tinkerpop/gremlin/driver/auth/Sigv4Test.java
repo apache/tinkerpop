@@ -15,6 +15,10 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -25,7 +29,7 @@ import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerCo
 import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerConstant.X_AMZ_SECURITY_TOKEN;
 
 public class Sigv4Test {
-    public static final String US_WEST_2 = "us-west-2";
+    public static final String REGION = "us-west-2";
     public static final String SERVICE_NAME = "service-name";
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -35,7 +39,7 @@ public class Sigv4Test {
 
     @Before
     public void setup() {
-        sigv4 = new Sigv4(US_WEST_2, credentialsProvider, SERVICE_NAME);
+        sigv4 = new Sigv4(REGION, credentialsProvider, SERVICE_NAME);
     }
 
     @Test
@@ -65,8 +69,11 @@ public class Sigv4Test {
     private void validateExpectedHeaders(HttpRequest httpRequest) {
         assertEquals("localhost", httpRequest.headers().get(HOST));
         assertNotNull(httpRequest.headers().get(X_AMZ_DATE));
-        assertNotNull(httpRequest.headers().get(AUTHORIZATION));
         assertNotNull(httpRequest.headers().get(X_AMZ_CONTENT_SHA256));
+        assertThat(httpRequest.headers().get(AUTHORIZATION),
+                allOf(startsWith("AWS4-HMAC-SHA256 Credential=foo"),
+                        containsString("/" + REGION + "/service-name/aws4_request"),
+                        containsString("Signature=")));
     }
 
 }

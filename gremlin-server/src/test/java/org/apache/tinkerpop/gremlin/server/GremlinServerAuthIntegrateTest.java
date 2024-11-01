@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.basic;
 import static org.apache.tinkerpop.gremlin.driver.auth.Auth.sigv4;
@@ -89,10 +89,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldPassSigv4ToServer() throws Exception {
         final AwsCredentialsProvider credentialsProvider = mock(AwsCredentialsProvider.class);
-        final AwsCredentials credentials = mock(AwsCredentials.class);
+        final AwsSessionCredentials credentials = AwsSessionCredentials.create("I am AWSAccessKeyId", "I am AWSSecretKey", "I am AWSSessionToken");
         when(credentialsProvider.resolveCredentials()).thenReturn(credentials);
-//        when(credentials.getAWSAccessKeyId()).thenReturn("I am AWSAccessKeyId");
-//        when(credentials.getAWSSecretKey()).thenReturn("I am AWSSecretKey");
 
         final AtomicReference<HttpRequest> httpRequest = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build()
