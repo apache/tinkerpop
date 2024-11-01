@@ -16,10 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+from aiohttp import ClientResponseError
 import aiohttp
 import asyncio
-import async_timeout
-from aiohttp import ClientResponseError
+import sys
+
+if sys.version_info >= (3, 11):
+    import asyncio as async_timeout
+else:
+    import async_timeout
 
 from gremlin_python.driver.transport import AbstractBaseTransport
 
