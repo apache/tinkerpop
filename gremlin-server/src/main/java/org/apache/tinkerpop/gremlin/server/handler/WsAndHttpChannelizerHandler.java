@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -41,6 +44,8 @@ import static org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer.P
  */
 @ChannelHandler.Sharable
 public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
+
+    private static final Logger logger = LoggerFactory.getLogger(WsAndHttpChannelizerHandler.class);
 
     private final WebSocketChannelizer wsChannelizer = new WebSocketChannelizer();
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
@@ -100,6 +105,12 @@ public class WsAndHttpChannelizerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+        // The log printing here is necessary because when an exception thrown by Netty reaches this method,
+        // if the error is not printed, the server side will not be able to perceive what has happened.
+        // For example, if the maxContentLength in JanusGraph's Gremlin-Server configuration is set to 65536,
+        // and the client sends data over this size via WebSocket, the JanusGraph server logs will appear normal,
+        // but the client will experience a disconnection, making it difficult to immediately identify the cause of the issue.
+        logger.error("Could not process the request", cause);
         ctx.close();
     }
 
