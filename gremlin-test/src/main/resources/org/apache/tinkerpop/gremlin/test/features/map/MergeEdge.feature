@@ -950,4 +950,4 @@ Feature: Step - mergeE()
     And the graph should return 7 for count of "g.E()"
     And the graph should return 7 for count of "g.E().hasNot(\"created\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").hasNot(\"created\").inV().has(\"person\",\"name\",\"vadas\")"
-    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").outE(\"self\").hasNot('weight').inV().has(\"person\",\"name\",\"vadas\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"vadas\").outE(\"self\").hasNot(\"weight\").inV().has(\"person\",\"name\",\"vadas\")"
