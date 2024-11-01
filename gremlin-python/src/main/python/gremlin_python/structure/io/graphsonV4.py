@@ -147,32 +147,6 @@ class _GraphSONTypeIO(object, metaclass=GraphSONTypeType):
         raise NotImplementedError()
 
 
-class _BytecodeSerializer(_GraphSONTypeIO):
-    @classmethod
-    def _dictify_instructions(cls, instructions, writer):
-        out = []
-        for instruction in instructions:
-            inst = [instruction[0]]
-            inst.extend(writer.to_dict(arg) for arg in instruction[1:])
-            out.append(inst)
-        return out
-
-    @classmethod
-    def dictify(cls, bytecode, writer):
-        if isinstance(bytecode, Traversal):
-            bytecode = bytecode.bytecode
-        out = {}
-        if bytecode.source_instructions:
-            out["source"] = cls._dictify_instructions(bytecode.source_instructions, writer)
-        if bytecode.step_instructions:
-            out["step"] = cls._dictify_instructions(bytecode.step_instructions, writer)
-        return GraphSONUtil.typed_value("Bytecode", out)
-
-
-class TraversalSerializer(_BytecodeSerializer):
-    python_type = Traversal
-
-
 class VertexSerializer(_GraphSONTypeIO):
     python_type = Vertex
     graphson_type = "g:Vertex"
@@ -220,71 +194,6 @@ class PropertySerializer(_GraphSONTypeIO):
     def dictify(cls, property, writer):
         return GraphSONUtil.typed_value("Property", {"key": writer.to_dict(property.key),
                                                     "value": writer.to_dict(property.value)})
-
-
-class TraversalStrategySerializer(_GraphSONTypeIO):
-    python_type = TraversalStrategy
-
-    @classmethod
-    def dictify(cls, strategy, writer):
-        configuration = {}
-        for key in strategy.configuration:
-            configuration[key] = writer.to_dict(strategy.configuration[key])
-        return GraphSONUtil.typed_value(strategy.strategy_name, configuration)
-
-
-class TraverserIO(_GraphSONTypeIO):
-    python_type = Traverser
-    graphson_type = "g:Traverser"
-
-    @classmethod
-    def dictify(cls, traverser, writer):
-        return GraphSONUtil.typed_value("Traverser", {"value": writer.to_dict(traverser.object),
-                                                     "bulk": writer.to_dict(traverser.bulk)})
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return Traverser(reader.to_object(d["value"]),
-                         reader.to_object(d["bulk"]))
-
-
-class EnumSerializer(_GraphSONTypeIO):
-    python_type = Enum
-
-    @classmethod
-    def dictify(cls, enum, _):
-        return GraphSONUtil.typed_value(SymbolUtil.to_camel_case(type(enum).__name__),
-                                        SymbolUtil.to_camel_case(str(enum.name)))
-
-
-class PSerializer(_GraphSONTypeIO):
-    python_type = P
-
-    @classmethod
-    def dictify(cls, p, writer):
-        out = {"predicate": p.operator,
-               "value": [writer.to_dict(p.value), writer.to_dict(p.other)] if p.other is not None else
-               writer.to_dict(p.value)}
-        return GraphSONUtil.typed_value("P", out)
-
-
-class TextPSerializer(_GraphSONTypeIO):
-    python_type = TextP
-
-    @classmethod
-    def dictify(cls, p, writer):
-        out = {"predicate": p.operator,
-               "value": [writer.to_dict(p.value), writer.to_dict(p.other)] if p.other is not None else
-               writer.to_dict(p.value)}
-        return GraphSONUtil.typed_value("TextP", out)
-
-
-class TypeSerializer(_GraphSONTypeIO):
-    python_type = TypeType
-
-    @classmethod
-    def dictify(cls, typ, writer):
-        return writer.to_dict(typ())
 
 
 class UUIDIO(_GraphSONTypeIO):
@@ -401,27 +310,6 @@ class MapType(_GraphSONTypeIO):
                 new_dict[HashableDict.of(reader.to_object(l[x]))] = reader.to_object(l[x + 1])
                 x = x + 2
         return new_dict
-
-
-class BulkSetIO(_GraphSONTypeIO):
-    graphson_type = "g:BulkSet"
-
-    @classmethod
-    def objectify(cls, l, reader):
-        new_list = []
-
-        # this approach basically mimics what currently existed in 3.3.4 and prior versions where BulkSet is
-        # basically just coerced to list. the limitation here is that if the value of a bulk exceeds the size of
-        # a list (into the long space) then stuff won't work nice.
-        if len(l) > 0:
-            x = 0
-            while x < len(l):
-                obj = reader.to_object(l[x])
-                bulk = reader.to_object(l[x + 1])
-                for y in range(bulk):
-                    new_list.append(obj)
-                x = x + 2
-        return new_list
 
 
 class FloatIO(_NumberIO):
@@ -664,9 +552,14 @@ class PathDeserializer(_GraphSONTypeIO):
         return Path(reader.to_object(d["labels"]), reader.to_object(d["objects"]))
 
 
-class TDeserializer(_GraphSONTypeIO):
+class TIO(_GraphSONTypeIO):
     graphson_type = "g:T"
+    graphson_base_type = "T"
+    python_type = T
 
+    @classmethod
+    def dictify(cls, t, writer):
+        return GraphSONUtil.typed_value(cls.graphson_base_type, t.name, "g")
     @classmethod
     def objectify(cls, d, reader):
         return T[d]
@@ -684,19 +577,3 @@ class DirectionIO(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return Direction[d]
-
-
-class TraversalMetricsDeserializer(_GraphSONTypeIO):
-    graphson_type = "g:TraversalMetrics"
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return reader.to_object(d)
-
-
-class MetricsDeserializer(_GraphSONTypeIO):
-    graphson_type = "g:Metrics"
-
-    @classmethod
-    def objectify(cls, d, reader):
-        return reader.to_object(d)
