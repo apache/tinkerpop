@@ -47,27 +47,25 @@ def read_file_by_name(resource_name):
     with open(full_name, 'r') as resource_file:
         return json.dumps(json.load(resource_file), separators=(',', ':'))
 
-@pytest.mark.skip(reason="enable after big decimal implementation/serialization is unified in python (")
 def test_pos_bigdecimal():
     def decimal_cmp(x, y):
-        if x.scale == y.scale and x.unscaled_value == y.unscaled_value:
+        # python json library can only read a BigDecimal into float during deser, precision will be lost with GraphSON
+        # so compare float only
+        if float(x.value) == float(y.value):
             return True
         else:
             return False
 
-    # gremlin-python adds an extra 0 byte to the value.
     run_writeread("pos-bigdecimal", decimal_cmp)
 
-@pytest.mark.skip(reason="enable after big decimal implementation/serialization is unified in python")
 def test_neg_bigdecimal():
     def decimal_cmp(x, y):
-        if x.scale == y.scale and x.unscaled_value == y.unscaled_value:
+        if float(x.value) == float(y.value):
             return True
         else:
             return False
-    
-    # gremlin-python adds an extra 0 byte to the value.
-    run_writeread("neg-bigdecimal", decimal_cmp())
+
+    run_writeread("neg-bigdecimal", decimal_cmp)
 
 def test_pos_biginteger():
     # gremlin-python adds an extra 0 byte to the value.

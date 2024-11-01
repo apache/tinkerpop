@@ -157,7 +157,6 @@ def test_bigint_negative(remote_connection):
         g.V(vid).drop().iterate()
 
 
-@pytest.mark.skip(reason="BigDecimal implementation needs revisiting")
 def test_bigdecimal(remote_connection):
     if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return

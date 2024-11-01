@@ -29,7 +29,7 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar, to_bigdecimal
 from gremlin_python.process.traversal import Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
@@ -455,35 +455,18 @@ class FloatIO(_NumberIO):
         return cls.python_type(v)
 
 
-class BigDecimalIO(_NumberIO):
-    python_type = Decimal
+class BigDecimalIO(_GraphSONTypeIO):
+    python_type = BigDecimal
     graphson_type = "g:BigDecimal"
     graphson_base_type = "BigDecimal"
 
     @classmethod
     def dictify(cls, n, writer):
-        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
-            return n
-        elif math.isnan(n):
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "g")
-        elif math.isinf(n) and n > 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "g")
-        elif math.isinf(n) and n < 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "g")
-        else:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "g")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, str(n.value), "g")
 
     @classmethod
     def objectify(cls, v, _):
-        if isinstance(v, str):
-            if v == 'NaN':
-                return Decimal('nan')
-            elif v == "Infinity":
-                return Decimal('inf')
-            elif v == "-Infinity":
-                return Decimal('-inf')
-
-        return Decimal(v)
+        return to_bigdecimal(v)
 
 
 class DoubleIO(FloatIO):
