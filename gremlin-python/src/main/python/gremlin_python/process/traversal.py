@@ -900,6 +900,7 @@ class WithOptions(object):
 
     map = 1
 
+
 class GValue:
     def __init__(self, name, value):
         if name is None:
