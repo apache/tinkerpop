@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.auth;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.Settings;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;

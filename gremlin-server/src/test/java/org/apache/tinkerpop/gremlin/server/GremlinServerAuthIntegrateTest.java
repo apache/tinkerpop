@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import io.netty.handler.codec.http.FullHttpRequest;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
