@@ -18,34 +18,31 @@
  */
 package org.apache.tinkerpop.gremlin.driver.auth;
 
-import com.amazonaws.DefaultRequest;
-import com.amazonaws.SignableRequest;
-import com.amazonaws.auth.AWS4Signer;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.http.HttpMethodName;
-import com.amazonaws.util.SdkHttpUtils;
-import com.amazonaws.util.StringUtils;
-import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
-import org.apache.http.entity.StringEntity;
-import org.apache.tinkerpop.gremlin.driver.HttpRequest;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.http.entity.StringEntity;
+import org.apache.tinkerpop.gremlin.driver.HttpRequest;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.http.ContentStreamProvider;
+import software.amazon.awssdk.http.SdkHttpMethod;
+import software.amazon.awssdk.http.SdkHttpRequest;
+import software.amazon.awssdk.http.auth.aws.signer.AwsV4HttpSigner;
+import software.amazon.awssdk.http.auth.spi.signer.SignedRequest;
+import software.amazon.awssdk.utils.http.SdkHttpUtils;
 
 import static com.amazonaws.auth.internal.SignerConstants.AUTHORIZATION;
 import static com.amazonaws.auth.internal.SignerConstants.HOST;
+import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_CONTENT_SHA256;
 import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_DATE;
 import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_SECURITY_TOKEN;
 
@@ -54,30 +51,44 @@ import static com.amazonaws.auth.internal.SignerConstants.X_AMZ_SECURITY_TOKEN;
  * the signing process requires final header and body data, this interceptor should almost always be last.
  */
 public class Sigv4 implements Auth {
-    private final AWSCredentialsProvider awsCredentialsProvider;
-    private final AWS4Signer aws4Signer;
+    private final AwsCredentialsProvider awsCredentialsProvider;
+    private final AwsV4HttpSigner aws4Signer;
+    private final String serviceName;
+    private final String regionName;
 
     public Sigv4(final String regionName, final String serviceName) {
-        this(regionName, new DefaultAWSCredentialsProviderChain(), serviceName);
+        this(regionName, DefaultCredentialsProvider.create(), serviceName);
     }
 
-    public Sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider, final String serviceName) {
+    public Sigv4(final String regionName, final AwsCredentialsProvider awsCredentialsProvider, final String serviceName) {
         this.awsCredentialsProvider = awsCredentialsProvider;
 
-        aws4Signer = new AWS4Signer();
-        aws4Signer.setRegionName(regionName);
-        aws4Signer.setServiceName(serviceName);
+        aws4Signer = AwsV4HttpSigner.create();
+        this.regionName = regionName;
+        this.serviceName = serviceName;
     }
 
     @Override
     public HttpRequest apply(final HttpRequest httpRequest) {
         try {
             // Convert Http request into an AWS SDK signable request
-            final SignableRequest<?> awsSignableRequest = toSignableRequest(httpRequest);
+            final SdkHttpRequest awsSignableRequest = toSignableRequest(httpRequest);
 
             // Sign the AWS SDK signable request (which internally adds some HTTP headers)
-            final AWSCredentials credentials = awsCredentialsProvider.getCredentials();
-            aws4Signer.sign(awsSignableRequest, credentials);
+            final AwsCredentials credentials = awsCredentialsProvider.resolveCredentials();
+
+            if (!(httpRequest.getBody() instanceof byte[])) {
+                throw new IllegalArgumentException("Expected byte[] in HttpRequest body but got " + httpRequest.getBody().getClass());
+            }
+
+            final byte[] body = (byte[]) httpRequest.getBody();
+            final ContentStreamProvider content = (body.length != 0) ? ContentStreamProvider.fromByteArray(body) : ContentStreamProvider.fromUtf8String("");
+
+            SignedRequest signed = aws4Signer.sign(r -> r.identity(credentials)
+                    .request(awsSignableRequest)
+                    .payload(content)
+                    .putProperty(AwsV4HttpSigner.SERVICE_SIGNING_NAME, this.serviceName)
+                    .putProperty(AwsV4HttpSigner.REGION_NAME, this.regionName));
 
             // extract session token if temporary credentials are provided
             String sessionToken = "";
@@ -87,9 +98,11 @@ public class Sigv4 implements Auth {
 
             final Map<String, String> headers = httpRequest.headers();
             headers.remove(HttpRequest.Headers.HOST);
-            headers.put(HOST, awsSignableRequest.getHeaders().get(HOST));
-            headers.put(X_AMZ_DATE, awsSignableRequest.getHeaders().get(X_AMZ_DATE));
-            headers.put(AUTHORIZATION, awsSignableRequest.getHeaders().get(AUTHORIZATION));
+            headers.put(HOST, signed.request().host());
+            headers.put(X_AMZ_DATE, signed.request().headers().get(X_AMZ_DATE).get(0));
+            headers.put(AUTHORIZATION, signed.request().headers().get(AUTHORIZATION).get(0));
+            headers.put(X_AMZ_CONTENT_SHA256, signed.request().headers().get(X_AMZ_CONTENT_SHA256).get(0));
+            headers.put(X_AMZ_SECURITY_TOKEN, signed.request().headers().get(X_AMZ_SECURITY_TOKEN).get(0));
 
             if (!sessionToken.isEmpty()) {
                 headers.put(X_AMZ_SECURITY_TOKEN, sessionToken);
@@ -100,7 +113,7 @@ public class Sigv4 implements Auth {
         return httpRequest;
     }
 
-    private SignableRequest<?> toSignableRequest(final HttpRequest request) throws IOException {
+    private SdkHttpRequest toSignableRequest(final HttpRequest request) throws IOException {
 
         // make sure the request contains the minimal required set of information
         checkNotNull(request.getUri(), "The request URI must not be null");
@@ -108,13 +121,13 @@ public class Sigv4 implements Auth {
 
         // convert the headers to the internal API format
         final Map<String, String> headers = request.headers();
-        final Map<String, String> headersInternal = new HashMap<>();
+        final Map<String, List<String>> headersInternal = new HashMap<>();
 
         // we don't want to add the Host header as the Signer always adds the host header.
         for (Map.Entry<String, String> header : headers.entrySet()) {
             // Skip adding the Host header as the signing process will add one.
             if (!header.getKey().equalsIgnoreCase(HttpRequest.Headers.HOST)) {
-                headersInternal.put(header.getKey(), header.getValue());
+                headersInternal.put(header.getKey(), Collections.singletonList(header.getValue()));
             }
         }
 
@@ -177,24 +190,32 @@ public class Sigv4 implements Auth {
         return parameters;
     }
 
-    private SignableRequest<?> convertToSignableRequest(
+    private SdkHttpRequest convertToSignableRequest(
             final String httpMethodName,
             final URI httpEndpointUri,
             final String resourcePath,
-            final Map<String, String> httpHeaders,
+            final Map<String, List<String>> httpHeaders,
             final Map<String, List<String>> httpParameters,
             final InputStream httpContent) {
 
         // create the HTTP AWS SDK Signable Request and carry over information
-        final DefaultRequest<?> awsRequest = new DefaultRequest<>(aws4Signer.getServiceName());
-        awsRequest.setHttpMethod(HttpMethodName.fromValue(httpMethodName));
-        awsRequest.setEndpoint(httpEndpointUri);
-        awsRequest.setResourcePath(resourcePath);
-        awsRequest.setHeaders(httpHeaders);
-        awsRequest.setParameters(httpParameters);
-        awsRequest.setContent(httpContent);
+//        final DefaultRequest<?> awsRequest = new DefaultRequest<>(aws4Signer.getServiceName());
+//        awsRequest.setHttpMethod(HttpMethodName.fromValue(httpMethodName));
+//        awsRequest.setEndpoint(httpEndpointUri);
+//        awsRequest.setResourcePath(resourcePath);
+//        awsRequest.setHeaders(httpHeaders);
+//        awsRequest.setParameters(httpParameters);
+//        awsRequest.setContent(httpContent);
 
-        return awsRequest;
+        SdkHttpRequest httpRequest = SdkHttpRequest.builder()
+                .uri(httpEndpointUri)
+                .encodedPath(resourcePath)
+                .method(SdkHttpMethod.fromValue(httpMethodName))
+                .headers(httpHeaders)
+                .rawQueryParameters(httpParameters)
+                .build();
+
+        return httpRequest;
     }
 
     private void checkNotNull(final Object obj, final String errMsg) {

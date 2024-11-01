@@ -19,26 +19,35 @@ under the License.
 
 package examples;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class Connections {
     public static void main(String[] args) throws Exception {
-        withEmbedded();
-        withRemote();
+//        withEmbedded();
+//        withRemote();
         withCluster();
-        withSerializer();
+//        withSerializer();
     }
 
     // Creating an embedded graph
@@ -74,17 +83,59 @@ public class Connections {
     // Connecting and customizing configurations with a cluster
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
-        Cluster cluster = Cluster.build("localhost").
-            maxConnectionPoolSize(8).
-            path("/gremlin").
-            port(8182).
-            serializer(new GraphBinaryMessageSerializerV4()).
-            create();
+//        Cluster cluster = Cluster.build("localhost").
+//            maxConnectionPoolSize(8).
+//            path("/gremlin").
+//            port(8182).
+//            serializer(new GraphBinaryMessageSerializerV4()).
+//            create();
+
+        Cluster cluster = Cluster.build()
+                .addContactPoint("URL")
+                .path("/queries")
+                .port(443)
+                .serializer(Serializers.GRAPHSON_V4)
+                .enableSsl(true)
+                .maxConnectionPoolSize(1)
+                .removeInterceptor(Cluster.SERIALIZER_INTERCEPTOR_NAME) // We don't want the body to be serialized
+                .addInterceptor("queries-format", request -> {
+                    final RequestMessage rm = (RequestMessage) request.getBody();
+                    final Map<String, Object> queriesBody = new HashMap<>();
+
+                    queriesBody.put("query", rm.getGremlin());
+                    queriesBody.put("language", "GREMLIN");
+                    final Map fields = rm.getFields();
+                    if (fields.containsKey("bindings")) queriesBody.put("parameters", fields.get("bindings"));
+
+                    ObjectMapper om = new ObjectMapper();
+                    byte[] payload;
+                    try {
+                        payload = om.writeValueAsBytes(queriesBody);
+                    } catch (JsonProcessingException jpe) {
+                        throw new RuntimeException(jpe);
+                    }
+                    request.setBody(payload);
+
+                    Map<String, String> headers = request.headers();
+                    headers.remove("accept");
+                    headers.remove("accept-encoding");
+                    headers.put("content-type", "application/json");
+                    headers.put("content-length", String.valueOf(payload.length));
+
+                    return request;
+                })
+                .auth(Auth.sigv4("us-east-1", "neptune-graph"))
+                .enableUserAgentOnConnect(false)
+                .create();
+
+
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
-        g.addV().iterate();
-        long count = g.V().count().next();
-        System.out.println("Vertex count: " + count);
+        //g.addV().iterate();
+        GraphTraversal<Vertex, Vertex> v = g.V();
+        GraphTraversal<Vertex, Long> count = v.count();
+        Long next = count.next();
+        System.out.println("Vertex count: " + next);
 
         cluster.close();
         g.close();
