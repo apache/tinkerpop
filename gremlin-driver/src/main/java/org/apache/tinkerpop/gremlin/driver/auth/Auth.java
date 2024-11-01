@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver.auth;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.Settings;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 public interface Auth extends RequestInterceptor {
     String AUTH_BASIC = "basic";
@@ -34,7 +34,7 @@ public interface Auth extends RequestInterceptor {
         return new Sigv4(regionName, serviceName);
     }
 
-    static Auth sigv4(final String regionName, final AWSCredentialsProvider awsCredentialsProvider, final String serviceName) {
+    static Auth sigv4(final String regionName, final AwsCredentialsProvider awsCredentialsProvider, final String serviceName) {
         return new Sigv4(regionName, awsCredentialsProvider, serviceName);
     }
 
