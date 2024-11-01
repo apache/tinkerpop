@@ -56,6 +56,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
+* Add log entry in WsAndHttpChannelizerHandler.
+
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
 
