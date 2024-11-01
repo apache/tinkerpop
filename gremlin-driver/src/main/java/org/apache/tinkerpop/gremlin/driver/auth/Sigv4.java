@@ -78,13 +78,13 @@ public class Sigv4 implements Auth {
             final ContentStreamProvider content = toContentStream(httpRequest);
 
             // Sign the AWS SDK signable request (which internally adds some HTTP headers)
-            SignedRequest signed = aws4Signer.sign(r -> r.identity(credentials)
+            final SignedRequest signed = aws4Signer.sign(r -> r.identity(credentials)
                     .request(awsSignableRequest)
                     .payload(content)
                     .putProperty(AwsV4HttpSigner.SERVICE_SIGNING_NAME, this.serviceName)
                     .putProperty(AwsV4HttpSigner.REGION_NAME, this.regionName));
 
-            Map<String, String> headers = httpRequest.headers();
+            final Map<String, String> headers = httpRequest.headers();
             setSignedHeaders(headers, signed);
             setSessionToken(headers, credentials);
         } catch (final Exception ex) {
@@ -94,36 +94,34 @@ public class Sigv4 implements Auth {
         return httpRequest;
     }
 
-    private void setSessionToken(Map<String, String> headers, AwsCredentials credentials) {
+    private void setSessionToken(final Map<String, String> headers, final AwsCredentials credentials) {
         // extract session token if temporary credentials are provided
-        String sessionToken = "";
         if ((credentials instanceof AwsSessionCredentials)) {
-            sessionToken = ((AwsSessionCredentials) credentials).sessionToken();
-        }
-        if (!sessionToken.isEmpty()) {
-            headers.put(X_AMZ_SECURITY_TOKEN, sessionToken);
+            final String sessionToken = ((AwsSessionCredentials) credentials).sessionToken();
+            if (sessionToken != null && !sessionToken.isEmpty()) {
+                headers.put(X_AMZ_SECURITY_TOKEN, sessionToken);
+            }
         }
     }
 
-    private void setSignedHeaders(Map<String, String> headers, SignedRequest signed) {
+    private void setSignedHeaders(final Map<String, String> headers, final SignedRequest signed) {
         headers.remove(HttpRequest.Headers.HOST);
         headers.put(HOST, signed.request().host());
-        Map<String, List<String>> signedHeaders = signed.request().headers();
+        final Map<String, List<String>> signedHeaders = signed.request().headers();
         headers.put(X_AMZ_DATE, getSingleHeaderValue(signedHeaders, X_AMZ_DATE));
         headers.put(AUTHORIZATION, getSingleHeaderValue(signedHeaders, AUTHORIZATION));
         headers.put(X_AMZ_CONTENT_SHA256, getSingleHeaderValue(signedHeaders, X_AMZ_CONTENT_SHA256));
-        headers.put(X_AMZ_SECURITY_TOKEN, getSingleHeaderValue(signedHeaders, X_AMZ_SECURITY_TOKEN));
     }
 
-    private String getSingleHeaderValue(Map<String, List<String>> headers, String headerName) {
-        Set<String> headerValues = new HashSet<>(headers.containsKey(headerName) ? headers.get(headerName) : Collections.emptySet());
+    private String getSingleHeaderValue(final Map<String, List<String>> headers, final String headerName) {
+        final Set<String> headerValues = new HashSet<>(headers.containsKey(headerName) ? headers.get(headerName) : Collections.emptySet());
         if (headerValues.size() != 1) {
             throw new IllegalArgumentException(String.format("Expected 1 header %s but found %d", headerName, headerValues.size()));
         }
         return headerValues.iterator().next();
     }
 
-    private ContentStreamProvider toContentStream(HttpRequest httpRequest) {
+    private ContentStreamProvider toContentStream(final HttpRequest httpRequest) {
         // carry over the entity (or an empty entity, if no entity is provided)
         if (!(httpRequest.getBody() instanceof byte[])) {
             throw new IllegalArgumentException("Expected byte[] in HttpRequest body but got " + httpRequest.getBody().getClass());

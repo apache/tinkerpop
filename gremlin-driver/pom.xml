@@ -25,6 +25,9 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-driver</artifactId>
     <name>Apache TinkerPop :: Gremlin Driver</name>
+    <properties>
+        <awssdk.version>2.29.3</awssdk.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -53,22 +56,22 @@ limitations under the License.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>http-auth-aws</artifactId>
-            <version>2.29.3</version>
+            <version>${awssdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>auth</artifactId>
-            <version>2.29.3</version>
+            <version>${awssdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>utils</artifactId>
-            <version>2.29.3</version>
+            <version>${awssdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>protocol-core</artifactId>
-            <version>2.29.3</version>
+            <version>${awssdk.version}</version>
         </dependency>
         <!-- TinkerGraph is an optional dependency that is only required if doing deserialization of Graph instances -->
         <dependency>
