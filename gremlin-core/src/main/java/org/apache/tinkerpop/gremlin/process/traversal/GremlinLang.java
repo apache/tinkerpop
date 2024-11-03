@@ -67,7 +67,7 @@ public class GremlinLang implements Cloneable, Serializable {
     private static final AtomicInteger paramCount = new AtomicInteger(0);
     // [Discuss] probably ThreadLocal<Integer> is faster, but unsafe for multithreaded traversal construction.
     // private static final ThreadLocal<Integer> paramCount = ThreadLocal.withInitial(() -> 0);
-    private final List<OptionsStrategy> optionsStrategies = new ArrayList<>();
+    private List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
     public GremlinLang() {
     }
@@ -480,6 +480,7 @@ public class GremlinLang implements Cloneable, Serializable {
             clone.parameters = new HashMap<>(parameters);
             clone.gremlin = new StringBuilder(gremlin.length());
             clone.gremlin.append(gremlin);
+            clone.optionsStrategies = new ArrayList<>(this.optionsStrategies);
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
