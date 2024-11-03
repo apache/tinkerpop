@@ -39,7 +39,37 @@ ignores = [
     "g.withoutStrategies(CountStrategy).V().count()",  # serialization issues with Class in GraphSON
     "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
     "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
-    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()" # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    ## The following section has queries that aren't supported by gremlin-lang parameters
+    'g.V().branch(l1).option("a", __.values("age")).option("b", __.values("lang")).option("b", __.values("name"))',
+    'g.V().choose(pred1, __.out("knows"), __.in("created")).values("name")',
+    'g.V().repeat(__.both()).until(pred1).groupCount().by("name")',
+    'g.V().both().properties("name").order().by(c1).dedup().value()',
+    'g.V().filter(pred1)',
+    'g.V(vid1).filter(pred1)',
+    'g.V(vid2).filter(pred1)',
+    'g.V(vid1).out().filter(pred1)',
+    'g.E().filter(pred1)',
+    'g.V().out("created").has("name", __.map(l1).is(P.gt(3))).values("name")',
+    'g.V(vid1).map(l1)',
+    'g.V(vid1).outE().label().map(l1)',
+    'g.V(vid1).out().map(l1).map(l2)',
+    'g.withPath().V().as("a").out().map(l1)',
+    'g.withPath().V().as("a").out().out().map(l1)',
+    'g.V().values("name").order().by(c1).by(c2)',
+    'g.V().order().by("name", c1).by("name", c2).values("name")',
+    'g.V().hasLabel("person").order().by(l1, Order.desc).values("name")',
+    'g.V(v1).hasLabel("person").map(l1).order(Scope.local).by(Column.values, Order.desc).by(Column.keys, Order.asc)',
+    'g.V().valueMap().unfold().map(l1)',
+    'g.E(e11)',
+    'g.E(e7,e11)',
+    'g.E(xx1)',
+    'g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")',
+    'g.V().group().by(l1).by(__.constant(1))',
+    'g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()',
+    'g.V().group("a").by(l1).by(__.constant(1)).cap("a")',
+    'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")'
+    ## section end
 ]
 
 
@@ -56,7 +86,7 @@ def choose_graph(step, graph_name):
         return
 
     step.context.graph_name = graph_name
-    step.context.g = traversal().with_(step.context.remote_conn[graph_name])
+    step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
 
 
 @given("the graph initializer of")
