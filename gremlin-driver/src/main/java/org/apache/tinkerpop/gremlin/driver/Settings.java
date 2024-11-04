@@ -301,7 +301,7 @@ public final class Settings {
         public boolean sslSkipCertValidation = false;
 
         /**
-         * The maximum size of a connection pool for a {@link Host}. By default this is set to 500.
+         * The maximum size of a connection pool for a {@link Host}. By default this is set to 128.
          */
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
 

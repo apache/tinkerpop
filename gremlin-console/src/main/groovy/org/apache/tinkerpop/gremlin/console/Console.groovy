@@ -104,7 +104,7 @@ class Console {
         groovy.register(new PluginCommand(groovy, mediator))
         groovy.register(new ClsCommand(groovy, mediator))
 
-        // hide output temporarily while imports execute:pin list
+        // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
 
         org.codehaus.groovy.control.customizers.ImportCustomizer ic = new org.codehaus.groovy.control.customizers.ImportCustomizer()
