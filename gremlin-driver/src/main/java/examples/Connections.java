@@ -75,11 +75,11 @@ public class Connections {
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
         Cluster cluster = Cluster.build("localhost").
-                maxConnectionPoolSize(8).
-                path("/gremlin").
-                port(8182).
-                serializer(new GraphBinaryMessageSerializerV4()).
-                create();
+            maxConnectionPoolSize(8).
+            path("/gremlin").
+            port(8182).
+            serializer(new GraphBinaryMessageSerializerV4()).
+            create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
         g.addV().iterate();
@@ -96,8 +96,8 @@ public class Connections {
         TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
         MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
         Cluster cluster = Cluster.build("localhost").
-                serializer(serializer).
-                create();
+            serializer(serializer).
+            create();
         Client client = cluster.connect();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
 

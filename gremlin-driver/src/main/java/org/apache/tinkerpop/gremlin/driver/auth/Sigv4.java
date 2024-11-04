@@ -72,10 +72,10 @@ public class Sigv4 implements Auth {
     @Override
     public HttpRequest apply(final HttpRequest httpRequest) {
         try {
+            final ContentStreamProvider content = toContentStream(httpRequest);
             // Convert Http request into an AWS SDK signable request
             final SdkHttpRequest awsSignableRequest = toSignableRequest(httpRequest);
             final AwsCredentials credentials = awsCredentialsProvider.resolveCredentials();
-            final ContentStreamProvider content = toContentStream(httpRequest);
 
             // Sign the AWS SDK signable request (which internally adds some HTTP headers)
             final SignedRequest signed = aws4Signer.sign(r -> r.identity(credentials)
