@@ -25,6 +25,9 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-driver</artifactId>
     <name>Apache TinkerPop :: Gremlin Driver</name>
+    <properties>
+        <awssdk.version>2.29.3</awssdk.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -51,19 +54,24 @@ limitations under the License.
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-core</artifactId>
-            <version>1.12.720</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-auth-aws</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>utils</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>protocol-core</artifactId>
+            <version>${awssdk.version}</version>
         </dependency>
         <!-- TinkerGraph is an optional dependency that is only required if doing deserialization of Graph instances -->
         <dependency>
