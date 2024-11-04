@@ -51,19 +51,6 @@ describe('DriverRemoteConnection', function () {
           });
       });
 
-      it('should be able to send multiple requests concurrently with valid credentials and parse the response', async function () {
-        connection = getSecureConnectionWithPlainTextSaslAuthenticator(null, 'stephen', 'password');
-
-        const submissions = await Promise.all(
-          Array.from({ length: 10 }).map(() => connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))),
-        );
-
-        submissions.forEach((response) => {
-          assert.ok(response);
-          assert.ok(response.traversers);
-        });
-      });
-
       it('should send the request with invalid credentials and parse the response error', function () {
         connection = getSecureConnectionWithPlainTextSaslAuthenticator(null, 'Bob', 'password');
 

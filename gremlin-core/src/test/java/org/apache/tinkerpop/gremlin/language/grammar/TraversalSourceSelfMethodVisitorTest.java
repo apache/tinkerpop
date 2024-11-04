@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class TraversalSourceSelfMethodVisitorTest {
-    private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+    private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
     @Parameterized.Parameter(value = 0)
     public String script;
@@ -90,6 +90,6 @@ public class TraversalSourceSelfMethodVisitorTest {
         final GremlinParser.TraversalSourceSelfMethodContext ctx = parser.traversalSourceSelfMethod();
         final GraphTraversalSource source = new TraversalSourceSelfMethodVisitor(g, new GremlinAntlrToJava()).visitTraversalSourceSelfMethod(ctx);
 
-        assertEquals(expected.getBytecode(), source.getBytecode());
+        assertEquals(expected.getGremlinLang(), source.getGremlinLang());
     }
 }

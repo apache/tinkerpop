@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,12 +44,15 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     @Override
     protected Edge readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final Object id = context.read(buffer);
-        final String label = context.readValue(buffer, String.class, false);
+        // reading single string value for now according to GraphBinaryV4
+        final String label = (String) context.readValue(buffer, List.class, false).get(0);
 
         final Object inVId = context.read(buffer);
-        final String inVLabel = context.readValue(buffer, String.class, false);
+        // reading single string value for now according to GraphBinaryV4
+        final String inVLabel = (String) context.readValue(buffer, List.class, false).get(0);
         final Object outVId = context.read(buffer);
-        final String outVLabel = context.readValue(buffer, String.class, false);
+        // reading single string value for now according to GraphBinaryV4
+        final String outVLabel = (String) context.readValue(buffer, List.class, false).get(0);
 
         // discard the parent vertex
         context.read(buffer);
@@ -73,12 +77,16 @@ public class EdgeSerializer extends SimpleTypeSerializer<Edge> {
     protected void writeValue(final Edge value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
 
         context.write(value.id(), buffer);
-        context.writeValue(value.label(), buffer, false);
+        // wrapping label into list here for now according to GraphBinaryV4, but we aren't allowing null label yet
+        if (value.label() == null) {
+            throw new IOException("Unexpected null value when nullable is false");
+        }
+        context.writeValue(Collections.singletonList(value.label()), buffer, false);
 
         context.write(value.inVertex().id(), buffer);
-        context.writeValue(value.inVertex().label(), buffer, false);
+        context.writeValue(Collections.singletonList(value.inVertex().label()), buffer, false);
         context.write(value.outVertex().id(), buffer);
-        context.writeValue(value.outVertex().label(), buffer, false);
+        context.writeValue(Collections.singletonList(value.outVertex().label()), buffer, false);
 
         // we don't serialize the parent Vertex for edges.
         context.write(null, buffer);

@@ -118,7 +118,7 @@ Feature: Orderability
       | d[0.4].d |
       | d[0.2].d |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_inject_order
     Given the empty graph
     And using the parameter xx1 defined as "null"
@@ -161,7 +161,7 @@ Feature: Orderability
       | m[{"a":"a", "b":false, "c":"c"}] |
       | m[{"a":"a", "b":"b"}] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: g_inject_order_byXdescX
     Given the empty graph
     And using the parameter xx1 defined as "null"

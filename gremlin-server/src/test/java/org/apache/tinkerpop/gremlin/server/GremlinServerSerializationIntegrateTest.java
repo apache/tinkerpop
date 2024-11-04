@@ -29,9 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,9 +57,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     @Parameterized.Parameters
     public static Collection serializers() {
         return Arrays.asList(new Object[][]{
-                {new GraphBinaryMessageSerializerV1()},
-                {new GraphSONMessageSerializerV3()},
-                {new GraphSONMessageSerializerV2()}
+                {new GraphBinaryMessageSerializerV4()}
         });
     }
 

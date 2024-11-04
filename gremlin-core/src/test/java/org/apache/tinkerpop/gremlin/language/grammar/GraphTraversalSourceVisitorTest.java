@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +68,6 @@ public class GraphTraversalSourceVisitorTest {
         final GremlinParser.TraversalSourceContext ctx = parser.traversalSource();
         final GraphTraversalSource result = new GraphTraversalSourceVisitor(antlrToLanguage).visitTraversalSource(ctx);
 
-        assertEquals(traversalSource.getBytecode(), result.getBytecode());
+        assertEquals(traversalSource.getGremlinLang(), result.getGremlinLang());
     }
 }

@@ -24,7 +24,7 @@ from threading import Lock
 from .traversal import Traversal
 from .traversal import TraversalStrategies
 from .strategies import VertexProgramStrategy, OptionsStrategy
-from .traversal import Bytecode
+from .traversal import GremlinLang
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 from ..statics import long
@@ -35,13 +35,13 @@ __author__ = 'Stephen Mallette (http://stephen.genoprime.com), Lyndon Bauto (lyn
 
 
 class GraphTraversalSource(object):
-    def __init__(self, graph, traversal_strategies, bytecode=None, remote_connection=None):
+    def __init__(self, graph, traversal_strategies, gremlin_lang=None, remote_connection=None):
         log.info("Creating GraphTraversalSource.")
         self.graph = graph
         self.traversal_strategies = traversal_strategies
-        if bytecode is None:
-            bytecode = Bytecode()
-        self.bytecode = bytecode
+        if gremlin_lang is None:
+            gremlin_lang = GremlinLang()
+        self.gremlin_lang = gremlin_lang
         self.graph_traversal = GraphTraversal
         if remote_connection:
             self.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
@@ -51,10 +51,10 @@ class GraphTraversalSource(object):
         return "graphtraversalsource[" + str(self.graph) + "]"
 
     def get_graph_traversal_source(self):
-        return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), Bytecode(self.bytecode))
+        return self.__class__(self.graph, TraversalStrategies(self.traversal_strategies), GremlinLang(self.gremlin_lang))
 
     def get_graph_traversal(self):
-        return self.graph_traversal(self.graph, self.traversal_strategies, Bytecode(self.bytecode))
+        return self.graph_traversal(self.graph, self.traversal_strategies, GremlinLang(self.gremlin_lang))
 
     def withBulk(self, *args):
         warnings.warn(
@@ -65,7 +65,7 @@ class GraphTraversalSource(object):
 
     def with_bulk(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withBulk", *args)
+        source.gremlin_lang.add_source("withBulk", *args)
         return source
 
     def withPath(self, *args):
@@ -77,7 +77,7 @@ class GraphTraversalSource(object):
 
     def with_path(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withPath", *args)
+        source.gremlin_lang.add_source("withPath", *args)
         return source
 
     def withSack(self, *args):
@@ -89,7 +89,7 @@ class GraphTraversalSource(object):
 
     def with_sack(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withSack", *args)
+        source.gremlin_lang.add_source("withSack", *args)
         return source
 
     def withSideEffect(self, *args):
@@ -101,7 +101,7 @@ class GraphTraversalSource(object):
 
     def with_side_effect(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withSideEffect", *args)
+        source.gremlin_lang.add_source("withSideEffect", *args)
         return source
 
     def withStrategies(self, *args):
@@ -113,7 +113,7 @@ class GraphTraversalSource(object):
 
     def with_strategies(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withStrategies", *args)
+        source.gremlin_lang.add_source("withStrategies", *args)
         return source
 
     def withoutStrategies(self, *args):
@@ -125,40 +125,41 @@ class GraphTraversalSource(object):
 
     def without_strategies(self, *args):
         source = self.get_graph_traversal_source()
-        source.bytecode.add_source("withoutStrategies", *args)
+        source.gremlin_lang.add_source("withoutStrategies", *args)
         return source
 
     def with_(self, k, v=None):
         source = self.get_graph_traversal_source()
-        options_strategy = next((x for x in source.bytecode.source_instructions
+        options_strategy = next((x for x in source.gremlin_lang.gremlin
                                  if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
 
         val = True if v is None else v
         if options_strategy is None:
-            options_strategy = OptionsStrategy({k: val})
+            options_strategy = OptionsStrategy(**{k: val})
             source = self.with_strategies(options_strategy)
         else:
             options_strategy[1].configuration[k] = val
 
         return source
 
-    def tx(self):
-        # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
-        # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
-        # This is the same strategy as gremlin-javascript.
-        # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
-        #  we can take a breaking change
-        remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
-                                  x.fqcn == "py:RemoteStrategy"), None)
-
-        if remote_connection is None:
-            raise Exception("Error, remote connection is required for transaction.")
-
-        # You can't do g.tx().begin().tx() i.e child transactions are not supported.
-        if remote_connection and remote_connection.is_session_bound():
-            raise Exception("This TraversalSource is already bound to a transaction - child transactions are not "
-                            "supported")
-        return Transaction(self, remote_connection)
+    # TODO remove or update once HTTP transaction is implemented
+    # def tx(self):
+    #     # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
+    #     # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
+    #     # This is the same strategy as gremlin-javascript.
+    #     # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
+    #     #  we can take a breaking change
+    #     remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
+    #                               x.fqcn == "py:RemoteStrategy"), None)
+    #
+    #     if remote_connection is None:
+    #         raise Exception("Error, remote connection is required for transaction.")
+    #
+    #     # You can't do g.tx().begin().tx() i.e child transactions are not supported.
+    #     if remote_connection and remote_connection.is_session_bound():
+    #         raise Exception("This TraversalSource is already bound to a transaction - child transactions are not "
+    #                         "supported")
+    #     return Transaction(self, remote_connection)
 
     def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
                      edges=None, configuration=None):
@@ -175,12 +176,12 @@ class GraphTraversalSource(object):
 
     def E(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("E", *args)
+        traversal.gremlin_lang.add_step("E", *args)
         return traversal
 
     def V(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("V", *args)
+        traversal.gremlin_lang.add_step("V", *args)
         return traversal
 
     def addE(self, *args):
@@ -192,7 +193,7 @@ class GraphTraversalSource(object):
 
     def add_e(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("addE", *args)
+        traversal.gremlin_lang.add_step("addE", *args)
         return traversal
 
     def addV(self, *args):
@@ -204,43 +205,43 @@ class GraphTraversalSource(object):
 
     def add_v(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("addV", *args)
+        traversal.gremlin_lang.add_step("addV", *args)
         return traversal
 
     def merge_v(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("mergeV", *args)
+        traversal.gremlin_lang.add_step("mergeV", *args)
         return traversal
 
     def merge_e(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("mergeE", *args)
+        traversal.gremlin_lang.add_step("mergeE", *args)
         return traversal
 
     def inject(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("inject", *args)
+        traversal.gremlin_lang.add_step("inject", *args)
         return traversal
 
     def io(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("io", *args)
+        traversal.gremlin_lang.add_step("io", *args)
         return traversal
 
     def call(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("call", *args)
+        traversal.gremlin_lang.add_step("call", *args)
         return traversal
 
     def union(self, *args):
         traversal = self.get_graph_traversal()
-        traversal.bytecode.add_step("union", *args)
+        traversal.gremlin_lang.add_step("union", *args)
         return traversal
 
 
 class GraphTraversal(Traversal):
-    def __init__(self, graph, traversal_strategies, bytecode):
-        super(GraphTraversal, self).__init__(graph, traversal_strategies, bytecode)
+    def __init__(self, graph, traversal_strategies, gremlin_lang):
+        super(GraphTraversal, self).__init__(graph, traversal_strategies, gremlin_lang)
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -262,14 +263,14 @@ class GraphTraversal(Traversal):
         return self.values(key)
 
     def clone(self):
-        return GraphTraversal(self.graph, self.traversal_strategies, copy.deepcopy(self.bytecode))
+        return GraphTraversal(self.graph, self.traversal_strategies, copy.deepcopy(self.gremlin_lang))
 
     def V(self, *args):
-        self.bytecode.add_step("V", *args)
+        self.gremlin_lang.add_step("V", *args)
         return self
 
     def E(self, *args):
-        self.bytecode.add_step("E", *args)
+        self.gremlin_lang.add_step("E", *args)
         return self
 
     def addE(self, *args):
@@ -280,7 +281,7 @@ class GraphTraversal(Traversal):
         return self.add_e(*args)
 
     def add_e(self, *args):
-        self.bytecode.add_step("addE", *args)
+        self.gremlin_lang.add_step("addE", *args)
         return self
 
     def addV(self, *args):
@@ -291,43 +292,43 @@ class GraphTraversal(Traversal):
         return self.add_v(*args)
 
     def add_v(self, *args):
-        self.bytecode.add_step("addV", *args)
+        self.gremlin_lang.add_step("addV", *args)
         return self
 
     def aggregate(self, *args):
-        self.bytecode.add_step("aggregate", *args)
+        self.gremlin_lang.add_step("aggregate", *args)
         return self
 
     def all_(self, *args):
-        self.bytecode.add_step("all", *args)
+        self.gremlin_lang.add_step("all", *args)
         return self
 
     def and_(self, *args):
-        self.bytecode.add_step("and", *args)
+        self.gremlin_lang.add_step("and", *args)
         return self
 
     def any_(self, *args):
-        self.bytecode.add_step("any", *args)
+        self.gremlin_lang.add_step("any", *args)
         return self
 
     def as_(self, *args):
-        self.bytecode.add_step("as", *args)
+        self.gremlin_lang.add_step("as", *args)
         return self
 
     def as_date(self, *args):
-        self.bytecode.add_step("asDate", *args)
+        self.gremlin_lang.add_step("asDate", *args)
         return self
 
     def as_string(self, *args):
-        self.bytecode.add_step("asString", *args)
+        self.gremlin_lang.add_step("asString", *args)
         return self
 
     def barrier(self, *args):
-        self.bytecode.add_step("barrier", *args)
+        self.gremlin_lang.add_step("barrier", *args)
         return self
 
     def both(self, *args):
-        self.bytecode.add_step("both", *args)
+        self.gremlin_lang.add_step("both", *args)
         return self
 
     def bothE(self, *args):
@@ -338,7 +339,7 @@ class GraphTraversal(Traversal):
         return self.both_e(*args)
 
     def both_e(self, *args):
-        self.bytecode.add_step("bothE", *args)
+        self.gremlin_lang.add_step("bothE", *args)
         return self
 
     def bothV(self, *args):
@@ -349,47 +350,47 @@ class GraphTraversal(Traversal):
         return self.both_v(*args)
 
     def both_v(self, *args):
-        self.bytecode.add_step("bothV", *args)
+        self.gremlin_lang.add_step("bothV", *args)
         return self
 
     def branch(self, *args):
-        self.bytecode.add_step("branch", *args)
+        self.gremlin_lang.add_step("branch", *args)
         return self
 
     def by(self, *args):
-        self.bytecode.add_step("by", *args)
+        self.gremlin_lang.add_step("by", *args)
         return self
 
     def call(self, *args):
-        self.bytecode.add_step("call", *args)
+        self.gremlin_lang.add_step("call", *args)
         return self
 
     def cap(self, *args):
-        self.bytecode.add_step("cap", *args)
+        self.gremlin_lang.add_step("cap", *args)
         return self
 
     def choose(self, *args):
-        self.bytecode.add_step("choose", *args)
+        self.gremlin_lang.add_step("choose", *args)
         return self
 
     def coalesce(self, *args):
-        self.bytecode.add_step("coalesce", *args)
+        self.gremlin_lang.add_step("coalesce", *args)
         return self
 
     def coin(self, *args):
-        self.bytecode.add_step("coin", *args)
+        self.gremlin_lang.add_step("coin", *args)
         return self
 
     def combine(self, *args):
-        self.bytecode.add_step("combine", *args)
+        self.gremlin_lang.add_step("combine", *args)
         return self
 
     def concat(self, *args):
-        self.bytecode.add_step("concat", *args)
+        self.gremlin_lang.add_step("concat", *args)
         return self
 
     def conjoin(self, *args):
-        self.bytecode.add_step("conjoin", *args)
+        self.gremlin_lang.add_step("conjoin", *args)
         return self
 
     def connectedComponent(self, *args):
@@ -400,15 +401,15 @@ class GraphTraversal(Traversal):
         return self.connected_component(*args)
 
     def connected_component(self, *args):
-        self.bytecode.add_step("connectedComponent", *args)
+        self.gremlin_lang.add_step("connectedComponent", *args)
         return self
 
     def constant(self, *args):
-        self.bytecode.add_step("constant", *args)
+        self.gremlin_lang.add_step("constant", *args)
         return self
 
     def count(self, *args):
-        self.bytecode.add_step("count", *args)
+        self.gremlin_lang.add_step("count", *args)
         return self
 
     def cyclicPath(self, *args):
@@ -419,39 +420,39 @@ class GraphTraversal(Traversal):
         return self.cyclic_path(*args)
 
     def cyclic_path(self, *args):
-        self.bytecode.add_step("cyclicPath", *args)
+        self.gremlin_lang.add_step("cyclicPath", *args)
         return self
 
     def date_add(self, *args):
-        self.bytecode.add_step("dateAdd", *args)
+        self.gremlin_lang.add_step("dateAdd", *args)
         return self
 
     def date_diff(self, *args):
-        self.bytecode.add_step("dateDiff", *args)
+        self.gremlin_lang.add_step("dateDiff", *args)
         return self
 
     def dedup(self, *args):
-        self.bytecode.add_step("dedup", *args)
+        self.gremlin_lang.add_step("dedup", *args)
         return self
 
     def difference(self, *args):
-        self.bytecode.add_step("difference", *args)
+        self.gremlin_lang.add_step("difference", *args)
         return self
 
     def discard(self, *args):
-        self.bytecode.add_step("discard", *args)
+        self.gremlin_lang.add_step("discard", *args)
         return self
 
     def disjunct(self, *args):
-        self.bytecode.add_step("disjunct", *args)
+        self.gremlin_lang.add_step("disjunct", *args)
         return self
 
     def drop(self, *args):
-        self.bytecode.add_step("drop", *args)
+        self.gremlin_lang.add_step("drop", *args)
         return self
 
     def element(self, *args):
-        self.bytecode.add_step("element", *args)
+        self.gremlin_lang.add_step("element", *args)
         return self
 
     def elementMap(self, *args):
@@ -462,19 +463,19 @@ class GraphTraversal(Traversal):
         return self.element_map(*args)
 
     def element_map(self, *args):
-        self.bytecode.add_step("elementMap", *args)
+        self.gremlin_lang.add_step("elementMap", *args)
         return self
 
     def emit(self, *args):
-        self.bytecode.add_step("emit", *args)
+        self.gremlin_lang.add_step("emit", *args)
         return self
 
     def fail(self, *args):
-        self.bytecode.add_step("fail", *args)
+        self.gremlin_lang.add_step("fail", *args)
         return self
 
     def filter_(self, *args):
-        self.bytecode.add_step("filter", *args)
+        self.gremlin_lang.add_step("filter", *args)
         return self
 
     def flatMap(self, *args):
@@ -485,23 +486,23 @@ class GraphTraversal(Traversal):
         return self.flat_map(*args)
 
     def flat_map(self, *args):
-        self.bytecode.add_step("flatMap", *args)
+        self.gremlin_lang.add_step("flatMap", *args)
         return self
 
     def fold(self, *args):
-        self.bytecode.add_step("fold", *args)
+        self.gremlin_lang.add_step("fold", *args)
         return self
 
     def format_(self, *args):
-        self.bytecode.add_step("format", *args)
+        self.gremlin_lang.add_step("format", *args)
         return self
 
     def from_(self, *args):
-        self.bytecode.add_step("from", *args)
+        self.gremlin_lang.add_step("from", *args)
         return self
 
     def group(self, *args):
-        self.bytecode.add_step("group", *args)
+        self.gremlin_lang.add_step("group", *args)
         return self
 
     def groupCount(self, *args):
@@ -512,11 +513,11 @@ class GraphTraversal(Traversal):
         return self.group_count(*args)
 
     def group_count(self, *args):
-        self.bytecode.add_step("groupCount", *args)
+        self.gremlin_lang.add_step("groupCount", *args)
         return self
 
     def has(self, *args):
-        self.bytecode.add_step("has", *args)
+        self.gremlin_lang.add_step("has", *args)
         return self
 
     def hasId(self, *args):
@@ -527,7 +528,7 @@ class GraphTraversal(Traversal):
         return self.has_id(*args)
 
     def has_id(self, *args):
-        self.bytecode.add_step("hasId", *args)
+        self.gremlin_lang.add_step("hasId", *args)
         return self
 
     def hasKey(self, *args):
@@ -538,11 +539,11 @@ class GraphTraversal(Traversal):
         return self.has_key_(*args)
 
     def has_key_(self, *args):
-        self.bytecode.add_step("hasKey", *args)
+        self.gremlin_lang.add_step("hasKey", *args)
         return self
 
     def has_key(self, *args):
-        self.bytecode.add_step("hasKey", *args)
+        self.gremlin_lang.add_step("hasKey", *args)
         return self
 
     def hasLabel(self, *args):
@@ -553,7 +554,7 @@ class GraphTraversal(Traversal):
         return self.has_label(*args)
 
     def has_label(self, *args):
-        self.bytecode.add_step("hasLabel", *args)
+        self.gremlin_lang.add_step("hasLabel", *args)
         return self
 
     def hasNot(self, *args):
@@ -564,7 +565,7 @@ class GraphTraversal(Traversal):
         return self.has_not(*args)
 
     def has_not(self, *args):
-        self.bytecode.add_step("hasNot", *args)
+        self.gremlin_lang.add_step("hasNot", *args)
         return self
 
     def hasValue(self, *args):
@@ -575,15 +576,15 @@ class GraphTraversal(Traversal):
         return self.has_value(*args)
 
     def has_value(self, *args):
-        self.bytecode.add_step("hasValue", *args)
+        self.gremlin_lang.add_step("hasValue", *args)
         return self
 
     def id_(self, *args):
-        self.bytecode.add_step("id", *args)
+        self.gremlin_lang.add_step("id", *args)
         return self
 
     def identity(self, *args):
-        self.bytecode.add_step("identity", *args)
+        self.gremlin_lang.add_step("identity", *args)
         return self
 
     def inE(self, *args):
@@ -594,7 +595,7 @@ class GraphTraversal(Traversal):
         return self.in_e(*args)
 
     def in_e(self, *args):
-        self.bytecode.add_step("inE", *args)
+        self.gremlin_lang.add_step("inE", *args)
         return self
 
     def inV(self, *args):
@@ -605,119 +606,119 @@ class GraphTraversal(Traversal):
         return self.in_v(*args)
 
     def in_v(self, *args):
-        self.bytecode.add_step("inV", *args)
+        self.gremlin_lang.add_step("inV", *args)
         return self
 
     def in_(self, *args):
-        self.bytecode.add_step("in", *args)
+        self.gremlin_lang.add_step("in", *args)
         return self
 
     def index(self, *args):
-        self.bytecode.add_step("index", *args)
+        self.gremlin_lang.add_step("index", *args)
         return self
 
     def inject(self, *args):
-        self.bytecode.add_step("inject", *args)
+        self.gremlin_lang.add_step("inject", *args)
         return self
 
     def intersect(self, *args):
-        self.bytecode.add_step("intersect", *args)
+        self.gremlin_lang.add_step("intersect", *args)
         return self
 
     def is_(self, *args):
-        self.bytecode.add_step("is", *args)
+        self.gremlin_lang.add_step("is", *args)
         return self
 
     def key(self, *args):
-        self.bytecode.add_step("key", *args)
+        self.gremlin_lang.add_step("key", *args)
         return self
 
     def label(self, *args):
-        self.bytecode.add_step("label", *args)
+        self.gremlin_lang.add_step("label", *args)
         return self
 
     def length(self, *args):
-        self.bytecode.add_step("length", *args)
+        self.gremlin_lang.add_step("length", *args)
         return self
 
     def limit(self, *args):
-        self.bytecode.add_step("limit", *args)
+        self.gremlin_lang.add_step("limit", *args)
         return self
 
     def local(self, *args):
-        self.bytecode.add_step("local", *args)
+        self.gremlin_lang.add_step("local", *args)
         return self
 
     def loops(self, *args):
-        self.bytecode.add_step("loops", *args)
+        self.gremlin_lang.add_step("loops", *args)
         return self
 
     def lTrim(self, *args):
-        self.bytecode.add_step("lTrim", *args)
+        self.gremlin_lang.add_step("lTrim", *args)
         return self
 
     def l_trim(self, *args):
-        self.bytecode.add_step("lTrim", *args)
+        self.gremlin_lang.add_step("lTrim", *args)
         return self
 
     def map(self, *args):
-        self.bytecode.add_step("map", *args)
+        self.gremlin_lang.add_step("map", *args)
         return self
 
     def match(self, *args):
-        self.bytecode.add_step("match", *args)
+        self.gremlin_lang.add_step("match", *args)
         return self
 
     def math(self, *args):
-        self.bytecode.add_step("math", *args)
+        self.gremlin_lang.add_step("math", *args)
         return self
 
     def max_(self, *args):
-        self.bytecode.add_step("max", *args)
+        self.gremlin_lang.add_step("max", *args)
         return self
 
     def mean(self, *args):
-        self.bytecode.add_step("mean", *args)
+        self.gremlin_lang.add_step("mean", *args)
         return self
 
     def merge(self, *args):
-        self.bytecode.add_step("merge", *args)
+        self.gremlin_lang.add_step("merge", *args)
         return self
 
     def merge_e(self, *args):
-        self.bytecode.add_step("mergeE", *args)
+        self.gremlin_lang.add_step("mergeE", *args)
         return self
 
     def merge_v(self, *args):
-        self.bytecode.add_step("mergeV", *args)
+        self.gremlin_lang.add_step("mergeV", *args)
         return self
 
     def min_(self, *args):
-        self.bytecode.add_step("min", *args)
+        self.gremlin_lang.add_step("min", *args)
         return self
 
     def none(self, *args):
-        self.bytecode.add_step("none", *args)
+        self.gremlin_lang.add_step("none", *args)
         return self
 
     def not_(self, *args):
-        self.bytecode.add_step("not", *args)
+        self.gremlin_lang.add_step("not", *args)
         return self
 
     def option(self, *args):
-        self.bytecode.add_step("option", *args)
+        self.gremlin_lang.add_step("option", *args)
         return self
 
     def optional(self, *args):
-        self.bytecode.add_step("optional", *args)
+        self.gremlin_lang.add_step("optional", *args)
         return self
 
     def or_(self, *args):
-        self.bytecode.add_step("or", *args)
+        self.gremlin_lang.add_step("or", *args)
         return self
 
     def order(self, *args):
-        self.bytecode.add_step("order", *args)
+        self.gremlin_lang.add_step("order", *args)
         return self
 
     def otherV(self, *args):
@@ -728,11 +729,11 @@ class GraphTraversal(Traversal):
         return self.other_v(*args)
 
     def other_v(self, *args):
-        self.bytecode.add_step("otherV", *args)
+        self.gremlin_lang.add_step("otherV", *args)
         return self
 
     def out(self, *args):
-        self.bytecode.add_step("out", *args)
+        self.gremlin_lang.add_step("out", *args)
         return self
 
     def outE(self, *args):
@@ -743,7 +744,7 @@ class GraphTraversal(Traversal):
         return self.out_e(*args)
 
     def out_e(self, *args):
-        self.bytecode.add_step("outE", *args)
+        self.gremlin_lang.add_step("outE", *args)
         return self
 
     def outV(self, *args):
@@ -754,7 +755,7 @@ class GraphTraversal(Traversal):
         return self.out_v(*args)
 
     def out_v(self, *args):
-        self.bytecode.add_step("outV", *args)
+        self.gremlin_lang.add_step("outV", *args)
         return self
 
     def pageRank(self, *args):
@@ -765,11 +766,11 @@ class GraphTraversal(Traversal):
         return self.page_rank(*args)
 
     def page_rank(self, *args):
-        self.bytecode.add_step("pageRank", *args)
+        self.gremlin_lang.add_step("pageRank", *args)
         return self
 
     def path(self, *args):
-        self.bytecode.add_step("path", *args)
+        self.gremlin_lang.add_step("path", *args)
         return self
 
     def peerPressure(self, *args):
@@ -780,31 +781,31 @@ class GraphTraversal(Traversal):
         return self.peer_pressure(*args)
 
     def peer_pressure(self, *args):
-        self.bytecode.add_step("peerPressure", *args)
+        self.gremlin_lang.add_step("peerPressure", *args)
         return self
 
     def product(self, *args):
-        self.bytecode.add_step("product", *args)
+        self.gremlin_lang.add_step("product", *args)
         return self
 
     def profile(self, *args):
-        self.bytecode.add_step("profile", *args)
+        self.gremlin_lang.add_step("profile", *args)
         return self
 
     def program(self, *args):
-        self.bytecode.add_step("program", *args)
+        self.gremlin_lang.add_step("program", *args)
         return self
 
     def project(self, *args):
-        self.bytecode.add_step("project", *args)
+        self.gremlin_lang.add_step("project", *args)
         return self
 
     def properties(self, *args):
-        self.bytecode.add_step("properties", *args)
+        self.gremlin_lang.add_step("properties", *args)
         return self
 
     def property(self, *args):
-        self.bytecode.add_step("property", *args)
+        self.gremlin_lang.add_step("property", *args)
         return self
 
     def propertyMap(self, *args):
@@ -815,47 +816,47 @@ class GraphTraversal(Traversal):
         return self.property_map(*args)
 
     def property_map(self, *args):
-        self.bytecode.add_step("propertyMap", *args)
+        self.gremlin_lang.add_step("propertyMap", *args)
         return self
 
     def range_(self, *args):
-        self.bytecode.add_step("range", *args)
+        self.gremlin_lang.add_step("range", *args)
         return self
 
     def read(self, *args):
-        self.bytecode.add_step("read", *args)
+        self.gremlin_lang.add_step("read", *args)
         return self
 
     def repeat(self, *args):
-        self.bytecode.add_step("repeat", *args)
+        self.gremlin_lang.add_step("repeat", *args)
         return self
 
     def replace(self, *args):
-        self.bytecode.add_step("replace", *args)
+        self.gremlin_lang.add_step("replace", *args)
         return self
 
     def reverse(self, *args):
-        self.bytecode.add_step("reverse", *args)
+        self.gremlin_lang.add_step("reverse", *args)
         return self
 
     def rTrim(self, *args):
-        self.bytecode.add_step("rTrim", *args)
+        self.gremlin_lang.add_step("rTrim", *args)
         return self
 
     def r_trim(self, *args):
-        self.bytecode.add_step("rTrim", *args)
+        self.gremlin_lang.add_step("rTrim", *args)
         return self
 
     def sack(self, *args):
-        self.bytecode.add_step("sack", *args)
+        self.gremlin_lang.add_step("sack", *args)
         return self
 
     def sample(self, *args):
-        self.bytecode.add_step("sample", *args)
+        self.gremlin_lang.add_step("sample", *args)
         return self
 
     def select(self, *args):
-        self.bytecode.add_step("select", *args)
+        self.gremlin_lang.add_step("select", *args)
         return self
 
     def shortestPath(self, *args):
@@ -866,7 +867,7 @@ class GraphTraversal(Traversal):
         return self.shortest_path(*args)
 
     def shortest_path(self, *args):
-        self.bytecode.add_step("shortestPath", *args)
+        self.gremlin_lang.add_step("shortestPath", *args)
         return self
 
     def sideEffect(self, *args):
@@ -877,7 +878,7 @@ class GraphTraversal(Traversal):
         return self.side_effect(*args)
 
     def side_effect(self, *args):
-        self.bytecode.add_step("sideEffect", *args)
+        self.gremlin_lang.add_step("sideEffect", *args)
         return self
 
     def simplePath(self, *args):
@@ -888,35 +889,35 @@ class GraphTraversal(Traversal):
         return self.simple_path(*args)
 
     def simple_path(self, *args):
-        self.bytecode.add_step("simplePath", *args)
+        self.gremlin_lang.add_step("simplePath", *args)
         return self
 
     def skip(self, *args):
-        self.bytecode.add_step("skip", *args)
+        self.gremlin_lang.add_step("skip", *args)
         return self
 
     def split(self, *args):
-        self.bytecode.add_step("split", *args)
+        self.gremlin_lang.add_step("split", *args)
         return self
 
     def store(self, *args):
-        self.bytecode.add_step("store", *args)
+        self.gremlin_lang.add_step("store", *args)
         return self
 
     def subgraph(self, *args):
-        self.bytecode.add_step("subgraph", *args)
+        self.gremlin_lang.add_step("subgraph", *args)
         return self
 
     def substring(self, *args):
-        self.bytecode.add_step("substring", *args)
+        self.gremlin_lang.add_step("substring", *args)
         return self
 
     def sum_(self, *args):
-        self.bytecode.add_step("sum", *args)
+        self.gremlin_lang.add_step("sum", *args)
         return self
 
     def tail(self, *args):
-        self.bytecode.add_step("tail", *args)
+        self.gremlin_lang.add_step("tail", *args)
         return self
 
     def timeLimit(self, *args):
@@ -927,15 +928,15 @@ class GraphTraversal(Traversal):
         return self.time_limit(*args)
 
     def time_limit(self, *args):
-        self.bytecode.add_step("timeLimit", *args)
+        self.gremlin_lang.add_step("timeLimit", *args)
         return self
 
     def times(self, *args):
-        self.bytecode.add_step("times", *args)
+        self.gremlin_lang.add_step("times", *args)
         return self
 
     def to(self, *args):
-        self.bytecode.add_step("to", *args)
+        self.gremlin_lang.add_step("to", *args)
         return self
 
     def toE(self, *args):
@@ -946,15 +947,15 @@ class GraphTraversal(Traversal):
         return self.to_e(*args)
 
     def to_e(self, *args):
-        self.bytecode.add_step("toE", *args)
+        self.gremlin_lang.add_step("toE", *args)
         return self
 
     def to_lower(self, *args):
-        self.bytecode.add_step("toLower", *args)
+        self.gremlin_lang.add_step("toLower", *args)
         return self
 
     def to_upper(self, *args):
-        self.bytecode.add_step("toUpper", *args)
+        self.gremlin_lang.add_step("toUpper", *args)
         return self
 
     def toV(self, *args):
@@ -965,31 +966,31 @@ class GraphTraversal(Traversal):
         return self.to_v(*args)
 
     def to_v(self, *args):
-        self.bytecode.add_step("toV", *args)
+        self.gremlin_lang.add_step("toV", *args)
         return self
 
     def tree(self, *args):
-        self.bytecode.add_step("tree", *args)
+        self.gremlin_lang.add_step("tree", *args)
         return self
 
     def trim(self, *args):
-        self.bytecode.add_step("trim", *args)
+        self.gremlin_lang.add_step("trim", *args)
         return self
 
     def unfold(self, *args):
-        self.bytecode.add_step("unfold", *args)
+        self.gremlin_lang.add_step("unfold", *args)
         return self
 
     def union(self, *args):
-        self.bytecode.add_step("union", *args)
+        self.gremlin_lang.add_step("union", *args)
         return self
 
     def until(self, *args):
-        self.bytecode.add_step("until", *args)
+        self.gremlin_lang.add_step("until", *args)
         return self
 
     def value(self, *args):
-        self.bytecode.add_step("value", *args)
+        self.gremlin_lang.add_step("value", *args)
         return self
 
     def valueMap(self, *args):
@@ -1000,23 +1001,23 @@ class GraphTraversal(Traversal):
         return self.value_map(*args)
 
     def value_map(self, *args):
-        self.bytecode.add_step("valueMap", *args)
+        self.gremlin_lang.add_step("valueMap", *args)
         return self
 
     def values(self, *args):
-        self.bytecode.add_step("values", *args)
+        self.gremlin_lang.add_step("values", *args)
         return self
 
     def where(self, *args):
-        self.bytecode.add_step("where", *args)
+        self.gremlin_lang.add_step("where", *args)
         return self
 
     def with_(self, *args):
-        self.bytecode.add_step("with", *args)
+        self.gremlin_lang.add_step("with", *args)
         return self
 
     def write(self, *args):
-        self.bytecode.add_step("write", *args)
+        self.gremlin_lang.add_step("write", *args)
         return self
 
 
@@ -1034,7 +1035,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def start(cls):
-        return GraphTraversal(None, None, Bytecode())
+        return GraphTraversal(None, None, GremlinLang())
 
     @classmethod
     def __(cls, *args):
@@ -1042,11 +1043,11 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def E(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).E(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).E(*args)
 
     @classmethod
     def V(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).V(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).V(*args)
 
     @classmethod
     def addE(cls, *args):
@@ -1058,7 +1059,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def add_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).add_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).add_e(*args)
 
     @classmethod
     def addV(cls, *args):
@@ -1070,43 +1071,43 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def add_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).add_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).add_v(*args)
 
     @classmethod
     def aggregate(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).aggregate(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).aggregate(*args)
 
     @classmethod
     def all_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).all_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).all_(*args)
 
     @classmethod
     def and_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).and_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).and_(*args)
 
     @classmethod
     def any_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).any_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).any_(*args)
 
     @classmethod
     def as_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).as_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).as_(*args)
 
     @classmethod
     def as_date(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).as_date(*args)
 
     @classmethod
     def as_string(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).as_string(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).as_string(*args)
 
     @classmethod
     def barrier(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).barrier(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).barrier(*args)
 
     @classmethod
     def both(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).both(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).both(*args)
 
     @classmethod
     def bothE(cls, *args):
@@ -1118,7 +1119,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def both_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).both_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).both_e(*args)
 
     @classmethod
     def bothV(cls, *args):
@@ -1130,51 +1131,51 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def both_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).both_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).both_v(*args)
 
     @classmethod
     def branch(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).branch(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).branch(*args)
 
     @classmethod
     def call(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).call(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).call(*args)
 
     @classmethod
     def cap(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).cap(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).cap(*args)
 
     @classmethod
     def choose(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).choose(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).choose(*args)
 
     @classmethod
     def coalesce(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).coalesce(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).coalesce(*args)
 
     @classmethod
     def coin(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).coin(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).coin(*args)
 
     @classmethod
     def combine(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).combine(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).combine(*args)
 
     @classmethod
     def concat(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).concat(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).concat(*args)
 
     @classmethod
     def conjoin(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).conjoin(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).conjoin(*args)
 
     @classmethod
     def constant(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).constant(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).constant(*args)
 
     @classmethod
     def count(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).count(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).count(*args)
 
     @classmethod
     def cyclicPath(cls, *args):
@@ -1186,35 +1187,35 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def cyclic_path(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).cyclic_path(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).cyclic_path(*args)
 
     @classmethod
     def date_add(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).date_add(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).date_add(*args)
 
     @classmethod
     def date_diff(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).date_diff(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).date_diff(*args)
 
     @classmethod
     def dedup(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).dedup(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).dedup(*args)
 
     @classmethod
     def difference(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).difference(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).difference(*args)
 
     @classmethod
     def disjunct(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).disjunct(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).disjunct(*args)
 
     @classmethod
     def drop(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).drop(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).drop(*args)
 
     @classmethod
     def element(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).element(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).element(*args)
 
     @classmethod
     def elementMap(cls, *args):
@@ -1226,19 +1227,19 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def element_map(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).element_map(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).element_map(*args)
 
     @classmethod
     def emit(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).emit(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).emit(*args)
 
     @classmethod
     def fail(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).fail(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).fail(*args)
 
     @classmethod
     def filter_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).filter_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).filter_(*args)
 
     @classmethod
     def flatMap(cls, *args):
@@ -1250,19 +1251,19 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def flat_map(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).flat_map(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).flat_map(*args)
 
     @classmethod
     def fold(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).fold(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).fold(*args)
 
     @classmethod
     def format_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).format_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).format_(*args)
 
     @classmethod
     def group(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).group(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).group(*args)
 
     @classmethod
     def groupCount(cls, *args):
@@ -1274,11 +1275,11 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def group_count(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).group_count(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).group_count(*args)
 
     @classmethod
     def has(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has(*args)
 
     @classmethod
     def hasId(cls, *args):
@@ -1290,7 +1291,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def has_id(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has_id(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has_id(*args)
 
     @classmethod
     def hasKey(cls, *args):
@@ -1302,7 +1303,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def has_key_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has_key_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has_key_(*args)
 
     @classmethod
     def hasLabel(cls, *args):
@@ -1314,7 +1315,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def has_label(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has_label(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has_label(*args)
 
     @classmethod
     def hasNot(cls, *args):
@@ -1326,7 +1327,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def has_not(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has_not(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has_not(*args)
 
     @classmethod
     def hasValue(cls, *args):
@@ -1338,15 +1339,15 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def has_value(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).has_value(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).has_value(*args)
 
     @classmethod
     def id_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).id_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).id_(*args)
 
     @classmethod
     def identity(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).identity(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).identity(*args)
 
     @classmethod
     def inE(cls, *args):
@@ -1358,7 +1359,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def in_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).in_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).in_e(*args)
 
     @classmethod
     def inV(cls, *args):
@@ -1370,51 +1371,51 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def in_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).in_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).in_v(*args)
 
     @classmethod
     def in_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).in_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).in_(*args)
 
     @classmethod
     def index(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).index(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).index(*args)
 
     @classmethod
     def inject(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).inject(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).inject(*args)
 
     @classmethod
     def intersect(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).intersect(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).intersect(*args)
 
     @classmethod
     def is_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).is_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).is_(*args)
 
     @classmethod
     def key(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).key(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).key(*args)
 
     @classmethod
     def label(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).label(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).label(*args)
 
     @classmethod
     def length(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).length(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).length(*args)
 
     @classmethod
     def limit(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).limit(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).limit(*args)
 
     @classmethod
     def local(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).local(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).local(*args)
 
     @classmethod
     def loops(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).loops(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).loops(*args)
 
     @classmethod
     def ltrim(cls, *args):
@@ -1426,63 +1427,63 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def l_trim(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).l_trim(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).l_trim(*args)
 
     @classmethod
     def map(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).map(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).map(*args)
 
     @classmethod
     def match(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).match(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).match(*args)
 
     @classmethod
     def math(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).math(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).math(*args)
 
     @classmethod
     def max_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).max_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).max_(*args)
 
     @classmethod
     def mean(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).mean(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).mean(*args)
 
     @classmethod
     def merge(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).merge(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).merge(*args)
 
     @classmethod
     def merge_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).merge_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).merge_e(*args)
 
     @classmethod
     def merge_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).merge_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).merge_v(*args)
 
     @classmethod
     def min_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).min_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).min_(*args)
 
     @classmethod
     def none(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).none(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).none(*args)
 
     @classmethod
     def not_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).not_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).not_(*args)
 
     @classmethod
     def optional(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).optional(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).optional(*args)
 
     @classmethod
     def or_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).or_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).or_(*args)
 
     @classmethod
     def order(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).order(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).order(*args)
 
     @classmethod
     def otherV(cls, *args):
@@ -1494,11 +1495,11 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def other_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).other_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).other_v(*args)
 
     @classmethod
     def out(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).out(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).out(*args)
 
     @classmethod
     def outE(cls, *args):
@@ -1510,7 +1511,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def out_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).out_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).out_e(*args)
 
     @classmethod
     def outV(cls, *args):
@@ -1522,27 +1523,27 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def out_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).out_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).out_v(*args)
 
     @classmethod
     def path(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).path(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).path(*args)
 
     @classmethod
     def product(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).product(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).product(*args)
 
     @classmethod
     def project(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).project(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).project(*args)
 
     @classmethod
     def properties(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).properties(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).properties(*args)
 
     @classmethod
     def property(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).property(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).property(*args)
 
     @classmethod
     def propertyMap(cls, *args):
@@ -1554,23 +1555,23 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def property_map(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).property_map(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).property_map(*args)
 
     @classmethod
     def range_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).range_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).range_(*args)
 
     @classmethod
     def repeat(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).repeat(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).repeat(*args)
 
     @classmethod
     def replace(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).replace(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).replace(*args)
 
     @classmethod
     def reverse(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).reverse(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).reverse(*args)
 
     @classmethod
     def rTrim(cls, *args):
@@ -1582,19 +1583,19 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def r_trim(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).r_trim(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).r_trim(*args)
 
     @classmethod
     def sack(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).sack(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).sack(*args)
 
     @classmethod
     def sample(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).sample(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).sample(*args)
 
     @classmethod
     def select(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).select(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).select(*args)
 
     @classmethod
     def sideEffect(cls, *args):
@@ -1606,7 +1607,7 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def side_effect(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).side_effect(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).side_effect(*args)
 
     @classmethod
     def simplePath(cls, *args):
@@ -1618,35 +1619,35 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def simple_path(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).simple_path(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).simple_path(*args)
 
     @classmethod
     def skip(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).skip(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).skip(*args)
 
     @classmethod
     def split(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).split(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).split(*args)
 
     @classmethod
     def store(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).store(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).store(*args)
 
     @classmethod
     def subgraph(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).subgraph(*args)
 
     @classmethod
     def substring(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).substring(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).substring(*args)
 
     @classmethod
     def sum_(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).sum_(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).sum_(*args)
 
     @classmethod
     def tail(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).tail(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).tail(*args)
 
     @classmethod
     def timeLimit(cls, *args):
@@ -1658,15 +1659,15 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def time_limit(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).time_limit(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).time_limit(*args)
 
     @classmethod
     def times(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).times(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).times(*args)
 
     @classmethod
     def to(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).to(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).to(*args)
 
     @classmethod
     def toE(cls, *args):
@@ -1678,15 +1679,15 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def to_e(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).to_e(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).to_e(*args)
 
     @classmethod
     def to_lower(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).to_lower(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).to_lower(*args)
 
     @classmethod
     def to_upper(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).to_upper(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).to_upper(*args)
 
     @classmethod
     def toV(cls, *args):
@@ -1698,31 +1699,31 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def to_v(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).to_v(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).to_v(*args)
 
     @classmethod
     def tree(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).tree(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).tree(*args)
 
     @classmethod
     def trim(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).trim(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).trim(*args)
 
     @classmethod
     def unfold(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).unfold(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).unfold(*args)
 
     @classmethod
     def union(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).union(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).union(*args)
 
     @classmethod
     def until(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).until(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).until(*args)
 
     @classmethod
     def value(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).value(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).value(*args)
 
     @classmethod
     def valueMap(cls, *args):
@@ -1734,90 +1735,90 @@ class __(object, metaclass=MagicType):
 
     @classmethod
     def value_map(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).value_map(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).value_map(*args)
 
     @classmethod
     def values(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).values(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).values(*args)
 
     @classmethod
     def where(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).where(*args)
+        return cls.graph_traversal(None, None, GremlinLang()).where(*args)
 
 
 # Class to handle transactions.
-class Transaction:
-
-    def __init__(self, g, remote_connection):
-        self._g = g
-        self._session_based_connection = None
-        self._remote_connection = remote_connection
-        self.__is_open = False
-        self.__mutex = Lock()
-
-    # Begins transaction.
-    def begin(self):
-        with self.__mutex:
-            # Verify transaction is not open.
-            self.__verify_transaction_state(False, "Transaction already started on this object")
-
-            # Create new session using the remote connection.
-            self._session_based_connection = self._remote_connection.create_session()
-            self.__is_open = True
-
-            # Set the session as a remote strategy within the traversal strategy.
-            traversal_strategy = TraversalStrategies()
-            traversal_strategy.add_strategies([RemoteStrategy(self._session_based_connection)])
-
-            # Return new GraphTraversalSource.
-            return GraphTraversalSource(self._g.graph, traversal_strategy, self._g.bytecode)
-
-    # Rolls transaction back.
-    def rollback(self):
-        with self.__mutex:
-            # Verify transaction is open, close session and return result of transaction's rollback.
-            self.__verify_transaction_state(True, "Cannot rollback a transaction that is not started.")
-            return self.__close_session(self._session_based_connection.rollback())
-
-    # Commits the current transaction.
-    def commit(self):
-        with self.__mutex:
-            # Verify transaction is open, close session and return result of transaction's commit.
-            self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
-            return self.__close_session(self._session_based_connection.commit())
-
-    # Closes session.
-    def close(self):
-        with self.__mutex:
-            # Verify transaction is open.
-            self.__verify_transaction_state(True, "Cannot close a transaction that has previously been closed.")
-            self.__close_session(None)
-
-    # Return whether or not transaction is open.
-    # Allow camelcase function here to keep api consistent with other languages.
-    def isOpen(self):
-        warnings.warn(
-            "gremlin_python.process.Transaction.isOpen will be replaced by "
-            "gremlin_python.process.Transaction.is_open.",
-            DeprecationWarning)
-        return self.is_open()
-
-    def is_open(self):
-        # if the underlying DriverRemoteConnection is closed then the Transaction can't be open
-        if (self._session_based_connection and self._session_based_connection.is_closed()) or \
-                self._remote_connection.is_closed():
-            self.__is_open = False
-
-        return self.__is_open
-
-    def __verify_transaction_state(self, state, error_message):
-        if self.__is_open != state:
-            raise Exception(error_message)
-
-    def __close_session(self, session):
-        self.__is_open = False
-        self._remote_connection.remove_session(self._session_based_connection)
-        return session
+# class Transaction:
+#
+#     def __init__(self, g, remote_connection):
+#         self._g = g
+#         self._session_based_connection = None
+#         self._remote_connection = remote_connection
+#         self.__is_open = False
+#         self.__mutex = Lock()
+#
+#     # Begins transaction.
+#     def begin(self):
+#         with self.__mutex:
+#             # Verify transaction is not open.
+#             self.__verify_transaction_state(False, "Transaction already started on this object")
+#
+#             # Create new session using the remote connection.
+#             self._session_based_connection = self._remote_connection.create_session()
+#             self.__is_open = True
+#
+#             # Set the session as a remote strategy within the traversal strategy.
+#             traversal_strategy.py = TraversalStrategies()
+#             traversal_strategy.py.add_strategies([RemoteStrategy(self._session_based_connection)])
+#
+#             # Return new GraphTraversalSource.
+#             return GraphTraversalSource(self._g.graph, traversal_strategy.py, self._g.bytecode)
+#
+#     # Rolls transaction back.
+#     def rollback(self):
+#         with self.__mutex:
+#             # Verify transaction is open, close session and return result of transaction's rollback.
+#             self.__verify_transaction_state(True, "Cannot rollback a transaction that is not started.")
+#             return self.__close_session(self._session_based_connection.rollback())
+#
+#     # Commits the current transaction.
+#     def commit(self):
+#         with self.__mutex:
+#             # Verify transaction is open, close session and return result of transaction's commit.
+#             self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
+#             return self.__close_session(self._session_based_connection.commit())
+#
+#     # Closes session.
+#     def close(self):
+#         with self.__mutex:
+#             # Verify transaction is open.
+#             self.__verify_transaction_state(True, "Cannot close a transaction that has previously been closed.")
+#             self.__close_session(None)
+#
+#     # Return whether or not transaction is open.
+#     # Allow camelcase function here to keep api consistent with other languages.
+#     def isOpen(self):
+#         warnings.warn(
+#             "gremlin_python.process.Transaction.isOpen will be replaced by "
+#             "gremlin_python.process.Transaction.is_open.",
+#             DeprecationWarning)
+#         return self.is_open()
+#
+#     def is_open(self):
+#         # if the underlying DriverRemoteConnection is closed then the Transaction can't be open
+#         if (self._session_based_connection and self._session_based_connection.is_closed()) or \
+#                 self._remote_connection.is_closed():
+#             self.__is_open = False
+#
+#         return self.__is_open
+#
+#     def __verify_transaction_state(self, state, error_message):
+#         if self.__is_open != state:
+#             raise Exception(error_message)
+#
+#     def __close_session(self, session):
+#         self.__is_open = False
+#         self._remote_connection.remove_session(self._session_based_connection)
+#         return session
 
 
 def E(*args):

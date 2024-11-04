@@ -20,16 +20,12 @@ limitations under the License.
             <pattern>[%p] %C - %m%n</pattern>
         </encoder>
     </appender>
-    <logger name="org.apache.tinkerpop.gremlin.server.handler.MultiTaskSession" level="ERROR"/>
-    <logger name="org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor" level="ERROR"/>
-    <logger name="org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor" level="ERROR"/>
     <logger name="org.apache.tinkerpop.gremlin.server.AbstractGremlinServerIntegrationTest" level="INFO"/>
     <logger name="audit.org.apache.tinkerpop.gremlin.server" level="INFO"/>
-    <logger name="org.apache.tinkerpop.gremlin.server.handler.SingleTaskSession" level="ERROR"/>
     <logger name="org.apache.tinkerpop.gremlin.server.AbstractChannelizer" level="ERROR"/>
     <!-- this logger is noisy and we don't assert anything and the error is already tracked on the server so we can
          trim the logs a bit with this. -->
-    <logger name="org.apache.tinkerpop.gremlin.driver.Handler$GremlinResponseHandler" level="OFF"/>
+    <logger name="org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler" level="OFF"/>
     <root level="WARN">
         <appender-ref ref="stdout"/>
     </root>

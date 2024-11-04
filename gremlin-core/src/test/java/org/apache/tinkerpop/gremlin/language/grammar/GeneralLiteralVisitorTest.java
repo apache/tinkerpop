@@ -31,17 +31,17 @@ import org.junit.runners.Parameterized;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.time.ZoneOffset.UTC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
@@ -448,29 +448,28 @@ public class GeneralLiteralVisitorTest {
 
     @RunWith(Parameterized.class)
     public static class ValidDatetimeLiteralTest {
-        private static final ZoneId UTC = ZoneId.of("Z");
 
         @Parameterized.Parameter(value = 0)
         public String script;
 
         @Parameterized.Parameter(value = 1)
-        public Date expected;
+        public OffsetDateTime expected;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
-                    {"datetime('2018-03-22T00:35:44.741Z')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
-                    {"datetime('2018-03-22T00:35:44.741-0000')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
-                    {"datetime('2018-03-22T00:35:44.741+0000')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
-                    {"datetime('2018-03-22T00:35:44.741-0300')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, ZoneOffset.ofHours(-3)).toInstant())},
-                    {"datetime('2018-03-22T00:35:44.741+1600')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, ZoneOffset.ofHours(16)).toInstant())},
-                    {"datetime('2018-03-22T00:35:44.741')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 741000000, UTC).toInstant())},
-                    {"datetime('2018-03-22T00:35:44Z')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 0, UTC).toInstant())},
-                    {"datetime('2018-03-22T00:35:44')", Date.from(ZonedDateTime.of(2018, 03, 22, 00, 35, 44, 0, UTC).toInstant())},
-                    {"datetime('2018-03-22')", Date.from(ZonedDateTime.of(2018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
-                    {"datetime('1018-03-22')", Date.from(ZonedDateTime.of(1018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
-                    {"datetime('9018-03-22')", Date.from(ZonedDateTime.of(9018, 03, 22, 0, 0, 0, 0, UTC).toInstant())},
-                    {"datetime('1000-001')", Date.from(ZonedDateTime.of(1000, 1, 1, 0, 0, 0, 0, UTC).toInstant())},
+                    {"datetime('2018-03-22T00:35:44.741Z')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC)},
+                    {"datetime('2018-03-22T00:35:44.741-0000')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC)},
+                    {"datetime('2018-03-22T00:35:44.741+0000')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC)},
+                    {"datetime('2018-03-22T00:35:44.741-0300')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), ZoneOffset.ofHours(-3))},
+                    {"datetime('2018-03-22T00:35:44.741+1600')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), ZoneOffset.ofHours(16))},
+                    {"datetime('2018-03-22T00:35:44.741')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC)},
+                    {"datetime('2018-03-22T00:35:44Z')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 0), UTC)},
+                    {"datetime('2018-03-22T00:35:44')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 0), UTC)},
+                    {"datetime('2018-03-22')", OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 0, 0, 0, 0), UTC)},
+                    {"datetime('1018-03-22')", OffsetDateTime.of(LocalDateTime.of(1018, 03, 22, 0, 0, 0, 0), UTC)},
+                    {"datetime('9018-03-22')", OffsetDateTime.of(LocalDateTime.of(9018, 03, 22, 0, 0, 0, 0), UTC)},
+                    {"datetime('1000-001')", OffsetDateTime.of(LocalDateTime.of(1000, 1, 1, 0, 0, 0, 0), UTC)},
             });
         }
 
@@ -480,7 +479,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
 
-            final Date dt = (Date) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
+            final OffsetDateTime dt = (OffsetDateTime) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
             assertEquals(expected, dt);
         }
     }
@@ -492,8 +491,8 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
 
-            final Date dt = (Date) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
-            assertTrue(new Date().getTime() - dt.getTime() < 1000);
+            final OffsetDateTime dt = (OffsetDateTime) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
+            assertTrue(OffsetDateTime.now(UTC).toEpochSecond() - dt.toEpochSecond() < 1000);
         }
     }
 

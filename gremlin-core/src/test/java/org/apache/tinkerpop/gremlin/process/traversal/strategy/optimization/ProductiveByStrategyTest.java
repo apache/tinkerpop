@@ -20,13 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
@@ -47,7 +45,6 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ProductiveByStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
     private static final Traversal<Object,Object> ageValueTraversal = new ValueTraversal<>("age");
     private static final Traversal<Object,Object> nameValueTraversal = new ValueTraversal<>("name");
     private static final Traversal<Object,Object> nullTraversal = new ConstantTraversal<>(null);
@@ -70,7 +67,7 @@ public class ProductiveByStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         applyProductiveByStrategy(original);
         assertEquals(repr, optimized, original);
     }

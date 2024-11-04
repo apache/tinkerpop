@@ -19,10 +19,6 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from gremlin_python.process.graph_traversal import GraphTraversalSource
-from gremlin_python.process.traversal import TraversalStrategies
-import warnings
-
 
 class Graph(object):
 

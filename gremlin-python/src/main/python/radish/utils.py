@@ -36,9 +36,22 @@ def create_lookup_e(remote):
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
-    return g.E().group(). \
-        by(lambda: ("it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", "gremlin-groovy")). \
+    edges = {}
+    edge_map = g.E().group(). \
+        by(__.project('o', 'l', 'i').by(__.out_v().values('name')).by(__.label()).by(__.in_v().values('name'))). \
         by(__.tail()).next()
+
+    for key, value in edge_map.items():
+        edges[_get_edge_keys(key)] = value
+
+    return edges
+
+
+def _get_edge_keys(key_map):
+    outV = key_map.get('o')
+    label = key_map.get('l')
+    inV = key_map.get('i')
+    return f'{outV}-{label}->{inV}'
 
 
 @pick
@@ -48,15 +61,25 @@ def create_lookup_vp(remote):
     # hold a map of the "name"/vertexproperty for use in asserting results - "name" in this context is in the form of
     # vertexName-propName->propVal where the propVal must be typed according to the gherkin spec. note that the toy
     # graphs only deal in String/Int/Float/Double types so none of the other types are accounted for here.
-    return g.V().properties().group(). \
-        by(lambda: ("{ it -> \n" +
-                    "  def val = it.value()\n" +
-                    "  if (val instanceof Integer)\n" +
-                    "    val = 'd[' + val + '].i'\n" +
-                    "  else if (val instanceof Float)\n" +
-                    "    val = 'd[' + val + '].f'\n" +
-                    "  else if (val instanceof Double)\n" +
-                    "    val = 'd[' + val + '].d'\n" +
-                    "  return it.element().value('name') + '-' + it.key() + '->' + val\n" +
-                    "}", "gremlin-groovy")). \
+    vps = {}
+    props = g.V().properties().group(). \
+        by(__.project('n', 'k', 'v').by(__.element().values('name')).by(__.key()).by(__.value())). \
         by(__.tail()).next()
+
+    for key, value in props.items():
+        vps[_get_v_keys(key)] = value
+
+    return vps
+
+
+# since gremlin-lang doesn't allow lambdas, we are using the same logic as javascript to construct the keys
+def _get_v_keys(key_map):
+    k = key_map.get('k')
+    val = key_map.get('v')
+    if k == 'weight':
+        val = f'd[{val}].d'
+    elif k == 'age' or k == 'since' or k == 'skill':
+        val = f'd[{val}].i'
+    name = key_map.get('n')
+
+    return f'{name}-{k}->{val}'

@@ -23,22 +23,20 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
-import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +70,7 @@ import java.util.stream.Stream;
  * Gremlin scripts).
  * <p/>
  * Implementers need only worry about determining how incoming data is converted to a
- * {@link RequestMessage} and outgoing data is converted from a  {@link ResponseMessage} to whatever expected format is
+ * {@link RequestMessage} and outgoing data is converted from a {@link ResponseMessage} to whatever expected format is
  * needed by the pipeline.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -80,11 +78,8 @@ import java.util.stream.Stream;
 public abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
     protected static final List<Settings.SerializerSettings> DEFAULT_SERIALIZERS = Arrays.asList(
-            new Settings.SerializerSettings(GraphSONMessageSerializerV2.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), Collections.emptyMap()),
-            new Settings.SerializerSettings(GraphBinaryMessageSerializerV1.class.getName(), new HashMap<String,Object>(){{
-                put(GraphBinaryMessageSerializerV1.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
-            }})
+            new Settings.SerializerSettings(GraphSONMessageSerializerV4.class.getName(), Collections.emptyMap()),
+            new Settings.SerializerSettings(GraphBinaryMessageSerializerV4.class.getName(), Collections.emptyMap())
     );
 
     protected Settings settings;
@@ -100,19 +95,13 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public static final String PIPELINE_REQUEST_HANDLER = "request-handler";
     public static final String PIPELINE_HTTP_RESPONSE_ENCODER = "http-response-encoder";
     public static final String PIPELINE_HTTP_AGGREGATOR = "http-aggregator";
-    public static final String PIPELINE_WEBSOCKET_SERVER_COMPRESSION = "web-socket-server-compression-handler";
     public static final String PIPELINE_HTTP_USER_AGENT_HANDLER = "http-user-agent-handler";
 
     protected static final String PIPELINE_SSL = "ssl";
-    protected static final String PIPELINE_OP_SELECTOR = "op-selector";
-    protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
     protected static final String PIPELINE_HTTP_REQUEST_DECODER = "http-request-decoder";
     protected static final String GREMLIN_ENDPOINT = "/gremlin";
 
     protected final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-
-    private OpSelectorHandler opSelectorHandler;
-    private OpExecutorHandler opExecutorHandler;
 
     protected Authenticator authenticator;
     protected Authorizer authorizer;
@@ -122,14 +111,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
      * Modify the pipeline as needed here.
      */
     public abstract void configure(final ChannelPipeline pipeline);
-
-    /**
-     * This method is called after the pipeline is completely configured.  It can be overridden to make any
-     * final changes to the pipeline before it goes into use.
-     */
-    public void finalize(final ChannelPipeline pipeline) {
-        // do nothing
-    }
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
@@ -150,10 +131,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
         authenticator = createAuthenticator(settings.authentication);
         authorizer = createAuthorizer(settings.authorization);
-
-        // these handlers don't share any state and can thus be initialized once per pipeline
-        opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService, this);
-        opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
     }
 
     @Override
@@ -174,11 +151,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
         // instance
         configure(pipeline);
-
-        pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
-        pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
-
-        finalize(pipeline);
     }
 
     protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings settings) {

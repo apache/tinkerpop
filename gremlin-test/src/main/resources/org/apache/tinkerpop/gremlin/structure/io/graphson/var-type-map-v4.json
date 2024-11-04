@@ -1,0 +1,25 @@
+{
+  "@type" : "g:Map",
+  "@value" : [ null, null, {
+    "@type" : "g:List",
+    "@value" : [ {
+      "@type" : "g:Int32",
+      "@value" : 1
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 2
+    }, {
+      "@type" : "g:Int32",
+      "@value" : 3
+    } ]
+  }, {
+    "@type" : "g:DateTime",
+    "@value" : "1970-01-01T00:24:41.295Z"
+  }, "test", {
+    "@type" : "g:Int32",
+    "@value" : 123
+  }, {
+    "@type" : "g:DateTime",
+    "@value" : "1970-01-01T00:24:41.295Z"
+  }, "red" ]
+}

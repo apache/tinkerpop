@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -70,12 +71,12 @@ public interface MessageSerializer<M> {
     /**
      * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
      */
-    public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException;
+    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) throws SerializationException;
 
     /**
-     * Deserialize a Netty {@code ByteBuf} into a {@link ResponseMessage}.
+     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
      */
-    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException;
+    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException;
 
     /**
      * The list of mime types that the serializer supports. They should be ordered in preferred ordered where the
@@ -92,4 +93,25 @@ public interface MessageSerializer<M> {
      */
     public default void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
     }
+
+    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+
+    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
+
+    public enum MessageParts {
+        HEADER, DATA, FOOTER;
+
+        public static final EnumSet<MessageParts> ALL = EnumSet.of(HEADER, DATA, FOOTER);
+        public static final EnumSet<MessageParts> START = EnumSet.of(HEADER, DATA);
+        public static final EnumSet<MessageParts> CHUNK = EnumSet.of(DATA);
+        public static final EnumSet<MessageParts> END = EnumSet.of(DATA, FOOTER);
+        public static final EnumSet<MessageParts> ERROR = EnumSet.of(FOOTER);
+    }
+
 }

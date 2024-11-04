@@ -17,10 +17,11 @@ specific language governing permissions and limitations
 under the License.
 '''
 
-import datetime
 import uuid
+import pytest
 
-from gremlin_python.driver.serializer import GraphSONSerializersV2d0, GraphBinarySerializersV1
+from datetime import datetime, timedelta, timezone
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.statics import *
 
@@ -80,28 +81,16 @@ def test_vertex_vertex_properties(remote_connection_crew):
     assert vertex.properties[1].properties[1].value == 2000
 
 
-def test_timestamp(remote_connection):
-    g = traversal().with_(remote_connection)
-    ts = timestamp(1481750076295 / 1000)
-    resp = g.addV('test_vertex').property('ts', ts)
-    resp = resp.toList()
-    vid = resp[0].id
-    try:
-        ts_prop = g.V(vid).properties('ts').toList()[0]
-        assert isinstance(ts_prop.value, timestamp)
-        assert ts_prop.value == ts
-    finally:
-        g.V(vid).drop().iterate()
-
-
 def test_datetime(remote_connection):
     g = traversal().with_(remote_connection)
-    dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
-    resp = g.addV('test_vertex').property('dt', dt).toList()
+    tz = timezone(timedelta(seconds=36000))
+    ms = 12345678912
+    dt = datetime(2022, 5, 20, tzinfo=tz) + timedelta(microseconds=ms)
+    resp = g.add_v('test_vertex').property('dt', dt).to_list()
     vid = resp[0].id
     try:
-        dt_prop = g.V(vid).properties('dt').toList()[0]
-        assert isinstance(dt_prop.value, datetime.datetime)
+        dt_prop = g.V(vid).properties('dt').to_list()[0]
+        assert isinstance(dt_prop.value, datetime)
         assert dt_prop.value == dt
     finally:
         g.V(vid).drop().iterate()
@@ -110,10 +99,10 @@ def test_datetime(remote_connection):
 def test_uuid(remote_connection):
     g = traversal().with_(remote_connection)
     uid = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
-    resp = g.addV('test_vertex').property('uuid', uid).toList()
+    resp = g.add_v('test_vertex').property('uuid', uid).to_list()
     vid = resp[0].id
     try:
-        uid_prop = g.V(vid).properties('uuid').toList()[0]
+        uid_prop = g.V(vid).properties('uuid').to_list()[0]
         assert isinstance(uid_prop.value, uuid.UUID)
         assert uid_prop.value == uid
     finally:
@@ -121,31 +110,31 @@ def test_uuid(remote_connection):
 
 
 def test_short(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
     num = short(1111)
-    resp = g.addV('test_vertex').property('short', num).toList()
+    resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('short', num).to_list()
     vid = resp[0].id
     try:
-        bigint_prop = g.V(vid).properties('short').toList()[0]
-        assert isinstance(bigint_prop.value, int)
-        assert bigint_prop.value == num
+        short_prop = g.with_('language', 'gremlin-lang').V(vid).properties('short').to_list()[0]
+        assert isinstance(short_prop.value, int)
+        assert short_prop.value == num
     finally:
         g.V(vid).drop().iterate()
 
 
 def test_bigint_positive(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
     big = bigint(0x1000_0000_0000_0000_0000)
-    resp = g.addV('test_vertex').property('bigint', big).toList()
+    resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigint', big).to_list()
     vid = resp[0].id
     try:
-        bigint_prop = g.V(vid).properties('bigint').toList()[0]
+        bigint_prop = g.with_('language', 'gremlin-lang').V(vid).properties('bigint').to_list()[0]
         assert isinstance(bigint_prop.value, int)
         assert bigint_prop.value == big
     finally:
@@ -153,15 +142,15 @@ def test_bigint_positive(remote_connection):
 
 
 def test_bigint_negative(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
     big = bigint(-0x1000_0000_0000_0000_0000)
-    resp = g.addV('test_vertex').property('bigint', big).toList()
+    resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigint', big).to_list()
     vid = resp[0].id
     try:
-        bigint_prop = g.V(vid).properties('bigint').toList()[0]
+        bigint_prop = g.with_('language', 'gremlin-lang').V(vid).properties('bigint').to_list()[0]
         assert isinstance(bigint_prop.value, int)
         assert bigint_prop.value == big
     finally:
@@ -169,15 +158,15 @@ def test_bigint_negative(remote_connection):
 
 
 def test_bigdecimal(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphBinarySerializersV1):
+    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
         return
 
     g = traversal().with_(remote_connection)
-    bigdecimal = BigDecimal(101, 235)
-    resp = g.addV('test_vertex').property('bigdecimal', bigdecimal).toList()
+    bigdecimal = BigDecimal(10, 235)
+    resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigdecimal', bigdecimal).to_list()
     vid = resp[0].id
     try:
-        bigdecimal_prop = g.V(vid).properties('bigdecimal').toList()[0]
+        bigdecimal_prop = g.with_('language', 'gremlin-lang').V(vid).properties('bigdecimal').next()
         assert isinstance(bigdecimal_prop.value, BigDecimal)
         assert bigdecimal_prop.value.scale == bigdecimal.scale
         assert bigdecimal_prop.value.unscaled_value == bigdecimal.unscaled_value
@@ -186,31 +175,30 @@ def test_bigdecimal(remote_connection):
 
 
 def test_odd_bits(remote_connection):
-    if not isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
-        g = traversal().with_(remote_connection)
-        char_lower = str.__new__(SingleChar, chr(78))
-        resp = g.addV('test_vertex').property('char_lower', char_lower).toList()
-        vid = resp[0].id
-        try:
-            v = g.V(vid).values('char_lower').toList()[0]
-            assert v == char_lower
-        finally:
-            g.V(vid).drop().iterate()
+    g = traversal().with_(remote_connection)
+    char_lower = str.__new__(SingleChar, chr(78))
+    resp = g.add_v('test_vertex').property('char_lower', char_lower).to_list()
+    vid = resp[0].id
+    try:
+        v = g.V(vid).values('char_lower').to_list()[0]
+        assert v == char_lower
+    finally:
+        g.V(vid).drop().iterate()
 
-        char_upper = str.__new__(SingleChar, chr(57344))
-        resp = g.addV('test_vertex').property('char_upper', char_upper).toList()
-        vid = resp[0].id
-        try:
-            v = g.V(vid).values('char_upper').toList()[0]
-            assert v == char_upper
-        finally:
-            g.V(vid).drop().iterate()
+    char_upper = str.__new__(SingleChar, chr(57344))
+    resp = g.add_v('test_vertex').property('char_upper', char_upper).to_list()
+    vid = resp[0].id
+    try:
+        v = g.V(vid).values('char_upper').to_list()[0]
+        assert v == char_upper
+    finally:
+        g.V(vid).drop().iterate()
 
-        dur = datetime.timedelta(seconds=1000, microseconds=1000)
-        resp = g.addV('test_vertex').property('dur', dur).toList()
-        vid = resp[0].id
-        try:
-            v = g.V(vid).values('dur').toList()[0]
-            assert v == dur
-        finally:
-            g.V(vid).drop().iterate()
+    dur = timedelta(seconds=1000, microseconds=1000)
+    resp = g.add_v('test_vertex').property('dur', dur).to_list()
+    vid = resp[0].id
+    try:
+        v = g.V(vid).values('dur').to_list()[0]
+        assert v == dur
+    finally:
+        g.V(vid).drop().iterate()

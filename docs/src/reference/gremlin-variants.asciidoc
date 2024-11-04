@@ -797,15 +797,14 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
-|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
+|connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
-|connectionPool.maxSize |The maximum size of a connection pool for a host. |8
+|connectionPool.maxSize |The maximum size of a connection pool for a host. |128
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
 |connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
-|connectionPool.minSize |The minimum size of a connection pool for a host. |2
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
@@ -815,8 +814,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
 |connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
-|enableCompression |Enables permessage-deflate compression. Note that use of compression may increase vulnerability to attacks such as CRIME/BREACH.|true
-|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
+|connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
 |hosts |The list of hosts that the driver will connect to. |localhost
 |jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
@@ -824,10 +822,11 @@ The following table describes the various configuration options for the Gremlin 
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
 |protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
-|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
+|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
+|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
@@ -1167,11 +1166,10 @@ paths to the generated code automatically.
 [[gremlin-java-troubleshooting]]
 === Troubleshooting
 
-*Max frame length of 65536 has been exceeded*
+*Response exceeded X bytes.*
 
-This error occurs when the driver attempts to process a request/response that exceeds the configured maximum size.
-The most direct way to fix this problem is to increase the `maxContentLength` setting in the driver. Ideally, the
-`maxContentLength` set for the driver should match the setting defined on the server.
+This error occurs when the driver attempts to process a response that exceeds the configured maximum response size.
+The most direct way to fix this problem is to increase the `maxResponseContentLength` setting in the driver.
 
 *TimeoutException*
 
@@ -1371,7 +1369,6 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.authenticator |Authenticator |The authentication handler to use. |undefined
 |options.processor |String |The name of the opProcessor to use, leave it undefined or set 'session' when session mode. |undefined
 |options.session |String |The sessionId of Client in session mode. undefined means session-less Client. |undefined
-|options.enableCompression |Boolean |Enables permessage-deflate compression. Note that use of compression may increase vulnerability to attacks such as CRIME/BREACH.|false
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent will be sent during connection handshake. |true
 |options.headers |Object |An associative array containing the additional header key/values for the initial request. |undefined
 |options.pingEnabled |Boolean |Setup ping interval. |true
@@ -2250,19 +2247,21 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|enable_compression |Enables sending a user agent to the server during connection requests. |False
-|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |headers |Additional headers that will be added to each request message. |`None`
-|kerberized_service |the first part of the principal name configured for the gremlin service|"""
 |max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV1`
+|request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|interceptors |The request interceptors to run after request serialization.|`None`
 |password |The password to submit on requests that require authentication. |""
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
-|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
 |username |The username to submit on requests that require authentication. |""
+|kerberized_service |the first part of the principal name configured for the gremlin service|"""
+|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
+|enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
+More details can be found in provider docs
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
@@ -2588,8 +2587,23 @@ results within a collection across different languages. If a `Set` is needed the
 to `Set` manually.
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Using GraphSON 3.0 or GraphBinary (after 3.5.0) makes it possible to return
-such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of
-key.
+such results. However, it may not be possible to serialize these maps so they can't be re-inserted (or round tripped).
+In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of key.
+* The `float` type in Python is a double precision floating point number which is commonly referred to in other
+languages as a `double`. This means that single precision floating point values will be deserialized into a double, so
+there will be a precision difference.
+* Gremlin supports multiple fixed-width integers such as byte (1-byte), short (2-byte), and long (8-byte). These are
+deserialized into Python's variable size `int` type. These numbers can't be exactly round tripped because the original
+type information is lost during deserialization. During serialization, these numbers will try to be converted into a
+4-byte integer which may throw exceptions if the value is too large or waste space if the value is very small.
+* The Gremlin Char type is deserialized as a string and therefore can't be round tripped as it will it will attempt to
+be serialized as a string.
+* Date and Duration types in Gremlin are deserialized as `datetime.datetime` and `datetime.timedelta` respectively in
+`gremlin-python`. This can lead to errors for large values because they exceed the maximum size allowed for `datetime`
+and `timedelta`.
+* In Gremlin, 1 isn't equal to the boolean true value and 0 isn't equal to the boolean false value, but they are equal
+in Python. This means that in `gremlin-python` if these values are in a `Set`, you will get a different behavior than
+what is intended by Gremlin, since it follows Python's behavior.
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.

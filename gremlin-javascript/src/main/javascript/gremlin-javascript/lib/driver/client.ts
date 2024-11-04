@@ -56,7 +56,6 @@ export default class Client {
    * @param {String} [options.processor] The name of the opProcessor to use, leave it undefined or set 'session' when session mode.
    * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
-   * @param {Boolean} [options.enableCompression] Enable per-message deflate compression. Defaults to: false.
    * @constructor
    */
   constructor(

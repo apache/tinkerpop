@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
@@ -29,14 +31,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -57,8 +61,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Stan
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.MultiMap;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -245,18 +249,23 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             put(PartitionStrategy.class.getSimpleName(), PartitionStrategy.class);
             put(SeedStrategy.class.getSimpleName(), SeedStrategy.class);
             put(SubgraphStrategy.class.getSimpleName(), SubgraphStrategy.class);
+            put(VertexProgramStrategy.class.getSimpleName(), VertexProgramStrategy.class);
 
             // finalization
+            put(MatchAlgorithmStrategy.class.getSimpleName(), MatchAlgorithmStrategy.class);
             put(ReferenceElementStrategy.class.getSimpleName(), ReferenceElementStrategy.class);
 
             // optimizations
             put(ProductiveByStrategy.class.getSimpleName(), ProductiveByStrategy.class);
+            put(PathRetractionStrategy.class.getSimpleName(), PathRetractionStrategy.class);
+            put(RepeatUnrollStrategy.class.getSimpleName(), RepeatUnrollStrategy.class);
 
             // verification
             put(EdgeLabelVerificationStrategy.class.getSimpleName(), EdgeLabelVerificationStrategy.class);
             put(LambdaRestrictionStrategy.class.getSimpleName(), LambdaRestrictionStrategy.class);
             put(ReadOnlyStrategy.class.getSimpleName(), ReadOnlyStrategy.class);
             put(ReservedKeysVerificationStrategy.class.getSimpleName(), ReservedKeysVerificationStrategy.class);
+            put(VertexProgramRestrictionStrategy.class.getSimpleName(), VertexProgramRestrictionStrategy.class);
         }};
 
         static {
@@ -322,7 +331,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
         /**
          * Unregisters a strategy by its simple name. If the strategy is not in the registry then the grammar cannot
          * reference it which means that it cannot be removed from execution using
-         * {{@link GraphTraversalSource#withoutStrategies(Class[])}}..
+         * {{@link GraphTraversalSource#withoutStrategies(Class[])}}.
          */
         public static void unregisterStrategy(final Class<? extends TraversalStrategy> clazz) {
             GLOBAL_REGISTRY.remove(clazz.getSimpleName());

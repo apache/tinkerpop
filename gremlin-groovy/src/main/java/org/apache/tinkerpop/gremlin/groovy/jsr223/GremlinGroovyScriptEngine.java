@@ -37,12 +37,6 @@ import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer;
-import org.apache.tinkerpop.gremlin.jsr223.TranslatorCustomizer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -79,7 +73,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -140,7 +133,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     public static final String COLLECTED_BOUND_VARS_MAP_VARNAME = "gremlin_script_engine_collected_boundvars";
 
-    private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
 
     public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>() {
         @Override
@@ -186,7 +178,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private volatile GremlinGroovyScriptEngineFactory factory;
 
-    private static final String STATIC = "static";
     private static final String SCRIPT = "Script";
     private static final String DOT_GROOVY = ".groovy";
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
@@ -198,7 +189,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private final boolean interpreterModeEnabled;
     private final long expectedCompilationTime;
-    private final Optional<Translator.ScriptTranslator.TypeTranslator> typeTranslator;
 
     /**
      * There is no need to require type checking infrastructure if type checking is not enabled.
@@ -257,11 +247,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         interpreterModeEnabled = groovyCustomizers.stream()
                 .anyMatch(p -> p.getClass().equals(InterpreterModeGroovyCustomizer.class));
 
-        final Optional<TranslatorCustomizer> translatorCustomizer = listOfCustomizers.stream().
-                filter(p -> p instanceof TranslatorCustomizer).
-                map(p -> (TranslatorCustomizer) p).findFirst();
-        typeTranslator = translatorCustomizer.map(TranslatorCustomizer::createTypeTranslator);
-
         createClassLoader();
     }
 
@@ -270,35 +255,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     public Set getPlugins() {
         return loadedPlugins;
-    }
-
-    @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
-        // these validations occur before merging in bytecode bindings which will override existing ones. need to
-        // extract the named traversalsource prior to that happening so that bytecode bindings can share the same
-        // namespace as global bindings (e.g. traversalsources and graphs).
-        if (traversalSource.equals(HIDDEN_G))
-            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
-
-        if (bindings.containsKey(HIDDEN_G))
-            throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
-
-        if (!bindings.containsKey(traversalSource))
-            throw new IllegalArgumentException("The bindings available to the ScriptEngine do not contain a traversalSource named: " + traversalSource);
-
-        final Object b = bindings.get(traversalSource);
-        if (!(b instanceof TraversalSource))
-            throw new IllegalArgumentException(traversalSource + " is of type " + b.getClass().getSimpleName() + " and is not an instance of TraversalSource");
-
-        final Bindings inner = new SimpleBindings();
-        inner.putAll(bindings);
-        inner.putAll(bytecode.getBindings());
-        inner.put(HIDDEN_G, b);
-        // DefaultTypeTranslator isn't thread-safe so a new one needs to be instantiated to keep this ScriptEngine thread-safe.
-        final Translator.ScriptTranslator.TypeTranslator translator = typeTranslator.isPresent() ? typeTranslator.get() : new GroovyTranslator.DefaultTypeTranslator(false);
-        org.apache.tinkerpop.gremlin.process.traversal.Script script = GroovyTranslator.of(HIDDEN_G, translator).translate(bytecode);
-        script.getParameters().ifPresent(inner::putAll);
-        return (Traversal.Admin) this.eval(script.getScript(), inner);
     }
 
     /**

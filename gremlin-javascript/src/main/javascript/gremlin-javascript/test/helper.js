@@ -106,14 +106,7 @@ export const getGremlinSocketServerClientNoUserAgent = function getGremlinSocket
   const url = socketServerUrl + settings.PORT + '/gremlin';
   let mimeType = getMimeTypeFromSocketServerSettings(settings)
   return new Client(url, { traversalSource, mimeType, enableUserAgentOnConnect:false });
-}
-
-export const getGremlinSocketServerClientWithOptions = function getGremlinSocketServerClient(traversalSource, options) {
-  const settings = getGremlinSocketServerSettings();
-  const url = socketServerUrl + settings.PORT + '/gremlin';
-  const mimeType = getMimeTypeFromSocketServerSettings(settings)
-  return new Client(url, { traversalSource, mimeType, ...options});
-}
+};
 
 export function getGremlinSocketServerSettings() {
   const settings = jsYaml.load(fs.readFileSync(sockerServerConfigPath, 'utf8'));

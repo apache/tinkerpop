@@ -21,24 +21,22 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation;
 import org.apache.tinkerpop.gremlin.jsr223.DefaultImportCustomizer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.DotNetTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.PythonTranslator;
 import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
@@ -53,9 +51,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -80,8 +80,7 @@ public class GremlinGroovyScriptEngineTest {
     private static final Object[] EMPTY_ARGS = new Object[0];
 
     private static final GremlinGroovyScriptEngine ambiguousNullEngine = new GremlinGroovyScriptEngine(
-            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
+            (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()));
 
     @Test
     public void shouldNotCacheGlobalFunctions() throws Exception {
@@ -475,122 +474,6 @@ public class GremlinGroovyScriptEngineTest {
 	}
 
     @Test
-    public void shouldProduceBindingsForVars() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
-
-        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("g", g);
-        engine.eval("g.V(b).out()", bindings);
-        final Traversal.Admin<Vertex, Vertex> t = (Traversal.Admin<Vertex, Vertex>)
-                engine.eval("g.V(v1Id).has(\"person\",\"age\",29).has('person','active',x).in(\"knows\")." +
-                        System.lineSeparator() +
-                        "mergeE(m1).mergeV(m2).option(Merge.onCreate,m3).mergeV(__.identity())." +
-                        System.lineSeparator() +
-                        "choose(__.out().count()).option(two, __.values(\"name\")).option(three, __.values(\"age\"))." +
-                        System.lineSeparator() +
-                        "filter(outE().count().is(y))."  +
-                        System.lineSeparator() +
-                        "map(l)." +
-                        System.lineSeparator() +
-                        "order().by('name',o)", bindings);
-        final Bytecode bytecode = t.getBytecode();
-        engine.eval("g.V(b).out()", bindings);
-
-        final PythonTranslator translator = PythonTranslator.of("g");
-        final String gremlinAsPython = translator.translate(bytecode).getScript();
-
-        final Map<String,Object> bytecodeBindings = bytecode.getBindings();
-        assertEquals(10, bytecodeBindings.size());
-        assertThat(bytecodeBindings.containsKey("x"), is(true));
-        assertThat(bytecodeBindings.containsKey("y"), is(true));
-        assertThat(bytecodeBindings.containsKey("v1Id"), is(true));
-        assertThat(bytecodeBindings.containsKey("l"), is(true));
-        assertThat(bytecodeBindings.containsKey("o"), is(true));
-        assertThat(bytecodeBindings.containsKey("m1"), is(true));
-        assertThat(bytecodeBindings.containsKey("m2"), is(true));
-        assertThat(bytecodeBindings.containsKey("m3"), is(true));
-        assertThat(bytecodeBindings.containsKey("two"), is(true));
-        assertThat(bytecodeBindings.containsKey("three"), is(true));
-
-        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).merge_v(__.identity()).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
-    }
-
-    @Test
-    public void shouldHandleNaNInf() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((GroovyCustomizer)
-                () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()));
-
-        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("g", g);
-
-        final Traversal.Admin t = (Traversal.Admin)
-                engine.eval("g.inject(-Infinity,NaN,xx1).is(P.eq(Infinity).or(P.eq(NaN)).or(P.eq(+Infinity)))", bindings);
-        final Bytecode bytecode = t.getBytecode();
-
-        final Map<String,Object> bytecodeBindings = bytecode.getBindings();
-        assertEquals(1, bytecodeBindings.size());
-        assertThat(bytecodeBindings.containsKey("xx1"), is(true));
-
-        final JavascriptTranslator jsTranslator = JavascriptTranslator.of("g");
-        final String gremlinAsJs = jsTranslator.translate(bytecode).getScript();
-        assertEquals("g.inject(Number.NEGATIVE_INFINITY,Number.NaN,xx1).is(P.eq(Number.POSITIVE_INFINITY).or(P.eq(Number.NaN)).or(P.eq(Number.POSITIVE_INFINITY)))", gremlinAsJs);
-
-        final PythonTranslator pyTranslator = PythonTranslator.of("g");
-        final String gremlinAsPy = pyTranslator.translate(bytecode).getScript();
-        assertEquals("g.inject(float('-inf'),float('nan'),xx1).is_(P.eq(float('inf')).or_(P.eq(float('nan'))).or_(P.eq(float('inf'))))", gremlinAsPy);
-
-        final DotNetTranslator dnTranslator = DotNetTranslator.of("g");
-        final String gremlinAsDn = dnTranslator.translate(bytecode).getScript();
-        assertEquals("g.Inject(Double.NegativeInfinity,Double.NaN,xx1).Is(P.Eq(Double.PositiveInfinity).Or(P.Eq(Double.NaN)).Or(P.Eq(Double.PositiveInfinity)))", gremlinAsDn);
-    }
-
-    @Test
-    public void shouldHandleCall() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()),
-                (GroovyCustomizer) () -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation())
-        );
-
-        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("g", g);
-
-        final Traversal.Admin t = (Traversal.Admin)
-                engine.eval("g.V().as(\"v\").call(\"tinker.degree.centrality\", xx1, __.project(\"direction\").by(__.constant(OUT))).project(\"vertex\", \"degree\").by(select(\"v\")).by()", bindings);
-        final Bytecode bytecode = t.getBytecode();
-
-        final Map<String,Object> bytecodeBindings = bytecode.getBindings();
-        assertEquals(1, bytecodeBindings.size());
-        assertThat(bytecodeBindings.containsKey("xx1"), is(true));
-
-        final JavascriptTranslator jsTranslator = JavascriptTranslator.of("g");
-        final String gremlinAsJs = jsTranslator.translate(bytecode).getScript();
-        assertEquals("g.V().as(\"v\").call(\"tinker.degree.centrality\",xx1,__.project(\"direction\").by(__.constant(Direction.OUT))).project(\"vertex\",\"degree\").by(__.select(\"v\")).by()", gremlinAsJs);
-
-        final PythonTranslator pyTranslator = PythonTranslator.of("g");
-        final String gremlinAsPy = pyTranslator.translate(bytecode).getScript();
-        assertEquals("g.V().as_('v').call('tinker.degree.centrality',xx1,__.project('direction').by(__.constant(Direction.OUT))).project('vertex','degree').by(__.select('v')).by()", gremlinAsPy);
-
-        final DotNetTranslator dnTranslator = DotNetTranslator.of("g");
-        final String gremlinAsDn = dnTranslator.translate(bytecode).getScript();
-        assertEquals("g.V().As(\"v\").Call<object>(\"tinker.degree.centrality\",(IDictionary<object,object>) xx1,(ITraversal) __.Project<object>(\"direction\").By(__.Constant<object>(Direction.Out))).Project<object>(\"vertex\",\"degree\").By(__.Select<object>(\"v\")).By()", gremlinAsDn);
-
-        // verify no Bindings bleedover
-        final Traversal.Admin t2 = (Traversal.Admin)
-                engine.eval("g.inject([:])", bindings);
-        final Bytecode bytecode2 = t2.getBytecode();
-
-        final Map<String,Object> bytecodeBindings2 = bytecode2.getBindings();
-        assertEquals(0, bytecodeBindings2.size());
-        assertThat(bytecodeBindings2.containsKey("xx1"), is(false));
-    }
-
-
-    @Test
     public void shouldHandleMergeVAmbiguousNull() throws Exception {
         final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
         final Bindings bindings = new SimpleBindings();
@@ -642,5 +525,61 @@ public class GremlinGroovyScriptEngineTest {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         final Object values = engine.eval("values");
         assertEquals(Column.values, values);
+    }
+
+    public static class TestStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
+        private final Configuration configuration;
+
+        public TestStrategy(final Map configuration) {
+            this(new MapConfiguration(configuration));
+        }
+
+        private TestStrategy(final Configuration configuration) {
+            this.configuration = configuration;
+        }
+        @Override
+        public void apply(Traversal.Admin traversal) {
+            // Do nothing
+        }
+
+        @Override
+        public Configuration getConfiguration() {
+            return configuration;
+        }
+
+        public static TestStrategy create(Configuration configuration) {
+            return new TestStrategy(configuration);
+        }
+    }
+
+    @Test
+    public void shouldReconstructCustomRegisteredStrategy() throws ScriptException {
+        GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(DefaultImportCustomizer.build().addClassImports(TestStrategy.class).create());
+        final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
+        final Bindings bindings = new SimpleBindings();
+        bindings.put("g", g);
+
+        GraphTraversal traversal = (GraphTraversal) scriptEngine.eval("g.withStrategies(new TestStrategy(stringKey:\"stringValue\",intKey:1,booleanKey:true)).V()", bindings);
+
+        TestStrategy reconstructedStrategy = traversal.asAdmin().getStrategies().getStrategy(TestStrategy.class).get();
+
+        assertNotNull(reconstructedStrategy);
+
+        MapConfiguration expectedConfig = new MapConfiguration(new HashMap<String, Object>() {{
+            put("stringKey", "stringValue");
+            put("intKey", 1);
+            put("booleanKey", true);
+        }});
+
+        Set<String> expectedKeys = new HashSet<>();
+        Set<String> actualKeys = new HashSet<>();
+        expectedConfig.getKeys().forEachRemaining((key) -> expectedKeys.add(key));
+        reconstructedStrategy.getConfiguration().getKeys().forEachRemaining((key) -> actualKeys.add(key));
+
+        assertEquals(expectedKeys, actualKeys);
+
+        expectedKeys.forEach((key) -> {
+            assertEquals(expectedConfig.get(Object.class, key), reconstructedStrategy.getConfiguration().get(Object.class, key));
+        });
     }
 }

@@ -175,9 +175,9 @@ class TestConsole(object):
     def _expect_gremlin_header(child):
         # skip/read the Gremlin graphics
         child.expect("\r\n")
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
         TestConsole._expect_prompt(child)
 
     @staticmethod

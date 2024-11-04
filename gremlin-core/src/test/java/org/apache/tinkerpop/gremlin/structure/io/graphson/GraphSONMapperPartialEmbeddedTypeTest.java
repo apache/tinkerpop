@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -45,7 +43,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -68,6 +65,9 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
                         .addCustomModule(GraphSONXModuleV3.build())
+                        .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
+                {"v4", GraphSONMapper.build().version(GraphSONVersion.V4_0)
+                        .addCustomModule(GraphSONXModuleV4.build())
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
@@ -77,36 +77,6 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
     @Parameterized.Parameter(1)
     public ObjectMapper mapper;
-
-    @Test
-    public void elementOrderShouldNotMatter() throws Exception {
-        final String bytecodeJSONFail1 = "{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@type\":\"g:Int32\",\"@value\":-4294967295}]]}}";
-        final String bytecodeJSONFail2 = "{\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@value\":-4294967295,\"@type\":\"g:Int32\"}]]},\"@type\":\"g:Bytecode\"}";
-
-        // first validate the failures of TINKERPOP-1738 - prior to the jackson fix on 2.9.4 one of these would have
-        // passed based on the ordering of the properties
-        try {
-            mapper.readValue(bytecodeJSONFail1, Bytecode.class);
-            fail("Should have thrown an error because 'bigint1value' is not an int32");
-        } catch (Exception ex) {
-            assertThat(ex, instanceOf(JsonMappingException.class));
-        }
-
-        try {
-            mapper.readValue(bytecodeJSONFail2, Bytecode.class);
-            fail("Should have thrown an error because 'bigint1value' is not an int32");
-        } catch (Exception ex) {
-            assertThat(ex, instanceOf(JsonMappingException.class));
-        }
-
-        // now do a legit parsing based on order
-        final String bytecodeJSON1 = "{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@type\":\"g:Int64\",\"@value\":-4294967295}]]}}";
-        final String bytecodeJSON2 = "{\"@value\":{\"step\":[[\"addV\",\"poc_int\"],[\"property\",\"bigint1value\",{\"@value\":-4294967295,\"@type\":\"g:Int64\"}]]},\"@type\":\"g:Bytecode\"}";
-
-        final Bytecode bytecode1 = mapper.readValue(bytecodeJSON1, Bytecode.class);
-        final Bytecode bytecode2 = mapper.readValue(bytecodeJSON2, Bytecode.class);
-        assertEquals(bytecode1, bytecode2);
-    }
 
     @Test
     public void shouldSerializeDeserializeNestedCollectionsAndMapAndTypedValuesCorrectly() throws Exception {
@@ -176,7 +146,7 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
 
     @Test
     public void shouldFailIfTypeSpecifiedIsNotSameTypeInPayload() {
-        final ZoneOffset o = ZonedDateTime.now().getOffset();
+        final OffsetDateTime o = OffsetDateTime.now();
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             mapper.writeValue(stream, o);
@@ -185,7 +155,11 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
             mapper.readValue(inputStream, Instant.class);
             fail("Should have failed decoding the value");
         } catch (Exception e) {
-            assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLINX_TYPE_NAMESPACE + ":ZoneOffset') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+            if (version.startsWith("v4")) {
+                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLIN_TYPE_NAMESPACE + ":DateTime') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+            } else {
+                assertThat(e.getMessage(), containsString("Could not deserialize the JSON value as required. Nested exception: java.lang.InstantiationException: Cannot deserialize the value with the detected type contained in the JSON ('" + GraphSONTokens.GREMLINX_TYPE_NAMESPACE + ":OffsetDateTime') to the type specified in parameter to the object mapper (class java.time.Instant). Those types are incompatible."));
+            }
         }
     }
 
@@ -302,13 +276,9 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
-    public void shouldHandleDefaultRemoteTraverser() throws Exception {
-        final DefaultRemoteTraverser<String> o = new DefaultRemoteTraverser<>("test", 100);
-        assertEquals(o, serializeDeserialize(mapper, o, Traverser.class));
-    }
-
-    @Test
     public void shouldHandleVariantsOfP() throws Exception {
+        if (version.startsWith("v4")) return;
+
         final List<P> variantsOfP = Arrays.asList(
                 P.between(1,2),
                 P.eq(1),

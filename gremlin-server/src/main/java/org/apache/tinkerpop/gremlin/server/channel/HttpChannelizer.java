@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
+import io.netty.handler.codec.http.cors.CorsHandler;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -26,6 +29,10 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthorizationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpContentCompressionHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpRequestCheckingHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpRequestMessageDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.HttpUserAgentHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
@@ -46,11 +53,15 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
+    private HttpRequestCheckingHandler httpRequestCheckingHandler = new HttpRequestCheckingHandler();
+    private HttpRequestMessageDecoder httpRequestMessageDecoder = new HttpRequestMessageDecoder(serializers);
+    private HttpRequestIdHandler httpRequestIdHandler = new HttpRequestIdHandler();
+    private HttpContentCompressionHandler httpContentEncoder = new HttpContentCompressionHandler();
 
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings);
+        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(gremlinExecutor, graphManager, settings);
     }
 
     @Override
@@ -63,9 +74,16 @@ public class HttpChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
-        final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxContentLength);
+        pipeline.addLast("http-requestid-handler", httpRequestIdHandler);
+        pipeline.addLast("http-keepalive-handler", new HttpServerKeepAliveHandler());
+        pipeline.addLast("http-cors-handler", new CorsHandler(CorsConfigBuilder.forAnyOrigin().build()));
+
+        final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxRequestContentLength);
         aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
         pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, aggregator);
+        pipeline.addLast("http-request-checker", httpRequestCheckingHandler);
+        pipeline.addLast("http-user-agent-handler", new HttpUserAgentHandler());
+        pipeline.addLast("http-compression-handler", httpContentEncoder);
 
         if (authenticator != null) {
             // Cannot add the same handler instance multiple times unless
@@ -78,12 +96,14 @@ public class HttpChannelizer extends AbstractChannelizer {
                 pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
         }
 
+        // The authorizer needs access to the RequestMessage but the authenticator doesn't.
+        pipeline.addLast("http-requestmessage-decoder", httpRequestMessageDecoder);
+
         if (authorizer != null) {
             final ChannelInboundHandlerAdapter authorizationHandler = new HttpBasicAuthorizationHandler(authorizer);
             pipeline.addLast(PIPELINE_AUTHORIZER, authorizationHandler);
         }
 
-        pipeline.addLast("http-user-agent-handler", new HttpUserAgentHandler());
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
         // Note that channelRead()'s do not propagate down the pipeline past HttpGremlinEndpointHandler
     }
@@ -96,11 +116,5 @@ public class HttpChannelizer extends AbstractChannelizer {
         } else {
             return createAuthenticationHandler(settings);
         }
-    }
-
-    @Override
-    public void finalize(final ChannelPipeline pipeline) {
-        pipeline.remove(PIPELINE_OP_SELECTOR);
-        pipeline.remove(PIPELINE_OP_EXECUTOR);
     }
 }

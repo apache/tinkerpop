@@ -18,33 +18,32 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Data model for the "result" portion of a {@link ResponseMessage}.
  */
 public final class ResponseResult {
-    private final Object data;
-    private final Map<String, Object> meta;
+    private final List<Object> data;
+    private final boolean bulked;
 
-    public ResponseResult(final Object data, final Map<String, Object> meta) {
+    public ResponseResult(final List<Object> data, final boolean bulked) {
+        this.bulked = bulked;
         this.data = data;
-        this.meta = meta;
     }
 
-    public Object getData() {
+    public List<Object> getData() {
         return data;
     }
 
-    public Map<String, Object> getMeta() {
-        return meta;
+    public boolean isBulked() {
+        return bulked;
     }
 
     @Override
     public String toString() {
         return "ResponseResult{" +
                 "data=" + data +
-                ", meta=" + meta +
                 '}';
     }
 }

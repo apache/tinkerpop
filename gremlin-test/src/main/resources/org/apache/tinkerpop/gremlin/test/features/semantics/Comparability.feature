@@ -865,7 +865,7 @@ Feature: Comparability
   ## Infinity vs. Infinity
   ######################################################
     
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfX_eqXInfX
     Given the empty graph
     And the traversal of
@@ -877,7 +877,7 @@ Feature: Comparability
       | result |
       | d[Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfArgX_eqXInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[Infinity]"
@@ -890,7 +890,7 @@ Feature: Comparability
       | result |
       | d[Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfX_neqXInfX
     Given the empty graph
     And the traversal of
@@ -900,7 +900,7 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfArgX_neqXInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[Infinity]"
@@ -911,7 +911,7 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfX_eqXNegInfX
     Given the empty graph
     And the traversal of
@@ -923,7 +923,7 @@ Feature: Comparability
       | result |
       | d[-Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfArgX_eqXNegInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[-Infinity]"
@@ -936,7 +936,7 @@ Feature: Comparability
       | result |
       | d[-Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfX_neqXNegInfX
     Given the empty graph
     And the traversal of
@@ -946,7 +946,7 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfArgX_neqXNegInfX
     Given the empty graph
     And using the parameter xx1 defined as "d[-Infinity]"
@@ -957,7 +957,7 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfX_gtXNegInfX
     Given the empty graph
     And the traversal of
@@ -969,7 +969,7 @@ Feature: Comparability
       | result |
       | d[Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXInfX_ltXNegInfX
     Given the empty graph
     And the traversal of
@@ -979,7 +979,7 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfX_ltXInfX
     Given the empty graph
     And the traversal of
@@ -991,7 +991,7 @@ Feature: Comparability
       | result |
       | d[-Infinity] |
 
-  @GraphComputerVerificationInjectionNotSupported
+  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
   Scenario: InjectXNegInfX_gtXInfX
     Given the empty graph
     And the traversal of

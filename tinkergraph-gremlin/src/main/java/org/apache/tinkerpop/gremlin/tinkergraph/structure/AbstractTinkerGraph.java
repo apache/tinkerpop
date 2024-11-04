@@ -224,8 +224,10 @@ public abstract class AbstractTinkerGraph implements Graph {
             return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV1.instance())).create();
         else if (builder.requiresVersion(GraphSONVersion.V2_0))   // there is no gryo v2
             return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV2.instance())).create();
-        else
+        else if (builder.requiresVersion(GraphSONVersion.V3_0))
             return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV3.instance())).create();
+        else
+            return (I) builder.graph(this).onMapper(mapper -> mapper.addRegistry(TinkerIoRegistryV4.instance())).create();
     }
 
     ////////////// STRUCTURE API METHODS //////////////////

@@ -24,24 +24,21 @@ package org.apache.tinkerpop.gremlin.util.ser;
 public final class SerTokens {
     private SerTokens() {}
 
-    public static final String TOKEN_ATTRIBUTES = "attributes";
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_STATUS = "status";
-    public static final String TOKEN_DATA = "data";
-    public static final String TOKEN_META = "meta";
     public static final String TOKEN_CODE = "code";
-    public static final String TOKEN_REQUEST = "requestId";
+    public static final String TOKEN_DATA = "data";
+    public static final String TOKEN_EXCEPTION = "exception";
     public static final String TOKEN_MESSAGE = "message";
-    public static final String TOKEN_PROCESSOR = "processor";
-    public static final String TOKEN_OP = "op";
-    public static final String TOKEN_ARGS = "args";
+    public static final String TOKEN_GREMLIN = "gremlin";
+    public static final String TOKEN_LANGUAGE = "language";
+    public static final String TOKEN_BINDINGS = "bindings";
+    public static final String TOKEN_G = "g";
+    public static final String TOKEN_TIMEOUT_MS = "timeoutMs";
+    public static final String TOKEN_MATERIALIZE_PROPERTIES = "materializeProperties";
 
     public static final String MIME_JSON = "application/json";
-    public static final String MIME_GRAPHSON_V1 = "application/vnd.gremlin-v1.0+json";
-    public static final String MIME_GRAPHSON_V1_UNTYPED = "application/vnd.gremlin-v1.0+json;types=false";
-    public static final String MIME_GRAPHSON_V2 = "application/vnd.gremlin-v2.0+json";
-    public static final String MIME_GRAPHSON_V2_UNTYPED = "application/vnd.gremlin-v2.0+json;types=false";
-    public static final String MIME_GRAPHSON_V3 = "application/vnd.gremlin-v3.0+json";
-    public static final String MIME_GRAPHSON_V3_UNTYPED = "application/vnd.gremlin-v3.0+json;types=false";
-    public static final String MIME_GRAPHBINARY_V1 = "application/vnd.graphbinary-v1.0";
+    public static final String MIME_GRAPHSON_V4 = "application/vnd.gremlin-v4.0+json";
+    public static final String MIME_GRAPHSON_V4_UNTYPED = "application/vnd.gremlin-v4.0+json;types=false";
+    public static final String MIME_GRAPHBINARY_V4 = "application/vnd.graphbinary-v4.0";
 }

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +48,9 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final Date dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        sb.append("time.UnixMilli(" + dt.getTime() + ")");
+        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        // todo: update when go datetime serializer is implemented
+        sb.append("time.UnixMilli(" + dt.toInstant().toEpochMilli() + ")");
         return null;
     }
 
@@ -194,8 +196,9 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append(GO_PACKAGE_NAME).append(ctx.getText()).append("()");
         else {
-            sb.append(GO_PACKAGE_NAME).append(ctx.getChild(1).getText()).append("(");
-            sb.append(GO_PACKAGE_NAME + ctx.getChild(1).getText() + "Config{");
+            String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
+            sb.append(GO_PACKAGE_NAME).append(strategyName).append("(");
+            sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
 
             // get a list of all the arguments to the strategy - i.e. anything not a terminal node
             final List<ParseTree> configs = ctx.children.stream().

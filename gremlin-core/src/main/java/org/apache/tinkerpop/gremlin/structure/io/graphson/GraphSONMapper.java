@@ -84,7 +84,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     @Override
     public ObjectMapper createMapper() {
         final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
-        om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        if (version != GraphSONVersion.V4_0) {
+            om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        }
 
         final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo);
         om.registerModule(graphSONModule);
@@ -94,7 +96,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (loadCustomSerializers)
             om.findAndRegisterModules();
 
-        if ((version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) && typeInfo != TypeInfo.NO_TYPES) {
+        if ((version == GraphSONVersion.V4_0 || version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) &&
+                typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
@@ -134,15 +137,20 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                         .typeProperty(GraphSONTokens.CLASS);
                 om.setDefaultTyping(typer);
             }
-        } else if (version == GraphSONVersion.V3_0) {
+        } else if (version == GraphSONVersion.V3_0 || version == GraphSONVersion.V4_0) {
 
         } else {
             throw new IllegalStateException("Unknown GraphSONVersion: " + version);
         }
 
-        // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
-        final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
-        om.setSerializerProvider(provider);
+        // Starting with GraphSONv4, only types that can be returned from the result of a traversal are supported. This
+        // differs to previous versions where a gremlin-groovy script could return any type. So if an unknown type is
+        // encountered, an error should be thrown.
+        if (version != GraphSONVersion.V4_0) {
+            // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
+            final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
+            om.setSerializerProvider(provider);
+        }
 
         if (normalize)
             om.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
@@ -199,7 +207,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
-        private GraphSONVersion version = GraphSONVersion.V3_0;
+        private GraphSONVersion version = GraphSONVersion.V4_0;
         private boolean includeDefaultXModule = false;
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
@@ -218,7 +226,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V3_0}.
+         * Set the version of GraphSON to use. The default is {@link GraphSONVersion#V4_0}.
          */
         public Builder version(final GraphSONVersion version) {
             this.version = version;
@@ -253,7 +261,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Supply a default extension module of V2_0 and V3_0 for serialization/deserialization.
+         * Supply a default extension module of V2_0, V3_0 and V4_0 for serialization/deserialization.
          */
         public Builder addDefaultXModule(final boolean includeDefaultXModule) {
             this.includeDefaultXModule = includeDefaultXModule;
@@ -321,6 +329,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                     this.addCustomModule(GraphSONXModuleV2.build().create(this.normalize, typeInfo));
                 } else if (this.version == GraphSONVersion.V3_0) {
                     this.addCustomModule(GraphSONXModuleV3.build().create(this.normalize, typeInfo));
+                } else if (this.version == GraphSONVersion.V4_0) {
+                    this.addCustomModule(GraphSONXModuleV4.build().create(this.normalize, typeInfo));
                 }
             }
 

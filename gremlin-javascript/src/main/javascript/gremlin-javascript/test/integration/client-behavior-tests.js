@@ -18,7 +18,7 @@
  */
 
 import assert from 'assert';
-import { getGremlinSocketServerClient, getGremlinSocketServerSettings, getGremlinSocketServerClientNoUserAgent, getGremlinSocketServerClientWithOptions } from '../helper.js';
+import { getGremlinSocketServerClient, getGremlinSocketServerSettings, getGremlinSocketServerClientNoUserAgent } from '../helper.js';
 import { getUserAgent } from "../../lib/utils.js";
 
 let client;
@@ -60,33 +60,6 @@ describe('Client', function () {
             assert.strictEqual(result.first(), "");
 
             await noUserAgentClient.close();
-        });
-        it('should not request permessage deflate compression by default', async function () {
-            const result = await client.submit('1', null, {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
-            const returnedExtensions = result.first()
-            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
-        });
-        it('should not request permessage deflate compression when disabled', async function () {
-            const noCompressionClient = getGremlinSocketServerClientWithOptions('gmodern',
-                {enableCompression: false});
-            const result = await noCompressionClient.submit('1', null,
-                {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
-
-            const returnedExtensions = result.first()
-            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
-
-            await noCompressionClient.close();
-        });
-        it('should request permessage deflate compression when enabled', async function () {
-            const compressionClient = getGremlinSocketServerClientWithOptions('gmodern',
-                {enableCompression: true});
-            const result = await compressionClient.submit('1', null,
-                {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
-
-            const returnedExtensions = result.first()
-            assert.ok(returnedExtensions.includes("permessage-deflate;"))
-
-            await compressionClient.close();
         });
         it('should send per request settings to server', async function () {
             const resultSet = await client.submit('1', null, {
