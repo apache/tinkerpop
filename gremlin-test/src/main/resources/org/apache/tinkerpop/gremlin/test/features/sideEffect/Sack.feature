@@ -38,24 +38,24 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(0.0).V().outE().sack(Operator.sum).by("weight").inV().sack().sum()
+      g.withSack(0.0d).V().outE().sack(Operator.sum).by("weight").inV().sack().sum()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3.5].m |
+      | d[3.5].d |
 
   Scenario: g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack
     Given the modern graph
     And the traversal of
       """
-      g.withSack(0.0).V().repeat(__.outE().sack(Operator.sum).by("weight").inV()).times(2).sack()
+      g.withSack(0.0d).V().repeat(__.outE().sack(Operator.sum).by("weight").inV()).times(2).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[2.0].m |
-      | d[1.4].m |
+      | d[2.0].d |
+      | d[1.4].d |
 
   @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
@@ -63,12 +63,12 @@ Feature: Step - sack()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withBulk(false).withSack(1.0, Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
+      g.withBulk(false).withSack(1.0d, Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].m |
+      | d[1.0].d |
 
   @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
@@ -90,13 +90,13 @@ Feature: Step - sack()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withSack(1.0, Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
+      g.withSack(1.0d, Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].m |
-      | d[1.0].m |
+      | d[1.0].d |
+      | d[1.0].d |
 
   Scenario: g_V_sackXassignX_byXageX_sack
     Given the modern graph
