@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -73,7 +73,7 @@ public abstract class AbstractWarningVerificationStrategy
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> m = new HashMap<>(2);
+        final Map<String, Object> m = new LinkedHashMap<>(2);
         m.put(THROW_EXCEPTION, this.throwException);
         m.put(LOG_WARNING, this.logWarning);
         return new MapConfiguration(m);
