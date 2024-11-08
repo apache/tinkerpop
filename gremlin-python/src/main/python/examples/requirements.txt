@@ -24,5 +24,5 @@ charset-normalizer==3.3.2
 frozenlist==1.4.1
 idna==3.10
 isodate==0.6.1
-multidict==6.0.5
+multidict==6.1.0
 yarl==1.13.1
