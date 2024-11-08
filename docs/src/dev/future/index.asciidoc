@@ -336,18 +336,3 @@ Work may include adding the ability to debug queries and traversals, adding Open
 ==== Type System [[type-system]]
 TinkerPop has not had one's own type system defined and has been relying on the JVM types, which becomes a problem especially in
 GLVs that doesn't have corresponding types defined in their language. (link:https://lists.apache.org/thread/rpdq3ywk6vqpyv512to36ot8yqvjo3dv[DISCUSS thread])
-
-=== 4.x Branching Methodology
-
-Development of 4.x occurs on the `4.0-dev` branch. This branch was created as an orphan branch and therefore has no
-history tied to any other branch in the repo including master. As such, there is no need to merge/rebase `4.0-dev`. When
-it comes time to promote `4.0-dev` to `master` the procedure for doing so will be to:
-
-1. Create a `3.x-master` branch from `master`
-1. Delete all content from `master` in one commit
-1. Rebase `4.0-dev` on `master`
-1. Merge `4.0-dev` to `master` and push
-
-From this point 3.x development will occur on `3.x-master` and 4.x development occurs on `master` (with the same version
-branching as we have now, e.g `3.3-dev`, `4.1-dev`, etc.) The `3.x-master` branch changes will likely still merge to
-`master`, but will all merge as no-op changes.
