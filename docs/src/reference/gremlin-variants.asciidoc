@@ -2099,7 +2099,6 @@ To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(
 [source,bash]
 ----
 pip install gremlinpython
-pip install gremlinpython[kerberos]     # Optional, not available on Microsoft Windows
 ----
 
 [[gremlin-python-connecting]]
@@ -2111,42 +2110,35 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 
 [source,python]
 ----
-g = traversal().with_remote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin','g'))
 ----
 
-If you need to send additional headers in the websockets connection, you can pass an optional `headers` parameter
+If you need to send additional headers in the HTTP connection, you can pass an optional `headers` parameter
 to the `DriverRemoteConnection` constructor.
 
 [source,python]
 ----
-g = traversal().with_remote(DriverRemoteConnection(
-    'ws://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
+g = traversal().with_(DriverRemoteConnection(
+    'http://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
 ----
 
-Gremlin-Python supports plain text and Kerberos SASL authentication, you can set it on the connection options.
+Gremlin-Python contains an `auth` module that allows custom authentication implementation, with plain text and SigV4
+authentication provided as reference.
 
 [source,python]
 ----
 # Plain text authentication
-g = traversal().with_remote(DriverRemoteConnection(
-    'ws://localhost:8182/gremlin', 'g', username='stephen', password='password'))
+g = traversal().with_(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', auth=basic('stephen', 'password')))
 
-# Kerberos authentication
-g = traversal().with_remote(DriverRemoteConnection(
-    'ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org'))
+# SigV4 authentication
+g = traversal().with_(DriverRemoteConnection(
+    'ws://localhost:8182/gremlin', 'g', auth=sigv4(service-region, service-name)))
 ----
 
-The value specified for the kerberized_service should correspond to the first part of the principal name configured for
-the gremlin service, but with the slash replaced by an _at_ sign. The Gremlin-Python client reads the kerberos
-configurations from your system. It finds the KDC's hostname and port from the krb5.conf file at the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or as indicated in the KRB5_CONFIG
-environment variable. It finds credentials from the credential cache or a keytab file at the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default locations] or as indicated
-in the KRB5CCNAME or KRB5_KTNAME environment variables.
-
 If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
-<<connecting-rgp,Remote Gremlin Provider>>, this server normally has SSL activated and the websockets url will start
-with 'wss://'. If Gremlin-Server uses a self-signed certificate for SSL, Gremlin-Python needs access to a local copy of
+<<connecting-rgp,Remote Gremlin Provider>>, this server normally has SSL activated and the HTTP url will start
+with 'https://'. If Gremlin-Server uses a self-signed certificate for SSL, Gremlin-Python needs access to a local copy of
 the CA certificate file (in openssl .pem format), to be specified in the SSL_CERT_FILE environment variable.
 
 NOTE: If connecting from an inherently single-threaded Python process where blocking while waiting for Gremlin
@@ -2162,8 +2154,8 @@ Some connection options can also be set on individual requests made through the 
 vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
-`evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulked`, `language`, `materializeProperties`,
+`userAgent`, and `evaluationTimeout`.
 
 anchor:python-imports[]
 [[gremlin-python-imports]]
@@ -2255,48 +2247,31 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |interceptors |The request interceptors to run after request serialization.|`None`
-|password |The password to submit on requests that require authentication. |""
+|auth |The authentication scheme to use when submitting requests that require authentication. |`None`
 |pool_size |The number of connections used by the pool. |4
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
 |transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
-|username |The username to submit on requests that require authentication. |""
-|kerberized_service |the first part of the principal name configured for the gremlin service|"""
-|session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
+|enable_bulked_result |Enables bulking of results on the server. |False
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
 pass through of the named parameters available in
-link:https://docs.aiohttp.org/en/stable/client_reference.html#aiohttp.ClientSession.ws_connect[AIOHTTP's ws_connect],
+link:https://docs.aiohttp.org/en/stable/client_reference.html#aiohttp.ClientSession[AIOHTTP's HTTP ClientSession],
 and the ability to call the api from an event loop:
 
 [source,python]
 ----
 import ssl
 ...
-g = traversal().with_remote(
-  DriverRemoteConnection('ws://localhost:8182/gremlin','g',
-                         transport_factory=lambda: AiohttpTransport(read_timeout=60,
-                                                                    write_timeout=20,
-                                                                    heartbeat=10,
-                                                                    call_from_event_loop=True,
-                                                                    max_content_length=100*1024*1024,
+g = traversal().with_(
+  DriverRemoteConnection('http://localhost:8182/gremlin','g',
+                         transport_factory=lambda: AiohttpTransport(timeout=60,
+                                                                    max_line_size=100*1024*1024,
                                                                     ssl_options=ssl.create_default_context(Purpose.CLIENT_AUTH))))
 ----
-
-Note that the `heartbeat` enables keep-alive functionality within aiohttp and it is not enabled by default. It is
-important that the heartbeat interval is not too short, as the wait for the server response to the heartbeat request
-is half the amount of this value. Therefore, if the heartbeat is ten seconds then the wait for the response is just
-five seconds. If the response is not received in that time period then the connection will be closed and any ongoing
-requests on that connection will fail to retrieve results. Therefore, if the heartbeat is set to one second, it only
-provides a half-second to get the response which raises the possibility considerably that the connection will be
-inadvertently closed.
-
-Compression configuration options are described in the
-link:https://docs.python.org/3.6/library/zlib.html#zlib.compressobj[zlib documentation]. By default, compression
-settings are configured as shown in the above example.
 
 [[gremlin-python-strategies]]
 === Traversal Strategies
@@ -2330,6 +2305,7 @@ re-construction machine-side.
 
 [[gremlin-python-transactions]]
 === Transactions
+WARNING: Transaction is currently disabled in this Milestone release.
 
 To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
@@ -2359,41 +2335,6 @@ except Exception as e:
 
 ----
 
-[[gremlin-python-lambda]]
-=== The Lambda Solution
-
-Supporting link:https://en.wikipedia.org/wiki/Anonymous_function[anonymous functions] across languages is difficult as
-most languages do not support lambda introspection and thus, code analysis. In Gremlin-Python, a Gremlin lambda should
-be represented as a zero-arg callable that returns a string representation of the lambda expected for use in the
-traversal. The lambda should be written as a `Gremlin-Groovy` string. When the lambda is represented in `Bytecode` its
-language is encoded such that the remote connection host can infer which translator and ultimate execution engine to
-use.
-
-[source,python]
-----
->>> g.V().out().map(lambda: "it.get().value('name').length()").sum().to_list()
-[24]
-----
-
-TIP: When running into situations where Groovy cannot properly discern a method signature based on the `Lambda`
-instance created, it will help to fully define the closure in the lambda expression - so rather than
-`lambda: ('it.get().value('name')','gremlin-groovy')`, prefer `lambda: ('x -> x.get().value('name'),'gremlin-groovy')`.
-
-Finally, Gremlin `Bytecode` that includes lambdas requires that the traversal be processed by the
-`ScriptEngine`. To avoid continued recompilation costs, it supports the encoding of bindings, which allow a remote
-engine to to cache traversals that will be reused over and over again save that some parameterization may change. Thus,
-instead of translating, compiling, and then executing each submitted bytecode, it is possible to simply execute.
-
-[source,python]
-----
->>> g.V(Bindings.of('x',1)).out('created').map(lambda: "it.get().value('name').length()").sum_().to_list()
-[3]
->>> g.V(Bindings.of('x',4)).out('created').map(lambda: "it.get().value('name').length()").sum_().to_list()
-[9]
-----
-
-WARNING: As explained throughout the documentation, when possible <<a-note-on-lambdas,avoid>> lambdas.
-
 [[gremlin-python-scripts]]
 === Submitting Scripts
 
@@ -2404,7 +2345,7 @@ Usage is as follows:
 [source,python]
 ----
 from gremlin_python.driver import client <1>
-client = client.Client('ws://localhost:8182/gremlin', 'g') <2>
+client = client.Client('http://localhost:8182/gremlin', 'g') <2>
 ----
 
 <1> Import the Gremlin-Python `client` module.
