@@ -54,6 +54,7 @@ traversal strategies may not function properly.
 
 [[transactions]]
 == Traversal Transactions
+WARNING: Transaction is currently disabled in this Milestone release.
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
 represents a unit of work to execute against the database. A traversals unit of work is affected by usage convention
