@@ -140,7 +140,7 @@ TinkerPop has several release branches:
 * `3.3-dev` - 3.3.x (no longer maintained)
 * `3.4-dev` - 3.4.x (no longer maintained)
 * `3.5-dev` - 3.5.x (no longer maintained)
-* `3.6-dev` - 3.6.x (non-breaking bug fixes and enhancements)
+* `3.6-dev` - 3.6.x (no longer maintained)
 * `3.7-dev` - 3.7.x (non-breaking bug fixes and enhancements)
 * `master` - 4.x.x (current development)
 
