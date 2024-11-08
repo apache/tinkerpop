@@ -55,6 +55,8 @@ public class IdentityRemovalStrategyTest {
                 {__.match(__.as("a").out("knows").identity().as("b"),__.as("b").identity()).identity(), __.match(__.as("a").out("knows").as("b"),__.as("b"))},
                 {__.union(__.out().identity(), __.identity(), __.out()), __.union(__.out(), __.identity(), __.out())},
                 {__.choose(__.out().identity(), __.identity(), __.out("knows")), __.choose(__.out(), __.identity(), __.out("knows"))},
+                {__.repeat(__.identity()), __.repeat(__.identity())},
+                {__.repeat(__.out().identity()), __.repeat(__.out())},
                 {__.identity().out().identity(), __.out()},
                 {__.identity().as("a").out().identity(), __.identity().as("a").out()},
                 {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
