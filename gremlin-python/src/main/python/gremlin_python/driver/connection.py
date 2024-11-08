@@ -42,9 +42,7 @@ class Connection:
             self.__add_header(useragent.userAgentHeader, useragent.userAgent)
         self._enable_bulked_result = enable_bulked_result
         if self._enable_bulked_result:
-            if self._headers is None:
-                self._headers = dict()
-            self._headers["bulked"] = "true"
+            self.__add_header("bulked", "true")
 
     def connect(self):
         if self._transport:

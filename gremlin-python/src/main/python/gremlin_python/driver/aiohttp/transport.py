@@ -16,6 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import json
+
 import aiohttp
 import asyncio
 import sys
@@ -123,6 +125,10 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
                     if self._max_content_len and len(
                             data_buffer) > self._max_content_len:
                         raise Exception(f'Response size {len(data_buffer)} exceeds limit {self._max_content_len} bytes')
+                    if self._http_req_resp.headers.get('content-type') == 'application/json':
+                        message = json.loads(data_buffer.decode('utf-8'))
+                        err = message.get('message')
+                        raise Exception(f'Server disconnected with error message: "{err}" - please try to reconnect')
                     return data_buffer
             return self._loop.run_until_complete(async_read())
             # raise Exception('missing handling of streamed responses to protocol')

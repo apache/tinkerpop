@@ -203,19 +203,6 @@ statics.add_static('BOTH', Direction.BOTH)
 statics.add_static('from_', Direction.OUT)
 statics.add_static('to', Direction.IN)
 
-# TODO to be removed
-GraphSONVersion = Enum('GraphSONVersion', ' V1_0 V2_0 V3_0')
-
-statics.add_static('V1_0', GraphSONVersion.V1_0)
-statics.add_static('V2_0', GraphSONVersion.V2_0)
-statics.add_static('V3_0', GraphSONVersion.V3_0)
-
-# TODO to be removed
-GryoVersion = Enum('GryoVersion', ' V1_0 V3_0')
-
-statics.add_static('V1_0', GryoVersion.V1_0)
-statics.add_static('V3_0', GryoVersion.V3_0)
-
 DT = Enum('DT', ' second minute hour day')
 
 statics.add_static('second', DT.second)

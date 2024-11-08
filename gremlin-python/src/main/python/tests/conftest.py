@@ -134,11 +134,15 @@ def remote_connection(request):
         return remote_conn
 
 
-@pytest.fixture(params=['graphbinaryv4'])
+@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
 def remote_connection_crew(request):
     try:
         if request.param == 'graphbinaryv4':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew')
+        elif request.param == 'graphsonv4':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 request_serializer=serializer.GraphSONSerializersV4(),
+                                                 response_serializer=serializer.GraphSONSerializersV4())
         else:
             raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
