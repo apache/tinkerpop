@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.neo4j.process.traversal;
 
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 
 import java.io.Serializable;
-import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,8 +43,7 @@ public final class LabelP extends P<String> {
      * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
      */
     @Deprecated
-    public static final class LabelBiPredicate implements BiPredicate<String, String>, Serializable {
-
+    public static final class LabelBiPredicate implements PBiPredicate<String, String>, Serializable {
         private static final LabelBiPredicate INSTANCE = new LabelBiPredicate();
 
         private LabelBiPredicate() {

@@ -37,12 +37,12 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             _traversers = traversersToAddOnApplication;
         }
 
-        public void Apply<S, E>(ITraversal<S, E> traversal)
+        public void Apply<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)
         {
             traversal.Traversers = _traversers;
         }
 
-        public Task ApplyAsync<S, E>(ITraversal<S, E> traversal, CancellationToken cancellationToken)
+        public Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal, CancellationToken cancellationToken)
         {
             traversal.Traversers = _traversers;
             return Task.CompletedTask;

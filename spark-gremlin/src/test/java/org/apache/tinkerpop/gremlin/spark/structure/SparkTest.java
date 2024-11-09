@@ -51,6 +51,23 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SparkTest extends AbstractSparkTest {
+    @Test
+    public void testCustomizedSparkAppName() {
+	final String appName = "SparkAppNameTest";
+	final org.apache.spark.SparkConf sparkConfiguration = new org.apache.spark.SparkConf();
+	sparkConfiguration.set("spark.app.name", appName);
+	sparkConfiguration.set("spark.master", "local[4]");
+	final org.apache.spark.SparkContext sparkContext = Spark.create(sparkConfiguration);
+	assertEquals(appName, sparkContext.getConf().get("spark.app.name"));
+    }
+
+    @Test
+    public void testDefaultSparkAppName() {
+	final org.apache.spark.SparkConf sparkConfiguration = new org.apache.spark.SparkConf();
+	sparkConfiguration.set("spark.master", "local[4]");
+	final org.apache.spark.SparkContext sparkContext = Spark.create(sparkConfiguration);
+	assertEquals(Spark.DEFAULT_APP_NAME, sparkContext.getConf().get("spark.app.name"));
+    }
 
     @Test
     public void testSparkRDDPersistence() throws Exception {
@@ -61,7 +78,7 @@ public class SparkTest extends AbstractSparkTest {
 
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, TestFiles.PATHS.get("tinkerpop-modern-v3d0.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, TestFiles.PATHS.get("tinkerpop-modern-v3.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_WRITER, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);

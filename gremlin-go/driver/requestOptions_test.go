@@ -44,6 +44,10 @@ func TestRequestOptions(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create()
 		assert.Equal(t, "TestUserAgent", r.userAgent)
 	})
+	t.Run("Test RequestOptionsBuilder with custom materializeProperties", func(t *testing.T) {
+		r := new(RequestOptionsBuilder).SetMaterializeProperties("TestMaterializeProperties").Create()
+		assert.Equal(t, "TestMaterializeProperties", r.materializeProperties)
+	})
 	t.Run("Test RequestOptionsBuilder with custom bindings", func(t *testing.T) {
 		bindings := map[string]interface{}{"x": 2, "y": 5}
 		r := new(RequestOptionsBuilder).SetBindings(bindings).Create()

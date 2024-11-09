@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV2d0;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.shaded.jackson.core.StreamReadConstraints;
 import org.junit.Test;
 
@@ -40,10 +40,10 @@ public class ClusterConfigTest {
         config.setProperty("serializer.config.maxNestingDepth", 55);
         config.setProperty("hosts", Arrays.asList("localhost"));
 
-        config.setProperty("serializer.className", GraphSONMessageSerializerV3d0.class.getCanonicalName());
+        config.setProperty("serializer.className", GraphSONMessageSerializerV3.class.getCanonicalName());
         final Cluster cluster = Cluster.open(config);
-        assertTrue(cluster.getSerializer() instanceof GraphSONMessageSerializerV3d0);
-        final GraphSONMessageSerializerV3d0 serV3 = (GraphSONMessageSerializerV3d0) cluster.getSerializer();
+        assertTrue(cluster.getSerializer() instanceof GraphSONMessageSerializerV3);
+        final GraphSONMessageSerializerV3 serV3 = (GraphSONMessageSerializerV3) cluster.getSerializer();
         final StreamReadConstraints constraints = serV3.getMapper().getFactory().streamReadConstraints();
 
         assertEquals(999, constraints.getMaxNumberLength());
@@ -59,10 +59,10 @@ public class ClusterConfigTest {
         config.setProperty("serializer.config.maxNestingDepth", 55);
         config.setProperty("hosts", Arrays.asList("localhost"));
 
-        config.setProperty("serializer.className", GraphSONMessageSerializerV2d0.class.getCanonicalName());
+        config.setProperty("serializer.className", GraphSONMessageSerializerV2.class.getCanonicalName());
         final Cluster cluster = Cluster.open(config);
-        assertTrue(cluster.getSerializer() instanceof GraphSONMessageSerializerV2d0);
-        final GraphSONMessageSerializerV2d0 serV2 = (GraphSONMessageSerializerV2d0) cluster.getSerializer();
+        assertTrue(cluster.getSerializer() instanceof GraphSONMessageSerializerV2);
+        final GraphSONMessageSerializerV2 serV2 = (GraphSONMessageSerializerV2) cluster.getSerializer();
         final StreamReadConstraints constraints = serV2.getMapper().getFactory().streamReadConstraints();
 
         assertEquals(999, constraints.getMaxNumberLength());

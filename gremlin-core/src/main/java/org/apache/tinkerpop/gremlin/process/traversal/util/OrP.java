@@ -20,13 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -65,16 +63,13 @@ public final class OrP<V> extends ConnectiveP<V> {
     }
 
     @Override
-    public String getPredicateName() { return "or"; }
-
-    @Override
     public OrP<V> clone() {
         final OrP<V> clone = (OrP<V>) super.clone();
         clone.biPredicate = new OrBiPredicate(clone);
         return clone;
     }
 
-    private class OrBiPredicate implements BiPredicate<V, V>, Serializable {
+    private class OrBiPredicate implements PBiPredicate<V, V>, Serializable {
 
         private final OrP<V> orP;
 
@@ -97,6 +92,11 @@ public final class OrP<V> extends ConnectiveP<V> {
             if (typeError != null)
                 throw typeError;
             return false;
+        }
+
+        @Override
+        public String getPredicateName() {
+            return "or";
         }
     }
 }

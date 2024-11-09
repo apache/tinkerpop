@@ -41,7 +41,7 @@ import java.util.function.BiPredicate;
  * @author Pierre De Wilde
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Contains implements BiPredicate<Object, Collection> {
+public enum Contains implements PBiPredicate<Object, Collection> {
 
     /**
      * The first object is within the {@code Collection} provided in the second object. The second object may not be

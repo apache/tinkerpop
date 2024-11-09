@@ -114,7 +114,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     }
 
                     StepBlock? currentStep = null;
-                    StepDefinition stepDefinition = null;
+                    StepDefinition? stepDefinition = null;
                     foreach (var step in scenario.Steps)
                     {
                         var previousStep = currentStep;
@@ -238,13 +238,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
         }
 
-        private Exception ExecuteStep(StepDefinition instance, StepBlock stepBlock, Step step)
+        private Exception? ExecuteStep(StepDefinition instance, StepBlock stepBlock, Step step)
         {
             var attribute = Attributes[stepBlock];
             var methodAndParameters = instance.GetType().GetMethods()
                 .Select(m =>
                 {
-                    var attr = (BddAttribute) m.GetCustomAttribute(attribute);
+                    var attr = (BddAttribute?) m.GetCustomAttribute(attribute);
                     
                     if (attr == null)
                     {
@@ -255,7 +255,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     {
                         return null;
                     }
-                    var parameters = new List<object>();
+                    var parameters = new List<object?>();
                     for (var i = 1; i < match.Groups.Count; i++)
                     {
                         parameters.Add(match.Groups[i].Value);
@@ -358,7 +358,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException($"No step definition class matches Given '{stepText}'");
             }
-            return (StepDefinition) Activator.CreateInstance(type);
+            return (StepDefinition) Activator.CreateInstance(type)!;
         }
 
         private ICollection<Type> GetStepDefinitionTypes()
@@ -391,9 +391,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             var codeBaseUrl = new Uri(GetType().GetTypeInfo().Assembly.Location);
             var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
-            DirectoryInfo rootDir = null;
-            for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath));
-                dir.Parent != null;
+            DirectoryInfo? rootDir = null;
+            for (var dir = Directory.GetParent(Path.GetDirectoryName(codeBasePath)!);
+                dir!.Parent != null;
                 dir = dir.Parent)
             {
                 if (dir.Name == "gremlin-dotnet" && dir.GetFiles("pom.xml").Length == 1)

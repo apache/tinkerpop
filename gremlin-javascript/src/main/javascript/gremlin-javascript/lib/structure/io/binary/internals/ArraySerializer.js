@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 module.exports = class ArraySerializer {
   constructor(ioc, ID) {
     this.ioc = ioc;

@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.8</version>
+        <version>3.7.4-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-core</artifactId>
     <name>Apache TinkerPop :: Gremlin Core</name>
@@ -34,6 +34,14 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-language</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -70,15 +78,6 @@ limitations under the License.
             <groupId>net.objecthunter</groupId>
             <artifactId>exp4j</artifactId>
             <version>${exp4j.version}</version>
-        </dependency>
-        <!-- LOGGING -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
         <!-- TESTING -->
         <dependency>

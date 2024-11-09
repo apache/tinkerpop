@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
@@ -32,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,6 +57,7 @@ public class Context {
     private final ScheduledExecutorService scheduledExecutorService;
     private final AtomicBoolean finalResponseWritten = new AtomicBoolean();
     private final long requestTimeout;
+    private final String materializeProperties;
     private final RequestContentType requestContentType;
     private final Object gremlinArgument;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
@@ -94,6 +99,7 @@ public class Context {
         this.gremlinArgument = requestMessage.getArgs().get(Tokens.ARGS_GREMLIN);
         this.requestContentType = determineRequestContents();
         this.requestTimeout = determineTimeout();
+        this.materializeProperties = determineMaterializeProperties();
     }
 
     public void setTimeoutExecutor(final ScheduledFuture<?> timeoutExecutor) {
@@ -123,6 +129,10 @@ public class Context {
      */
     public long getRequestTimeout() {
         return requestTimeout;
+    }
+
+    public String getMaterializeProperties() {
+        return materializeProperties;
     }
 
     public boolean isFinalResponseWritten() {
@@ -292,5 +302,37 @@ public class Context {
                 GremlinScriptChecker.parse(gremlinArgument.toString()).getTimeout() : Optional.empty();
 
         return timeoutDefinedInScript.orElse(seto);
+    }
+
+    private String determineMaterializeProperties() {
+        // with() in Script request has the highest priority
+        if (requestContentType == RequestContentType.SCRIPT) {
+            final Optional<String> mp = GremlinScriptChecker.parse(gremlinArgument.toString()).getMaterializeProperties();
+            if (mp.isPresent())
+                return mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                        ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                        : Tokens.MATERIALIZE_PROPERTIES_ALL;
+        }
+
+        final Map<String, Object> args = requestMessage.getArgs();
+        // all options except MATERIALIZE_PROPERTIES_TOKENS treated as MATERIALIZE_PROPERTIES_ALL
+        return args.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)
+                && args.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)
+                ? Tokens.MATERIALIZE_PROPERTIES_TOKENS
+                : Tokens.MATERIALIZE_PROPERTIES_ALL;
+    }
+
+    public void handleDetachment(final List<Object> aggregate) {
+        if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+            final Object firstElement = aggregate.get(0);
+
+            if (firstElement instanceof Element) {
+                for (int i = 0; i < aggregate.size(); i++)
+                    aggregate.set(i, ReferenceFactory.detach((Element) aggregate.get(i)));
+            } else if (firstElement instanceof AbstractTraverser) {
+                for (final Object item : aggregate)
+                    ((AbstractTraverser) item).detach();
+            }
+        }
     }
 }

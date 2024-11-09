@@ -21,6 +21,8 @@
 
 #endregion
 
+using System.Linq;
+
 namespace Gremlin.Net.Structure
 {
     /// <summary>
@@ -35,8 +37,9 @@ namespace Gremlin.Net.Structure
         /// <param name="label">The label of the vertex property.</param>
         /// <param name="value">The id of the vertex property.</param>
         /// <param name="vertex">The (optional) <see cref="Vertex" /> that owns this <see cref="VertexProperty" />.</param>
-        public VertexProperty(object id, string label, dynamic value, Vertex vertex = null)
-            : base(id, label)
+        /// <param name="properties">Optional properties of the VertexProperty.</param>
+        public VertexProperty(object? id, string label, dynamic? value, Vertex? vertex = null, dynamic[]? properties = null)
+            : base(id, label, properties)
         {
             Value = value;
             Vertex = vertex;
@@ -45,17 +48,26 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     The value of this <see cref="VertexProperty" />.
         /// </summary>
-        public dynamic Value { get; }
+        public dynamic? Value { get; }
 
         /// <summary>
         ///     The <see cref="Vertex" /> that owns this <see cref="VertexProperty" />.
         /// </summary>
-        public Vertex Vertex { get; }
+        public Vertex? Vertex { get; }
 
         /// <summary>
         ///     The key of this <see cref="VertexProperty" />.
         /// </summary>
         public string Key => Label;
+
+        /// <summary>
+        /// Get property by key
+        /// </summary>
+        /// <returns>property or null when not found</returns>
+        public Property? Property(string key)
+        {
+            return Properties?.Cast<Property>().FirstOrDefault(p => p.Key == key);
+        }
 
         /// <inheritdoc />
         public override string ToString()

@@ -1,6 +1,0 @@
-{
-  "step" : [ [ "V" ], [ "has", "label", {
-    "predicate" : "eq",
-    "value" : "person"
-  } ], [ "out" ], [ "in" ], [ "tree" ] ]
-}

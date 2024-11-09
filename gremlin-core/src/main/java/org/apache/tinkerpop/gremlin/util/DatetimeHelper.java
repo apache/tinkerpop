@@ -34,7 +34,6 @@ import java.util.Date;
 import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-import static java.time.format.DateTimeFormatter.ISO_TIME;
 
 /**
  * Utility class for parsing and formatting dates/times.
@@ -127,5 +126,12 @@ public final class DatetimeHelper {
      */
     public static Date datetime(final String d) {
         return parse(d);
+    }
+
+    /**
+     * A proxy allows for syntax similar to Gremlin grammar of {@code datetime()}.
+     */
+    public static Date datetime() {
+        return new Date();
     }
 }

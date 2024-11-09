@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const g = require('../../../graph');
 
 module.exports = class VertexPropertySerializer {
@@ -154,7 +155,7 @@ module.exports = class VertexPropertySerializer {
       // {properties} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which contains properties. Note that as TinkerPop currently send "references" only, this value will always be null.
       let properties, properties_len;
       try {
-        ({ v: properties, len: properties_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
+        ({ v: properties, len: properties_len } = this.ioc.anySerializer.deserialize(cursor));
         len += properties_len;
       } catch (err) {
         err.message = '{properties}: ' + err.message;
@@ -163,7 +164,10 @@ module.exports = class VertexPropertySerializer {
       // TODO: should we verify that properties is null?
       cursor = cursor.slice(properties_len);
 
-      const v = new g.VertexProperty(id, label, value, properties);
+      // null properties are deserialized into empty lists
+      const vp_props = properties ? properties : [];
+
+      const v = new g.VertexProperty(id, label, value, vp_props);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });

@@ -44,6 +44,10 @@ public class SeedStrategy extends AbstractTraversalStrategy<TraversalStrategy.De
 
     private final long seed;
 
+    /**
+     * @deprecated As of release 3.7.3, replaced by {@link #build()#seed}.
+     */
+    @Deprecated
     public SeedStrategy(final long seed) {
         this.seed = seed;
     }
@@ -75,5 +79,28 @@ public class SeedStrategy extends AbstractTraversalStrategy<TraversalStrategy.De
         map.put(ID_SEED, this.seed);
         map.put(STRATEGY, SeedStrategy.class.getCanonicalName());
         return new MapConfiguration(map);
+    }
+
+    /**
+     * Builds a {@code SeedStrategy} instance.
+     */
+    public static Builder build() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private long seed = 0;
+
+        /**
+         * Set the seed value for the strategy that will ensure deterministic results from {@link Seedable} steps.
+         */
+        public Builder seed(final long seed) {
+            this.seed = seed;
+            return this;
+        }
+
+        public SeedStrategy create() {
+            return new SeedStrategy(seed);
+        }
     }
 }

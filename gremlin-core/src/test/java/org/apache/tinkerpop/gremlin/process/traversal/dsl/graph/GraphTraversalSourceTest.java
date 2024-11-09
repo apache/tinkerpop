@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -96,12 +96,12 @@ public class GraphTraversalSourceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailMergeEForBadInput() {
-        g.mergeE(CollectionFactory.asMap(T.value, "nope"));
+        g.mergeE(CollectionUtil.asMap(T.value, "nope"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailMergeVForBadInput() {
-        g.mergeV(CollectionFactory.asMap(T.value, "nope"));
+        g.mergeV(CollectionUtil.asMap(T.value, "nope"));
     }
 
     /**

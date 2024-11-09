@@ -32,7 +32,6 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Structure.IO.GraphBinary;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using NSubstitute.Extensions;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
@@ -77,7 +76,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 mockedClientWebSocket
                     .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
                     .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, (WebSocketCloseStatus)closeStatus, closeStatus.ToString()));
-    
+
                 await AssertExpectedConnectionClosedException((WebSocketCloseStatus?)closeStatus, closeStatus.ToString(), () => webSocketConnection.ReceiveMessageAsync());
             }
 
@@ -86,7 +85,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
                 .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, null));
             await AssertExpectedConnectionClosedException(null, null, () => webSocketConnection.ReceiveMessageAsync());
-            
+
             mockedClientWebSocket
                 .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
                 .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, string.Empty));
@@ -198,7 +197,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var task = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
                 cts.Token);
             cts.Cancel();
-            
+
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
             Assert.True(task.IsCanceled);
             await mockedClientWebSocket.Received(1).SendAsync(Arg.Any<ArraySegment<byte>>(),
@@ -207,7 +206,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 Arg.Any<CancellationToken>());
             await mockedClientWebSocket.DidNotReceive().ReceiveAsync(Arg.Any<ArraySegment<byte>>(), cts.Token);
         }
-        
+
         [Fact]
         public async Task ShouldProperlyHandleCancellationForSubmitAsyncIfAlreadyCancelled()
         {
@@ -218,7 +217,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
             var task = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
                 token);
-            
+
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
             Assert.True(task.IsCanceled);
             await mockedClientWebSocket.DidNotReceive().SendAsync(Arg.Any<ArraySegment<byte>>(),
@@ -227,7 +226,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 Arg.Any<CancellationToken>());
             await mockedClientWebSocket.DidNotReceive().ReceiveAsync(Arg.Any<ArraySegment<byte>>(), token);
         }
-        
+
         [Fact]
         public async Task ShouldContinueSubmittingOtherMessagesIfOneIsCancelled()
         {
@@ -238,7 +237,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
             var connection = GetConnection(mockedClientWebSocket);
             var cts = new CancellationTokenSource();
-            
+
             var taskToCancel = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
                 cts.Token);
             var taskToComplete = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
@@ -247,14 +246,14 @@ namespace Gremlin.Net.UnitTest.Driver
             var taskToComplete2 = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
                 CancellationToken.None);
             tcs.TrySetResult();
-            
+
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await taskToCancel);
             Assert.True(taskToCancel.IsCanceled);
             await Task.Delay(TimeSpan.FromMilliseconds(400)); // wait a bit to let the messages being sent
             await mockedClientWebSocket.Received(3).SendAsync(Arg.Any<ArraySegment<byte>>(),
                 Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         }
-        
+
         [Fact]
         public async Task ShouldContinueSubmittingOtherMessagesIfOneIsAlreadyCancelled()
         {
@@ -270,11 +269,11 @@ namespace Gremlin.Net.UnitTest.Driver
             fakeMessageSerializer.SerializeMessageAsync(messageToSend, Arg.Any<CancellationToken>())
                 .Returns(bytesToSend);
             var connection = GetConnection(mockedClientWebSocket, fakeMessageSerializer);
-            
+
             var taskToCancel = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
                 cancelledToken);
             var taskToComplete = connection.SubmitAsync<object>(messageToSend, CancellationToken.None);
-            
+
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await taskToCancel);
             Assert.True(taskToCancel.IsCanceled);
             await mockedClientWebSocket.Received(1).SendAsync(bytesToSend, Arg.Any<WebSocketMessageType>(),
@@ -287,10 +286,8 @@ namespace Gremlin.Net.UnitTest.Driver
             var fakeMessageSerializer = Substitute.For<IMessageSerializer>();
             var receivedBytes = new byte[] { 1, 2, 3 };
             var messageToCancel = RequestMessage.Build(string.Empty).Create();
-            var receivedMessage = new ResponseMessage<List<object>>
-            {
-                RequestId = messageToCancel.RequestId, Status = new ResponseStatus { Code = ResponseStatusCode.Success }
-            };
+            var receivedMessage = new ResponseMessage<List<object>>(messageToCancel.RequestId,
+                new ResponseStatus(ResponseStatusCode.Success), new ResponseResult<List<object>>(null));
             fakeMessageSerializer.DeserializeMessageAsync(receivedBytes, Arg.Any<CancellationToken>())
                 .Returns(receivedMessage);
             var fakeWebSocketConnection = Substitute.For<IWebSocketConnection>();
@@ -299,24 +296,24 @@ namespace Gremlin.Net.UnitTest.Driver
             var connection = GetConnection(fakeWebSocketConnection, fakeMessageSerializer);
             await connection.ConnectAsync(CancellationToken.None);
             var cts = new CancellationTokenSource();
-            
+
             var submitTask = connection.SubmitAsync<object>(messageToCancel, cts.Token);
             cts.Cancel();
             receiveTaskCompletionSource.SetResult(receivedBytes);
             await Assert.ThrowsAsync<TaskCanceledException>(() => submitTask);
-            
+
             Assert.Equal(0, connection.NrRequestsInFlight);
         }
 
         private static Connection GetConnection(IClientWebSocket clientWebSocket,
-            IMessageSerializer messageSerializer = null, Uri uri = null)
+            IMessageSerializer? messageSerializer = null, Uri? uri = null)
         {
             return GetConnection(new WebSocketConnection(clientWebSocket, new WebSocketSettings()), messageSerializer,
                 uri);
         }
-        
+
         private static Connection GetConnection(IWebSocketConnection webSocketConnection,
-            IMessageSerializer messageSerializer = null, Uri uri = null)
+            IMessageSerializer? messageSerializer = null, Uri? uri = null)
         {
             uri ??= new Uri("wss://localhost:8182");
             messageSerializer ??= new GraphBinaryMessageSerializer();
@@ -329,9 +326,10 @@ namespace Gremlin.Net.UnitTest.Driver
                 sessionId: null);
         }
 
-        private static async Task AssertExpectedConnectionClosedException(WebSocketCloseStatus? expectedCloseStatus, string expectedCloseDescription, Func<Task> func)
+        private static async Task AssertExpectedConnectionClosedException(WebSocketCloseStatus? expectedCloseStatus,
+            string? expectedCloseDescription, Func<Task> func)
         {
-            ConnectionClosedException exception = await Assert.ThrowsAsync<ConnectionClosedException>(func);
+            var exception = await Assert.ThrowsAsync<ConnectionClosedException>(func);
             Assert.Equal(expectedCloseStatus, exception.Status);
             Assert.Equal(expectedCloseDescription, exception.Description);
         }

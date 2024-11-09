@@ -32,13 +32,13 @@ public static class MockedLoggerExtensions
     public static void VerifyMessageWasLogged(this ILogger logger, LogLevel expectedLogLevel, string logMessagePart)
     {
         logger.Received().Log(expectedLogLevel, Arg.Any<EventId>(),
-            Arg.Is<Arg.AnyType>((object a) => a.ToString().Contains(logMessagePart)), null,
-            Arg.Any<Func<Arg.AnyType, Exception, string>>());
+            Arg.Is<Arg.AnyType>((object a) => a.ToString()!.Contains(logMessagePart)), null,
+            Arg.Any<Func<Arg.AnyType, Exception?, string>>());
     }
-    
+
     public static void VerifyNothingWasLogged(this ILogger logger)
     {
         logger.DidNotReceive().Log(Arg.Any<LogLevel>(), Arg.Any<EventId>(), Arg.Any<Arg.AnyType>(),
-            Arg.Any<Exception>(), Arg.Any<Func<Arg.AnyType, Exception, string>>());
+            Arg.Any<Exception>(), Arg.Any<Func<Arg.AnyType, Exception?, string>>());
     }
 }

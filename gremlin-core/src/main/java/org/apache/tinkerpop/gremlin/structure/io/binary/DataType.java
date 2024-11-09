@@ -71,6 +71,7 @@ public enum DataType {
     METRICS(0x2C),
     TRAVERSALMETRICS(0x2D),
     MERGE(0x2E),
+    DT(0x2F),
 
     CHAR(0X80),
     DURATION(0X81),

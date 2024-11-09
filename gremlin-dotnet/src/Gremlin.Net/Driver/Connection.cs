@@ -45,9 +45,9 @@ namespace Gremlin.Net.Driver
         private readonly IMessageSerializer _messageSerializer;
         private readonly Uri _uri;
         private readonly IWebSocketConnection _webSocketConnection;
-        private readonly string _username;
-        private readonly string _password;
-        private readonly string _sessionId;
+        private readonly string? _username;
+        private readonly string? _password;
+        private readonly string? _sessionId;
         private readonly bool _sessionEnabled;
 
         private readonly ConcurrentQueue<(RequestMessage msg, CancellationToken cancellationToken)> _writeQueue = new();
@@ -60,8 +60,8 @@ namespace Gremlin.Net.Driver
         private int _writeInProgress = 0;
         private const int Closed = 1;
 
-        public Connection(IWebSocketConnection webSocketConnection, Uri uri, string username, string password,
-            IMessageSerializer messageSerializer, string sessionId)
+        public Connection(IWebSocketConnection webSocketConnection, Uri uri, string? username, string? password,
+            IMessageSerializer messageSerializer, string? sessionId)
         {
             _uri = uri;
             _username = username;
@@ -131,7 +131,8 @@ namespace Gremlin.Net.Driver
             var receivedMsg = await _messageSerializer.DeserializeMessageAsync(received).ConfigureAwait(false);
             if (receivedMsg == null)
             {
-                ThrowMessageDeserializedNull();
+                throw new InvalidOperationException(
+                    "Received data deserialized into null object message. Cannot operate on it.");
             }
 
             try
@@ -154,9 +155,6 @@ namespace Gremlin.Net.Driver
                 }
             }
         }
-
-        private static void ThrowMessageDeserializedNull() =>
-            throw new InvalidOperationException("Received data deserialized into null object message. Cannot operate on it.");
 
         private void HandleReceivedMessage(ResponseMessage<List<object>> receivedMsg)
         {
@@ -302,7 +300,7 @@ namespace Gremlin.Net.Driver
             {
                 msgBuilder.AddArgument(kv.Key, kv.Value);
             }
-            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId);
+            msgBuilder.AddArgument(Tokens.ArgsSession, _sessionId!);
             return msgBuilder.Create();
         }
 

@@ -21,6 +21,8 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +46,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(value.Label, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent vertex
@@ -52,24 +54,24 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             
             // placeholder for properties
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
-
         }
 
         /// <inheritdoc />
         protected override async Task<VertexProperty> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            var vp = new VertexProperty(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
-                await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
+            var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var value = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
             // discard the parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            
-            // discard the properties
-            await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            
-            return vp;
+
+            var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();
+
+            return new VertexProperty(id, label, value, null, propertiesAsArray);
         }
     }
 }

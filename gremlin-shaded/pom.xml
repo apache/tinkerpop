@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.8</version>
+        <version>3.7.4-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-shaded</artifactId>
     <name>Apache TinkerPop :: Gremlin Shaded</name>
@@ -112,6 +112,13 @@ limitations under the License.
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <minimizeJar>false</minimizeJar>
                             <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resources>
+                                        <resource>META-INF/licenses/kryo</resource>
+                                        <resource>META-INF/licenses/minlog</resource>
+                                        <resource>META-INF/licenses/bigint</resource>
+                                    </resources>
+                                </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/kryo</resource>
                                     <file>src/main/static/licenses/kryo</file>

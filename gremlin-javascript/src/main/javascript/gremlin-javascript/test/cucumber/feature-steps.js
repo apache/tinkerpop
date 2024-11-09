@@ -41,9 +41,11 @@ const t = traversalModule.t;
 const P = traversalModule.P;
 const direction = traversalModule.direction;
 const merge = traversalModule.merge;
-
+const deepMembersById = require('./element-comparison').deepMembersById;
 const parsers = [
+  [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
+  [ 'dt\\[(.+)\\]', toDateTime ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
@@ -62,6 +64,12 @@ const parsers = [
   [ 'M\\[(.+)\\]', toMerge ]
 ].map(x => [ new RegExp('^' + x[0] + '$'), x[1] ]);
 
+chai.use(function (chai, chaiUtils) {
+  chai.Assertion.overwriteMethod('members', function (_super) {
+    return deepMembersById;
+  });
+});
+
 const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   setNotSupported: "There is no Set support in gremlin-javascript",
@@ -73,6 +81,52 @@ const ignoredScenarios = {
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_V_out_in_valuesXnameX_fold_dedupXlocalX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnonexistantX_fold_differenceXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnameX_fold_differenceXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_differenceXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_path_byXvaluesXnameX_toUpperX_differenceXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXmarkoX_differenceXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valueMapXlocationX_selectXvaluesX_unfold_differenceXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_differenceXrippleX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_differenceXempty_listX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_differenceXconstantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_differenceXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_differenceXa_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_differenceXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectX3_threeX_differenceXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnonexistantX_fold_disjunctXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnameX_fold_disjunctXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_disjunctXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_path_byXvaluesXnameX_toUpperX_disjunctXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valueMapXlocationX_selectXvaluesX_unfold_disjunctXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_disjunctXmarkoX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_disjunctXstephen_markoX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_disjunctXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_disjunctXa_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_disjunctXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectX3_threeX_disjunctXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnonexistantX_fold_intersectXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnameX_fold_intersectXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_path_byXvaluesXnameX_toUpperX_intersectXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXmarkoX_intersectX___V_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valueMapXlocationX_selectXvaluesX_unfold_intersectXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_intersectX___constantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_intersectXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_intersectXa_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_intersectXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectX3_threeX_intersectXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnonexistantX_fold_mergeXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXnameX_fold_mergeXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_mergeXV_valuesXageX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_path_byXvaluesXnameX_toUpperX_mergeXMARKOX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXmarkoX_mergeXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valueMapXlocationX_selectXvaluesX_unfold_mergeXseattle_vancouverX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_mergeXempty_listX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_valuesXageX_fold_mergeXconstantX27X_foldX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_V_out_out_path_byXnameX_mergeXdave_kelvinX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_mergeXa_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectXa_null_bX_mergeXa_null_cX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_injectX3_threeX_mergeXfive_three_7X': new IgnoreError(ignoreReason.setNotSupported),
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
@@ -132,17 +186,30 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   });
 });
 
+var removeProperties = function(p) {
+  if (p === undefined) {   
+  } else if (p instanceof graphModule.Vertex || p instanceof graphModule.Edge) {
+    p.properties = undefined;
+  } else if (p instanceof Array) {
+    p.forEach(removeProperties)
+  } else if (p instanceof Map) {
+    removeProperties(Array.from(p.keys()))
+    removeProperties(Array.from(p.values()))
+  } else if (p instanceof graphModule.Path) {
+    removeProperties(p.objects)
+  }
+
+  return p
+}
+
 When('iterated to list', function () {
-  return this.traversal.toList().then(list => this.result = list).catch(err => this.result = err);
+  return this.traversal.toList().then(list => this.result = removeProperties(list)).catch(err => this.result = err);
 });
 
 When('iterated next', function () {
   return this.traversal.next().then(it => {
-    this.result = it.value;
-    if (this.result instanceof Path) {
-      // Compare using the objects array
-      this.result = this.result.objects;
-    }
+    // for Path compare using the objects array
+    this.result = removeProperties(it.value instanceof Path ? it.value.objects : it.value )
   }).catch(err => this.result = err);
 });
 
@@ -179,7 +246,7 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
+      expect(toCompare(this.result)).to.have.deep.members(toCompare(expectedResult));
       break;
     case 'of':
       // result is a subset of the expected
@@ -352,6 +419,10 @@ function toDirection(value) {
     return direction["from_"];
   else
     return direction[value.toLowerCase()];
+}
+
+function toDateTime(value) {
+  return new Date(value);
 }
 
 function toMerge(value) {

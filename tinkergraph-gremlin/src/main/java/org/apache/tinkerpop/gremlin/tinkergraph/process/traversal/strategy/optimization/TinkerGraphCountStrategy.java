@@ -29,8 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -41,8 +39,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This strategy will do a direct {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper#getVertices}
- * size call if the traversal is a count of the vertices and edges of the graph or a one-to-one map chain thereof.
+ * This strategy will do a graph size call if the traversal is a count of the vertices and edges of the graph
+ * or a one-to-one map chain thereof.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>

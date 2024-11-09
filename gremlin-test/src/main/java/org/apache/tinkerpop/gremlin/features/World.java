@@ -81,4 +81,17 @@ public interface World {
     public default String convertIdToScript(final Object id, final Class<? extends Element> type) {
         return id.toString();
     }
+
+    /**
+     * Allows for some flexibility in error message assertion, where the provider can handle assertions themselves.
+     * Providers should use standard assertion logic as they would with tests. Note that if this method is called, then
+     * the exception has happened and that the only point of concern for assertion is the message. Providers can not use
+     * this method as a way to avoid throwing an exception in the first place. TinkerPop tries to not be too
+     * prescriptive with error messages and while we recommend providers conform to our messages it is not required.
+     * @return {@code true} if the assertion was handled and {@code false} if default handling should be engaged
+     */
+    public default boolean handleErrorMessageAssertion(final String comparison, final String expectedMessage,
+                                                       final Throwable actualException) {
+        return false;
+    }
 }

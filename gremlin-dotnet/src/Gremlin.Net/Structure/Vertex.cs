@@ -21,6 +21,9 @@
 
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Gremlin.Net.Structure
 {
     /// <summary>
@@ -38,9 +41,19 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="id">The id of the vertex.</param>
         /// <param name="label">The label of the vertex.</param>
-        public Vertex(object id, string label = DefaultLabel)
-            : base(id, label)
+        /// <param name="properties">Optional properties of the vertex.</param>
+        public Vertex(object? id, string label = DefaultLabel, dynamic[]? properties = null)
+            : base(id, label, properties)
         {
+        }
+
+        /// <summary>
+        /// Get property by key
+        /// </summary>
+        /// <returns>property or null when not found</returns>
+        public VertexProperty? Property(string key)
+        {
+            return Properties?.Cast<VertexProperty>().FirstOrDefault(p => p.Key == key);
         }
 
         /// <inheritdoc />

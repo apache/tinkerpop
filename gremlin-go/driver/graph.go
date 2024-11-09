@@ -32,8 +32,9 @@ type Graph struct {
 // Element is the base structure for both Vertex and Edge.
 // The inherited identifier must be unique to the inheriting classes.
 type Element struct {
-	Id    interface{}
-	Label string
+	Id         interface{}
+	Label      string
+	Properties interface{}
 }
 
 // Vertex contains a single Vertex which has a Label and an Id.
@@ -74,12 +75,12 @@ type Path struct {
 
 // String returns the string representation of the vertex.
 func (v *Vertex) String() string {
-	return fmt.Sprintf("v[%s]", v.Id)
+	return fmt.Sprintf("v[%v]", v.Id)
 }
 
 // String returns the string representation of the edge.
 func (e *Edge) String() string {
-	return fmt.Sprintf("e[%s][%s-%s->%s]", e.Id, e.OutV.Id, e.Label, e.InV.Id)
+	return fmt.Sprintf("e[%v][%v-%s->%v]", e.Id, e.OutV.Id, e.Label, e.InV.Id)
 }
 
 // String returns the string representation of the vertex property.

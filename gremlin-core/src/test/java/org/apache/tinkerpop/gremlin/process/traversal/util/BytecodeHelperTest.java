@@ -45,6 +45,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -71,18 +72,19 @@ public class BytecodeHelperTest {
     public void shouldFindStrategy() {
         final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(g.with("x").with("y", 100).V().asAdmin().getBytecode(), OptionsStrategy.class);
         int counter = 0;
-        while(itty.hasNext()) {
-            final OptionsStrategy strategy = itty.next();
-            if (strategy.getOptions().keySet().contains("x")) {
-                assertThat(strategy.getOptions().get("x"), is(true));
-                counter++;
-            } else if (strategy.getOptions().keySet().contains("y")) {
-                assertEquals(100, strategy.getOptions().get("y"));
-                counter++;
-            }
+
+        final OptionsStrategy strategy = itty.next();
+        if (strategy.getOptions().keySet().contains("x")) {
+            assertThat(strategy.getOptions().get("x"), is(true));
+            counter++;
         }
 
+        if (strategy.getOptions().keySet().contains("y")) {
+            assertEquals(100, strategy.getOptions().get("y"));
+            counter++;
+        }
         assertEquals(2, counter);
+        assertFalse(itty.hasNext()); // There should only be a single source instruction per strategy.
     }
 
     @Test

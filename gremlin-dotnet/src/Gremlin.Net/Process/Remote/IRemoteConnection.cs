@@ -39,7 +39,7 @@ namespace Gremlin.Net.Process.Remote
         /// <param name="bytecode">The <see cref="Bytecode" /> to send.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The <see cref="ITraversal" /> with the results and optional side-effects.</returns>
-        Task<ITraversal<S, E>> SubmitAsync<S, E>(Bytecode bytecode, CancellationToken cancellationToken = default);
+        Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Creates a <see cref="RemoteTransaction" /> in the context of a <see cref="GraphTraversalSource" /> designed to work with

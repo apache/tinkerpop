@@ -22,6 +22,7 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
 const g = require('../../../graph');
 
 module.exports = class VertexSerializer {
@@ -126,7 +127,10 @@ module.exports = class VertexSerializer {
       }
       cursor = cursor.slice(properties_len);
 
-      const v = new g.Vertex(id, label, properties);
+      // null properties are deserialized into empty lists
+      const vertex_props = properties ? properties : [];
+
+      const v = new g.Vertex(id, label, vertex_props);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });

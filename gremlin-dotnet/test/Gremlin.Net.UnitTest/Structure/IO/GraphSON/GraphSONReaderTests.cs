@@ -74,7 +74,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSON);
             var deserializedValue = reader.ToObject(jsonElement);
         
-            Assert.Equal("test", deserializedValue.Value);
+            Assert.Equal("test", deserializedValue!.Value);
         }
         
         [Fact]
@@ -118,7 +118,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedDict);
             var deserializedValue = reader.ToObject(jsonElement);
         
-            var expectedDict = new Dictionary<string, dynamic>
+            var expectedDict = new Dictionary<string, dynamic?>
             {
                 {"age", new List<object> {29}},
                 {"name", new List<object> {"marko"}},
@@ -136,7 +136,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Edge readEdge = reader.ToObject(jsonElement);
+            Edge readEdge = reader.ToObject(jsonElement)!;
         
             Assert.Equal((long) 17, readEdge.Id);
             Assert.Equal("knows", readEdge.Label);
@@ -286,7 +286,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
             var deserializedValue = reader.ToObject(jsonElement);
         
-            Assert.Equal(new List<object> {5, 6, null}, deserializedValue);
+            Assert.Equal(new List<object?> {5, 6, null}, deserializedValue);
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -296,11 +296,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            T readT = reader.ToObject(jsonElement);
+            T readT = reader.ToObject(jsonElement)!;
         
             Assert.Equal(T.Label, readT);
         }
-        
+
         [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDirection(int version)
         {
@@ -311,6 +311,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jsonElement);
         
             Assert.Equal(Direction.Out, deserializedValue);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeDT(int version)
+        {
+            const string serializedValue = "{\"@type\":\"g:DT\",\"@value\":\"minute\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
+            var deserializedValue = reader.ToObject(jsonElement);
+
+            Assert.Equal(DT.Minute, deserializedValue);
         }
 
         [Theory, MemberData(nameof(Versions))]
@@ -333,7 +345,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(2);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Path readPath = reader.ToObject(jsonElement);
+            Path readPath = reader.ToObject(jsonElement)!;
         
             Assert.Equal("path[v[1], v[3], lop]", readPath.ToString());
             Assert.Equal(new Vertex(1), readPath[0]);
@@ -351,7 +363,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(3);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Path readPath = reader.ToObject(jsonElement);
+            Path readPath = reader.ToObject(jsonElement)!;
         
             Assert.Equal("path[v[5]]", readPath.ToString());
             Assert.Equal(new Vertex(5L), readPath[0]);
@@ -370,13 +382,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Property readProperty = reader.ToObject(jsonElement);
+            Property readProperty = reader.ToObject(jsonElement)!;
         
             Assert.Equal("aKey", readProperty.Key);
             Assert.Equal((long) 17, readProperty.Value);
-            Assert.Equal(typeof(Edge), readProperty.Element.GetType());
+            Assert.Equal(typeof(Edge), readProperty.Element!.GetType());
             var edge = readProperty.Element as Edge;
-            Assert.Equal((long) 122, edge.Id);
+            Assert.Equal((long) 122, edge!.Id);
             Assert.Equal("knows", edge.Label);
             Assert.Equal("x", edge.InV.Id);
             Assert.Equal("y", edge.OutV.Id);
@@ -415,7 +427,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            VertexProperty readVertexProperty = reader.ToObject(jsonElement);
+            VertexProperty readVertexProperty = reader.ToObject(jsonElement)!;
         
             Assert.Equal("anId", readVertexProperty.Id);
             Assert.Equal("aKey", readVertexProperty.Label);
@@ -431,7 +443,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            VertexProperty readVertexProperty = reader.ToObject(jsonElement);
+            VertexProperty readVertexProperty = reader.ToObject(jsonElement)!;
         
             Assert.Equal(1, readVertexProperty.Id);
             Assert.Equal("name", readVertexProperty.Label);
@@ -460,7 +472,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Vertex deserializedValue = reader.ToObject(jsonElement);
+            Vertex deserializedValue = reader.ToObject(jsonElement)!;
         
             Assert.Equal("person", deserializedValue.Label);
         }
@@ -473,11 +485,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
-            Vertex readVertex = reader.ToObject(jsonElement);
+            Vertex readVertex = reader.ToObject(jsonElement)!;
         
             Assert.Equal(new Vertex(1), readVertex);
             Assert.Equal("person", readVertex.Label);
-            Assert.Equal(typeof(int), readVertex.Id.GetType());
+            Assert.Equal(typeof(int), readVertex.Id!.GetType());
         }
         
         [Theory, MemberData(nameof(VersionsSupportingCollections))]
@@ -576,7 +588,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var reader = CreateStandardGraphSONReader(version);
         
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
-            Traverser deserializedValue = reader.ToObject(jsonElement);
+            Traverser deserializedValue = reader.ToObject(jsonElement)!;
             
             Assert.Equal(10, deserializedValue.Bulk);
             Assert.Equal(1, deserializedValue.Object);

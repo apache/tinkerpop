@@ -23,12 +23,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -49,7 +51,7 @@ public abstract class AbstractClient implements SimpleClient {
 
     @Override
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
-        callbackResponseHandler.callback = callback;
+        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), callback);
         writeAndFlush(requestMessage);
     }
 
@@ -65,7 +67,7 @@ public abstract class AbstractClient implements SimpleClient {
     public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception {
         final List<ResponseMessage> results = new ArrayList<>();
         final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
-        callbackResponseHandler.callback = response -> {
+        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), response -> {
             if (f.isDone())
                 throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
 
@@ -75,7 +77,7 @@ public abstract class AbstractClient implements SimpleClient {
             if (response.getStatus().getCode().isFinalResponse()) {
                 f.complete(results);
             }
-        };
+        });
 
         writeAndFlush(requestMessage);
 
@@ -83,11 +85,11 @@ public abstract class AbstractClient implements SimpleClient {
     }
 
     static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        public Consumer<ResponseMessage> callback;
+        public Map<UUID, Consumer<ResponseMessage>> callbackByRequestId = new HashMap<>();
 
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            callback.accept(response);
+            callbackByRequestId.get(response.getRequestId()).accept(response);
         }
     }
 }

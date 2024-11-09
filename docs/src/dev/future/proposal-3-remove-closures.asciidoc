@@ -1,0 +1,1531 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+== Proposal 3 - Removing the Need for Closures/Lambda in Gremlin
+
+=== Status
+
+This proposal has been accepted through a post to the TinkerPop Dev List and is ready to begin implementaion.
+
+=== Motivation
+
+There are a number of useful operations that Gremlin users often wish to
+perform that are not provided today in the form of traversal steps or
+predicates (P/TextP). For historical reasons these functions were
+omitted and users were able to accomplish these tasks by specifying
+anonymous code blocks or “closures” to perform these tasks. For example,
+below is an example of how you can achieve a case-insensitive search for
+any cities that contain “Miami”.
+
+....
+g.V().hasLabel('city').
+    has('name',filter{it.get().toLowerCase().contains('Miami'.toLowerCase())})
+....
+
+While this is just one example of how closures are used, they are a
+powerful fallback mechanism in Gremlin to handle use cases where there
+is no functionality within the Gremlin language to meet the
+requirements. However, for a variety of reasons such as security and
+performance, many/most remote providers of TinkerPop do not allow users
+to execute closures as part of a query. This leaves users with a
+problem, as the mechanism provided to solve these sorts of use cases is
+not allowed. Examples of some commonly requested functionality that
+cannot be accomplished without the use of closures would be:
+
+[cols=",,",options="header",]
+|===
+|String Functions |List Functions |Date Functions
+|asString |reverse |dateAdd
+|concat |remove |dateDiff
+|length |indexOf |asDate
+|split |product |
+|substring |all |
+|rTrim |any |
+|lTrim |none |
+|trim |concat |
+|replace |length |
+|reverse |intersect |
+|toUpper |difference |
+|toLower |union |
+|===
+
+=== Considerations
+
+* Adding full support for traversals as parameters to predicates would
+simplify the syntax of these examples. However, this is a known issue
+with Gremlin and none of the proposed options below are blocked by it,
+nor do they exacerbated this issue any further. As such, the
+ramifications of that change are not covered by this proposal.
+
+=== Proposed Options and Recommendation
+
+==== Option 1 (Recommended)
+
+Create a new Gremlin step for each of the desired functions a user is
+looking to perform. Each step encapsulates a set of functionality that
+customers are looking to achieve. While certain steps may be reused
+across input types (e.g. `reverse()` for both list and string inputs)
+the behaviors of each step is well-defined for a given input type.
+
+*Example*: Find me all `city` nodes with a `name` starting with `miami`,
+ignoring case?
+`g.V().hasLabel('city').where(values('name').toLower(), eq('miami'))`
+
+===== Pros:
+
+* Most similar to current Gremlin patterns for adding steps
+* Feel the most like Gremlin when writing the
+
+===== Cons:
+
+* Would result in a potentially large number of steps being added to the
+language, hindering discoverability
+* Adds complexity to creating and maintaining all the current GLVs due
+to the number of new steps.
+
+==== Option 2
+
+Create a single Gremlin step that take the operation as a parameter and
+uses that parameter to mutate the behavior to achieve the desired
+functionality.
+
+*Example*: : Find me all `city` nodes with a `name` starting with
+`miami`, ignoring case?
+`g.V().hasLabel('city').where(F.apply(Func.toLower, values('name')), eq('miami'))`
+
+===== Pros:
+
+* Single step simplifies adding new operations across GLVs
+
+===== Cons:
+
+* Introduces a novel concept, a function, to the Gremlin language
+* No set signature for `F.apply` as it will differ per operation
+
+==== Option 3
+
+Create a new type of predicate in Gremlin that specifies the operation
+and returns the correct output. This would be a new paradigm within
+Gremlin, as it extends predicates to return non-boolean results.
+
+*Example*:: Find me all `city` nodes with a `name` starting with
+`miami`, ignoring case?
+`g.V().hasLabel('city').where(SP.toLower(values('name')).is('miami'))`
+
+===== Pros:
+
+* Single predicate simplifies adding new operations as they are now a
+token and not a new step that needs to be propagated across all the GLVs
+
+===== Cons:
+
+* New paradigm in Gremlin that further blurs the line between predicates
+and steps
+* Signature differs for each predicate operation
+* Signatures of common steps needs to change to include options like
+`where(Predicate)`
+
+=== Proposed Syntax
+
+<<string-function-syntax>>
+
+<<list-function-syntax>>
+
+<<date-function-syntax>>
+
+=== Examples
+
+==== String Examples
+
+===== String Example 1 (SE1)
+
+I want to find the offices, by name, where the name does not have a "-"
+as the third character of the string
+(https://stackoverflow.com/questions/56115935/gremlin-is-there-a-way-to-find-the-character-based-on-the-index-of-a-string[here])
+
+`g.V().hasLabel('office').where(__.values('name').substr(2, 1)).is(neq('-'))) `
+
+===== String Example 2 (SE2)
+
+I would like to trim out the "Mbit/s" from the string
+(https://stackoverflow.com/questions/45365726/im-unable-to-substring-values-that-i-get-by-running-a-gremlin-query-ive-been[here])
+
+`g.V('Service').has('serviceId','ETHA12819844').out('AssociatedToService').`
+`value("bandwidth").replace("Mbit/s", "")`
+
+===== String Example 3 (SE3)
+
+I am trying to add a new vertex which should be labeled like an existing
+vertex but with some prefix attached
+(https://stackoverflow.com/questions/61106927/concatenate-gremlin-graphtraversal-result-with-string[here])
+
+....
+`g.V(3).as('a').addV(constant("").concat("prefix_", select('a').label())`
+....
+
+===== String Example 4 (SE4)
+
+Find all products that start with the same case-insensitive prefix. +
+e.g. Given the following products:
+
+[cols=",",options="header",]
+|===
+|id |product_name
+|1 |PROD-123
+|2 |PROD-234
+|3 |TEST-1234
+|4 |GAMMA-1234
+|5 |PR-123
+|===
+
+We should return:
+
+[cols=",",options="header",]
+|===
+|id |product_name
+|1 |PROD-123
+|2 |PROD-234
+|===
+
+....
+g.V().hasLabel('Product').has('product_name').as('product1').
+  V().hasLabel('Product').has('product_name'`).`
+  where(__.is(select('product1').toLower())`.values('product_name').substring(0, 5)).
+  select('product1')
+....
+
+===== String Example 5 (SE5)
+
+Perform case-insensitive search
+
+....
+g.V().hasLabel('Product').where(values('product_name').toLower(), eq('foo'))
+....
+
+===== String Example 6 (SE6)
+
+Applying functions to returning values, in this case return the `age`
+and a lower cased version of `name`
+
+`g.V().hasLabel('person').valueMap('age', 'name').by().by(toLower())`
+
+===== String Example 7 (SE7)
+
+Concatenating values on the return, in this case return a concatenated
+name
+
+`g.V().hasLabel('person').project('age', 'name').` `by('age').`
+`by(values('first_name').concat(" ").concat(values('last_name'))`
+
+==== List Examples
+
+===== List Example 1 (LE1)
+
+Given a list of people, return the list of `age`s if everyone’s `age` >
+18
+
+`g.V().hasLabel('person').values('age').fold().where(all(gt(18)))`
+
+===== List Example 2 (LE2)
+
+Given a set of vertices, return the list of vertices if anyone’s `age` >
+18
+
+`g.V([1,2,3,4]).fold().where(any(values('age').is(gt(18))))`
+
+===== List Example 3 (LE3)
+
+Given a list, find the index of the first occurrence of `Dave`
+
+`g.V().hasLabel('person').fold().indexOf(has('name', 'Dave'))` `==> 12`
+
+`g.inject(['Dave', 'Kelvin', 'Stephen']).indexOf(constant('Dave'))`
+`==> 0`
+
+===== List Example 4 (LE4)
+
+Given a list of people, remove any person with a name of `Dave`
+
+`g.V().hasLabel('person').fold().remove(has('name', 'Dave'))`
+`==> [‘Kelvin’, ‘Stephen’]`
+
+`g.inject(['Dave', 'Kelvin', 'Stephen']).remove(constant('Dave'))`
+`==> [‘Kelvin’, ‘Stephen’]`
+
+`g.inject(['Dave', 'Kelvin', 'Stephen']).remove(constant(['Dave', 'Stephen'))`
+`==> ['Kelvin']`
+
+==== Date Examples
+
+===== Date Example 1 (DE1)
+
+Given a transaction, find me all other transactions within 7 days prior
+
+`g.V('transaction1').values('date').dateAdd(DT.Days, -7).as('purchase_date').V().hasLabel('transaction').where(gt('purchase_date')).by('date').by()`
+
+===== Date Example 2 (DE2)
+
+Given two transactions, find me the difference in the dates
+
+`g.V('transaction1').values('date').dateDiff(DT.Days, V('transaction2').values('date').asDate())`
+
+===== Date Example 3 (DE3)
+
+Given a static value, return me the value as a date
+
+`g.inject('1900-01-01').asDate()`
+
+===== Date Example 4 (DE4)
+
+Find the difference between a transaction and the first of the year
+
+`g.V('transaction1').values('date').dateDiff(DT.Days, inject(datetime('2023-01-01'))`
+
+
+
+== String Manipulation functions in TinkerPop [[string-function-syntax]]
+
+One of the common gaps that user's find when using Gremlin is that there
+is a lack of string manipulation capabilities within the language
+itself. This requires that users use closures to handle many common
+string manipulation options that users want to do on data in the graph.
+This is a problem for many users as many of the providers prevent the
+use of arbitrary closures due to the security risks so for these users
+there is no way to manipulate strings directly.
+
+=== Proposal
+
+The proposal here is to add a set of steps to handle common string
+manipulation requests from users, the details for each are discussed
+below:
+
+* <<asString, asString()>>
+* <<concat, concat()>>
+* <<length, length()>>
+* <<split, split()>>
+* <<substring, substring()>>
+* <<rTrim, rTrim()>>
+* <<lTrim, lTrim()>>
+* <<trim, trim()>>
+* <<replace, replace()>>
+* <<reverse, reverse()>>
+* <<toUpper, toUpper()>>
+* <<toLower, toLower()>>
+
+=== Gremlin Language Variant Function Names
+
+[cols=",,,,,",options="header",]
+|===
+|Groovy |Java |Python |JavaScript |.NET |Go
+|asString() |asString() |as_string() |asString() |AsString() |AsString()
+
+|concat() |concat() |concat() |concat() |Concat() |Concat()
+
+|length() |length() |length() |length() |Length() |Length()
+
+|split() |split() |split() |split() |Split() |Split()
+
+|substring() |substring() |substring() |substring() |Substring()
+|Substring()
+
+|rTrim() |rTrim() |rtrim() |rTrim() |RTrim() |RTrim()
+
+|lTrim() |lTrim() |ltrim() |lTrim() |LTrim() |LTrim()
+
+|trim() |trim() |trim() |trim() |Trim() |Trim()
+
+|replace() |replace() |replace() |replace() |Replace() |Replace()
+
+|reverse() |reverse() |reverse() |reverse() |Reverse() |Reverse()
+
+|toUpper() |toUpper() |to_upper() |toUpper() |ToUpper() |ToUpper()
+
+|toLower() |toLower() |to_lower() |toLower() |ToLower() |ToLower()
+|===
+
+'''''
+
+== Function Definitions
+
+=== `asString()` [[asString]]
+
+Returns the value of the incoming traverser as a string
+
+==== Signature(s)
+
+`asString()`
+
+`asString(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+Any data type allowed by TinkerPop
+
+==== Expected Output
+
+A String value representing the string value of the traverser being
+passed in as shown below:
+
+[cols=",,",options="header",]
+|===
+|Incoming Datatype |Example Query |Example Output
+|Integer |`g.inject(29).asString()` |29
+
+|Float |`g.inject(29.0).asString()` |29.0
+
+|String |`g.inject('foo').asString()` |foo
+
+|UUID |`g.inject(UUID.randomUUID()).asString()`
+|47557eed-04e7-4aa4-89eb-9689d26fe94a
+
+|Map
+|`g.inject([["id": 1], ["id": 2, "something":"anything"]]).asString()`
+|[[id:1], [id:2, something:anything]]
+
+|Date |`g.inject(datetime()).asString()` |Sun Nov 04 00:00:00 UTC 2018
+
+|List |`g.inject([1,2,3]).asString()` |[1, 2, 3]
+
+|List (Local Scope) |`g.inject([1,2,3]).asString(local)` |["1", "2",
+"3"]
+
+|Vertex |`g.V(1).asString()` |v[1]
+
+|Edge |`g.E(7).asString()` |e[7][1-knows->2]
+
+|Property |`g.V(1).properties('age').asString()` |vp[age->29]
+
+|null |`g.V().group().by('foo').select(keys).asString()` |null
+|===
+
+'''''
+
+=== `concat()` [[concat]]
+
+Concatenates one or more strings together
+
+==== Signature(s)
+
+`concat(String...)`
+
+`concat(Traversal)`
+
+==== Parameters
+
+* `String...` - One or more String values to concatenate to the input
+string
+* `Traversal` - A traversal value to concatenate
+
+==== Allowed incoming traverser types
+
+String data types. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A String value representing the concatenation of all the incoming traverser and input values
+
+....
+g.inject('this').concat('is', 'a', 'test')
+==>thisisatest
+g.V(1).values('first_name').concat(' ').concat(V(1).values('last_name')
+==>John Doe
+g.inject('this', 'is', 'a', 'test').concat(' inserted')
+==>this inserted
+==>is inserted
+==>a inserted
+==>test inserted
+g.inject('John').concat(' ').concat(V(1).values('last_name'))
+==>John Doe
+....
+
+*Note* `concat()` may also be extended to handle concatenating list
+values together but that is out of scope for this change.
+
+'''''
+
+=== `length()` [[length]]
+
+Returns the length of the input string
+
+==== Signature(s)
+
+`length()`
+
+`length(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A Long value representing the number of items in an array or the number
+of characters in a string
+
+....
+g.inject('this').length()
+==>4
+g.inject('this').length(local)
+==>4
+....
+
+*Note*:While this is similar to `count(local)` they are not the same.
+`count(local)` treats the input by calculating the count of the items
+stored within the traversal. `length()` treats the input as an array and
+provides the length of that array.
+
+[cols=",,,",options="header",]
+|===
+|Input Datatype |Example traversal |count(local) |length()
+|Integer |`g.inject(29)` |1 |IllegalArgumentException
+
+|Float |`g.inject(29.0)` |1 |IllegalArgumentException
+
+|String |`g.inject('foo')` |1 |3
+
+|UUID |`g.inject(UUID.randomUUID())` |1 |IllegalArgumentException
+
+|Map |`g.inject(["id": 2, "something":"anything"]])` |1
+|IllegalArgumentException
+
+|Date |`g.inject(datetime())` |1 |IllegalArgumentException
+
+|List |`g.inject([1,2,3])` |3 |3
+
+|Vertex |`g.V(1)` |1 |IllegalArgumentException
+
+|Edge |`g.E(7)` |1 |IllegalArgumentException
+
+|Property |`g.V(1).properties('age')` |1 |IllegalArgumentException
+
+|null |`g.V().group().by('foo').select(keys)` |0
+|IllegalArgumentException
+|===
+
+'''''
+
+=== `split()` [[split]]
+
+Returns a list of strings created by splitting the input string around
+the matches of the given delimiter.
+
+==== Signature(s)
+
+`split(String)`
+
+`split(Scope, String)`
+
+==== Parameters
+
+* String - The delimiter character(s) to split the input string* *
+
+==== Allowed inputs
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array of strings split around the delimiter character(s)
+
+....
+g.inject('this').split('h')
+==>[t, is]
+g.inject('one,two').split(',')
+==>[one, two]
+g.inject('axxb').split('x')
+==>[a, b]
+g.inject('axybxc').split('xy')
+==>[a, bxc]
+g.inject(['this', 'that']).split('h')
+==>[[t, is], [t, at]]
+....
+
+'''''
+
+=== `substring()` [[substring]]
+
+returns a substring of the original string with the length specified,
+uses a 0-based start
+
+==== Signature(s)
+
+`substring(Long, Long)`
+
+`substring(Long)`
+
+`substring(Scope, Long, Long)`
+
+`substring(Scope, Long)`
+
+==== Parameters
+
+* Long - The start index, 0 based. If the value is negative then the
+start location will be the end of the string and it will go the
+specified number of characters from the end of the string.
+* Long - The number of characters to return. Optional - if not provided
+then all remaining characters will be returned
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A String value containing the number of characters specified beginning
+at the start location. If the start location plus the length specified
+is greater than or equal to the input length, the result will contain
+the entire string.
+
+....
+g.inject('this').substring(0, 1)
+==>t
+g.inject('this').substring(2)
+==>is
+g.inject('this').substring(2, 5)
+==>is
+g.inject('this').substring(-1)
+==>s
+g.inject(['this', 'is', 'a', 'test']).substring(local, 2)
+==>[is, '' ,'' , 'st']
+....
+
+'''''
+
+=== `rTrim()` [[rTrim]]
+
+Returns a string with trailing whitespace removed
+
+*Note*: Whitespace characters are defined as space/tab/line feed/line
+tabulation/form feed/carriage return.
+
+==== Signature(s)
+
+`rTrim()`
+
+`rTrim(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string value with trailing whitespace removed
+
+....
+g.inject('this ').rTrim()
+==>this
+g.inject(['this ', 'that ']).rTrim(local)
+==>[this, that]
+....
+
+'''''
+
+=== `lTrim()` [[lTrim]]
+
+Returns a string with leading whitespace removed
+
+*Note*: Whitespace characters are defined as space/tab/line feed/line
+tabulation/form feed/carriage return.
+
+==== Signature(s)
+
+`lTrim()`
+
+`lTrim(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string value with leading whitespace removed
+
+....
+g.inject(' this').lTrim()
+==>this
+g.inject([' this', ' that']).lTrim(local)
+==>[this, that]
+....
+
+'''''
+
+=== `trim()` [[trim]]
+
+Returns a string with leading and trailing whitespace removed
+
+*Note*: Whitespace characters are defined as space/tab/line feed/line
+tabulation/form feed/carriage return.
+
+==== Signature(s)
+
+`trim()`
+
+`trim(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string value with leading and trailing whitespace removed
+
+....
+g.inject(' this ').trim()
+==>this
+g.inject([' this ', ' that ']).trim()
+==>[this, that]
+....
+
+'''''
+
+=== `replace()` [[replace]]
+
+Returns a string with the specified characters in the original string
+replaced with the new characters
+
+==== Signature(s)
+
+`replace(String, String)`
+
+`replace(Scope, String, String)`
+
+==== Parameters
+
+* String - The character(s) to be replaced
+* String - The character(s) to replace with
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string
+
+....
+g.inject('this').replace('t', 'x)
+==>xhis
+g.inject('this').replace('x', 't')
+==>this
+g.inject('this').replace('is', 'was')
+==>thwas
+g.inject(['this', 'that']).replace('th', 'was')
+==>[wasis, wasat]
+....
+
+'''''
+
+=== `reverse()` [[reverse]]
+
+Reverses the current string
+
+==== Signature(s)
+
+`reverse()`
+
+`reverse(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A String value representing the reversed version of the incoming string
+
+....
+g.inject('this').reverse()
+==>siht
+g.inject(['this', 'that']).reverse(local)
+==>[siht, taht]
+....
+
+*Note* `reverse()` may also be extended to handle concatenating list
+values together but that is out of scope for this change.
+
+'''''
+
+=== `toUpper()` [[toUpper]]
+
+Returns an upper case string representation.
+
+*Note*: All case conversions will be done via the mappings specified for
+Unicode (https://www.unicode.org/reports/tr44/#Casemapping[found here])
+
+==== Signature(s)
+
+`toUpper()`
+
+`toUpper(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string
+
+....
+g.inject('this').toUpper()
+==>THIS
+g.inject(['this', 'that']).toUpper()
+==>[THIS, THAT]
+....
+
+'''''
+
+=== `toLower()` [[toLower]]
+
+Returns an lower case string representation
+
+*Note*: All case conversions will be done via the mappings specified for
+Unicode (https://www.unicode.org/reports/tr44/#Casemapping[found here])
+
+==== Signature(s)
+
+`toLower()`
+
+`toLower(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+String data types or array, if local scope is used. If a non-string
+traverser, or the list containing non-string values, is passed in then
+an `IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string
+
+....
+g.inject('THIS').toLower()
+==>this
+g.inject(['THIS', 'THAT']).toLower()
+==>[this, that]
+....
+
+
+== List Manipulation functions in TinkerPop [[list-function-syntax]]
+
+One of the common gaps that user's find when using Gremlin is that there
+is a lack of list manipulation capabilities within the language itself.
+This requires that users use closures to handle many common manipulation
+options that users want to do on data in the graph. This is a problem
+for many users as many of the providers prevent the use of arbitrary
+closures due to the security risks so for these users there is no way to
+manipulate strings directly.
+
+=== Proposal
+
+The proposal here is to add a set of steps to handle common list
+manipulation requests from users, the details for each are discussed
+below:
+
+* <<length_list, length()>>
+* <<reverse_list, reverse()>>
+* <<remove_list, remove()>>
+* <<indexOf_list, indexOf()>>
+* <<product_list, product()>>
+* <<all_list, all()>>
+* <<any_list, any()>>
+* <<none_list, none()>>
+* <<concat_list, concat()>>
+* <<intersect_list, intersect()>>
+* <<union_list, union()>>
+* <<difference_list, difference()>>
+* <<disjunct_list, disjunct()>>
+* <<conjoin_list, conjoin()>>
+
+=== Gremlin Language Variant Function Names
+
+[cols=",,,,,",options="header",]
+|===
+|Groovy |Java |Python |JavaScript |.NET |Go
+|length() |length() |length() |length() |Length() |Length()
+
+|reverse() |reverse() |reverse() |reverse() |Reverse() |Reverse()
+
+|remove() |remove() |remove() |remove() |Remove() |Remove()
+
+|indexOf() |indexOf() |index_of() |indexOf() |IndexOf() |IndexOf()
+
+|product() |product() |product() |product() |Product() |Product()
+
+|all() |all() |all() |all() |All() |All()
+
+|any() |any() |any() |any() |Any() |Any()
+
+|none() |none() |none() |none() |None() |None()
+
+|concat() |concat() |concat() |concat() |Concat() |Concat()
+
+|intersect() |intersect() |intersect() |intersect() |Intersect()
+|Intersect()
+
+|union() |union() |union() |union() |Union() |Union()
+
+|difference() |difference() |difference() |difference() |Difference()
+|Difference()
+
+|disjunct() |disjunct() |disjunct() |disjunct() |Disjunct()
+|Disjunct()
+
+|conjoin() |conjoin() |conjoin() |conjoin() |Conjoin() |Conjoin()
+|===
+
+'''''
+
+== Function Definitions
+
+=== `length()` [[length_list]]
+
+Returns the length of a list in the incoming traverser
+
+==== Signature(s)
+
+`length()`
+
+==== Parameters
+
+None
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A Long value representing the number of items in an array or the number
+of characters in a string
+
+....
+g.inject([1, 2]).length()
+==>2
+....
+
+=== `reverse()` [[reverse_list]]
+
+Returns the value of the incoming list in reverse order
+
+==== Signature(s)
+
+`reverse()`
+
+==== Parameters
+
+None
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array in reverse order.
+
+....
+g.inject([1,2]).reverse()
+==>[2, 1]
+....
+
+=== `remove()` [[remove_list]]
+
+Removes the first element from the incoming list where the value equals
+the specified value
+
+==== Signature(s)
+
+`remove(value)`
+
+`remove(Traversal)`
+
+==== Parameters
+
+* value - The value to remove
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array value representing the new list
+
+....
+g.inject([1,2]).remove(1)
+==>[2]
+....
+
+=== `indexOf()` [[indexOf_list]]
+ 
+Returns the first occurrence of the `value` in the incoming array
+
+==== Signature(s)
+
+`indexOf(value)`
+
+`indexOf(Traversal)`
+
+==== Parameters
+
+* value - The value to locate
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A long representing the index of the first occurrence of the value
+(zero-based). If the values does not exist then `null` is returned
+
+....
+g.inject([1,2]).indexOf(1)
+==>0
+....
+
+=== `product()` [[product_list]]
+
+Returns the cartesian product of two lists
+
+==== Signature(s)
+
+`product(value)`
+
+`product(Traversal)`
+
+==== Parameters
+
+* value - An array
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A set of values where each value contains the cartesian product of two
+lists
+
+....
+g.inject([1,2]).product([3,4])
+==>[[1,3], [1,4], [2,3], [2,4]]
+....
+
+=== `any()` [[any_list]]
+
+Allows the traverser to continue if any items in the array pass the
+supplied predicate.
+
+==== Signature(s)
+
+`any(Predicate)`
+
+==== Parameters
+
+* Predicate - The predicate to use to test the values in the array
+
+==== Allowed incoming traverser types
+
+Array data types. All other types will be filtered out.
+
+==== Expected Output
+
+The arrays which have any item pass the predicate.
+
+....
+g.inject([1,2]).any(P.eq(1))
+==>[1,2]
+....
+
+=== `all()` [[all_list]]
+
+Allows the traverser to continue if all items in the array pass the
+supplied predicate.
+
+==== Signature(s)
+
+`all(Predicate)`
+
+==== Parameters
+
+* Predicate - The predicate to use to test the values in the array
+
+==== Allowed incoming traverser types
+
+Array data types. All other types will be filtered out.
+
+==== Expected Output
+
+The arrays which have all items pass the predicate.
+
+....
+g.inject([1,2]).all(P.gt(0))
+==>[1,2]
+....
+
+=== `none()` [[none_list]]
+
+Returns true if no items in the array `value` exist in the input
+
+==== Signature(s)
+
+`none(value)`
+
+`none(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+True if no values from one list are in the other, False otherwise
+
+....
+g.inject([1,2]).none([1])
+==>false
+g.inject([1,2]).none([1, 3])
+==>false
+g.inject([1,2]).none([3])
+==>true
+....
+
+=== `concat()` [[concat_list]]
+
+Returns the concatenation of the incoming array and the traversal or
+array value passed as a parameter. This will return all values,
+including duplicates.
+
+==== Signature(s)
+
+`concat(value)`
+
+`concat(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array containing the values of the concatenation of the two lists
+
+....
+g.inject([1,2]).concat([3])
+==>[1, 2, 3]
+g.inject([1,2]).concat([1, 4])
+==>[1, 2, 1, 4]
+g.V().has('age', 29).values('age').dedup().fold().concat(V().has('age', 30).values('age').dedup().fold())
+==>[29, 30]
+....
+
+=== `union()` [[union_list]]
+
+Returns the union of the incoming array and the traversal or array value
+passed as a parameter. This will return an array of unique values
+
+==== Signature(s)
+
+`union(value)`
+
+`union(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array containing the unique values of the union of the two lists
+
+....
+g.inject([1,2]).union([1])
+==>[1, 2]
+g.inject([1,2]).union([1, 4])
+==>[1, 2, 4]
+g.V().has('age', 29).values('age').dedup().fold().union(V().has('age', 30).values('age').dedup().fold())
+==>[29, 30]
+....
+
+=== `intersect()` [[intersect_list]]
+
+Returns the intersection of the incoming array and the traversal or
+array value passed as a parameter. This will return an array of unique
+values
+
+==== Signature(s)
+
+`intersect(value)`
+
+`intersect(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array containing the unique values of the intersection of the two
+lists
+
+....
+g.inject([1,2]).intersect([1])
+==>[1]
+g.inject([1,2]).intersect([1, 2, 3])
+==>[1, 2]
+g.V().has('age', 29).values('age').dedup().fold().intersect(V().has('age', 30).values('age').dedup().fold())
+==>[]
+....
+
+=== `difference()` [[difference_list]]
+
+Returns the difference of the incoming array and the traversal or array
+value passed as a parameter. This will return an array of unique values
+
+==== Signature(s)
+
+`difference(value)`
+
+`difference(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array containing the different values of the intersection of the two
+lists
+
+....
+g.inject([1,2]).difference([1])
+==>[2]
+g.inject([1,2]).difference([1, 2, 3])
+==>[3]
+g.V().has('age', 29).values('age').dedup().fold().difference(V().has('age', 30).values('age').dedup().fold())
+==>[29, 30]
+....
+
+=== `disjunct()` [[disjunct_list]]
+
+Returns the disjunct set of the incoming array and the traversal or array
+value passed as a parameter. This will return an array of unique values
+
+==== Signature(s)
+
+`disjunct(value)`
+
+`disjunct(Traversal)`
+
+==== Parameters
+
+* value - An array of the items to check in the incoming list
+
+==== Allowed incoming traverser types
+
+Array data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+An array containing the different values of the intersection of the two
+lists
+
+....
+g.inject([1,2]).disjunct([1])
+==>[2]
+g.inject([1,2,4]).disjunct([1, 2, 3])
+==>[3, 4]
+....
+
+=== `conjoin()` [[conjoin_list]]
+
+Returns the join of the incoming array and delimiter passed as a
+parameter. This will return a String of the values joined together with
+the delimiter.
+
+==== Signature(s)
+
+`conjoin(delimiter)`
+
+==== Parameters
+
+* delimiter - A string delimiter used to join the values
+
+==== Allowed incoming traverser types
+
+String data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A string of the values joined together with the delimiter
+
+....
+g.inject([1,2]).conjoin("5")
+==>152
+g.inject([1,2,3]).conjoin(";")
+==>1;2;3
+....
+
+== Date Manipulation functions in TinkerPop [[date-function-syntax]]
+
+One of the common gaps that user's find when using Gremlin is that there
+is a lack of date manipulation capabilities within the language itself.
+This requires that users use closures to handle many common manipulation
+options that users want to do on data in the graph. This is a problem
+for many users as many of the providers prevent the use of arbitrary
+closures due to the security risks so for these users there is no way to
+manipulate strings directly.
+
+=== Proposal
+
+The proposal here is to add a set of steps to handle common datetime
+manipulation requests from users, the details for each are discussed
+below:
+
+* <<asDate, asDate()>>
+* <<dateAdd, dateAdd()>>
+* <<dateDiff, dateDiff()>>
+
+=== Gremlin Language Variant Function Names
+
+[cols=",,,,,",options="header",]
+|===
+|Groovy |Java |Python |JavaScript |.NET |Go
+|asDate() |asDate() |as_date() |asDate() |AsDate() |AsDate()
+|dateAdd() |dateAdd() |date_add() |dateAdd() |DateAdd() |DateAdd()
+|dateDiff() |dateDiff() |date_diff() |dateDiff() |DateDiff() |DateDiff()
+|===
+
+== Function Definitions
+
+=== `asDate()` [[asDate]]
+
+Returns the value of the incoming traverser as an ISO-8601 date
+
+==== Signature(s)
+
+`asDate()`
+
+`asDate(Scope)`
+
+==== Parameters
+
+* Scope - Scope Enum
+
+==== Allowed incoming traverser types
+
+Any data type that can be parsed into an ISO-8601 date. If an
+unsupported types is passed in then an `IllegalArgumentException` will
+be thrown
+
+==== Expected Output
+
+A Date value representing the ISO-8601 value of the traverser being
+passed in as shown below:
+
+[cols=",,",options="header",]
+|===
+|Incoming Datatype |Example Query |Example Output
+|Integer |`g.inject(0).asDate()` |1900-01-01T00:00:00Z
+
+|Float |`g.inject(29.0).asDate()` |1900-01-01T00:00:00Z
+
+|String |`g.inject('1/1/1900').asDate()` |1900-01-01T00:00:00Z
+
+|UUID |`g.inject(UUID.randomUUID()).asDate()`
+|`IllegalArgumentException`
+
+|Map
+|`g.inject([["id": 1], ["id": 2, "something":"anything"]]).asDate()`
+|`IllegalArgumentException`]
+
+|Datetime |`g.inject(datetime()).asDate()` |Sun Nov 04 00:00:00 UTC 2018
+
+|List |`g.inject([1,2,3]).asDate()` |`IllegalArgumentException`
+
+|List (Local Scope) |`g.inject([1,2,3]).asDate(local)`
+|`IllegalArgumentException`
+
+|Vertex |`g.V(1).asDate()` |`IllegalArgumentException`
+
+|Edge |`g.E(7).asDate()` |`IllegalArgumentException`
+
+|Property |`g.V(1).properties('age').asDate()`
+|`IllegalArgumentException`
+
+|null |`g.V().group().by('foo').select(keys).asDate()`
+|`IllegalArgumentException`
+|===
+
+=== `dateAdd()` [[dateAdd]]
+
+Returns the value with the addition of the `value` number of units as
+specified by the `DateToken`
+
+==== Signature(s)
+
+`dateAdd(DateToken, value)`
+
+`dateAdd(Scope, DateToken, value))`
+
+==== Parameters
+
+* DateToken - DateToken Enum
+* value - The number of units, specified by the Datetime Token, to add to
+the incoming values
+
+==== Allowed incoming traverser types
+
+Datetime data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+A Datetime with the value added.
+
+....
+g.inject(datetime()).dateAdd(DT.days, 7)
+==> 2018-03-22
+g.inject(datetime()).dateAdd(DT.days, -7)
+==> 2018-03-8
+g.inject([datetime(), datetime()]).dateAdd(local, DT.days, 7)
+==> [2018-03-22, 2018-03-22]
+....
+
+=== `dateDiff()` [[dateDiff]]
+
+Returns the difference between two Datetimes in epoch time
+
+==== Signature(s)
+
+`dateDiff(value)`
+
+`dateDiff(Traversal)`
+
+`dateDiff(Scope, value))`
+
+==== Parameters
+
+* value - The Datetime to find the difference from
+
+==== Allowed incoming traverser types
+
+Datetime data types. If non-array data types are passed in then an
+`IllegalArgumentException` will be thrown
+
+==== Expected Output
+
+The epoch time difference between the two values
+
+....
+g.inject(datetime()).dateDiff(datetime().dateAdd(DT.days, 7))
+==> 604800
+g.inject(datetime()).dateDiff(datetime().dateAdd(DT.days, 7))
+==> -604800
+g.inject([datetime(), datetime()]).dateDiff(local, DT.days, 7)
+==> [604800, 604800]
+....

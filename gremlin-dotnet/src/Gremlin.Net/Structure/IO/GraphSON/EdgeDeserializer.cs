@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Linq;
 using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -30,20 +31,29 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var outVId = reader.ToObject(graphsonObject.GetProperty("outV"));
-            var outVLabel = graphsonObject.TryGetProperty("outVLabel", out var outVLabelProperty)
-                ? outVLabelProperty.GetString()
+            string outVLabel = graphsonObject.TryGetProperty("outVLabel", out var outVLabelProperty)
+                ? outVLabelProperty.GetString()!
                 : Vertex.DefaultLabel;
             var outV = new Vertex(outVId, outVLabel);
             var inVId = reader.ToObject(graphsonObject.GetProperty("inV"));
-            var inVLabel = graphsonObject.TryGetProperty("inVLabel", out var inVLabelProperty)
-                ? inVLabelProperty.GetString()
+            string inVLabel = graphsonObject.TryGetProperty("inVLabel", out var inVLabelProperty)
+                ? inVLabelProperty.GetString()!
                 : Vertex.DefaultLabel;
             var inV = new Vertex(inVId, inVLabel);
             var edgeId = reader.ToObject(graphsonObject.GetProperty("id"));
-            var edgeLabel = graphsonObject.TryGetProperty("label", out var labelProperty)
-                ? labelProperty.GetString()
+            string edgeLabel = graphsonObject.TryGetProperty("label", out var labelProperty)
+                ? labelProperty.GetString()!
                 : "edge";
-            return new Edge(edgeId, outV, edgeLabel, inV);
+
+            dynamic[]? properties = null;
+            if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
+                && propertiesObject.ValueKind == JsonValueKind.Object)
+            {
+                properties = propertiesObject.EnumerateObject()
+                    .Select(p => reader.ToObject(p.Value)!).ToArray();
+            }
+
+            return new Edge(edgeId, outV, edgeLabel, inV, properties);
         }
     }
 }

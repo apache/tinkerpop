@@ -203,3 +203,18 @@ Feature: Step - mean()
     Then the result should be unordered
       | result |
       | d[29.0].d |
+
+  # It verifies if empty lists are filtered out as expected
+  Scenario: g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_meanXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(union(values("age"), outE().values("weight")).fold()).mean(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[7.725].d |
+      | d[27.0].d |
+      | d[11.133333333333333].d |
+      | d[17.6].d |

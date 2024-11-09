@@ -31,17 +31,7 @@ public class ParseTreeContextCastHelper {
      * @param childIndex : child index
      * @return casted GenericLiteralContext
      */
-    public static GremlinParser.GenericLiteralContext castChildToGenericLiteral(final ParseTree ctx, final int childIndex) {
-        return (GremlinParser.GenericLiteralContext)(ctx.getChild(childIndex));
-    }
-
-    /**
-     * Cast ParseTree node child into GenericLiteralListContext
-     * @param ctx : ParseTree node
-     * @param childIndex : child index
-     * @return casted GenericLiteralListContext
-     */
-    public static GremlinParser.GenericLiteralListContext castChildToGenericLiteralList(final ParseTree ctx, final int childIndex) {
-        return (GremlinParser.GenericLiteralListContext)(ctx.getChild(childIndex));
+    public static GremlinParser.GenericLiteralArgumentContext castChildToGenericLiteral(final ParseTree ctx, final int childIndex) {
+        return (GremlinParser.GenericLiteralArgumentContext)(ctx.getChild(childIndex));
     }
 }

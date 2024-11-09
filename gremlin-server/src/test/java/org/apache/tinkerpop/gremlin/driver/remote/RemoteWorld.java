@@ -23,23 +23,18 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.server.GremlinServer;
-import org.apache.tinkerpop.gremlin.server.ServerTestHelper;
-import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.TestClientFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.junit.AssumptionViolatedException;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -120,6 +115,7 @@ public abstract class RemoteWorld implements World {
                 "@StepDrop",
                 "@StepInject",
                 "@StepV",
+                "@StepE",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationStrategyNotSupported",
                 "@GraphComputerVerificationMidVNotSupported",
@@ -164,24 +160,24 @@ public abstract class RemoteWorld implements World {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteWorld extends RemoteWorld {
-        public GraphBinaryRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1D0)); }
+        public GraphBinaryRemoteWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1D0)); }
+        public GraphBinaryRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHBINARY_V1)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphSONRemoteWorld extends RemoteWorld {
-        public GraphSONRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V3D0)); }
+        public GraphSONRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V3)); }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphSONRemoteComputerWorld extends RemoteComputerWorld {
-        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V3D0)); }
+        public GraphSONRemoteComputerWorld() { super(createTestCluster(Serializers.GRAPHSON_V3)); }
     }
 }

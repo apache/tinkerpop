@@ -14,9 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
+:docinfo: shared
+:docinfodir: ../
 :toc-position: left
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 = TinkerPop Upgrade Information
 
@@ -24,6 +27,8 @@ This document helps users of Apache TinkerPop™ to understand the changes that 
 outlines new features, how to resolve breaking changes and other information specific to a release.  This document is
 equally useful to TinkerPop providers, who build libraries and other systems on the core APIs and protocols that
 TinkerPop exposes.
+
+include::release-3.7.x.asciidoc[]
 
 include::release-3.6.x.asciidoc[]
 

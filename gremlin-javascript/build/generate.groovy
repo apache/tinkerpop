@@ -95,6 +95,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +
+                    'const CardinalityValue = graphTraversalModule.CardinalityValue;\n' +
                     'const Column = traversalModule.column\n' +
                     'const Direction = {\n' +
                     '    BOTH: traversalModule.direction.both,\n' +
@@ -103,6 +104,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     '    from_: traversalModule.direction.out,\n' +
                     '    to: traversalModule.direction.in\n' +
                     '};\n' +
+                    'const DT = traversalModule.dt;\n' +
                     'const Merge = traversalModule.merge;\n' +
                     'const P = traversalModule.P;\n' +
                     'const Pick = traversalModule.pick\n' +

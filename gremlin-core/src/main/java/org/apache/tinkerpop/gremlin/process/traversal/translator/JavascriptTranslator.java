@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -186,6 +185,15 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                     return "Number.NEGATIVE_INFINITY";
             }
             return o.toString();
+        }
+
+        @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            script.append("CardinalityValue." + inst.getArguments()[0] + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
         }
 
         @Override

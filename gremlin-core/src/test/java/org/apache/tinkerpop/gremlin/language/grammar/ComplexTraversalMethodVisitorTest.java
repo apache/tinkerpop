@@ -71,7 +71,7 @@ public class ComplexTraversalMethodVisitorTest {
         }
 
         @Test
-        public void testNestedGraphTraversal() {
+        public void shouldParseNestedGraphTraversal() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.QueryContext ctx = parser.query();
@@ -104,7 +104,7 @@ public class ComplexTraversalMethodVisitorTest {
         }
 
         @Test
-        public void testChainedGraphTraversal() {
+        public void shouldParseChainedGraphTraversal() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.QueryContext ctx = parser.query();
@@ -137,7 +137,7 @@ public class ComplexTraversalMethodVisitorTest {
         }
 
         @Test
-        public void testTerminatedGraphTraversal() {
+        public void shouldParseTerminatedGraphTraversal() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.QueryContext ctx = parser.query();

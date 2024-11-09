@@ -19,12 +19,14 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Script;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
@@ -72,6 +74,11 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
 
     private static final List<String> methodsWithArgsNotNeedingGeneric = Arrays.asList(GraphTraversal.Symbols.group,
             GraphTraversal.Symbols.groupCount, GraphTraversal.Symbols.sack);
+
+    private static final List<String> stringMethodsWithScopes = Arrays.asList(GraphTraversal.Symbols.asString,
+            GraphTraversal.Symbols.length, GraphTraversal.Symbols.lTrim, GraphTraversal.Symbols.replace,
+            GraphTraversal.Symbols.rTrim, GraphTraversal.Symbols.split, GraphTraversal.Symbols.substring,
+            GraphTraversal.Symbols.toLower, GraphTraversal.Symbols.toUpper, GraphTraversal.Symbols.trim);
 
     private DotNetTranslator(final String traversalSource, final TypeTranslator typeTranslator) {
         this.traversalSource = traversalSource;
@@ -192,6 +199,16 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     return (o instanceof Float ? "Single" : "Double") + ".NegativeInfinity";
             }
             return o.toString();
+        }
+
+        @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            final String card = inst.getArguments()[0].toString();
+            script.append("CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
         }
 
         @Override
@@ -344,11 +361,15 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     if (methodName.equals(GraphTraversal.Symbols.fold) && o.getSourceInstructions().size() + o.getStepInstructions().size() > 1 ||
                             (methodName.equals(GraphTraversal.Symbols.inject) && instructionPosition > 0))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "")).append("()");
+                    else if (stringMethodsWithScopes.contains(methodName))
+                        // string functions with doesn't use generics if no scope is specified
+                        script.append(".").append(resolveSymbol(methodName).replace("<object>", "")).append("()");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("()");
                 } else {
                     if (methodsWithArgsNotNeedingGeneric.contains(methodName) ||
-                            (methodName.equals(GraphTraversal.Symbols.inject) && (Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull) || instructionPosition > 0)))
+                            (methodName.equals(GraphTraversal.Symbols.inject) && (Arrays.stream(instruction.getArguments()).noneMatch(Objects::isNull) || instructionPosition > 0)) ||
+                            (stringMethodsWithScopes.contains(methodName) && (Arrays.stream(instruction.getArguments()).noneMatch(EnumUtils.getEnumList(Scope.class)::contains))))
                         script.append(".").append(resolveSymbol(methodName).replace("<object>", "").replace("<object,object>", "")).append("(");
                     else
                         script.append(".").append(resolveSymbol(methodName)).append("(");
@@ -517,6 +538,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         private final static Map<String, String> FROM_CS_MAP = new HashMap<>();
 
         static {
+            TO_CS_MAP.put(GraphTraversal.Symbols.asString, "AsString<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.branch, "Branch<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.call, "Call<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.cap, "Cap<object>");
@@ -531,8 +553,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.index, "Index<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.inject, "Inject<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.io, "Io<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.length, "Length<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.limit, "Limit<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.local, "Local<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.lTrim, "LTrim<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.match, "Match<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.map, "Map<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.max, "Max<object>");
@@ -542,11 +566,18 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
             TO_CS_MAP.put(GraphTraversal.Symbols.project, "Project<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.properties, "Properties<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.range, "Range<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.replace, "Replace<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.rTrim, "RTrim<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.sack, "Sack<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.select, "Select<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.skip, "Skip<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.split, "Split<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.substring, "Substring<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.sum, "Sum<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.tail, "Tail<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.toLower, "ToLower<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.toUpper, "ToUpper<object>");
+            TO_CS_MAP.put(GraphTraversal.Symbols.trim, "Trim<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.unfold, "Unfold<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.union, "Union<object>");
             TO_CS_MAP.put(GraphTraversal.Symbols.value, "Value<object>");

@@ -41,7 +41,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <param name="operatorName">The name of the predicate.</param>
         /// <param name="value">The value of the predicate.</param>
         /// <param name="other">An optional other predicate that is used as an argument for this predicate.</param>
-        public TextP(string operatorName, string value, P other = null) : base(operatorName, value, other)
+        public TextP(string operatorName, string value, P? other = null) : base(operatorName, value, other)
         {
         }
 
@@ -84,11 +84,6 @@ namespace Gremlin.Net.Process.Traversal
         public static TextP NotRegex(string value)
         {
             return new TextP("notRegex", value);
-        }
-
-        private static T[] ToGenericArray<T>(ICollection<T> collection)
-        {
-            return collection?.ToArray() ?? new T[0];
         }
 
         /// <inheritdoc />

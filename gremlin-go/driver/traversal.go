@@ -155,6 +155,36 @@ var Cardinality = cardinalities{
 	Set:    "set",
 }
 
+type cv struct {
+	Bytecode *Bytecode
+}
+
+type CardValue interface {
+	Single(val interface{}) Bytecode
+	Set(val interface{}) Bytecode
+	List(val interface{}) Bytecode
+}
+
+var CardinalityValue CardValue = &cv{}
+
+func (*cv) Single(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
+	return bc
+}
+
+func (*cv) Set(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
+	return bc
+}
+
+func (*cv) List(val interface{}) Bytecode {
+	bc := Bytecode{}
+	bc.AddSource("CardinalityValueTraversal", Cardinality.List, val)
+	return bc
+}
+
 type column string
 
 type columns struct {
@@ -269,6 +299,38 @@ var T = ts{
 	Id_:   "id_",
 	Key:   "key",
 	Value: "value",
+}
+
+type materializeProperties struct {
+	All    string
+	Tokens string
+}
+
+// MaterializeProperties is string symbols.
+var MaterializeProperties = materializeProperties{
+	All:    "all",
+	Tokens: "tokens",
+}
+
+type dt string
+
+type dts struct {
+	// time period second
+	Second dt
+	// time period minute
+	Minute dt
+	// time period hour
+	Hour dt
+	// time period day
+	Day dt
+}
+
+// Merge is a set of operations for Vertex and Edge merging.
+var DT = dts{
+	Second: "second",
+	Minute: "minute",
+	Hour:   "hour",
+	Day:    "day",
 }
 
 type merge string

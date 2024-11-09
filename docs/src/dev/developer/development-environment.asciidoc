@@ -28,7 +28,9 @@ image:conspiracy.png[]
 
 At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk8/[Java 8] but it is
 preferable to use link:https://openjdk.java.net/projects/jdk/11/[Java 11] cross-compiled to Java 8 (the
-cross-compilation happens automatically as part of the build). Maven (requiring a minimum of
+cross-compilation happens automatically as part of the build). Starting with 3.7.0, you can also build with
+link:https://openjdk.org/projects/jdk/17/[Java 17]. Note, however, that there are some issues with deep reflection
+so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
 link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
@@ -214,6 +216,15 @@ NOTE: The installation of plugins sometimes fails in this step with the error: `
 failed`. It often helps in this case to delete the directories for the dependencies that cannot be downloaded
 in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
 `asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
+
+NOTE: Unexpected failures with OLAP often point to a jar conflict that arises in scenarios where Hadoop or Spark
+dependencies (or other dependencies for that matter) are modified and conflict. It is not picked up by the enforcer
+plugin because the inconsistency arises through plugin installation in Gremlin Console at document generation time.
+Making adjustments to the various paths by way of the `<manifestEntries>` on the jar given the functionality provided
+by the `DependencyGrabber` class which allows you to manipulate (typically deleting conflicting files from `/lib` and
+`/plugin`) plugin loading will usually resolve it, though it could also be a more general environmental problem with
+Spark or Hadoop. The easiest way to see the error is to simply run the examples in the Gremlin Console which more
+plainly displays the error than the failure of the documentation generation process.
 
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
@@ -458,7 +469,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 ** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
 ** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-* Generate <<building-testing,test resources>> for `gremlin-io-test`: `mvn clean install -pl :gremlin-io-test -Dio`
 * Regenerate toy graph data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Start Gremlin Server with Docker using the standard test configuration: `docker/gremlin-server.sh`
@@ -476,7 +486,8 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Check the effective `pom.xml`: `mvn -pl gremlin-python -Pglv-python help:effective-pom -Doutput=withProfilePom.xml`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
-** Execute with the `-DincludeNeo4j` option to include transactional tests.
+** Execute with the `-DincludeNeo4j` option to include neo4j-gremlin tests. As of 3.7.0, transactional tests on Gremlin Server, Gremlin Driver,
+and GLVs will run automatically with integration tests against the TinkerTransactionGraph.
 ** Execute with the `-DuseEpoll` option to try to use Netty native transport (works on Linux, but will fallback to Java NIO on other OS).
 * Benchmarks: `mvn verify -DskipBenchmarks=false`
 ** Reports are generated to the console and to `gremlin-tools/gremlin-benchmark/target/reports/benchmark`.

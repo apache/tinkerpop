@@ -21,7 +21,11 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.function.Supplier;
 
 /**
  * {@inheritDoc}
@@ -33,6 +37,16 @@ public class NoOpTerminalVisitor extends GremlinAntlrToJava {
 
     public NoOpTerminalVisitor() {
         super();
+    }
+
+    public NoOpTerminalVisitor(final Graph graph, final VariableResolver variableResolver) {
+        super(graph, variableResolver);
+    }
+
+    public NoOpTerminalVisitor(final String traversalSourceName, final Graph graph,
+                               final Supplier<GraphTraversal<?,?>> createAnonymous,
+                               final GraphTraversalSource g, final VariableResolver variableResolver) {
+        super(traversalSourceName, graph, createAnonymous, g, variableResolver);
     }
 
     /**

@@ -21,16 +21,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -40,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +47,13 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
             InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class, IoStep.class, ElementStep.class
+    ));
+
+    // Some operators output an indeterministic result when executed in GraphComputer.
+    // For now, we disable such operators. Operator.assign can have the same issue, however it is
+    // used in GraphComputer's code internally, so we don't disable it here.
+    private static final Set<Operator> UNSUPPORTED_OPERATORS = new HashSet<>(Arrays.asList(
+            Operator.minus, Operator.div
     ));
 
     private ComputerVerificationStrategy() {
@@ -80,6 +85,13 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
                 throw new VerificationException("The following step is currently not supported on GraphComputer: " + step, traversal);
+
+            if (step instanceof SideEffectCapable) {
+                final BinaryOperator<?> sideEffectOperator = traversal.getSideEffects().getReducer(((SideEffectCapable<?, ?>) step).getSideEffectKey());
+                if (UNSUPPORTED_OPERATORS.stream().filter(o -> o == sideEffectOperator).findFirst().isPresent()) {
+                    throw new VerificationException("The following step has an SideEffect operator " + sideEffectOperator + " which is currently not supported on GraphComputer: " + step, traversal);
+                }
+            }
         }
 
         Step<?, ?> nextParentStep = traversal.getParent().asStep();

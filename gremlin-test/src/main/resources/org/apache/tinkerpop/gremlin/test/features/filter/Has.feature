@@ -245,7 +245,7 @@ Feature: Step - has()
       | result |
       | e[josh-created->ripple] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_hasXlocationX
     Given the crew graph
     And the traversal of

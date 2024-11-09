@@ -28,15 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -52,11 +46,10 @@ import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
@@ -76,7 +69,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -574,7 +566,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -602,7 +594,7 @@ public class TinkerGraphTest {
         final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
 
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3d0.instance()).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().version(GryoVersion.V3_0).addRegistry(TinkerIoRegistryV3.instance()).classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -995,7 +987,7 @@ public class TinkerGraphTest {
         }
     }
 
-    public static class CustomClassResolver extends GryoClassResolverV1d0 {
+    public static class CustomClassResolver extends GryoClassResolverV1 {
         private ColorToTinkerGraphSerializer colorToGraphSerializer = new ColorToTinkerGraphSerializer();
 
         public Registration getRegistration(final Class clazz) {

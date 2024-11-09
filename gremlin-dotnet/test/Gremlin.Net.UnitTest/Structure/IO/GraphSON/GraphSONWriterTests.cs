@@ -277,6 +277,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeDT(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var serializedEnum = writer.WriteObject(DT.Minute);
+
+            var expectedGraphSON = "{\"@type\":\"g:DT\",\"@value\":\"minute\"}";
+            Assert.Equal(expectedGraphSON, serializedEnum);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldSerializeMerge(int version)
         {
             var writer = CreateGraphSONWriter(version);
@@ -303,7 +314,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         public void ShouldSerializeGList(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var list = new List<object> {5, 6, null};
+            var list = new List<object?> {5, 6, null};
 
             var serializedGraphSON = writer.WriteObject(list);
 
@@ -560,7 +571,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
     internal class TestGraphSONSerializer : IGraphSONSerializer
     {
-        public string TestNamespace { get; set; }
+        public string? TestNamespace { get; set; }
 
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {

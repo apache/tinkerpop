@@ -33,10 +33,10 @@ public class GremlinParserException extends RuntimeException {
         super(message);
     }
 
-    public GremlinParserException(final int line_number, final int charPositionInLine, final String message) {
+    public GremlinParserException(final int lineNumber, final int charPositionInLine, final String message) {
         super(new StringBuilder()
                 .append("Query parsing failed at line ")
-                .append(line_number)
+                .append(lineNumber)
                 .append(", character position at ")
                 .append(charPositionInLine)
                 .append(", error message : ")

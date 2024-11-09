@@ -119,7 +119,6 @@ Feature: Step - addV()
     Then the result should have a count of 4
     And the graph should return 2 for count of "g.V().properties(\"name\")"
 
-  @MultiMetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX
     Given the empty graph
     And the graph initializer of
@@ -146,7 +145,7 @@ Feature: Step - addV()
     And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
@@ -174,7 +173,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
-  @MultiMetaProperties
+  @MetaProperties
   Scenario: g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX
     Given the empty graph
     And the graph initializer of
@@ -202,7 +201,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",\"private\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X
     Given the empty graph
     And the graph initializer of
@@ -255,7 +254,7 @@ Feature: Step - addV()
       | marko |
     And the graph should return 2 for count of "g.V().has(\"name\",\"marko\")"
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X
     Given the empty graph
     And the graph initializer of
@@ -283,7 +282,7 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\")"
     And the graph should return 1 for count of "g.V().has(\"name\",\"stephenm\").properties(\"name\").has(\"since\",2010)"
 
-  @MultiMetaProperties
+  @MultiProperties
   Scenario: g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX
     Given the empty graph
     And the graph initializer of
@@ -429,7 +428,6 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
 
- 
   Scenario: g_addV_propertyXmapX
     Given the empty graph
     And the traversal of
@@ -449,6 +447,42 @@ Feature: Step - addV()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+
+  @MultiProperties
+  Scenario: g_V_hasXname_fooX_propertyXname_setXbarX_age_43X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property(Cardinality.single, "name", "foo").property("age", 42)
+      """
+    And the traversal of
+      """
+      g.V().has('name','foo').property(["name": Cardinality.set("bar"), "age": 43 ])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"bar\")"
+    And the graph should return 1 for count of "g.V().has(\"age\",43)"
+    And the graph should return 0 for count of "g.V().has(\"age\",42)"
+
+  @MultiProperties
+  Scenario: g_V_hasXname_fooX_propertyXset_name_bar_age_singleX43XX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property(Cardinality.single, "name", "foo").property("age", 42)
+      """
+    And the traversal of
+      """
+      g.V().has('name','foo').property(Cardinality.set, ["name":"bar", "age": Cardinality.single(43) ])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"name\",\"foo\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"bar\")"
+    And the graph should return 1 for count of "g.V().has(\"age\",43)"
+    And the graph should return 0 for count of "g.V().has(\"age\",42)"
 
   Scenario: g_addV_propertyXnullX
     Given the empty graph
@@ -505,7 +539,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"age\",null)"
 
-  @AllowNullPropertyValues @MultiMetaProperties
+  @AllowNullPropertyValues @MetaProperties
   Scenario: g_addVXpersonX_propertyXname_markoX_propertyXfriendWeight_null_acl_nullX
     Given the empty graph
     And the traversal of
@@ -532,3 +566,30 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 0 for count of "g.V().has(\"person\",\"age\",50)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"age\",51)"
+
+  Scenario: g_V_limitX3X_addVXsoftwareX_aggregateXa1X_byXlabelX_aggregateXa2X_byXlabelX_capXa1_a2X_selectXa_bX_byXunfoldX_foldX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And the traversal of
+      """
+      g.V().limit(3).addV("software").aggregate("a1").by(T.label).aggregate("a2").by(T.label).cap("a1", "a2").
+        select("a1","a2").by(unfold().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a1": ["software", "software", "software"], "a2": ["software", "software", "software"]}] |

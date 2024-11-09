@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.remote;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphBinaryRemoteGraphProvider extends AbstractRemoteGraphProvider implements AutoCloseable {
     public GraphBinaryRemoteGraphProvider() {
-        super(createClusterBuilder(Serializers.GRAPHBINARY_V1D0).create());
+        super(createClusterBuilder(Serializers.GRAPHBINARY_V1).create());
     }
 }

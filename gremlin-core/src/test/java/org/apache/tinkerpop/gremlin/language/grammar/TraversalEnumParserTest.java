@@ -65,7 +65,7 @@ public class TraversalEnumParserTest {
         }
 
         @Test
-        public void testAllEnumTypes() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        public void shouldParseAllEnumTypes() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
             final Class<? extends Enum> enumType = (Class<? extends Enum>) (Class.forName(className));
             for (Enum enumConstant : enumType.getEnumConstants()) {
                 final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(enumConstant.name()));
@@ -98,7 +98,7 @@ public class TraversalEnumParserTest {
         }
 
         @Test
-        public void testAllQualifiedEnumTypes() throws
+        public void shouldParseAllQualifiedEnumTypes() throws
         ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
             Class<? extends Enum> enumType = (Class<? extends Enum>) (Class.forName(className));
             for (Enum enumConstant : enumType.getEnumConstants()) {

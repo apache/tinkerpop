@@ -20,12 +20,12 @@ package org.apache.tinkerpop.gremlin.console.jsr223;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.groovy.groovysh.Groovysh;
 import org.apache.tinkerpop.gremlin.console.GremlinGroovysh;
 import org.apache.tinkerpop.gremlin.console.Mediator;
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.junit.Before;
 import org.junit.Rule;

@@ -18,26 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.ietf.jgss.GSSException;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -166,6 +175,68 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void shouldFailAuthenticateWithUnAuthenticatedRequestAfterMaxDeferrableDuration() throws Exception {
+        try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
+            // First request will initiate the authentication handshake
+            // Subsequent requests will be deferred
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration1  = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration2  = client.submitAsync("");
+            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration3  = client.submitAsync("");
+
+            // After the maximum allowed deferred request duration,
+            // any non-authenticated request will invalidate all requests with 429 error
+            CompletableFuture<List<ResponseMessage>> futureOfRequestSubmittedTooLate = CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(SaslAuthenticationHandler.MAX_REQUEST_DEFERRABLE_DURATION.plus(Duration.ofSeconds(1)).toMillis());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }).thenCompose((__) -> {
+                try {
+                    return client.submitAsync("");
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            assertEquals(2, futureOfRequestWithinAuthDuration1.get().size());
+            assertEquals(1, futureOfRequestWithinAuthDuration2.get().size());
+            assertEquals(1, futureOfRequestWithinAuthDuration3.get().size());
+            assertEquals(1, futureOfRequestSubmittedTooLate.get().size());
+
+            assertEquals(ResponseStatusCode.AUTHENTICATE, futureOfRequestWithinAuthDuration1.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration1.get().get(1).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration2.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration3.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestSubmittedTooLate.get().get(0).getStatus().getCode());
+        }
+    }
+
+    @Test
+    public void shouldFailAuthenticateWithIncorrectParallelRequests() throws Exception {
+        try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
+
+            CompletableFuture<List<ResponseMessage>> firstRequest = client.submitAsync("1");
+            CompletableFuture<List<ResponseMessage>> secondRequest  = client.submitAsync("2");
+            CompletableFuture<List<ResponseMessage>> thirdRequest  = client.submitAsync("3");
+
+            Thread.sleep(500);
+
+            // send some incorrect value for username password which should cause all requests to fail.
+            client.submitAsync(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, "someincorrectvalue").create());
+
+            assertEquals(2, firstRequest.get().size());
+            assertEquals(1, secondRequest.get().size());
+            assertEquals(1, thirdRequest.get().size());
+
+            assertEquals(ResponseStatusCode.AUTHENTICATE, firstRequest.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, firstRequest.get().get(1).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, secondRequest.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, thirdRequest.get().get(0).getStatus().getCode());
+        }
+    }
+
+    @Test
     public void shouldAuthenticateWithPlainTextOverDefaultJSONSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON)
                 .credentials("stephen", "password").create();
@@ -176,7 +247,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateWithPlainTextOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect();
 
@@ -202,7 +273,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAuthenticateAndWorkWithVariablesOverGraphSONV1Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1D0)
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED)
                 .credentials("stephen", "password").create();
         final Client client = cluster.connect(name.getMethodName());
 

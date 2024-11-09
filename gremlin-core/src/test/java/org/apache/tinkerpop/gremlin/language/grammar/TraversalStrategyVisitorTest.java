@@ -58,6 +58,7 @@ public class TraversalStrategyVisitorTest {
         return Arrays.asList(new Object[][]{
                 {"ReadOnlyStrategy", ReadOnlyStrategy.instance()},
                 {"new SeedStrategy(seed: 999999)", new SeedStrategy(999999)},
+                {"new SeedStrategy(seed: 999999)", SeedStrategy.build().seed(999999).create()},
                 {"new PartitionStrategy(partitionKey: 'k', includeMetaProperties: true)", PartitionStrategy.build().partitionKey("k").includeMetaProperties(true).create()},
                 {"new PartitionStrategy(partitionKey: 'k', writePartition: 'p', readPartitions: ['p','x','y'])", PartitionStrategy.build().partitionKey("k").writePartition("p").readPartitions("p", "x", "y").create()},
                 {"ProductiveByStrategy", ProductiveByStrategy.instance()},
@@ -79,11 +80,11 @@ public class TraversalStrategyVisitorTest {
     }
 
     @Test
-    public void testTraversalStrategy() {
+    public void shouldParseTraversalStrategy() {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.TraversalStrategyContext ctx = parser.traversalStrategy();
-        final TraversalStrategy strategy = new TraversalStrategyVisitor((DefaultGremlinBaseVisitor) antlrToLanguage.tvisitor).visitTraversalStrategy(ctx);
+        final TraversalStrategy strategy = new TraversalStrategyVisitor(antlrToLanguage).visitTraversalStrategy(ctx);
 
         assertEquals(expected, strategy);
         assertEquals(ConfigurationConverter.getMap(expected.getConfiguration()),

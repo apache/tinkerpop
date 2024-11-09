@@ -18,14 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -38,17 +43,20 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
 
     @Override
     protected VertexProperty readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final VertexProperty v = new ReferenceVertexProperty<>(context.read(buffer),
-                context.readValue(buffer, String.class, false),
-                context.read(buffer));
+        final DetachedVertexProperty.Builder builder = DetachedVertexProperty.build()
+                .setId(context.read(buffer))
+                .setLabel(context.readValue(buffer, String.class, false))
+                .setValue(context.read(buffer));
 
         // discard the parent vertex - we only send "references"
         context.read(buffer);
 
-        // discard the properties - as we only send "references" this should always be null, but will we change our
-        // minds some day????
-        context.read(buffer);
-        return v;
+        final List<Property> properties = context.read(buffer);
+        if (properties != null && !properties.isEmpty()) {
+            for (Property p : properties) builder.addProperty(p);
+        }
+
+        return builder.create();
     }
 
     @Override
@@ -57,10 +65,17 @@ public class VertexPropertySerializer extends SimpleTypeSerializer<VertexPropert
         context.writeValue(value.label(), buffer, false);
         context.write(value.value(), buffer);
 
-        // we don't serialize the parent vertex even as a "reference", but, let's hold a place for it
+        // we don't serialize the parent vertex, let's hold a place for it
         context.write(null, buffer);
-        // we don't serialize properties for graph elements. they are "references", but we leave a place holder
-        // here as an option for the future as we've waffled this soooooooooo many times now
-        context.write(null, buffer);
+
+        if (value instanceof ReferenceVertexProperty) {
+            context.write(null, buffer);
+        }
+        else {
+            final List<?> asList = value.graph().features().vertex().supportsMetaProperties() ?
+                    IteratorUtils.toList(value.properties()) :
+                    Collections.emptyList();
+            context.write(asList, buffer);
+        }
     }
 }

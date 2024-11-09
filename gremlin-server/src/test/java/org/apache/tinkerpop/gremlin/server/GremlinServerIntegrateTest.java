@@ -32,19 +32,20 @@ import org.apache.tinkerpop.gremlin.server.channel.UnifiedTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WsAndHttpTestChannelizer;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
@@ -63,6 +64,7 @@ import org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -92,7 +94,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.apache.tinkerpop.gremlin.driver.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin.Compilation.COMPILE_STATIC;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
@@ -107,6 +109,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
@@ -254,7 +257,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldRespondToTimeoutCancelledWsRequest":
             case "shouldRespondToTimeoutCancelledSessionRequest":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 settings.evaluationTimeout = 5000;
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
                 settings.channelizer = WebSocketChannelizer.class.getName();
@@ -265,7 +268,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.channelizer = UnifiedChannelizer.class.getName();
                 break;
             case "shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest":
-                tryIncludeNeo4jGraph(settings);
+                useTinkerTransactionGraph(settings);
                 settings.evaluationTimeout = 30000;
                 settings.sessionLifetimeTimeout = 5000; // This needs to be shorter because of the delay in scheduling session task.
                 settings.gremlinPool = POOL_SIZE_FOR_TIMEOUT_TESTS;
@@ -1015,11 +1018,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3D0).create();
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
         final Client client = cluster.connect();
 
         try {
-            client.submit("def class C { def C getC(){return this}}; new C()").all().join();
+            client.submit("class C { def C getC(){return this}}; new C()").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
@@ -1185,7 +1188,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProvideBetterExceptionForMethodCodeTooLarge() {
-        final int numberOfParameters = 4000;
+        final int numberOfParameters = 6000;
         final Map<String,Object> b = new HashMap<>();
 
         // generate a script with a ton of bindings usage to generate a "code too large" exception
@@ -1247,7 +1250,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Don't test with UnifiedChannelizer since we only want to test the case where a task is cancelled before
         // running which is handled by shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest.
         assumeThat("Must use OpProcessor", isUsingUnifiedChannelizer(), is(false));
-        assumeNeo4jIsPresent();
 
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
@@ -1274,7 +1276,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
      */
     @Test(timeout = 180000) // Add timeout in case the test hangs.
     public void shouldRespondToTimeoutCancelledMultiTaskUnifiedRequest() throws Exception {
-        assumeNeo4jIsPresent();
         final Cluster cluster = TestClientFactory.build().create();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
         final GraphTraversalSource gtx = g.tx().begin();
@@ -1374,5 +1375,27 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals("make it stop", t.getMessage());
             assertEquals(ResponseStatusCode.SERVER_ERROR_FAIL_STEP, ((ResponseException) t).getResponseStatusCode());
         }
+    }
+
+    @Test
+    public void shouldReturnEmptyPropertiesWithMaterializeProperties() {
+        final Cluster cluster = TestClientFactory.build().create();
+        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster));
+
+        final Vertex v1 = g.addV("person").property("name", "marko").next();
+        final Vertex r1 = g.V().next();
+        assertEquals(v1.properties().next(), r1.properties().next());
+        final Vertex r1_tokens = g.with("materializeProperties", "tokens").V().next();
+        assertFalse(r1_tokens.properties().hasNext());
+
+        final VertexProperty vp1 = (VertexProperty) g.with("materializeProperties", "tokens").V().properties().next();
+        assertFalse(vp1.properties().hasNext());
+
+        final Vertex v2 = g.addV("person").property("name", "stephen").next();
+        g.V(v1).addE("knows").to(v2).property("weight", 0.75).iterate();
+        final Edge r2 = g.E().next();
+        assertEquals(r2.properties().next(), r2.properties().next());
+        final Edge r2_tokens = g.with("materializeProperties", "tokens").E().next();
+        assertFalse(r2_tokens.properties().hasNext());
     }
 }

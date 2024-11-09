@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.6.8</version>
+        <version>3.7.4-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-console</artifactId>
     <name>Apache TinkerPop :: Gremlin Console</name>
@@ -138,6 +138,11 @@ limitations under the License.
                     <artifactId>jopt-simple</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-cli-picocli</artifactId>
+            <version>${groovy.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -289,6 +294,10 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/slf4j</resource>
                                     <file>src/main/static/licenses/slf4j</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                                    <resource>META-INF/licenses/treelayout</resource>
+                                    <file>src/main/static/licenses/treelayout</file>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/licenses/logback</resource>

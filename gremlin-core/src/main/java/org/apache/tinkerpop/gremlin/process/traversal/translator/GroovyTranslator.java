@@ -207,6 +207,15 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         }
 
         @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            script.append("VertexProperty.Cardinality." + inst.getArguments()[0] + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
+        }
+
+        @Override
         protected Script produceScript(final Set<?> o) {
             return produceScript(new ArrayList<>(o)).append(" as Set");
         }

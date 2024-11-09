@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.junit.Test;
 

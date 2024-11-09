@@ -73,7 +73,8 @@ setup(
     tests_require=[
         'pytest>=4.6.4,<7.2.0',
         'radish-bdd==0.13.4',
-        'PyHamcrest>=1.9.0,<3.0.0'
+        'PyHamcrest>=1.9.0,<3.0.0',
+        'PyYAML>=5.3'
     ],
     install_requires=install_requires,
     extras_require={

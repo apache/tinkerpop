@@ -30,7 +30,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// <summary>
     /// A <see cref="Property"/> serializer.
     /// </summary>
-    public class PropertySerializer : SimpleTypeSerializer<Property>
+    public class 
+        PropertySerializer : SimpleTypeSerializer<Property>
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="PropertySerializer" /> class.
@@ -43,7 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         protected override async Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken = default)
         {
-            await writer.WriteValueAsync(value.Key, stream, false, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(value.Key, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.Value, stream, cancellationToken).ConfigureAwait(false);
             
             // placeholder for the parent element
@@ -55,7 +56,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var p = new Property(
-                (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false),
+                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false),
                 await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false));
 
             // discard parent element

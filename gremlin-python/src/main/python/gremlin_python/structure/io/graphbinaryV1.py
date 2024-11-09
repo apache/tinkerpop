@@ -33,7 +33,7 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, BigDecimal, FunctionType, ShortType, IntType, LongType, BigIntType, \
                                    TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, GremlinType, \
                                    SingleChar
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, Merge, \
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, DT, Merge, \
                                              Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
@@ -97,6 +97,7 @@ class DataType(Enum):
     metrics = 0x2c
     traversalmetrics = 0x2d
     merge = 0x2e
+    dt = 0x2f
     char = 0x80
     duration = 0x81
     inetaddress = 0x82            # todo
@@ -601,8 +602,11 @@ class EdgeIO(_GraphBinaryTypeIO):
         edgelbl = r.to_object(b, DataType.string, False)
         inv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
         outv = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
-        edge = Edge(edgeid, outv, edgelbl, inv)
-        b.read(4)
+        b.read(2)
+        props = r.read_object(b)
+        # null properties are returned as empty lists
+        properties = [] if props is None else props
+        edge = Edge(edgeid, outv, edgelbl, inv, properties)
         return edge
 
 
@@ -680,8 +684,12 @@ class VertexIO(_GraphBinaryTypeIO):
 
     @classmethod
     def _read_vertex(cls, b, r):
-        vertex = Vertex(r.read_object(b), r.to_object(b, DataType.string, False))
-        b.read(2)
+        vertex_id = r.read_object(b)
+        vertex_label = r.to_object(b, DataType.string, False)
+        props = r.read_object(b)
+        # null properties are returned as empty lists
+        properties = [] if props is None else props
+        vertex = Vertex(vertex_id, vertex_label, properties)
         return vertex
 
 
@@ -707,7 +715,10 @@ class VertexPropertyIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertexproperty(cls, b, r):
         vp = VertexProperty(r.read_object(b), r.to_object(b, DataType.string, False), r.read_object(b), None)
-        b.read(4)
+        b.read(2)
+        properties = r.read_object(b)
+        # null properties are returned as empty lists
+        vp.properties = [] if properties is None else properties
         return vp
 
 
@@ -916,6 +927,11 @@ class PSerializer(_GraphBinaryTypeIO):
             writer.to_dict(a, to_extend)
 
         return to_extend
+
+
+class DTIO(_EnumIO):
+    graphbinary_type = DataType.dt
+    python_type = DT
 
 
 class MergeIO(_EnumIO):

@@ -611,7 +611,7 @@ Feature: Step - SubgraphStrategy
       | marko |
       | josh |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_propertiesXlocationX_value
     Given the crew graph
     And the traversal of
@@ -627,7 +627,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_valuesXlocationX
     Given the crew graph
     And the traversal of
@@ -643,7 +643,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_asXaX_propertiesXlocationX_asXbX_selectXaX_outE_properties_selectXbX_value_dedup
     Given the crew graph
     And the traversal of
@@ -660,7 +660,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertexProperties_hasXstartTime_gtX2005XXXX_V_asXaX_valuesXlocationX_asXbX_selectXaX_outE_properties_selectXbX_dedup
     Given the crew graph
     And the traversal of
@@ -677,7 +677,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertices_hasXname_neqXstephenXX_vertexProperties_hasXstartTime_gtX2005XXXX_V_propertiesXlocationX_value
     Given the crew graph
     And the traversal of
@@ -693,7 +693,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXvertices_hasXname_neqXstephenXX_vertexProperties_hasXstartTime_gtX2005XXXX_V_valuesXlocationX
     Given the crew graph
     And the traversal of
@@ -709,7 +709,7 @@ Feature: Step - SubgraphStrategy
       | seattle |
       | aachen |
 
-  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiMetaProperties
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded @MultiProperties @MetaProperties
   Scenario: g_withStrategiesXSubgraphStrategyXedges_hasLabelXusesX_hasXskill_5XXX_V_outE_valueMap_selectXvaluesX_unfold
     Given the crew graph
     And the traversal of
@@ -755,6 +755,22 @@ Feature: Step - SubgraphStrategy
     Then the result should be unordered
       | result |
       | e[marko-created->lop] |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withStrategiesXSubgraphStrategyXcheckAdjacentVertices_subgraphDXX_E
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(new SubgraphStrategy(checkAdjacentVertices: true,
+                                            vertices: __.has("name", P.within("josh", "lop", "ripple")),
+                                            edges: __.or(__.has("weight", 0.4).hasLabel("created"),
+                                                         __.has("weight", 1.0).hasLabel("created")))).E()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
@@ -914,3 +930,17 @@ Feature: Step - SubgraphStrategy
     Then the result should be unordered
       | result |
       | v[lop] |
+
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withStrategiesXSubgraphStrategyXcheckAdjacentVertices_subgraphDXX_EX9X_bothV
+    Given the modern graph
+    And using the parameter eid9 defined as "e[marko-created->lop].id"
+    And the traversal of
+      """
+      g.withStrategies(new SubgraphStrategy(checkAdjacentVertices: true,
+                                            vertices: __.has("name", P.within("josh", "lop", "ripple")),
+                                            edges: __.or(__.has("weight", 0.4).hasLabel("created"),
+                                                         __.has("weight", 1.0).hasLabel("created")))).E(eid9).bothV()
+      """
+    When iterated to list
+    Then the result should be empty

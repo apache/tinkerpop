@@ -25,15 +25,12 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.INTEGER;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.LONG;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.INTEGER;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.LONG;
 
 /**
  * Helps create a variety of different toy graphs for testing and learning purposes.
@@ -57,7 +54,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createClassic()} into an existing graph.
      */
-    public static void generateClassic(final TinkerGraph g) {
+    public static void generateClassic(final AbstractTinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, "name", "marko", "age", 29);
         final Vertex vadas = g.addVertex(T.id, 2, "name", "vadas", "age", 27);
         final Vertex lop = g.addVertex(T.id, 3, "name", "lop", "lang", "java");
@@ -85,7 +82,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createModern()} into an existing graph.
      */
-    public static void generateModern(final TinkerGraph g) {
+    public static void generateModern(final AbstractTinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person");
         marko.property("name", "marko", T.id, 0l);
         marko.property("age", 29, T.id, 1l);
@@ -128,7 +125,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createTheCrew()} into an existing graph.
      */
-    public static void generateTheCrew(final TinkerGraph g) {
+    public static void generateTheCrew(final AbstractTinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko");
         final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen");
         final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias");
@@ -191,7 +188,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createKitchenSink()} into an existing graph.
      */
-    public static void generateKitchenSink(final TinkerGraph graph) {
+    public static void generateKitchenSink(final AbstractTinkerGraph graph) {
         final GraphTraversalSource g = graph.traversal();
         g.addV("loops").property(T.id, 1000).property("name", "loop").as("me").
           addE("self").to("me").property(T.id, 1001).
@@ -215,7 +212,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createGratefulDead()} into an existing graph.
      */
-    public static void generateGratefulDead(final TinkerGraph graph) {
+    public static void generateGratefulDead(final AbstractTinkerGraph graph) {
         final InputStream stream = TinkerFactory.class.getResourceAsStream("grateful-dead.kryo");
         try {
             graph.io(gryo()).reader().create().readGraph(stream, graph);

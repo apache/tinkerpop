@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
@@ -53,7 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TinkerGraphComputerView {
 
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
     protected final Map<String, VertexComputeKey> computeKeys;
     private Map<Element, Map<String, List<VertexProperty<?>>>> computeProperties;
     private final Set<Object> legalVertices = new HashSet<>();
@@ -61,7 +62,7 @@ public final class TinkerGraphComputerView {
     private final GraphFilter graphFilter;
     private final Set<String> retainVertexProperties;
 
-    public TinkerGraphComputerView(final TinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
+    public TinkerGraphComputerView(final AbstractTinkerGraph graph, final GraphFilter graphFilter, final Set<VertexComputeKey> computeKeys) {
         this.graph = graph;
         this.computeKeys = new HashMap<>();
         computeKeys.forEach(key -> this.computeKeys.put(key.getKey(), key));

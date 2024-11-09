@@ -7,9 +7,6 @@ The Apache Software Foundation (http://www.apache.org/).
 ------------------------------------------------------------------------
 Jackson-Databind, Jackson-Annotation and Jackson-Core 2.15.2
 ------------------------------------------------------------------------
-# Jackson JSON processor
-
-Jackson is a high-performance, Free/Open Source JSON processing library.
 It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
 been in development since 2007.
 It is currently developed by a community of developers.
@@ -35,6 +32,6 @@ It is currently developed by a community of developers.
         (We only use those portions of the bigint project that can be licensed under 2-clause BSD License.)
 
 ------------------------------------------------------------------------
-Objenesis 2.4
+Objenesis 3.3 - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
 ------------------------------------------------------------------------
-Copyright 2006-2016 Joe Walnes, Henri Tremblay, Leonardo Mesquita
+Copyright 2006-2022 Joe Walnes, Henri Tremblay, Leonardo Mesquita

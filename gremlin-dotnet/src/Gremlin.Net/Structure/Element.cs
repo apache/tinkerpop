@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure
 {
@@ -35,24 +36,31 @@ namespace Gremlin.Net.Structure
         /// </summary>
         /// <param name="id">The id of the element.</param>
         /// <param name="label">The label of the element.</param>
-        protected Element(object id, string label)
+        /// <param name="properties">Optional properties of the element.</param>
+        protected Element(object? id, string label, dynamic[]? properties = null)
         {
             Id = id;
             Label = label;
+            Properties = properties;
         }
 
         /// <summary>
         ///     Gets the id of this <see cref="Element" />.
         /// </summary>
-        public object Id { get; }
+        public object? Id { get; }
 
         /// <summary>
         ///     Gets the label of this <see cref="Element" />.
         /// </summary>
         public string Label { get; }
 
+        /// <summary>
+        ///     Gets the properties of this <see cref="Element" />.
+        /// </summary>
+        public dynamic[]? Properties { get; }
+
         /// <inheritdoc />
-        public bool Equals(Element other)
+        public bool Equals(Element? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -60,7 +68,7 @@ namespace Gremlin.Net.Structure
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -71,7 +79,7 @@ namespace Gremlin.Net.Structure
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return Id != null ? Id.GetHashCode() : 0;
         }
     }
 }

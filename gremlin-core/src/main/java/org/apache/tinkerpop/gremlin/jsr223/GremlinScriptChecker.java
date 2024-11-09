@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -34,15 +36,16 @@ public class GremlinScriptChecker {
     /**
      * An empty result whose properties return as empty.
      */
-    public static final Result EMPTY_RESULT = new Result(null, null);
+    public static final Result EMPTY_RESULT = new Result(null, null, null);
 
     /**
      * At least one of these tokens should be present somewhere in the Gremlin string for {@link #parse(String)} to
      * take any action at all.
      */
     private static final Set<String> tokens = new HashSet<>(Arrays.asList("evaluationTimeout", "scriptEvaluationTimeout",
-                                                                          "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT",
-                                                                          "requestId", "REQUEST_ID"));
+            "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT", "requestId", "REQUEST_ID", "materializeProperties",
+            "ARGS_MATERIALIZE_PROPERTIES"));
+
     /**
      * Matches single line comments, multi-line comments and space characters.
      * <pre>
@@ -95,24 +98,35 @@ public class GremlinScriptChecker {
     private static final String requestIdTokens = "[\"']requestId[\"']|(?:Tokens\\.)?REQUEST_ID";
 
     /**
+     * Regex fragment for the materializeProperties to look for. There are basically four:
+     * <ul>
+     *     <li>{@code materializeProperties} which is a string value and thus single or double quoted</li>
+     *     <li>{@code ARGS_MATERIALIZE_PROPERTIES} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
+     * </ul>
+     */
+    private static final String materializePropertiesTokens = "[\"']materializeProperties[\"']|(?:Tokens\\.)?ARGS_MATERIALIZE_PROPERTIES";
+
+    /**
      * Matches {@code .with({timeout-token},{timeout})} with a matching group on the {@code timeout}.
-     *
+     * input: g.with('materializeProperties',100)
      * <pre>
      * From https://regex101.com/
      *
-     * \.with\((?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|(?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))["']\)
-     *
+     * \.with\((((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))\)
+     * 
      * gm
-     * 1st Alternative \.with\((?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
      * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
      * with matches the characters with literally (case sensitive)
      * \( matches the character ( with index 4010 (2816 or 508) literally (case sensitive)
-     * Non-capturing group (?:(?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
-     * Non-capturing group (?:["']evaluationTimeout["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT)
-     * 1st Alternative ["']evaluationTimeout["']
+     * 1st Capturing Group (((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))
+     * 1st Alternative ((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
+     * 2nd Capturing Group ((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
+     * Non-capturing group (?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT)
+     * 1st Alternative ["']materializeProperties["']
      * Match a single character present in the list below ["']
      * "' matches a single character in the list "' (case sensitive)
-     * evaluationTimeout matches the characters evaluationTimeout literally (case sensitive)
+     * materializeProperties
+     *  matches the characters materializeProperties literally (case sensitive)
      * Match a single character present in the list below ["']
      * "' matches a single character in the list "' (case sensitive)
      * 2nd Alternative ["']scriptEvaluationTimeout["']
@@ -137,7 +151,7 @@ public class GremlinScriptChecker {
      * Named Capture Group to (?<to>\d*)
      * \d matches a digit (equivalent to [0-9])
      * * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
-     * 2nd Capturing Group (:?L|l)?
+     * 4th Capturing Group (:?L|l)?
      * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
      * 1st Alternative :?L
      * : matches the character : with index 5810 (3A16 or 728) literally (case sensitive)
@@ -145,24 +159,29 @@ public class GremlinScriptChecker {
      * L matches the character L with index 7610 (4C16 or 1148) literally (case sensitive)
      * 2nd Alternative l
      * l matches the character l with index 10810 (6C16 or 1548) literally (case sensitive)
-     * 2nd Alternative (?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))["']\)
-     * Non-capturing group (?:(?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?))
-     * Non-capturing group (?:["']requestId["']|(?:Tokens\.)?REQUEST_ID)
-     * 1st Alternative ["']requestId["']
-     * 2nd Alternative (?:Tokens\.)?REQUEST_ID
+     * 2nd Alternative ((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)
+     * 5th Capturing Group ((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)
+     * Non-capturing group (?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES)
+     * 1st Alternative ["']materializeProperties["']
+     * 2nd Alternative (?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES
      * , matches the character , with index 4410 (2C16 or 548) literally (case sensitive)
      * Match a single character present in the list below ["']
      * "' matches a single character in the list "' (case sensitive)
-     * Named Capture Group rid (?<rid>.*?)
-     * . matches any character (except for line terminators)
-     * *? matches the previous token between zero and unlimited times, as few times as possible, expanding as needed (lazy)
+     * Named Capture Group mp (?<mp>.*?)
      * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
+     * 3rd Alternative ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
+     * 7th Capturing Group ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
      * \) matches the character ) with index 4110 (2916 or 518) literally (case sensitive)
+     * Global pattern flags
+     * g modifier: global. All matches (don't return after first match)
+     * m modifier: multi line. Causes ^ and $ to match the begin/end of each line (not only begin/end of string)
      * </pre>
      */
     private static final Pattern patternWithOptions =
-            Pattern.compile("\\.with\\(((?:" + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|((?:" + requestIdTokens + "),[\"'](?<rid>.*?))[\"']\\)");
+            Pattern.compile("\\.with\\((((?:"
+                    + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|((?:"
+                    + materializePropertiesTokens + "),[\"'](?<mp>.*?)[\"']?)|((?:"
+                    + requestIdTokens + "),[\"'](?<rid>.*?)[\"']))\\)");
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
@@ -184,6 +203,7 @@ public class GremlinScriptChecker {
         // arguments given to Result class as null mean they weren't assigned (or the parser didn't find them somehow - eek!)
         Long timeout = null;
         String requestId = null;
+        String materializeProperties = null;
         do {
             // timeout is added up across all scripts
             final String to = m.group("to");
@@ -195,9 +215,13 @@ public class GremlinScriptChecker {
             // request id just uses the last one found
             final String rid = m.group("rid");
             if (rid != null) requestId = rid;
+
+            //materializeProperties just uses the last one found
+            final String mp = m.group("mp");
+            if (mp != null) materializeProperties = mp;
         } while (m.find());
 
-        return new Result(timeout, requestId);
+        return new Result(timeout, requestId, materializeProperties);
     }
 
     /**
@@ -206,26 +230,36 @@ public class GremlinScriptChecker {
     public static class Result {
         private final Long timeout;
         private final String requestId;
+        private final String materializeProperties;
 
-        private Result(final Long timeout, final String requestId) {
+        private Result(final Long timeout, final String requestId, final String materializeProperties) {
             this.timeout = timeout;
             this.requestId = requestId;
+            this.materializeProperties = materializeProperties;
         }
 
         /**
-         * Gets the value of the timeouts that were set using the {@code with()} source step. If there are multiple
-         * commands using this step, the timeouts are summed together.
+         * Gets the value of the timeouts that were set using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the timeouts are summed together.
          */
         public final Optional<Long> getTimeout() {
             return null == timeout ? Optional.empty() : Optional.of(timeout);
         }
 
         /**
-         * Gets the value of the request identifier supplied using the {@code with()} source step. If there are
-         * multiple commands using this step, the last usage should represent the id returned here.
+         * Gets the value of the request identifier supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the id returned here.
          */
         public Optional<String> getRequestId() {
             return null == requestId ? Optional.empty() : Optional.of(requestId);
+        }
+
+        /**
+         * Gets the value of the materializeProperties supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the value returned here.
+         */
+        public Optional<String> getMaterializeProperties() {
+            return null == materializeProperties ? Optional.empty() : Optional.of(materializeProperties);
         }
 
         @Override
@@ -233,6 +267,7 @@ public class GremlinScriptChecker {
             return "GremlinScriptChecker.Result{" +
                     "timeout=" + timeout +
                     ", requestId='" + requestId + '\'' +
+                    ", materializeProperties='" + materializeProperties + '\'' +
                     '}';
         }
     }

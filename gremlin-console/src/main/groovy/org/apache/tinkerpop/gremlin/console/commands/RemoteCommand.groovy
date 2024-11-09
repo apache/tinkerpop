@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
+import org.apache.groovy.groovysh.ComplexCommandSupport
+import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
-import org.codehaus.groovy.tools.shell.ComplexCommandSupport
-import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
  * Configure a remote connection to a Gremlin Server.

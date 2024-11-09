@@ -38,7 +38,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// Initializes a new instance of the <see cref="GraphBinaryReader" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for deserialization.</param>
-        public GraphBinaryReader(TypeSerializerRegistry registry = null)
+        public GraphBinaryReader(TypeSerializerRegistry? registry = null)
         {
             _registry = registry ?? TypeSerializerRegistry.Instance;
         }
@@ -47,15 +47,29 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// Reads only the value for a specific type <typeparamref name="T"/>.
         /// </summary>
         /// <param name="stream">The GraphBinary data to parse.</param>
-        /// <param name="nullable">Whether or not the value can be null.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <typeparam name="T">The type of the object to read.</typeparam>
         /// <returns>The read value.</returns>
-        public async Task<object> ReadValueAsync<T>(Stream stream, bool nullable,
+        public async Task<object?> ReadNullableValueAsync<T>(Stream stream,
             CancellationToken cancellationToken = default)
         {
             var typedSerializer = _registry.GetSerializerFor(typeof(T));
-            return await typedSerializer.ReadValueAsync(stream, this, nullable, cancellationToken)
+            return await typedSerializer.ReadNullableValueAsync(stream, this, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        
+        /// <summary>
+        /// Reads only the value for a specific type <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="stream">The GraphBinary data to parse.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <typeparam name="T">The type of the object to read.</typeparam>
+        /// <returns>The read value.</returns>
+        public async Task<object> ReadNonNullableValueAsync<T>(Stream stream,
+            CancellationToken cancellationToken = default)
+        {
+            var typedSerializer = _registry.GetSerializerFor(typeof(T));
+            return await typedSerializer.ReadNonNullableValueAsync(stream, this, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -65,14 +79,14 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         /// <param name="stream">The GraphBinary data to parse.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read value.</returns>
-        public async Task<object> ReadAsync(Stream stream, CancellationToken cancellationToken = default)
+        public async Task<object?> ReadAsync(Stream stream, CancellationToken cancellationToken = default)
         {
             var type = DataType.FromTypeCode(await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false));
 
             if (type == DataType.UnspecifiedNull)
             {
                 await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false); // read value byte to advance the index
-                return default; // should be null (TODO?)
+                return null;
             }
 
             ITypeSerializer typeSerializer;
@@ -82,8 +96,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             }
             else
             {
-                var customTypeName =
-                    (string)await ReadValueAsync<string>(stream, false, cancellationToken).ConfigureAwait(false);
+                var customTypeName = (string)await ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                    .ConfigureAwait(false);
                 typeSerializer = _registry.GetSerializerForCustomType(customTypeName);
             }
             

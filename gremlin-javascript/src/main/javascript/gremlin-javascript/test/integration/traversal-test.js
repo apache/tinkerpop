@@ -26,7 +26,7 @@ const Mocha = require('mocha');
 const assert = require('assert');
 const { AssertionError } = require('assert');
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
-const { Vertex } = require('../../lib/structure/graph');
+const { Vertex, Edge, VertexProperty} = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
 const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,
@@ -81,7 +81,7 @@ describe('Traversal', function () {
         assert.fail("there is no server so an error should have occurred");
       }).catch(function(err) {
         if (err instanceof AssertionError) throw err;
-        assert.strictEqual(err.message, "connect ECONNREFUSED 127.0.0.1:9998");
+        assert.strictEqual(err.code, "ECONNREFUSED");
       });
     });
   });
@@ -129,6 +129,36 @@ describe('Traversal', function () {
         });
     });
   });
+  describe('#materializeProperties()', function () {
+    it('should skip vertex properties when tokens is set', function () {
+      var g = traversal().withRemote(connection);
+      return g.with_("materializeProperties", "tokens").V().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 6);
+        list.forEach(v => assert.ok(v instanceof Vertex));
+        list.forEach(v => assert.ok(v.properties === undefined || v.properties.length === 0));
+      });
+    });
+    it('should skip edge properties when tokens is set', function () {
+      var g = traversal().withRemote(connection);
+      return g.with_("materializeProperties", "tokens").E().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 6);
+        list.forEach(e => assert.ok(e instanceof Edge));
+        // due to the way edge is constructed, edge properties will be {} regardless if it's null or []
+        list.forEach(e => assert.strictEqual(Object.keys(e.properties).length, 0));
+      });
+    });
+    it('should skip vertex property properties when tokens is set', function () {
+      var g = traversal().withRemote(connection);
+      return g.with_("materializeProperties", "tokens").V().properties().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 12);
+        list.forEach(vp => assert.ok(vp instanceof VertexProperty));
+        list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties.length === 0));
+      });
+    });
+  });
   describe('lambdas', function() {
     it('should handle 1-arg lambdas', function() {
       const g = traversal().withRemote(connection);
@@ -160,11 +190,11 @@ describe('Traversal', function () {
   describe("more complex traversals", function() {
     it('should return paths of value maps', function() {
       const g = traversal().withRemote(connection);
-      return g.V(1).out().in_().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
+      return g.V(1).out().order().in_().order().limit(1).path().by(__.valueMap('name')).toList().then(function (list) {
         assert.ok(list);
         assert.strictEqual(list.length, 1);
         assert.strictEqual(list[0].objects[0].get('name')[0], "marko");
-        assert.strictEqual(list[0].objects[1].get('name')[0], "lop");
+        assert.strictEqual(list[0].objects[1].get('name')[0], "vadas");
         assert.strictEqual(list[0].objects[2].get('name')[0], "marko");
       });
     });
@@ -246,19 +276,14 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - commit', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
-
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
     it('should commit a simple transaction', async function () {
       const g = traversal().withRemote(txConnection);
@@ -289,19 +314,15 @@ describe('Traversal', function () {
   });
   describe('support remote transactions - rollback', function() {
     before(function () {
-      if (process.env.TEST_TRANSACTIONS !== "true") return this.skip();
 
       txConnection = helper.getConnection('gtx');
       return txConnection.open();
     });
     after(function () {
-      if (process.env.TEST_TRANSACTIONS === "true") {
-        // neo4j gets re-used and has to be cleaned up per test that uses it
-        const g = traversal().withRemote(txConnection);
-        return g.V().drop().iterate().then(() => {
-          return txConnection.close()
-        });
-      }
+      const g = traversal().withRemote(txConnection);
+      return g.V().drop().iterate().then(() => {
+        return txConnection.close()
+      });
     });
     it('should rollback a simple transaction', async function() {
       const g = traversal().withRemote(txConnection);

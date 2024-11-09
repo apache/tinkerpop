@@ -29,13 +29,13 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.util.CharsetUtil;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV3d0;
-import org.apache.tinkerpop.gremlin.driver.ser.SerTokens;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class HttpHandlerUtilTest {
 
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private final GraphBinaryMessageSerializerV1 graphBinarySerializer = new GraphBinaryMessageSerializerV1();
-    public final GraphSONMessageSerializerV3d0 graphSONSerializer = new GraphSONMessageSerializerV3d0();
+    public final GraphSONMessageSerializerV3 graphSONSerializer = new GraphSONMessageSerializerV3();
 
     @Test
     public void shouldFailWhenIncorrectSerializerUsed() throws SerializationException {
@@ -67,13 +67,13 @@ public class HttpHandlerUtilTest {
         final ByteBuf buffer = graphSONSerializer.serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1D0);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-        serializers.put(SerTokens.MIME_GRAPHBINARY_V1D0, graphBinarySerializer);
+        serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
 
         try {
             HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
@@ -94,13 +94,13 @@ public class HttpHandlerUtilTest {
         final ByteBuf buffer = graphBinarySerializer.serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
-        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1D0);
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1);
 
         final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-        serializers.put(SerTokens.MIME_GRAPHBINARY_V1D0, graphBinarySerializer);
+        serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
 
         final RequestMessage deserialized = HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
         assertThat(request, samePropertyValuesAs(deserialized));
@@ -123,7 +123,7 @@ public class HttpHandlerUtilTest {
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-        serializers.put(SerTokens.MIME_GRAPHBINARY_V1D0, graphBinarySerializer);
+        serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
 
         final RequestMessage deserialized = HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
         assertEquals(gremlin, deserialized.getArgs().get(Tokens.ARGS_GREMLIN));
@@ -154,7 +154,7 @@ public class HttpHandlerUtilTest {
                     encoder.toString(), buffer, headers, new DefaultHttpHeaders());
 
             final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
-            serializers.put(SerTokens.MIME_GRAPHBINARY_V1D0, graphBinarySerializer);
+            serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
 
             final RequestMessage deserialized = HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
             assertEquals(gremlin, deserialized.getArgs().get(Tokens.ARGS_GREMLIN));

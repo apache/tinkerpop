@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.tools.CollectionFactory;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -64,6 +67,22 @@ public class GraphTraversalTest {
         g.addV().property(T.label, null);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldFailWhenUsingOptionAndCardinalityArgumentWithoutMergeV() {
+        final Map<Object, Object> m = new HashMap<Object,Object>() {{
+            put("k", 1);
+        }};
+        g.mergeE(new HashMap<>()).option(Merge.onMatch, m, VertexProperty.Cardinality.list);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldFailWhenUsingOptionAndCardinalityFunctionWithoutMergeV() {
+        final Map<Object, Object> m = new HashMap<Object,Object>() {{
+            put("k", VertexProperty.Cardinality.list(1));
+        }};
+        g.mergeE(new HashMap<>()).option(Merge.onMatch, m);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailPropertyWithCardinalityNullVertexId() {
         g.addV().property(VertexProperty.Cardinality.single, T.id, null);
@@ -76,12 +95,12 @@ public class GraphTraversalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailMergeEWithBadInput() {
-        g.inject(0).mergeE(CollectionFactory.asMap(T.value, 100));
+        g.inject(0).mergeE(CollectionUtil.asMap(T.value, 100));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailMergeVWithBadInput() {
-        g.inject(0).mergeV(CollectionFactory.asMap(T.value, 100));
+        g.inject(0).mergeV(CollectionUtil.asMap(T.value, 100));
     }
 
     @Test

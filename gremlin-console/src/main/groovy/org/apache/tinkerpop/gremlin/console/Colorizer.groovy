@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.console;
 
-import org.codehaus.groovy.tools.shell.AnsiDetector
+import org.apache.groovy.groovysh.AnsiDetector
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
 

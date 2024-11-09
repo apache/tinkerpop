@@ -25,11 +25,12 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,6 +86,24 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
                 } else {
                     this.properties.put(entry.getKey(), Collections.singletonList(new DetachedProperty<>(entry.getKey(), entry.getValue(), this)));
                 }
+            });
+        }
+    }
+
+    public DetachedEdge(final Object id, final String label,
+                        final List<Property> properties,
+                        final Object outVId, final String outVLabel,
+                        final Object inVId, final String inVLabel) {
+        super(id, label);
+        this.outVertex = new DetachedVertex(outVId, outVLabel, Collections.emptyMap());
+        this.inVertex = new DetachedVertex(inVId, inVLabel, Collections.emptyMap());
+        if (properties != null && !properties.isEmpty()) {
+            this.properties = new HashMap<>();
+            properties.iterator().forEachRemaining(property -> {
+                if (!this.properties.containsKey(property.key())) {
+                    this.properties.put(property.key(), new ArrayList());
+                }
+                this.properties.get(property.key()).add(property);
             });
         }
     }

@@ -54,7 +54,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select
 import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCallContext;
 import static org.apache.tinkerpop.gremlin.structure.service.Service.Type;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry.LambdaServiceFactory;
-import static org.apache.tinkerpop.gremlin.util.tools.CollectionFactory.asMap;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 

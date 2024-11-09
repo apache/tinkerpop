@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.8</version>
+        <version>3.7.4-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-javascript</artifactId>
     <name>Apache TinkerPop :: Gremlin Javascript</name>
@@ -63,11 +63,6 @@ limitations under the License.
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.apache.tinkerpop</groupId>
-                        <artifactId>neo4j-gremlin</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
                         <groupId>commons-io</groupId>
                         <artifactId>commons-io</artifactId>
                         <version>${commons.io.version}</version>
@@ -79,7 +74,7 @@ limitations under the License.
 						<scope>runtime</scope>
 					</dependency>
                     <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
+                        <groupId>org.apache.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
                         <type>pom</type>

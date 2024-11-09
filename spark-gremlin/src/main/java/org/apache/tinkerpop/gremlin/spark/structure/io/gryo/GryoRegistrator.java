@@ -40,7 +40,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.kryoshim.unshaded.Un
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializersV1d0;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoSerializersV1;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.TypeRegistration;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.SerializerShim;
@@ -214,23 +214,23 @@ public class GryoRegistrator implements KryoRegistrator {
         m.put(VertexWritable.class, new UnshadedSerializerAdapter<>(new VertexWritableSerializer()));
         m.put(ObjectWritable.class, new UnshadedSerializerAdapter<>(new ObjectWritableSerializer<>()));
         //
-        m.put(HadoopVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexSerializer()));
-        m.put(HadoopVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexPropertySerializer()));
-        m.put(HadoopProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.PropertySerializer()));
-        m.put(HadoopEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.EdgeSerializer()));
+        m.put(HadoopVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexSerializer()));
+        m.put(HadoopVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexPropertySerializer()));
+        m.put(HadoopProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.PropertySerializer()));
+        m.put(HadoopEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.EdgeSerializer()));
         //
-        m.put(ComputerGraph.ComputerVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexSerializer()));
-        m.put(ComputerGraph.ComputerVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexPropertySerializer()));
-        m.put(ComputerGraph.ComputerProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.PropertySerializer()));
-        m.put(ComputerGraph.ComputerEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.EdgeSerializer()));
+        m.put(ComputerGraph.ComputerVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexSerializer()));
+        m.put(ComputerGraph.ComputerVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexPropertySerializer()));
+        m.put(ComputerGraph.ComputerProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.PropertySerializer()));
+        m.put(ComputerGraph.ComputerEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.EdgeSerializer()));
         //
-        m.put(StarGraph.StarEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.EdgeSerializer()));
-        m.put(StarGraph.StarVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexSerializer()));
-        m.put(StarGraph.StarProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.PropertySerializer()));
-        m.put(StarGraph.StarVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.VertexPropertySerializer()));
+        m.put(StarGraph.StarEdge.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.EdgeSerializer()));
+        m.put(StarGraph.StarVertex.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexSerializer()));
+        m.put(StarGraph.StarProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.PropertySerializer()));
+        m.put(StarGraph.StarVertexProperty.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.VertexPropertySerializer()));
         //
-        m.put(MutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.PathSerializer()));
-        m.put(ImmutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1d0.PathSerializer()));
+        m.put(MutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.PathSerializer()));
+        m.put(ImmutablePath.class, new UnshadedSerializerAdapter<>(new GryoSerializersV1.PathSerializer()));
         //
         m.put(CompactBuffer[].class, null);
         // TODO: VoidSerializer is a default serializer and thus, may not be needed (if it is, you can't use FieldSerializer)

@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.IO;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
@@ -40,23 +41,25 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             return GraphSONUtil.ToTypedValue(nameof(Property), valueDict);
         }
 
-        private dynamic CreateElementDict(Element element, GraphSONWriter writer)
+        private dynamic? CreateElementDict(Element? element, GraphSONWriter writer)
         {
             if (element == null)
                 return null;
             var serializedElement = writer.ToDict(element);
+            if (serializedElement == null)
+            {
+                throw new IOException(
+                    $"Could not write the {nameof(Property.Element)} of this {nameof(Property)}, {nameof(Property.Element)}: {element}");
+            }
             Dictionary<string, dynamic> elementDict = serializedElement;
             if (elementDict.ContainsKey(GraphSONTokens.ValueKey))
             {
                 var elementValueSerialized = elementDict[GraphSONTokens.ValueKey];
                 Dictionary<string, dynamic> elementValueDict = elementValueSerialized;
-                if (elementValueDict != null)
-                {
-                    elementValueDict.Remove("outVLabel");
-                    elementValueDict.Remove("inVLabel");
-                    elementValueDict.Remove("properties");
-                    elementValueDict.Remove("value");
-                }
+                elementValueDict.Remove("outVLabel");
+                elementValueDict.Remove("inVLabel");
+                elementValueDict.Remove("properties");
+                elementValueDict.Remove("value");
             }
             return serializedElement;
         }

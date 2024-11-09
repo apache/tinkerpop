@@ -14,11 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
+
+:docinfo: shared
+:docinfodir: ../../
+:toc-position: left
+
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
-
-:toc-position: left
 
 = Introduction
 
@@ -191,7 +194,8 @@ The following bullets provide some tips to consider when implementing the struct
 * `VertexProperty`
 ** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
 can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
-meta-properties, the `VertexProperty` needs to be implemented as an `Element`.
+meta-properties, the `VertexProperty` needs to be implemented as an `Element`. `VertexProperty` should return empty
+iterable for properties if meta-properties is not supported.
 
 [[olap-implementations]]
 ==== OLAP Implementations
@@ -1095,6 +1099,9 @@ Gremlin Server will send:
 
 NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Reference Documentation] for more
 examples of `RequestMessage` and `ResponseMessage` instances.
+
+NOTE: Tinkerpop provides a test server which may be useful for testing drivers. Details can be found
+link:https://tinkerpop.apache.org/docs/current/dev/developer/#gremlin-socket-server-tests[here]
 
 === OpProcessors Arguments
 

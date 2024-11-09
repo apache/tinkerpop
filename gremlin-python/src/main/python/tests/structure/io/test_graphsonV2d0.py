@@ -159,6 +159,7 @@ class TestGraphSONReader:
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        assert 2 == len(vertex.properties)
         ##
         vertex = self.graphson_reader.read_object("""
         {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Float","@value":45.23}}}""")

@@ -24,11 +24,59 @@ updates:
     labels:
       - "javascript"
       - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: "npm"
     directory: "/gremlint"
     schedule:
       interval: "daily"
     target-branch: "3.5-dev"
     labels:
-      - "javascript"
+      - "gremlint"
+      - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@types/node"
+        update-types: [ "version-update:semver-patch" ]
+  - package-ecosystem: "npm"
+    directory: "/docs/gremlint"
+    schedule:
+      interval: "daily"
+    target-branch: "master"
+    labels:
+      - "gremlint"
+      - "dependencies"
+    ignore:
+      - dependency-name: "prettier"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@types/*"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "styled-components"
+        update-types: [ "version-update:semver-patch" ]
+      - dependency-name: "@testing-library/jest-dom"
+        update-types: [ "version-update:semver-patch" ]
+  - package-ecosystem: "gomod"
+    directory: "/gremlin-go"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "go"
+      - "dependencies"
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
+      - "java"
+      - "dependencies"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "3.5-dev"
+    labels:
       - "dependencies"

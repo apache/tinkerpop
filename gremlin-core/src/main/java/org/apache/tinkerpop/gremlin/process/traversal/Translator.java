@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -232,6 +233,11 @@ public interface Translator<S, T> {
             protected abstract Script produceScript(final P<?> p);
 
             /**
+             * Take the {@link Bytecode} and write the syntax for it directly to the member {@link #script} variable.
+             */
+            protected abstract Script produceCardinalityValue(final Bytecode o);
+
+            /**
              *  For each operator argument, if withParameters set true, try parametrization as follows:
              *
              *  -----------------------------------------------
@@ -272,7 +278,13 @@ public interface Translator<S, T> {
                 if (object instanceof Bytecode.Binding) {
                     return script.getBoundKeyOrAssign(withParameters, ((Bytecode.Binding) object).variable());
                 } else if (object instanceof Bytecode) {
-                    return produceScript(getAnonymousTraversalPrefix(), (Bytecode) object);
+                    final Bytecode bc = (Bytecode) object;
+                    if (bc.getSourceInstructions().size() == 1 &&
+                            bc.getSourceInstructions().get(0).getOperator().equals(CardinalityValueTraversal.class.getSimpleName())) {
+                        return produceCardinalityValue(bc);
+                    } else {
+                        return produceScript(getAnonymousTraversalPrefix(), bc);
+                    }
                 } else if (object instanceof Traversal) {
                     return convertToScript(((Traversal) object).asAdmin().getBytecode());
                 } else if (object instanceof String) {

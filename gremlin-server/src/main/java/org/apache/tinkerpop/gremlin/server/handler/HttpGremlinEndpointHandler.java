@@ -34,25 +34,29 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
-import org.apache.tinkerpop.gremlin.driver.Tokens;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
-import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +98,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(HttpGremlinEndpointHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
-    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
@@ -232,6 +235,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     requestMessage.getArg(Tokens.ARGS_GREMLIN),
                                     requestMessage.getArg(Tokens.ARGS_BINDINGS), o, Thread.currentThread().getName());
 
+                            final Optional<String> mp = requestMessage.getArg(Tokens.ARGS_GREMLIN) instanceof String
+                                    ? GremlinScriptChecker.parse(requestMessage.getArg(Tokens.ARGS_GREMLIN)).getMaterializeProperties()
+                                    : Optional.empty();
+
                             // need to replicate what TraversalOpProcessor does with the bytecode op. it converts
                             // results to Traverser so that GLVs can handle the results. don't quite get the same
                             // benefit here because the bulk has to be 1 since we've already resolved the result,
@@ -239,6 +246,19 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             final List<Object> results = requestMessage.getOp().equals(Tokens.OPS_BYTECODE) ?
                                     (List<Object>) IteratorUtils.asList(o).stream().map(r -> new DefaultRemoteTraverser<Object>(r, 1)).collect(Collectors.toList()) :
                                     IteratorUtils.asList(o);
+
+                            if (mp.isPresent() && mp.get().equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS)) {
+                                final Object firstElement = results.get(0);
+
+                                if (firstElement instanceof Element) {
+                                    for (int i = 0; i < results.size(); i++)
+                                        results.set(i, ReferenceFactory.detach((Element) results.get(i)));
+                                } else if (firstElement instanceof AbstractTraverser) {
+                                    for (final Object item : results)
+                                        ((AbstractTraverser) item).detach();
+                                }
+                            }
+
                             final ResponseMessage responseMessage = ResponseMessage.build(requestId)
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(results).create();

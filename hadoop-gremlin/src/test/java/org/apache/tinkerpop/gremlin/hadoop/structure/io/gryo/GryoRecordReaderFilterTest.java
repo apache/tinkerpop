@@ -32,7 +32,7 @@ import java.io.File;
 public class GryoRecordReaderFilterTest extends RecordReaderWriterTest {
     @Override
     protected String getInputFilename() {
-        return "grateful-dead-v3d0.kryo";
+        return "grateful-dead-v3.kryo";
     }
 
     @Override

@@ -22,7 +22,7 @@
  */
 'use strict';
 
-const { Traversal } = require('./traversal');
+const { Traversal, cardinality } = require('./traversal');
 const { Transaction } = require('./transaction');
 const remote = require('../driver/remote-connection');
 const Bytecode = require('./bytecode');
@@ -337,6 +337,16 @@ class GraphTraversalSource {
     const b = new Bytecode(this.bytecode).addStep('call', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
+
+  /**
+   * union GraphTraversalSource method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  union(...args) {
+    const b = new Bytecode(this.bytecode).addStep('union', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+  }
 }
 
 /**
@@ -361,6 +371,16 @@ class GraphTraversal extends Traversal {
    */
   V(...args) {
     this.bytecode.addStep('V', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal E method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  E(...args) {
+    this.bytecode.addStep('E', args);
     return this;
   }
 
@@ -395,6 +415,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal all method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  all(...args) {
+    this.bytecode.addStep('all', args);
+    return this;
+  }
+
+  /**
    * Graph traversal and method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -405,12 +435,42 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal any method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  any(...args) {
+    this.bytecode.addStep('any', args);
+    return this;
+  }
+
+  /**
    * Graph traversal as method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   as(...args) {
     this.bytecode.addStep('as', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal asDate method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asDate(...args) {
+    this.bytecode.addStep('asDate', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal asString method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asString(...args) {
+    this.bytecode.addStep('asString', args);
     return this;
   }
 
@@ -524,6 +584,36 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal combine method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  combine(...args) {
+    this.bytecode.addStep('combine', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal concat method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  concat(...args) {
+    this.bytecode.addStep('concat', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal conjoin method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  conjoin(...args) {
+    this.bytecode.addStep('conjoin', args);
+    return this;
+  }
+
+  /**
    * Graph traversal connectedComponent method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -564,12 +654,52 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal dateAdd method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateAdd(...args) {
+    this.bytecode.addStep('dateAdd', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dateDiff method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dateDiff(...args) {
+    this.bytecode.addStep('dateDiff', args);
+    return this;
+  }
+
+  /**
    * Graph traversal dedup method.
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
   dedup(...args) {
     this.bytecode.addStep('dedup', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal difference method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  difference(...args) {
+    this.bytecode.addStep('difference', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal disjunct method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  disjunct(...args) {
+    this.bytecode.addStep('disjunct', args);
     return this;
   }
 
@@ -649,6 +779,16 @@ class GraphTraversal extends Traversal {
    */
   fold(...args) {
     this.bytecode.addStep('fold', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal format method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  format(...args) {
+    this.bytecode.addStep('format', args);
     return this;
   }
 
@@ -813,6 +953,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal intersect method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  intersect(...args) {
+    this.bytecode.addStep('intersect', args);
+    return this;
+  }
+
+  /**
    * Graph traversal is method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -843,6 +993,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal length method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  length(...args) {
+    this.bytecode.addStep('length', args);
+    return this;
+  }
+
+  /**
    * Graph traversal limit method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -869,6 +1029,16 @@ class GraphTraversal extends Traversal {
    */
   loops(...args) {
     this.bytecode.addStep('loops', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal lTrim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  lTrim(...args) {
+    this.bytecode.addStep('lTrim', args);
     return this;
   }
 
@@ -919,6 +1089,16 @@ class GraphTraversal extends Traversal {
    */
   mean(...args) {
     this.bytecode.addStep('mean', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal merge method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  merge(...args) {
+    this.bytecode.addStep('merge', args);
     return this;
   }
 
@@ -1083,6 +1263,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal product method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  product(...args) {
+    this.bytecode.addStep('product', args);
+    return this;
+  }
+
+  /**
    * Graph traversal profile method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1173,6 +1363,36 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal replace method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  replace(...args) {
+    this.bytecode.addStep('replace', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal reverse method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  reverse(...args) {
+    this.bytecode.addStep('reverse', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal rTrim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  rTrim(...args) {
+    this.bytecode.addStep('rTrim', args);
+    return this;
+  }
+
+  /**
    * Graph traversal sack method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1243,6 +1463,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal split method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  split(...args) {
+    this.bytecode.addStep('split', args);
+    return this;
+  }
+
+  /**
    * Graph traversal store method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1259,6 +1489,16 @@ class GraphTraversal extends Traversal {
    */
   subgraph(...args) {
     this.bytecode.addStep('subgraph', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal subgraph method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  substring(...args) {
+    this.bytecode.addStep('substring', args);
     return this;
   }
 
@@ -1323,6 +1563,26 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal toLower method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  toLower(...args) {
+    this.bytecode.addStep('toLower', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal toUpper method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  toUpper(...args) {
+    this.bytecode.addStep('toUpper', args);
+    return this;
+  }
+
+  /**
    * Graph traversal toV method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1339,6 +1599,16 @@ class GraphTraversal extends Traversal {
    */
   tree(...args) {
     this.bytecode.addStep('tree', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal trim method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  trim(...args) {
+    this.bytecode.addStep('trim', args);
     return this;
   }
 
@@ -1433,6 +1703,45 @@ class GraphTraversal extends Traversal {
   }
 }
 
+class CardinalityValue extends Bytecode {
+  /**
+   * Creates a new instance of {@link CardinalityValue}.
+   * @param {String} card
+   * @param {Object} value
+   */
+  constructor(card, value) {
+    super();
+    this.addSource('CardinalityValueTraversal', [card, value]);
+  }
+
+  /**
+   * Create a value with single cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static single(value) {
+    return new CardinalityValue(cardinality.single, value);
+  }
+
+  /**
+   * Create a value with list cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static list(value) {
+    return new CardinalityValue(cardinality.list, value);
+  }
+
+  /**
+   * Create a value with set cardinality.
+   * @param {Array} value
+   * @returns {CardinalityValue}
+   */
+  static set(value) {
+    return new CardinalityValue(cardinality.set, value);
+  }
+}
+
 function callOnEmptyTraversal(fnName, args) {
   const g = new GraphTraversal(null, null, new Bytecode());
   return g[fnName].apply(g, args);
@@ -1443,12 +1752,17 @@ function callOnEmptyTraversal(fnName, args) {
  * @type {Object}
  */
 const statics = {
+  E: (...args) => callOnEmptyTraversal('E', args),
   V: (...args) => callOnEmptyTraversal('V', args),
   addE: (...args) => callOnEmptyTraversal('addE', args),
   addV: (...args) => callOnEmptyTraversal('addV', args),
   aggregate: (...args) => callOnEmptyTraversal('aggregate', args),
+  all: (...args) => callOnEmptyTraversal('all', args),
   and: (...args) => callOnEmptyTraversal('and', args),
+  any: (...args) => callOnEmptyTraversal('any', args),
   as: (...args) => callOnEmptyTraversal('as', args),
+  asDate: (...args) => callOnEmptyTraversal('asDate', args),
+  asString: (...args) => callOnEmptyTraversal('asString', args),
   barrier: (...args) => callOnEmptyTraversal('barrier', args),
   both: (...args) => callOnEmptyTraversal('both', args),
   bothE: (...args) => callOnEmptyTraversal('bothE', args),
@@ -1459,9 +1773,12 @@ const statics = {
   choose: (...args) => callOnEmptyTraversal('choose', args),
   coalesce: (...args) => callOnEmptyTraversal('coalesce', args),
   coin: (...args) => callOnEmptyTraversal('coin', args),
+  concat: (...args) => callOnEmptyTraversal('concat', args),
   constant: (...args) => callOnEmptyTraversal('constant', args),
   count: (...args) => callOnEmptyTraversal('count', args),
   cyclicPath: (...args) => callOnEmptyTraversal('cyclicPath', args),
+  dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
+  dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
   element: (...args) => callOnEmptyTraversal('element', args),
@@ -1471,6 +1788,7 @@ const statics = {
   filter: (...args) => callOnEmptyTraversal('filter', args),
   flatMap: (...args) => callOnEmptyTraversal('flatMap', args),
   fold: (...args) => callOnEmptyTraversal('fold', args),
+  format: (...args) => callOnEmptyTraversal('format', args),
   group: (...args) => callOnEmptyTraversal('group', args),
   groupCount: (...args) => callOnEmptyTraversal('groupCount', args),
   has: (...args) => callOnEmptyTraversal('has', args),
@@ -1489,9 +1807,11 @@ const statics = {
   is: (...args) => callOnEmptyTraversal('is', args),
   key: (...args) => callOnEmptyTraversal('key', args),
   label: (...args) => callOnEmptyTraversal('label', args),
+  length: (...args) => callOnEmptyTraversal('length', args),
   limit: (...args) => callOnEmptyTraversal('limit', args),
   local: (...args) => callOnEmptyTraversal('local', args),
   loops: (...args) => callOnEmptyTraversal('loops', args),
+  lTrim: (...args) => callOnEmptyTraversal('lTrim', args),
   map: (...args) => callOnEmptyTraversal('map', args),
   match: (...args) => callOnEmptyTraversal('match', args),
   math: (...args) => callOnEmptyTraversal('math', args),
@@ -1515,22 +1835,30 @@ const statics = {
   propertyMap: (...args) => callOnEmptyTraversal('propertyMap', args),
   range: (...args) => callOnEmptyTraversal('range', args),
   repeat: (...args) => callOnEmptyTraversal('repeat', args),
+  replace: (...args) => callOnEmptyTraversal('replace', args),
+  reverse: (...args) => callOnEmptyTraversal('reverse', args),
+  rTrim: (...args) => callOnEmptyTraversal('rTrim', args),
   sack: (...args) => callOnEmptyTraversal('sack', args),
   sample: (...args) => callOnEmptyTraversal('sample', args),
   select: (...args) => callOnEmptyTraversal('select', args),
   sideEffect: (...args) => callOnEmptyTraversal('sideEffect', args),
   simplePath: (...args) => callOnEmptyTraversal('simplePath', args),
   skip: (...args) => callOnEmptyTraversal('skip', args),
+  split: (...args) => callOnEmptyTraversal('split', args),
   store: (...args) => callOnEmptyTraversal('store', args),
   subgraph: (...args) => callOnEmptyTraversal('subgraph', args),
+  substring: (...args) => callOnEmptyTraversal('substring', args),
   sum: (...args) => callOnEmptyTraversal('sum', args),
   tail: (...args) => callOnEmptyTraversal('tail', args),
   timeLimit: (...args) => callOnEmptyTraversal('timeLimit', args),
   times: (...args) => callOnEmptyTraversal('times', args),
   to: (...args) => callOnEmptyTraversal('to', args),
   toE: (...args) => callOnEmptyTraversal('toE', args),
+  toLower: (...args) => callOnEmptyTraversal('toLower', args),
+  toUpper: (...args) => callOnEmptyTraversal('toUpper', args),
   toV: (...args) => callOnEmptyTraversal('toV', args),
   tree: (...args) => callOnEmptyTraversal('tree', args),
+  trim: (...args) => callOnEmptyTraversal('trim', args),
   unfold: (...args) => callOnEmptyTraversal('unfold', args),
   union: (...args) => callOnEmptyTraversal('union', args),
   until: (...args) => callOnEmptyTraversal('until', args),
@@ -1543,5 +1871,6 @@ const statics = {
 module.exports = {
   GraphTraversal,
   GraphTraversalSource,
+  CardinalityValue,
   statics,
 };

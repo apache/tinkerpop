@@ -36,7 +36,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             {
                 return new Dictionary<object, object>(0);
             }
-            var result = new Dictionary<object, object>(graphsonObject.GetArrayLength() / 2);
+            var result = new Dictionary<object, object?>(graphsonObject.GetArrayLength() / 2);
             for (var i = 0; i < graphsonObject.GetArrayLength(); i += 2)
             {
                 result[reader.ToObject(graphsonObject[i])] = reader.ToObject(graphsonObject[i + 1]);
@@ -51,7 +51,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             {
                 throw new InvalidOperationException("Object must implement IDictionary");
             }
-            var result = new object[map.Count * 2];
+            var result = new object?[map.Count * 2];
             var index = 0;
             foreach (var key in map.Keys)
             {

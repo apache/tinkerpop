@@ -1,0 +1,137 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 4*
+
+== TinkerGraph Transaction Support
+
+=== Introduction
+Now, if you need to use transactions in TinkerPop, the only solution is to use the Neo4j plugin. Unfortunately, this plugin has not been updated for a long time and is only compatible with Neo4j version 3.4, which reached end of life in March 2020. Gremlin cannot be used as a replacement for other graphs that support transactions.
+
+=== Motivation
+* Users will be able to use transactions without the outdated Neo4j plugin.
+* Test framework simplification.
+* A more robust Gremlin Server setup out-of-the-box.
+* A better learning experience for new users.
+* A less complicated transaction story for new users.
+* A better test graph that is more readily swappable with other graphs.
+
+=== Assumptions
+
+* Need to reuse existing code as much as possible.
+* Users should be able to work both with and without transactions.
+* Transaction implementation should not have additional external dependencies.
+* Existing drivers should work without changes.
+
+=== Specifications
+==== Design Overview
+The main changes relate to TinkerGraph, need to make a similar solution but with transaction support. Also TinkerGraph by default will have 2 configurations on Gremlin Server and users themselves will choose what they need, TinkerGraph or TinkerTransactionGraph.
+Locks will be write-only to reduce the impact of transactions on performance. In this case the isolation level will be `read committed`, the same as now with the Neo4j plugin. 
+Only ThreadLocalTransaction is planned, therefore embedded graph transactions may not be fully supported.
+
+==== Overview of changes to code base
+===== ElementContainer
+Storage for current Element value and ThreadLocal updated value with `isDeleted` flag. Similar for `Vertices` and `Edges`.
+[code]
+----
+class ElementContainer {
+    Vertex current;
+    ThreadLocal<Vertex> transactionUpdatedValue;
+    ThreadLocal<Boolean> isDeleted;
+}
+----
+
+===== TinkerTransactionGraph
+Vertices and Edges will store with version number and dirty transaction values
+`Map<Object, ElementContainer> vertices` where `Object` is Vertex Id.
+Shared code with TinkerGraph will be moved to AbstractTinkerGraph.
+
+===== TinkerTransactionElement
+Add `currentVersion` to all TinkerElements. This is the number of the transaction that last updated it.
+
+===== TinkerThreadLocalTransaction
+Extension of AbstractThreadLocalTransaction. Add a unique transaction number. Can use `AtomicLong.incrementAndGet`
+
+===== Graph Feature files
+Add TinkerTransactionGraphFeatures, TinkerTransactionGraphVertexFeatures, TinkerTransactionGraphEdgeFeatures, TinkerTransactionGraphGraphFeatures, TinkerTransactionGraphVertexPropertyFeatures.
+
+==== CRUD operations without transaction
+1. Wrap into transaction
+2. Commit
+
+==== CRUD operations with transaction
+===== Create
+Add new ElementContainer to `vertices` and `edges` in TinkerTransactionGraph.
+
+==== Read
+Read values from `vertices` ElementContainer, `transactionUpdatedValue` if present, otherwise `current`.
+if `isDeleted` flag is set, then the element is deleted in transaction and should be skipped.
+
+===== Update
+Update corresponding ElementContainer  in `vertices`.
+
+===== Delete
+Set `isDeleted` flag in ElementContainer  in `vertices`.
+
+==== Transaction flows
+===== Commit flow
+To reduce lock time double-checked locking used.
+1. Make list of all affected elements sorted by transaction#. The reason is to reduce the lock time.
+2. If any has a newer version, then fail.
+3. Try to lock all Vertices/Edges changed in transaction. For vertex/edge delete operation also need to lock adjacent edges/vertices. Lock is for write operations only. If some Vertex/Edge is already locked then fail.
+4. Check versions again, fail if some element is updated. Code: `Vertices.get(id).current()).currentVersion() !=Vertices.get(id).transactionUpdatedValue().currentVersion()`
+5. For all Elements replace current version with value updated in transaction (or remove Element on Delete operation). Cleanup `transactionUpdatedValue`.
+6. Change version of all updated Elements.
+7. Unlock.
+8. Update indexes if needed.
+
+===== Rollback
+Cleanup `transactionUpdatedValue` in `vertices`
+
+===== Error
+On any error, including transaction conflict:
+1. Rollback
+2. Throw exception
+
+===== Timeout
+Add transactionWatchdog which will rollback locked/expired transactions. Similar to `Session.touch`.
+1. If the transaction was open longer than some preconfigured (default 10-20 minutes?) time.
+2. If the transaction start commit, but not finish (default 1-2 seconds?).
+
+===== Examples of conflict resolution
+* tx1 adds a property to v1, tx2 deletes v1 (same for edges)
+transaction that executed first will set the lock on v1, second transaction will fail on one of steps 2-4.
+* tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
+If tx1 try to commit first: tx1 add edge, tx2 delete v1 AND all edges including newly added.
+If tx2 try to commit first: tx2 deletes v1 or v2, tx1 will fail on step 1.
+* tx1 changes a Cardinality.single property to x, tx2 changes the same Cardinality.single property to y
+Last transaction will fail on step 2 or 4.
+* tx1 adds a new vertex v1, tx2 adds the same vertex (same for edges)
+Last transaction will fail on step 2 or 4 or 5.
+* tx1 removes vertex v1, tx2 removes the same vertex (same for edges)
+Both transactions will be successful. 
+* tx1 adds vertex v1, tx2 removes vertex v1 (same for edges)
+If v1 exists before and tx1 commit first: tx1 fail on step 5
+If v1 exists before and tx2 commit first: tx1 fail on step 2 or 4
+If v1 not exists before and tx1 commit first: tx1 ok; tx2 depends on commit time, ok when tx1 finished and fail on step 2 or 4 otherwise.
+If v1 not exists before and tx2 commit first: tx2 ok, tx1 ok
+
+
+==== Additional changes
+Split TinkerFactory into AbstractTinkerFactory and TinkerFactory, add TinkerTransactionGraphFactory.
+Transfer responsibility of graph update operations from static TinkerHelper to TinkerGraph/TinkerTransactionGraph.

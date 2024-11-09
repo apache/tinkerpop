@@ -177,7 +177,7 @@ class DriverRemoteConnection(RemoteConnection):
                                  if x[0] == "withStrategies" and type(x[1]) is OptionsStrategy), None)
         request_options = None
         if options_strategy:
-            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent']
+            allowed_keys = ['evaluationTimeout', 'scriptEvaluationTimeout', 'batchSize', 'requestId', 'userAgent', 'materializeProperties']
             request_options = {allowed: options_strategy[1].configuration[allowed] for allowed in allowed_keys
                                if allowed in options_strategy[1].configuration}
         return request_options

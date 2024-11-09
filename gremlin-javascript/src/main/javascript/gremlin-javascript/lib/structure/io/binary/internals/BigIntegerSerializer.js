@@ -22,6 +22,8 @@
  */
 'use strict';
 
+const { Buffer } = require('buffer');
+
 // TODO: it has room for performance improvements
 module.exports = class BigIntegerSerializer {
   constructor(ioc) {

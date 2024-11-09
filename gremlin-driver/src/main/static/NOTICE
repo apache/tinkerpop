@@ -49,11 +49,11 @@ JavaTuples 1.2
 Copyright (c) 2010, The JAVATUPLES team (http://www.javatuples.org)
 
 ------------------------------------------------------------------------
-Netty 4.1.100
+Netty 4.1.101
 ------------------------------------------------------------------------
 Copyright 2014 The Netty Project
 
 ------------------------------------------------------------------------
-Objenesis 2.4 (Included through gremlin-shaded)
+Objenesis 3.3 - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
 ------------------------------------------------------------------------
-Copyright 2006-2016 Joe Walnes, Henri Tremblay, Leonardo Mesquita
+Copyright 2006-2022 Joe Walnes, Henri Tremblay, Leonardo Mesquita

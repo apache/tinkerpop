@@ -36,7 +36,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [InlineData("test")]
         public void ShouldReturnAvailableTraverserObjWhenNextIsCalled(object traverserObj)
         {
-            var traversal = new TestTraversal(new List<object> {traverserObj});
+            var traversal = new TestTraversal(new List<object?> {traverserObj});
 
             var actualObj = traversal.Next();
 
@@ -49,7 +49,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [InlineData("test")]
         public void ShouldCheckHasNext(object traverserObj)
         {
-            var traversal = new TestTraversal(new List<object> {traverserObj});
+            var traversal = new TestTraversal(new List<object?> {traverserObj});
 
             Assert.True(traversal.HasNext());
             Assert.True(traversal.HasNext());
@@ -66,7 +66,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [InlineData(10)]
         public void ShouldReturnCorrectNrOfResultObjsWhenNextIsCalledWithAmountArgument(int nrOfResults)
         {
-            var objs = new List<object>(20);
+            var objs = new List<object?>(20);
             for (var i = 0; i < 20; i++)
                 objs.Add(i);
             var traversal = new TestTraversal(objs);
@@ -79,9 +79,9 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
                 Assert.Equal(objs[i], traversedObjsList[i]);
         }
 
-        private List<object> UnfoldBulks(IReadOnlyList<object> objs, IReadOnlyList<long> bulks)
+        private List<object?> UnfoldBulks(IReadOnlyList<object?> objs, IReadOnlyList<long> bulks)
         {
-            var unfoldedObjs = new List<object>();
+            var unfoldedObjs = new List<object?>();
             for (var traverserIdx = 0; traverserIdx < objs.Count; traverserIdx++)
             for (var currentBulkObjIdx = 0; currentBulkObjIdx < bulks[traverserIdx]; currentBulkObjIdx++)
                 unfoldedObjs.Add(objs[traverserIdx]);
@@ -91,7 +91,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldDrainAllTraversersWhenIterateIsCalled()
         {
-            var someObjs = new List<object> {1, 2, 3};
+            var someObjs = new List<object?> {1, 2, 3};
             var traversal = new TestTraversal(someObjs);
 
             var drainedTraversal = traversal.Iterate();
@@ -103,7 +103,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         public void ShouldReturnNullWhenNextIsCalledAndNoTraverserIsAvailable()
         {
             var expectedFirstObj = 1;
-            var traversal = new TestTraversal(new List<object> {expectedFirstObj});
+            var traversal = new TestTraversal(new List<object?> {expectedFirstObj});
 
             var actualFirstObj = traversal.Next();
             var actualSecondObj = traversal.Next();
@@ -115,18 +115,18 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldReturnTraversalsTraverserWhenNextTraverserIsCalled()
         {
-            var someObjs = new List<object> {1, 2, 3};
+            var someObjs = new List<object?> {1, 2, 3};
             var traversal = new TestTraversal(someObjs);
 
             var traverser = traversal.NextTraverser();
 
-            Assert.Equal(traversal.Traversers.First(), traverser);
+            Assert.Equal(traversal.Traversers!.First(), traverser);
         }
 
         [Fact]
         public void ShouldThrowNotSupportedExceptionWhenResetIsCalled()
         {
-            var someObjs = new List<object> {1, 2, 3};
+            var someObjs = new List<object?> {1, 2, 3};
             var traversal = new TestTraversal(someObjs);
 
             Assert.Throws<NotSupportedException>(() => traversal.Reset());
@@ -135,7 +135,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldReturnAllTraverserObjsWhenToListIsCalled()
         {
-            var expectedObjs = new List<object> {1, 2, 3};
+            var expectedObjs = new List<object?> {1, 2, 3};
             var traversal = new TestTraversal(expectedObjs);
 
             var traversedObjs = traversal.ToList();
@@ -146,13 +146,13 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldReturnAllTraverserObjWithoutDuplicatesWhenToSetIsCalled()
         {
-            var traverserObjs = new List<object> {1, 1, 2, 3};
+            var traverserObjs = new List<object?> {1, 1, 2, 3};
             var traversal = new TestTraversal(traverserObjs);
 
             var traversedObjSet = traversal.ToSet();
 
             Assert.Equal(3, traversedObjSet.Count);
-            Assert.Equal(new HashSet<object>(traverserObjs), traversedObjSet);
+            Assert.Equal(new HashSet<object?>(traverserObjs), traversedObjSet);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldBeUnfoldTraverserBulksWhenToListIsCalled()
         {
-            var objs = new List<object> {1, 2, 3};
+            var objs = new List<object?> {1, 2, 3};
             var bulks = new List<long> {3, 2, 1};
             var traversal = new TestTraversal(objs, bulks);
 

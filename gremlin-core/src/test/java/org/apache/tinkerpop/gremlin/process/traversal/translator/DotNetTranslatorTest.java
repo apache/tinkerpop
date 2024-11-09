@@ -69,7 +69,7 @@ public class DotNetTranslatorTest {
                         "new SeedStrategy(seed: 999999)).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
-                        new SeedStrategy(999999)).
+                        SeedStrategy.build().seed(999999).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 
@@ -201,6 +201,11 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("CardinalityValue.Set(\"test\")", VertexProperty.Cardinality.set("test"));
+    }
+
+    @Test
     public void shouldTranslateHasNull() {
         String script = translator.translate(g.V().has("k", (Object) null).asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Has(\"k\",(object) null)", script);
@@ -272,6 +277,64 @@ public class DotNetTranslatorTest {
                         ".To(new Vertex(\"user:20:foo\\\\u0020bar\\\\u005c\\\\u0022mr\\\\u005c\\\\u0022\\\\u00241000#50\", \"user\"))" +
                         ".Property(\"when\",\"2018/09/21\")",
                 script4);
+    }
+
+    @Test
+    public void shouldTranslateStringFunctionWithAndWithoutScopes(){
+        assertEquals("g.Inject(1).AsString()",
+                translator.translate(g.inject(1).asString().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(1).AsString<object>(Scope.Local)",
+                translator.translate(g.inject(1).asString(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Length()",
+                translator.translate(g.inject("hello").length().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Length<object>(Scope.Local)",
+                translator.translate(g.inject("hello").length(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").LTrim()",
+                translator.translate(g.inject("hello").lTrim().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").LTrim<object>(Scope.Local)",
+                translator.translate(g.inject("hello").lTrim(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").RTrim()",
+                translator.translate(g.inject("hello").rTrim().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").RTrim<object>(Scope.Local)",
+                translator.translate(g.inject("hello").rTrim(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").ToUpper()",
+                translator.translate(g.inject("hello").toUpper().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").ToUpper<object>(Scope.Local)",
+                translator.translate(g.inject("hello").toUpper(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").ToLower()",
+                translator.translate(g.inject("hello").toLower().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").ToLower<object>(Scope.Local)",
+                translator.translate(g.inject("hello").toLower(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Trim()",
+                translator.translate(g.inject("hello").trim().asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Trim<object>(Scope.Local)",
+                translator.translate(g.inject("hello").trim(Scope.local).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Replace(\"o\",\"a\")",
+                translator.translate(g.inject("hello").replace("o", "a").asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Replace<object>(Scope.Local,\"o\",\"a\")",
+                translator.translate(g.inject("hello").replace(Scope.local, "o", "a").asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Split(\"o\")",
+                translator.translate(g.inject("hello").split("o").asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Split<object>(Scope.Local,\"o\")",
+                translator.translate(g.inject("hello").split(Scope.local, "o").asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Substring(1)",
+                translator.translate(g.inject("hello").substring(1).asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Substring<object>(Scope.Local,1)",
+                translator.translate(g.inject("hello").substring(Scope.local, 1).asAdmin().getBytecode()).getScript());
+
+        assertEquals("g.Inject(\"hello\").Substring(1,2)",
+                translator.translate(g.inject("hello").substring(1, 2).asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(\"hello\").Substring<object>(Scope.Local,1,2)",
+                translator.translate(g.inject("hello").substring(Scope.local, 1, 2).asAdmin().getBytecode()).getScript());
     }
 
     @Test

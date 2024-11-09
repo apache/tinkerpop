@@ -62,7 +62,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddStep("someStep", new Dictionary<string, object> {{"someKey", b.Of("valVariable", "valValue")}});
 
             var arg = bytecode.StepInstructions[0].Arguments[0] as IDictionary;
-            Assert.Equal(new Binding("valVariable", "valValue"), arg["someKey"]);
+            Assert.Equal(new Binding("valVariable", "valValue"), arg!["someKey"]);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddStep("someStep", new Dictionary<string, object> {{b.Of("keyVariable", "keyValue"), 1234}});
 
             var arg = bytecode.StepInstructions[0].Arguments[0];
-            var binding = ((Dictionary<object, object>) arg).Keys.First() as Binding;
+            var binding = ((Dictionary<object, object>) arg!).Keys.First() as Binding;
             Assert.Equal(new Binding("keyVariable", "keyValue"), binding);
         }
 
@@ -87,7 +87,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddStep("someStep", new List<string> {"test", b.Of("listVariable", "listValue")});
 
             var arg = bytecode.StepInstructions[0].Arguments[0] as IList;
-            Assert.Equal(new Binding("listVariable", "listValue"), arg[1]);
+            Assert.Equal(new Binding("listVariable", "listValue"), arg![1]);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddStep("someStep", new HashSet<string> { "test", b.Of("setVariable", "setValue") });
 
             var arg = bytecode.StepInstructions[0].Arguments[0] as ISet<object>;
-            Assert.Equal(new Binding("setVariable", "setValue"), arg.ToList()[1]);
+            Assert.Equal(new Binding("setVariable", "setValue"), arg!.ToList()[1]);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddSource("someSource", new Dictionary<string, object> { { "someKey", b.Of("valVariable", "valValue") } });
 
             var arg = bytecode.SourceInstructions[0].Arguments[0] as IDictionary;
-            Assert.Equal(new Binding("valVariable", "valValue"), arg["someKey"]);
+            Assert.Equal(new Binding("valVariable", "valValue"), arg!["someKey"]);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddSource("someSource", new Dictionary<string, object> { { b.Of("keyVariable", "keyValue"), 1234 } });
 
             var arg = bytecode.SourceInstructions[0].Arguments[0];
-            var binding = ((Dictionary<object, object>)arg).Keys.First() as Binding;
+            var binding = ((Dictionary<object, object>)arg!).Keys.First() as Binding;
             Assert.Equal(new Binding("keyVariable", "keyValue"), binding);
         }
 
@@ -158,7 +158,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddSource("someSource", new List<string> { "test", b.Of("listVariable", "listValue") });
 
             var arg = bytecode.SourceInstructions[0].Arguments[0] as IList;
-            Assert.Equal(new Binding("listVariable", "listValue"), arg[1]);
+            Assert.Equal(new Binding("listVariable", "listValue"), arg![1]);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             bytecode.AddSource("someSource", new HashSet<string> { "test", b.Of("setVariable", "setValue") });
 
             var arg = bytecode.SourceInstructions[0].Arguments[0] as ISet<object>;
-            Assert.Equal(new Binding("setVariable", "setValue"), arg.ToList()[1]);
+            Assert.Equal(new Binding("setVariable", "setValue"), arg!.ToList()[1]);
         }
 
         [Fact]

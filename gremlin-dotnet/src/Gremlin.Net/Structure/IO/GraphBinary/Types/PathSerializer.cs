@@ -53,7 +53,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var readLabelObjects =
-                (List<object>)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+                (List<object>?)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            if (readLabelObjects == null) throw new IOException("Read null, but expected a list of labels");
             var labels = new List<ISet<string>>();
             foreach (var labelObjectList in readLabelObjects)
             {
@@ -65,8 +66,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
                 labels.Add(labelSet);
             }
             
-            var objects = (List<object>) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            
+            var objects = (List<object?>?) await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            if (objects == null) throw new IOException("Read null, but expected a list of objects");
             return new Path(labels, objects);
         }
     }

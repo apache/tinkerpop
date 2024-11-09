@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.console.commands
 
+import org.apache.groovy.groovysh.ComplexCommandSupport
+import org.apache.groovy.groovysh.Groovysh
 import org.apache.tinkerpop.gremlin.console.Mediator
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
@@ -25,11 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslato
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule
-import org.codehaus.groovy.tools.shell.ComplexCommandSupport
-import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
  * Commands that help work with Gremlin bytecode.
@@ -90,7 +90,7 @@ class BytecodeCommand extends ComplexCommandSupport {
 
     private def static createDefaultBuilder() {
         def builder = GraphSONMapper.build().
-                addCustomModule(GraphSONXModuleV3d0.build().create(false)).
+                addCustomModule(GraphSONXModuleV3.build()).
                 version(GraphSONVersion.V3_0)
 
         def loadedTinkerGraph = false

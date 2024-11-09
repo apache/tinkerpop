@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -45,15 +45,22 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
+    private boolean userProvidedLabel;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
         this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
+        userProvidedLabel = label != null;
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
         super(traversal);
         this.parameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
+        userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    public boolean hasUserProvidedLabel() {
+        return userProvidedLabel;
     }
 
     @Override
@@ -73,6 +80,8 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     @Override
     public void configure(final Object... keyValues) {
+        if (keyValues[0] == T.label) userProvidedLabel = true;
+
         if (keyValues[0] == T.label && this.parameters.contains(T.label)) {
             if (this.parameters.contains(T.label, Vertex.DEFAULT_LABEL)) {
                 this.parameters.remove(T.label);
@@ -92,11 +101,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
         final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(traverser));
-        if (this.callbackRegistry != null && !callbackRegistry.getCallbacks().isEmpty()) {
-            final EventStrategy eventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class).get();
-            final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(eventStrategy.detach(vertex));
-            this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-        }
+        EventUtil.registerVertexCreation(callbackRegistry, getTraversal(), vertex);
         return vertex;
     }
 
@@ -131,6 +136,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     public AddVertexStep<S> clone() {
         final AddVertexStep<S> clone = (AddVertexStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
+        clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
     }
 }

@@ -84,7 +84,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var vertex = g.V(1).Next();
 
             Assert.Equal(new Vertex(1), vertex);
-            Assert.Equal(1, vertex.Id);
+            Assert.Equal(1, vertex!.Id);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var shortestPath =
                 g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<Vertex>(1).Path().Next();
 
-            Assert.Equal(4, shortestPath.Count);
+            Assert.Equal(4, shortestPath!.Count);
             Assert.Equal(new Vertex(6), shortestPath[3]);
         }
 
@@ -290,6 +290,48 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var tx = g.Tx();
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.RollbackAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInV()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vertices = g.With("materializeProperties", "tokens").V().ToList();
+            foreach (var v in vertices)
+            {
+                Assert.NotNull(v);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(v.Properties == null || v.Properties.Length == 0);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInE()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var edges = g.With("materializeProperties", "tokens").E().ToList();
+            foreach (var e in edges)
+            {
+                Assert.NotNull(e);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(e.Properties == null || e.Properties.Length == 0);
+            }
+        }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInVP()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var vps = g.With("materializeProperties", "tokens").V().Properties<VertexProperty>().ToList();
+            foreach (var vp in vps)
+            {
+                Assert.NotNull(vp);
+                // GraphSON will deserialize into null and GraphBinary to []
+                Assert.True(vp.Properties == null || vp.Properties.Length == 0);
+            }
         }
     }
 }

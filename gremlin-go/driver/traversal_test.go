@@ -29,7 +29,6 @@ import (
 )
 
 func TestTraversal(t *testing.T) {
-	testTransactionEnable := getEnvOrDefaultBool("TEST_TRANSACTIONS", true)
 
 	t.Run("Test clone traversal", func(t *testing.T) {
 		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
@@ -76,7 +75,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction commit", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -106,7 +104,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction rollback", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -136,7 +133,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction flows", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -183,7 +179,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test multi commit Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -218,7 +213,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test multi rollback Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -253,7 +247,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -288,7 +281,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction close", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -324,7 +316,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test Transaction close tx from parent", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a transaction traversal.
 		remote := newConnection(t)
 		g := Traversal_().WithRemote(remote)
@@ -362,7 +353,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test commit if no transaction started", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 
@@ -375,7 +365,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test rollback if no transaction started", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 
@@ -388,7 +377,6 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testTransactionEnable)
 		// Start a traversal.
 		g := newWithOptionsConnection(t)
 

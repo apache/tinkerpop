@@ -132,9 +132,6 @@ during this period.
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
-.. Be sure that `gremlin-io-test` has been updated (from 3.3.0 on - this module was not available prior to the 3.3.x line)
-... This is typically a post-release task, but it's worth checking to be sure in case the step was somehow overlooked.
-... Instructions for updating the module are described in the <<io,IO Documentation and Testing Section>>.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -287,6 +284,7 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 .. Update `community.html`, specifically the version numbers for our official releases.
 .. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
+.. Update `docs/gremlint/package.json` with the latest version of gremlint.
 .. Preview changes locally with `bin/generate-home.sh` then commit changes to git.
 . Wait for zip distributions to sync to the Apache mirrors (i.e ensure the download links work from a mirror).
 . `bin/publish-home.sh <username>` to publish the updated web site with new releases.
@@ -328,6 +326,7 @@ the help of a PMC member for those steps.
 . Examine the `future.asciidoc` and update the "Roadmap" as needed.
 . Update the version numbers in `pull_request_template.md`.
 . Send email to advise that code freeze is lifted.
+. Consider the changes made to Gremlin and determine if the community needs to organize a PR to [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/gremlin) to keep TypeScript up to date.
 . Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
 .. Make changes as necessary to update the examples.
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.

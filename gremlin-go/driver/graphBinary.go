@@ -23,11 +23,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/google/uuid"
 	"math"
 	"math/big"
 	"reflect"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Version 1.0
@@ -80,6 +81,7 @@ const (
 	traversalStrategyType dataType = 0x29
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
+	dtType                dataType = 0x2f
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
@@ -435,7 +437,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	return buffer.Bytes(), nil
 }
 
-//Format: {Key}{Value}{parent}
+// Format: {Key}{Value}{parent}
 func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := value.(*Property)
 
@@ -454,7 +456,7 @@ func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *gra
 	return buffer.Bytes(), nil
 }
 
-//Format: {Id}{Label}{Value}{parent}{properties}
+// Format: {Id}{Label}{Value}{parent}{properties}
 func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	vp := value.(*VertexProperty)
 	_, err := typeSerializer.write(vp.Id, buffer)
@@ -477,7 +479,7 @@ func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerialize
 	return buffer.Bytes(), nil
 }
 
-//Format: {Labels}{Objects}
+// Format: {Labels}{Objects}
 func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	p := value.(*Path)
 	_, err := typeSerializer.write(p.Labels, buffer)
@@ -710,6 +712,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return scopeType, nil
 	case merge:
 		return mergeType, nil
+	case dt:
+		return dtType, nil
 	case p, Predicate:
 		return pType, nil
 	case textP, TextPredicate:
@@ -985,17 +989,14 @@ func readMap(data *[]byte, i *int) (interface{}, error) {
 		}
 		if k == nil {
 			mapData[nil] = v
+		} else if reflect.TypeOf(k).Comparable() {
+			mapData[k] = v
 		} else {
 			switch reflect.TypeOf(k).Kind() {
 			case reflect.Map:
 				mapData[&k] = v
-				break
-			case reflect.Slice:
-				mapData[fmt.Sprint(k)] = v
-				break
 			default:
-				mapData[k] = v
-				break
+				mapData[fmt.Sprint(k)] = v
 			}
 		}
 	}
@@ -1008,7 +1009,7 @@ func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
 	for j := uint32(0); j < sz; j++ {
 		keyDataType := readDataType(data, i)
 		if keyDataType != stringType {
-			return nil, newError(err0703ReadMapNonStringKeyError)
+			return nil, newError(err0703ReadMapNonStringKeyError, keyDataType)
 		}
 
 		// Skip nullable, key must be present
@@ -1051,11 +1052,11 @@ func durationReader(data *[]byte, i *int) (interface{}, error) {
 
 // {fully qualified id}{unqualified label}
 func vertexReader(data *[]byte, i *int) (interface{}, error) {
-	return vertexReaderNullByte(data, i, true)
+	return vertexReaderReadingProperties(data, i, true)
 }
 
-// {fully qualified id}{unqualified label}{[unused null byte]}
-func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, error) {
+// {fully qualified id}{unqualified label}{fully qualified properties}
+func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (interface{}, error) {
 	var err error
 	v := new(Vertex)
 	v.Id, err = readFullyQualifiedNullable(data, i, true)
@@ -1067,33 +1068,53 @@ func vertexReaderNullByte(data *[]byte, i *int, unusedByte bool) (interface{}, e
 		return nil, err
 	}
 	v.Label = label.(string)
-	if unusedByte {
-		*i += 2
+	if readProperties {
+		props, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		// null properties are returned as empty slices
+		v.Properties = make([]interface{}, 0)
+		if props != nil {
+			v.Properties = props
+		}
 	}
 	return v, nil
 }
 
-// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{unused null byte}
+// {fully qualified id}{unqualified label}{in vertex w/o null byte}{out vertex}{unused null byte}{fully qualified properties}
 func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	var err error
 	e := new(Edge)
 	e.Id, err = readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
 	label, err := readUnqualified(data, i, stringType, false)
 	if err != nil {
 		return nil, err
 	}
 	e.Label = label.(string)
-	v, err := vertexReaderNullByte(data, i, false)
+	v, err := vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
 	e.InV = *v.(*Vertex)
-	v, err = vertexReaderNullByte(data, i, false)
+	v, err = vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
 	}
 	e.OutV = *v.(*Vertex)
-	*i += 4
+	*i += 2
+	props, err := readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+	// null properties are returned as empty slices
+	e.Properties = make([]interface{}, 0)
+	if props != nil {
+		e.Properties = props
+	}
 	return e, nil
 }
 
@@ -1131,7 +1152,19 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 
-	*i += 4
+	*i += 2
+
+	props, err := readFullyQualifiedNullable(data, i, true)
+	if err != nil {
+		return nil, err
+	}
+
+	// null properties are returned as empty slices
+	vp.Properties = make([]interface{}, 0)
+	if props != nil {
+		vp.Properties = props
+	}
+
 	return vp, nil
 }
 

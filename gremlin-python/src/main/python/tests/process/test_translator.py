@@ -359,6 +359,13 @@ class TestTranslator(object):
                       "g.withStrategies(VertexProgramStrategy).V().shortestPath().with('~tinkerpop.shortestPath.target',__.has('name','peter'))"])
 
         # 99
+        tests.append([g.V().coalesce(__.E(),__.addE('person')),
+                     "g.V().coalesce(__.E(),__.addE('person'))"])
+        # 100
+        tests.append([g.inject(1).E(),
+                     "g.inject(1).E()"])
+
+        # 99
         tests.append([g.V().has("p1", starting_with("foo")),
                       "g.V().has('p1',startingWith('foo'))"])
 

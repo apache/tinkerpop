@@ -25,6 +25,8 @@ import socket
 import logging
 import queue
 
+import yaml
+
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver import serializer
@@ -38,10 +40,15 @@ from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTT
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'wss://localhost:{}/gremlin')
+gremlin_socket_server_url = os.environ.get('GREMLIN_SOCKET_SERVER_URL', 'ws://localhost:{}/gremlin')
+gremlin_socket_server_config_path = os.environ.get("GREMLIN_SOCKET_SERVER_CONFIG_PATH",
+                                                   "../../../../../../gremlin-tools/gremlin-socket-server/conf/"
+                                                   "test-ws-gremlin.yaml")
 kerberos_hostname = os.environ.get('KRB_HOSTNAME', socket.gethostname())
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
 kerberos_url = gremlin_server_url.format(45942)
+
 kerberized_service = 'test-service@{}'.format(kerberos_hostname)
 gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
 gremlin_basic_auth_url_http = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/')
@@ -51,6 +58,7 @@ verbose_logging = False
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
+
 
 @pytest.fixture
 def connection(request):
@@ -88,6 +96,57 @@ def client(request):
         return client
 
 
+@pytest.fixture
+def gremlin_socket_server_serializer(socket_server_settings):
+    if socket_server_settings["SERIALIZER"] == "GraphBinaryV1":
+        return serializer.GraphBinarySerializersV1()
+    elif socket_server_settings["SERIALIZER"] == "GraphSONV2":
+        return serializer.GraphSONSerializersV2d0()
+    elif socket_server_settings["SERIALIZER"] == "GraphSONV3":
+        return serializer.GraphSONSerializersV3d0()
+    else:
+        return serializer.GraphBinarySerializersV1()
+
+
+@pytest.fixture
+def socket_server_client(request, socket_server_settings, gremlin_socket_server_serializer):
+    marker = request.node.get_closest_marker("client_kwargs")
+    client_kwargs = marker.args[0] if marker is not None else dict()
+    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
+    try:
+        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer, **client_kwargs)
+    except OSError:
+        pytest.skip('Gremlin Socket Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+@pytest.fixture
+def socket_server_client_no_user_agent(request, socket_server_settings, gremlin_socket_server_serializer):
+    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
+    try:
+        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer,
+                        enable_user_agent_on_connect=False)
+    except OSError:
+        pytest.skip('Gremlin Socket Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+@pytest.fixture
+def socket_server_settings():
+    with open(gremlin_socket_server_config_path, mode="rb") as file:
+        settings = yaml.safe_load(file)
+    return settings
+
 @pytest.fixture(params=['basic', 'kerberos'])
 def authenticated_client(request):
     try:
@@ -122,6 +181,30 @@ def remote_connection(request):
                                                  message_serializer=serializer.GraphSONSerializersV2d0())
         elif request.param == 'graphsonv3':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        else:
+            raise ValueError("Invalid serializer option - " + request.param)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+def remote_connection_crew(request):
+    try:
+        if request.param == 'graphbinaryv1':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 message_serializer=serializer.GraphBinarySerializersV1())
+        elif request.param == 'graphsonv2':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
+                                                 message_serializer=serializer.GraphSONSerializersV2d0())
+        elif request.param == 'graphsonv3':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
                                                  message_serializer=serializer.GraphSONSerializersV3d0())
         else:
             raise ValueError("Invalid serializer option - " + request.param)

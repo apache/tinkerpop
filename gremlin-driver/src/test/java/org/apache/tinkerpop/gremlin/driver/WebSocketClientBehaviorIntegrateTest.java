@@ -19,7 +19,10 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.AbstractWarningVerificationStrategy;
+import org.apache.tinkerpop.gremlin.socket.server.SimpleSocketServer;
+import org.apache.tinkerpop.gremlin.socket.server.SocketServerSettings;
+import org.apache.tinkerpop.gremlin.socket.server.TestChannelizers;
+import org.apache.tinkerpop.gremlin.socket.server.TestWSGremlinInitializer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -30,10 +33,12 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -59,7 +65,14 @@ public class WebSocketClientBehaviorIntegrateTest {
 
     private static LogCaptor logCaptor;
 
+    private final SocketServerSettings settings;
+
     private SimpleSocketServer server;
+
+    public WebSocketClientBehaviorIntegrateTest() throws IOException {
+        settings = SocketServerSettings.read(FileSystems.getDefault().getPath("..","gremlin-tools", "gremlin-socket-server", "conf", "test-ws-gremlin.yaml"));
+        settings.SERIALIZER = "GraphSONV2";
+    }
 
     @BeforeClass
     public static void setupLogCaptor() {
@@ -75,15 +88,15 @@ public class WebSocketClientBehaviorIntegrateTest {
     public void setUp() throws InterruptedException {
         logCaptor.clearLogs();
 
-        server = new SimpleSocketServer();
+        server = new SimpleSocketServer(settings);
         if (name.getMethodName().equals("shouldAttemptHandshakeForLongerThanDefaultNettySslHandshakeTimeout") ||
                 name.getMethodName().equals("shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout")) {
             server.start(new TestChannelizers.TestWSNoOpInitializer());
         } else if (name.getMethodName().equals("shouldContinueRunningRemainingConnectionsIfServerThrottlesNewConnections") ||
                 name.getMethodName().equals("shouldReturnCorrectExceptionIfServerThrottlesNewConnectionsAndMaxWaitExceeded")) {
-            server.start(new TestChannelizers.TestConnectionThrottlingInitializer());
+            server.start(new TestChannelizers.TestConnectionThrottlingInitializer(settings));
         } else {
-            server.start(new TestWSGremlinInitializer());
+            server.start(new TestWSGremlinInitializer(settings));
         }
     }
 
@@ -98,16 +111,16 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldIncludeUserAgentInHandshakeRequest() {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
         // trigger the testing server to return captured user agent
         String returnedUserAgent = client.submit("1", RequestOptions.build()
-                        .overrideRequestId(TestWSGremlinInitializer.USER_AGENT_REQUEST_ID).create()).one().getString();
+                        .overrideRequestId(settings.USER_AGENT_REQUEST_ID).create()).one().getString();
         assertEquals(UserAgent.USER_AGENT, returnedUserAgent);
     }
 
@@ -116,18 +129,74 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldNotIncludeUserAgentInHandshakeRequestIfDisabled() {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .enableUserAgentOnConnect(false)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
         // trigger the testing server to return captured user agent
         String returnedUserAgent = client.submit("1", RequestOptions.build()
-                .overrideRequestId(TestWSGremlinInitializer.USER_AGENT_REQUEST_ID).create()).one().getString();
+                .overrideRequestId(settings.USER_AGENT_REQUEST_ID).create()).one().getString();
         assertEquals("", returnedUserAgent);
+    }
+
+    /**
+     * Tests that client is correctly requesting permessage deflate compression is used
+     */
+    @Test
+    public void shouldRequestCompressionByDefault() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+    }
+
+    /**
+     * Tests that client is correctly requesting permessage deflate compression is used
+     */
+    @Test
+    public void shouldRequestCompressionWhenEnabled() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .enableCompression(true)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+    }
+
+    /**
+     * Tests that no user agent is sent to server when that behaviour is disabled.
+     */
+    @Test
+    public void shouldNotRequestCompressionWhenDisabled() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .enableCompression(false)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured sec-websocket-extensions header
+        String returnedWsExtensions = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
+        assertFalse(returnedWsExtensions.contains("permessage-deflate;"));
     }
 
     /**
@@ -151,7 +220,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         // pool used just for the purpose of initializing the hosts).
         final Cluster cluster = Cluster.build("localhost").
                 addContactPoint("localhost").
-                addContactPoint("localhost").port(SimpleSocketServer.PORT).
+                addContactPoint("localhost").port(settings.PORT).
                 workerPoolSize(1).
                 minConnectionPoolSize(32).maxConnectionPoolSize(32).create();
 
@@ -188,10 +257,10 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldRemoveConnectionFromPoolWhenServerClose_WithNoPendingRequests() throws InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -207,7 +276,7 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         // trigger the testing server to send a WS close frame
         Vertex v = client.submit("1", RequestOptions.build()
-                .overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID).create())
+                .overrideRequestId(settings.SINGLE_VERTEX_DELAYED_CLOSE_CONNECTION_REQUEST_ID).create())
                 .one().getVertex();
 
         assertNotNull(v);
@@ -224,7 +293,7 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         // assert sanity after connection replacement
         v = client.submit("1",
-                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
+                RequestOptions.build().overrideRequestId(settings.SINGLE_VERTEX_REQUEST_ID).create())
                 .one().getVertex();
         assertNotNull(v);
     }
@@ -235,10 +304,10 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldRemoveConnectionFromPoolWhenServerClose_WithPendingRequests() throws InterruptedException, ExecutionException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -252,9 +321,9 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         // Send two requests in flight. Both should error out.
         final CompletableFuture<ResultSet> req1 = client.submitAsync("1", RequestOptions.build()
-                .overrideRequestId(TestWSGremlinInitializer.CLOSE_CONNECTION_REQUEST_ID).create());
+                .overrideRequestId(settings.CLOSE_CONNECTION_REQUEST_ID).create());
         final CompletableFuture<ResultSet> req2 = client.submitAsync("1", RequestOptions.build()
-                .overrideRequestId(TestWSGremlinInitializer.CLOSE_CONNECTION_REQUEST_ID_2).create());
+                .overrideRequestId(settings.CLOSE_CONNECTION_REQUEST_ID_2).create());
 
 
         // assert both are sent on same connection
@@ -272,7 +341,7 @@ public class WebSocketClientBehaviorIntegrateTest {
 
         // assert sanity after connection replacement
         final Vertex v = client.submit("1",
-                RequestOptions.build().overrideRequestId(TestWSGremlinInitializer.SINGLE_VERTEX_REQUEST_ID).create())
+                RequestOptions.build().overrideRequestId(settings.SINGLE_VERTEX_REQUEST_ID).create())
                 .one().getVertex();
         assertNotNull(v);
     }
@@ -283,10 +352,10 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldNotCreateReplacementConnectionWhenClientClosesConnection() throws ExecutionException, InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
 
@@ -320,7 +389,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldAttemptHandshakeForLongerThanDefaultNettySslHandshakeTimeout() {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .connectionSetupTimeoutMillis(20000) // needs to be larger than 10000ms.
@@ -351,7 +420,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldPrintCorrectErrorForRegularWebSocketHandshakeTimeout() throws InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(1)
                 .connectionSetupTimeoutMillis(120)
@@ -380,7 +449,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldContinueRunningRemainingConnectionsIfServerThrottlesNewConnections() throws ExecutionException, InterruptedException, TimeoutException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(5)
                 .maxWaitForConnection(15000) // large value ensures that request will eventually find a connection.
@@ -389,7 +458,7 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxInProcessPerConnection(1)
                 .minSimultaneousUsagePerConnection(0)
                 .maxSimultaneousUsagePerConnection(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -413,7 +482,7 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldReturnCorrectExceptionIfServerThrottlesNewConnectionsAndMaxWaitExceeded() {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxConnectionPoolSize(5)
                 .maxWaitForConnection(250) // small value ensures that requests will return TimeoutException.
@@ -422,7 +491,7 @@ public class WebSocketClientBehaviorIntegrateTest {
                 .maxInProcessPerConnection(1)
                 .minSimultaneousUsagePerConnection(0)
                 .maxSimultaneousUsagePerConnection(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -445,9 +514,9 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldContinueRunningIfServerGoesDownTemporarily() throws InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -457,8 +526,8 @@ public class WebSocketClientBehaviorIntegrateTest {
         scheduledPool.schedule(() -> {
             try {
                 server.stopSync();
-                server = new SimpleSocketServer();
-                server.start(new TestWSGremlinInitializer());
+                server = new SimpleSocketServer(settings);
+                server.start(new TestWSGremlinInitializer(settings));
                 synchronized (lock) {
                     lock.notify();
                 }
@@ -483,11 +552,11 @@ public class WebSocketClientBehaviorIntegrateTest {
      */
     @Test
     public void shouldReturnCorrectExceptionIfServerGoesDown() throws InterruptedException {
-        final Cluster cluster = Cluster.build("localhost").port(SimpleSocketServer.PORT)
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
                 .minConnectionPoolSize(1)
                 .maxWaitForConnection(500)
                 .connectionSetupTimeoutMillis(100)
-                .serializer(Serializers.GRAPHSON_V2D0)
+                .serializer(Serializers.GRAPHSON_V2)
                 .create();
 
         final Client.ClusteredClient client = cluster.connect();
@@ -504,5 +573,29 @@ public class WebSocketClientBehaviorIntegrateTest {
         }
 
         cluster.close();
+    }
+
+    /**
+     * Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
+     * evaluationTimeout, and userAgent) to the server.
+     */
+    @Test
+    public void shouldSendPerRequestSettingsToServer() {
+        final Cluster cluster = Cluster.build("localhost").port(settings.PORT)
+                .minConnectionPoolSize(1)
+                .maxConnectionPoolSize(1)
+                .serializer(Serializers.GRAPHSON_V2)
+                .create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // trigger the testing server to return captured request settings
+        String response = client.submit("1", RequestOptions.build()
+                .overrideRequestId(settings.PER_REQUEST_SETTINGS_REQUEST_ID)
+                .timeout(1234).userAgent("helloWorld").batchSize(12)
+                .materializeProperties("tokens").create()).one().getString();
+
+        String expectedResponse = String.format("requestId=%s evaluationTimeout=%d, batchSize=%d, userAgent=%s, materializeProperties=%s",
+                settings.PER_REQUEST_SETTINGS_REQUEST_ID, 1234, 12, "helloWorld", "tokens");
+        assertEquals(expectedResponse, response);
     }
 }

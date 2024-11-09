@@ -42,7 +42,7 @@ Feature: Step - hasLabel()
       | e[marko-knows->vadas] |
       | e[marko-knows->josh] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_E_hasLabelXuses_traversesX
     Given the crew graph
     And the traversal of

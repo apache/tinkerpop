@@ -18,6 +18,139 @@
 @StepClassBranch @StepUnion
 Feature: Step - union()
 
+  Scenario: g_unionXX
+    Given the modern graph
+    And the traversal of
+       """
+       g.union()
+       """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_name
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().values("name"))
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+      | vadas  |
+      | lop    |
+      | josh   |
+      | ripple |
+      | peter  |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXVXv1X_VX4XX_name
+    Given the modern graph
+    And using the parameter v1 defined as "v[vadas]"
+    And using the parameter v4 defined as "v[josh]"
+    And the traversal of
+       """
+       g.union(__.V(v1), __.V(v4)).values("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas  |
+      | josh   |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_hasLabelXsoftwareX_V_hasLabelXpersonXX_name
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().hasLabel("software"), __.V().hasLabel("person")).values("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+      | vadas  |
+      | lop    |
+      | josh   |
+      | ripple |
+      | peter  |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_out_out_V_hasLabelXsoftwareXX_path
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().out().out(), __.V().hasLabel("software")).path()
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[marko],v[josh],v[ripple]] |
+      | p[v[marko],v[josh],v[lop]] |
+      | p[v[lop]] |
+      | p[v[ripple]] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXV_out_out_V_hasLabelXsoftwareXX_path_byXnameX
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.V().out().out(), __.V().hasLabel("software")).path().by("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko,josh,ripple] |
+      | p[marko,josh,lop] |
+      | p[lop] |
+      | p[ripple] |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_unionXunionXV_out_outX_V_hasLabelXsoftwareXX_path_byXnameX
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.union(__.V().out().out()), __.V().hasLabel("software")).path().by("name")
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko,josh,ripple] |
+      | p[marko,josh,lop] |
+      | p[lop] |
+      | p[ripple] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_unionXinjectX1X_injectX2X
+    Given the modern graph
+    And the traversal of
+       """
+       g.union(__.inject(1), __.inject(2))
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+      | d[2].i |
+
+  Scenario: g_V_unionXconstantX1X_constantX2X_constantX3XX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[2].i"
+    And using the parameter xx3 defined as "d[3].i"
+    And using the parameter v2 defined as "v[vadas]"
+    And the traversal of
+       """
+       g.V(v2).union(constant(xx1), constant(xx2), constant(xx3))
+       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+      | d[2].i |
+      | d[3].i |
+
   Scenario: g_V_unionXout__inX_name
     Given the modern graph
     And the traversal of
@@ -152,3 +285,18 @@ Feature: Step - union()
       | result |
       | d[1].l   |
       | d[1].l   |
+
+  Scenario: g_unionXaddVXpersonX_propertyXname_aliceX_addVXpersonX_propertyXname_bobX_addVXpersonX_propertyXname_chrisX_name
+    Given the empty graph
+    And the traversal of
+      """
+      g.union(__.addV("person").property("name", "alice"),
+              __.addV("person").property("name", "bob"),
+              __.addV("person").property("name", "chris")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | alice |
+      | bob |
+      | chris |

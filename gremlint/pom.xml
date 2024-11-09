@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.6.8</version>
+        <version>3.7.4-SNAPSHOT</version>
     </parent>
     <artifactId>gremlint</artifactId>
     <name>Apache TinkerPop :: Gremlint</name>
@@ -53,7 +53,7 @@ limitations under the License.
                 <artifactId>gmavenplus-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
+                        <groupId>org.apache.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
                         <version>${groovy.version}</version>
                         <type>pom</type>

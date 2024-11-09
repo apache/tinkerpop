@@ -20,7 +20,7 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
@@ -54,6 +54,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphTest",
         method = "g_VX1X_V_valuesXnameX",
+        reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeTest",
+        method = "*",
         reason = "Mid-traversal V()/E() is currently not supported on GraphComputer")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest",
@@ -142,6 +146,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
 public class GraphSONRemoteGraphComputerProvider extends AbstractRemoteGraphProvider {
     public GraphSONRemoteGraphComputerProvider() {
-        super(createClusterBuilder(Serializers.GRAPHSON_V3D0).create(), true);
+        super(createClusterBuilder(Serializers.GRAPHSON_V3).create(), true);
     }
 }

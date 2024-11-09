@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @GraphComputerVerificationElementSupported
+@StepClassMap @StepElement @GraphComputerVerificationElementSupported
 Feature: Step - element()
 
   # VertexProperty -> Vertex
@@ -97,7 +97,7 @@ Feature: Step - element()
       | e[josh-created->ripple] |
 
   # MetaProperty -> VertexProperty
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_VXv7_properties_properties_element_element
     Given the crew graph
     And using the parameter v7 defined as "v[stephen]"
@@ -110,7 +110,7 @@ Feature: Step - element()
       | result |
       | v[stephen] |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_properties_properties_element_element
     Given the crew graph
     And using the parameter v7 defined as "v[stephen]"

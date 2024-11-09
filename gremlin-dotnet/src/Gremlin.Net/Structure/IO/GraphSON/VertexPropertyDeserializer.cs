@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Linq;
 using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
@@ -30,12 +31,20 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
             var id = reader.ToObject(graphsonObject.GetProperty("id"));
-            var label = graphsonObject.GetProperty("label").GetString();
+            string label = graphsonObject.GetProperty("label").GetString()!;
             var value = reader.ToObject(graphsonObject.GetProperty("value"));
             var vertex = graphsonObject.TryGetProperty("vertex", out var vertexProperty)
                 ? new Vertex(reader.ToObject(vertexProperty))
                 : null;
-            return new VertexProperty(id, label, value, vertex);
+
+            Property[]? properties = null;
+            if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
+                && propertiesObject.ValueKind == JsonValueKind.Object)
+            {
+                properties = propertiesObject.EnumerateObject()
+                    .Select(p => new Property(p.Name, reader.ToObject(p.Value))).ToArray();
+            }
+            return new VertexProperty(id, label, value, vertex, properties);
         }
     }
 }

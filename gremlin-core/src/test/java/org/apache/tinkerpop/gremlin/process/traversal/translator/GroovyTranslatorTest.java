@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -159,6 +160,11 @@ public class GroovyTranslatorTest {
     @Test
     public void shouldTranslateColumn() {
         assertTranslation("Column.keys", Column.keys);
+    }
+
+    @Test
+    public void shouldTranslateCardinalityValue() {
+        assertTranslation("VertexProperty.Cardinality.set(\"test\")", VertexProperty.Cardinality.set("test"));
     }
 
     @Test

@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
      * with {@link TinkerGraphComputerView}.
      */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
-        this(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), vertex, key, value, propertyKeyValues);
+        this(((AbstractTinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((AbstractTinkerGraph) vertex.graph()), vertex, key, value, propertyKeyValues);
     }
 
     /**
@@ -93,6 +94,26 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     }
 
     @Override
+    public Object clone() {
+        final TinkerVertexProperty vp = new TinkerVertexProperty(id, vertex, key, value);
+        vp.properties = properties;
+        return vp;
+    }
+
+    public TinkerVertexProperty copy(final TinkerVertex newOwner) {
+        final TinkerVertexProperty vp = new TinkerVertexProperty(id, newOwner, key, value);
+
+        if (null != properties) {
+            final Map<String, Property> cloned = new ConcurrentHashMap<>(properties.size());
+            properties.entrySet().stream().forEach(p -> cloned.put(p.getKey(), ((TinkerProperty) p.getValue()).copy(vp)));
+
+            vp.properties = cloned;
+        }
+
+        return vp;
+    }
+
+    @Override
     public Object id() {
         return this.id;
     }
@@ -115,6 +136,9 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
+        // in most cases vertex should already be touched, but let's play safe
+        ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
+
         if (this.removed) throw elementAlreadyRemoved(VertexProperty.class, id);
 
         if ((!allowNullPropertyValues && null == value)) {
@@ -136,10 +160,12 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     @Override
     public void remove() {
         if (null != this.vertex.properties && this.vertex.properties.containsKey(this.key)) {
+            ((AbstractTinkerGraph)vertex.graph()).touch(vertex);
+
             this.vertex.properties.get(this.key).remove(this);
             if (this.vertex.properties.get(this.key).size() == 0) {
                 this.vertex.properties.remove(this.key);
-                TinkerHelper.removeIndex(this.vertex, this.key, this.value);
+                TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
             }
             final AtomicBoolean delete = new AtomicBoolean(true);
             this.vertex.properties(this.key).forEachRemaining(property -> {
@@ -147,7 +173,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
                 if ((currentPropertyValue != null && currentPropertyValue.equals(this.value) || null == currentPropertyValue && null == this.value))
                     delete.set(false);
             });
-            if (delete.get()) TinkerHelper.removeIndex(this.vertex, this.key, this.value);
+            if (delete.get()) TinkerIndexHelper.removeIndex(this.vertex, this.key, this.value);
             this.properties = null;
             this.removed = true;
         }

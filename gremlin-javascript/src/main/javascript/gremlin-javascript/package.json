@@ -1,6 +1,6 @@
 {
   "name": "gremlin",
-  "version": "3.6.8",
+  "version": "3.7.4-alpha1",
   "description": "JavaScript Gremlin Language Variant",
   "author": "Apache TinkerPop team",
   "keywords": [
@@ -14,7 +14,11 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^8.11.0"
+    "buffer": "^6.0.3",
+    "eventemitter3": "^5.0.1",
+    "readable-stream": "^4.5.2",
+    "uuid": "^9.0.1",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "chai": "~4.5.0",

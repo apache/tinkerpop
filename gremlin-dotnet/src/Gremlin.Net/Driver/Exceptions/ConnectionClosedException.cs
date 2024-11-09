@@ -27,8 +27,8 @@ using System.Net.WebSockets;
 namespace Gremlin.Net.Driver.Exceptions
 {
     /// <summary>
-    ///     The exception that is thrown for requests that in-flight when the underlyingg websocket is closed by the server.
-    ///     Requests that recieve this exception will be in a non-deteministic state and may need to be retried.
+    ///     The exception that is thrown for requests that in-flight when the underlying websocket is closed by the server.
+    ///     Requests that receive this exception will be in a non-deterministic state and may need to be retried.
     /// </summary>
     /// <remarks>
     ///     It is recommended to use the same request retry policy that is applied when a <see cref="System.Net.WebSockets.WebSocketException" />,
@@ -44,19 +44,19 @@ namespace Gremlin.Net.Driver.Exceptions
         /// <summary>
         ///     Gets the Websocket closure description provided by the server.
         /// </summary>
-        public string Description { get; }
+        public string? Description { get; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ConnectionClosedException" /> class.
         /// </summary>
-        public ConnectionClosedException(WebSocketCloseStatus? status, string description)
+        public ConnectionClosedException(WebSocketCloseStatus? status, string? description)
             : base(CreateMessage(status, description))
         {
             Status = status;
             Description = description;
         }
 
-        private static string CreateMessage(WebSocketCloseStatus? status, string description)
+        private static string CreateMessage(WebSocketCloseStatus? status, string? description)
         {
             return $"Connection closed by server. CloseStatus: {status?.ToString() ?? "<none>"}, CloseDescription: {description ?? "<none>"}." +
                 " Any in-progress requests on the connection will be in an unknown state, and may need to be retried.";

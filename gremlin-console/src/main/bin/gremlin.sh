@@ -108,6 +108,12 @@ if [ -n "$SCRIPT_DEBUG" ]; then
     set -x
 fi
 
+# Try to detect JDK version and add specific flag for JDK 17 to allow use of neo4j-gremlin
+JAVA_VERSION=$($JAVA -version 2>&1 | awk -F '"' '/version/ {print $2}')
+if [[ "$JAVA_VERSION" == 17* ]]; then
+    JVM_OPTS+=( "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" )
+fi
+
 # Start the JVM, execute the application, and return its exit code
 # shellcheck disable=SC2068
 exec $JAVA ${JVM_OPTS[@]} org.apache.tinkerpop.gremlin.console.Console "$@"

@@ -873,7 +873,7 @@ IMPORTANT: The `g.tx()` is only supported in Java at this time. Support for othe
 future releases on the 3.5.x line.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2537[TINKERPOP-2537],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Reference Documentation - Transactions]
+link:https://tinkerpop.apache.org/docs/3.5.0/reference/#transactions[Reference Documentation - Transactions]
 
 ==== Anonymous Child Traversals
 

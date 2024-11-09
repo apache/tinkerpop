@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
+using Gremlin.Net.Driver.Messages;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -188,7 +189,8 @@ namespace Gremlin.Net.UnitTest.Driver
             fakedConnection.IsOpen.Returns(false);
             mockedConnectionFactory.CreateConnection().Returns(_ => OpenConnection);
 
-            await returnedConnection.SubmitAsync<bool>(null, CancellationToken.None);
+            await returnedConnection.SubmitAsync<bool>(RequestMessage.Build(string.Empty).Create(),
+                CancellationToken.None);
             returnedConnection.Dispose();
 
             Assert.Equal(1, pool.NrConnections);

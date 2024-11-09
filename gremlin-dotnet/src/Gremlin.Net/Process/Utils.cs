@@ -35,8 +35,11 @@ namespace Gremlin.Net.Process
     /// </summary>
     internal static class Utils
     {
+        /// <summary>
+        /// The user agent which is sent with connection requests if enabled.
+        /// </summary>
         public static string UserAgent => _userAgent ??= GenerateUserAgent();
-        private static string _userAgent;
+        private static string? _userAgent;
         
         /// <summary>
         /// Waits the completion of the provided Task.
@@ -50,7 +53,7 @@ namespace Gremlin.Net.Process
             }
             catch (AggregateException ex)
             {
-                if (ex.InnerExceptions.Count == 1)
+                if (ex.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();   
                 }

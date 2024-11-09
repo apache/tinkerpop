@@ -319,7 +319,7 @@ Feature: Step - dedup()
       | result |
       | d[12].l |
 
-  @MultiMetaProperties
+  @MultiProperties @MetaProperties
   Scenario: g_V_both_properties_properties_dedup_count
     Given the crew graph
     And the traversal of
@@ -405,3 +405,37 @@ Feature: Step - dedup()
       Then the result should be unordered
         | result |
         | d[29].i |
+
+  Scenario: g_V_properties_dedup_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV('person').property('name','josh').
+        addV('person').property('name','josh').
+        addV('person').property('name','josh')
+      """
+    And the traversal of
+      """
+      g.V().properties("name").dedup().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+
+  Scenario: g_V_properties_dedup_byXvalueX_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV('person').property('name','josh').
+        addV('person').property('name','josh').
+        addV('person').property('name','josh')
+      """
+    And the traversal of
+      """
+      g.V().properties("name").dedup().by(value).count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |

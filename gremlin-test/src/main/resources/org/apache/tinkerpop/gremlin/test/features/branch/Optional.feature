@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassBranch @StepChoose
-Feature: Step - choose()
+@StepClassBranch @StepOptional
+Feature: Step - optional()
 
   Scenario: g_VX2X_optionalXoutXknowsXX
     Given the modern graph

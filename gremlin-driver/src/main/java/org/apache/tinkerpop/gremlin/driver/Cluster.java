@@ -27,8 +27,10 @@ import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -1052,7 +1054,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.size() == 0) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1D0.simpleInstance();
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1.simpleInstance();
             return new Cluster(this);
         }
     }

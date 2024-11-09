@@ -18,6 +18,7 @@
 @StepClassSideEffect @StepInject
 Feature: Step - inject()
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_out_injectXv2X_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -34,7 +35,7 @@ Feature: Step - inject()
       | vadas |
       | josh  |
 
-
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -69,8 +70,9 @@ Feature: Step - inject()
       | vadas |
       | josh  |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_1_3_nullX
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject(null, 1, 3, null)
@@ -83,8 +85,9 @@ Feature: Step - inject()
       | d[3].i |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject(10,20,null,20,10,10).groupCount("x").dedup().as("y").project("a","b").by().by(__.select("x").select(__.select("y")))
@@ -96,8 +99,9 @@ Feature: Step - inject()
       | m[{"a":"d[20].i", "b":"d[2].l"}] |
       | m[{"a":null, "b":"d[1].l"}] |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXname_marko_age_nullX_selectXname_ageX
-    Given the empty graph
+    Given the modern graph
     And using the parameter xx1 defined as "m[{\"name\":\"marko\", \"age\":null}]"
     And the traversal of
       """
@@ -108,8 +112,9 @@ Feature: Step - inject()
       | result |
       | m[{"name":"marko", "age":null}] |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_nullX
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject(null, null)
@@ -120,8 +125,9 @@ Feature: Step - inject()
       | null |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnullX
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject(null)
@@ -131,8 +137,9 @@ Feature: Step - inject()
       | result |
       | null |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject()
@@ -140,6 +147,7 @@ Feature: Step - inject()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_valuesXageX_injectXnull_nullX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"
@@ -181,8 +189,9 @@ Feature: Step - inject()
       | result |
       | d[29].i |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_1_3_nullX_asXaX_selectXaX
-    Given the empty graph
+    Given the modern graph
     And the traversal of
       """
       g.inject(null, 1, 3, null).as("a").select("a")

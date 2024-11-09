@@ -232,6 +232,76 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, fmt.Sprintf("%v", source), fmt.Sprintf("%v", res))
 		})
+		t.Run("read incomparable map: a map value as the key", func(t *testing.T) {
+			// prepare test data
+			var buf = &bytes.Buffer{}
+			typeSerializer := &graphBinaryTypeSerializer{}
+			// write the size of map
+			err := binary.Write(buf, binary.BigEndian, uint32(1))
+			if err != nil {
+				t.Fatalf("Failed to write data: %v", err)
+			}
+			// write a map value as the key
+			k1 := map[string]string{"key": "value"}
+			_, err = typeSerializer.write(reflect.ValueOf(k1).Interface(), buf)
+			if err != nil {
+				t.Fatalf("Failed to encode data: %v", err)
+			}
+			v1 := "value1"
+			_, err = typeSerializer.write(reflect.ValueOf(v1).Interface(), buf)
+			if err != nil {
+				t.Fatalf("Failed to encode data: %v", err)
+			}
+
+			data := buf.Bytes()
+			i := 0
+			result, err := readMap(&data, &i)
+			if err != nil {
+				t.Fatalf("readMap failed: %v", err)
+			}
+			mResult, ok := result.(map[interface{}]interface{})
+			if !ok {
+				t.Fatalf("readMap result not map[interface{}]interface{}")
+			}
+			for k, v := range mResult {
+				assert.Equal(t, reflect.Ptr, reflect.TypeOf(k).Kind())
+				assert.Equal(t, "value1", v)
+			}
+		})
+		t.Run("read incomparable map: a slice value as the key", func(t *testing.T) {
+			// prepare test data
+			var buf = &bytes.Buffer{}
+			typeSerializer := &graphBinaryTypeSerializer{}
+			// write the size of map
+			err := binary.Write(buf, binary.BigEndian, uint32(1))
+			if err != nil {
+				t.Fatalf("Failed to write data: %v", err)
+			}
+			// write a slice value as the key
+			k2 := []int{1, 2, 3}
+			_, err = typeSerializer.write(reflect.ValueOf(k2).Interface(), buf)
+			if err != nil {
+				t.Fatalf("Failed to encode data: %v", err)
+			}
+			v2 := "value2"
+			_, err = typeSerializer.write(reflect.ValueOf(v2).Interface(), buf)
+			if err != nil {
+				t.Fatalf("Failed to encode data: %v", err)
+			}
+
+			data := buf.Bytes()
+			i := 0
+			result, err := readMap(&data, &i)
+			if err != nil {
+				t.Fatalf("readMap failed: %v", err)
+			}
+			expected := map[interface{}]interface{}{
+				"[1 2 3]": "value2",
+			}
+			if !reflect.DeepEqual(result, expected) {
+				t.Errorf("Expected %v, but got %v", expected, result)
+			}
+		})
 		t.Run("read-write time", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
@@ -250,7 +320,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			buff := []byte{0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01}
 			m, err := readMapUnqualified(&buff, &i)
 			assert.Nil(t, m)
-			assert.Equal(t, newError(err0703ReadMapNonStringKeyError), err)
+			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
 }

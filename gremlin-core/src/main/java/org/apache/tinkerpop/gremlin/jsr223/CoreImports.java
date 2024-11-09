@@ -53,7 +53,9 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decorati
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
+import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
@@ -66,7 +68,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -130,8 +131,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1d0;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV3d0;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV1;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolverV3;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
@@ -196,6 +197,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(VertexProperty.Cardinality.class);
         CLASS_IMPORTS.add(Column.class);
         CLASS_IMPORTS.add(Direction.class);
+        CLASS_IMPORTS.add(DT.class);
         CLASS_IMPORTS.add(Merge.class);
         CLASS_IMPORTS.add(Operator.class);
         CLASS_IMPORTS.add(Order.class);
@@ -228,8 +230,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(GraphSONVersion.class);
         CLASS_IMPORTS.add(GraphSONWriter.class);
         CLASS_IMPORTS.add(LegacyGraphSONReader.class);
-        CLASS_IMPORTS.add(GryoClassResolverV1d0.class);
-        CLASS_IMPORTS.add(GryoClassResolverV3d0.class);
+        CLASS_IMPORTS.add(GryoClassResolverV1.class);
+        CLASS_IMPORTS.add(GryoClassResolverV3.class);
         CLASS_IMPORTS.add(GryoIo.class);
         CLASS_IMPORTS.add(GryoMapper.class);
         CLASS_IMPORTS.add(GryoReader.class);
@@ -335,6 +337,7 @@ public final class CoreImports {
         uniqueMethods(Lambda.class).forEach(METHOD_IMPORTS::add);
         try {
             METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime", String.class));
+            METHOD_IMPORTS.add(DatetimeHelper.class.getMethod("datetime"));
         } catch (Exception ex) {
             throw new IllegalStateException("Could not load datetime() function to imports");
         }
@@ -347,6 +350,7 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, VertexProperty.Cardinality.values());
         Collections.addAll(ENUM_IMPORTS, Column.values());
         Collections.addAll(ENUM_IMPORTS, Direction.values());
+        Collections.addAll(ENUM_IMPORTS, DT.values());
         Collections.addAll(ENUM_IMPORTS, Merge.values());
         Collections.addAll(ENUM_IMPORTS, Operator.values());
         Collections.addAll(ENUM_IMPORTS, Order.values());

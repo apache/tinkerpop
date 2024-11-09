@@ -23,11 +23,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.util.AttributeKey;
-import org.apache.tinkerpop.gremlin.driver.UserAgent;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.tinkerpop.gremlin.server.handler.WsUserAgentHandler.USER_AGENT_HEADER_NAME;
 
 public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     /**
@@ -37,14 +38,14 @@ public class HttpUserAgentHandler extends ChannelInboundHandlerAdapter {
     private static final int MAX_USER_AGENT_METRICS = 10000;
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUserAgentHandler.class);
-    public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(UserAgent.USER_AGENT_HEADER_NAME);
+    public static final AttributeKey<String> USER_AGENT_ATTR_KEY = AttributeKey.valueOf(USER_AGENT_HEADER_NAME);
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
-            if (request.headers().contains(UserAgent.USER_AGENT_HEADER_NAME)) {
-                final String userAgent = request.headers().get(UserAgent.USER_AGENT_HEADER_NAME);
+            if (request.headers().contains(USER_AGENT_HEADER_NAME)) {
+                final String userAgent = request.headers().get(USER_AGENT_HEADER_NAME);
                 ctx.channel().attr(USER_AGENT_ATTR_KEY).set(userAgent);
                 logger.debug("New Connection on channel [{}] with user agent [{}]", ctx.channel().id().asShortText(), userAgent);
 

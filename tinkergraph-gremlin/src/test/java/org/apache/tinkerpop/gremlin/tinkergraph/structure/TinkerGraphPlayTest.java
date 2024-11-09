@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -45,6 +46,7 @@ import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal.Symbols.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
@@ -56,6 +58,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -281,5 +284,35 @@ public class TinkerGraphPlayTest {
                 g.V("3").
                         union(__.repeat(out().simplePath()).times(2).count(),
                                 __.repeat(in().simplePath()).times(2).count());
+    }
+
+    @Test
+    @Ignore
+    public void WithinTest() {
+        final int count = 500;
+
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        for (int i = 0; i < count; i++) {
+            graph.addVertex(T.label, "person", T.id, i);
+        }
+
+        graph.vertices().forEachRemaining(a -> {
+            graph.vertices().forEachRemaining(b -> {
+                if (a != b && ((int) a.id() < 2 || (int) b.id() < 2)) {
+                    a.addEdge("knows", b);
+                }
+            });
+        });
+
+        final long start = System.currentTimeMillis();
+
+        final List result = g.
+                V().has(T.id,P.lt(count/2)).aggregate("v1").
+                V().where(P.without("v1")).
+                toList();
+
+        System.out.println(result.size());
+        System.out.printf("Done in %10d %n", System.currentTimeMillis() - start);
     }
 }

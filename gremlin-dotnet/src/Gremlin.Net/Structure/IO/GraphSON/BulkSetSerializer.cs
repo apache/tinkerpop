@@ -42,7 +42,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             // previous versions.
             return Enumerable.Range(0, graphsonObject.GetArrayLength() / 2).SelectMany<int, object>(i =>
                 Enumerable.Repeat<object>(reader.ToObject(graphsonObject[i * 2]),
-                    (int) reader.ToObject(graphsonObject[i * 2 + 1]))).ToList();
+                    (int) reader.ToObject(graphsonObject[i * 2 + 1])!)).ToList();
         }
     }
 }

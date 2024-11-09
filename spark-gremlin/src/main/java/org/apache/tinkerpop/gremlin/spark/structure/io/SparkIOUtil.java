@@ -48,7 +48,7 @@ public class SparkIOUtil {
      *     Configuration sparkGraphConfiguration = new BaseConfiguration();
      *     sparkGraphConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
      *     sparkGraphConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR,
-     *         SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3d0.kryo"));
+     *         SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern-v3.kryo"));
      *
      *     // load vertices
      *     JavaPairRDD verticesRDD = SparkIOUtil.loadVertices(sparkGraphConfiguration, sparkContext);

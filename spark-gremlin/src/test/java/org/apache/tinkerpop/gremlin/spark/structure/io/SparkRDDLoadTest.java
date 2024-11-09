@@ -69,7 +69,7 @@ public class SparkRDDLoadTest extends AbstractSparkTest {
         final Configuration sparkGraphConfiguration = new BaseConfiguration();
         sparkGraphConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
         sparkGraphConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR,
-                TestFiles.PATHS.get("tinkerpop-modern-v3d0.kryo"));
+                TestFiles.PATHS.get("tinkerpop-modern-v3.kryo"));
 
         // load vertices
         JavaPairRDD<Object, VertexWritable> verticesRDD = SparkIOUtil.loadVertices(sparkGraphConfiguration, sparkContext);

@@ -132,14 +132,15 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         protected String getSyntax(final Boolean o) {
             return o.toString();
         }
+
         @Override
         protected String getSyntax(final Date o) {
-            return "time.Unix(" + o.getTime() + ", 0)";
+            return "time.UnixMilli(" + o.getTime() + ")";
         }
 
         @Override
         protected String getSyntax(final Timestamp o) {
-            return "time.Unix(" + o.getTime() + ", 0)";
+            return "time.UnixMilli(" + o.getTime() + ")";
         }
 
         @Override
@@ -178,6 +179,16 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Pick o) {
             return GO_PACKAGE_NAME + "Pick." + resolveSymbol(o.toString());
+        }
+
+        @Override
+        protected Script produceCardinalityValue(final Bytecode o) {
+            final Bytecode.Instruction inst = o.getSourceInstructions().get(0);
+            final String card = inst.getArguments()[0].toString();
+            script.append(GO_PACKAGE_NAME + "CardinalityValue." + card.substring(0, 1).toUpperCase() + card.substring(1) + "(");
+            convertToScript(inst.getArguments()[1]);
+            script.append(")");
+            return script;
         }
 
         @Override

@@ -40,26 +40,38 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
         {
             // Write {custom type info}, {value_flag} and {value}
             await stream.WriteAsync(_typeInfoBytes, cancellationToken).ConfigureAwait(false);
-            await WriteValueAsync(value, stream, writer, true, cancellationToken);
+            await WriteNullableValueAsync(value, stream, writer, cancellationToken);
         }
 
-        public override async Task WriteValueAsync(object value, Stream stream, GraphBinaryWriter writer, bool nullable,
+        public override async Task WriteNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken = default)
         {
             if (value == null)
             {
-                if (!nullable)
-                {
-                    throw new IOException("Unexpected null value when nullable is false");
-                }
-
                 await writer.WriteValueFlagNullAsync(stream, cancellationToken).ConfigureAwait(false);
                 return;
             }
 
-            if (nullable)
+            await writer.WriteValueFlagNoneAsync(stream, cancellationToken).ConfigureAwait(false);
+
+            var samplePerson = (SamplePerson)value;
+            var name = samplePerson.Name;
+            
+            // value_length = name_byte_length + name_bytes + long
+            await stream.WriteIntAsync(4 + Encoding.UTF8.GetBytes(name).Length + 8, cancellationToken)
+                .ConfigureAwait(false);
+
+            await writer.WriteNonNullableValueAsync(name, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(samplePerson.BirthDate, stream, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        
+        public override async Task WriteNonNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer,
+            CancellationToken cancellationToken = default)
+        {
+            if (value == null)
             {
-                await writer.WriteValueFlagNoneAsync(stream, cancellationToken).ConfigureAwait(false);
+                throw new IOException("Unexpected null value when nullable is false");
             }
 
             var samplePerson = (SamplePerson)value;
@@ -69,12 +81,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
             await stream.WriteIntAsync(4 + Encoding.UTF8.GetBytes(name).Length + 8, cancellationToken)
                 .ConfigureAwait(false);
 
-            await writer.WriteValueAsync(name, stream, false, cancellationToken).ConfigureAwait(false);
-            await writer.WriteValueAsync(samplePerson.BirthDate, stream, false, cancellationToken)
+            await writer.WriteNonNullableValueAsync(name, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(samplePerson.BirthDate, stream, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public override async Task<object> ReadAsync(Stream stream, GraphBinaryReader reader,
+        public override async Task<object?> ReadAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
             // {custom type info}, {value_flag} and {value}
@@ -84,19 +96,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
                 throw new IOException("{custom_type_info} should not be provided for this custom type");
             }
 
-            return await ReadValueAsync(stream, reader, true, cancellationToken).ConfigureAwait(false);
+            return await ReadNullableValueAsync(stream, reader, cancellationToken).ConfigureAwait(false);
         }
 
-        public override async Task<object> ReadValueAsync(Stream stream, GraphBinaryReader reader, bool nullable,
+        public override async Task<object?> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
-            if (nullable)
+            var valueFlag = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
+            if ((valueFlag & 1) == 1)
             {
-                var valueFlag = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
-                if ((valueFlag & 1) == 1)
-                {
-                    return null;
-                }
+                return null;
             }
             
             // Read the byte length of the value bytes
@@ -112,10 +121,35 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary.Types.Sample
                 throw new IOException($"Not enough readable bytes: {valueLength} (expected: {stream.Length})");
             }
 
-            var name = (string)await reader.ReadValueAsync<string>(stream, false, cancellationToken)
+            var name = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
                 .ConfigureAwait(false);
             var birthDate =
-                (DateTimeOffset)await reader.ReadValueAsync<DateTimeOffset>(stream, false, cancellationToken)
+                (DateTimeOffset)await reader.ReadNonNullableValueAsync<DateTimeOffset>(stream, cancellationToken)
+                    .ConfigureAwait(false);
+
+            return new SamplePerson(name, birthDate);
+        }
+        
+        public override async Task<object> ReadNonNullableValueAsync(Stream stream, GraphBinaryReader reader,
+            CancellationToken cancellationToken = default)
+        {
+            // Read the byte length of the value bytes
+            var valueLength = await stream.ReadIntAsync(cancellationToken).ConfigureAwait(false);
+
+            if (valueLength <= 0)
+            {
+                throw new IOException($"Unexpected value length: {valueLength}");
+            }
+
+            if (valueLength > stream.Length)
+            {
+                throw new IOException($"Not enough readable bytes: {valueLength} (expected: {stream.Length})");
+            }
+
+            var name = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+                .ConfigureAwait(false);
+            var birthDate =
+                (DateTimeOffset)await reader.ReadNonNullableValueAsync<DateTimeOffset>(stream, cancellationToken)
                     .ConfigureAwait(false);
 
             return new SamplePerson(name, birthDate);

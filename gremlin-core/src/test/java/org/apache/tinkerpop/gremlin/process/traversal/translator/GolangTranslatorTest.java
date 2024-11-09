@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -67,6 +66,12 @@ public class GolangTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateCardinalityValue() {
+        assertEquals("g.Inject(gremlingo.CardinalityValue.Set(\"test\"))", translator.translate(
+                g.inject(VertexProperty.Cardinality.set("test")).asAdmin().getBytecode()).getScript());
+    }
+
+    @Test
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsGo = translator.translate(
                 g.addV().property("text", "a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getBytecode()).getScript();
@@ -96,7 +101,7 @@ public class GolangTranslatorTest {
         assertEquals("g.WithStrategies(gremlingo.ReadOnlyStrategy(), gremlingo.SubgraphStrategy(gremlingo.SubgraphStrategyConfig{CheckAdjacentVertices: false, Vertices: gremlingo.T__.HasLabel(\"person\")}), gremlingo.SeedStrategy(gremlingo.SeedStrategyConfig{Seed: 999999})).V().Has(\"name\")",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                                 SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
-                                new SeedStrategy(999999)).
+                                SeedStrategy.build().seed(999999).create()).
                         V().has("name").asAdmin().getBytecode()).getScript());
     }
 

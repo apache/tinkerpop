@@ -28,8 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2d0;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3d0;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV2;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.TypeInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,10 +54,10 @@ final class GraphSONTranslator<S extends TraversalSource, T extends Traversal.Ad
         final GraphSONMapper mapper;
         if (version == GraphSONVersion.V2_0) {
             mapper = GraphSONMapper.build()
-                    .addCustomModule(GraphSONXModuleV2d0.build().create(false)).version(GraphSONVersion.V2_0).create();
+                    .addCustomModule(GraphSONXModuleV2.build()).version(GraphSONVersion.V2_0).create();
         } else if (version == GraphSONVersion.V3_0) {
             mapper = GraphSONMapper.build()
-                    .addCustomModule(GraphSONXModuleV3d0.build().create(false)).version(GraphSONVersion.V3_0).create();
+                    .addCustomModule(GraphSONXModuleV3.build()).version(GraphSONVersion.V3_0).create();
         } else {
             throw new IllegalArgumentException("GraphSONVersion." + version.name() + " is not supported for testing");
         }

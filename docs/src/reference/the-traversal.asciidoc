@@ -383,6 +383,7 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 * `inject()` - Inserts arbitrary objects to start the traversal (<<inject-step, example>>).
 * `mergeE()` - Adds an `Edge` in a "create if not exist" fashion to start the traversal (<<mergeedge-step, example>>)
 * `mergeV()` - Adds a `Vertex` in a "create if not exist" fashion to start the traversal (<<mergevertex-step, example>>)
+* `union()` - Merges the results of an arbitrary number of child traversals to start the traversal (<<union-step, example>>).
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
@@ -660,6 +661,30 @@ g.E().aggregate(local,'x').by('weight').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(java.lang.String)++[`aggregate(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String)++[`aggregate(Scope,String)`]
 
+[[all-step]]
+=== All Step
+
+It is possible to filter list traversers using `all()`-step (*filter*). Every item in the list will be tested against
+the supplied predicate and if all of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
+
+[NOTE, caption=Python]
+====
+The term `all` is a reserved word in Python, and therefore must be referred to in Gremlin with `all_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().all(gt(25)) <1>
+----
+
+<1> Return the list of ages only if everyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#all(org.apache.tinkerpop.gremlin.process.traversal.P)++[`all(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
+
 [[and-step]]
 === And Step
 
@@ -691,6 +716,30 @@ g.V().where(outE('created').and().outE('knows')).values('name')
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#and(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`and(Traversal...)`]
+
+[[any-step]]
+=== Any Step
+
+It is possible to filter list traversers using `any()`-step (*filter*). All items in the list will be tested against
+the supplied predicate and if any of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists, null traversers, and non-iterable traversers are filtered out as well.
+
+[NOTE, caption=Python]
+====
+The term `any` is a reserved word in Python, and therefore must be referred to in Gremlin with `any_()`.
+====
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().any(gt(25)) <1>
+----
+
+<1> Return the list of ages if anyone's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#any(org.apache.tinkerpop.gremlin.process.traversal.P)++[`any(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
 [[as-step]]
 === As Step
@@ -733,6 +782,52 @@ g.V().hasLabel('software').as('a','b','c').
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as(java.lang.String,java.lang.String...)++[`as(String,String...)`]
+
+[[asString-step]]
+=== AsString Step
+
+The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned unchanged.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').values('age').asString() <1>
+g.V().hasLabel('person').values('age').asString().concat(' years old') <2>
+g.V().hasLabel('person').values('age').fold().asString(local) <3>
+----
+
+<1> Return ages as string.
+<2> Return ages as string and use concat to generate phrases.
+<3> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString()++[`asString()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`asString(Scope)`]
+
+[[asDate-step]]
+=== AsDate Step
+
+The `asDate()`-step (*map*) converts string or numeric input to Date.
+
+For string input only ISO-8601 format is supported. For numbers, the value is considered as the number of the
+milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT). Date input is passed without changes.
+
+If the incoming traverser is not a string, number or Date then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject(1690934400000).asDate() <1>
+g.inject("2023-08-02T00:00:00Z").asDate() <2>
+g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
+----
+
+<1> Convert number to Date
+<2> Convert ISO-8601 string to Date
+<3> Pass Date without modification
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate()++[`asDate()`]
 
 [[barrier-step]]
 === Barrier Step
@@ -1052,6 +1147,90 @@ g.V().coin(1.0)
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin(double)++[`coin(double)`]
 
+[[combine-step]]
+=== Combine Step
+
+The `combine()`-step (*map*) combines the elements of the incoming list traverser and the provided list argument into
+one list. This is also known as appending or concatenating. This step only expects list data (array or Iterable) and
+will throw an `IllegalArgumentException` if any other type is encountered (including `null`). This differs from the
+`merge()`-step in that it allows duplicates to exist.
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().combine(["james","jen","marko","vadas"])
+g.V().values("name").fold().combine(__.constant("stephen").fold())
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#combine(java.lang.Object)++[`combine(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#combine-step++[`Semantics`]
+
+[[concat-step]]
+=== Concat Step
+
+The `concat()`-step (*map*) concatenates one or more String values together to the incoming String traverser. This step
+can take either String varargs or Traversal varargs.
+Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
+concatenated, the `null` value will be propagated and returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.addV(constant('prefix_').concat(__.V(1).label())).property(id, 10) <1>
+g.V(10).label()
+g.V().hasLabel('person').values('name').as('a').
+    constant('Mr.').concat(__.select('a')) <2>
+g.V().hasLabel('software').as('a').values('name').
+    concat(' uses ').
+    concat(select('a').values('lang')) <3>
+g.V(1).outE().as('a').V(1).values('name').
+    concat(' ').
+    concat(select('a').label()).
+    concat(' ').
+    concat(select("a").inV().values('name')) <4>
+g.V(1).outE().as('a').V(1).values('name').
+    concat(constant(' '),
+        select("a").label(),
+        constant(' '),
+        select('a').inV().values('name')) <5>
+g.inject('hello', 'hi').concat(__.V().values('name')) <6>
+g.inject('This').concat(' ').concat('is a ', 'gremlin.') <7>
+----
+
+<1> Add a new vertex with id 10 which should be labeled like an existing vertex but with some prefix attached
+<2> Attach the prefix "Mr." to all the names using the `constant()`-step
+<3> Generate a string of software names and the language they use
+<4> Generate a string description for each of marko's outgoing edges
+<5> Alternative way to generate the string description by using traversal varargs. Use the `constant()` step to add
+desired strings between arguments.
+<6> The `concat()` step will append the first result from the child traversal to the incoming traverser
+<7> A generic use of `concat()` to join strings together
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#concat(java.lang.String)++[`concat(String...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#concat(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`concat(Taversal, Traversal...)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#concat-step++[`Semantics`]
+
+[[conjoin-step]]
+=== Conjoin Step
+
+The `conjoin()`-step (*map*) joins together the elements in the incoming list traverser together with the provided argument
+as a delimiter. The resulting `String` is added to the Traversal Stream. This step only expects list data (array or
+Iterable) in the incoming traverser and will throw an `IllegalArgumentException` if any other type is encountered
+(including `null`). Null values are skipped and not included in the result.
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().conjoin("+")
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#conjoin(java.lang.String)++[`conjoin(String)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#conjoin-step++[`Semantics`]
+
 [[connectedcomponent-step]]
 === ConnectedComponent Step
 
@@ -1169,6 +1348,43 @@ g.V(1).as('a').out('created').as('b').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#cyclicPath()++[`cyclicPath()`]
 
+[[dateAdd-step]]
+=== DateAdd Step
+
+The `dateAdd()`-step (*map*) returns the value with the addition of the value number of units as specified by the DateToken. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateAdd(DT.day, 7) <1>
+g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dateAdd(DT.minute, 1) <2>
+----
+
+<1> Add 7 days to Date
+<2> Add 1 minute to incoming dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd(org.apache.tinkerpop.gremlin.process.traversal.DT,int)++[`dateAdd(DT,int)`]
+
+[[dateDiff-step]]
+=== DateDiff Step
+
+The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time. 
+If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()) <1>
+----
+
+<1> Find difference between two dates
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
+
 [[dedup-step]]
 === Dedup Step
 
@@ -1218,6 +1434,45 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#dedup-step++[`Semantics`]
 
+[[difference-step]]
+=== Difference Step
+
+The `difference()`-step (*map*) calculates the difference between the incoming list traverser and the provided list
+argument. More specifically, this provides the set operation A-B where A is the traverser and B is the argument. This
+step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any other type is
+encountered (including `null`).
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().difference(["lop","ripple"])
+g.V().values("name").fold().difference(__.V().limit(2).values("name").fold())
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#difference(java.lang.Object)++[`difference(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`Semantics`]
+
+[[disjunct-step]]
+=== Disjunct Step
+
+The `disjunct()`-step (*map*) calculates the disjunct set between the incoming list traverser and the provided list
+argument. This step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any other
+type is encountered (including `null`).
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().disjunct(["lop","peter","sam"]) <1>
+g.V().values("name").fold().disjunct(__.V().limit(3).values("name").fold())
+----
+
+<1> Find the unique names between two group of names
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#disjunct(java.lang.Object)++[`disjunct(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#disjunct-step++[`Semantics`]
+
 [[drop-step]]
 === Drop Step
 
@@ -1241,16 +1496,18 @@ g.V()
 [[e-step]]
 === E Step
 
-The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`. Unlike the related
-<<v-step,V()>> it cannot be used mid-traversal.
+The `E()`-step is meant to read edges from the graph and is usually used to start a `GraphTraversal`, but can also
+be used mid-traversal.
 
 [gremlin-groovy,modern]
 ----
 g.E(11) <1>
 g.E().hasLabel('knows').has('weight', gt(0.75))
+g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas"))) <2>
 ----
 
 <1> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
+<2> Get edges with label `knows`, if there is none then add new one between `josh` and `vadas`.
 
 *Additional References*
 
@@ -1392,6 +1649,29 @@ process. Please see the <<general-steps, General Steps>> section for more inform
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+
+[[format-step]]
+=== Format Step
+
+This step is designed to simplify some string operations. In general, it is similar to the string formatting function
+available in many programming languages. Variable values can be picked up from Element properties, maps and scope variables.
+
+[gremlin-groovy,modern]
+----
+g.V().format("%{name} is %{age} years old") <1>
+g.V().hasLabel("person").as("a").values("name").as("p1").select("a").in("knows").format("%{p1} knows %{name}") <2>
+g.V().format("%{name} has %{_} connections").by(bothE().count()) <3>
+g.V().project("name","count").by(values("name")).by(bothE().count()).format("%{name} has %{count} connections") <4>
+----
+
+<1> A `format()` will use property values from incoming Element to produce String result.
+<2> A `format()` will use scope variable `p1` and property `name` to resolve variable values.
+<3> A `format()` will use property `name` and traversal product for positional argument to resolve variable values.
+<4> A `format()` will use map produced by `project` step to resolve variable values.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#format(java.lang.String)++[`format(String)`],
 
 [[fold-step]]
 === Fold Step
@@ -1715,6 +1995,24 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#inject(E...)++[`inject(Object)`]
 
+[[intersect-step]]
+=== Intersect Step
+
+The `intersect()`-step (*map*) calculates the intersection between the incoming list traverser and the provided list
+argument. This step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any other
+type is encountered (including `null`).
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().intersect(["marko","josh","james","jen"])
+g.V().values("name").fold().intersect(__.V().limit(2).values("name").fold())
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#intersect(java.lang.Object)++[`intersect(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#intersect-step++[`Semantics`]
+
 anchor:_gremlin_i_o[]
 [[io-step]]
 === IO Step
@@ -1763,6 +2061,10 @@ a reading perspective, they work best for small datasets (or perhaps medium data
 time is not critical) that are loading to an empty graph - incremental loading is not supported. The story from the
 writing perspective is not that different in there are no parallel operations in play, however streaming the output
 to disk requires a single pass of the data without high memory requirements for larger datasets.
+
+IMPORTANT: Default graph formats don't contain information about property cardinality, so it is up to the graph
+provider to choose the appropriate one. You will see a warning message if the chosen cardinality is SINGLE
+while your graph input contains multiple values for that property.
 
 In general, TinkerPop recommends that users examine the native bulk import/export tools of the graph implementation
 that they choose. Those tools will often outperform the `io()`-step and perhaps be easier to use with a greater
@@ -1960,6 +2262,26 @@ g.V(1).properties().label()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label()++[`label()`]
 
+[[length-step]]
+=== Length Step
+
+The `length()`-step (*map*) returns the length incoming string or list of string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.V().values('name').length() <1>
+g.V().values('name').fold().length(local) <2>
+----
+
+<1> Return the string length of all vertex names.
+<2> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length()++[`length()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`length(Scope)`]
+
 [[limit-step]]
 === Limit Step
 
@@ -2062,6 +2384,23 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops()++[`loops()`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
+
+[[lTrim-step]]
+=== LTrim Step
+
+The `lTrim()`-step (*map*) returns a string with leading whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).lTrim()
+g.inject(["   hello   ", " world ", null]).lTrim(local) <1>
+----
+
+<1> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim()++[`lTrim()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`lTrim(Scope)`]
 
 [[map-step]]
 === Map Step
@@ -2424,6 +2763,27 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mean(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`mean(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[merge-step]]
+=== Merge Step
+
+The `merge()`-step (*map*) combines collections like lists and maps. It expects an incoming traverser to contain a
+collection objection and will combine that object with its specified argument which must be of a matching type. This is
+also known as the union operation. If the incoming traverser or its associated argument do not meet the expected type,
+the step will throw an `IllegalArgumentException` if any other type is encountered (including `null`). This step differs
+from the `combine()`-step in that it doesn't allow duplicates.
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().merge(["james","jen","marko","vadas"])
+g.V().values("name").fold().merge(__.constant("james").fold())
+g.V().hasLabel('software').elementMap().merge([year:2009])
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#merge(java.lang.Object)++[`merge(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-step++[`Semantics`]
+
 [[mergeedge-step]]
 === MergeEdge Step
 
@@ -2539,7 +2899,7 @@ g.mergeV([(T.id):1,(T.label):'Dog',name:'Toby']).as('Toby').
 g.E().elementMap()
 ----
 
-The `Merge.outV` and `Merge.inV` tokens can be used as placeholders for values for `Direction.OUT` and Direction.IN`
+The `Merge.outV` and `Merge.inV` tokens can be used as placeholders for values for `Direction.OUT` and `Direction.IN`
 respectively in the `mergeE` arguments. These options can produce `Vertices`, as in the example above, or they can
 specify `Maps`, which will be used to search for `Vertices` in the graph. This is useful when the exact `T.id` of
 the from/to vertices is not known in advance:
@@ -2680,22 +3040,35 @@ Metadata > {}
 ======================================================================================================================================================================
 ----
 
-In some cases, such as when adding multi-properties or meta-properties to a vertex, one or
-more `property` steps can follow the `mergeV()` step. Note that meta-properties and
-multi-properties cannot be added directly using just `mergeV()` as a key/value pair such as
-`'my-numbers:[1,2,3,4]` will be treated as a `List` object and not a set of multi-property
-values.
+When working with multi-properties, there are two ways to specify them for `mergeV()`. First, you can specify them
+individually using a `CardinalityValue` as the value in the `Map`. The `CardinalityValue` allows you to specify the
+value as well as the `Cardinality` for that value. Note that it is only possible to specify one value with this syntax
+even if you are using `set` or `list`.
 
 [gremlin-groovy]
 ----
 g.mergeV([(T.label):'Dog', name:'Max']). <1>
-  property(list,'alias','Maximus').
-  property(list,'alias','Maxamillion') <2>
+    option(onCreate, [alias: set('Maximus')]). <2>
+  property(set,'alias','Maxamillion') <3>
 g.V().has('name','Max').valueMap().with(WithOptions.tokens)
 ----
 
 <1> Find or create a vertex for Max.
-<2> Whether Max was found or created, add some aliases with list cardinality.
+<2> If Max is not found then add an alias of `set` cardinality.
+<3> Whether Max was found or created, add another alias with `set` cardinality.
+
+The second option is to specify `Cardinality` for the entire range of values as follows:
+
+[gremlin-groovy]
+----
+g.mergeV([(T.label):'Dog', name:'Max']).
+    option(onCreate, [alias: 'Maximus', city: 'Boston'], set) <1>
+g.mergeV([(T.label):'Dog', name:'Max']).
+    option(onCreate, [alias: 'Maximus', city: single('Boston')], set) <2>
+----
+
+<1> If Max is created then set the alias and city with cardinality of `set`.
+<2> If Max is created then set the alias with cardinality of `set` and city with cardinality `single`.
 
 More than one vertex can be created by a single `mergeV()` operation. This is done by
 injecting a `List` of `Map` objects into the traversal and letting them stream into the `mergeV()`
@@ -2796,12 +3169,14 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[none-step]]
 === None Step
 
-The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for to traversals
+The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
 that are executed remotely where returning results is not useful and the traversal is only meant to generate
 side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
 the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
 quietly used by the `iterate()` terminal step which appends `none()` to the traversal before actually cycling through
 results.
+
+NOTE: As of release 4.0.0, `none()` will be renamed to `discard()`.
 
 *Additional References*
 
@@ -3158,6 +3533,24 @@ configuration keys from the `PeerPressure` class and is automatically imported t
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#peerPressure()++[`peerPressure()`]
 
+[[product-step]]
+=== Product Step
+
+The `product()`-step (*map*) calculates the cartesian product between the incoming list traverser and the provided list
+argument. This step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any
+other type is encountered (including `null`).
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").fold().product(["james","jen"])
+g.V().values("name").fold().product(__.V().has("age").limit(1).values("age").fold())
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#product(java.lang.Object)++[`product(Object)`]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#product-step++[`Semantics`]
+
 [[profile-step]]
 === Profile Step
 
@@ -3355,20 +3748,23 @@ g.V(1).property(['city': 'santa fe', 'state': 'new mexico'])  <1>
 g.V(1).property(list,'age',35)  <2>
 g.V(1).property(list, ['city': 'santa fe', 'state': 'new mexico'])  <3>
 g.V(1).valueMap()
-g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <4>
-g.V(1).properties('friendWeight').valueMap() <5>
-g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <6>
-g.addV().property(null) <7>
+g.V(1).property(list, ['age': single(36), 'city': 'wilmington', 'state': 'delaware'])  <4>
+g.V(1).valueMap()
+g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <5>
+g.V(1).properties('friendWeight').valueMap() <6>
+g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <7>
+g.addV().property(null) <8>
 g.addV().property(set, null)
 ----
 
-<1> Properties can also take a Map as an argument.
+<1> Properties can also take a `Map` as an argument.
 <2> For vertices, a cardinality can be provided for <<vertex-properties,vertex properties>>.
-<3> If a cardinality is specified for a Map then that cardinality will be used for all properties in the map.  If you need different cardinalities per property then you should individually add the property values.
-<4> It is possible to select the property value (as well as key) via a traversal.
-<5> For vertices, the `property()`-step can add meta-properties.
-<6> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
-<7> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
+<3> If a cardinality is specified for a `Map` then that cardinality will be used for all properties in the map.
+<4> Assign the `Cardinality` individually to override the specified `list` or the default cardinality if not specified.
+<5> It is possible to select the property value (as well as key) via a traversal.
+<6> For vertices, the `property()`-step can add meta-properties.
+<7> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
+<8> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
 
 *Additional References*
 
@@ -3543,6 +3939,63 @@ an adjacent vertex's properties or edges.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`]
 
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
+
+[[replace-step]]
+=== Replace Step
+The `replace()`-step (*map*) returns a string with the specified characters in the original string replaced with the new
+characters. Any null arguments will be a no-op and the original string is returned. Null values from the incoming
+traversers are not processed and remain as null when returned. If the incoming traverser is a non-String  value then
+an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject('that', 'this', 'test', null).replace('h', 'j') <1>
+g.inject('hello world').replace(null, 'j') <2>
+g.V().hasLabel("software").values("name").replace("p", "g") <3>
+g.V().hasLabel("software").values("name").fold().replace(local, "p", "g") <4>
+----
+<1> Replace "h" in the strings with "j".
+<2> Null inputs are ignored and the original string is returned.
+<3> Return software names with "p" replaced by "g".
+<4> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#replace(java.lang.String,java.lang.String)++[`replace(String,String)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#replace(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String,java.lang.String)++[`replace(Scope,String,String)`]
+
+[[reverse-step]]
+=== Reverse Step
+
+The `reverse()`-step (*map*) returns the reverse of the incoming list traverser. Single values (including `null`) are not
+processed and are added back to the Traversal Stream unchanged. If the incoming traverser is a String value then the
+reversed String will be returned.
+
+[gremlin-groovy,modern]
+----
+g.V().values("name").reverse() <1>
+g.V().values("name").order().fold().reverse() <2>
+----
+<1> Reverse the order of the characters in each name.
+<2> Fold all the names into a list in ascending order and then reverse the list's ordering (into descending).
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#reverse()++[`reverse()`]
+
+[[rTrim-step]]
+=== RTrim Step
+
+The `rTrim()`-step (*map*) returns a string with trailing whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).rTrim()
+g.inject(["   hello   ", " world ", null]).rTrim(local) <1>
+----
+
+<1> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#rTrim()++[`rTrim()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#rTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`rTrim(Scope)`]
 
 [[sack-step]]
 === Sack Step
@@ -3995,6 +4448,29 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip(org.apache.tinkerpop.gremlin.process.traversal.Scope,long)++[`skip(Scope,long)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[split-step]]
+=== Split Step
+The `split()`-step (*map*) returns a list of strings created by splitting the incoming string traverser around the
+matches of the given separator. A null separator will split the string by whitespaces. Null values from the incoming
+traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
+IllegalArgumentException will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("that", "this", "test", null).split("h") <1>
+g.V().hasLabel("person").values("name").split("a") <2>
+g.inject("helloworld", "hello world", "hello   world").split(null) <3>
+g.V().hasLabel("person").values("name").fold().split(local, "a") <4>
+----
+<1> Split the strings by "h".
+<2> Split person names by "a".
+<3> Splitting by null will split by whitespaces.
+<4> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list of results.
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(java.lang.String)++[`split(String)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String)++[`split(Scope, String)`]
+
 [[subgraph-step]]
 === Subgraph Step
 
@@ -4079,6 +4555,34 @@ List<Vertex> vertices = g.V(v).out().toList();
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#subgraph(java.lang.String)++[`subgraph(String)`]
+
+[[substring-step]]
+=== Substring Step
+The `substring()`-step (*map*) returns a substring with a 0-based start index (inclusive) and optionally an end index (exclusive) specified.
+If the start index is negative then it will begin at the specified index counted from the end of the string, or 0 if exceeding the string length.
+Likewise, if the end index is negative then it will end at the specified index counted from the end of the string, or 0 if exceeding the string length.
+
+End index is optional, if it is not specified or if it exceeds the length of the string then all remaining characters will
+be returned. End index &leq; start index will return the empty string. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("test", "hello world", null).substring(1, 8)
+g.inject("hello world").substring(-4) <1>
+g.inject("hello world").substring(2, 0) <2>
+g.V().hasLabel("software").values("name").substring(2)
+g.V().hasLabel("software").values("name").fold().substring(local, 2) <3>
+----
+<1> Negative start index, the first character is read by counting from the end of the string
+<2> Length of 0 specified will return the empty string
+<3> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(int)++[`substring(int)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(org.apache.tinkerpop.gremlin.process.traversal.Scope,int)++[`substring(Scope,int)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(int,int)++[`substring(int,int)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(org.apache.tinkerpop.gremlin.process.traversal.Scope,int,int)++[`substring(Scope,int,int)`]
 
 [[sum-step]]
 === Sum Step
@@ -4210,6 +4714,46 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toV(org.apache.tinkerpop.gremlin.structure.Direction)++[`toV(Direction)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Direction.html++[`Direction`]
 
+[[toLower-step]]
+=== ToLower Step
+
+The `toLower()`-step (*map*) returns the lowercase representation of incoming string or list of string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("HELLO", "wORlD", null).toLower()
+g.inject(["HELLO", "wORlD", null]).toLower(Scope.local) <1>
+----
+
+<1> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower()++[`toLower()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`toLower(Scope)`]
+
+[[toUpper-step]]
+=== ToUpper Step
+
+The `toUpper()`-step (*map*) returns the uppercase representation of incoming string or list of string traverser. Null values are not processed and remain as null when returned.
+If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("hello", "wORlD", null).toUpper()
+g.V().values("name").toUpper() <1>
+g.V().values("name").fold().toUpper(local) <2>
+----
+
+<1> Returns the upper case representation of all vertex names.
+<2> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper()++[`toUpper()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`toUpper(Scope)`]
+
 [[tree-step]]
 === Tree Step
 
@@ -4256,6 +4800,23 @@ g.V().has('name','josh').out('created').values('name').
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree()++[`tree()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree(java.lang.String)++[`tree(String)`]
 
+[[trim-step]]
+=== Trim Step
+
+The `trim()`-step (*map*) returns a string with leading and leading whitespace removed. Null values are not processed and remain
+as null when returned. If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
+
+[gremlin-groovy,modern]
+----
+g.inject("   hello   ", " world ", null).trim()
+g.inject(["   hello   ", " world ", null]).trim(Scope.local) <1>
+----
+
+<1> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list.
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#trim()++[`trim()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#trim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`trim(Scope)`]
+
 [[unfold-step]]
 === Unfold Step
 
@@ -4298,6 +4859,8 @@ g.V(4).union(
 g.V(4).union(
          __.in().values('age'),
          out().values('lang')).path()
+g.union(V().has('person','name','vadas'),
+        V().has('software','name','lop').in('created'))
 ----
 
 *Additional References*
@@ -5275,7 +5838,7 @@ With `SeedStrategy` in place, however, the same order is applied each time:
 
 [gremlin-groovy,modern]
 ----
-seedStrategy = new SeedStrategy(999998L)
+seedStrategy = SeedStrategy.build().seed(999998L).create()
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)
 g.withStrategies(seedStrategy).V().values('name').fold().order(local).by(shuffle)

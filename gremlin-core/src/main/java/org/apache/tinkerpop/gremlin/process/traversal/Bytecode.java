@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -47,7 +48,7 @@ import java.util.Set;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class Bytecode implements Cloneable, Serializable {
+public class Bytecode implements Cloneable, Serializable {
 
     private static final Object[] EMPTY_ARRAY = new Object[]{};
 
@@ -56,7 +57,7 @@ public final class Bytecode implements Cloneable, Serializable {
 
     public Bytecode() {}
 
-    Bytecode(final String sourceName, final Object... arguments) {
+    public Bytecode(final String sourceName, final Object... arguments) {
         this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
     }
 
@@ -77,10 +78,26 @@ public final class Bytecode implements Cloneable, Serializable {
                             ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
                             (Class) arguments[i];
                 }
+                // Remove them first to avoid duplicating information, we will add them below
+                BytecodeHelper.removeStrategies(this, TraversalSource.Symbols.withoutStrategies, classes);
                 this.sourceInstructions.add(new Instruction(sourceName, classes));
             }
-        } else
+        } else if (TraversalSource.Symbols.withStrategies.equals(sourceName)) {
+            final Class<TraversalStrategy>[] classes = new Class[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                if (!(arguments[i] instanceof TraversalStrategy)) {
+                    throw new IllegalArgumentException("The argument " + arguments[i] + " is not a TraversalStrategy");
+                }
+
+                classes[i] = arguments[i] instanceof TraversalStrategyProxy ?
+                        ((TraversalStrategyProxy) arguments[i]).getStrategyClass() :
+                        (Class) arguments[i].getClass();
+            }
+            BytecodeHelper.removeStrategies(this, TraversalSource.Symbols.withStrategies, classes);
             this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+        } else {
+            this.sourceInstructions.add(new Instruction(sourceName, flattenArguments(arguments)));
+        }
         Bindings.clear();
     }
 

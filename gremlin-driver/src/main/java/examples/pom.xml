@@ -21,7 +21,7 @@ limitations under the License.
 
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>run-examples</artifactId>
-    <version>3.6.5</version>
+    <version>3.7.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

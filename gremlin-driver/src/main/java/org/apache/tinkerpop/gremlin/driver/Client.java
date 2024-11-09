@@ -20,17 +20,18 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import java.net.ConnectException;
@@ -364,6 +365,7 @@ public abstract class Client {
         options.getOverrideRequestId().ifPresent(request::overrideRequestId);
         options.getUserAgent().ifPresent(userAgent -> request.addArg(Tokens.ARGS_USER_AGENT, userAgent));
         options.getLanguage().ifPresent(lang -> request.addArg(Tokens.ARGS_LANGUAGE, lang));
+        options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
         return submitAsync(request.create());
     }
@@ -662,6 +664,7 @@ public abstract class Client {
                 options.getTimeout().ifPresent(timeout -> request.add(Tokens.ARGS_EVAL_TIMEOUT, timeout));
                 options.getOverrideRequestId().ifPresent(request::overrideRequestId);
                 options.getUserAgent().ifPresent(userAgent -> request.add(Tokens.ARGS_USER_AGENT, userAgent));
+                options.getMaterializeProperties().ifPresent(mp -> request.addArg(Tokens.ARGS_MATERIALIZE_PROPERTIES, mp));
 
                 return submitAsync(request.create());
             } catch (RuntimeException re) {

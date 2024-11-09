@@ -424,7 +424,7 @@ public class GryoMapperTest {
      * TinkerPop which then removes the requirement for providers to expose serializers on the client side for user
      * consumption.
      */
-    private static class CustomClassResolver extends GryoClassResolverV1d0 {
+    private static class CustomClassResolver extends GryoClassResolverV1 {
         private IoXIoRegistry.IoXToVertexSerializer ioXToVertexSerializer = new IoXIoRegistry.IoXToVertexSerializer();
         private IoYIoRegistry.IoYToHashMapSerializer ioYToHashMapSerializer = new IoYIoRegistry.IoYToHashMapSerializer();
 

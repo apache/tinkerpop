@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -58,9 +59,9 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
+import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
+import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -129,6 +130,8 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), s -> s + "m"));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), s -> s + "n"));
 
+        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> String.format("datetime('%s')", s)));
+
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
@@ -183,6 +186,15 @@ public final class StepDefinition {
             return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
         }));
 
+        add(Pair.with(Pattern.compile("s\\[\\]"), s -> Collections.emptySet()));
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
+            final String[] items = s.split(",");
+            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
+        }));
+
+        // return the string values as is, used to wrap results that may contain other regex patterns
+        add(Pair.with(Pattern.compile("str\\[(.*)\\]"), String::valueOf));
+
         /*
          * TODO FIXME Add same support for other languages (js, python, .net)
          */
@@ -210,6 +222,8 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), BigDecimal::new));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), BigInteger::new));
 
+        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> DatetimeHelper.parse(s)));
+
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> g.V().has("name", s).next()));
@@ -221,13 +235,8 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> Collections.emptySet()));
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            final String[] items = s.split(",");
-            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
+        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
+            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
         }));
 
         add(Pair.with(Pattern.compile("(null)"), s -> null));
@@ -396,19 +405,23 @@ public final class StepDefinition {
     public void theTraversalWillRaiseAnErrorWithMessage(final String comparison, final String expectedMessage) {
         assertNotNull(error);
 
-        switch (comparison) {
-            case "containing":
-                assertThat(error.getMessage(), containsString(expectedMessage));
-                break;
-            case "starting":
-                assertThat(error.getMessage(), startsWith(expectedMessage));
-                break;
-            case "ending":
-                assertThat(error.getMessage(), endsWith(expectedMessage));
-                break;
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unknown comparison of %s - must be one of: containing, starting or ending", comparison));
+        // delegate error message assertion completely to the provider. if they choose to handle on their own then
+        // skip the default assertions
+        if (!world.handleErrorMessageAssertion(comparison, expectedMessage, error)) {
+            switch (comparison) {
+                case "containing":
+                    assertThat(error.getMessage(), containsStringIgnoringCase(expectedMessage));
+                    break;
+                case "starting":
+                    assertThat(error.getMessage(), startsWithIgnoringCase(expectedMessage));
+                    break;
+                case "ending":
+                    assertThat(error.getMessage(), endsWithIgnoringCase(expectedMessage));
+                    break;
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Unknown comparison of %s - must be one of: containing, starting or ending", comparison));
+            }
         }
 
         // consume the error now that it has been asserted
@@ -509,7 +522,7 @@ public final class StepDefinition {
             final Matcher matcher = pattern.matcher((String) v);
             if (matcher.find()) {
                 final Function<String,Object> converter = matcherConverter.getValue1();
-                return converter.apply(matcher.group(1));
+                return converter.apply(matcher.groupCount() == 0 ? "" : matcher.group(1));
             }
         }
 

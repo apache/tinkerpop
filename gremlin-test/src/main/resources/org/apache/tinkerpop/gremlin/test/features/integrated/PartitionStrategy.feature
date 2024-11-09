@@ -75,8 +75,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -86,7 +86,7 @@ Feature: Step - PartitionStrategy
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1].i |
+      | d[1.0].d |
 
   @WithPartitionStrategy
   Scenario: g_withStrategiesXPartitionStrategyXwrite_a_read_bXX_V_bothE_weight
@@ -95,8 +95,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -106,7 +106,7 @@ Feature: Step - PartitionStrategy
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[2].i |
+      | d[2.0].d |
 
   @WithPartitionStrategy
   Scenario: g_withStrategiesXPartitionStrategyXwrite_a_read_a_bXX_V_bothE_dedup_weight
@@ -115,8 +115,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -126,8 +126,8 @@ Feature: Step - PartitionStrategy
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1].i |
-      | d[2].i |
+      | d[1.0].d |
+      | d[2.0].d |
 
   @WithPartitionStrategy
   Scenario: g_withStrategiesXPartitionStrategyXwrite_a_read_cXX_V_bothE_weight
@@ -136,8 +136,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -154,8 +154,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -172,8 +172,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -190,8 +190,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -211,8 +211,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -229,8 +229,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -247,8 +247,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -265,8 +265,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """
@@ -286,8 +286,8 @@ Feature: Step - PartitionStrategy
       """
       g.addV("person").property("_partition","a").property("name","alice").as("a").
         addV("person").property("_partition","b").property("name","bob").as("b").
-        addE("knows").from("a").to("b").property("_partition","a").property("weight",1).
-        addE("knows").from("b").to("a").property("_partition","b").property("weight",2)
+        addE("knows").from("a").to("b").property("_partition","a").property("weight",1.0d).
+        addE("knows").from("b").to("a").property("_partition","b").property("weight",2.0d)
       """
     And the traversal of
       """

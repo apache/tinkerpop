@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.authz;
 
-import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
@@ -55,7 +55,7 @@ public interface Authorizer {
      * {@link AuthorizationException} if this is not the case.
      *
      * @param user {@link AuthenticatedUser} that needs authorization.
-     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.driver.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
+     * @param msg {@link RequestMessage} in which the {@link org.apache.tinkerpop.gremlin.util.Tokens}.ARGS_GREMLIN argument can contain an arbitrary succession of script statements.
      */
     public void authorize(final AuthenticatedUser user, final RequestMessage msg) throws AuthorizationException;
 
