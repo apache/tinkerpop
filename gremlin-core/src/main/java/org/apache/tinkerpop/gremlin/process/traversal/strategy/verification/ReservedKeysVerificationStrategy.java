@@ -101,7 +101,7 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
         private Builder() {}
 
         public Builder reservedKeys(final Set<String> keys) {
-            this.reservedKeys = new LinkedHashSet<>(keys);;
+            this.reservedKeys = new LinkedHashSet<>(keys);
             return this;
         }
 
