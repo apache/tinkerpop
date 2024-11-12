@@ -392,7 +392,7 @@ public class PropertyTest {
             uniformIntegerList.add(300);
         }
 
-        @Parameterized.Parameters(name = "supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {PropertyFeatures.FEATURE_BOOLEAN_VALUES, true},
