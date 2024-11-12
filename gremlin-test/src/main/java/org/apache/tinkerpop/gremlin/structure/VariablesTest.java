@@ -232,7 +232,7 @@ public class VariablesTest {
         }
 
 
-        @Parameterized.Parameters(name = "supports{0}({1})")
+        @Parameterized.Parameters(name = "supports{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {Graph.Features.VariableFeatures.FEATURE_BOOLEAN_VALUES, true},
