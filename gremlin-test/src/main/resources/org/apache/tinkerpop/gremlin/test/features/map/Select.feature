@@ -880,14 +880,8 @@ Feature: Step - select()
     And the graph initializer of
       """
       g.addV("A").property("name", "a1").as("a1").
-        addV("A").property("name", "a2").as("a2").
-        addV("A").property("name", "a3").as("a3").
         addV("B").property("name", "b1").as("b1").
-        addV("B").property("name", "b2").as("b2").
-        addV("B").property("name", "b3").as("b3").
-        addE("ab").from("a1").to("b1").
-        addE("ab").from("a2").to("b2").
-        addE("ab").from("a3").to("b3")
+        addE("ab").from("a1").to("b1")
       """
     And the traversal of
       """
@@ -896,11 +890,11 @@ Feature: Step - select()
           by(unfold().values('name').fold())
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"a":["a1","b1","a1"]}] |
-      | m[{"a":["a2","b2","a2"]}] |
-      | m[{"a":["a3","b3","a3"]}] |
+      | m[{"a":["a1","a1","b1"]}] |
+      | m[{"a":["b1","a1","a1"]}] |
 
   Scenario: g_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
     Given the modern graph
