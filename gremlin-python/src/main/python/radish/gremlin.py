@@ -1229,7 +1229,7 @@ world.gremlins = {
     'g_V_asXa_nX_selectXa_nX_byXageX_byXnameX': [(lambda g:g.V().as_('a', 'n').select('a', 'n').by('age').by('name'))], 
     'g_withStrategiesXProductiveByStrategyX_V_asXaX_selectXaX_byXageX': [(lambda g:g.with_strategies(ProductiveByStrategy()).V().as_('a').select('a').by('age'))], 
     'g_withSideEffectXk_nullX_injectXxX_selectXkX': [(lambda g:g.with_side_effect('k', None).inject('x').select('k'))], 
-    'g_V_out_in_selectXall_a_a_aX_byXunfold_name_foldX': [(lambda g:g.add_v('A').property('name', 'a1').as_('a1').add_v('A').property('name', 'a2').as_('a2').add_v('A').property('name', 'a3').as_('a3').add_v('B').property('name', 'b1').as_('b1').add_v('B').property('name', 'b2').as_('b2').add_v('B').property('name', 'b3').as_('b3').add_e('ab').from_('a1').to('b1').add_e('ab').from_('a2').to('b2').add_e('ab').from_('a3').to('b3')), (lambda g:g.V().as_('a').out().as_('a').in_().as_('a').select(Pop.all_, 'a', 'a', 'a').by(__.unfold().values('name').fold()))], 
+    'g_V_out_in_selectXall_a_a_aX_byXunfold_name_foldX': [(lambda g:g.add_v('A').property('name', 'a1').as_('a1').add_v('B').property('name', 'b1').as_('b1').add_e('ab').from_('a1').to('b1')), (lambda g:g.V().as_('a').out().as_('a').in_().as_('a').select(Pop.all_, 'a', 'a', 'a').by(__.unfold().values('name').fold()))], 
     'g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX': [(lambda g:g.without_strategies(LazyBarrierStrategy).V().as_('label').aggregate(Scope.local, 'x').select('x').select('label'))], 
     'g_V_name_asXaX_selectXfirst_aX': [(lambda g:g.V().values('name').as_('a').select(Pop.first, 'a'))], 
     'g_V_name_asXaX_selectXlast_aX': [(lambda g:g.V().values('name').as_('a').select(Pop.last, 'a'))], 
