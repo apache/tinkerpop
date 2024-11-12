@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +38,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class IdentityRemovalStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin original;
@@ -58,6 +55,8 @@ public class IdentityRemovalStrategyTest {
                 {__.match(__.as("a").out("knows").identity().as("b"),__.as("b").identity()).identity(), __.match(__.as("a").out("knows").as("b"),__.as("b"))},
                 {__.union(__.out().identity(), __.identity(), __.out()), __.union(__.out(), __.identity(), __.out())},
                 {__.choose(__.out().identity(), __.identity(), __.out("knows")), __.choose(__.out(), __.identity(), __.out("knows"))},
+                {__.repeat(__.identity()), __.repeat(__.identity())},
+                {__.repeat(__.out().identity()), __.repeat(__.out())},
                 {__.identity().out().identity(), __.out()},
                 {__.identity().as("a").out().identity(), __.identity().as("a").out()},
                 {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
@@ -69,7 +68,7 @@ public class IdentityRemovalStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         applyIdentityRemovalStrategy(original);
         assertEquals(repr, optimized, original);
     }
@@ -79,6 +78,5 @@ public class IdentityRemovalStrategyTest {
         strategies.addStrategies(IdentityRemovalStrategy.instance());
         traversal.asAdmin().setStrategies(strategies);
         traversal.asAdmin().applyStrategies();
-
     }
 }

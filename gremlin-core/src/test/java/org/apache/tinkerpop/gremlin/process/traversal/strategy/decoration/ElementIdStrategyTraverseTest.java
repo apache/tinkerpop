@@ -19,16 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -37,10 +35,10 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -49,7 +47,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith(Parameterized.class)
 public class ElementIdStrategyTraverseTest {
     private static Traversal traversalWithAddV;
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     static {
         final Graph mockedGraph = mock(Graph.class);
@@ -85,7 +82,7 @@ public class ElementIdStrategyTraverseTest {
 
     @Test
     public void shouldAlterTraversalToIncludeIdWhereNecessary() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin("__");
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         strategy.apply(traversal.asAdmin());
 

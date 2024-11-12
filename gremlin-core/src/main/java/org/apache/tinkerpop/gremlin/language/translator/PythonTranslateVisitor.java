@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append(ctx.getText()).append("()");
         else {
-            sb.append(ctx.getChild(1).getText()).append("(");
+            sb.append(ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText()).append("(");
 
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
@@ -102,28 +102,6 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         sb.append(SymbolHelper.toPython(ctx.getChild(0).getText()));
         sb.append("=");
         visit(ctx.getChild(2));
-        return null;
-    }
-
-    @Override
-    public Void visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) {
-        sb.append(SymbolHelper.toPython(ctx.getChild(0).getText())).append("(*[");
-        visit(ctx.classType());
-
-        if (ctx.classTypeList() != null && ctx.classTypeList().getChildCount() > 0) {
-            sb.append(", ");
-            visit(ctx.classTypeList());
-        }
-
-        sb.append("])");
-        return null;
-    }
-
-    @Override
-    public Void visitClassType(final GremlinParser.ClassTypeContext ctx) {
-        final Optional<? extends Class<? extends TraversalStrategy>> strategy = TraversalStrategies.GlobalCache.getRegisteredStrategyClass(ctx.getText());
-        final String fqcn = strategy.map(Class::getName).orElse(ctx.getText());
-        sb.append("GremlinType('").append(fqcn).append("')");
         return null;
     }
 
@@ -161,8 +139,8 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final Date dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        sb.append("datetime.datetime.utcfromtimestamp(" + dt.getTime() + " / 1000.0)");
+        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        sb.append("datetime.datetime.fromtimestamp(" + dt.toEpochSecond() + ").astimezone(datetime.timezone.utc)");
         return null;
     }
 
@@ -223,8 +201,12 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
             case 'b':
             case 's':
             case 'i':
-            case 'n':
                 sb.append(integerLiteral, 0, lastCharIndex);
+                break;
+            case 'n':
+                sb.append("bigint(");
+                sb.append(integerLiteral, 0, lastCharIndex);
+                sb.append(")");
                 break;
             case 'l':
                 sb.append("long(");

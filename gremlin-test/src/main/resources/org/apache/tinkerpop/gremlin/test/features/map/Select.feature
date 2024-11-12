@@ -880,14 +880,8 @@ Feature: Step - select()
     And the graph initializer of
       """
       g.addV("A").property("name", "a1").as("a1").
-        addV("A").property("name", "a2").as("a2").
-        addV("A").property("name", "a3").as("a3").
         addV("B").property("name", "b1").as("b1").
-        addV("B").property("name", "b2").as("b2").
-        addV("B").property("name", "b3").as("b3").
-        addE("ab").from("a1").to("b1").
-        addE("ab").from("a2").to("b2").
-        addE("ab").from("a3").to("b3")
+        addE("ab").from("a1").to("b1")
       """
     And the traversal of
       """
@@ -896,11 +890,11 @@ Feature: Step - select()
           by(unfold().values('name').fold())
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should be of
       | result |
       | m[{"a":["a1","b1","a1"]}] |
-      | m[{"a":["a2","b2","a2"]}] |
-      | m[{"a":["a3","b3","a3"]}] |
+      | m[{"a":["a1","a1","b1"]}] |
+      | m[{"a":["b1","a1","a1"]}] |
 
   @StepClassIntegrated
   Scenario: g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
@@ -918,3 +912,188 @@ Feature: Step - select()
       | v[josh] |
       | v[ripple] |
       | v[peter] |
+
+  Scenario: g_V_name_asXaX_selectXfirst_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").as("a").select(Pop.first, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_name_asXaX_selectXlast_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").as("a").select(Pop.last, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_name_asXaX_selectXmixed_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").as("a").select(Pop.mixed, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_name_asXaX_selectXall_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").as("a").select(Pop.all, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko] |
+      | l[vadas] |
+      | l[lop] |
+      | l[josh] |
+      | l[ripple] |
+      | l[peter] |
+
+  Scenario: g_V_hasLabelXpersonX_name_asXaX_concatXXX_asXaX_length_asXaX_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").as("a").concat("X").as("a").length().as("a").
+        select("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].i |
+      | d[6].i |
+      | d[5].i |
+      | d[6].i |
+
+  Scenario: g_V_hasLabelXpersonX_name_asXaX_concatXXX_asXaX_length_asXaX_selectXfirst_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").as("a").concat("X").as("a").length().as("a").
+        select(Pop.first, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+
+  Scenario: g_V_hasLabelXpersonX_name_asXaX_concatXXX_asXaX_length_asXaX_selectXlast_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").as("a").concat("X").as("a").length().as("a").
+        select(Pop.last, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].i |
+      | d[6].i |
+      | d[5].i |
+      | d[6].i |
+
+  Scenario: g_V_hasLabelXpersonX_name_asXaX_concatXXX_asXaX_concatXYZX_asXaX_selectXmixed_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").as("a").concat("X").as("a").concat("YZ").as("a").
+        select(Pop.mixed, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko,markoX,markoXYZ] |
+      | l[vadas,vadasX,vadasXYZ] |
+      | l[josh,joshX,joshXYZ] |
+      | l[peter,peterX,peterXYZ] |
+
+  Scenario: g_V_hasLabelXpersonX_name_asXaX_concatXXX_asXaX_concatXYZX_asXaX_selectXall_aX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").as("a").concat("X").as("a").concat("YZ").as("a").
+        select(Pop.all, "a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko,markoX,markoXYZ] |
+      | l[vadas,vadasX,vadasXYZ] |
+      | l[josh,joshX,joshXYZ] |
+      | l[peter,peterX,peterXYZ] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.unfold().values("name").fold())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | l[marko,josh,ripple] |
+      | l[marko,ripple,josh] |
+      | l[josh,marko,ripple] |
+      | l[josh,ripple,marko] |
+      | l[ripple,marko,josh] |
+      | l[ripple,josh,marko] |
+      | l[marko,josh,lop] |
+      | l[marko,lop,josh] |
+      | l[josh,marko,lop] |
+      | l[josh,lop,marko] |
+      | l[lop,marko,josh] |
+      | l[lop,josh,marko] |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXall_aX_byXunfold_valuesXnameX_foldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().as("a").out().as("a").out().as("a").select(Pop.all, "a").by(__.unfold().values("name").fold())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | l[marko,josh,ripple] |
+      | l[marko,ripple,josh] |
+      | l[josh,marko,ripple] |
+      | l[josh,ripple,marko] |
+      | l[ripple,marko,josh] |
+      | l[ripple,josh,marko] |
+      | l[marko,josh,lop] |
+      | l[marko,lop,josh] |
+      | l[josh,marko,lop] |
+      | l[josh,lop,marko] |
+      | l[lop,marko,josh] |
+      | l[lop,josh,marko] |

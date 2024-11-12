@@ -399,34 +399,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 def g = traversal().with(
                 DriverRemoteConnection.using('localhost', 8182))
 ----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceUsing]
-
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceCreation]
-----
-[source,javascript]
-----
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-
-const g = traversal().with(
-                new DriverRemoteConnection('ws://localhost:8182/gremlin'));
-----
 [source,python]
 ----
 from gremlin_python.process.anonymous_traversal_source import traversal
 
 g = traversal().with(
           DriverRemoteConnection('ws://localhost:8182/gremlin'))
-----
-[source,go]
-----
-import (
-	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
-)
-
-remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := gremlingo.Traversal_().With(remote)
 ----
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
@@ -496,33 +474,17 @@ v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinAdds]
-----
 [source,java]
 ----
 Vertex v1 = g.addV("person").property("name","marko").next();
 Vertex v2 = g.addV("person").property("name","stephen").next();
 g.V(v1).addE("knows").to(v2).property("weight",0.75).iterate();
 ----
-[source,javascript]
-----
-const v1 = g.addV('person').property('name','marko').next();
-const v2 = g.addV('person').property('name','stephen').next();
-g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate();
-----
 [source,python]
 ----
 v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
-----
-[source,go]
-----
-v1, err := g.AddV("person").Property("name", "marko").Next()
-v2, err := g.AddV("person").Property("name", "stephen").Next()
-g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
 ----
 
 The first two lines add a vertex each with the vertex label of "person" and the associated "name" property. The third
@@ -541,29 +503,15 @@ Retrieving this data is also a just writing a Gremlin statement:
 marko = g.V().has('person','name','marko').next()
 peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
 ----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinMarkoKnows]
-----
 [source,java]
 ----
 Vertex marko = g.V().has("person","name","marko").next()
 List<Vertex> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").toList()
 ----
-[source,javascript]
-----
-const marko = g.V().has('person','name','marko').next()
-const peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
-----
 [source,python]
 ----
 marko = g.V().has('person','name','marko').next()
 peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
-----
-[source,go]
-----
-marko, err := g.V().Has("person", "name", "marko").Next()
-peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
 In all these examples presented so far there really isn't a lot of difference in how the Gremlin itself looks. There

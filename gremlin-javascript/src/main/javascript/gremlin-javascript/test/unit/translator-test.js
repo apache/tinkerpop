@@ -110,5 +110,26 @@ describe('Translator', function () {
       assert.ok(script);
       assert.strictEqual(script, 'g.V([1, 2, 3])');
     });
+
+    it('should translate null', function () {
+      const g = new Graph().traversal();
+      const script = new Translator('g').translate(g.addV('test').property('empty', null));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.addV(\'test\').property(\'empty\', null)');
+    });
+
+    it('should translate undefined to null', function () {
+      const g = new Graph().traversal();
+      const script = new Translator('g').translate(g.addV('test').property('empty', undefined));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.addV(\'test\').property(\'empty\', null)');
+    });
+
+    it('should properly escape quotes in string literals', function () {
+      const g = new Graph().traversal();
+      const script = new Translator('g').translate(g.addV('test').property('quotes', "some \"quotes' in the middle."));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.addV(\'test\').property(\'quotes\', \'some "quotes\\\' in the middle.\')');
+    });
   });
 });

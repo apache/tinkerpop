@@ -38,24 +38,24 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(0.0).V().outE().sack(Operator.sum).by("weight").inV().sack().sum()
+      g.withSack(0.0d).V().outE().sack(Operator.sum).by("weight").inV().sack().sum()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3.5].m |
+      | d[3.5].d |
 
   Scenario: g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack
     Given the modern graph
     And the traversal of
       """
-      g.withSack(0.0).V().repeat(__.outE().sack(Operator.sum).by("weight").inV()).times(2).sack()
+      g.withSack(0.0d).V().repeat(__.outE().sack(Operator.sum).by("weight").inV()).times(2).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[2.0].m |
-      | d[1.4].m |
+      | d[2.0].d |
+      | d[1.4].d |
 
   @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack
@@ -63,12 +63,12 @@ Feature: Step - sack()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withBulk(false).withSack(1.0, Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
+      g.withBulk(false).withSack(1.0d, Operator.sum).V(vid1).local(__.outE("knows").barrier(Barrier.normSack).inV()).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].m |
+      | d[1.0].d |
 
   @GraphComputerVerificationOneBulk
   Scenario: g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack
@@ -90,13 +90,13 @@ Feature: Step - sack()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withSack(1.0, Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
+      g.withSack(1.0d, Operator.sum).V(vid1).local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1.0].m |
-      | d[1.0].m |
+      | d[1.0].d |
+      | d[1.0].d |
 
   Scenario: g_V_sackXassignX_byXageX_sack
     Given the modern graph
@@ -113,11 +113,17 @@ Feature: Step - sack()
       | d[35].i |
 
   Scenario: g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And using the parameter xx1 defined as "d[10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000].n"
+    And the traversal of
       """
-      GLV Suite does not support BigInteger assignments at this time.
+      g.withSack(xx1, Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in("knows").barrier().sack()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].m |
+      | d[0.5].m |
 
   Scenario: g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack
     Given an unsupported test
@@ -127,9 +133,19 @@ Feature: Step - sack()
       withSack() method called. Not sure how that would work with a GLV.
       """
 
-  Scenario: g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack
+    Given the modern graph
+    And using the parameter xx1 defined as "d[4.0].d"
+    And the traversal of
       """
-      Something strange happens with rounding that prevents GLVs from asserting this result properly.
+      g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |
+      | d[0.5].d |

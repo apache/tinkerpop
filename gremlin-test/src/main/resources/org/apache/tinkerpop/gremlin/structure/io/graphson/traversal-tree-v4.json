@@ -1,0 +1,60 @@
+{
+  "@type" : "g:Tree",
+  "@value" : [ {
+    "key" : {
+      "@type" : "g:Vertex",
+      "@value" : {
+        "id" : {
+          "@type" : "g:Int32",
+          "@value" : 10
+        },
+        "label" : [ "software" ],
+        "properties" : {
+          "name" : [ {
+            "@type" : "g:VertexProperty",
+            "@value" : {
+              "id" : {
+                "@type" : "g:Int64",
+                "@value" : 4
+              },
+              "value" : "gremlin",
+              "label" : [ "name" ]
+            }
+          } ]
+        }
+      }
+    },
+    "value" : {
+      "@type" : "g:Tree",
+      "@value" : [ {
+        "key" : {
+          "@type" : "g:Vertex",
+          "@value" : {
+            "id" : {
+              "@type" : "g:Int32",
+              "@value" : 11
+            },
+            "label" : [ "software" ],
+            "properties" : {
+              "name" : [ {
+                "@type" : "g:VertexProperty",
+                "@value" : {
+                  "id" : {
+                    "@type" : "g:Int64",
+                    "@value" : 5
+                  },
+                  "value" : "tinkergraph",
+                  "label" : [ "name" ]
+                }
+              } ]
+            }
+          }
+        },
+        "value" : {
+          "@type" : "g:Tree",
+          "@value" : [ ]
+        }
+      } ]
+    }
+  } ]
+}

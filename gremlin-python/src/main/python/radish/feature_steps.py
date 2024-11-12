@@ -29,15 +29,47 @@ from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop
 from radish import given, when, then, world
 from hamcrest import *
 
-outV = __.outV
+outV = __.out_v
 label = __.label
-inV = __.inV
+inV = __.in_v
 project = __.project
 tail = __.tail
 
 ignores = [
     "g.withoutStrategies(CountStrategy).V().count()",  # serialization issues with Class in GraphSON
-    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")"
+    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
+    "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    ## The following section has queries that aren't supported by gremlin-lang parameters
+    'g.V().branch(l1).option("a", __.values("age")).option("b", __.values("lang")).option("b", __.values("name"))',
+    'g.V().choose(pred1, __.out("knows"), __.in("created")).values("name")',
+    'g.V().repeat(__.both()).until(pred1).groupCount().by("name")',
+    'g.V().both().properties("name").order().by(c1).dedup().value()',
+    'g.V().filter(pred1)',
+    'g.V(vid1).filter(pred1)',
+    'g.V(vid2).filter(pred1)',
+    'g.V(vid1).out().filter(pred1)',
+    'g.E().filter(pred1)',
+    'g.V().out("created").has("name", __.map(l1).is(P.gt(3))).values("name")',
+    'g.V(vid1).map(l1)',
+    'g.V(vid1).outE().label().map(l1)',
+    'g.V(vid1).out().map(l1).map(l2)',
+    'g.withPath().V().as("a").out().map(l1)',
+    'g.withPath().V().as("a").out().out().map(l1)',
+    'g.V().values("name").order().by(c1).by(c2)',
+    'g.V().order().by("name", c1).by("name", c2).values("name")',
+    'g.V().hasLabel("person").order().by(l1, Order.desc).values("name")',
+    'g.V(v1).hasLabel("person").map(l1).order(Scope.local).by(Column.values, Order.desc).by(Column.keys, Order.asc)',
+    'g.V().valueMap().unfold().map(l1)',
+    'g.E(e11)',
+    'g.E(e7,e11)',
+    'g.E(xx1)',
+    'g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")',
+    'g.V().group().by(l1).by(__.constant(1))',
+    'g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()',
+    'g.V().group("a").by(l1).by(__.constant(1)).cap("a")',
+    'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")'
+    ## section end
 ]
 
 
@@ -54,7 +86,7 @@ def choose_graph(step, graph_name):
         return
 
     step.context.graph_name = graph_name
-    step.context.g = traversal().with_(step.context.remote_conn[graph_name])
+    step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
 
 
 @given("the graph initializer of")
@@ -67,7 +99,7 @@ def initialize_graph(step):
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    result = t.toList()
+    result = t.to_list()
     assert len(result) > 0
 
 
@@ -111,7 +143,10 @@ def translate_traversal(step):
 
     tagset = [tag.name for tag in step.all_tags]
     if "GraphComputerOnly" in tagset:
-        localg = step.context.g.withComputer()
+        localg = step.context.g.with_computer()
+    if "GremlinLangScriptOnly" in tagset:
+        # temporary tag used for tests that need gremlin-lang script processing before groovy script is removed
+        localg = step.context.g.with_('language', 'gremlin-lang')
     p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
 
@@ -122,7 +157,7 @@ def iterate_the_traversal(step):
         return
 
     try:
-        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
+        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.to_list()))
         step.context.failed = False
         step.context.failed_message = ''
     except Exception as e:
@@ -228,7 +263,7 @@ def _convert(val, ctx):
         return val[4:-1]
     elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
         # python 3.8 can handle only subset of ISO 8601 dates
-        return datetime.fromisoformat(val[3:-1].replace('Z', ''))
+        return datetime.fromisoformat(val[3:-1].replace('Z', '+00:00'))
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf

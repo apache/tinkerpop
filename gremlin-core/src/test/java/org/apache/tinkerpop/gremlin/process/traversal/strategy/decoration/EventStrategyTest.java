@@ -18,13 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +31,6 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.addV;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -43,8 +39,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class EventStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
-
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
@@ -72,7 +66,7 @@ public class EventStrategyTest {
 
     @Test
     public void shouldEventOnMutatingSteps() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final MutationListener listener1 = new ConsoleMutationListener(EmptyGraph.instance());
         final EventStrategy eventStrategy = EventStrategy.build()
                 .addListener(listener1).create();

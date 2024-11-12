@@ -1,0 +1,7 @@
+{
+  "@type" : "g:Set",
+  "@value" : [ null, {
+    "@type" : "g:Int32",
+    "@value" : 2
+  }, "person", true ]
+}

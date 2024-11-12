@@ -41,10 +41,6 @@ import static org.junit.Assert.fail;
  */
 public class ResultQueueTest extends AbstractResultQueueTest {
 
-    private static final Map<String,Object> ATTRIBUTES = new HashMap<String,Object>() {{
-        put("this", "that");
-    }};
-
     @Test
     public void shouldGetSizeUntilError() throws Exception {
         final Thread t = addToQueue(100, 10, true, false, 1);
@@ -135,7 +131,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.add(new Result("test3"));
 
         assertThat(future.isDone(), is(false));
-        resultQueue.markComplete(ATTRIBUTES);
+        resultQueue.markComplete();
         assertThat(future.isDone(), is(true));
 
         final List<Result> results = future.get();
@@ -145,7 +141,6 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         assertEquals(3, results.size());
 
         assertThat(resultQueue.isEmpty(), is(true));
-        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test
@@ -243,7 +238,7 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         resultQueue.add(new Result("test2"));
         resultQueue.add(new Result("test3"));
 
-        resultQueue.markComplete(ATTRIBUTES);
+        resultQueue.markComplete();
 
         // you might want 30 but there are only three
         final CompletableFuture<List<Result>> future = resultQueue.await(30);
@@ -256,7 +251,6 @@ public class ResultQueueTest extends AbstractResultQueueTest {
         assertEquals(3, results.size());
 
         assertThat(resultQueue.isEmpty(), is(true));
-        assertEquals("that", resultQueue.getStatusAttributes().get("this"));
     }
 
     @Test

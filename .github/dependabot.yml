@@ -4,7 +4,7 @@ updates:
     directory: "/gremlin-dotnet"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - ".NET"
       - "dependencies"
@@ -12,7 +12,7 @@ updates:
     directory: "/gremlin-python/src/main/python"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "python"
       - "dependencies"
@@ -20,7 +20,7 @@ updates:
     directory: "/gremlin-javascript/src/main/javascript/gremlin-javascript"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "javascript"
       - "dependencies"
@@ -31,7 +31,7 @@ updates:
     directory: "/gremlint"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "gremlint"
       - "dependencies"
@@ -65,7 +65,7 @@ updates:
     directory: "/gremlin-go"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "go"
       - "dependencies"
@@ -73,7 +73,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "java"
       - "dependencies"
@@ -81,6 +81,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "3.6-dev"
+    target-branch: "3.7-dev"
     labels:
       - "dependencies"

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.util;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +75,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -191,14 +191,13 @@ public class StepOutputArityPredictor {
                     MeanLocalStep.class,
                     MinLocalStep.class,
                     RangeLocalStep.class,
-                    SackStep.class,
                     SelectOneStep.class,
                     SelectStep.class,
                     SumLocalStep.class,
                     TailLocalStep.class,
                     WhereTraversalStep.class,
                     TraversalSelectStep.class
-                    );
+            );
 
     final private static List<Class> STEP_CLASSES_WITH_DEFINITELY_SINGULAR_ARITY_BEHAVIOR =
             Arrays.asList(
@@ -218,6 +217,8 @@ public class StepOutputArityPredictor {
                     PropertyKeyStep.class,
                     PropertyMapStep.class,
                     PropertyValueStep.class,
+                    SackStep.class,
+                    SackValueStep.class,
                     SampleLocalStep.class
             );
 

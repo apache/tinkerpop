@@ -19,11 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import nl.altindag.log.LogCaptor;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.junit.AfterClass;
@@ -46,7 +44,6 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Parameterized.class)
 public class EdgeLabelVerificationStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     private final static Predicate<String> MSG_PREDICATE = Pattern.compile(
             "^The provided traversal contains a vertex step without any specified edge label: VertexStep.*")
@@ -93,7 +90,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldIgnore() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -104,7 +101,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldOnlyThrow() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -124,7 +121,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldOnlyLog() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();
@@ -138,7 +135,7 @@ public class EdgeLabelVerificationStrategyTest {
 
     @Test
     public void shouldThrowAndLog() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EdgeLabelVerificationStrategy.build().throwException().logWarning().create());
         final Traversal traversal = this.traversal.asAdmin().clone();

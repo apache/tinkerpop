@@ -28,8 +28,9 @@ from gremlin_python.process.anonymous_traversal import traversal
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)
+
 
 def test_conns_in_threads(remote_connection):
     q = queue.Queue()
@@ -67,7 +68,7 @@ def _executor(q, conn):
         g = traversal().with_(conn)
         future = g.V().promise()
         t = future.result()
-        assert len(t.toList()) == 6
+        assert len(t.to_list()) == 6
     except:
         q.put(sys.exc_info()[0])
     else:
@@ -79,9 +80,9 @@ def _executor(q, conn):
 
 def handle_request():
     try:
-        remote_connection = DriverRemoteConnection(test_no_auth_url, "g")
+        remote_connection = DriverRemoteConnection(test_no_auth_url, "gmodern")
         g = traversal().with_(remote_connection)
-        g.V().limit(1).toList()
+        g.V().limit(1).to_list()
         remote_connection.close()
         return True
     except RuntimeError:

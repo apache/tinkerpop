@@ -20,9 +20,7 @@
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -36,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -58,12 +57,7 @@ public class TypeSerializerFailureTests {
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
-        final Bytecode.Binding b = new Bytecode.Binding(null, "b");
-
         final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
-
-        final Bytecode bytecode = new Bytecode();
-        bytecode.addStep(null);
 
         final BulkSet<Object> bulkSet = new BulkSet<>();
         bulkSet.add(vertex, 1L);
@@ -75,11 +69,8 @@ public class TypeSerializerFailureTests {
 
         // Provide instances that are malformed for serialization to fail
         return Arrays.asList(
-                b,
                 vertex,
-                Collections.singletonMap("one", b),
                 bulkSet,
-                bytecode,
                 Collections.singletonList(vertex),
                 new ReferenceEdge("an edge", null, vertex, vertex),
                 Lambda.supplier(null),

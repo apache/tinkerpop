@@ -254,12 +254,12 @@ the help of a PMC member for those steps.
 .. `mvn deploy -pl gremlin-python -DskipTests -Dpypi`
 .. `mvn deploy -pl :gremlin-dotnet-source -DskipTests -Dnuget`
 .. `mvn deploy -pl gremlin-javascript -DskipTests -Dnpm`
-... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-javscript/src/main/javascript/gremlin-javascript/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
+... Consider direct deploy with `npm publish --otp <otp>` from `gremlin-javascript/src/main/javascript/gremlin-javascript/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
 .. `mvn deploy -pl gremlint -DskipTests -Dnpm`
 ... Consider direct deploy with `npm publish --otp <otp>` from `gremlint/` - if using this method, ensure the `npm` version aligns with the one expected by the branch.
-.. `git tag gremlin-go/v3.6.3`
-.. `git push origin gremlin-go/v3.6.3`
-.. `GOPROXY=proxy.golang.org go list -m github.com/apache/tinkerpop/gremlin-go/v3@v3.6.3`
+.. `git tag gremlin-go/vxx.yy.zz`
+.. `git push origin gremlin-go/vxx.yy.zz`
+.. `GOPROXY=proxy.golang.org go list -m github.com/apache/tinkerpop/gremlin-go/v3@vxx.yy.xx`
 . Review the GLV releases
 .. link:https://pypi.org/project/gremlinpython/[gremlin-python - PyPi]
 .. link:https://www.nuget.org/packages/Gremlin.Net/[Gremlin.Net - nuget]

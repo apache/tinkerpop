@@ -30,6 +30,21 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== BulkSet Behavior Changes
+Starting with 4.0, steps which return BulkSet (e.g. `aggregate()`) will have results returned in different format
+depending on embedded or remote usage.
+
+For embedded cases, a BulkSet will be returned as before.
+
+For remote cases, BulkSets will now be expanded into Lists upon deserialization with `gremlin-driver`. All other GLVs already expanded BulkSet to List prior to TinkerPop 4.
+Each element in the BulkSet will appear in the list the same number of times as specified by its bulk value.
+
+==== Configuration changes
+This is a placeholder to summarize configuration-related changes.
+
+* `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
+* `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
+
 ==== Simplification to g creation
 
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
@@ -69,6 +84,40 @@ The properties file in the above example can either point to a remote configurat
 "g" to be switched as needed without code changes.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
+
+==== Changes to Java RequestInterceptor
+
+Because the underlying transport has been changed from WebSockets to HTTP, the usage of the `RequestInterceptor` has
+changed as well. The `RequestInterceptor` will now be run per request and will allow you to completely modify the HTTP
+request that is sent to the server. `Cluster` has four new methods added to it: `addInterceptorAfter`,
+`addInterceptorBefore`, `removeInterceptor` and `addInterceptor`. Each interceptor requires a name as it will be used
+to insert new interceptors in different positions.
+
+The interceptors work with a new class called HttpRequest. This is just a basic abstraction over a request but it also
+contains some useful strings for common headers. The initial `HttpRequest` that is passed to the first interceptor will
+contain a `RequestMessage`. `RequestMessage` is immutable and only certain keys can be added to them. If you want to
+customize the body by adding other fields, you will need to make a different copy of the `RequestMessage` or completely
+change the body to contain a different data type. The final interceptor must return a `HttpRequest` whose body contains
+a `byte[]`.
+
+After the initial HTTP request is generated, the interceptors will be called in order to allow the request to be
+modified. After each `RequestInterceptor` is run, the request is updated with the data from the final `HttpRequest` and
+that is sent to the endpoint. There is a default interceptor added to every `Cluster` called "serializer". This
+interceptor is responsible for serializing the request body is which what the server normally expects. This is intended
+to be an advanced customization technique that should only be used when needed.
+
+==== Addition of Python interceptor
+
+HTTP interceptors have been added to `gremlin-python` to enable capability similar to that of Java GLV. These
+interceptors can be passed into either a `DriverRemoteConnection` or a `Client` using the interceptors parameter. An
+interceptor is a `Callable` that accepts one argument which is the HTTP request (dictionary containing header, payload
+and auth) or a list/tuple of these functions. The interceptors will run after the request serializer has run but before
+any auth functions run so the HTTP request may still get modified after your interceptors are run. In situations where
+you don't want the payload to be serialized, the `message_serializer` has been split into a `request_serializer` and a
+`response_serializer`. Simply set the `request_serializer` to `None` and this will prevent the `RequestMessage` from
+being serialized. Again, this is expected to be an advanced feature so some knowledge of implementation details will be
+required to make this work. For example, you'll need to know what payload formats are accepted by `aiohttp` for the
+request to be sent.
 
 ==== Changes to deserialization for gremlin-javascript
 
@@ -168,12 +217,129 @@ removed. As a result, all translators in .NET, Python, Go and Javascript have be
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
+==== Change to `OptionsStrategy` in `gremlin-python`
+
+The `\\__init__()` syntax has been updated to be both more pythonic and more aligned to the `gremlin-lang` syntax.
+Previously, `OptionsStrategy()` took a single argument `options` which was a `dict` of all options to be set.
+Now, all options should be set directly as keyword arguments.
+
+For example:
+
+[source,python]
+----
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options={'key1': 'value1', 'key2': True}))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(key1='value1', key2=True))
+
+myOptions = {'key1': 'value1', 'key2': True}
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options=myOptions))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(**myOptions))
+----
+
+==== Custom Traversal Strategy Construction
+
+Traversal strategy construction has been updated such that it is no longer required to have concrete classes for each
+strategy being added to a graph traversal (use of concrete classes remains viable and is recommended for "native"
+TinkerPop strategies). To use strategies without a concrete class, `TraversalStrategyProxy` can be used in Java, and
+`TraversalStrategy` in Python.
+
+All the following examples will produce the script `g.withStrategies(new MyStrategy(config1:'my value',config2:123))`:
+
+[source,java]
+----
+Map<String, Object> configMap = new LinkedHashMap<>();
+        configMap.put("config1", "my value");
+        configMap.put("config2", 123);
+        TraversalStrategy strategyProxy = new TraversalStrategyProxy("MyStrategy", new MapConfiguration(configMap));
+
+        GraphTraversal traversal = g.withStrategies(strategyProxy);
+----
+
+[source,python]
+----
+g.with_strategies(TraversalStrategy(
+            strategy_name='MyStrategy',
+            config1='my value',
+            config2=123
+        ))
+----
+
+==== Changes to Serialization
+
+The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option
+that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
+types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
+
+The number of serializable types has been reduced in V4. For example, only a single temporal type remains. You have two
+options when trying to work with data types whose serializer has been removed: first, you can attempt to convert the
+data to another type that still have a serializer or, second, the type may have been too specific and therefore removed
+in which case your provider should have a Provider Defined Type (PDT) for it. See the next paragraph for information on
+PDTs.
+
+Custom serializers have also been removed so if you previously included those as part of your application, they should
+now be removed. In its place, PDTs have been introduced. In particular, there is the Primitive PDT and the Composite
+PDT. Primitive PDTs are string-based representations of a primitive type supported by your provider. Composite types
+contain a map of fields. You should consult your provider's documentation to determine what types of fields a
+particular PDT may contain.
+
 === Upgrading for Providers
 
 ==== Renaming NoneStep to DiscardStep
 NoneStep, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
 DiscardStep. In its place is a new list filtering NoneStep, which takes a predicate as an argument and passes lists with
 no elements matching the predicate.
+
+==== Changes to Serialization
+
+The V4 versions of GraphBinary and GraphSON are being introduced. Support for the older versions of GraphBinary (V1)
+and GraphSON (V1-3) is removed. Additionally, the GLVs will only use GraphBinary, the Gremlin Server, however, can
+still serialize both GraphSON and GraphBinary. The following is a list of the major changes to the GraphBinary format:
+
+* Removed type serializers:
+** Period
+** Date
+** TimeStamp
+** Instant
+** ZonedDateTime
+** OffsetTime
+** LocalDateTime
+** LocalDate
+** LocalTime
+** MonthDay
+** YearMonth
+** Year
+** ZoneOffset
+** BulkSet
+** Class
+** Binding
+** Bytecode
+** Barrier
+** Cardinality
+** Column
+** Operator
+** Order
+** Pick
+** Pop
+** Scope
+** Merge
+** DT
+** Lambda
+** P
+** Traverser
+** TextP
+** TraversalStrategy
+** Metrics
+** TraversalMetrics
+** InetAddress
+* Byte is redefined from being unsigned byte to a signed byte.
+* List has a `0x02` value_flag used to denote bulking.
+* Map has a `0x02` value_flag used to denote ordering.
+* `Element` (Vertex, Edge, VertexProperty) labels have been changed from `String` to `List` of `String`.
+* `Element` (Vertex, Edge, VertexProperty) properties are no longer null and are `List` of `Property`.
+* Custom is replaced with Provider Defined Types
 
 ==== Graph System Providers
 

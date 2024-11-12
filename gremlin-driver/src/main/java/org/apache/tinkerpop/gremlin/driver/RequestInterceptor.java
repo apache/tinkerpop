@@ -18,19 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.handler.codec.http.FullHttpRequest;
-
 import java.util.function.UnaryOperator;
 
 /**
- * This function is called a {@code FullHttpRequest} constructed and allow it to be modified as needed before it is
- * sent to the server. Implementations are supplied to {@link Cluster.Builder#requestInterceptor(RequestInterceptor)}.
- * When this method is called is dependent on the {@link Channelizer} implementation.
+ * Interceptors are run as a list to allow modification of the HTTP request before it is sent to the server. The first
+ * interceptor will be provided with a {@link HttpRequest} that holds a
+ * {@link org.apache.tinkerpop.gremlin.util.message.RequestMessage} in the body. The final interceptor should contain a
+ * {@code byte[]} in the body.
  */
-public interface RequestInterceptor extends UnaryOperator<FullHttpRequest> {
+public interface RequestInterceptor extends UnaryOperator<HttpRequest> {
 
-    /**
-     * The default implementation of a {@link RequestInterceptor} and behaves as a no-op.
-     */
-    public static final RequestInterceptor NO_OP = o -> o;
 }

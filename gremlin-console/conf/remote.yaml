@@ -17,18 +17,15 @@
 
 ##############################################################
 # This configuration is meant to have Gremlin Server return
-# text serialized objects. The server will toString()
-# results giving a view into how scripts are executing.
+# serialized objects.
 #
 # This file will work with:
 # - gremlin-server.yaml
 # - gremlin-server-classic.yaml
 # - gremlin-server-modern.yaml
-# - gremlin-server-modern-py.yaml
 # - gremlin-server-modern-readonly.yaml
-# - gremlin-server-spark.yaml
 ##############################################################
 
 hosts: [localhost]
 port: 8182
-serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
+serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}

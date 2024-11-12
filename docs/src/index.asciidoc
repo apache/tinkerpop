@@ -34,7 +34,7 @@ of this reference guide.
 2. <<tutorials,Tutorials>> - Brief but detailed explanations of specific technologies, patterns, use cases or best
 practices related to TinkerPop.
 3. <<publications,Publications>> - Blog posts, technical papers, presentation materials, etc.
-4. <<developer,Developer>> - Documentation for contributors to TinkerPop or for providers (i.e. those who implement
+4. link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer[Developer] - Documentation for contributors to TinkerPop or for providers (i.e. those who implement
 TinkerPop's interfaces).
 5. link:https://tinkerpop.apache.org/javadocs/x.y.z/full/[Javadoc] - The full Javadoc for all TinkerPop modules. There
 is also an abridged version of the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/[core] interfaces which may

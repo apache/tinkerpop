@@ -56,9 +56,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'from radish import world\n' +
                     'import datetime\n' +
-                    'from gremlin_python.statics import long, GremlinType\n' +
+                    'from gremlin_python.statics import long, bigint, GremlinType\n' +
                     'from gremlin_python.process.anonymous_traversal import traversal\n' +
-                    'from gremlin_python.process.strategies import SeedStrategy, SubgraphStrategy, PartitionStrategy, ProductiveByStrategy, ReadOnlyStrategy\n' +
+                    'from gremlin_python.process.strategies import *\n' +
                     'from gremlin_python.process.traversal import TraversalStrategy\n' +
                     'from gremlin_python.process.graph_traversal import __\n' +
                     'from gremlin_python.structure.graph import Graph\n' +
@@ -71,7 +71,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine('world.gremlins = {')
     gremlins.each { k,v ->
         // skipping lambdas until we decide for sure that they are out in 4.x
-        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
+        if (v.any { it.contains('l1')} || v.any { it.contains('l2')} || v.any { it.contains('c1')} || v.any { it.contains('c2')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
             writer.writeLine("    '${k}': [],  # skipping as it contains a lambda")
         } else if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])

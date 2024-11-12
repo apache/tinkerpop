@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -68,40 +68,40 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     protected boolean locked = false;
     protected boolean closed = false;
-    protected Bytecode bytecode;
+    protected GremlinLang gremlinLang;
 
-    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final Bytecode bytecode) {
+    private DefaultTraversal(final Graph graph, final TraversalStrategies traversalStrategies, final GremlinLang gremlinLang) {
         this.graph = graph;
         this.strategies = traversalStrategies;
-        this.bytecode = bytecode;
+        this.gremlinLang = gremlinLang;
         this.g = null;
     }
 
     public DefaultTraversal(final Graph graph) {
-        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()), new Bytecode());
+        this(graph, TraversalStrategies.GlobalCache.getStrategies(graph.getClass()), new GremlinLang());
     }
 
     public DefaultTraversal(final TraversalSource traversalSource) {
-        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getBytecode());
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversalSource.getGremlinLang());
         this.g = traversalSource;
     }
 
     public DefaultTraversal(final TraversalSource traversalSource, final DefaultTraversal.Admin<S,E> traversal) {
-        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getBytecode());
+        this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getGremlinLang());
         this.g = traversalSource;
         steps.addAll(traversal.getSteps());
     }
 
     public DefaultTraversal() {
-        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new Bytecode());
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), new GremlinLang());
     }
 
-    public DefaultTraversal(final Bytecode bytecode) {
-        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), bytecode);
+    public DefaultTraversal(final GremlinLang gremlinLang) {
+        this(EmptyGraph.instance(), TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class), gremlinLang);
     }
 
-    public Bytecode getBytecode() {
-        return this.bytecode;
+    public GremlinLang getGremlinLang() {
+        return this.gremlinLang;
     }
 
     @Override
@@ -272,7 +272,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies;
-            clone.bytecode = this.bytecode.clone();
+            clone.gremlinLang = this.gremlinLang.clone();
             for (final Step<?, ?> step : this.steps) {
                 final Step<?, ?> clonedStep = step.clone();
                 clonedStep.setTraversal(clone);

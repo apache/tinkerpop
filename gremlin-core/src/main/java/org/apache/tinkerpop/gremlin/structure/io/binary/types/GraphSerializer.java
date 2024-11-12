@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,17 +64,18 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
             final Graph graph = (Graph) openMethod.invoke(null, conf);
             final int vertexCount = context.readValue(buffer, Integer.class, false);
             for (int ix = 0; ix < vertexCount; ix++) {
-                final Vertex v = graph.addVertex(T.id, context.read(buffer), T.label, context.readValue(buffer, String.class, false));
+                final Vertex v = graph.addVertex(T.id, context.read(buffer), T.label, context.readValue(buffer, List.class, false).get(0));
                 final int vertexPropertyCount = context.readValue(buffer, Integer.class, false);
 
                 for (int iy = 0; iy < vertexPropertyCount; iy++) {
                     final Object id = context.read(buffer);
-                    final String label = context.readValue(buffer, String.class, false);
+                    // reading single string value for now according to GraphBinaryV4
+                    final String label = (String) context.readValue(buffer, List.class, false).get(0);
                     final Object val = context.read(buffer);
                     context.read(buffer); // toss parent as it's always null
                     final VertexProperty<Object> vp = v.property(VertexProperty.Cardinality.list, label, val, T.id, id);
 
-                    final List<Property> edgeProperties = context.readValue(buffer, ArrayList.class, false);
+                    final List<Property> edgeProperties = context.readValue(buffer, List.class, false);
                     for (Property p : edgeProperties) {
                         vp.property(p.key(), p.value());
                     }
@@ -83,7 +85,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
             final int edgeCount = context.readValue(buffer, Integer.class, false);
             for (int ix = 0; ix < edgeCount; ix++) {
                 final Object id = context.read(buffer);
-                final String label = context.readValue(buffer, String.class, false);
+                // reading single string value for now according to GraphBinaryV4
+                final String label = (String) context.readValue(buffer, List.class, false).get(0);
                 final Object inId = context.read(buffer);
                 final Vertex inV = graph.vertices(inId).next();
                 context.read(buffer);  // toss in label - always null in this context
@@ -131,12 +134,13 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         final List<VertexProperty<Object>> vertexProperties = IteratorUtils.list(vertex.properties());
 
         context.write(vertex.id(), buffer);
-        context.writeValue(vertex.label(), buffer, false);
+        // serializing label as list here for now according to GraphBinaryV4
+        context.writeValue(Collections.singletonList(vertex.label()), buffer, false);
         context.writeValue(vertexProperties.size(), buffer, false);
 
         for (VertexProperty<Object> vp : vertexProperties) {
             context.write(vp.id(), buffer);
-            context.writeValue(vp.label(), buffer, false);
+            context.writeValue(Collections.singletonList(vp.label()), buffer, false);
             context.write(vp.value(), buffer);
 
             // maintain the VertexProperty format we have with this empty parent.........
@@ -149,7 +153,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
 
     private void writeEdge(Buffer buffer, GraphBinaryWriter context, Edge edge) throws IOException {
         context.write(edge.id(), buffer);
-        context.writeValue(edge.label(), buffer, false);
+        // serializing label as list here for now according to GraphBinaryV4
+        context.writeValue(Collections.singletonList(edge.label()), buffer, false);
 
         context.write(edge.inVertex().id(), buffer);
 

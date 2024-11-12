@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -104,13 +105,17 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
                 sb.append(integerLiteral, 0, lastCharIndex);
                 break;
             case 'i':
-            case 'n':
-                // parse I/i as integer. no BigInteger so just remove the N/n
+                // parse I/i as integer.
                 sb.append(integerLiteral, 0, lastCharIndex);
                 break;
             case 'l':
                 // parse L/l as long
                 sb.append(integerLiteral);
+                break;
+            case 'n':
+                sb.append("new BigInteger(");
+                sb.append(integerLiteral, 0, lastCharIndex);
+                sb.append(")");
                 break;
             default:
                 // everything else just goes as specified
@@ -150,9 +155,10 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final Date dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
+        // todo: update when dotnet datetime serializer is implemented
         sb.append("DateTimeOffset.FromUnixTimeMilliseconds(");
-        sb.append(dt.getTime());
+        sb.append(dt.toInstant().toEpochMilli());
         sb.append(")");
         return null;
     }
@@ -240,7 +246,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         if (ctx.getChildCount() == 1)
             sb.append("new ").append(ctx.getText()).append("()");
         else {
-            sb.append("new ").append(ctx.getChild(1).getText()).append("(");
+            sb.append("new ").append(ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText()).append("(");
 
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());

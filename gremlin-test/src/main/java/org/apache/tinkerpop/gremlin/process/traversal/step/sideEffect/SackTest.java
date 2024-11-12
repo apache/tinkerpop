@@ -67,7 +67,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
 
-    public abstract Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack();
+    public abstract Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -148,10 +148,10 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack() {
-        final Traversal<Vertex, Double> traversal = get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack();
+    public void g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack() {
+        final Traversal<Vertex, Double> traversal = get_g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack();
         printTraversalForm(traversal);
-        final double expected = 2.0 / 3.0;
+        final double expected = 2.0 / 4.0;
         for (int i = 0; i < 6; i++) {
             assertTrue(traversal.hasNext());
             assertEquals(expected, ((Number) traversal.next()).doubleValue(), 0.0001);
@@ -205,8 +205,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX3_0XX_sack() {
-            return g.withSack(2).V().sack(Operator.div).by(constant(3.0)).sack();
+        public Traversal<Vertex, Double> get_g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack() {
+            return g.withSack(2).V().sack(Operator.div).by(constant(4.0)).sack();
         }
     }
 }

@@ -67,13 +67,17 @@ func (conn *mockWebsocketConn) SetPongHandler(h func(appData string) error) {
 }
 
 func getNewGorillaTransporter() (gorillaTransporter, *mockWebsocketConn) {
+	return getNewGorillaTransporterWithSettings(newDefaultConnectionSettings())
+}
+
+func getNewGorillaTransporterWithSettings(connectionSettings *connectionSettings) (gorillaTransporter, *mockWebsocketConn) {
 	mockConn := new(mockWebsocketConn)
 	return gorillaTransporter{
 		url:          "ws://mockHost:8182/gremlin",
 		logHandler:   newLogHandler(&defaultLogger{}, Info, language.English),
 		connection:   mockConn,
 		isClosed:     false,
-		connSettings: newDefaultConnectionSettings(),
+		connSettings: connectionSettings,
 		writeChannel: make(chan []byte, 100),
 		wg:           &sync.WaitGroup{},
 	}, mockConn
@@ -130,6 +134,30 @@ func TestGorillaTransporter(t *testing.T) {
 			assert.Nil(t, err)
 			isClosed = transporter.IsClosed()
 			assert.True(t, isClosed)
+		})
+	})
+
+	t.Run("Should error if request size exceeds WriteBufferSize", func(t *testing.T) {
+		connSettings := newDefaultConnectionSettings()
+		connSettings.writeBufferSize = 30
+		transporter, mockConn := getNewGorillaTransporterWithSettings(connSettings)
+
+		t.Run("Small message should succeed", func(t *testing.T) {
+			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(nil)
+			err := transporter.Write(make([]byte, 10))
+			assert.Nil(t, err)
+		})
+
+		t.Run("Large message should error", func(t *testing.T) {
+			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(nil)
+			err := transporter.Write(make([]byte, 31))
+			assert.Equal(t, newError(err1201RequestSizeExceedsWriteBufferError), err)
+		})
+
+		t.Run("Exact size should succeed", func(t *testing.T) {
+			mockConn.On("WriteMessage", 2, make([]byte, 10)).Return(nil)
+			err := transporter.Write(make([]byte, 30))
+			assert.Nil(t, err)
 		})
 	})
 }

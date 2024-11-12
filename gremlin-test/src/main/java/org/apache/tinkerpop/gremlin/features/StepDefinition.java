@@ -56,18 +56,6 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
 
-import static org.apache.commons.text.StringEscapeUtils.escapeJava;
-import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Every.everyItem;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
-import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
-import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -84,6 +72,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.apache.commons.text.StringEscapeUtils.escapeJava;
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Every.everyItem;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
+import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
+import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 @ScenarioScoped
 public final class StepDefinition {
@@ -333,6 +333,7 @@ public final class StepDefinition {
 
         // skip the header in the dataTable
         final Object[] expected = dataTable.asList().stream().skip(1).map(this::convertToObject).toArray();
+
         assertThat(actual, containsInAnyOrder(expected));
     }
 
@@ -380,13 +381,6 @@ public final class StepDefinition {
         assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
     }
 
-    @Then("debug the graph should return {int} for count of {string}")
-    public void debugTheGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
-        assertThatNoErrorWasThrown();
-
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
-    }
-
     @Then("the result should be empty")
     public void theResultShouldBeEmpty() {
         assertThatNoErrorWasThrown();
@@ -407,21 +401,23 @@ public final class StepDefinition {
     public void theTraversalWillRaiseAnErrorWithMessage(final String comparison, final String expectedMessage) {
         assertNotNull(error);
 
-        final String msg = world.mapErrorMessage(expectedMessage);
-
-        switch (comparison) {
-            case "containing":
-                assertThat(error.getMessage(), containsStringIgnoringCase(msg));
-                break;
-            case "starting":
-                assertThat(error.getMessage(), startsWithIgnoringCase(msg));
-                break;
-            case "ending":
-                assertThat(error.getMessage(), endsWithIgnoringCase(msg));
-                break;
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unknown comparison of %s - must be one of: containing, starting or ending", comparison));
+        // delegate error message assertion completely to the provider. if they choose to handle on their own then
+        // skip the default assertions
+        if (!world.handleErrorMessageAssertion(comparison, expectedMessage, error)) {
+            switch (comparison) {
+                case "containing":
+                    assertThat(error.getMessage(), containsStringIgnoringCase(expectedMessage));
+                    break;
+                case "starting":
+                    assertThat(error.getMessage(), startsWithIgnoringCase(expectedMessage));
+                    break;
+                case "ending":
+                    assertThat(error.getMessage(), endsWithIgnoringCase(expectedMessage));
+                    break;
+                default:
+                    throw new IllegalStateException(String.format(
+                            "Unknown comparison of %s - must be one of: containing, starting or ending", comparison));
+            }
         }
 
         // consume the error now that it has been asserted
@@ -595,7 +591,7 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(final T... items) {
         return new IsIterableContainingInAnyOrder(getMatchers(items));
     }
 
@@ -603,25 +599,25 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(final T... items) {
         return new IsIterableContainingInOrder(getMatchers(items));
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(Collection<T> collection) {
+    public static <T> org.hamcrest.Matcher<T> in(final Collection<T> collection) {
         return new IsInMatcher(collection);
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(T[] elements) {
+    public static <T> org.hamcrest.Matcher<T> in(final T[] elements) {
         return new IsInMatcher(elements);
     }
 
-    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(T[] items) {
+    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(final T[] items) {
         final List<org.hamcrest.Matcher<? super T>> matchers = new ArrayList<>();
 
         for (int ix = 0; ix < items.length; ix++) {

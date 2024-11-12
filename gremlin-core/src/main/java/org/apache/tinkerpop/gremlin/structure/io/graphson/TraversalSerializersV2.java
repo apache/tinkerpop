@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -45,7 +44,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +69,7 @@ final class TraversalSerializersV2 {
         @Override
         public void serialize(final Traversal traversal, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            jsonGenerator.writeObject(traversal.asAdmin().getBytecode());
+            jsonGenerator.writeObject(traversal.asAdmin().getGremlinLang());
         }
 
         @Override
@@ -80,45 +78,6 @@ final class TraversalSerializersV2 {
             serialize(traversal, jsonGenerator, serializerProvider);
         }
 
-    }
-
-    final static class BytecodeJacksonSerializer extends StdScalarSerializer<Bytecode> {
-
-        public BytecodeJacksonSerializer() {
-            super(Bytecode.class);
-        }
-
-        @Override
-        public void serialize(final Bytecode bytecode, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            jsonGenerator.writeStartObject();
-            if (bytecode.getSourceInstructions().iterator().hasNext()) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.SOURCE);
-                for (final Bytecode.Instruction instruction : bytecode.getSourceInstructions()) {
-                    jsonGenerator.writeStartArray();
-                    jsonGenerator.writeString(instruction.getOperator());
-                    for (final Object argument : instruction.getArguments()) {
-                        jsonGenerator.writeObject(argument);
-                    }
-                    jsonGenerator.writeEndArray();
-                }
-                jsonGenerator.writeEndArray();
-            }
-            if (bytecode.getStepInstructions().iterator().hasNext()) {
-                jsonGenerator.writeArrayFieldStart(GraphSONTokens.STEP);
-                for (final Bytecode.Instruction instruction : bytecode.getStepInstructions()) {
-                    jsonGenerator.writeStartArray();
-                    jsonGenerator.writeString(instruction.getOperator());
-                    for (final Object argument : instruction.getArguments()) {
-                        jsonGenerator.writeObject(argument);
-                    }
-                    jsonGenerator.writeEndArray();
-                }
-                jsonGenerator.writeEndArray();
-            }
-
-            jsonGenerator.writeEndObject();
-        }
     }
 
     static class EnumJacksonSerializer extends StdScalarSerializer<Enum> {
@@ -185,23 +144,6 @@ final class TraversalSerializersV2 {
 
     }
 
-    final static class BindingJacksonSerializer extends StdScalarSerializer<Bytecode.Binding> {
-
-        public BindingJacksonSerializer() {
-            super(Bytecode.Binding.class);
-        }
-
-        @Override
-        public void serialize(final Bytecode.Binding binding, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField(GraphSONTokens.KEY, binding.variable());
-            jsonGenerator.writeObjectField(GraphSONTokens.VALUE, binding.value());
-            jsonGenerator.writeEndObject();
-        }
-
-    }
-
     final static class TraverserJacksonSerializer extends StdScalarSerializer<Traverser> {
 
         public TraverserJacksonSerializer() {
@@ -238,53 +180,6 @@ final class TraversalSerializersV2 {
     ///////////////////
     // DESERIALIZERS //
     //////////////////
-
-    final static class BytecodeJacksonDeserializer extends StdDeserializer<Bytecode> {
-
-        public BytecodeJacksonDeserializer() {
-            super(Bytecode.class);
-        }
-
-        @Override
-        public Bytecode deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final Bytecode bytecode = new Bytecode();
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                final String current = jsonParser.getCurrentName();
-                if (current.equals(GraphSONTokens.SOURCE) || current.equals(GraphSONTokens.STEP)) {
-                    jsonParser.nextToken();
-
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-
-                        // there should be a list now and the first item in the list is always string and is the step name
-                        // skip the start array
-                        jsonParser.nextToken();
-                        
-                        final String stepName = jsonParser.getText();
-
-                        // iterate through the rest of the list for arguments until it gets to the end
-                        final List<Object> arguments = new ArrayList<>();
-                        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                            // we don't know the types here, so let the deserializer figure that business out
-                            arguments.add(deserializationContext.readValue(jsonParser, Object.class));
-                        }
-
-                        // if it's not a "source" then it must be a "step"
-                        if (current.equals(GraphSONTokens.SOURCE))
-                            bytecode.addSource(stepName, arguments.toArray());
-                        else
-                            bytecode.addStep(stepName, arguments.toArray());
-                    }
-                }
-            }
-            return bytecode;
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
 
     final static class EnumJacksonDeserializer<A extends Enum> extends StdDeserializer<A> {
 
@@ -435,35 +330,6 @@ final class TraversalSerializersV2 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
-    final static class BindingJacksonDeserializer extends StdDeserializer<Bytecode.Binding> {
-
-        public BindingJacksonDeserializer() {
-            super(Bytecode.Binding.class);
-        }
-
-        @Override
-        public Bytecode.Binding deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            String k = null;
-            Object v = null;
-
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                if (jsonParser.getCurrentName().equals(GraphSONTokens.KEY)) {
-                    jsonParser.nextToken();
-                    k = jsonParser.getText();
-                } else if (jsonParser.getCurrentName().equals(GraphSONTokens.VALUE)) {
-                    jsonParser.nextToken();
-                    v = deserializationContext.readValue(jsonParser, Object.class);
-                }
-            }
-            return new Bytecode.Binding<>(k, v);
         }
 
         @Override

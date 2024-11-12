@@ -101,7 +101,7 @@ public class DefaultTraversalTest {
         clone.getSideEffects().set("m", 2);
         assertEquals(1, original.getSideEffects().<Integer>get("m").intValue());
         assertEquals(2, clone.getSideEffects().<Integer>get("m").intValue());
-        assertNotSame(original.bytecode, clone.bytecode);
+        assertNotSame(original.gremlinLang, clone.gremlinLang);
         assertEquals(original.closed, clone.closed);
     }
 

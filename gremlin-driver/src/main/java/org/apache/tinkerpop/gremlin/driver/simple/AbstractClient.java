@@ -26,12 +26,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -51,7 +46,7 @@ public abstract class AbstractClient implements SimpleClient {
 
     @Override
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception {
-        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), callback);
+        callbackResponseHandler.callback = callback;
         writeAndFlush(requestMessage);
     }
 
@@ -63,33 +58,12 @@ public abstract class AbstractClient implements SimpleClient {
         return submitAsync(requestMessage).get(180, TimeUnit.SECONDS);
     }
 
-    @Override
-    public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception {
-        final List<ResponseMessage> results = new ArrayList<>();
-        final CompletableFuture<List<ResponseMessage>> f = new CompletableFuture<>();
-        callbackResponseHandler.callbackByRequestId.put(requestMessage.getRequestId(), response -> {
-            if (f.isDone())
-                throw new RuntimeException("A terminating message was already encountered - no more messages should have been received");
-
-            results.add(response);
-
-            // check if the current message is terminating - if it is then we can mark complete
-            if (response.getStatus().getCode().isFinalResponse()) {
-                f.complete(results);
-            }
-        });
-
-        writeAndFlush(requestMessage);
-
-        return f;
-    }
-
     static class CallbackResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        public Map<UUID, Consumer<ResponseMessage>> callbackByRequestId = new HashMap<>();
+        public Consumer<ResponseMessage> callback;
 
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
-            callbackByRequestId.get(response.getRequestId()).accept(response);
+            callback.accept(response);
         }
     }
 }

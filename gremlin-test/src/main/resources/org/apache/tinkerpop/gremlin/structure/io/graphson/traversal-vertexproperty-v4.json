@@ -1,0 +1,11 @@
+{
+  "@type" : "g:VertexProperty",
+  "@value" : {
+    "id" : {
+      "@type" : "g:Int64",
+      "@value" : 0
+    },
+    "value" : "marko",
+    "label" : [ "name" ]
+  }
+}
