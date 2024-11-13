@@ -238,8 +238,9 @@ limitations under the License.
         <!-- Test gremlin-javascript in Docker -->
         <profile>
             <id>glv-js</id>
+            <!-- TODO re-enable after gremlin-js is implemented -->
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <finalName>${project.artifactId}-${project.version}</finalName>

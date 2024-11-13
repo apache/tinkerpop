@@ -121,9 +121,10 @@ limitations under the License.
             <id>gremlin-dotnet</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>.glv</exists>
-                </file>
+                <!-- TODO re-enable after gremlin-dotnet is implemented -->
+<!--                <file>-->
+<!--                    <exists>.glv</exists>-->
+<!--                </file>-->
             </activation>
             <properties>
                 <packaging.type>dotnet-library</packaging.type>
