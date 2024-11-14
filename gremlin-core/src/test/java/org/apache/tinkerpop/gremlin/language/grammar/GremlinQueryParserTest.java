@@ -110,4 +110,16 @@ public class GremlinQueryParserTest {
         assertEquals(g.V(null, null, null).has("name", P.gt(null)).asAdmin().getBytecode(),
                 t.asAdmin().getBytecode());
     }
+
+    @Test(expected = GremlinParserException.class)
+    public void shouldNotParseChildTraversalsSpawnedFromG() {
+        final GremlinAntlrToJava gremlinAntlrToJava = new GremlinAntlrToJava("g",
+                EmptyGraph.instance(), __::start, g, VariableResolver.NoVariableResolver.instance());
+        try {
+            GremlinQueryParser.parse("g.addE('knows').from(g.V(1))", gremlinAntlrToJava);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
 }
