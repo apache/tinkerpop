@@ -172,8 +172,7 @@ chainedParentOfGraphTraversal
     ;
 
 nestedTraversal
-    : rootTraversal
-    | chainedTraversal
+    : chainedTraversal
     | ANON_TRAVERSAL_ROOT DOT chainedTraversal
     ;
 

@@ -90,8 +90,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
-* Add log entry in WsAndHttpChannelizerHandler.
-* IdentityRemovalStrategy does not omit IdentityStep if only with RepeatEndStep under RepeatStep.
+* Add log entry in `WsAndHttpChannelizerHandler`.
+* Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
+* Changed Gremlin grammar to make use of `g` to spawn child traversals a syntax error.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
