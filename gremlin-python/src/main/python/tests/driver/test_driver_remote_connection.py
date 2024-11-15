@@ -108,7 +108,8 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_connection)
         t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000}
+                                                                             'evaluationTimeout': 1000,
+                                                                             'bulked': True}
         assert 6 == t.to_list()[0]
 
     def test_extract_request_options_with_params(self, remote_connection):
@@ -119,6 +120,7 @@ class TestDriverRemoteConnection(object):
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
                                                                              'evaluationTimeout': 1000,
                                                                              'userAgent': 'test',
+                                                                             'bulked': True,
                                                                              'params': {'ids': [1, 2, 3]}}
         assert 3 == t.to_list()[0]
 

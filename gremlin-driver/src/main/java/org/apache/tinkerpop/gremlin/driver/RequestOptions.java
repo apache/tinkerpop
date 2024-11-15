@@ -105,8 +105,10 @@ public final class RequestOptions {
                 builder.language((String) options.get(ARGS_LANGUAGE));
             if (options.containsKey(BULKED))
                 builder.withBulkedResult((boolean) options.get(BULKED));
-
         }
+        // request the server to send bulked results by default when using drc through request options
+        if (builder.bulkedResult == null)
+            builder.withBulkedResult(true);
 
         final Map<String, Object> parameters = gremlinLang.getParameters();
         if (parameters != null && !parameters.isEmpty()) {
@@ -122,7 +124,7 @@ public final class RequestOptions {
         private Long timeout = null;
         private String materializeProperties = null;
         private String language = null;
-        private String bulkedResult;
+        private String bulkedResult = null;
 
         /**
          * The aliases to set on the request.

@@ -23,7 +23,6 @@ import uuid
 
 import pytest
 from gremlin_python.driver.client import Client
-from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
@@ -266,7 +265,7 @@ def test_client_gremlin_lang_request_options_with_binding(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     # Note that bindings for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(Parameter.var('x', [1, 2, 3])).count()
-    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    request_opts = {'language': 'gremlin-lang', 'params': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3
@@ -381,7 +380,7 @@ def test_multi_thread_pool(client):
 def test_client_gremlin_lang_with_short(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.with_('language', 'gremlin-lang').V().has('age', short(16)).count()
-    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    request_opts = {'language': 'gremlin-lang'}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     results = []
@@ -393,7 +392,7 @@ def test_client_gremlin_lang_with_short(client):
 def test_client_gremlin_lang_with_long(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V().has('age', long(851401972585122)).count()
-    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    request_opts = {}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     results = []
@@ -405,7 +404,7 @@ def test_client_gremlin_lang_with_long(client):
 def test_client_gremlin_lang_with_bigint(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.with_('language', 'gremlin-lang').V().has('age', bigint(0x1000_0000_0000_0000_0000)).count()
-    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    request_opts = {'language': 'gremlin-lang'}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     results = []

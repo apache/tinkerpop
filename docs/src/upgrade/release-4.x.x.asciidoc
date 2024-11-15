@@ -30,6 +30,30 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Result Bulking from Server
+In previous versions, when a traversal is submitted through the DriverRemoteConnection (DRC) via the Bytecode processor,
+the results from the server were bulked as Traverser, which provides a form of result optimization across the wire.
+Starting with 4.0, with the removal of Bytecode and Traverser serializer, this optimization is now achieved via
+`GraphBinaryV4` response message serialization, and can be controlled through cluster setting or per request option.
+
+Per request option setting will always override cluster settings, and regardless of cluster or request option settings,
+bulking will only occur if the script processing language is set to `gremlin-lang` and the serializer is set to `GraphBinaryV4`.
+
+[source,java]
+----
+// cluster setting
+Cluster cluster = Cluster.build().enableBulkedResult(true).create();
+
+// per request option
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+List result = g.with("language", "gremlin-lang").with("bulked", true).inject(1).toList();
+----
+
+By default, the cluster setting for bulked result is false. To remain consistent with previous behavior, remote traversal
+submitted through the DRC will always send a request option setting `bulked` to `true`. This implies that if `gremlin-lang`
+script engine and `GraphBinaryV4` serializer are used, then results from the server will be bulked regardless of cluster setting,
+and can only be disabled via per request option.
+
 ==== BulkSet Behavior Changes
 Starting with 4.0, steps which return BulkSet (e.g. `aggregate()`) will have results returned in different format
 depending on embedded or remote usage.

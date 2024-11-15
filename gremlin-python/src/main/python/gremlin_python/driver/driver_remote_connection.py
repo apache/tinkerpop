@@ -123,6 +123,9 @@ class DriverRemoteConnection(RemoteConnection):
         for os in gremlin_lang.options_strategies:
             request_options.update({token: os.configuration[token] for token in Tokens
                                     if token in os.configuration})
+        # request the server to send bulked results by default when using drc through request options
+        if 'bulked' not in request_options:
+            request_options['bulked'] = True
         if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
             request_options["params"] = gremlin_lang.parameters
 
