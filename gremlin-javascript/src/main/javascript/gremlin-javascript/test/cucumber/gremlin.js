@@ -1083,7 +1083,6 @@ const gremlins = {
     g_V_order_byXname_ascX_name: [function({g}) { return g.V().order().by("name", Order.asc).values("name") }], 
     g_V_order_byXnameX_name: [function({g}) { return g.V().order().by("name").values("name") }], 
     g_V_outE_order_byXweight_descX_weight: [function({g}) { return g.V().outE().order().by("weight", Order.desc).values("weight") }], 
-    g_V_order_byXname_a1_b1X_byXname_b2_a2X_name: [function({g, c1, c2}) { return g.V().order().by("name", c1).by("name", c2).values("name") }], 
     g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX: [function({g}) { return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select("a", "b") }], 
     g_V_both_hasLabelXpersonX_order_byXage_descX_limitX5X_name: [function({g}) { return g.V().both().hasLabel("person").order().by("age", Order.desc).limit(5).values("name") }], 
     g_V_properties_order_byXkey_descX_key: [function({g}) { return g.V().properties().order().by(T.key, Order.desc).key() }], 

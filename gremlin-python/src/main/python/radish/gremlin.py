@@ -1065,7 +1065,6 @@ world.gremlins = {
     'g_V_order_byXname_ascX_name': [(lambda g:g.V().order().by('name', Order.asc).values('name'))], 
     'g_V_order_byXnameX_name': [(lambda g:g.V().order().by('name').values('name'))], 
     'g_V_outE_order_byXweight_descX_weight': [(lambda g:g.V().out_e().order().by('weight', Order.desc).values('weight'))], 
-    'g_V_order_byXname_a1_b1X_byXname_b2_a2X_name': [],  # skipping as it contains a lambda
     'g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX': [(lambda g:g.V().as_('a').out('created').as_('b').order().by(Order.shuffle).select('a', 'b'))], 
     'g_V_both_hasLabelXpersonX_order_byXage_descX_limitX5X_name': [(lambda g:g.V().both().has_label('person').order().by('age', Order.desc).limit(5).values('name'))], 
     'g_V_properties_order_byXkey_descX_key': [(lambda g:g.V().properties().order().by(T.key, Order.desc).key())], 

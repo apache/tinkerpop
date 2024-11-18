@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -634,9 +633,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        if (ctx.traversalTokenArgument().variable() != null)
-            sb.append("(T) ");
-        visit(ctx.traversalTokenArgument());
+        visit(ctx.traversalToken());
         sb.append(", ");
         tryAppendCastToObject(ctx.genericLiteralArgument());
         visit(ctx.genericLiteralArgument());
@@ -649,9 +646,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        if (ctx.traversalTokenArgument().variable() != null)
-            sb.append("(T) ");
-        visit(ctx.traversalTokenArgument());
+        visit(ctx.traversalToken());
         sb.append(", ");
         visit(ctx.traversalPredicate());
         sb.append(")");
@@ -663,9 +658,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        if (ctx.traversalTokenArgument().variable() != null)
-            sb.append("(T) ");
-        visit(ctx.traversalTokenArgument());
+        visit(ctx.traversalToken());
         sb.append(", ");
         visit(ctx.nestedTraversal());
         sb.append(")");
@@ -869,7 +862,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         // call is ambiguous without an explicit cast
         visit(ctx.getChild(0));
         sb.append("(");
-        visit(ctx.traversalMergeArgument());
+        visit(ctx.traversalMerge());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericLiteralMapNullableArgument()); // second argument
@@ -882,7 +875,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         // call is ambiguous without an explicit cast
         visit(ctx.getChild(0));
         sb.append("(");
-        visit(ctx.traversalMergeArgument());
+        visit(ctx.traversalMerge());
         sb.append(", ");
         sb.append("(ITraversal) ");
         visit(ctx.nestedTraversal());
@@ -916,9 +909,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
-            if (ctx.traversalCardinalityArgument().variable() != null)
-                sb.append("(Cardinality) ");
-            visit(ctx.traversalCardinalityArgument());
+            visit(ctx.traversalCardinality());
             sb.append(", ");
             tryAppendCastToObject(ctx.genericLiteralArgument(0));
             visit(ctx.genericLiteralArgument(0));

@@ -142,6 +142,13 @@ g.V().withStrategies(SubgraphStrategy(vertices: __.hasLabel('person')))
 
 In a future version, it is likely that the `new` keyword will be removed entirely from the grammar.
 
+*Refined variable support*
+
+The Gremlin grammar allows variables to be used in various places. Unlike Groovy, from which the Gremlin grammar is
+partially derived and which allows variables to be used for any argument to a method, Gremlin only allows for variables
+to be used when they refer to particular types. In making this change it did mean that all enums like, `Scope`, `Pop`,
+`Order`, etc. can no longer be used in that way and can therefore only be recognized as literal values.
+
 *Supports withoutStrategies()*
 
 The `withoutStrategies()` configuration step is now supported syntax for the grammar. While this option is not commonly
@@ -156,7 +163,7 @@ g.V().withoutStrategies(CountStrategy)
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
 
-==== Renaming none() to discard()
+==== Renamed none() to discard()
 
 The `none()` step, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been
 renamed to `discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and
