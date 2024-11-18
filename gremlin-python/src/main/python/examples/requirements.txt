@@ -25,4 +25,4 @@ frozenlist==1.4.1
 idna==3.10
 isodate==0.6.1
 multidict==6.0.5
-yarl==1.13.1
+yarl==1.17.2
