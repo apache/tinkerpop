@@ -77,12 +77,12 @@ traversalSourceSelfMethod_withPath
 
 traversalSourceSelfMethod_withSack
     : 'withSack' LPAREN genericLiteralArgument RPAREN
-    | 'withSack' LPAREN genericLiteralArgument COMMA traversalBiFunctionArgument RPAREN
+    | 'withSack' LPAREN genericLiteralArgument COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withSideEffect
     : 'withSideEffect' LPAREN stringArgument COMMA genericLiteralArgument RPAREN
-    | 'withSideEffect' LPAREN stringArgument COMMA genericLiteralArgument COMMA traversalBiFunctionArgument RPAREN
+    | 'withSideEffect' LPAREN stringArgument COMMA genericLiteralArgument COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies
@@ -348,7 +348,7 @@ traversalMethod_mergeE
     ;
 
 traversalMethod_aggregate
-    : 'aggregate' LPAREN traversalScopeArgument COMMA stringArgument RPAREN #traversalMethod_aggregate_Scope_String
+    : 'aggregate' LPAREN traversalScope COMMA stringArgument RPAREN #traversalMethod_aggregate_Scope_String
     | 'aggregate' LPAREN stringArgument RPAREN #traversalMethod_aggregate_String
     ;
 
@@ -369,7 +369,7 @@ traversalMethod_as
     ;
 
 traversalMethod_barrier
-    : 'barrier' LPAREN traversalSackMethodArgument RPAREN #traversalMethod_barrier_Consumer
+    : 'barrier' LPAREN traversalSackMethod RPAREN #traversalMethod_barrier_Consumer
     | 'barrier' LPAREN RPAREN #traversalMethod_barrier_Empty
     | 'barrier' LPAREN integerArgument RPAREN #traversalMethod_barrier_int
     ;
@@ -391,16 +391,16 @@ traversalMethod_branch
     ;
 
 traversalMethod_by
-    : 'by' LPAREN traversalComparatorArgument RPAREN #traversalMethod_by_Comparator
+    : 'by' LPAREN traversalComparator RPAREN #traversalMethod_by_Comparator
     | 'by' LPAREN RPAREN #traversalMethod_by_Empty
-    | 'by' LPAREN traversalFunctionArgument RPAREN #traversalMethod_by_Function
-    | 'by' LPAREN traversalFunctionArgument COMMA traversalComparatorArgument RPAREN #traversalMethod_by_Function_Comparator
-    | 'by' LPAREN traversalOrderArgument RPAREN #traversalMethod_by_Order
+    | 'by' LPAREN traversalFunction RPAREN #traversalMethod_by_Function
+    | 'by' LPAREN traversalFunction COMMA traversalComparator RPAREN #traversalMethod_by_Function_Comparator
+    | 'by' LPAREN traversalOrder RPAREN #traversalMethod_by_Order
     | 'by' LPAREN stringArgument RPAREN #traversalMethod_by_String
-    | 'by' LPAREN stringArgument COMMA traversalComparatorArgument RPAREN #traversalMethod_by_String_Comparator
-    | 'by' LPAREN traversalTokenArgument RPAREN #traversalMethod_by_T
+    | 'by' LPAREN stringArgument COMMA traversalComparator RPAREN #traversalMethod_by_String_Comparator
+    | 'by' LPAREN traversalToken RPAREN #traversalMethod_by_T
     | 'by' LPAREN nestedTraversal RPAREN #traversalMethod_by_Traversal
-    | 'by' LPAREN nestedTraversal COMMA traversalComparatorArgument RPAREN #traversalMethod_by_Traversal_Comparator
+    | 'by' LPAREN nestedTraversal COMMA traversalComparator RPAREN #traversalMethod_by_Traversal_Comparator
     ;
 
 traversalMethod_cap
@@ -408,7 +408,7 @@ traversalMethod_cap
     ;
 
 traversalMethod_choose
-    : 'choose' LPAREN traversalFunctionArgument RPAREN #traversalMethod_choose_Function
+    : 'choose' LPAREN traversalFunction RPAREN #traversalMethod_choose_Function
     | 'choose' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_choose_Predicate_Traversal
     | 'choose' LPAREN traversalPredicate COMMA nestedTraversal COMMA nestedTraversal RPAREN #traversalMethod_choose_Predicate_Traversal_Traversal
     | 'choose' LPAREN nestedTraversal RPAREN #traversalMethod_choose_Traversal
@@ -438,7 +438,7 @@ traversalMethod_constant
 
 traversalMethod_count
     : 'count' LPAREN RPAREN #traversalMethod_count_Empty
-    | 'count' LPAREN traversalScopeArgument RPAREN #traversalMethod_count_Scope
+    | 'count' LPAREN traversalScope RPAREN #traversalMethod_count_Scope
     ;
 
 traversalMethod_cyclicPath
@@ -446,7 +446,7 @@ traversalMethod_cyclicPath
     ;
 
 traversalMethod_dedup
-    : 'dedup' LPAREN traversalScopeArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_dedup_Scope_String
+    : 'dedup' LPAREN traversalScope (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_dedup_Scope_String
     | 'dedup' LPAREN stringLiteralVarargs RPAREN #traversalMethod_dedup_String
     ;
 
@@ -483,7 +483,7 @@ traversalMethod_flatMap
 
 traversalMethod_fold
     : 'fold' LPAREN RPAREN #traversalMethod_fold_Empty
-    | 'fold' LPAREN genericLiteralArgument COMMA traversalBiFunctionArgument RPAREN #traversalMethod_fold_Object_BiFunction
+    | 'fold' LPAREN genericLiteralArgument COMMA traversalBiFunction RPAREN #traversalMethod_fold_Object_BiFunction
     ;
 
 traversalMethod_from
@@ -509,9 +509,9 @@ traversalMethod_has
     | 'has' LPAREN stringNullableArgument COMMA stringNullableArgument COMMA genericLiteralArgument RPAREN #traversalMethod_has_String_String_Object
     | 'has' LPAREN stringNullableArgument COMMA stringNullableArgument COMMA traversalPredicate RPAREN #traversalMethod_has_String_String_P
     | 'has' LPAREN stringNullableArgument COMMA nestedTraversal RPAREN #traversalMethod_has_String_Traversal
-    | 'has' LPAREN traversalTokenArgument COMMA genericLiteralArgument RPAREN #traversalMethod_has_T_Object
-    | 'has' LPAREN traversalTokenArgument COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
-    | 'has' LPAREN traversalTokenArgument COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
+    | 'has' LPAREN traversalToken COMMA genericLiteralArgument RPAREN #traversalMethod_has_T_Object
+    | 'has' LPAREN traversalToken COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
+    | 'has' LPAREN traversalToken COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
     ;
 
 traversalMethod_hasId
@@ -588,7 +588,7 @@ traversalMethod_label
     ;
 
 traversalMethod_limit
-    : 'limit' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_limit_Scope_long
+    : 'limit' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_limit_Scope_long
     | 'limit' LPAREN integerArgument RPAREN #traversalMethod_limit_long
     ;
 
@@ -615,12 +615,12 @@ traversalMethod_math
 
 traversalMethod_max
     : 'max' LPAREN RPAREN #traversalMethod_max_Empty
-    | 'max' LPAREN traversalScopeArgument RPAREN #traversalMethod_max_Scope
+    | 'max' LPAREN traversalScope RPAREN #traversalMethod_max_Scope
     ;
 
 traversalMethod_mean
     : 'mean' LPAREN RPAREN #traversalMethod_mean_Empty
-    | 'mean' LPAREN traversalScopeArgument RPAREN #traversalMethod_mean_Scope
+    | 'mean' LPAREN traversalScope RPAREN #traversalMethod_mean_Scope
     ;
 
 traversalMethod_merge
@@ -629,7 +629,7 @@ traversalMethod_merge
 
 traversalMethod_min
     : 'min' LPAREN RPAREN #traversalMethod_min_Empty
-    | 'min' LPAREN traversalScopeArgument RPAREN #traversalMethod_min_Scope
+    | 'min' LPAREN traversalScope RPAREN #traversalMethod_min_Scope
     ;
 
 traversalMethod_none
@@ -642,9 +642,9 @@ traversalMethod_not
 
 traversalMethod_option
     : 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
-    | 'option' LPAREN traversalMergeArgument COMMA genericLiteralMapNullableArgument RPAREN #traversalMethod_option_Merge_Map
-    | 'option' LPAREN traversalMergeArgument COMMA genericLiteralMapNullableArgument COMMA traversalCardinality RPAREN #traversalMethod_option_Merge_Map_Cardinality
-    | 'option' LPAREN traversalMergeArgument COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
+    | 'option' LPAREN traversalMerge COMMA genericLiteralMapNullableArgument RPAREN #traversalMethod_option_Merge_Map
+    | 'option' LPAREN traversalMerge COMMA genericLiteralMapNullableArgument COMMA traversalCardinality RPAREN #traversalMethod_option_Merge_Map_Cardinality
+    | 'option' LPAREN traversalMerge COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
     | 'option' LPAREN genericLiteralArgument COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
     | 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal
     ;
@@ -659,7 +659,7 @@ traversalMethod_or
 
 traversalMethod_order
     : 'order' LPAREN RPAREN #traversalMethod_order_Empty
-    | 'order' LPAREN traversalScopeArgument RPAREN #traversalMethod_order_Scope
+    | 'order' LPAREN traversalScope RPAREN #traversalMethod_order_Scope
     ;
 
 traversalMethod_otherV
@@ -709,10 +709,10 @@ traversalMethod_properties
     ;
 
 traversalMethod_property
-    : 'property' LPAREN traversalCardinalityArgument COMMA genericLiteralArgument COMMA genericLiteralArgument (COMMA genericLiteralVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+    : 'property' LPAREN traversalCardinality COMMA genericLiteralArgument COMMA genericLiteralArgument (COMMA genericLiteralVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+    | 'property' LPAREN traversalCardinality COMMA genericLiteralMapNullableArgument RPAREN # traversalMethod_property_Cardinality_Object
     | 'property' LPAREN genericLiteralArgument COMMA genericLiteralArgument (COMMA genericLiteralVarargs)? RPAREN #traversalMethod_property_Object_Object_Object
     | 'property' LPAREN genericLiteralMapNullableArgument RPAREN # traversalMethod_property_Object
-    | 'property' LPAREN traversalCardinalityArgument COMMA genericLiteralMapNullableArgument RPAREN # traversalMethod_property_Cardinality_Object
     ;
 
 traversalMethod_propertyMap
@@ -720,7 +720,7 @@ traversalMethod_propertyMap
     ;
 
 traversalMethod_range
-    : 'range' LPAREN traversalScopeArgument COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_range_Scope_long_long
+    : 'range' LPAREN traversalScope COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_range_Scope_long_long
     | 'range' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_range_long_long
     ;
 
@@ -738,20 +738,20 @@ traversalMethod_reverse
     ;
 
 traversalMethod_sack
-    : 'sack' LPAREN traversalBiFunctionArgument RPAREN #traversalMethod_sack_BiFunction
+    : 'sack' LPAREN traversalBiFunction RPAREN #traversalMethod_sack_BiFunction
     | 'sack' LPAREN RPAREN #traversalMethod_sack_Empty
     ;
 
 traversalMethod_sample
-    : 'sample' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_sample_Scope_int
+    : 'sample' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_sample_Scope_int
     | 'sample' LPAREN integerArgument RPAREN #traversalMethod_sample_int
     ;
 
 traversalMethod_select
-    : 'select' LPAREN traversalColumnArgument RPAREN #traversalMethod_select_Column
-    | 'select' LPAREN traversalPopArgument COMMA stringArgument RPAREN #traversalMethod_select_Pop_String
-    | 'select' LPAREN traversalPopArgument COMMA stringArgument COMMA stringArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_select_Pop_String_String_String
-    | 'select' LPAREN traversalPopArgument COMMA nestedTraversal RPAREN #traversalMethod_select_Pop_Traversal
+    : 'select' LPAREN traversalColumn RPAREN #traversalMethod_select_Column
+    | 'select' LPAREN traversalPop COMMA stringArgument RPAREN #traversalMethod_select_Pop_String
+    | 'select' LPAREN traversalPop COMMA stringArgument COMMA stringArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_select_Pop_String_String_String
+    | 'select' LPAREN traversalPop COMMA nestedTraversal RPAREN #traversalMethod_select_Pop_Traversal
     | 'select' LPAREN stringArgument RPAREN #traversalMethod_select_String
     | 'select' LPAREN stringArgument COMMA stringArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_select_String_String_String
     | 'select' LPAREN nestedTraversal RPAREN #traversalMethod_select_Traversal
@@ -770,7 +770,7 @@ traversalMethod_simplePath
     ;
 
 traversalMethod_skip
-    : 'skip' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_skip_Scope_long
+    : 'skip' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_skip_Scope_long
     | 'skip' LPAREN integerArgument RPAREN #traversalMethod_skip_long
     ;
 
@@ -784,13 +784,13 @@ traversalMethod_subgraph
 
 traversalMethod_sum
     : 'sum' LPAREN RPAREN #traversalMethod_sum_Empty
-    | 'sum' LPAREN traversalScopeArgument RPAREN #traversalMethod_sum_Scope
+    | 'sum' LPAREN traversalScope RPAREN #traversalMethod_sum_Scope
     ;
 
 traversalMethod_tail
     : 'tail' LPAREN RPAREN #traversalMethod_tail_Empty
-    | 'tail' LPAREN traversalScopeArgument RPAREN #traversalMethod_tail_Scope
-    | 'tail' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_tail_Scope_long
+    | 'tail' LPAREN traversalScope RPAREN #traversalMethod_tail_Scope
+    | 'tail' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_tail_Scope_long
     | 'tail' LPAREN integerArgument RPAREN #traversalMethod_tail_long
     ;
 
@@ -808,18 +808,18 @@ traversalMethod_times
     ;
 
 traversalMethod_to
-    : 'to' LPAREN traversalDirectionArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_to_Direction_String
+    : 'to' LPAREN traversalDirection (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_to_Direction_String
     | 'to' LPAREN stringArgument RPAREN #traversalMethod_to_String
     | 'to' LPAREN structureVertexArgument RPAREN #traversalMethod_to_Vertex
     | 'to' LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
     ;
 
 traversalMethod_toE
-    : 'toE' LPAREN traversalDirectionArgument (COMMA stringLiteralVarargs)? RPAREN
+    : 'toE' LPAREN traversalDirection (COMMA stringLiteralVarargs)? RPAREN
     ;
 
 traversalMethod_toV
-    : 'toV' LPAREN traversalDirectionArgument RPAREN
+    : 'toV' LPAREN traversalDirection RPAREN
     ;
 
 traversalMethod_tree
@@ -886,7 +886,7 @@ traversalMethod_concat
 
 traversalMethod_asString
     : 'asString' LPAREN RPAREN #traversalMethod_asString_Empty
-    | 'asString' LPAREN traversalScopeArgument RPAREN #traversalMethod_asString_Scope
+    | 'asString' LPAREN traversalScope RPAREN #traversalMethod_asString_Scope
     ;
 
 traversalMethod_format
@@ -895,49 +895,49 @@ traversalMethod_format
 
 traversalMethod_toUpper
     : 'toUpper' LPAREN RPAREN #traversalMethod_toUpper_Empty
-    | 'toUpper' LPAREN traversalScopeArgument RPAREN #traversalMethod_toUpper_Scope
+    | 'toUpper' LPAREN traversalScope RPAREN #traversalMethod_toUpper_Scope
     ;
 
 traversalMethod_toLower
     : 'toLower' LPAREN RPAREN #traversalMethod_toLower_Empty
-    | 'toLower' LPAREN traversalScopeArgument RPAREN #traversalMethod_toLower_Scope
+    | 'toLower' LPAREN traversalScope RPAREN #traversalMethod_toLower_Scope
     ;
 
 traversalMethod_length
     : 'length' LPAREN RPAREN #traversalMethod_length_Empty
-    | 'length' LPAREN traversalScopeArgument RPAREN #traversalMethod_length_Scope
+    | 'length' LPAREN traversalScope RPAREN #traversalMethod_length_Scope
     ;
 
 traversalMethod_trim
     : 'trim' LPAREN RPAREN #traversalMethod_trim_Empty
-    | 'trim' LPAREN traversalScopeArgument RPAREN #traversalMethod_trim_Scope
+    | 'trim' LPAREN traversalScope RPAREN #traversalMethod_trim_Scope
     ;
 
 traversalMethod_lTrim
     : 'lTrim' LPAREN RPAREN #traversalMethod_lTrim_Empty
-    | 'lTrim' LPAREN traversalScopeArgument RPAREN #traversalMethod_lTrim_Scope
+    | 'lTrim' LPAREN traversalScope RPAREN #traversalMethod_lTrim_Scope
     ;
 
 traversalMethod_rTrim
     : 'rTrim' LPAREN RPAREN #traversalMethod_rTrim_Empty
-    | 'rTrim' LPAREN traversalScopeArgument RPAREN #traversalMethod_rTrim_Scope
+    | 'rTrim' LPAREN traversalScope RPAREN #traversalMethod_rTrim_Scope
     ;
 
 traversalMethod_replace
     : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
-    | 'replace' LPAREN traversalScopeArgument COMMA stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_Scope_String_String
+    | 'replace' LPAREN traversalScope COMMA stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_Scope_String_String
     ;
 
 traversalMethod_split
     : 'split' LPAREN stringNullableArgument RPAREN #traversalMethod_split_String
-    | 'split' LPAREN traversalScopeArgument COMMA stringNullableArgument RPAREN #traversalMethod_split_Scope_String
+    | 'split' LPAREN traversalScope COMMA stringNullableArgument RPAREN #traversalMethod_split_Scope_String
     ;
 
 traversalMethod_substring
     : 'substring' LPAREN integerArgument RPAREN #traversalMethod_substring_int
-    | 'substring' LPAREN traversalScopeArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int
+    | 'substring' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int
     | 'substring' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_int_int
-    | 'substring' LPAREN traversalScopeArgument COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int_int
+    | 'substring' LPAREN traversalScope COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int_int
     ;
 
 traversalMethod_asDate
@@ -945,7 +945,7 @@ traversalMethod_asDate
     ;
 
 traversalMethod_dateAdd
-    : 'dateAdd' LPAREN traversalDTArgument COMMA integerArgument RPAREN
+    : 'dateAdd' LPAREN traversalDT COMMA integerArgument RPAREN
     ;
 
 traversalMethod_dateDiff
@@ -1495,71 +1495,6 @@ genericLiteralMapNullableArgument
 
 structureVertexArgument
     : structureVertex
-    | variable
-    ;
-
-traversalCardinalityArgument
-    : traversalCardinality
-    | variable
-    ;
-
-traversalColumnArgument
-    : traversalColumn
-    | variable
-    ;
-
-traversalDirectionArgument
-    : traversalDirection
-    | variable
-    ;
-
-traversalMergeArgument
-    : traversalMerge
-    | variable
-    ;
-
-traversalOrderArgument
-    : traversalOrder
-    | variable
-    ;
-
-traversalPopArgument
-    : traversalPop
-    | variable
-    ;
-
-traversalSackMethodArgument
-    : traversalSackMethod
-    | variable
-    ;
-
-traversalScopeArgument
-    : traversalScope
-    | variable
-    ;
-
-traversalTokenArgument
-    : traversalToken
-    | variable
-    ;
-
-traversalComparatorArgument
-    : traversalComparator
-    | variable
-    ;
-
-traversalFunctionArgument
-    : traversalFunction
-    | variable
-    ;
-
-traversalBiFunctionArgument
-    : traversalBiFunction
-    | variable
-    ;
-
-traversalDTArgument
-    : traversalDT
     | variable
     ;
 
