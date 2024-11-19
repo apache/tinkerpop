@@ -1698,9 +1698,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_valueMap_boolean_String(final GremlinParser.TraversalMethod_valueMap_boolean_StringContext ctx) {
         if (ctx.getChildCount() == 4) {
-            return graphTraversal.valueMap((boolean) antlr.argumentVisitor.visitBooleanArgument(ctx.booleanArgument()));
+            return graphTraversal.valueMap(antlr.genericVisitor.parseBoolean(ctx.booleanLiteral()));
         } else {
-            return graphTraversal.valueMap((boolean) antlr.argumentVisitor.visitBooleanArgument(ctx.booleanArgument()),
+            return graphTraversal.valueMap(antlr.genericVisitor.parseBoolean(ctx.booleanLiteral()),
                     antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
         }
     }

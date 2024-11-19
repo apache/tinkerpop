@@ -846,7 +846,7 @@ traversalMethod_value
 
 traversalMethod_valueMap
     : 'valueMap' LPAREN stringLiteralVarargs RPAREN #traversalMethod_valueMap_String
-    | 'valueMap' LPAREN booleanArgument (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_valueMap_boolean_String
+    | 'valueMap' LPAREN booleanLiteral (COMMA stringLiteralVarargs)? RPAREN #traversalMethod_valueMap_boolean_String
     ;
 
 traversalMethod_values
