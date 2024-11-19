@@ -19,9 +19,11 @@ limitations under the License.
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a JSON-based format that is designed for human readable
 output that is easily supported in any programming language through the wide-array of JSON parsing libraries that
-exist on virtually all platforms. GraphSON is considered both a "graph" format and a generalized object serialization
-format. That characteristic makes it useful as a serialization format for Gremlin Server where arbitrary objects
-of varying types may be returned as results.
+exist on virtually all platforms. GraphSON versions 1 to 3 were considered to be both a "graph" format and a
+generalized object serialization format. That characteristic makes it useful as a serialization format for Gremlin
+Server where arbitrary objects of varying types may be returned as results. However, starting in GraphSON 4, GraphSON
+is only intended to be a network serialization format that is only able to serialize specific types defined by the
+format. It is only meant to be used with the TinkerPop HTTP API.
 
 When considering GraphSON as a "graph" format, the relevant feature to consider is the `writeGraph` and `readGraph`
 methods on the `GraphSONWriter` and `GraphSONReader` interfaces, respectively. These methods write the entire `Graph`
@@ -48,7 +50,7 @@ writer.writeObject(os, graph);
 Generalized object serialization will be discussed later in this section, so for now the focus will be on the "graph"
 format. Unlike GraphML, GraphSON does not use an edge list format. It uses an adjacency list. In the adjacency list,
 each vertex is essentially a line in the file and the vertex line contains a list of all the edges associated with
-that vertex. The GraphSON 3.0 representation looks like this for the Modern toy graph:
+that vertex. The GraphSON 4.0 representation looks like this for the Modern toy graph:
 
 [source,json]
 ----
@@ -102,13 +104,11 @@ mime type is made explicit on requests to avoid breaking changes or unexpected r
 
 Version 4.0 of GraphSON was first introduced on TinkerPop 4.0.0 and is represented by the
 `application/vnd.gremlin-v4.0+json` mime type. There also exists an untyped version:
-`application/vnd.gremlin-v3.0+json;types=false`. It is very similar to GraphSON 3.0, with just several key differences:
+`application/vnd.gremlin-v4.0+json;types=false`. It is very similar to GraphSON 3.0, with just several key differences:
 many underused or duplicated types have been removed, labels are now list of strings and request/response formats have
 changed quite a bit, and custom types have been replaced with Provider Defined Type (PDT).
 
-=== Core
-
-==== Boolean
+=== Boolean
 
 Matches the JSON Boolean and doesn't have type information.
 
@@ -122,7 +122,7 @@ true
 true
 ----
 
-==== Composite PDT
+=== Composite PDT
 
 JSON Object with two required keys: "type" and "fields" +
 "type" is a JSON String +
@@ -161,7 +161,7 @@ JSON Object with two required keys: "type" and "fields" +
 }
 ----
 
-==== DateTime
+=== DateTime
 
 JSON String representing a datetime in the ISO-8601 format.
 
@@ -178,7 +178,7 @@ JSON String representing a datetime in the ISO-8601 format.
 "2007-12-03T10:15:30+01:00"
 ----
 
-==== Double
+=== Double
 
 A JSON Number with the same range as a IEEE754 double precision floating point or a JSON String with one of the
 following values: "-Infinity", "Infinity", "NaN" 
@@ -196,7 +196,7 @@ following values: "-Infinity", "Infinity", "NaN"
 100.0
 ----
 
-==== Float
+=== Float
 
 A JSON Number with the same range as a IEEE754 single precision floating point or a JSON String with one of the
 following values: "-Infinity", "Infinity", "NaN" 
@@ -214,7 +214,7 @@ following values: "-Infinity", "Infinity", "NaN"
 100.0
 ----
 
-==== Integer
+=== Integer
 
 A JSON Number with the same range as a 4-byte signed integer.
 
@@ -231,7 +231,7 @@ A JSON Number with the same range as a 4-byte signed integer.
 100
 ----
 
-==== List
+=== List
 
 List is a JSON Array. The type is used to distinguish between different collection types that are also mapped to JSON
 Array. The untyped version converts complex types to JSON String.
@@ -257,7 +257,7 @@ Array. The untyped version converts complex types to JSON String.
 [ 1, "person", true, null ]
 ----
 
-==== Long
+=== Long
 
 A JSON Number with the same range as a 8-byte signed integer.
 
@@ -274,7 +274,7 @@ A JSON Number with the same range as a 8-byte signed integer.
 100
 ----
 
-==== Map
+=== Map
 
 Map is a JSON Array to provide the ability to allow for non-String keys, which is not possible in JSON. The untyped
 version converts complex types to JSON String.
@@ -325,7 +325,7 @@ version converts complex types to JSON String.
 }
 ----
 
-==== Null
+=== Null
 
 Matches the JSON Null and doesn't have type information.
 
@@ -339,7 +339,7 @@ null
 null
 ----
 
-==== Primitive PDT
+=== Primitive PDT
 
 JSON Object with two required keys: "type" and "value" +
 "type" is a JSON String +
@@ -364,7 +364,7 @@ JSON Object with two required keys: "type" and "value" +
 }
 ----
 
-==== Set
+=== Set
 
 A JSON Array. The untyped version converts complex types to JSON String.
 
@@ -389,7 +389,7 @@ A JSON Array. The untyped version converts complex types to JSON String.
 [ null, 2, "person", true ]
 ----
 
-==== String
+=== String
 
 Matches the JSON String and doesn't have type information.
 
@@ -403,7 +403,7 @@ Matches the JSON String and doesn't have type information.
 "abc"
 ----
 
-==== UUID
+=== UUID
 
 JSON String form of UUID.
 
@@ -420,9 +420,7 @@ JSON String form of UUID.
 "41d2e28a-20a4-4ab0-b379-d810dede3786"
 ----
 
-=== Graph Structure
-
-==== Edge
+=== Edge
 
 JSON Object (required keys are: id, label, inVLabel, outVLabel, inV, outV) +
 "id" is any GraphSON 4.0 type +
@@ -508,7 +506,7 @@ The untyped version has one additional required key "type" which is always "vert
 }
 ----
 
-==== Graph
+=== Graph
 
 `TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`. Graph is a JSON Object with
 two required keys: "vertices" and "edges" +
@@ -2165,7 +2163,7 @@ two required keys: "vertices" and "edges" +
 }
 ----
 
-==== Path
+=== Path
 
 Object with two required keys: "labels" and "objects" +
 "labels" is a `g:List` of `g:Set` of labels of the steps traversed +
@@ -2272,7 +2270,7 @@ Object with two required keys: "labels" and "objects" +
 }
 ----
 
-==== Property
+=== Property
 
 JSON Object with two required keys: "key" and "value" +
 "key" is a `String` +
@@ -2300,7 +2298,7 @@ JSON Object with two required keys: "key" and "value" +
 }
 ----
 
-==== Tree
+=== Tree
 
 JSON Object with one or more possibly nested "key" "value" pairs
 "key" is an Element (`g:Vertex`, `g:Edge`, `g:VertexProperty`)
@@ -2429,7 +2427,7 @@ JSON Object with one or more possibly nested "key" "value" pairs
 ]
 ----
 
-==== Vertex
+=== Vertex
 
 JSON Object with required keys: "id", "label", "properties" +
 "id" is any GraphSON 4.0 type +
@@ -2613,7 +2611,7 @@ The untyped version has one additional required key "type" which is always "vert
 }
 ----
 
-==== VertexProperty
+=== VertexProperty
 
 JSON Object with required keys: "id", "value", "label", "properties" +
 "id" is any type GraphSON 4.0 type +
@@ -2649,9 +2647,7 @@ JSON Object with required keys: "id", "value", "label", "properties" +
 }
 ----
 
-=== Graph Process
-
-==== BulkSet
+=== BulkSet
 
 JSON Array that contains the expanded entries of the BulkSet.
 Note: BulkSet is serialized to g:List so there is no BulkSet deserializer.
@@ -2673,7 +2669,7 @@ Note: BulkSet is serialized to g:List so there is no BulkSet deserializer.
 [ "marko", "josh", "josh" ]
 ----
 
-==== Direction
+=== Direction
 
 JSON String of the enum value.
 
@@ -2690,7 +2686,7 @@ JSON String of the enum value.
 "OUT"
 ----
 
-==== T
+=== T
 
 JSON String of the enum value.
 
@@ -2707,9 +2703,7 @@ JSON String of the enum value.
 "label"
 ----
 
-=== RequestMessage
-
-==== Standard
+=== Standard Request
 
 The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.
 
@@ -2751,9 +2745,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 }
 ----
 
-=== ResponseMessage
-
-==== Standard Result
+=== Standard Result
 
 The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
 
@@ -2953,7 +2945,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 }
 ----
 
-==== Error Result
+=== Error Result
 
 The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.
 
@@ -2988,8 +2980,6 @@ The following `ResponseMessage` is a typical example of the typical successful r
 }
 ----
 
-=== Extended
-
 Note that the "extended" types require the addition of the separate `GraphSONXModuleV4d0` module as follows:
 
 [source,java]
@@ -3000,7 +2990,7 @@ mapper = GraphSONMapper.build().
                         version(GraphSONVersion.V4_0).create().createMapper()
 ----
 
-==== BigDecimal
+=== BigDecimal
 
 A JSON Number.
 
@@ -3017,7 +3007,7 @@ A JSON Number.
 123456789987654321123456789987654321
 ----
 
-==== BigInteger
+=== BigInteger
 
 A JSON Number.
 
@@ -3034,7 +3024,7 @@ A JSON Number.
 123456789987654321123456789987654321
 ----
 
-==== Byte
+=== Byte
 
 A JSON Number with the same range as a 1-byte signed integer.
 
@@ -3051,7 +3041,7 @@ A JSON Number with the same range as a 1-byte signed integer.
 1
 ----
 
-==== Binary
+=== Binary
 
 JSON String containing base64-encoded bytes
 
@@ -3068,7 +3058,7 @@ JSON String containing base64-encoded bytes
 "c29tZSBieXRlcyBmb3IgeW91"
 ----
 
-==== Char
+=== Char
 
 A JSON String containing a single UTF-8 encoded character.
 
@@ -3085,7 +3075,7 @@ A JSON String containing a single UTF-8 encoded character.
 "x"
 ----
 
-==== Duration
+=== Duration
 
 JSON String with ISO-8601 seconds based representation. The following example is a `Duration` of five days.
 
@@ -3102,7 +3092,7 @@ JSON String with ISO-8601 seconds based representation. The following example is
 "PT120H"
 ----
 
-==== Short
+=== Short
 
 A JSON Number with the same range as a 2-byte signed integer.
 
