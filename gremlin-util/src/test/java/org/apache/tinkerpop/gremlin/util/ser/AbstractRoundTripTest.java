@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -181,6 +182,12 @@ public abstract class AbstractRoundTripTest {
                     assertEquals(bulkSetExpanded, bulklist);
                 }},
                 new Object[] {"Tree", tree, null},
+                new Object[] {"EmptyTraversalMetrics", emptyTraversalMetrics, (Consumer<String>) m -> {
+                    assertEquals(m, emptyTraversalMetrics.toString());
+                }},
+                new Object[] {"TraversalMetrics", traversalMetrics, (Consumer<String>) m -> {
+                    assertEquals(m, traversalMetrics.toString());
+                }},
 
                 // collections
                 new Object[] {"ListSingle", list, null},

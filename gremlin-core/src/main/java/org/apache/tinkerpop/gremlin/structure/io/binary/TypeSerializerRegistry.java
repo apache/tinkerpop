@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -52,6 +53,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializ
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalExplanationSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalMetricsSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
@@ -87,6 +89,7 @@ public class TypeSerializerRegistry {
     private static final RegistryEntry[] defaultEntries = new RegistryEntry[] {
             new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
             new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
+            new RegistryEntry<>(TraversalMetrics.class, new TraversalMetricsSerializer()), // needs to register before String so StringSerializer is mapped to STRING datatype
             new RegistryEntry<>(String.class, new StringSerializer()),
             new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
             new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),

@@ -350,6 +350,26 @@ class GraphSONSerializersV4 {
         }
     }
 
+    final static class TraversalMetricsJacksonSerializer extends StdScalarSerializer<TraversalMetrics> {
+        public TraversalMetricsJacksonSerializer() {
+            super(TraversalMetrics.class);
+        }
+
+        @Override
+        public void serialize(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            jsonGenerator.writeString(traversalMetrics.toString());
+        }
+
+        @Override
+        public void serializeWithType(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
+                throws IOException {
+            // Don't include type information as it should be a plain string.
+            jsonGenerator.writeString(traversalMetrics.toString());
+        }
+    }
+
     /**
      * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
      */
