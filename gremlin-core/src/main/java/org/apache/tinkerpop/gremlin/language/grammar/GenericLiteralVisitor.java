@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -140,13 +141,27 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Parse a string literal varargs, and return an string array
+     * Parse a string argument varargs, and return an string array
      */
-    public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
+    public GValue<String>[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
         if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
-            return new String[0];
+            return new GValue[0];
         }
         return varargsContext.stringNullableArgument()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(antlr.argumentVisitor::parseString)
+                .toArray(GValue[]::new);
+    }
+
+    /**
+     * Parse a string literal varargs, and return a string array
+     */
+    public String[] parseStringVarargsLiterals(final GremlinParser.StringLiteralVarargsLiteralsContext varargsContext) {
+        if (varargsContext == null || varargsContext.stringNullableLiteral() == null) {
+            return new String[0];
+        }
+        return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
                 .map(antlr.argumentVisitor::parseString)

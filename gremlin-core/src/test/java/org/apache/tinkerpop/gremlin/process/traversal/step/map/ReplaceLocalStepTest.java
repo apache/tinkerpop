@@ -44,7 +44,7 @@ public class ReplaceLocalStepTest extends StepTest {
 
         assertEquals("hello", __.__("hello").replace(Scope.local, null, "a").next());
         assertEquals("hello", __.__("hello").replace(Scope.local, "el", null).next());
-        assertEquals("hello", __.__("hello").replace(Scope.local, null, null).next());
+        assertEquals("hello", __.__("hello").replace(Scope.local, (String) null, null).next());
 
         assertArrayEquals(new String[]{"hell0", "w0rld", null, ""},
                 ((List<?>) __.__(Arrays.asList("hello", "world", null, "")).replace(Scope.local, "o", "0").next()).toArray());

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
@@ -45,6 +46,10 @@ public final class ReplaceGlobalStep<S, E> extends ScalarMapStep<S, E> {
         super(traversal);
         this.oldChar=oldChar;
         this.newChar=newChar;
+    }
+
+    public ReplaceGlobalStep(final Traversal.Admin traversal, final GValue<String> oldChar, final GValue<String> newChar ) {
+        this(traversal, oldChar.get(), newChar.get());
     }
 
     @Override

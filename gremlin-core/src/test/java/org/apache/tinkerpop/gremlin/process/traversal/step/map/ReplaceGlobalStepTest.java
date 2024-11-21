@@ -47,7 +47,7 @@ public class ReplaceGlobalStepTest extends StepTest {
 
         assertEquals("hello", __.__("hello").replace(null, "a").next());
         assertEquals("hello", __.__("hello").replace("el", null).next());
-        assertEquals("hello", __.__("hello").replace(null, null).next());
+        assertEquals("hello", __.__("hello").replace((String) null, null).next());
 
         assertArrayEquals(new String[]{"hell0", "w0rld", null, ""},
                 __.__("hello", "world", null, "").replace("o", "0").toList().toArray());

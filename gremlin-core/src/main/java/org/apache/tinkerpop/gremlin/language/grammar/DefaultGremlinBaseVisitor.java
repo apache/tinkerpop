@@ -1648,6 +1648,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitStringLiteralVarargsLiterals(final GremlinParser.StringLiteralVarargsLiteralsContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalMethod_option_Merge_Map_Cardinality(final GremlinParser.TraversalMethod_option_Merge_Map_CardinalityContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}

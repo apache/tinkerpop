@@ -408,6 +408,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Map the {@link Vertex} to its adjacent vertices given a direction.
+     *
+     * @param direction  the direction to traverse from the current vertex
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Vertex> to(final Direction direction) {
+        return this.to(direction, (String[]) null);
+    }
+
+    /**
      * Map the {@link Vertex} to its adjacent vertices given a direction and edge labels.
      *
      * @param direction  the direction to traverse from the current vertex
@@ -431,10 +443,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Vertex> to(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.to, direction, edgeLabel, edgeLabels);
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, edgeLabel, GValue.class);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, direction, labels));
+    public default GraphTraversal<S, Vertex> to(final Direction direction, final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.to, direction, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, direction, edgeLabels));
+    }
+
+    /**
+     * Map the {@link Vertex} to its outgoing adjacent vertices.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Vertex> out() {
+        return this.out((String[]) null);
     }
 
     /**
@@ -459,11 +481,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 3.7.3
      */
-    public default GraphTraversal<S, Vertex> out(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.out, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.OUT, labels));
+    public default GraphTraversal<S, Vertex> out(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.out, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.OUT, edgeLabels));
     }
+
+    /**
+     * Map the {@link Vertex} to its incoming adjacent vertices.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Vertex> in() {
+        return this.in((String[]) null);
+    }
+
 
     /**
      * Map the {@link Vertex} to its incoming adjacent vertices given the edge labels.
@@ -487,10 +520,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Vertex> in(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.in, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.IN, labels));
+    public default GraphTraversal<S, Vertex> in(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.in, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.IN, edgeLabels));
+    }
+
+    /**
+     * Map the {@link Vertex} to its adjacent vertices.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Vertex> both() {
+        return this.both((String[]) null);
     }
 
     /**
@@ -515,10 +558,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Vertex> both(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.both, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.BOTH, labels));
+    public default GraphTraversal<S, Vertex> both(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.both, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, Direction.BOTH, edgeLabels));
+    }
+
+    /**
+     * Map the {@link Vertex} to its incident edges given the direction.
+     *
+     * @param direction  the direction to traverse from the current vertex
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Edge> toE(final Direction direction) {
+        return this.toE(direction, (String[]) null);
     }
 
     /**
@@ -546,10 +600,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Edge> toE(final Direction direction, final GValue<String> edgeLabel, final GValue<String>... edgeLabels) {
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.toE, direction, edgeLabel, edgeLabels);
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, edgeLabel, GValue.class);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, direction, labels));
+    public default GraphTraversal<S, Edge> toE(final Direction direction, final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.toE, direction, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, direction, edgeLabels));
+    }
+
+    /**
+     * Map the {@link Vertex} to its outgoing incident edges.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Edge> outE() {
+        return this.outE((String[]) null);
     }
 
     /**
@@ -574,10 +638,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Edge> outE(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.outE, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.OUT, labels));
+    public default GraphTraversal<S, Edge> outE(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.outE, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.OUT, edgeLabels));
+    }
+
+    /**
+     * Map the {@link Vertex} to its incoming incident edges.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Edge> inE() {
+        return this.inE((String[]) null);
     }
 
     /**
@@ -602,12 +676,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Edge> inE(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.inE, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.IN, labels));
+    public default GraphTraversal<S, Edge> inE(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.inE, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.IN, edgeLabels));
     }
 
+    /**
+     * Map the {@link Vertex} to its incident edges.
+     *
+     * @return the traversal with an appended {@link VertexStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, Edge> bothE() {
+        return this.bothE((String[]) null);
+    }
 
     /**
      * Map the {@link Vertex} to its incident edges given the edge labels.
@@ -631,10 +714,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Edge> bothE(final GValue<String> label, final GValue<String>... edgeLabels) {
-        final GValue<String>[] labels = CollectionUtil.addFirst(edgeLabels, label, GValue.class);
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.bothE, label, edgeLabels);
-        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.BOTH, labels));
+    public default GraphTraversal<S, Edge> bothE(final GValue<String>... edgeLabels) {
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.bothE, edgeLabels);
+        return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, Direction.BOTH, edgeLabels));
     }
 
     /**
@@ -1996,6 +2078,42 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
+     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
+     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param newChar the character to replace.
+     * @param oldChar the character to be replaced.
+     * @return the traversal with an appended {@link ReplaceGlobalStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, String> replace(final GValue<String> oldChar, final GValue<String> newChar) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.replace, oldChar, newChar);
+        return this.asAdmin().addStep(new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar));
+    }
+
+    /**
+     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
+     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
+     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
+     * {@code IllegalArgumentException} will be thrown.
+     *
+     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
+     * @param newChar the character to replace.
+     * @param oldChar the character to be replaced.
+     * @return the traversal with an appended {@link ReplaceGlobalStep} or {@link ReplaceLocalStep} depending on the {@link Scope}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
+     * @since 3.7.1
+     */
+    public default <E2> GraphTraversal<S, E2> replace(final Scope scope, final GValue<String> oldChar, final GValue<String> newChar) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.replace, scope, oldChar, newChar);
+        return this.asAdmin().addStep(scope.equals(Scope.global) ?
+                new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar) : new ReplaceLocalStep<>(this.asAdmin(), oldChar, newChar));
+    }
+
+    /**
      * Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
      * A null separator will split the string by whitespaces. Null values from incoming traversers are not processed
      * and remain as null when returned. If the incoming traverser is a non-String value then an
@@ -2683,6 +2801,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.has, label.get(), propertyKey, value);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
+    }
+
+    /**
+     * Filters vertices, edges and vertex properties based on their properties.
+     *
+     * @param label       the label of the {@link Element}
+     * @param propertyKey the key of the property to filter on
+     * @param predicate   the filter to apply to the key's value
+     * @return the traversal with an appended {@link HasStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
+     * @since 3.0.0-incubating
+     */
+    public default GraphTraversal<S, E> has(final GValue<String> label, final String propertyKey, final P<?> predicate) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.has, label.get(), propertyKey, predicate);
+        TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
+        return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, predicate));
     }
 
     /**

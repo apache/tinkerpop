@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -60,8 +62,20 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for string types.
      */
-    public String parseString(final GremlinParser.StringArgumentContext ctx) {
-        return (String) visitStringArgument(ctx);
+    public String parseString(final GremlinParser.StringLiteralContext ctx) {
+        return antlr.genericVisitor.parseString(ctx);
+    }
+
+    /**
+     * Wrapper to visit function for string types.
+     */
+    public GValue<String> parseString(final GremlinParser.StringArgumentContext ctx) {
+        Object literalOrVar = visitStringArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+            return (GValue<String>) literalOrVar;
+        } else {
+            return GValue.ofString((String) literalOrVar);
+        }
     }
 
     /**
@@ -127,8 +141,20 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for string types.
      */
-    public String parseString(final GremlinParser.StringNullableArgumentContext ctx) {
-        return (String) visitStringNullableArgument(ctx);
+    public String parseString(final GremlinParser.StringNullableLiteralContext ctx) {
+        return antlr.genericVisitor.parseString(ctx);
+    }
+
+    /**
+     * Wrapper to visit function for string types.
+     */
+    public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
+        Object literalOrVar = visitStringNullableArgument((ctx));
+        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+            return (GValue<String>) literalOrVar;
+        } else {
+            return GValue.ofString((String) literalOrVar);
+        }
     }
 
     @Override

@@ -63,7 +63,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     public AddEdgeStep(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabel);
+        this.parameters.set(this, T.label, edgeLabel.get());
     }
 
     public AddEdgeStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
