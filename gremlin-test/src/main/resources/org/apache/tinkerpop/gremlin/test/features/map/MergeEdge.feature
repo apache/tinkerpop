@@ -171,9 +171,10 @@ Feature: Step - mergeE()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"M[outV]\", \"D[IN]\":\"M[inV]\"}]"
     And the traversal of
       """
-      g.V().as("v").mergeE([T.label:"self",OUT:Merge.outV,IN:Merge.inV]).option(Merge.onCreate,null).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      g.V().as("v").mergeE(xx1).option(Merge.onCreate,null).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -216,9 +217,10 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").property("age", 29).
         addV("person").property("name", "vadas").property("age", 27)
       """
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"M[outV]\", \"D[IN]\":\"M[inV]\"}]"
     And the traversal of
       """
-      g.V().as("v").mergeE([T.label:"self",OUT:Merge.outV,IN:Merge.inV]).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      g.V().as("v").mergeE(xx1).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
       """
     When iterated to list
     Then the result should have a count of 2
@@ -646,11 +648,12 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
+    And using the parameter xx1 defined as "m[{ \"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
+    And using the parameter xx3 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
     And the traversal of
       """
-      g.mergeE([OUT:Merge.outV,IN:Merge.inV,T.label:"knows"]).option(outV, xx1).option(inV, xx2)
+      g.mergeE(xx1).option(outV, xx2).option(inV, xx3)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -664,11 +667,12 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
        addV("person").property("name", "vadas")
       """
+    And using the parameter xx1 defined as "m[{ \"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(vid1).as("x").V(vid2).as("y").mergeE([OUT:Merge.outV,IN:Merge.inV,T.label:"knows"]).option(outV, select("x")).option(inV, select("y"))
+      g.V(vid1).as("x").V(vid2).as("y").mergeE(xx1).option(outV, select("x")).option(inV, select("y"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -793,9 +797,10 @@ Feature: Step - mergeE()
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"name\": \"marko\", \"t[label]\": \"person\"}]"
     And using the parameter xx2 defined as "m[{\"name\": \"vadas\", \"t[label]\": \"person\"}]"
+    And using the parameter xx3 defined as "m[{\"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
     And the traversal of
       """
-      g.mergeV(xx1).as("outV").mergeV(xx2).as("inV").mergeE([OUT:Merge.outV,IN:Merge.inV,T.label:"knows"]).option(outV, select("outV")).option(inV, select("inV"))
+      g.mergeV(xx1).as("outV").mergeV(xx2).as("inV").mergeE(xx3).option(outV, select("outV")).option(inV, select("inV"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -813,9 +818,10 @@ Feature: Step - mergeE()
       """
     And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\", \"t[label]\": \"person\"}]"
     And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\", \"t[label]\": \"person\"}]"
+    And using the parameter xx3 defined as "m[{\"D[OUT]\": \"M[outV]\", \"D[IN]\": \"M[inV]\", \"t[label]\": \"knows\"}]"
     And the traversal of
       """
-      g.mergeV(xx1).as("outV").mergeV(xx2).as("inV").mergeE([OUT:Merge.outV,IN:Merge.inV,T.label:"knows"]).option(outV, select("outV")).option(inV, select("inV"))
+      g.mergeV(xx1).as("outV").mergeV(xx2).as("inV").mergeE(xx3).option(outV, select("outV")).option(inV, select("inV"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -830,10 +836,11 @@ Feature: Step - mergeE()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"~label\":\"vertex\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"M[outV]\", \"D[IN]\":\"M[inV]\"}]"
+    And using the parameter xx2 defined as "m[{\"~label\":\"vertex\"}]"
     And the traversal of
       """
-      g.V().as("v").mergeE([T.label:"self",OUT:Merge.outV,IN:Merge.inV]).option(Merge.onMatch,xx1).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      g.V().as("v").mergeE(xx1).option(Merge.onMatch,xx2).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
