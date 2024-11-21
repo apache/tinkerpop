@@ -64,6 +64,19 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  Scenario: g_VX1X_hasXname_markovarX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx1 defined as "marko"
+    And the traversal of
+      """
+      g.V(vid1).has("name", xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
   Scenario: g_VX2X_hasXname_markoX
     Given the modern graph
     And using the parameter vid1 defined as "v[vadas].id"

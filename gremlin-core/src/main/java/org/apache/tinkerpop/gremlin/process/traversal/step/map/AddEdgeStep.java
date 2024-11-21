@@ -58,7 +58,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabel);
+        this.parameters.set(this, T.label, GValue.of(null, edgeLabel));
     }
 
     public AddEdgeStep(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
@@ -103,7 +103,10 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        Object literalOrVar = this.parameters.get(traverser, T.label, () -> GValue.of(null, Edge.DEFAULT_LABEL)).get(0);
+        final GValue<String> edgeLabel = literalOrVar instanceof String ?
+                GValue.ofString(null, (String) literalOrVar) :
+                (GValue<String>) literalOrVar;
 
         final Object theTo;
         try {
@@ -143,7 +146,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
             fromVertex = ((Attachable<Vertex>) fromVertex)
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
 
-        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+        final Edge edge = fromVertex.addEdge(edgeLabel.get(), toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
         EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
         return edge;
     }

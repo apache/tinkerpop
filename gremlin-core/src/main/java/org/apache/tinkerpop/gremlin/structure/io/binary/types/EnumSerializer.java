@@ -47,6 +47,7 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
 
     public static final EnumSerializer<Direction> DirectionSerializer = new EnumSerializer<>(DataType.DIRECTION, Direction::valueOf);
     public static final EnumSerializer<T> TSerializer = new EnumSerializer<>(DataType.T, T::valueOf);
+    public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
 
     private final Function<String, E> readFunc;
 

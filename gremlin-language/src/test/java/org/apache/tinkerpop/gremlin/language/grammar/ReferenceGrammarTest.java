@@ -69,6 +69,12 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
             final String listItems = Stream.of(items).map(String::trim).map(x -> String.format("\"%s\"", x)).collect(Collectors.joining(","));
             return String.format("[%s]", listItems);
         }));
+        add(Pair.with(Pattern.compile("s\\[\\]"), (k,v) -> "{}"));
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), (k,v) -> {
+            final String[] items = v.split(",");
+            final String setItems = Stream.of(items).map(String::trim).map(x -> String.format("\"%s\"", x)).collect(Collectors.joining(","));
+            return String.format("{%s}", setItems);
+        }));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), (k,v) -> "\"1\""));
         add(Pair.with(Pattern.compile("v(\\d)"), (k,v) -> String.format("new Vertex(%s, \"vertex\")", v)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), (k,v) -> "\"1\""));

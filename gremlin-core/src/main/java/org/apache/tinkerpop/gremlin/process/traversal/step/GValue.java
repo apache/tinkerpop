@@ -52,6 +52,9 @@ public class GValue<V> implements Cloneable, Serializable {
     }
 
     private GValue(final String name, final GType type, final V value) {
+        if (name != null && name.startsWith("_")) {
+            throw new IllegalArgumentException(String.format("Invalid GValue name [%s]. Should not start with _.", name));
+        }
         this.name = name;
         this.type = type;
         this.value = value;
@@ -120,7 +123,7 @@ public class GValue<V> implements Cloneable, Serializable {
      *
      * @param value the value of the variable
      */
-    public static <V> GValue<V> of(final V value) {
+    static <V> GValue<V> of(final V value) {
         if (value instanceof GValue) return (GValue) value;
         return new GValue<>(GType.getType(value), value);
     }
@@ -140,7 +143,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a string value.
      */
-    public static GValue<String> ofString(final String value) {
+    static GValue<String> ofString(final String value) {
         return new GValue<>(GType.STRING, value);
     }
 
@@ -154,7 +157,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for an integer value.
      */
-    public static GValue<Integer> ofInteger(final Integer value) {
+    static GValue<Integer> ofInteger(final Integer value) {
         return new GValue<>(GType.INTEGER, value);
     }
 
@@ -168,7 +171,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a boolean value.
      */
-    public static GValue<Boolean> ofBoolean(final Boolean value) {
+    static GValue<Boolean> ofBoolean(final Boolean value) {
         return new GValue<>(GType.BOOLEAN, value);
     }
 
@@ -182,7 +185,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a double value.
      */
-    public static GValue<Double> ofDouble(final Double value) {
+    static GValue<Double> ofDouble(final Double value) {
         return new GValue<>(GType.DOUBLE, value);
     }
 
@@ -196,7 +199,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a BigInteger value.
      */
-    public static GValue<BigInteger> ofBigInteger(final BigInteger value) {
+    static GValue<BigInteger> ofBigInteger(final BigInteger value) {
         return new GValue<>(GType.BIG_INTEGER, value);
     }
 
@@ -210,7 +213,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a BigDecimal value.
      */
-    public static GValue<BigDecimal> ofBigDecimal(final BigDecimal value) {
+    static GValue<BigDecimal> ofBigDecimal(final BigDecimal value) {
         return new GValue<>(GType.BIG_DECIMAL, value);
     }
 
@@ -224,7 +227,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a long value.
      */
-    public static GValue<Long> ofLong(final Long value) {
+    static GValue<Long> ofLong(final Long value) {
         return new GValue<>(GType.LONG, value);
     }
 
@@ -238,7 +241,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a map value.
      */
-    public static GValue<Map> ofMap(final Map value) {
+    static GValue<Map> ofMap(final Map value) {
         return new GValue<>(GType.MAP, value);
     }
 
@@ -252,7 +255,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a list value.
      */
-    public static <T> GValue<List<T>> ofList(final List<T> value) {
+    static <T> GValue<List<T>> ofList(final List<T> value) {
         return new GValue<>(GType.LIST, value);
     }
 
@@ -266,7 +269,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a set value.
      */
-    public static GValue<Set> ofSet(final Set value) {
+    static GValue<Set> ofSet(final Set value) {
         return new GValue<>(GType.SET, value);
     }
 
@@ -280,7 +283,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a vertex value.
      */
-    public static GValue<Vertex> ofVertex(final Vertex value) {
+    static GValue<Vertex> ofVertex(final Vertex value) {
         return new GValue<>(GType.VERTEX, value);
     }
 
@@ -294,7 +297,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for an edge value.
      */
-    public static GValue<Edge> ofEdge(final Edge value) {
+    static GValue<Edge> ofEdge(final Edge value) {
         return new GValue<>(GType.EDGE, value);
     }
 
@@ -308,7 +311,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a path value.
      */
-    public static GValue<Path> ofPath(final Path value) {
+    static GValue<Path> ofPath(final Path value) {
         return new GValue<>(GType.PATH, value);
     }
 
@@ -322,7 +325,7 @@ public class GValue<V> implements Cloneable, Serializable {
     /**
      * Create a new {@code GValue} for a property value.
      */
-    public static GValue<Property> ofProperty(final Property value) {
+    static GValue<Property> ofProperty(final Property value) {
         return new GValue<>(GType.PROPERTY, value);
     }
 
@@ -364,7 +367,7 @@ public class GValue<V> implements Cloneable, Serializable {
 
     /**
      * Checks the type of the object against the provided {@link GType}. If the object is a {@link GValue} then it
-     * can directly check the type, otherwise it will test the given object's class itself using the mappign on the
+     * can directly check the type, otherwise it will test the given object's class itself using the mapping on the
      * {@link GType}.
      */
     public static boolean instanceOf(final Object o, final GType type) {

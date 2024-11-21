@@ -186,6 +186,20 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  Scenario: g_VX4X_bothEXcreatedvarX
+    Given the modern graph
+    And using the parameter vid4 defined as "v[josh].id"
+    And using the parameter xx1 defined as "created"
+    And the traversal of
+      """
+      g.V(vid4).bothE(xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[josh-created->lop] |
+      | e[josh-created->ripple] |
+
   Scenario: g_VX4X_bothE
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -264,6 +278,22 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     And the traversal of
       """
       g.V(vid1).out("knows","created")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX1X_outXknowsvar_createdvarX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx2 defined as "knows"
+    And using the parameter xx3 defined as "created"
+    And the traversal of
+      """
+      g.V(vid1).out(xx2,xx3)
       """
     When iterated to list
     Then the result should be unordered

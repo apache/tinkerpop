@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -120,8 +120,8 @@ public class GremlinLangTest {
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.hasLabel(\"person\"))).V()",},
                 {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
-                {g.inject(Parameter.var("x", "x")).V(Parameter.var("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
-                {newG().inject(Parameter.value("test1"), Parameter.value("test2")), "g.inject(_0,_1)"},
+                {g.inject(GValue.of("x", "x")).V(GValue.of("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
+                {newG().inject(GValue.of(null, "test1"), GValue.of("xx2", "test2")), "g.inject(\"test1\",xx2)"},
                 {newG().inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject({1,2})"},
         });
     }
@@ -130,35 +130,35 @@ public class GremlinLangTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameDontNeedEscaping() {
-            g.V(GremlinLang.Parameter.var("\"", new int[]{1, 2, 3}));
+            g.V(GValue.of("\"", new int[]{1, 2, 3}));
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameIsNotNumber() {
-            g.V(GremlinLang.Parameter.var("1", new int[]{1, 2, 3}));
+            g.V(GValue.of("1", new int[]{1, 2, 3}));
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameIsValidIdentifier() {
-            g.V(GremlinLang.Parameter.var("1a", new int[]{1, 2, 3}));
+            g.V(GValue.of("1a", new int[]{1, 2, 3}));
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldCheckParameterNameIsNotReserved() {
-            g.V(GremlinLang.Parameter.var("_1", new int[]{1, 2, 3}));
+            g.V(GValue.of("_1", new int[]{1, 2, 3}));
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void shouldNowAllowParameterNameDuplicates() {
-            final GremlinLang gremlin = g.inject(Parameter.var("ids", new int[]{1, 2})).V(Parameter.var("ids", new int[]{2, 3}))
+            final GremlinLang gremlin = g.inject(GValue.of("ids", new int[]{1, 2})).V(GValue.of("ids", new int[]{2, 3}))
                     .asAdmin().getGremlinLang();
         }
 
         @Test
         public void shouldAllowToUseSameParameterTwice() {
             final int[] value = new int[]{1, 2, 3};
-            final Parameter p = Parameter.var("ids", value);
-            final GremlinLang gremlin = g.inject(p).V(p).asAdmin().getGremlinLang();
+            final GValue<int[]> gValue = GValue.of("ids", value);
+            final GremlinLang gremlin = g.inject(gValue).V(gValue).asAdmin().getGremlinLang();
 
             assertEquals("g.inject(ids).V(ids)", gremlin.getGremlin());
             assertEquals(value, gremlin.getParameters().get("ids"));

@@ -155,6 +155,7 @@ Feature: Step - hasId()
       | v[josh] |
       | v[josh] |
       | v[peter] |
+
   Scenario: g_VX1X_out_hasIdX2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

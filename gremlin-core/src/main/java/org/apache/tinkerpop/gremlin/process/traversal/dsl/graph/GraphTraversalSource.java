@@ -347,6 +347,20 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
+     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     *
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
+        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
      *
      * @since 3.1.0-incubating
@@ -368,6 +382,18 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
+     *
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> addE(final GValue<String> label) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddEdgeStartStep(traversal, label));
     }
 
     /**
@@ -613,7 +639,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params, final Traversal<S, Map> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStep<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
