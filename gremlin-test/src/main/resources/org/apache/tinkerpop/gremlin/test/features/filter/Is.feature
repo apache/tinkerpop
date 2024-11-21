@@ -29,6 +29,18 @@ Feature: Step - is()
       | result |
       | d[32].i |
 
+  Scenario: g_V_valuesXageX_isX32varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[32].i"
+    And the traversal of
+      """
+      g.V().values("age").is(xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+
   Scenario: g_V_valuesXageX_isXlte_30X
     Given the modern graph
     And the traversal of
@@ -41,11 +53,38 @@ Feature: Step - is()
       | d[27].i |
       | d[29].i |
 
+  Scenario: g_V_valuesXageX_isXlte_30varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[30].i"
+    And the traversal of
+      """
+      g.V().values("age").is(P.lte(xx1))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[29].i |
+
   Scenario: g_V_valuesXageX_isXgte_29X_isXlt_34X
     Given the modern graph
     And the traversal of
       """
       g.V().values("age").is(P.gte(29)).is(P.lt(34))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[32].i |
+
+  Scenario: g_V_valuesXageX_isXgte_29vaarX_isXlt_34varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[29].i"
+    And using the parameter xx2 defined as "d[34].i"
+    And the traversal of
+      """
+      g.V().values("age").is(P.gte(xx1)).is(P.lt(xx2))
       """
     When iterated to list
     Then the result should be unordered

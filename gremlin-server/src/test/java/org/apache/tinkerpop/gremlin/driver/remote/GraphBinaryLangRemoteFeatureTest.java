@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GraphBinaryLangRemoteFeatureTest.RemoteGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
+//        name= {"g_callXlist_map_traversalX"},
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class GraphBinaryLangRemoteFeatureTest extends AbstractFeatureTest {
     public static class RemoteGuiceFactory extends AbstractGuiceFactory {
