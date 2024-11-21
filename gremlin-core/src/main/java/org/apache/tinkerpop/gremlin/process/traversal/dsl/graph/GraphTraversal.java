@@ -2078,42 +2078,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
-     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
-     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
-     * {@code IllegalArgumentException} will be thrown.
-     *
-     * @param newChar the character to replace.
-     * @param oldChar the character to be replaced.
-     * @return the traversal with an appended {@link ReplaceGlobalStep}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
-     * @since 3.7.1
-     */
-    public default GraphTraversal<S, String> replace(final GValue<String> oldChar, final GValue<String> newChar) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.replace, oldChar, newChar);
-        return this.asAdmin().addStep(new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar));
-    }
-
-    /**
-     * Returns a string with the specified characters in the original string replaced with the new characters. Any null
-     * arguments will be a no-op and the original string is returned. Null values from incoming traversers are not
-     * processed and remain as null when returned. If the incoming traverser is a non-String value then an
-     * {@code IllegalArgumentException} will be thrown.
-     *
-     * @param scope local will operate on individual strings within incoming lists, global will operate on current traversal as a single object.
-     * @param newChar the character to replace.
-     * @param oldChar the character to be replaced.
-     * @return the traversal with an appended {@link ReplaceGlobalStep} or {@link ReplaceLocalStep} depending on the {@link Scope}.
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#replace-step" target="_blank">Reference Documentation - Replace Step</a>
-     * @since 3.7.1
-     */
-    public default <E2> GraphTraversal<S, E2> replace(final Scope scope, final GValue<String> oldChar, final GValue<String> newChar) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.replace, scope, oldChar, newChar);
-        return this.asAdmin().addStep(scope.equals(Scope.global) ?
-                new ReplaceGlobalStep<>(this.asAdmin(), oldChar, newChar) : new ReplaceLocalStep<>(this.asAdmin(), oldChar, newChar));
-    }
-
-    /**
      * Returns a list of strings created by splitting the incoming string traverser around the matches of the given separator.
      * A null separator will split the string by whitespaces. Null values from incoming traversers are not processed
      * and remain as null when returned. If the incoming traverser is a non-String value then an
@@ -2811,7 +2775,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param predicate   the filter to apply to the key's value
      * @return the traversal with an appended {@link HasStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
-     * @since 3.0.0-incubating
+     * @since 4.0.0
      */
     public default GraphTraversal<S, E> has(final GValue<String> label, final String propertyKey, final P<?> predicate) {
         this.asAdmin().getGremlinLang().addStep(Symbols.has, label.get(), propertyKey, predicate);

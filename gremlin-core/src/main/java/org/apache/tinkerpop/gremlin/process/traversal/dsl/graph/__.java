@@ -1763,5 +1763,4 @@ public class __ {
     public static <A, B> GraphTraversal<A, B> call(final String service, final GValue<Map> params, final Traversal<?, Map<?,?>> childTraversal) {
         return __.<A>start().call(service, params, childTraversal);
     }
-
 }

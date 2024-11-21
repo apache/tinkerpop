@@ -95,7 +95,7 @@ traversalSourceSelfMethod_withoutStrategies
 
 traversalSourceSelfMethod_with
     : 'with' LPAREN stringLiteral RPAREN
-    | 'with' LPAREN stringLiteral COMMA genericLiteral RPAREN
+    | 'with' LPAREN stringLiteral COMMA genericLiteralArgument RPAREN
     ;
 
 traversalSourceSpawnMethod
@@ -924,8 +924,8 @@ traversalMethod_rTrim
     ;
 
 traversalMethod_replace
-    : 'replace' LPAREN stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_String_String
-    | 'replace' LPAREN traversalScope COMMA stringNullableArgument COMMA stringNullableArgument RPAREN #traversalMethod_replace_Scope_String_String
+    : 'replace' LPAREN stringNullableLiteral COMMA stringNullableLiteral RPAREN #traversalMethod_replace_String_String
+    | 'replace' LPAREN traversalScope COMMA stringNullableLiteral COMMA stringNullableLiteral RPAREN #traversalMethod_replace_Scope_String_String
     ;
 
 traversalMethod_split

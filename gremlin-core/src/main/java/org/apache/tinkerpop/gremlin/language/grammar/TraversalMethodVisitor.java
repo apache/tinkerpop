@@ -91,7 +91,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addV_String(final GremlinParser.TraversalMethod_addV_StringContext ctx) {
-        Object literalOrVar = antlr.argumentVisitor.parseString(ctx.stringArgument());
+        final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
         if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
             return this.graphTraversal.addV((GValue<String>) literalOrVar);
         } else {
@@ -176,7 +176,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addE_String(final GremlinParser.TraversalMethod_addE_StringContext ctx) {
-        Object literalOrVar = antlr.argumentVisitor.parseString(ctx.stringArgument());
+        final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
         if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
             return this.graphTraversal.addE((GValue<String>) literalOrVar);
         } else {
@@ -2076,8 +2076,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_replace_String_String(final GremlinParser.TraversalMethod_replace_String_StringContext ctx) {
-        return graphTraversal.replace(antlr.argumentVisitor.parseString(ctx.stringNullableArgument(0)),
-                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)));
+        return graphTraversal.replace(antlr.argumentVisitor.parseString(ctx.stringNullableLiteral(0)),
+                antlr.argumentVisitor.parseString(ctx.stringNullableLiteral(1)));
     }
 
     /**
@@ -2086,8 +2086,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_replace_Scope_String_String(final GremlinParser.TraversalMethod_replace_Scope_String_StringContext ctx) {
         return graphTraversal.replace(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
-                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(0)),
-                antlr.argumentVisitor.parseString(ctx.stringNullableArgument(1)));
+                antlr.argumentVisitor.parseString(ctx.stringNullableLiteral(0)),
+                antlr.argumentVisitor.parseString(ctx.stringNullableLiteral(1)));
     }
 
     /**

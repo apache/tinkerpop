@@ -141,7 +141,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
             return source.with(antlr.argumentVisitor.parseString(ctx.stringLiteral()));
         } else {
             return source.with(antlr.argumentVisitor.parseString(ctx.stringLiteral()),
-                    antlr.argumentVisitor.visitGenericLiteral(ctx.genericLiteral()));
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
         }
     }
 }
