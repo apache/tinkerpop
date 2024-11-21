@@ -221,6 +221,11 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitGenericLiteral(final GremlinParser.GenericLiteralContext ctx) {
+        return antlr.genericVisitor.visitGenericLiteral(ctx);
+    }
+
+    @Override
     public Object visitGenericLiteralListArgument(final GremlinParser.GenericLiteralListArgumentContext ctx) {
         if (ctx.genericLiteralList() != null) {
             return antlr.genericVisitor.visitChildren(ctx.genericLiteralList());
