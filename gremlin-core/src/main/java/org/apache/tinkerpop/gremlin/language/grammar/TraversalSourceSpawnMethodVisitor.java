@@ -59,7 +59,12 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addE(final GremlinParser.TraversalSourceSpawnMethod_addEContext ctx) {
         if (ctx.stringArgument() != null) {
-            return this.traversalSource.addE(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+            Object literalOrVar = antlr.argumentVisitor.parseString(ctx.stringArgument());
+            if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+                return this.traversalSource.addE((GValue<String>) literalOrVar);
+            } else {
+                return this.traversalSource.addE((String) literalOrVar);
+            }
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addE(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
         } else {
@@ -73,7 +78,12 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
         if (ctx.stringArgument() != null) {
-            return this.traversalSource.addV(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+            Object literalOrVar = antlr.argumentVisitor.parseString(ctx.stringArgument());
+            if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+                return this.traversalSource.addV((GValue<String>) literalOrVar);
+            } else {
+                return this.traversalSource.addV((String) literalOrVar);
+            }
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
         } else {

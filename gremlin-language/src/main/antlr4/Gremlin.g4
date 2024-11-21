@@ -81,8 +81,8 @@ traversalSourceSelfMethod_withSack
     ;
 
 traversalSourceSelfMethod_withSideEffect
-    : 'withSideEffect' LPAREN stringLiteral COMMA genericLiteral RPAREN
-    | 'withSideEffect' LPAREN stringLiteral COMMA genericLiteral COMMA traversalBiFunction RPAREN
+    : 'withSideEffect' LPAREN stringLiteral COMMA genericLiteralArgument RPAREN
+    | 'withSideEffect' LPAREN stringLiteral COMMA genericLiteralArgument COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies

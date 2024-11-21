@@ -69,7 +69,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for string types.
      */
-    public GValue<String> parseString(final GremlinParser.StringArgumentContext ctx) {
+    public Object parseString(final GremlinParser.StringArgumentContext ctx) {
         Object literalOrVar = visitStringArgument(ctx);
         if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
             return (GValue<String>) literalOrVar;

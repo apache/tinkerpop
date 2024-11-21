@@ -416,7 +416,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> to(final Direction direction) {
-        return this.to(direction, (String[]) null);
+        return this.to(direction, new String[0]);
     }
 
     /**
@@ -456,7 +456,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> out() {
-        return this.out((String[]) null);
+        return this.out(new String[0]);
     }
 
     /**
@@ -494,7 +494,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> in() {
-        return this.in((String[]) null);
+        return this.in(new String[0]);
     }
 
 
@@ -533,7 +533,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Vertex> both() {
-        return this.both((String[]) null);
+        return this.both(new String[0]);
     }
 
     /**
@@ -572,7 +572,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction) {
-        return this.toE(direction, (String[]) null);
+        return this.toE(direction, new String[0]);
     }
 
     /**
@@ -613,7 +613,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> outE() {
-        return this.outE((String[]) null);
+        return this.outE(new String[0]);
     }
 
     /**
@@ -651,7 +651,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> inE() {
-        return this.inE((String[]) null);
+        return this.inE(new String[0]);
     }
 
     /**
@@ -689,7 +689,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.0.0-incubating
      */
     public default GraphTraversal<S, Edge> bothE() {
-        return this.bothE((String[]) null);
+        return this.bothE(new String[0]);
     }
 
     /**

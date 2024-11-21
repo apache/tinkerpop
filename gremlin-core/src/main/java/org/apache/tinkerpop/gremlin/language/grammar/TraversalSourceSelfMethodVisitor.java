@@ -90,10 +90,10 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
         if (ctx.getChildCount() < 8) {
             // with 4 children withSideEffect() was called without a reducer specified.
             return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringLiteral()),
-                    antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral()));
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
         } else {
             return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringLiteral()),
-                    antlr.argumentVisitor.visitGenericLiteral(ctx.genericLiteral()),
+                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
