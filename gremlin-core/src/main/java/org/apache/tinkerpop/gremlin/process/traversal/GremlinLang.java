@@ -176,8 +176,8 @@ public class GremlinLang implements Cloneable, Serializable {
             String key = gValue.getName();
             Object value = gValue.get();
             if (value instanceof Map) {
-                ((Map) value).computeIfPresent(Direction.IN, (k, v) -> v instanceof Merge ? v.toString() : v);
                 ((Map) value).computeIfPresent(Direction.OUT, (k, v) -> v instanceof Merge ? v.toString() : v);
+                ((Map) value).computeIfPresent(Direction.IN, (k, v) -> v instanceof Merge ? v.toString() : v);
             }
 
             if (key == null) {

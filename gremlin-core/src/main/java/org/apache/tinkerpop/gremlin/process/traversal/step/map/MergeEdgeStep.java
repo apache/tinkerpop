@@ -73,7 +73,7 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
     }
 
     public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> merge) {
-        super(traversal, isStart, transformMap(merge));
+        super(traversal, isStart, merge);
     }
 
     public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
@@ -239,7 +239,13 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
         if (!map.containsKey(direction))
             return;
 
-        final Object value = map.get(direction);
+        Object value = map.get(direction);
+
+        if (Objects.equals(value, "outV"))
+            value = Merge.valueOf("outV");
+        else if (Objects.equals(value, "inV"))
+            value = Merge.valueOf("inV");
+
         if (Objects.equals(token, value)) {
             if (traversal == null) {
                 throw new IllegalArgumentException(String.format(
@@ -431,13 +437,4 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
         }
     }
 
-    /**
-     * Transform string tokens inside parameterized map back into enum token for processing.
-     */
-    private static Map transformMap(final GValue<Map> merge) {
-        Map mergeMap = merge.get();
-        mergeMap.computeIfPresent(Direction.IN, (k, v) -> (Objects.equals(v, "inV")) ? Merge.valueOf((String) v) : v);
-        mergeMap.computeIfPresent(Direction.OUT, (k, v) -> (Objects.equals(v, "outV")) ? Merge.valueOf((String) v) : v);
-        return mergeMap;
-    }
 }

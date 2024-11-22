@@ -301,7 +301,7 @@ Feature: Step - inject()
       | s[d[1].i] |
 
   @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
-  Scenario: g_injectX1_1X_set
+  Scenario: g_injectX1_1X_setvar
     Given the modern graph
     And using the parameter xx1 defined as "s[d[1].i,d[1].i]"
     And the traversal of
@@ -314,7 +314,7 @@ Feature: Step - inject()
       | s[d[1].i] |
 
   @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
-  Scenario: g_injectX1_1X_set
+  Scenario: g_injectX_set
     Given the modern graph
     And using the parameter xx1 defined as "s[]"
     And the traversal of
