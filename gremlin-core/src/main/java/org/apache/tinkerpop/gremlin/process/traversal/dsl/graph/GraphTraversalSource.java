@@ -639,7 +639,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params, final Traversal<S, Map> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStep<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
