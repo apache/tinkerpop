@@ -239,13 +239,7 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
         if (!map.containsKey(direction))
             return;
 
-        Object value = map.get(direction);
-
-        if (Objects.equals(value, "~outV"))
-            value = Merge.valueOf("outV");
-        else if (Objects.equals(value, "~inV"))
-            value = Merge.valueOf("inV");
-
+        final Object value = map.get(direction);
         if (Objects.equals(token, value)) {
             if (traversal == null) {
                 throw new IllegalArgumentException(String.format(

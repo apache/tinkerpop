@@ -174,11 +174,6 @@ public class GremlinLang implements Cloneable, Serializable {
         if (arg instanceof GValue) {
             final GValue gValue = (GValue) arg;
             String key = gValue.getName();
-            Object value = gValue.get();
-            if (value instanceof Map) {
-                ((Map) value).computeIfPresent(Direction.OUT, (k, v) -> v instanceof Merge ? String.format("~%s", v) : v);
-                ((Map) value).computeIfPresent(Direction.IN, (k, v) -> v instanceof Merge ? String.format("~%s", v) : v);
-            }
 
             if (key == null) {
                 key = String.format("_%d", paramCount.getAndIncrement());
@@ -193,7 +188,7 @@ public class GremlinLang implements Cloneable, Serializable {
                     throw new IllegalArgumentException(String.format("Parameter with name [%s] already defined.", key));
                 }
             } else {
-                parameters.put(key, value);
+                parameters.put(key, gValue.get());
             }
             return key;
         }
