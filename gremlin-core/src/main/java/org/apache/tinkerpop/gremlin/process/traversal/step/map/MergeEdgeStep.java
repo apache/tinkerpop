@@ -241,9 +241,9 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
 
         Object value = map.get(direction);
 
-        if (Objects.equals(value, "outV"))
+        if (Objects.equals(value, "~outV"))
             value = Merge.valueOf("outV");
-        else if (Objects.equals(value, "inV"))
+        else if (Objects.equals(value, "~inV"))
             value = Merge.valueOf("inV");
 
         if (Objects.equals(token, value)) {
