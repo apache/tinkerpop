@@ -141,27 +141,7 @@ public class ArgumentVisitorTest {
     public void shouldParse() {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-        if (clazz.equals(Boolean.class)) {
-            assertParsing(() -> {
-                final GremlinParser.BooleanArgumentContext ctx = parser.booleanArgument();
-                return antlrToLanguage.argumentVisitor.parseBoolean(ctx);
-            });
-        } else if (clazz.equals(Integer.class)) {
-            assertParsing(() -> {
-                final GremlinParser.IntegerArgumentContext ctx = parser.integerArgument();
-                return antlrToLanguage.argumentVisitor.parseNumber(ctx);
-            });
-        } else if (clazz.equals(Float.class)) {
-            assertParsing(() -> {
-                final GremlinParser.FloatArgumentContext ctx = parser.floatArgument();
-                return antlrToLanguage.argumentVisitor.parseNumber(ctx);
-            });
-        } else if (clazz.equals(String.class)) {
-            assertParsing(() -> {
-                final GremlinParser.StringArgumentContext ctx = parser.stringArgument();
-                return antlrToLanguage.argumentVisitor.parseString(ctx);
-            });
-        } else if (clazz.equals(StringNullable.class)) {
+        if (clazz.equals(StringNullable.class)) {
             assertParsing(() -> {
                 final GremlinParser.StringNullableArgumentContext ctx = parser.stringNullableArgument();
                 return antlrToLanguage.argumentVisitor.parseString(ctx);
@@ -180,7 +160,7 @@ public class ArgumentVisitorTest {
             assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, parser.traversalDirection()));
         } else if (clazz.equals(Vertex.class)) {
             assertParsing(() -> {
-                final GremlinParser.StructureVertexArgumentContext ctx = parser.structureVertexArgument();
+                final GremlinParser.StructureVertexContext ctx = parser.structureVertex();
                 return antlrToLanguage.argumentVisitor.parseVertex(ctx);
             });
         } else if (clazz.equals(Order.class)) {

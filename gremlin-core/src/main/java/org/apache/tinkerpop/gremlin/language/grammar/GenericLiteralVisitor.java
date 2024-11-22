@@ -141,20 +141,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Parse a string argument varargs, and return an string array
-     */
-    public GValue<String>[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
-        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
-            return new GValue[0];
-        }
-        return varargsContext.stringNullableArgument()
-                .stream()
-                .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
-                .toArray(GValue[]::new);
-    }
-
-    /**
      * Parse a string literal varargs, and return a string array
      */
     public String[] parseStringVarargsLiterals(final GremlinParser.StringLiteralVarargsLiteralsContext varargsContext) {
@@ -164,7 +150,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
+                .map(antlr.genericVisitor::parseString)
                 .toArray(String[]::new);
     }
 

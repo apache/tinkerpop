@@ -371,7 +371,7 @@ traversalMethod_as
 traversalMethod_barrier
     : 'barrier' LPAREN traversalSackMethod RPAREN #traversalMethod_barrier_Consumer
     | 'barrier' LPAREN RPAREN #traversalMethod_barrier_Empty
-    | 'barrier' LPAREN integerArgument RPAREN #traversalMethod_barrier_int
+    | 'barrier' LPAREN integerLiteral RPAREN #traversalMethod_barrier_int
     ;
 
 traversalMethod_both
@@ -588,8 +588,8 @@ traversalMethod_label
     ;
 
 traversalMethod_limit
-    : 'limit' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_limit_Scope_long
-    | 'limit' LPAREN integerArgument RPAREN #traversalMethod_limit_long
+    : 'limit' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_limit_Scope_long
+    | 'limit' LPAREN integerLiteral RPAREN #traversalMethod_limit_long
     ;
 
 traversalMethod_local
@@ -720,8 +720,8 @@ traversalMethod_propertyMap
     ;
 
 traversalMethod_range
-    : 'range' LPAREN traversalScope COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_range_Scope_long_long
-    | 'range' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_range_long_long
+    : 'range' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_Scope_long_long
+    | 'range' LPAREN integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_long_long
     ;
 
 traversalMethod_read
@@ -743,8 +743,8 @@ traversalMethod_sack
     ;
 
 traversalMethod_sample
-    : 'sample' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_sample_Scope_int
-    | 'sample' LPAREN integerArgument RPAREN #traversalMethod_sample_int
+    : 'sample' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_sample_Scope_int
+    | 'sample' LPAREN integerLiteral RPAREN #traversalMethod_sample_int
     ;
 
 traversalMethod_select
@@ -770,8 +770,8 @@ traversalMethod_simplePath
     ;
 
 traversalMethod_skip
-    : 'skip' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_skip_Scope_long
-    | 'skip' LPAREN integerArgument RPAREN #traversalMethod_skip_long
+    : 'skip' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_skip_Scope_long
+    | 'skip' LPAREN integerLiteral RPAREN #traversalMethod_skip_long
     ;
 
 traversalMethod_store
@@ -790,8 +790,8 @@ traversalMethod_sum
 traversalMethod_tail
     : 'tail' LPAREN RPAREN #traversalMethod_tail_Empty
     | 'tail' LPAREN traversalScope RPAREN #traversalMethod_tail_Scope
-    | 'tail' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_tail_Scope_long
-    | 'tail' LPAREN integerArgument RPAREN #traversalMethod_tail_long
+    | 'tail' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_tail_Scope_long
+    | 'tail' LPAREN integerLiteral RPAREN #traversalMethod_tail_long
     ;
 
 traversalMethod_fail
@@ -800,11 +800,11 @@ traversalMethod_fail
     ;
 
 traversalMethod_timeLimit
-    : 'timeLimit' LPAREN integerArgument RPAREN
+    : 'timeLimit' LPAREN integerLiteral RPAREN
     ;
 
 traversalMethod_times
-    : 'times' LPAREN integerArgument RPAREN
+    : 'times' LPAREN integerLiteral RPAREN
     ;
 
 traversalMethod_to
@@ -934,10 +934,10 @@ traversalMethod_split
     ;
 
 traversalMethod_substring
-    : 'substring' LPAREN integerArgument RPAREN #traversalMethod_substring_int
-    | 'substring' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int
-    | 'substring' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_int_int
-    | 'substring' LPAREN traversalScope COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_substring_Scope_int_int
+    : 'substring' LPAREN integerLiteral RPAREN #traversalMethod_substring_int
+    | 'substring' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_substring_Scope_int
+    | 'substring' LPAREN integerLiteral COMMA integerLiteral RPAREN #traversalMethod_substring_int_int
+    | 'substring' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_substring_Scope_int_int
     ;
 
 traversalMethod_asDate
@@ -945,12 +945,12 @@ traversalMethod_asDate
     ;
 
 traversalMethod_dateAdd
-    : 'dateAdd' LPAREN traversalDT COMMA integerArgument RPAREN
+    : 'dateAdd' LPAREN traversalDT COMMA integerLiteral RPAREN
     ;
 
 traversalMethod_dateDiff
     : 'dateDiff' LPAREN nestedTraversal RPAREN #traversalMethod_dateDiff_Traversal
-    | 'dateDiff' LPAREN dateArgument RPAREN #traversalMethod_dateDiff_Date
+    | 'dateDiff' LPAREN dateLiteral RPAREN #traversalMethod_dateDiff_Date
     ;
 
 /*********************************************
