@@ -43,4 +43,14 @@ public final class FunctionTraverser<A, B> implements Function<Traverser<A>, B>,
     public String toString() {
         return this.function.toString();
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other != null && other.getClass().equals(this.getClass()) && this.hashCode() == other.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.function.hashCode();
+    }
 }
