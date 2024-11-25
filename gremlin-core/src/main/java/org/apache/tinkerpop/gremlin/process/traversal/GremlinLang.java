@@ -170,7 +170,6 @@ public class GremlinLang implements Cloneable, Serializable {
             return gremlinLang.getGremlin("__");
         }
 
-        // TODO old Parameters tests will fail, reminder to check them
         if (arg instanceof GValue) {
             final GValue gValue = (GValue) arg;
             String key = gValue.getName();
@@ -470,31 +469,6 @@ public class GremlinLang implements Cloneable, Serializable {
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Parameter to be used in Traversal.
-     */
-    public static class Parameter {
-        private final String key;
-        private final Object value;
-
-        private Parameter(final String key, final Object value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public static Parameter var(final String key, final Object value) {
-            if (key != null && key.startsWith("_")) {
-                throw new IllegalArgumentException(String.format("Invalid parameter name [%s]. Should not start with _.", key));
-            }
-
-            return new Parameter(key, value);
-        }
-
-        public static Parameter value(final Object value) {
-            return new Parameter(null, value);
         }
     }
 

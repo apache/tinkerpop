@@ -21,7 +21,7 @@ Unit tests for the GremlinLang Class. Modified from deprecated Groovy Translator
 """
 from gremlin_python.process.strategies import ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy, PartitionStrategy
 from gremlin_python.process.traversal import within, eq, T, Order, Scope, Column, Operator, P, Pop, Cardinality, \
-    between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, Parameter
+    between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, GValue
 from gremlin_python.statics import SingleByte, short, long, bigint, BigDecimal
 from gremlin_python.structure.graph import Graph, Vertex, Edge, VertexProperty
 from gremlin_python.process.anonymous_traversal import traversal
@@ -473,45 +473,45 @@ class TestGremlinLang(object):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
             assert gremlin_lang == tests[t][1]
 
-    def test_parameters_name_dont_need_escaping(self):
+    def test_gvalue_name_dont_need_escaping(self):
         g = traversal().with_(None)
         try:
-            g.V(Parameter.var('\"', [1, 2, 3]))
+            g.V(GValue('\"', [1, 2, 3]))
         except Exception as ex:
             assert str(ex) == 'invalid parameter name ".'
 
-    def test_parameters_is_not_number(self):
+    def test_gvalue_is_not_number(self):
         g = traversal().with_(None)
         try:
-            g.V(Parameter.var('1', [1, 2, 3]))
+            g.V(GValue('1', [1, 2, 3]))
         except Exception as ex:
             assert str(ex) == 'invalid parameter name 1.'
 
-    def test_parameters_is_valid_identifier(self):
+    def test_gvalue_is_valid_identifier(self):
         g = traversal().with_(None)
         try:
-            g.V(Parameter.var('1a', [1, 2, 3]))
+            g.V(GValue('1a', [1, 2, 3]))
         except Exception as ex:
             assert str(ex) == 'invalid parameter name 1a.'
 
-    def test_parameters_is_not_reserved(self):
+    def test_gvalue_is_not_reserved(self):
         g = traversal().with_(None)
         try:
-            g.V(Parameter.var('_1', [1, 2, 3]))
+            g.V(GValue('_1', [1, 2, 3]))
         except Exception as ex:
-            assert str(ex) == 'invalid parameter name _1. Should not start with _.'
+            assert str(ex) == 'invalid GValue name _1. Should not start with _.'
 
-    def test_parameters_is_not_duplicate(self):
+    def test_gvalue_is_not_duplicate(self):
         g = traversal().with_(None)
         try:
-            g.inject(Parameter.var('ids', [1, 2])).V(Parameter.var('ids', [2, 3]))
+            g.inject(GValue('ids', [1, 2])).V(GValue('ids', [2, 3]))
         except Exception as ex:
             assert str(ex) == 'parameter with name ids already exists.'
 
-    def test_parameters_allow_parameter_reuse(self):
+    def test_gvalue_allow_parameter_reuse(self):
         g = traversal().with_(None)
         val = [1, 2, 3]
-        p = Parameter.var('ids', val)
+        p = GValue('ids', val)
         gremlin = g.inject(p).V(p).gremlin_lang
         assert 'g.inject(ids).V(ids)' == gremlin.get_gremlin()
         assert val == gremlin.get_parameters().get('ids')

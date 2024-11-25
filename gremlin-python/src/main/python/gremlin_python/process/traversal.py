@@ -23,7 +23,7 @@ import threading
 import warnings
 
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, Edge, Path, Property
 
 from .. import statics
 from ..statics import long, SingleByte, short, bigint, BigDecimal
@@ -853,8 +853,8 @@ class GremlinLang(object):
             self.parameters.update(gremlin_lang.parameters)
             return gremlin_lang.get_gremlin('__')
 
-        if isinstance(arg, Parameter):
-            key = arg.key
+        if isinstance(arg, GValue):
+            key = arg.get_name()
             if key is None:
                 key = f'_{self.param_count.get_and_increment()}'
 
@@ -1085,20 +1085,24 @@ class GremlinLang(object):
     #         return Bytecode._create_graph_op("tx", "rollback")
 
 
-class Parameter:
-    def __init__(self, key, value):
-        self.key = key
+class GValue:
+    def __init__(self, name=None, value=None):
+        if name is not None and name.startswith('_'):
+            raise Exception(f'invalid GValue name {name}. Should not start with _.')
+        self.name = name
         self.value = value
 
-    @staticmethod
-    def var(key, value):
-        if key is not None and key.startswith('_'):
-            raise Exception(f'invalid parameter name {key}. Should not start with _.')
-        return Parameter(key, value)
+    def is_variable(self):
+        return self.name is not None
 
-    @staticmethod
-    def value(value):
-        return Parameter(None, value)
+    def get_name(self):
+        return self.name
+
+    def is_null(self):
+        return self.value is None
+
+    def get(self):
+        return self.value
 
 
 class CardinalityValue(GremlinLang):

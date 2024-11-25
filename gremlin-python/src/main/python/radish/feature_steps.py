@@ -25,7 +25,7 @@ from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, \
-    Pick, Operator, IO, WithOptions, Merge
+    Pick, Operator, IO, WithOptions, Merge, GValue
 from radish import given, when, then, world
 from hamcrest import *
 
@@ -127,7 +127,15 @@ def translate_traversal(step):
     if step.context.ignore:
         return
 
-    p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
+    p = {}
+    if hasattr(step.context, "traversal_params"):
+        # user flag "parameterize", when set to 'true' will use GValue to parameterize parameters instead of flattening them out into string
+        if world.config.user_data.get("parameterize"):
+            for k, v in step.context.traversal_params.items():
+                p[k] = GValue(k, v)
+        else:
+            p = step.context.traversal_params
+
     localg = step.context.g
 
     tagset = [tag.name for tag in step.all_tags]
