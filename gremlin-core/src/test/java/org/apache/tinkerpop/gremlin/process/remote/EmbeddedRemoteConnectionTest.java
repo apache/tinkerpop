@@ -19,13 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.remote;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter.value;
-import static org.apache.tinkerpop.gremlin.process.traversal.GremlinLang.Parameter.var;
 import static org.junit.Assert.assertEquals;
 
 public class EmbeddedRemoteConnectionTest {
@@ -42,6 +41,6 @@ public class EmbeddedRemoteConnectionTest {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
-        assertEquals(33, simulatedRemoteG.inject(value(11), var("x", 22)).sum().next());
+        assertEquals(33, simulatedRemoteG.inject(GValue.of(11), GValue.of("x", 22)).sum().next());
     }
 }

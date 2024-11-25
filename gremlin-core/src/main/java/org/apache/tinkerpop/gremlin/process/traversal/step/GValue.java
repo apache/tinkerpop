@@ -52,6 +52,9 @@ public class GValue<V> implements Cloneable, Serializable {
     }
 
     private GValue(final String name, final GType type, final V value) {
+        if (name != null && name.startsWith("_")) {
+            throw new IllegalArgumentException(String.format("Invalid GValue name [%s]. Should not start with _.", name));
+        }
         this.name = name;
         this.type = type;
         this.value = value;

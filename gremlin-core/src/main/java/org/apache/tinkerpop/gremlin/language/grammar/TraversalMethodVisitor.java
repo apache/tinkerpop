@@ -1095,7 +1095,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         } else if (ctx.ioOptionsValues() != null) {
             o = WithOptionsVisitor.instance().visitIoOptionsValues(ctx.ioOptionsValues());
         } else {
-            o = antlr.argumentVisitor.parseObject(ctx.genericLiteralArgument());
+            o = antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument());
         }
         return graphTraversal.with(k, o);
     }

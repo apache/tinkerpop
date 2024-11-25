@@ -88,9 +88,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
         try {
-            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
-                    addParameter("x", "Good bye, world!").create();
-            client.submit("g.inject(1).fail(x)", ro).all().get();
+            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").create();
+            client.submit("g.inject(1).fail('Good bye, world!')", ro).all().get();
             fail("should throw exception");
         } catch (Exception ex) {
             final Throwable inner = ExceptionHelper.getRootCause(ex);

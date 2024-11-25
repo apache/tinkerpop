@@ -40,24 +40,15 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Wrapper for visit function for object types.
-     */
-    public Object parseObject(final GremlinParser.GenericLiteralArgumentContext ctx) {
-        return visitGenericLiteralArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Vertex} types.
-     */
-    public Vertex parseVertex(final GremlinParser.StructureVertexContext ctx) {
-        return antlr.structureVisitor.visitStructureVertex(ctx);
-    }
-
-    /**
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) {
-        return (Map) visitGenericLiteralMapNullableArgument(ctx);
+        Object literalOrVar = visitGenericLiteralMapNullableArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
+            return ((GValue<Map>) literalOrVar).get();
+        } else {
+            return (Map) literalOrVar;
+        }
     }
 
     /**

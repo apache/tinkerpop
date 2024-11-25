@@ -365,8 +365,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return literalMap;
     }
 
-
-
     /**
      * {@inheritDoc}
      */

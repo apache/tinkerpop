@@ -26,9 +26,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FormatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -1131,6 +1134,14 @@ public class __ {
     public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final Object value) {
         return __.<A>start().has(label, propertyKey, value);
     }
+
+    /**
+     * @see GraphTraversal#has(GValue, String, P)
+     */
+    public static <A> GraphTraversal<A, A> has(final GValue<String> label, final String propertyKey, final P<?> predicate) {
+        return __.<A>start().has(label, propertyKey, predicate);
+    }
+
 
     /**
      * @see GraphTraversal#has(GValue, String, Object)

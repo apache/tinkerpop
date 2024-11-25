@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -167,7 +168,7 @@ public class GraphTraversalSourceTest {
         assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
 
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
-        GremlinLang lang = g.V(value(11)).asAdmin().getGremlinLang();
+        GremlinLang lang = g.V(GValue.of(11)).asAdmin().getGremlinLang();
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
         assertThat(lang.getParameters().size(), is(1));
         assertThat(lang.getParameters().values(), containsInAnyOrder(11));
@@ -175,7 +176,7 @@ public class GraphTraversalSourceTest {
         paramMatcher.find();
         assertThat(lang.getParameters().keySet(), containsInAnyOrder(paramMatcher.group()));
 
-        lang = g.V(value(22)).asAdmin().getGremlinLang();
+        lang = g.V(GValue.of(22)).asAdmin().getGremlinLang();
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
         assertThat(lang.getParameters().size(), is(1));
         assertThat(lang.getParameters().values(), containsInAnyOrder(22));

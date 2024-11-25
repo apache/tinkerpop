@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -69,8 +70,8 @@ public class TraversalMethodVisitorTest {
     }
     
     private void compare(Object expected, Object actual) {
-        assertEquals(((DefaultGraphTraversal) expected).asAdmin().getGremlinLang(),
-                ((DefaultGraphTraversal) actual).asAdmin().getGremlinLang());
+        assertEquals(((DefaultGraphTraversal) expected).asAdmin(),
+                ((DefaultGraphTraversal) actual).asAdmin());
     }
 
     @Test
@@ -124,7 +125,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void shouldParseTraversalMethod_and() throws Exception {
-        compare(g.V().and(outE("knows")), eval("g.V().and(outE('knows'))"));
+        compare(g.V().and(outE(GValue.of("knows"))), eval("g.V().and(outE('knows'))"));
     }
 
     @Test
@@ -158,12 +159,12 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void shouldParseTraversalMethod_both_SingleString() throws Exception {
-        compare(g.V().both("test"), eval("g.V().both('test')"));
+        compare(g.V().both(GValue.of("test")), eval("g.V().both('test')"));
     }
 
     @Test
     public void shouldParseTraversalMethod_both_MultiString() throws Exception {
-        compare(g.V().both(new String[]{"a", "b"}), eval("g.V().both('a', 'b')"));
+        compare(g.V().both(new GValue[]{GValue.of("a"), GValue.of("b")}), eval("g.V().both('a', 'b')"));
     }
 
     @Test
@@ -529,7 +530,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void shouldParseTraversalMethod_inE() throws Exception {
-        compare(g.V().inE("created"), eval("g.V().inE('created')"));
+        compare(g.V().inE(GValue.of("created")), eval("g.V().inE('created')"));
     }
 
     @Test
@@ -962,7 +963,7 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void shouldParseTraversalMethod_to_Direction_String() throws Exception {
-        compare(g.V().to(Direction.IN, "asd"), eval("g.V().to(IN, 'asd')"));
+        compare(g.V().to(Direction.IN, GValue.of("asd")), eval("g.V().to(IN, 'asd')"));
     }
 
     @Test
