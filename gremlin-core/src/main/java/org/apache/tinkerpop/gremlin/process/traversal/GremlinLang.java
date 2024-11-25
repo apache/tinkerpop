@@ -472,8 +472,6 @@ public class GremlinLang implements Cloneable, Serializable {
         }
     }
 
-    /////
-
     private Object[] flattenArguments(final Object... arguments) {
         if (arguments == null || arguments.length == 0)
             return EMPTY_ARRAY;
