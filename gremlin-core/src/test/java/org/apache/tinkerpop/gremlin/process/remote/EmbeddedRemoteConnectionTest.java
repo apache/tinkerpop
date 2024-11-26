@@ -41,6 +41,6 @@ public class EmbeddedRemoteConnectionTest {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
-        assertEquals(33, simulatedRemoteG.inject(GValue.of(11), GValue.of("x", 22)).sum().next());
+        assertEquals(33, simulatedRemoteG.inject(GValue.of(null, 11), GValue.of("x", 22)).sum().next());
     }
 }

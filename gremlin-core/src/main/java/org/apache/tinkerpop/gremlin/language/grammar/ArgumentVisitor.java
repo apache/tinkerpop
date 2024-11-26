@@ -98,7 +98,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
             return (GValue<String>) literalOrVar;
         } else {
-            return GValue.ofString((String) literalOrVar);
+            return GValue.ofString(null, (String) literalOrVar);
         }
     }
 
@@ -211,5 +211,16 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitVariable(final GremlinParser.VariableContext ctx) {
         return resolver.apply(ctx.getText(), ctx);
+    }
+
+    /**
+     * Create a new {@code GValue} from a particular value but without the specified name. If the argument provide is
+     * already a {@code GValue} then it is returned as-is.
+     *
+     * @param value the value of the variable
+     */
+    public static <V> GValue<V> asGValue(final V value) {
+        if (value instanceof GValue) return (GValue) value;
+        return GValue.of(null, value);
     }
 }

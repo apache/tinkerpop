@@ -175,7 +175,7 @@ public class GremlinLang implements Cloneable, Serializable {
             String key = gValue.getName();
 
             if (key == null) {
-                key = String.format("_%d", paramCount.getAndIncrement());
+                return argAsString(((GValue<?>) arg).get());
             }
 
             if (!SourceVersion.isIdentifier(key)) {

@@ -153,7 +153,7 @@ public class GraphTraversalSourceTest {
 
     @Test
     public void shouldContainReuseableGremlinLang() {
-        final Pattern paramPatter = Pattern.compile("_\\d+");
+        final Pattern paramPatter = Pattern.compile("xx\\d+");
         assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
         g.with("a", "1").V();
         assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
@@ -161,7 +161,7 @@ public class GraphTraversalSourceTest {
         assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
 
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
-        GremlinLang lang = g.V(GValue.of(11)).asAdmin().getGremlinLang();
+        GremlinLang lang = g.V(GValue.of("xx1", 11)).asAdmin().getGremlinLang();
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
         assertThat(lang.getParameters().size(), is(1));
         assertThat(lang.getParameters().values(), containsInAnyOrder(11));
@@ -169,7 +169,7 @@ public class GraphTraversalSourceTest {
         paramMatcher.find();
         assertThat(lang.getParameters().keySet(), containsInAnyOrder(paramMatcher.group()));
 
-        lang = g.V(GValue.of(22)).asAdmin().getGremlinLang();
+        lang = g.V(GValue.of("xx2", 22)).asAdmin().getGremlinLang();
         assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
         assertThat(lang.getParameters().size(), is(1));
         assertThat(lang.getParameters().values(), containsInAnyOrder(22));

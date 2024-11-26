@@ -33,11 +33,11 @@ public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E>
     private final GValue<E> end;
 
     public ConstantTraversal(final E end) {
-        this.end = null == end ? GValue.of(null) : GValue.of(end);
+        this.end = null == end ? GValue.of(null, null) : GValue.of(null, end);
     }
 
     public ConstantTraversal(final GValue<E> end) {
-        this.end = null == end ? GValue.of(null) : end;
+        this.end = null == end ? GValue.of(null, null) : end;
     }
 
     @Override

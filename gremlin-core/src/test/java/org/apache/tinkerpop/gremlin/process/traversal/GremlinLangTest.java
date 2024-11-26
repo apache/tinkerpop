@@ -121,7 +121,7 @@ public class GremlinLangTest {
                 {g.withStrategies(SubgraphStrategy.build().vertices(__.has("name", P.within("josh", "lop", "ripple"))).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.has(\"name\",P.within([\"josh\",\"lop\",\"ripple\"])))).V()"},
                 {g.inject(GValue.of("x", "x")).V(GValue.of("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
-                {newG().inject(GValue.of("test1"), GValue.of("test2")), "g.inject(_0,_1)"},
+                {newG().inject(GValue.of(null, "test1"), GValue.of("xx2", "test2")), "g.inject(\"test1\",xx2)"},
                 {newG().inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject({1,2})"},
         });
     }

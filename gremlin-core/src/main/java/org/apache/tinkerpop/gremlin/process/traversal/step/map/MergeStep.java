@@ -48,8 +48,10 @@ public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements Traver
 
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
+        } else if (values instanceof GValue){
+            parameterItems = (GValue<Object>) values;
         } else {
-            parameterItems = GValue.of(values);;
+            parameterItems = GValue.of(null, values);
         }
     }
 

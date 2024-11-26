@@ -1431,7 +1431,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.mergeV, searchCreate);
-        final MergeVertexStep<S> step = new MergeVertexStep(this.asAdmin(), false, null == searchCreate ? GValue.ofMap(null) : searchCreate);
+        final MergeVertexStep<S> step = new MergeVertexStep(this.asAdmin(), false, null == searchCreate ? GValue.ofMap(null, null) : searchCreate);
         return this.asAdmin().addStep(step);
     }
 
@@ -1486,7 +1486,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         // get a construction time exception if the Map is bad
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.mergeE, searchCreate);
-        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, null == searchCreate ? GValue.ofMap(null) : searchCreate);
+        final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, null == searchCreate ? GValue.ofMap(null, null) : searchCreate);
         return this.asAdmin().addStep(step);
     }
 

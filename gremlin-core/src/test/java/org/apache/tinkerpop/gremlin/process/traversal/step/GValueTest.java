@@ -77,7 +77,7 @@ public class GValueTest {
 
     @Test
     public void shouldCreateGValueFromString() {
-        final GValue<String> gValue = GValue.ofString("test");
+        final GValue<String> gValue = GValue.ofString(null, "test");
         assertEquals("test", gValue.get());
         assertEquals(GType.STRING, gValue.getType());
         assertThat(gValue.isVariable(), is(false));
