@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -103,6 +104,87 @@ public class TraversalRootVisitorTest {
     public void shouldParseAnonymousTraversal_to()  {
         compare(g.V().map(__.to(Direction.OUT)), eval("g.V().map(__.to(Direction.OUT))"));
         compare(g.V().map(__.to(Direction.OUT, "knows")), eval("g.V().map(__.to(Direction.OUT,\"knows\"))"));
+        compare(g.V().map(__.to(Direction.OUT, GValue.ofString("foo", "bar"))), eval("g.V().map(__.to(Direction.OUT,foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_out()  {
+        compare(g.V().map(__.out()), eval("g.V().map(__.out())"));
+        compare(g.V().map(__.out("knows")), eval("g.V().map(__.out(\"knows\"))"));
+        compare(g.V().map(__.out(GValue.ofString("foo", "bar"))), eval("g.V().map(__.out(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_in()  {
+        compare(g.V().map(__.in()), eval("g.V().map(__.in())"));
+        compare(g.V().map(__.in("knows")), eval("g.V().map(__.in(\"knows\"))"));
+        compare(g.V().map(__.in(GValue.ofString("foo", "bar"))), eval("g.V().map(__.in(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_both()  {
+        compare(g.V().map(__.both()), eval("g.V().map(__.both())"));
+        compare(g.V().map(__.both("knows")), eval("g.V().map(__.both(\"knows\"))"));
+        compare(g.V().map(__.both(GValue.ofString("foo", "bar"))), eval("g.V().map(__.both(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_toE()  {
+        compare(g.V().map(__.toE(Direction.OUT)), eval("g.V().map(__.toE(Direction.OUT))"));
+        compare(g.V().map(__.toE(Direction.OUT, "knows")), eval("g.V().map(__.toE(Direction.OUT,\"knows\"))"));
+        compare(g.V().map(__.toE(Direction.OUT, GValue.ofString("foo", "bar"))), eval("g.V().map(__.toE(Direction.OUT,foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_outE()  {
+        compare(g.V().map(__.outE()), eval("g.V().map(__.outE())"));
+        compare(g.V().map(__.outE("knows")), eval("g.V().map(__.outE(\"knows\"))"));
+        compare(g.V().map(__.outE(GValue.ofString("foo", "bar"))), eval("g.V().map(__.outE(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_inE()  {
+        compare(g.V().map(__.inE()), eval("g.V().map(__.inE())"));
+        compare(g.V().map(__.inE("knows")), eval("g.V().map(__.inE(\"knows\"))"));
+        compare(g.V().map(__.inE(GValue.ofString("foo", "bar"))), eval("g.V().map(__.inE(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_bothE()  {
+        compare(g.V().map(__.bothE()), eval("g.V().map(__.bothE())"));
+        compare(g.V().map(__.bothE("knows")), eval("g.V().map(__.bothE(\"knows\"))"));
+        compare(g.V().map(__.bothE(GValue.ofString("foo", "bar"))), eval("g.V().map(__.bothE(foo))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_toV()  {
+        compare(g.V().map(__.toV(Direction.OUT)), eval("g.V().map(__.toV(Direction.OUT)))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_inV()  {
+        compare(g.V().map(__.inV()), eval("g.V().map(__.inV()))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_outV()  {
+        compare(g.V().map(__.outV()), eval("g.V().map(__.outV()))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_bothV()  {
+        compare(g.V().map(__.bothV()), eval("g.V().map(__.bothV()))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_otherV()  {
+        compare(g.V().map(__.otherV()), eval("g.V().map(__.otherV()))"));
+    }
+
+    @Test
+    public void shouldParseAnonymousTraversal_order()  {
+        compare(g.V().map(__.order()), eval("g.V().map(__.order()))"));
+        compare(g.V().map(__.order(Scope.global)), eval("g.V().map(__.order(Scope.global)))"));
     }
 
     private void compare(Object expected, Object actual) {
