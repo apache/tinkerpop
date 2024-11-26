@@ -367,7 +367,7 @@ public class GValue<V> implements Cloneable, Serializable {
 
     /**
      * Checks the type of the object against the provided {@link GType}. If the object is a {@link GValue} then it
-     * can directly check the type, otherwise it will test the given object's class itself using the mappign on the
+     * can directly check the type, otherwise it will test the given object's class itself using the mapping on the
      * {@link GType}.
      */
     public static boolean instanceOf(final Object o, final GType type) {
