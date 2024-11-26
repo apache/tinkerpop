@@ -855,8 +855,6 @@ class GremlinLang(object):
 
         if isinstance(arg, GValue):
             key = arg.get_name()
-            if key is None:
-                key = f'_{self.param_count.get_and_increment()}'
 
             if not key.isidentifier():
                 raise Exception(f'invalid parameter name {key}.')
@@ -1086,14 +1084,13 @@ class GremlinLang(object):
 
 
 class GValue:
-    def __init__(self, name=None, value=None):
-        if name is not None and name.startswith('_'):
+    def __init__(self, name, value):
+        if name is None:
+            raise Exception("The parameter name cannot be None.")
+        if name.startswith('_'):
             raise Exception(f'invalid GValue name {name}. Should not start with _.')
         self.name = name
         self.value = value
-
-    def is_variable(self):
-        return self.name is not None
 
     def get_name(self):
         return self.name

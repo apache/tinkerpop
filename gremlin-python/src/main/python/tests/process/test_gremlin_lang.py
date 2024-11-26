@@ -473,6 +473,13 @@ class TestGremlinLang(object):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
             assert gremlin_lang == tests[t][1]
 
+    def test_gvalue_name_cannot_be_null(self):
+        g = traversal().with_(None)
+        try:
+            g.V(GValue(None, [1, 2, 3]))
+        except Exception as ex:
+            assert str(ex) == 'The parameter name cannot be None.'
+
     def test_gvalue_name_dont_need_escaping(self):
         g = traversal().with_(None)
         try:
