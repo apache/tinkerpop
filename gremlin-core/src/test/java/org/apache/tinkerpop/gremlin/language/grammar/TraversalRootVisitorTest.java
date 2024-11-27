@@ -1572,14 +1572,30 @@ public class TraversalRootVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_call_String_Traversal() {
+        compare(g.V().map(__.call("test", __.inject(CollectionUtil.asMap("a", "b")))), eval("g.V().map(__.call(\"test\", __.inject([\"a\":\"b\"])))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_call_Map() {
         compare(g.V().map(__.call("test", CollectionUtil.asMap("x", "y"))), eval("g.V().map(__.call(\"test\", [\"x\":\"y\"]))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_call_Map_Traversal() {
+        compare(g.V().map(__.call("test", CollectionUtil.asMap("x", "y"), __.inject(CollectionUtil.asMap("a", "b")))), eval("g.V().map(__.call(\"test\", [\"x\":\"y\"], __.inject([\"a\":\"b\"])))"));
     }
 
     @Test
     public void shouldParseTraversalMethod_call_GValue() {
         antlrToLanguage = createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("test", CollectionUtil.asMap("foo", "bar"))));
         compare(g.V().map(__.call("svc", GValue.ofMap("test", CollectionUtil.asMap("foo", "bar")))), eval("g.V().map(__.call(\"svc\", test))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_call_GValue_Traversal() {
+        antlrToLanguage = createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("test", CollectionUtil.asMap("foo", "bar"))));
+        compare(g.V().map(__.call("svc", GValue.ofMap("test", CollectionUtil.asMap("foo", "bar")), __.inject(CollectionUtil.asMap("a", "b")))), eval("g.V().map(__.call(\"svc\", test, __.inject([\"a\":\"b\"])))"));
     }
 
     private void compare(Object expected, Object actual) {
