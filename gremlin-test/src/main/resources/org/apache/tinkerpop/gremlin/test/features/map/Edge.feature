@@ -356,3 +356,16 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | marko |
       | josh |
       | vadas |
+
+  Scenario: g_V_toEXout_knowsvarX_valuesXweightX
+    Given the modern graph
+    And using the parameter xx1 defined as "knows"
+    And the traversal of
+      """
+      g.V().toE(Direction.OUT, xx1).values("weight")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+      | d[1.0].d |

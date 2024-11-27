@@ -153,6 +153,19 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_hasXpersonvar_age_gt_30X
+    Given the modern graph
+    And using the parameter xx1 defined as "person"
+    And the traversal of
+      """
+      g.V().has(xx1, "age", P.gt(30))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[peter] |
+      | v[josh] |
+
   Scenario: g_VX4X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
