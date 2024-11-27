@@ -44,14 +44,14 @@ class Client:
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
-                 enable_bulked_result=False, **transport_kwargs):
+                 bulk_results=False, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
 
         self._closed = False
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
-        self._enable_bulked_result = enable_bulked_result
+        self._bulk_results = bulk_results
         self._traversal_source = traversal_source
         if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024

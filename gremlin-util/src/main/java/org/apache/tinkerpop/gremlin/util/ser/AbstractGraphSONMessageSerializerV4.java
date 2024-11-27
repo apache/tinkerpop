@@ -335,8 +335,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             if (data.containsKey(Tokens.ARGS_BATCH_SIZE)) {
                 builder.addChunkSize((int) data.get(Tokens.ARGS_BATCH_SIZE));
             }
-            if (data.containsKey(Tokens.BULKED)) {
-                builder.addBulkedResult(Boolean.parseBoolean(data.get(Tokens.BULKED).toString()));
+            if (data.containsKey(Tokens.BULK_RESULTS)) {
+                builder.addBulkResults(Boolean.parseBoolean(data.get(Tokens.BULK_RESULTS).toString()));
             }
 
             return builder.create();

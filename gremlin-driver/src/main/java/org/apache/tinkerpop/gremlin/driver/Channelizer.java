@@ -199,7 +199,7 @@ public interface Channelizer extends ChannelHandler {
 
             httpCompressionDecoder = new HttpContentDecompressionHandler();
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
-                    cluster.isUserAgentOnConnectEnabled(), cluster.isBulkingEnabled(), connection.getUri());
+                    cluster.isUserAgentOnConnectEnabled(), cluster.isBulkResultsEnabled(), connection.getUri());
             gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
             if (cluster.getIdleConnectionTimeout() > 0) {
                 final int idleConnectionTimeout = (int) (cluster.getIdleConnectionTimeout() / 1000);
