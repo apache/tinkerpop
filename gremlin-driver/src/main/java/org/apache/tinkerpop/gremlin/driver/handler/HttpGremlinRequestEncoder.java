@@ -56,17 +56,17 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
-    private final boolean bulkedResultEnabled;
+    private final boolean bulkResults;
     private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
     private final URI uri;
 
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer,
                                      final List<Pair<String, ? extends RequestInterceptor>> interceptors,
-                                     final boolean userAgentEnabled, boolean bulkedResultEnabled, final URI uri) {
+                                     final boolean userAgentEnabled, boolean bulkResults, final URI uri) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
-        this.bulkedResultEnabled = bulkedResultEnabled;
+        this.bulkResults = bulkResults;
         this.uri = uri;
     }
 
@@ -88,8 +88,8 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             if (userAgentEnabled) {
                 headersMap.put(HttpRequest.Headers.USER_AGENT, UserAgent.USER_AGENT);
             }
-            if (bulkedResultEnabled) {
-                headersMap.put(Tokens.BULKED, "true");
+            if (bulkResults) {
+                headersMap.put(Tokens.BULK_RESULTS, "true");
             }
             HttpRequest gremlinRequest = new HttpRequest(headersMap, requestMessage, uri);
 

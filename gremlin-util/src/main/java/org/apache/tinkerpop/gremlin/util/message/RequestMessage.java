@@ -161,8 +161,8 @@ public final class RequestMessage {
             return this;
         }
 
-        public Builder addBulkedResult(final boolean bulked) {
-            this.fields.put(Tokens.BULKED, String.valueOf(bulked));
+        public Builder addBulkResults(final boolean bulking) {
+            this.fields.put(Tokens.BULK_RESULTS, String.valueOf(bulking));
             return this;
         }
 

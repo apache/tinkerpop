@@ -314,12 +314,12 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-        final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULKED);
+        final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULK_RESULTS);
         // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
         // The serializer check is temporarily needed because GraphSON hasn't been removed yet and doesn't support bulking.
         final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 ?
-                (args.containsKey(Tokens.BULKED) ?
-                        Objects.equals(args.get(Tokens.BULKED), "true") :
+                (args.containsKey(Tokens.BULK_RESULTS) ?
+                        Objects.equals(args.get(Tokens.BULK_RESULTS), "true") :
                         Objects.equals(bulkingSetting, "true")) :
                 false;
 

@@ -93,7 +93,7 @@ public final class Settings {
     /**
      * Toggles if result from server is bulked. Default is false.
      */
-    public boolean enableBulkedResult = false;
+    public boolean bulkResults = false;
 
     /**
      * Read configuration from a file into a new {@link Settings} object.
@@ -132,8 +132,8 @@ public final class Settings {
         if (conf.containsKey("enableUserAgentOnConnect"))
             settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
 
-        if (conf.containsKey("enableBulkedResult"))
-            settings.enableBulkedResult = conf.getBoolean("enableBulkedResult");
+        if (conf.containsKey("bulkResults"))
+            settings.bulkResults = conf.getBoolean("bulkResults");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());

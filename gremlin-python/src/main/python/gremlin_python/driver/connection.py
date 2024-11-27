@@ -26,7 +26,7 @@ class Connection:
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
                  executor, pool, headers=None, enable_user_agent_on_connect=True,
-                 enable_bulked_result=False):
+                 bulk_results=False):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -40,9 +40,9 @@ class Connection:
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
             self.__add_header(useragent.userAgentHeader, useragent.userAgent)
-        self._enable_bulked_result = enable_bulked_result
-        if self._enable_bulked_result:
-            self.__add_header("bulked", "true")
+        self._bulk_results = bulk_results
+        if self._bulk_results:
+            self.__add_header("bulkResults", "true")
 
     def connect(self):
         if self._transport:

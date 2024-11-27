@@ -189,7 +189,7 @@ public final class Cluster {
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
                 .idleConnectionTimeoutMillis(settings.connectionPool.idleConnectionTimeout)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
-                .enableBulkedResult(settings.enableBulkedResult)
+                .bulkResults(settings.bulkResults)
                 .validationRequest(settings.connectionPool.validationRequest);
 
         if (!settings.auth.type.isEmpty()) {
@@ -475,10 +475,10 @@ public final class Cluster {
     }
 
     /**
-     * Checks if cluster is configured to send bulked results
+     * Checks if cluster is configured to bulk results
      */
-    public boolean isBulkingEnabled() {
-        return manager.isBulkedResultEnabled();
+    public boolean isBulkResultsEnabled() {
+        return manager.isBulkResultsEnabled();
     }
 
     public final static class Builder {
@@ -513,7 +513,7 @@ public final class Cluster {
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private long idleConnectionTimeoutMillis = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
-        private boolean enableBulkedResult = false;
+        private boolean bulkResults = false;
 
         private Builder() {
             addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
@@ -891,10 +891,10 @@ public final class Cluster {
 
         /**
          * Configures whether cluster will enable result bulking to optimize performance.
-         * @param enableBulkedResult true enables bulking.
+         * @param bulkResults true enables bulking.
          */
-        public Builder enableBulkedResult(final boolean enableBulkedResult) {
-            this.enableBulkedResult = enableBulkedResult;
+        public Builder bulkResults(final boolean bulkResults) {
+            this.bulkResults = bulkResults;
             return this;
         }
 
@@ -966,7 +966,7 @@ public final class Cluster {
         private final int port;
         private final String path;
         private final boolean enableUserAgentOnConnect;
-        private final boolean enableBulkedResult;
+        private final boolean bulkResults;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -979,7 +979,7 @@ public final class Cluster {
             this.contactPoints = builder.getContactPoints();
             this.interceptors = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
-            this.enableBulkedResult = builder.enableBulkedResult;
+            this.bulkResults = builder.bulkResults;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
@@ -1147,8 +1147,8 @@ public final class Cluster {
         /**
          * Checks if cluster is configured to send bulked results
          */
-        public boolean isBulkedResultEnabled() {
-            return enableBulkedResult;
+        public boolean isBulkResultsEnabled() {
+            return bulkResults;
         }
     }
 }

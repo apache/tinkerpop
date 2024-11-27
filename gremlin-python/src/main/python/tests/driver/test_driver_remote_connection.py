@@ -97,18 +97,19 @@ class TestDriverRemoteConnection(object):
         results = g.V().has('person', 'name', 'marko').both('knows').group_count().by(__.values('name').fold()).next()
         assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
 
-    def test_bulked_request_option(self, remote_connection):
+    def test_bulk_request_option(self, remote_connection):
         g = traversal().with_(remote_connection)
         result = g.inject(1,2,3,2,1).to_list()
         assert 5 == len(result)
-        bulked_results = g.with_("language", "gremlin-lang").with_("bulked", True).inject(1,2,3,2,1).to_list()
+        bulked_results = g.with_("language", "gremlin-lang").with_("bulkResults", True).inject(1,2,3,2,1).to_list()
         assert 5 == len(bulked_results)
 
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
         t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000}
+                                                                             'evaluationTimeout': 1000,
+                                                                             'bulkResults': True}
         assert 6 == t.to_list()[0]
 
     def test_extract_request_options_with_params(self, remote_connection):
@@ -119,6 +120,7 @@ class TestDriverRemoteConnection(object):
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
                                                                              'evaluationTimeout': 1000,
                                                                              'userAgent': 'test',
+                                                                             'bulkResults': True,
                                                                              'params': {'ids': [1, 2, 3]}}
         assert 3 == t.to_list()[0]
 

@@ -87,9 +87,9 @@ public final class Tokens {
     public static final String TIMEOUT_MS = "timeoutMs";
 
     /**
-     * The key for turning on bulked result optimization for driver requests.
+     * The key for server to bulk result as a form of optimization for driver requests.
      */
-    public static final String BULKED = "bulked";
+    public static final String BULK_RESULTS = "bulkResults";
 
     /**
      * A value that is a custom string that the user can pass to a server that might accept it for purpose of

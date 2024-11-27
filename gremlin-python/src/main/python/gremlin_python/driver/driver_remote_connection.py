@@ -36,7 +36,7 @@ class DriverRemoteConnection(RemoteConnection):
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
-                 enable_bulked_result=False, **transport_kwargs):
+                 bulk_results=False, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
@@ -47,7 +47,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__auth = auth
         self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
-        self.__enable_bulked_result = enable_bulked_result
+        self.__bulk_results = bulk_results
         self.__transport_kwargs = transport_kwargs
 
         if response_serializer is None:
@@ -62,7 +62,7 @@ class DriverRemoteConnection(RemoteConnection):
                                      interceptors=interceptors, auth=auth,
                                      headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
-                                     enable_bulked_result=enable_bulked_result,
+                                     bulk_results=bulk_results,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source
@@ -123,6 +123,9 @@ class DriverRemoteConnection(RemoteConnection):
         for os in gremlin_lang.options_strategies:
             request_options.update({token: os.configuration[token] for token in Tokens
                                     if token in os.configuration})
+        # request the server to bulk results by default when using drc through request options
+        if 'bulkResults' not in request_options:
+            request_options['bulkResults'] = True
         if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
             request_options["params"] = gremlin_lang.parameters
 

@@ -238,7 +238,7 @@ public abstract class Client {
         options.getG().ifPresent(g -> request.addG(g));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
-        options.getBulked().ifPresent(bulked -> request.addBulkedResult(Boolean.parseBoolean(bulked)));
+        options.getBulkResults().ifPresent(bulked -> request.addBulkResults(Boolean.parseBoolean(bulked)));
 
         return submitAsync(request.create());
     }
