@@ -66,6 +66,16 @@ Feature: Step - product()
     When iterated to list
     Then the traversal will raise an error with message containing text of "product step can only take an array or an Iterable as an argument, encountered"
 
+  Scenario: g_V_valuesXnameX_fold_productX7varX
+    Given the modern graph
+    And using the parameter xx1 defined as "7"
+    And the traversal of
+      """
+      g.V().values("name").fold().product(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "product step can only take an array or an Iterable as an argument, encountered"
+
   Scenario: g_V_valuesXnameX_fold_productXnullX
     Given the modern graph
     And the traversal of

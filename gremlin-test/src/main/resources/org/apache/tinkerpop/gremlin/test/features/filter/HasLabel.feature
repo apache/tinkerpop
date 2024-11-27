@@ -78,6 +78,23 @@ Feature: Step - hasLabel()
       | v[lop] |
       | v[ripple] |
 
+  Scenario: g_V_hasLabelXperson_softwarevarX
+    Given the modern graph
+    And using the parameter xx1 defined as "software"
+    And the traversal of
+    """
+    g.V().hasLabel("person",xx1)
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+      | v[lop] |
+      | v[ripple] |
+
   Scenario: g_V_hasLabelXpersonX_hasLabelXsoftwareX
     Given the modern graph
     And the traversal of
