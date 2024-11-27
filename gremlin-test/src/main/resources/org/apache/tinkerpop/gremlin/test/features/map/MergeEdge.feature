@@ -86,6 +86,7 @@ Feature: Step - mergeE()
   #   - vertices already exists
   #   - results in two new edges
   # g_mergeEXnullX
+  # g_mergeEXnullvarX
   # g_V_mergeEXnullX
   #   - mergeE(null) and no option
   #   - vertices already exists
@@ -267,6 +268,34 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.mergeE(null)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  Scenario: g_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  Scenario: g_V_limitX1X_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.V().limit(1).mergeE(xx1)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"

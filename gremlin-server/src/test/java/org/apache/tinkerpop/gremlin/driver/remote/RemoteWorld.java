@@ -192,11 +192,6 @@ public abstract class RemoteWorld implements World {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
             return g.with("language", "groovy-test");
         }
-
-        @Override
-        public boolean useParametersLiterally() {
-            return false;
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
