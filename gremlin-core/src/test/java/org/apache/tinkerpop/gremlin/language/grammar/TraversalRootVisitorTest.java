@@ -115,14 +115,17 @@ public class TraversalRootVisitorTest {
     public void shouldParseTraversalMethod_mergeE_GValue()  {
         antlrToLanguage = new GremlinAntlrToJava("g", EmptyGraph.instance(), __::start, g,
                 new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("foo", Collections.singletonMap("x", "y"))));
-        compare(g.V().map(__.mergeE()), eval("g.V().map(__.mergeE())"));
         compare(g.V().map(__.mergeE(GValue.of("foo", Collections.singletonMap("x", "y")))), eval("g.V().map(__.mergeE(foo))"));
-        compare(g.V().map(__.mergeE(__.hasLabel("person"))), eval("g.V().map(__.mergeE(__.hasLabel(\"person\")))"));
     }
 
     @Test
     public void shouldParseTraversalMethod_mergeE_Traversal()  {
         compare(g.V().map(__.mergeE(__.hasLabel("person"))), eval("g.V().map(__.mergeE(__.hasLabel(\"person\")))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_mergeE_Map()  {
+        compare(g.V().map(__.mergeE(CollectionUtil.asMap("x", "y"))), eval("g.V().map(__.mergeE([\"x\":\"y\"]))"));
     }
 
     @Test
@@ -160,6 +163,11 @@ public class TraversalRootVisitorTest {
     @Test
     public void shouldParseTraversalMethod_mergeV_Traversal()  {
         compare(g.V().map(__.mergeV(__.hasLabel("person"))), eval("g.V().map(__.mergeV(__.hasLabel(\"person\")))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_mergeV_Map()  {
+        compare(g.V().map(__.mergeV(CollectionUtil.asMap("x", "y"))), eval("g.V().map(__.mergeV([\"x\": \"y\"]))"));
     }
 
     @Test
@@ -1561,6 +1569,11 @@ public class TraversalRootVisitorTest {
     @Test
     public void shouldParseTraversalMethod_call() {
         compare(g.V().map(__.call("test")), eval("g.V().map(__.call(\"test\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_call_Map() {
+        compare(g.V().map(__.call("test", CollectionUtil.asMap("x", "y"))), eval("g.V().map(__.call(\"test\", [\"x\":\"y\"]))"));
     }
 
     @Test
