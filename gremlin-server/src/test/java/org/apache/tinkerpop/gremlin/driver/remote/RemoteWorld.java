@@ -195,7 +195,7 @@ public abstract class RemoteWorld implements World {
 
         @Override
         public boolean useParametersLiterally() {
-            return false;
+            return true;
         }
     }
 
