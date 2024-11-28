@@ -208,7 +208,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.lang.reflect.Array;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2888,7 +2887,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             // be turned into array first
             if (otherIds != null) {
                 for (final Object i : otherIds) {
-                    if (id instanceof Object[]) {
+                    // to retain existing behavior, GValue's containing collections are unrolled by 1 layer.
+                    // For example, GValue.of([1, 2]) is processed to [GValue.of(1), GValue.of(2)]
+                    if(i instanceof GValue) {
+                        Object value = ((GValue) i).get();
+                        if (i instanceof Object[]) {
+                            for (Object o : (Object[]) value) {
+                                if(o instanceof GValue) {
+                                    ids.add(o);
+                                } else {
+                                    ids.add(GValue.of(null, o));
+                                }
+                            }
+                        } else if(value instanceof Collection) {
+                            for (Object o : (Collection<?>) value) {
+                                if(o instanceof GValue) {
+                                    ids.add(o);
+                                } else {
+                                    ids.add(GValue.of(null, o));
+                                }
+                            }
+                        } else {
+                            ids.add(i);
+                        }
+                    }
+                    else if (i instanceof Object[]) {
                         Collections.addAll(ids, (Object[]) i);
                     } else if (i instanceof Collection) {
                         ids.addAll((Collection<?>) i);

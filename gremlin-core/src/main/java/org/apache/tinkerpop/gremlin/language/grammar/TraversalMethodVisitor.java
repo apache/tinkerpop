@@ -143,6 +143,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralMapNullableArgument(ctx.genericLiteralMapNullableArgument());
         if (GValue.valueInstanceOf(literalOrVar, GType.MAP))
             return graphTraversal.mergeE((GValue<Map<Object, Object>>) literalOrVar);
+        else if (GValue.valueInstanceOf(literalOrVar, GType.UNKNOWN) && ((GValue) literalOrVar).get() == null)
+            return graphTraversal.mergeE(GValue.ofMap(((GValue) literalOrVar).getName(), null));
         else
             return graphTraversal.mergeE((Map) literalOrVar);
     }

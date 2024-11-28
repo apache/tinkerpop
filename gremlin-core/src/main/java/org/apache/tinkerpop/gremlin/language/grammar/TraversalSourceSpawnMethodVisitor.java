@@ -134,6 +134,8 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
         final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralMapNullableArgument(ctx.genericLiteralMapNullableArgument());
         if (GValue.valueInstanceOf(literalOrVar, GType.MAP))
             return this.traversalSource.mergeV((GValue) literalOrVar);
+        else if (GValue.valueInstanceOf(literalOrVar, GType.UNKNOWN) && ((GValue) literalOrVar).get() == null)
+            return this.traversalSource.mergeV((GValue) GValue.ofMap(((GValue) literalOrVar).getName(), null));
         else
             return this.traversalSource.mergeV((Map) literalOrVar);
     }
@@ -162,6 +164,8 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
         final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralMapNullableArgument(ctx.genericLiteralMapNullableArgument());
         if (GValue.valueInstanceOf(literalOrVar, GType.MAP))
             return this.traversalSource.mergeE((GValue) literalOrVar);
+        else if (GValue.valueInstanceOf(literalOrVar, GType.UNKNOWN) && ((GValue) literalOrVar).get() == null)
+            return this.traversalSource.mergeE((GValue) GValue.ofMap(((GValue) literalOrVar).getName(), null));
         else
             return this.traversalSource.mergeE((Map) literalOrVar);
     }
