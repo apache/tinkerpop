@@ -4554,14 +4554,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final GValue<Map<Object, Object>> m, final VertexProperty.Cardinality cardinality) {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.option, merge, m, cardinality);
 
-        final Map<Object, Object> map = m.get();
-
-        // do explicit cardinality for every single pair in the map
-        for (Object k : map.keySet()) {
-            final Object o = map.get(k);
-            if (!(o instanceof CardinalityValueTraversal))
-                map.put(k, new CardinalityValueTraversal(cardinality, o));
-        }
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }

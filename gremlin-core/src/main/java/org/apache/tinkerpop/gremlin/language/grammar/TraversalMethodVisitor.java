@@ -1250,15 +1250,16 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
             return this.graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()), (Map) null);
         }
 
-        if (ctx.genericLiteralMapNullableArgument().variable() != null) {
+        final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralMapNullableArgument(ctx.genericLiteralMapNullableArgument());
+        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
             return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
-                    (Map) antlr.argumentVisitor.visitVariable(ctx.genericLiteralMapNullableArgument().variable()),
+                    (GValue<Map<Object, Object>>) literalOrVar,
+                    TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
+        } else {
+            return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
+                    (Map<Object, Object>) literalOrVar,
                     TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
         }
-
-        return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
-                (Map) new GenericLiteralVisitor(antlr).visitGenericLiteralMap(ctx.genericLiteralMapNullableArgument().genericLiteralMap()),
-                TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
     }
 
     /**
