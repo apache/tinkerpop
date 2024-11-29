@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
@@ -71,7 +71,7 @@ public class TraversalStrategyVisitorTest {
                 {"new ReservedKeysVerificationStrategy(logWarning: true, throwException: true)", ReservedKeysVerificationStrategy.build().logWarning(true).throwException(true).create()},
                 {"ReservedKeysVerificationStrategy(logWarning: true, throwException: true)", ReservedKeysVerificationStrategy.build().logWarning(true).throwException(true).create()},
                 {"new ReservedKeysVerificationStrategy(logWarning: true, throwException: false)", ReservedKeysVerificationStrategy.build().logWarning(true).create()},
-                {"new ReservedKeysVerificationStrategy(keys: ['a','b'])", ReservedKeysVerificationStrategy.build().reservedKeys(new HashSet<>(Arrays.asList("a", "b"))).create()},
+                {"new ReservedKeysVerificationStrategy(keys: ['a','b'])", ReservedKeysVerificationStrategy.build().reservedKeys(new LinkedHashSet<>(Arrays.asList("a", "b"))).create()},
                 {"new SubgraphStrategy(vertices: hasLabel('person'))", SubgraphStrategy.build().vertices(hasLabel("person")).create()},
                 {"SubgraphStrategy(vertices: hasLabel('person'))", SubgraphStrategy.build().vertices(hasLabel("person")).create()},
                 {"new SubgraphStrategy(vertices: hasLabel('person'), edges: hasLabel('knows'), vertexProperties: has('time', between(1234, 4321)), checkAdjacentVertices: true)", SubgraphStrategy.build().vertices(hasLabel("person")).edges(hasLabel("knows")).vertexProperties(has("time", P.between(1234, 4321))).checkAdjacentVertices(true).create()},
