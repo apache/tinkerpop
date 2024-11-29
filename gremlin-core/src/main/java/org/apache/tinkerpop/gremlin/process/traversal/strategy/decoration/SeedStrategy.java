@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Seedable;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,9 +75,9 @@ public class SeedStrategy extends AbstractTraversalStrategy<TraversalStrategy.De
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, SeedStrategy.class.getCanonicalName());
+        final Map<String, Object> map = new LinkedHashMap<>();
         map.put(ID_SEED, this.seed);
+        map.put(STRATEGY, SeedStrategy.class.getCanonicalName());
         return new MapConfiguration(map);
     }
 

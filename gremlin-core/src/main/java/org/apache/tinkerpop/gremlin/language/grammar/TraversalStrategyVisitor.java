@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.Read
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<TraversalStrategy> {
@@ -100,7 +100,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                     builder.throwException(antlr.argumentVisitor.parseBoolean(ctx.booleanArgument()));
                     break;
                 case ReservedKeysVerificationStrategy.KEYS:
-                    builder.reservedKeys(new HashSet<>(Arrays.asList(antlr.genericVisitor.parseStringList(ctx.stringLiteralList()))));
+                    builder.reservedKeys(new LinkedHashSet<>(Arrays.asList(antlr.genericVisitor.parseStringList(ctx.stringLiteralList()))));
                     break;
             }
         });

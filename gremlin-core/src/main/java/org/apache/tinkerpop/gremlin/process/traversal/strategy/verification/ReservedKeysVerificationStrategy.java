@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class ReservedKeysVerificationStrategy extends AbstractWarningVerificationStrategy {
 
     public static final String KEYS = "keys";
-    private static final Set<String> DEFAULT_RESERVED_KEYS = new HashSet<>(Arrays.asList("id", "label"));
+    private static final Set<String> DEFAULT_RESERVED_KEYS = new LinkedHashSet<>(Arrays.asList("id", "label"));
     private final Set<String> reservedKeys;
 
     private ReservedKeysVerificationStrategy(final Builder builder) {
@@ -79,7 +79,7 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
     public static ReservedKeysVerificationStrategy create(final Configuration configuration) {
         return build()
                 .reservedKeys(configuration.getList(KEYS, new ArrayList<>(DEFAULT_RESERVED_KEYS)).
-                        stream().map(Object::toString).collect(Collectors.toSet()))
+                        stream().map(Object::toString).collect(Collectors.toCollection(LinkedHashSet::new)))
                 .throwException(configuration.getBoolean(THROW_EXCEPTION, false))
                 .logWarning(configuration.getBoolean(LOG_WARNING, false)).create();
     }
@@ -101,7 +101,7 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
         private Builder() {}
 
         public Builder reservedKeys(final Set<String> keys) {
-            reservedKeys = keys;
+            this.reservedKeys = new LinkedHashSet<>(keys);
             return this;
         }
 
