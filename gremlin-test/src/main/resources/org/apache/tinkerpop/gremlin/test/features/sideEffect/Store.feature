@@ -49,7 +49,6 @@ Feature: Step - store()
       | lop |
       | josh |
 
-  @GremlinLangScriptOnly
   Scenario: g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX
     Given the modern graph
     And using the parameter xx1 defined as "s[]"
@@ -62,7 +61,6 @@ Feature: Step - store()
       | result |
       | s[marko,vadas,lop,josh,ripple,peter] |
 
-  @GremlinLangScriptOnly
   Scenario: g_withSideEffectXa_set_inlineX_V_both_name_storeXaX_capXaX
     Given the modern graph
     And the traversal of
