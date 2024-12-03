@@ -252,7 +252,7 @@ class Connection extends EventEmitter {
   #handleUnexpectedResponse = async (_req, res) => {
     const body = await new Promise((resolve, reject) => {
       const chunks = [];
-      res.on('data', data => {
+      res.on('data', (data) => {
         chunks.push(data instanceof Buffer ? data : Buffer.from(data));
       });
       res.on('end', () => {
@@ -266,7 +266,7 @@ class Connection extends EventEmitter {
       error,
       message: errorMessage,
       type: 'unexpected-response',
-      target: this._ws
+      target: this._ws,
     });
   };
 
