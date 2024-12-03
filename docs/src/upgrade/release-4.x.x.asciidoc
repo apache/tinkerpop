@@ -76,6 +76,7 @@ This is a placeholder to summarize configuration-related changes.
 * `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
 * `enableCompression` setting has been removed.
 
+[[simplified-g-creation]]
 ==== Simplification to g creation
 
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
@@ -111,10 +112,36 @@ strengthens the abstraction further. To demonstrate this further consider this n
 g = traversal().with("config.properties")
 ----
 
-The properties file in the above example can either point to a remote configuration or a embedded configuration allowing
+The properties file in the above example can either point to a remote configuration or an embedded configuration allowing
 "g" to be switched as needed without code changes.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
+
+==== Removal of :remote and :submit Console Commands
+
+The `:remote` and `:submit` commands, used to establish connections and send scripts to a remote `gremlin-server`, are
+no longer supported in `gremlin-console`. If sending a traversal, users should instead create a `RemoteTraversalSource`
+(see <<simplified-g-creation, Simplification to g Creation for examples>>).
+
+While a `RemoteTraversalSource` is the preferred method of executing remote traversals from `gremlin-console`, it
+remains possible to send scripts directly using a `gremlin-driver` `Client`.
+
+[gremlin-groovy]
+----
+cluster = Cluster.open('conf/remote-objects.yaml')
+client = cluster.connect()
+
+client.submit("g.V()")
+
+client.close()
+cluster.close()
+----
+
+==== Removal of Gephi Console Plugin
+
+The Gephi Plugin for `gremlin-console` is no longer supported and has been removed. Apache TinkerPop no longer maintains
+any graph visualization tool, however there are a number of community-led alternatives available, many of which are
+listed on the link:https://tinkerpop.apache.org/community.html#powered-by[TinkerPop community page].
 
 ==== Changes to Java RequestInterceptor
 
@@ -415,7 +442,6 @@ format:
 ** Pick
 ** Pop
 ** Scope
-** Merge
 ** DT
 ** Lambda
 ** P
@@ -425,6 +451,7 @@ format:
 ** Metrics
 ** TraversalMetrics
 ** InetAddress
+* OffsetDatetime has been renamed to Datetime. This type maps to `OffsetDateTime` in Java and a `datetime` in Python.
 * Byte is redefined from being unsigned byte to a signed byte.
 * List has a `0x02` value_flag used to denote bulking.
 * Map has a `0x02` value_flag used to denote ordering.
@@ -433,7 +460,7 @@ format:
 * Custom is replaced with Provider Defined Types
 
 One of the biggest differences is in datetime support. Previously, in the Java implementation, `java.util.Date`,
-`java.sql.Timestamp` and most types from the `java.time` package had serializers. This is isn't the case in GraphSON 4
+`java.sql.Timestamp` and most types from the `java.time` package had serializers. This isn't the case in GraphSON 4
 as only `java.time.OffsetDateTime` is supported. Java provides methods to convert amongst these classes so they should
 be used to convert your data to and from `java.time.OffsetDateTime`.
 

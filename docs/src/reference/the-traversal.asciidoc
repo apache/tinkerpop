@@ -2932,7 +2932,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(java.util.Map)++[`mergeE(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeE(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-e-step++[`Semantics`]
 
 [[mergevertex-step]]
 === MergeVertex Step
@@ -3133,7 +3133,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(java.util.Map)++[`mergeV(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeV(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-v-step++[`Semantics`]
 
 [[min-step]]
 === Min Step
