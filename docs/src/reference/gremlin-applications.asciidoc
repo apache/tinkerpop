@@ -462,8 +462,8 @@ NOTE: Gremlin Server is the replacement for link:https://github.com/tinkerpop/re
 NOTE: Please see the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Provider Documentation] for information
 on how to develop a driver for Gremlin Server.
 
-By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSocket] and
-exposes a custom sub-protocol for interacting with the server.
+By default, communication with Gremlin Server occurs over HTTP/1.1. The TinkerPop HTTP API is described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_api[HTTP provider documentation].
 
 WARNING: Gremlin Server allows for the execution of remotely submitted "scripts" (i.e. arbitrary code sent by a client
 to the server). Developers should consider the security implications involved in running Gremlin Server without the
@@ -491,17 +491,13 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] ServerGremlinExecutor - Initialized GremlinExecutor and preparing GremlinScriptEngines instances.
 [INFO] ServerGremlinExecutor - Initialized gremlin-groovy GremlinScriptEngine and registered metrics
 [INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
-[INFO] OpLoader - Adding the standard OpProcessor.
-[INFO] OpLoader - Adding the session OpProcessor.
-[INFO] OpLoader - Adding the traversal OpProcessor.
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
 [INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v3.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0 with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v1.0-stringd with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v4.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
+[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
+[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v4.0 with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
@@ -824,62 +820,46 @@ They are all still evaluated locally.
 [[connecting-via-http]]
 === Connecting via HTTP
 
-image:gremlin-rexster.png[width=225,float=left] While the default behavior for Gremlin Server is to provide a
-WebSocket-based connection, it can also be configured to support plain HTTP web service.
-The HTTP endpoint provides for a communication protocol familiar to most developers, with a wide support of
-programming languages, tools and libraries for accessing it.  As a result, HTTP provides a fast way to get started
-with Gremlin Server.   It also may represent an easier upgrade path from link:https://github.com/tinkerpop/rexster[Rexster]
-as the API for the endpoint is very similar to Rexster's link:https://github.com/tinkerpop/rexster/wiki/Gremlin-Extension[Gremlin Extension].
+image:gremlin-rexster.png[width=225,float=left] The HTTP endpoint provides for a communication protocol familiar to
+most developers, with a wide support of programming languages, tools and libraries for accessing it.  As a result, HTTP
+provides a fast way to get started with Gremlin Server.
 
-IMPORTANT: TinkerPop provides and supports this HTTP endpoint as a convenience and for legacy reasons, but users should
-prefer the recommended approach of bytcode based requests as described in <<connecting-gremlin,Connecting Gremlin>>
-section.
+Gremlin Server implements the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_api[TinkerPop HTTP API].
+It provides a single endpoint which allows for the submission of a Gremlin script as a request.  For each request, it
+returns a response containing the serialized results of that script.
 
-Gremlin Server provides for a single HTTP endpoint - a Gremlin evaluator - which allows the submission of a Gremlin
-script as a request.  For each request, it returns a response containing the serialized results of that script.
-To enable this endpoint, Gremlin Server needs to be configured with the `HttpChannelizer`, which replaces the default.
-The `WsAndHttpChannelizer` may also be configured to enable both WebSockets and the REST endpoint in the configuration
-file:
-
-[source,yaml]
-channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
-
-[source,yaml]
-channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
-
-The `HttpChannelizer` is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
+The `HttpChannelizer` is already configured in the `gremlin-server-modern.yaml` file that is packaged with the Gremlin
 Server distribution.  To utilize it, start Gremlin Server as follows:
 
 [source,text]
-bin/gremlin-server.sh conf/gremlin-server-rest-modern.yaml
+bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
 Once the server has started, issue a request.  Here's an example with link:http://curl.haxx.se/[cURL]:
 
 [source,text]
-$ curl "http://localhost:8182?gremlin=100-1"
-
-which returns:
-
-[source,js]
-{
-  "result":{"data":99,"meta":{}},
-  "requestId":"0581cdba-b152-45c4-80fa-3d36a6eecf1c",
-  "status":{"code":200,"attributes":{},"message":""}
-}
-
-The above example showed a `GET` operation, but the preferred method for this endpoint is `POST`:
-
-[source,text]
 curl -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
 
-which returns:
+returns:
 
 [source,js]
 {
-  "result":{"data":99,"meta":{}},
-  "requestId":"ef2fe16c-441d-4e13-9ddb-3c7b5dfb10ba",
-  "status":{"code":200,"attributes":{},"message":""}
+  "result": {
+      "data": {
+          "@type": "g:List",
+          "@value": [
+              {
+                  "@type": "g:Int32",
+                  "@value": 99
+              }
+          ]
+      }
+  },
+  "status": {
+      "code": 200
+  }
 }
+
+`POST` is the only supported method for this endpoint. This means that `GET` with query parameters is not supported.
 
 It is also preferred that Gremlin scripts be parameterized when possible via `bindings`:
 
@@ -896,6 +876,9 @@ parameter name.  In other words, `bindings.x` will create a parameter named "x" 
 Gremlin script.  The caveat is that these arguments will always be treated as `String` values.  To ensure that data
 types are preserved or to pass complex objects such as lists or maps, use `POST` which will at least support the
 allowed JSON data types.
+
+NOTE: The Gremlin Server doesn't support link:https://en.wikipedia.org/wiki/HTTP_pipelining[HTTP pipelining]. Attempts
+to use this feature will cause the server to throw an error and may lead to results being sent out-of-order.
 
 Passing the `Accept` header with a valid MIME type will trigger the server to return the result in a particular format.
 Note that in addition to the formats available given the server's `serializers` configuration, there is also a basic
@@ -993,7 +976,7 @@ The following table describes the various YAML configuration options that Gremli
 |authentication.config |A `Map` of configuration settings to be passed to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |authorization.authorizer |The fully qualified classname of an `Authorizer` implementation to use. |_none_
 |authorization.config |A `Map` of configuration settings to be passed to the `Authorizer` when it is constructed.  The settings available are dependent on the implementation. |_none_
-|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket). |`WebSocketChannelizer`
+|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. HTTP). |`HttpChannelizer`
 |enableAuditLog |The `AuthenticationHandler`, `AuthorizationHandler` and processors can issue audit logging messages with the authenticated user, remote socket address and requests with a gremlin query. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the `logback.xml` file. |_false_
 |graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
@@ -1343,36 +1326,16 @@ authorization and protective measures against malicious script execution.  Clien
 chosen. Script execution options are covered <<script-execution, "at the end of this section">>. This section
 starts with authentication.
 
-Gremlin Server supports a pluggable authentication framework using
-link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and
-Security Layer). Depending on the client used to connect to Gremlin Server, different authentication
-mechanisms are accessible, see the table below.
-
-[width="70%",cols="3,5,3",options="header"]
-|=========================================================
-|Client |Authentication mechanism |Availability
-|HTTP |BASIC |3.0.0-incubating
-1.3+v|Gremlin-Java/
-Gremlin-Console |PLAIN SASL (username/password) |3.0.0-incubating
-|Pluggable SASL |3.0.0-incubating
-|GSSAPI SASL (Kerberos) |3.3.0
-|Gremlin.NET |PLAIN SASL |3.3.0
-1.2+v|Gremlin-Python |PLAIN SASL |3.2.2
-|GSSAPI SASL (Kerberos) |3.4.7
-|Gremlin.Net |PLAIN SASL |3.2.7
-|Gremlin-Javascript |PLAIN SASL |3.3.0
-|Gremlin-go |PLAIN SASL |3.5.4
-|=========================================================
+By default, Gremlin Server supports HTTP basic authentication.
 
 By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable
 authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin
-Server comes packaged with two implementations called `SimpleAuthenticator` for plain text authentication using HTTP
-BASIC or PLAIN SASL and `Krb5Authenticator` for Kerberos authentication using GSSAPI SASL.
+Server comes packaged with an implementation called `SimpleAuthenticator` for plain text authentication using HTTP
+BASIC.
 
 ==== Plain text authentication
 
-The `SimpleAuthenticator` implements the "PLAIN" SASL mechanism (i.e. plain text) to authenticate a request.  It also
-supports handling basic authentication requests from http clients. It validates
+The `SimpleAuthenticator` supports handling basic authentication requests from http clients. It validates
 username/password pairs against a graph database, which must be provided to it as part of the configuration.
 
 [source,yaml]
@@ -1523,59 +1486,6 @@ IMPORTANT: In the above example, an empty in-memory TinkerGraph was used for dem
 Obviously, this data will not be retained and usable with Gremlin Server. It would be important to configure
 TinkerGraph to persist that data or to manually persist it (e.g. write the graph data to Gryo) once changes are
 complete. Alternatively, use a persistent graph to hold the credentials and configure Gremlin Server accordingly.
-
-[[krb5authenticator]]
-==== Kerberos Authentication
-
-The `Krb5Authenticator` implements the "GSSAPI" SASL mechanism (i.e. Kerberos) to authenticate a request from a Gremlin
-client.  It can be applied in an existing Kerberos environment and validates whether a
-link:https://www.roguelynn.com/words/explain-like-im-5-kerberos/[valid authentication proof and service ticket are
-offered].
-
-[source,yaml]
-authentication: {
-  authenticator: org.apache.tinkerpop.gremlin.server.auth.Krb5Authenticator,
-  config: {
-    principal: gremlinserver/hostname.your.org@YOUR.REALM,
-    keytab: /etc/security/keytabs/gremlinserver.service.keytab}}
-
-`Krb5Authenticator` needs a Kerberos service principal and a keytab that holds the secret key for that principal. The keytab
-location and service name, e.g. gremlinserver, are free to be chosen. `Krb5Authenticator` finds the KDC's hostname and
-port from the krb5.conf file with Kerberos configurations. This file can reside at either the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] or a location to be specified as a
-system property in the JAVA_OPTIONS environment variable of Gremlin Server:
-
-[source, bash]
-export JAVA_OPTIONS="${JAVA_OPTIONS} -Xms512m -Xmx4096m -Djava.security.krb5.conf=/etc/krb5.conf"
-
-Gremlin clients have to specify the service name as the `protocol` connection parameter. For Gremlin-Console the
-`protocol` is an entry in the remote.yaml file, for Gremlin-java the client builder has a `protocol()` method.
-
-In addition to the `protocol`, the Gremlin client needs to specify a `jaasEntry`, an entry in the
-link:https://en.wikipedia.org/wiki/Java_Authentication_and_Authorization_Service[JAAS] configuration file. As a
-start one can define a conf/gremlin-jaas.conf file with a `GremlinConsole` jaasEntry:
-
-[source, jaas]
-GremlinConsole {
-  com.sun.security.auth.module.Krb5LoginModule required
-  doNotPrompt=true
-  useTicketCache=true;
-};
-
-This configuration tells Gremlin Console to pass authentication requests from Gremlin Server to the Krb5LoginModule, which is
-part of the java standard library. The Krb5LoginModule does not prompt the user for a username and password but uses the
-ticket cache that is normally refreshed when a user logs in to a host within the Kerberos realm.
-
-The Gremlin client needs the location of the JAAS configuration file to be passed as a system property to the JVM. For
-Gremlin-Console the easiest way to do this is to pass it to the run script via the JAVA_OPTIONS environment property.
-If the krb5.conf Kerberos configuration file is not available from the
-https://web.mit.edu/kerberos/krb5-devel/doc/mitK5defaults.html[default location] it has to be provided as a system
-property as well:
-
-[source, bash]
-JAAS_OPTION="-Djava.security.auth.login.config=conf/gremlin-jaas.conf"
-KRB5_OPTION="-Djava.security.krb5.conf=/etc/krb5.conf"
-export JAVA_OPTIONS="${JAVA_OPTIONS} ${KRB5_OPTION} ${JAAS_OPTION}"
 
 [[authorization]]
 ==== Authorization

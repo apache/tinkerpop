@@ -69,7 +69,8 @@ providing more detailed information about usage, configuration and known limitat
 
 [[gremlin-go]]
 == Gremlin-Go
-WARNING: Gremlin-Go is not available in this Milestone release, please consider testing with Java or Python.
+IMPORTANT: 4.0 Milestone Release - Gremlin-Go is not available in this milestone, please consider testing with Java or
+Python.
 
 image:gremlin-go.png[width=130,float=right] Apache TinkerPop's Gremlin-Go implements Gremlin within the link:https://go.dev/[Go] language and can therefore be used on different operating systems. Go's syntax has the similar constructs as Java including
 "dot notation" for function chaining (`a.b.c`) and round bracket function arguments (`a(b,c)`). Something unlike Java is that Gremlin-Go requires a
@@ -792,20 +793,21 @@ The following table describes the various configuration options for the Gremlin 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|connectionPool.channelizer |The fully qualified classname of the client `Channelizer` that defines how to connect to the server. |`Channelizer.WebSocketChannelizer`
+|auth.type |Type of Auth to submit on requests that require authentication. Can be: `basic` or `sigv4`. |_""_
+|auth.username |The username to submit on requests that require basic authentication. |_none_
+|auth.password |The password to submit on requests that require basic authentication. |_none_
+|auth.region |The region setting for sigv4 authentication. |_none_
+|auth.serviceName |The service name setting for sigv4 authentication. |_none_
+|connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
-|connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |180000
+|connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
 |connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
-|connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
-|connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
 |connectionPool.maxSize |The maximum size of a connection pool for a host. |128
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
-|connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
-|connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
@@ -814,20 +816,17 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
-|connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
-|connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
+|bulkResults |Sets whether the server should attempt to get bulk results or not. |false
+|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |hosts |The list of hosts that the driver will connect to. |localhost
-|jaasEntry |Sets the `AuthProperties.Property.JAAS_ENTRY` properties for authentication to Gremlin Server. |_none_
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
-|protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
 |serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
-|enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
 Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/driver/Cluster.Builder.html[Cluster.Builder javadoc] to get more information on these settings.
@@ -835,25 +834,28 @@ Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/
 [[gremlin-java-transactions]]
 === Transactions
 
-Transactions with Java are best described in <<transactions,The Traversal - Transactions>> section of this
-documentation as Java covers both embedded and remote use cases.
+IMPORTANT: 4.0 Milestone Release - Transactions with Java isn't currently supported.
 
 [[gremlin-java-serialization]]
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
 format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there are two options for serialization: GraphSON and GraphBinary. It is important that the client and server
-have the same serializers configured in the same way or else one or the other will experience serialization exceptions
-and fail to always communicate. Discrepancy in serializer registration between client and server can happen fairly
-easily as different graph systems may automatically include serializers on the server-side, thus leaving the client
-to be configured manually. As an example:
+there is a single option for serialization: GraphBinary.
+
+IMPORTANT: 4.0 Milestone Release - There is temporary support for GraphSON in the Java driver which will help with
+testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
+
+It is important that the client and server have the same serializers configured in the same way or else one or the
+other will experience serialization exceptions and fail to always communicate. Discrepancy in serializer registration
+between client and server can happen fairly easily as different graph systems may automatically include serializers on
+the server-side, thus leaving the client to be configured manually. As an example:
 
 [source,java]
 ----
 IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph provider
 TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
-MessageSerializer serializer = new GraphBinaryMessageSerializerV1(typeSerializerRegistry);
+MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
 Cluster cluster = Cluster.build().
                           serializer(serializer).
                           create();
@@ -864,7 +866,7 @@ GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
 ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3` or `GraphBinaryMessageSerializerV1` respectively)
+the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV4` or `GraphBinaryMessageSerializerV4` respectively)
 in the same way and building that into the `Cluster` object.
 
 [[gremlin-java-lambda]]
@@ -1023,6 +1025,29 @@ g2Client.submit("g.V()")
 
 The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
+
+==== RequestInterceptor
+
+Gremlin-Java allows for modification of the underlying HTTP request through the use of `RequestInteceptors`. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-Java is written in a way that you should be able to interact with a TinkerPop-enabled
+server without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A `RequestInterceptor` is simply a `UnaryOperator`. A list of these are maintained and will be run sequentially for
+each request. When building a `Cluster` instance, the methods `addInterceptorAfter()`, `addInterceptorBefore()`,
+`addInterceptor()`, and `removeInterceptor()` can be used to add or remove interceptors. It's important to remember
+that order matters so if one interceptor depends on another's output then ensure they are added in the correct order.
+Note that `Auth` is also implemented using interceptors, and `Auth` is always run last after your list of interceptors
+has already ran. By default, the `PayloadSerializingInterceptor` with the name `serializer` is added to your list of
+interceptors. This interceptor is used for serializing the body of the request. The first interceptor is provided with 
+a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that contains a `RequestMessage` in the body. As a reminder
+`RequestMessage` is immutable and only certain keys can be added to them. If you want to customize the body by adding
+other fields, you will need to make a different copy of the `RequestMessage` or completely change the body to contain a
+different data type. The very last interceptor should have a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that
+contains a byte[] in the body.
+
+For an example of a simple `RequestInterceptor` that only modifies the header of the request take a look at
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/auth/Basic.java[basic authentication].
 
 [[gremlin-java-dsl]]
 === Domain Specific Languages
@@ -1243,7 +1268,8 @@ All examples can then be run using your IDE of choice.
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
-WARNING: Gremlin-JavaScript is not available in this Milestone release, please consider testing with Java or Python.
+IMPORTANT: 4.0 Milestone Release - Gremlin-JavaScript is not available in this milestone, please consider testing with
+Java or Python.
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
 JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 6 or
@@ -1692,7 +1718,8 @@ node modern-traversals.js
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
-WARNING: Gremlin.Net is not available in this Milestone release, please consider testing with Java or Python.
+IMPORTANT: 4.0 Milestone Release - Gremlin.Net is not available in this milestone, please consider testing with Java or
+Python.
 
 image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
 language. It targets .NET Standard and can therefore be used on different operating systems and with different .NET
@@ -2154,7 +2181,7 @@ Some connection options can also be set on individual requests made through the 
 vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulked`, `language`, `materializeProperties`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`, `materializeProperties`,
 `userAgent`, and `evaluationTimeout`.
 
 anchor:python-imports[]
@@ -2254,7 +2281,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
-|enable_bulked_result |Enables bulking of results on the server. |False
+|bulk_results |Enables bulking of results on the server. |False
 |=========================================================
 
 Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
