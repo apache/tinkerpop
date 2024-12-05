@@ -5602,26 +5602,27 @@ g.withStrategies(EdgeLabelVerificationStrategy(throwException=true))
 
 === ElementIdStrategy
 
-`ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as TinkerGraph,
+`ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as `TinkerGraph`,
 allow specification of custom identifiers when creating elements:
 
 [gremlin-groovy]
 ----
-g = traversal().with(TinkerGraph.open())
+g = traversal().withEmbedded(TinkerGraph.open())
 v = g.addV().property(id,'42a').next()
 g.V('42a')
 ----
 
-Other `Graph` implementations, such as Neo4j, generate element identifiers automatically and cannot be assigned.
+Other `Graph` implementations generate element identifiers automatically and cannot be assigned.
 As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indices
-under the hood.
+under the hood. Note that this demonstration is using `TinkerGraph` for convenience, however in practice
+`ElementIdStrategy` offers little value in a `Graph` which allows custom identifiers.
 
 [gremlin-groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = traversal().with(graph).withStrategies(strategy)
+g = traversal().withEmbedded(TinkerGraph.open()).withStrategies(strategy)
 g.addV().property(id, '42a').id()
+g.V().elementMap()
 ----
 
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph

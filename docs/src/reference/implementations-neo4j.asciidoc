@@ -86,16 +86,23 @@ The Gremlin-Console session below demonstrates Neo4j indices. For more informati
 * Manipulating indices with link:http://neo4j.com/docs/developer-manual/current/#query-schema-index[Cypher].
 * Manipulating indices with the Neo4j link:http://neo4j.com/docs/stable/tutorials-java-embedded-new-index.html[Java API].
 
-[gremlin-groovy]
+[source,groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
-g = traversal().with(graph)
-graph.cypher("CREATE INDEX ON :person(name)")
-graph.tx().commit()  <1>
-g.addV('person').property('name','marko')
-g.addV('dog').property('name','puppy')
-g.V().hasLabel('person').has('name','marko').values('name')
-graph.close()
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[community single [/tmp/neo4j]]
+gremlin> g = traversal().withEmbedded(graph)
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
+gremlin> graph.cypher("CREATE INDEX ON :person(name)")
+gremlin> graph.tx().commit() //// (1)
+==>null
+gremlin> g.addV('person').property('name','marko')
+==>v[0]
+gremlin> g.addV('dog').property('name','puppy')
+==>v[1]
+gremlin> g.V().hasLabel('person').has('name','marko').values('name')
+==>marko
+gremlin> graph.close()
+==>null
 ----
 
 <1> Schema mutations must happen in a different transaction than graph mutations
@@ -103,21 +110,31 @@ graph.close()
 Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined index (only vertex
 labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
 
-[gremlin-groovy]
+[source,groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
-g = traversal().with(graph)
-g.io('data/grateful-dead.xml').read().iterate()
-g.tx().commit()
-clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
-graph.cypher("CREATE INDEX ON :artist(name)") <2>
-g.tx().commit()
-Thread.sleep(5000) <3>
-clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} <4>
-clock(1000) {g.V().has('name','Garcia').iterate()} <5>
-graph.cypher("DROP INDEX ON :artist(name)") <6>
-g.tx().commit()
-graph.close()
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[community single [/tmp/neo4j]]
+gremlin> g = traversal().withEmbedded(graph)
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
+gremlin> g.io('data/grateful-dead.xml').read().iterate()
+gremlin> g.tx().commit()
+==>null
+gremlin> clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} //// (1)
+==>0.35031228
+gremlin> graph.cypher("CREATE INDEX ON :artist(name)") //// (2)
+gremlin> g.tx().commit()
+==>null
+gremlin> Thread.sleep(5000) //// (3)
+==>null
+gremlin> clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} //// (4)
+==>0.061846079
+gremlin> clock(1000) {g.V().has('name','Garcia').iterate()} //// (5)
+==>0.6680353569999999
+gremlin> graph.cypher("DROP INDEX ON :artist(name)") //// (6)
+gremlin> g.tx().commit()
+==>null
+gremlin> graph.close()
+==>null
 ----
 
 <1> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
@@ -134,14 +151,20 @@ image::gremlin-loves-cypher.png[width=400]
 NeoTechnology are the creators of the graph pattern-match query language link:https://neo4j.com/developer/cypher-query-language/[Cypher].
 It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
 
-[gremlin-groovy]
+[source,groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
-g = traversal().with(graph)
-g.io('data/tinkerpop-modern.kryo').read().iterate()
-graph.cypher('MATCH (a {name:"marko"}) RETURN a')
-graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
-graph.close()
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[community single [/tmp/neo4j]]
+gremlin> g = traversal().withEmbedded(graph)
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
+gremlin> g.io('data/tinkerpop-modern.kryo').read().iterate()
+gremlin> graph.cypher('MATCH (a {name:"marko"}) RETURN a')
+==>[a:v[0]]
+gremlin> graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
+==>josh
+==>vadas
+gremlin> graph.close()
+==>null
 ----
 
 Thus, like <<match-step,`match()`>>-step in Gremlin, it is possible to do a declarative pattern match and then move
@@ -165,26 +188,46 @@ public void removeLabel(String label) // remove a label from the vertex
 
 An example use case is presented below.
 
-[gremlin-groovy]
+[source,groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
-g = traversal().with(graph)
-vertex = (Neo4jVertex) g.addV('human::animal').next() <1>
-vertex.label() <2>
-vertex.labels() <3>
-vertex.addLabel('organism') <4>
-vertex.label()
-vertex.removeLabel('human') <5>
-vertex.labels()
-vertex.addLabel('organism') <6>
-vertex.labels()
-vertex.removeLabel('human') <7>
-vertex.label()
-g.V().has(label,'organism') <8>
-g.V().has(label,of('organism')) <9>
-g.V().has(label,of('organism')).has(label,of('animal'))
-g.V().has(label,of('organism').and(of('animal')))
-graph.close()
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
+==>neo4jgraph[community single [/tmp/neo4j]]
+gremlin> g = traversal().withEmbedded(graph)
+==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
+gremlin> vertex = (Neo4jVertex) g.addV('human::animal').next() //// (1)
+==>v[0]
+gremlin> vertex.label() //// (2)
+==>animal::human
+gremlin> vertex.labels() //// (3)
+==>animal
+==>human
+gremlin> vertex.addLabel('organism') //// (4)
+==>null
+gremlin> vertex.label()
+==>animal::human::organism
+gremlin> vertex.removeLabel('human') //// (5)
+==>null
+gremlin> vertex.labels()
+==>animal
+==>organism
+gremlin> vertex.addLabel('organism') //// (6)
+==>null
+gremlin> vertex.labels()
+==>animal
+==>organism
+gremlin> vertex.removeLabel('human') //// (7)
+==>null
+gremlin> vertex.label()
+==>animal::organism
+gremlin> g.V().has(label,'organism') //// (8)
+gremlin> g.V().has(label,of('organism')) //// (9)
+==>v[0]
+gremlin> g.V().has(label,of('organism')).has(label,of('animal'))
+==>v[0]
+gremlin> g.V().has(label,of('organism').and(of('animal')))
+==>v[0]
+gremlin> graph.close()
+==>null
 ----
 
 <1> Typecasting to a `Neo4jVertex` is only required in Java.

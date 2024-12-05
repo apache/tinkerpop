@@ -733,7 +733,7 @@ objects and then re-use them.
 
 [gremlin-groovy]
 ----
-cluster = Cluster.open('conf/remote-objects.yaml')
+cluster = Cluster.open('conf/remote.yaml')
 client = cluster.connect()
 g = traversal().with(DriverRemoteConnection.using(client, "g"))
 g.V().elementMap()

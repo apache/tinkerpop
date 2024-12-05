@@ -49,15 +49,7 @@ g.V().count()
 g.V().out().out().values('name')
 ----
 
-For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
-
-[gremlin-groovy]
-----
-graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = traversal().with(graph).withComputer(SparkGraphComputer)
-:remote connect tinkerpop.hadoop graph g
-:> g.V().group().by{it.value('name')[1]}.by('name')
-----
+NOTE: We no longer support lambda executions via `:remote` on the Gremlin Console starting in TinkerPop 4.
 
 The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce the amount of data shuffled across
 the wire on each iteration of the <<vertexprogram,`VertexProgram`>>. When the graph is loaded as a Spark RDD
