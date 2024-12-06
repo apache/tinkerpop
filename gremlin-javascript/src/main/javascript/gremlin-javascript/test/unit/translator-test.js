@@ -131,5 +131,13 @@ describe('Translator', function () {
       assert.ok(script);
       assert.strictEqual(script, 'g.addV(\'test\').property(\'quotes\', \'some "quotes\\\' in the middle.\')');
     });
+
+    it('should properly escape quotes in Object values', function () {
+      const g = new Graph().traversal();
+      const o = {key: "some \"quotes' in the middle."}
+      const script = new Translator('g').translate(g.inject(o));
+      assert.ok(script);
+      assert.strictEqual(script, 'g.inject((\'key\', \'some "quotes\\\' in the middle.\'))');
+    });
   });
 });

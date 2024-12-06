@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "lib": ["DOM"],
+    "lib": ["DOM", "es2022"],
     "allowJs": true,
     "declaration": true,
     "outDir": "build",

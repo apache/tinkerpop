@@ -88,7 +88,7 @@ export default class Translator {
           }
           script += `('${key}', `;
           if (anyObject[key] instanceof String || typeof anyObject[key] === 'string') {
-            script += `'${anyObject[key]}'`;
+            script += `'${`${anyObject[key]}`.replaceAll("'", "\\'")}'`; // eslint-disable-line quotes
           } else {
             script += anyObject[key];
           }
@@ -108,7 +108,7 @@ export default class Translator {
     } else if (typeof anyObject === 'number' || typeof anyObject === 'boolean') {
       script += anyObject;
     } else {
-      script += `'${`${anyObject}`.replace("'", "\\'")}'`; // eslint-disable-line quotes
+      script += `'${`${anyObject}`.replaceAll("'", "\\'")}'`; // eslint-disable-line quotes
     }
 
     return script;
