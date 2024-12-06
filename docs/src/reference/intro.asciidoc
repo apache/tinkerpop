@@ -422,6 +422,9 @@ has two such formats that it uses with link:https://tinkerpop.apache.org/docs/x.
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Users should prefer GraphBinary when available
 in the programming language being used.
 
+IMPORTANT: 4.0 Milestone Release - There is temporary support for GraphSON in the Java driver which will help with
+testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
+
 A good example is the `subgraph()`-step which returns a `Graph` instance as its result. The subgraph returned from
 the server can be deserialized into an actual `Graph` instance on the client, which then means it is possible to
 spawn a `GraphTraversalSource` from that to do local Gremlin traversals on the client-side. For non-JVM
@@ -429,9 +432,11 @@ spawn a `GraphTraversalSource` from that to do local Gremlin traversals on the c
 no GTM to process Gremlin so there isn't much that can be done with such a result.
 
 The second point is related to this issue. As there is no GTM, there is no "structure" API and thus graph elements like
-`Vertex` and `Edge` are "references" only. A "reference" means that they only contain the `id` and `label` of the
+`Vertex` and `Edge` are usually "references". A "reference" means that they only contain the `id` and `label` of the
 element and not the properties. To be consistent, even JVM-based languages hold this limitation when talking to a
-remote Gremlin Server.
+remote Gremlin Server. However, you can alternatively get a "detached" element when using the `all` option for
+`materializeProperties`. In this case, the element will contain all of its properties, but will not be connected to any
+other element.
 
 IMPORTANT: Most SQL developers would not write a query as `SELECT * FROM table`. They would instead write the
 individual names of the fields they wanted in place of the wildcard. Writing "good" Gremlin is no different with this
@@ -440,15 +445,17 @@ regard. Prefer explicit property key names in Gremlin unless it is completely im
 The third and final point involves transactions. Under this model, one traversal is equivalent to a single transaction
 and there is no way in TinkerPop to string together multiple traversals into the same transaction.
 
+IMPORTANT: 4.0 Milestone Release - Remote transactions are not supported in this milestone.
+
 [[connecting-rgp]]
 === Remote Gremlin Provider
 
 Remote Gremlin Providers (RGPs) are showing up more and more often in the graph database space. In TinkerPop terms,
 this category of graph providers is defined by those who simply support the Gremlin language. Typically, these are
-server-based graphs, often cloud-based, which accept Gremlin scripts or bytecode as a request and return results.
-They will often implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would
-with Gremlin Server. Therefore, the typical connection approach is identical to the method of connection presented in
-the <<connecting-gremlin-server,previous section>> with the exact same caveats pointed out toward the end.
+server-based graphs, often cloud-based, which accept Gremlin scripts as a request and return results. They will often
+implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would with Gremlin
+Server. Therefore, the typical connection approach is identical to the method of connection presented in the
+<<connecting-gremlin-server,previous section>> with the exact same caveats pointed out toward the end.
 
 Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are not required to do so to be considered
 TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into
@@ -556,7 +563,7 @@ therefore recommended that users avoid usage of methods like `Graph.addVertex()`
 prefer use of Gremlin with `g.addV()` or `g.V(1).properties()`.
 
 Outside of considering these points, the best practice for ensuring the greatest level of compatibility across graphs
-is to avoid <<connecting-embedded,embedded>> mode and stick to the bytecode based approaches explained in the
+is to avoid <<connecting-embedded,embedded>> mode and stick to the traversal-based approaches explained in the
 <<connecting-gremlin-server,Gremlin Server>> and the <<connecting-rgp,RGP>> sections above. It creates the least
 opportunity to stray from the agnostic path as anything that can be done with those two modes also works in embedded
 mode. If using embedded mode, simply write code as though the `Graph` instance is "remote" and not local to the JVM.

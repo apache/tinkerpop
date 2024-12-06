@@ -499,8 +499,8 @@ executing.  It is up to the script to properly commit or rollback transactions i
 [[connecting-via-drivers]]
 === Connecting via Drivers
 
-image:rexster-connect.png[width=180,float=right] TinkerPop offers client-side drivers for the Gremlin Server websocket
-sub-protocol in a variety of languages:
+image:rexster-connect.png[width=180,float=right] TinkerPop offers client-side drivers for the Gremlin Server that
+communicates via the TinkerPop HTTP API in a variety of languages:
 
 * <<gremlin-dotnet,C#>>
 * <<gremlin-go,Go>>
@@ -509,9 +509,9 @@ sub-protocol in a variety of languages:
 * <<gremlin-python,Python>>
 
 These drivers provide methods to send Gremlin based requests and get back traversal results as a response. The requests
-may be script-based or bytecode-based. As discussed earlier in the <<connecting-gremlin-server,introduction>> the
-recommendation is to use bytecode-based requests. The difference between sending scripts and sending bytecode are
-demonstrated below in some basic examples:
+are script-based or traversal-based. Traversals are internally translated into a `gremlin-lang` compatible script.
+Traversals are still the recommended way to send Gremlin as it has better integration with your language of choice. The
+difference between sending scripts and sending traversals are demonstrated below in some basic examples:
 
 [source,java,tab]
 ----
@@ -576,8 +576,8 @@ g := Traversal_().With(remote)
 list, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
-The advantage of bytecode over scripts should be apparent from the above examples. Scripts are just strings that are
-embedded in code (in the above examples, the strings are Groovy-based) whereas bytecode based requests are themselves
+The advantage of traversals over scripts should be apparent from the above examples. Scripts are just strings that are
+embedded in code (in the above examples, the strings are Groovy-based) whereas traversal based requests are themselves
 code written in the native language of use. Obviously, the advantage of the Gremlin being actual code is that there
 are checks (e.g. compile-time, auto-complete and other IDE support, language level checks, etc.) that help validate the
 Gremlin during the development process.
@@ -717,11 +717,6 @@ curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bind
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
 
-WARNING: Consider the size of the result of a submitted script being returned from the HTTP endpoint.  A script
-that iterates thousands of results will serialize each of those in memory into a single JSON result set.  It is
-quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
-WebSocket configuration, which supports streaming, if that type of use case is required.
-
 === Configuring
 
 The `gremlin-server.sh` file serves multiple purposes.  It can be used to "install" dependencies to the Gremlin
@@ -823,9 +818,6 @@ The following table describes the various YAML configuration options that Gremli
 |metrics.slf4jReporter.enabled |Turns on SLF4j reporting of metrics. |false
 |metrics.slf4jReporter.interval |Time in milliseconds between reports of metrics to SLF4j. |180000
 |port |The port to bind the server to. |8182
-|processors |A `List` of `Map` settings, where each `Map` represents a `OpProcessor` implementation to use along with its configuration. |_none_
-|processors[X].className |The full class name of the `OpProcessor` implementation. |_none_
-|processors[X].config |A `Map` containing `OpProcessor` specific configurations. |_none_
 |resultIterationBatchSize |Defines the size in which the result of a request is "batched" back to the client.  In other words, if set to `1`, then a result that had ten items in it would get each result sent back individually.  If set to `2` the same ten results would come back in five batches of two each. |64
 |scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  If this value is not set, it will default to "gremlin-groovy". |_gremlin-groovy_
 |scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
@@ -854,53 +846,6 @@ The following table describes the various YAML configuration options that Gremli
 |=========================================================
 
 See the <<metrics,Metrics>> section for more information on how to configure Ganglia and Graphite.
-
-[[opprocessor-configurations]]
-==== OpProcessor Configurations
-
-An `OpProcessor` provides a way to plug-in handlers to Gremlin Server's processing flow. Gremlin Server uses this
-plug-in system itself to expose the packaged functionality that it exposes. Configurations can be supplied to an
-`OpProcessor` through the `processors` key in the Gremlin Server configuration file. Each `OpProcessor` can take a
-`Map` of arguments which are specific to a particular implementation:
-
-[source,yaml]
-----
-processors:
-  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
-----
-
-The following sub-sections describe those configurations for each `OpProcessor` implementations supplied with Gremlin
-Server.
-
-===== SessionOpProcessor
-
-The `SessionOpProcessor` provides a way to interact with Gremlin Server over a <<sessions,session>>.
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Name |Description |Default
-|globalFunctionCacheEnabled |Determines if the script engine cache for global functions is enabled and behaves as an override to the plugin specific setting of the same name. |true
-|maxParameters |Maximum number of parameters that can be passed on the request. |16
-|perGraphCloseTimeout |Time in milliseconds to wait for each configured graph to close any open transactions when the session is killed. |10000
-|sessionTimeout |Time in milliseconds before a session will time out. |28800000
-|=========================================================
-
-===== StandardOpProcessor
-
-The `StandardOpProcessor` provides a way to interact with Gremlin Server without use of sessions and is the default
-method for processing script evaluation requests.
-
-[width="100%",cols="3,10,^2",options="header"]
-|=========================================================
-|Name |Description |Default
-|maxParameters |Maximum number of parameters that can be passed on the request. |16
-|=========================================================
-
-[[traversalopprocessor]]
-===== TraversalOpProcessor
-
-The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,with()>>.
-It has no special configuration settings.
 
 ==== Serialization
 
@@ -938,12 +883,8 @@ available GraphSON serializers that can be configured:
 [width="100%",cols="2,2,4,4",options="header"]
 |=========================================================
 |Version |Embedded Types |Mime Type |Class
-|1.0 |yes |`application/vnd.gremlin-v1.0+json` |`GraphSONMessageSerializerGremlinV1`
-|1.0 |no |`application/vnd.gremlin-v1.0+json;types=false` |`GraphSONUntypedMessageSerializerV1`
-|2.0 |yes |`application/vnd.gremlin-v2.0+json` |`GraphSONMessageSerializerV2`
-|2.0 |no |`application/vnd.gremlin-v2.0+json;types=false` |`GraphSONUntypedMessageSerializerV2`
-|3.0 |yes |`application/vnd.gremlin-v3.0+json` |`GraphSONMessageSerializerV3`
-|3.0 |no |`application/vnd.gremlin-v3.0+json;types=false` |`GraphSONMessageSerializerV3`
+|4.0 |yes |`application/vnd.gremlin-v4.0+json` |`GraphSONMessageSerializerV4`
+|4.0 |no |`application/vnd.gremlin-v4.0+json;types=false` |`GraphSONMessageSerializerV4`
 |=========================================================
 
 The above serializer classes can be found in the `org.apache.tinkerpop.gremlin.util.ser` package of `gremlin-util`.
@@ -959,10 +900,10 @@ Configuring GraphSON in the Gremlin Server configuration looks like this:
 
 [source,yaml]
 ----
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4 }
 ----
 
-Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has the following configuration option:
+Gremlin Server is configured by default with GraphSON 4.0 as shown above. It has the following configuration option:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
@@ -970,23 +911,11 @@ Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |=========================================================
 
-It is worth noting that GraphSON 1.0 still has some appeal for some users as it can be configured to produce an untyped
-JSON format which is a bit easier to consume than its successors which embed data types into the output. This version
-of GraphSON tends to be the one that users like to utilize when <<connecting-via-http,connecting via HTTP>> and is still
-used by some <<connecting-rgp, Remote Gremlin Providers>> for this purpose.
+It is possible for two serializers to bind to the same mime type such as `application/json`. When such conflicts arise,
+Gremlin Server will use the order of the serializers to determine priority such that the first serializer to bind to a
+type will be used and the others ignored. The following log message will indicate how the server is ultimately configured:
 
-To configure Gremlin Server this way, the `GraphSONMessageSerializerV1d0` must be included:
-
-[source,yaml]
-----
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1 }
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3 }
-----
-
-In the above situation, both `GraphSONMessageSerializerV1d0` and `GraphSONMessageSerializerV3d0` each bind to the
-`application/json` mime type. When such conflicts arise, Gremlin Server will use the order of the serializers to
-determine priority such that the first serializer to bind to a type will be used and the others ignored. The following
-log message will indicate how the server is ultimately configured:
+NOTE: The below examples use GraphSON 1.0 and GraphSON 3.0 for example purposes, however, they are no longer available.
 
 [source,text]
 ----
@@ -1013,20 +942,18 @@ both the client and the server, as well as limiting the size of the payload that
 format itself is described in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphbinary[IO Documentation].
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }
 
-It has the MIME type of `application/vnd.graphbinary-v1.0` and the following configuration options:
+It has the MIME type of `application/vnd.graphbinary-v4.0` and the following configuration options:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |builder |Name of the `TypeSerializerRegistry.Builder` instance to be used to construct the `TypeSerializerRegistry`. |_none_
 |=========================================================
 
-As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization. Note
-that the `ioRegistries` setting is applied first, followed by the `custom` setting.
+As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization.
 
 [[metrics]]
 ==== Metrics
@@ -1353,6 +1280,8 @@ is hardly feasible, because such requests get full access to Gremlin Server's ex
 execution of `GraphFactory.open()` or `GraphTraversalSource.getGraph()` methods without resorting to TinkerPop
 implementation details (that is, internal API's that can change without notice).
 
+IMPORTANT: 4.0 Milestone Release - These authorization mechanisms don't currently apply due to the removal of Bytecode.
+
 The three mechanisms for authorization each have their merits in terms of simplicity and flexibility. The table below
 gives an overview.
 
@@ -1384,8 +1313,8 @@ such as read only access can be either applied at authorization time as policy i
 execution time as a result of an applied `Strategy` (denoted as 'hybrid' bytecode analysis in the table). A code
 example pursuing the former option is provided in the <<authz-code-example, next section>>.
 
-NOTE: Both the passive and active authorization solutions need to analyze the gremlin bytecode of the original request
-for unwanted removal of restricting Strategies.
+IMPORTANT: 4.0 Milestone Release - passive and active authorization mechanisms are not supported in this milestone
+because bytecode has been replaced with GremlinLang.
 
 NOTE: Gremlin Server is not shipped with `Authorizer` implementations, because these would heavily depend on the external
 systems to integrate with, e.g. link:https://ldap.com/directory-servers/[LDAP systems] or
@@ -1982,10 +1911,10 @@ It was mentioned above at the start of this "Best Practices" section that serial
 by the requesting system. This point begs for further clarification as there are a number of ways to use and configure
 Gremlin Server which might influence its interpretation.
 
-To begin to discuss these nuances, first consider the method of making requests to Gremlin Server: script or bytecode.
+To begin to discuss these nuances, first consider the method of making requests to Gremlin Server: script or traversal.
 For scripts, that will mean that users are sending string representation of Gremlin to the server directly through a
-driver over websockets or through the HTTP. For bytecode, users will be utilize a <<gremlin-drivers-variants, Gremlin GLV>>
-which will construct bytecode for them and submit the request to the server upon iteration of their traversal.
+driver or over HTTP. For bytecode, users will be utilize a <<gremlin-drivers-variants, Gremlin GLV>> which will
+construct bytecode for them and submit the request to the server upon iteration of their traversal.
 
 In either case, it is important to also consider the method of "detachment". Detachment refers to the manner in which
 a graph element is disconnected from the graph for purpose of serialization. Depending on the case and configuration,
@@ -2089,9 +2018,9 @@ to the TinkerPop dev list which outlines the full history of this issue and rela
 If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
 available to Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving
 this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no
-script parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to
-better control the nature of the global function cache from the client side, by issuing scripts with a parameter to
-help define how the garbage collector should treat the references.
+script parameterization due to a given use case, it is possible to better control the nature of the global function
+cache from the client side, by issuing scripts with a parameter to help define how the garbage collector should treat
+the references.
 
 The parameter is called `#jsr223.groovy.engine.keep.globals` and has four options:
 
@@ -2135,101 +2064,6 @@ link:https://static.javadoc.io/com.github.ben-manes.caffeine/caffeine/2.6.2/com/
 By default, the cache is set to `softValues` which means they are garbage collected in a globally least-recently-used
 manner as memory gets low. For production systems, it is likely that a more predictable strategy be taken as shown
 above with the use of the `maximumSize`.
-
-[[sessions]]
-==== Considering Sessions
-
-The preferred approach for issuing script-based requests to Gremlin Server is to do so in a sessionless manner.  The
-concept of "sessionless" refers to a request that is completely encapsulated within a single transaction, such that
-the script in the request starts with a new transaction and ends with a closed transaction. Sessionless requests have
-automatic transaction management handled by Gremlin Server, thus automatically opening and closing transactions as
-previously described.  The downside to the sessionless approach is that the entire script to be executed must be known
-at the time of submission so that it can all be executed at once.  This requirement makes it difficult for some use
-cases where more control over the transaction is desired.
-
-For such use cases, Gremlin Server supports sessions.  With sessions, the user is in complete control of the start
-and end of the transaction. This feature comes with some additional expense to consider:
-
-* Initialization scripts will be executed for each session created so any expense related to them will be established
-each time a session is constructed.
-* There will be one script cache per session, which obviously increases memory requirements.  The cache is not shared,
-so as to ensure that a session has isolation from other session environments. As a result, if the same script is
-executed in each session the same compilation cost will be paid for each session it is executed in.
-* Each session will require its own thread pool with a single thread in it - this ensures that transactional
-boundaries are managed properly from one request to the next.
-* If there are multiple Gremlin Server instances, communication from the client to the server must be bound to the
-server that the session was initialized in.  Gremlin Server does not share session state as the transactional context
-of a `Graph` is bound to the thread it was initialized in.
-
-To connect to a session with Java via the `gremlin-driver`, it is necessary to create a `SessionedClient` from the
-`Cluster` object:
-
-[source,java]
-----
-Cluster cluster = Cluster.open();  <1>
-Client client = cluster.connect("sessionName"); <2>
-----
-
-<1> Opens a reference to `localhost` as <<gremlin-java,previously shown>>.
-<2> Creates a `SessionedClient` given the configuration options of the Cluster. The `connect()` method is given a
-`String` value that becomes the unique name of the session. It is often best to simply use a `UUID` to represent
-the session.
-
-It is also possible to have Gremlin Server manage the transactions as is done with sessionless requests. The user is
-in control of enabling this feature when creating the `SessionedClient`:
-
-[source,java]
-----
-Cluster cluster = Cluster.open();
-Client client = cluster.connect("sessionName", true);
-----
-
-Specifying `true` to the `connect()` method signifies that the `client` should make each request as one encapsulated
-in a transaction. With this configuration of `client` there is no need to close a transaction manually.
-
-When using this mode of the `SessionedClient` it is important to recognize that global variable state for the session
-is not rolled-back on failure depending on where the failure occurs. For example, sending the following script would
-create a variable "x" in global session scope that would be accessible on the next request:
-
-[source,groovy]
-x = 1
-
-However, sending this script which explicitly throws an exception:
-
-[source,groovy]
-y = 2
-throw new RuntimeException()
-
-will result in an obvious failure during script evaluation and "y" will not be available to the next request. The
-complication arises where the script evaluates successfully, but fails during result iteration or serialization. For
-example, this script:
-
-[source,groovy]
-a = 1
-g.addV()
-
-would successfully evaluate and return a `Traversal`.  The variable "a" would be available on the next request. However,
-if there was a failure in transaction management on the call to `commit()`, "a" would still be available to the next
-request.
-
-To avoid unexpected problems with state in relation to errors in sessions, it is best to follow these guidelines:
-
-* Do not re-use session identifiers. Simply use a new UUID for each session.
-* On exception, be sure to call `close()` on the `Client` and create a new session.
-* While you may submit parallel asynchronous requests to a session, it may not make sense to do so because they are
-simply executed serially as they arrive to the session. A failed asynchronous request could leave an invalid state
-in the session which may not allow later requests to succeed. Either use synchronous requests only or carefully
-consider error conditions with asynchronous requests.
-
-[source,java]
-----
-Client.SessionSettings settings =
-    Client.SessionSettings.build().maintainStateAfterException(true).create();
-Client session = cluster.connect(Client.Settings.build().useSession(settings).create());
-----
-
-A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes
-necessary for a given use case.
 
 [[considering-transactions]]
 ==== Considering Transactions

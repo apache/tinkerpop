@@ -33,12 +33,12 @@ as well.
 
 TinkerPop provides an array of drivers in different programming languages as a way to connect to a remote Gremlin
 Server or Remote Gremlin Provider. Drivers allow the developer to make requests to that remote system and get back
-results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin bytecode
-over this sub-protocol. Gremlin strings are written in the scripting language made available by the remote system that
+results from the TinkerPop-enabled graphs hosted within. A driver can submit Gremlin strings and Gremlin traversals
+over this HTTP protocol. Gremlin strings are written in the scripting language made available by the remote system that
 the driver is connecting to (typically, Groovy-based). This connection approach is quite similar to what developers
 are likely familiar with when using JDBC and SQL.
 
-The preferred approach is to use bytecode-based requests, which essentially allows the ability to craft Gremlin
+The preferred approach is to use traversal-based requests, which essentially allows the ability to craft Gremlin
 directly in the programming language of choice. As Gremlin makes use of two fundamental programming constructs:
 link:https://en.wikipedia.org/wiki/Function_composition[function composition] and
 link:https://en.wikipedia.org/wiki/Nested_function[function nesting], it is possible to embed the Gremlin language
@@ -798,7 +798,7 @@ The following table describes the various configuration options for the Gremlin 
 |auth.password |The password to submit on requests that require basic authentication. |_none_
 |auth.region |The region setting for sigv4 authentication. |_none_
 |auth.serviceName |The service name setting for sigv4 authentication. |_none_
-|connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes WebSocket protocol handshake and SSL handshake. |15000
+|connectionPool.connectionSetupTimeoutMillis | Duration of time in milliseconds provided for connection setup to complete which includes the SSL handshake. |15000
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
 |connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
@@ -1478,15 +1478,6 @@ for (const vertex of result2) {
 }
 ----
 
-It is also possible to initialize the `Client` to use <<sessions,sessions>>:
-
-[source,javascript]
-----
-const client = new gremlin.driver.Client('ws://localhost:8182/gremlin', { traversalSource: 'g', 'session': 'unique-string-id' });
-----
-
-With this configuration, the state of variables within scripts are preserved between requests.
-
 ==== Per Request Settings
 
 The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
@@ -1915,14 +1906,6 @@ If the remote system has authentication and SSL enabled, then the `GremlinServer
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithAuthentication]
 ----
 
-It is also possible to initialize the `Client` to use <<sessions,sessions>>:
-
-[source,csharp]
-----
-var gremlinServer = new GremlinServer("localhost", 8182);
-var client = new GremlinClient(gremlinServer, sessionId: Guid.NewGuid().ToString()))
-----
-
 ==== Per Request Settings
 
 The `GremlinClient.Submit()` functions accept an option to build a raw `RequestMessage`. A good use-case for this
@@ -2332,7 +2315,7 @@ re-construction machine-side.
 
 [[gremlin-python-transactions]]
 === Transactions
-WARNING: Transaction is currently disabled in this Milestone release.
+IMPORTANT: 4.0 Milestone Release - Transactions are currently disabled in this Milestone release.
 
 To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section

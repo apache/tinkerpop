@@ -582,26 +582,26 @@ include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Pr
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[with()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
-step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
+step will then send the `GremlinLang` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.
 
 There is one method to implement on `RemoteConnection`:
 
 [source,java]
-public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
+public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException;
 
 Note that it returns a `RemoteTraversal`. This interface should also be implemented and in most cases implementers can
 simply extend the `AbstractRemoteTraversal`.
 
 TinkerPop provides the `DriverRemoteConnection` as a useful and
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/remote[example implementation].
-`DriverRemoteConnection` serializes the `Traversal` as Gremlin bytecode and then submits it for remote processing on
-Gremlin Server. Gremlin Server rebinds the `Traversal` to a configured `Graph` instance and then iterates the results
-back as it would normally do.
+`DriverRemoteConnection` serializes the `Traversal` as GremlinLang and then submits it for remote processing on
+Gremlin Server. Gremlin Server parses the script into a `Traversal` to a configured `Graph` instance and then iterates
+the results back as it would normally do.
 
 Implementing `RemoteConnection` is not something routinely done for those implementing `gremlin-core`. It is only
 something required if there is a need to exploit remote traversal submission. If a graph provider has a "graph server"
-similar to Gremlin Server that can accept bytecode-based requests on its own protocol, then that would be one example
+similar to Gremlin Server that can accept traversal-based requests on its own protocol, then that would be one example
 of a reason to implement this interface.
 
 [[bulk-import-export]]
@@ -1070,7 +1070,7 @@ user-agent: NotAvailable Gremlin-Java.4.0.0 11.0.25 Windows_11.10.0 amd64
 
 ===== Request Header Value Options
 
-[width="100%",cols="3,10",options="header"]
+[width="100%",cols="2,10",options="header"]
 |=========================================================
 |Name |Options
 |mimetype |A MIME type listed in <<serializers>>.
@@ -1120,7 +1120,7 @@ serialized. In that case, the `Content-Type` of the response should be `applicat
 
 ===== Response Message Format
 
-[width="100%",cols="3,10a",options="header"]
+[width="100%",cols="2,10a",options="header"]
 |=========================================================
 |Key |Description
 |result |A map that contains the result data.
@@ -1163,7 +1163,7 @@ serialized. In that case, the `Content-Type` of the response should be `applicat
 
 The following table details the HTTP status codes that Gremlin Server will send:
 
-[width="100%",cols="2,2,9",options="header"]
+[width="100%",cols="1,3,9",options="header"]
 |=========================================================
 |Code |Name |Description
 |200 |SUCCESS |The server successfully processed a request to completion - there are no messages remaining in this stream.
