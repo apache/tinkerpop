@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -53,7 +53,7 @@ public class ConjoinStepTest extends StepTest {
         assertEquals("5.5,8.0,10.1", __.__(new double[] {5.5, 8.0, 10.1}).conjoin(",").next());
         assertNull(__.__(Arrays.asList(null, null)).conjoin(",").next());
 
-        final Set<Integer> set = new HashSet<>();
+        final Set<Integer> set = new LinkedHashSet<>();
         set.add(10); set.add(11); set.add(12);
         assertEquals("10.11.12", __.__(set).conjoin(".").next());
     }
