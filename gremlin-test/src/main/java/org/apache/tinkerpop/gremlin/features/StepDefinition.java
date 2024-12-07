@@ -122,6 +122,12 @@ public final class StepDefinition {
             final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
             return String.format("[%s]", listItems);
         }));
+        add(Pair.with(Pattern.compile("s\\[\\]"), s -> "{}"));
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
+            final String[] items = s.split(",");
+            final String setItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
+            return String.format("{%s}", setItems);
+        }));
         add(Pair.with(Pattern.compile("d\\[(NaN)\\]"), s -> "NaN"));
         add(Pair.with(Pattern.compile("d\\[(Infinity)\\]"), s -> "Infinity"));
         add(Pair.with(Pattern.compile("d\\[(-Infinity)\\]"), s -> "-Infinity"));
@@ -160,12 +166,6 @@ public final class StepDefinition {
         }));
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("(null)"), s -> "null"));
         add(Pair.with(Pattern.compile("(true)"), s -> "true"));

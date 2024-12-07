@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
@@ -117,7 +118,7 @@ public class PartitionStrategyTest {
                     final List<AddEdgeStep> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal.asAdmin());
                     assertEquals(1, addEdgeSteps.size());
                     addEdgeSteps.forEach(s -> {
-                        assertEquals(repr, "test", s.getParameters().get(T.label, () -> Edge.DEFAULT_LABEL).get(0));
+                        assertEquals(repr, GValue.of(null, "test"), s.getParameters().get(T.label, () -> Edge.DEFAULT_LABEL).get(0));
                         assertEquals(repr, "a", s.getParameters().get("p", null).get(0));
                     });
                 } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStep.class, traversal.asAdmin())) {

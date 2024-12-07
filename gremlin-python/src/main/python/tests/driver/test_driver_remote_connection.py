@@ -21,7 +21,7 @@ import os
 from gremlin_python import statics
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.statics import long
-from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, Parameter, Cardinality
+from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
@@ -116,7 +116,7 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_connection)
         t = g.with_("evaluationTimeout",
                     1000).with_("batchSize", 100).with_("userAgent",
-                                                        "test").V(Parameter.var('ids', [1, 2, 3])).count()
+                                                        "test").V(GValue('ids', [1, 2, 3])).count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
                                                                              'evaluationTimeout': 1000,
                                                                              'userAgent': 'test',

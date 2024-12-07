@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -140,16 +141,16 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Parse a string literal varargs, and return an string array
+     * Parse a string literal varargs, and return a string array
      */
-    public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
-        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
+    public String[] parseStringVarargsLiterals(final GremlinParser.StringLiteralVarargsLiteralsContext varargsContext) {
+        if (varargsContext == null || varargsContext.stringNullableLiteral() == null) {
             return new String[0];
         }
-        return varargsContext.stringNullableArgument()
+        return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
+                .map(antlr.genericVisitor::parseString)
                 .toArray(String[]::new);
     }
 
@@ -363,8 +364,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
 
         return literalMap;
     }
-
-
 
     /**
      * {@inheritDoc}

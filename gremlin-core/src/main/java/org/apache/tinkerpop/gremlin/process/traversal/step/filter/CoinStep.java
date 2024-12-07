@@ -41,12 +41,12 @@ public final class CoinStep<S> extends FilterStep<S> implements Seedable {
 
     public CoinStep(final Traversal.Admin traversal, final double probability) {
         super(traversal);
-        this.probability = GValue.ofDouble(probability);
+        this.probability = GValue.ofDouble(null, probability);
     }
 
     public CoinStep(final Traversal.Admin traversal, final GValue<Double> probability) {
         super(traversal);
-        this.probability = null == probability ? GValue.ofDouble(null) : probability;
+        this.probability = null == probability ? GValue.ofDouble(null,null) : probability;
     }
 
     @Override

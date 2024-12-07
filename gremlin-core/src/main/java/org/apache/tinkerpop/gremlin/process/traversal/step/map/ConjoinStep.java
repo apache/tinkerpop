@@ -38,7 +38,7 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
     private GValue<String> delimiter;
 
     public ConjoinStep(final Traversal.Admin traversal, final String delimiter) {
-        this(traversal, GValue.of(delimiter));
+        this(traversal, GValue.of(null, delimiter));
     }
 
     public ConjoinStep(final Traversal.Admin traversal, final GValue<String> delimiter) {

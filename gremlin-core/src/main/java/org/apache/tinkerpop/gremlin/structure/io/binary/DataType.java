@@ -43,6 +43,7 @@ public enum DataType {
     VERTEXPROPERTY(0X12),
     DIRECTION(0X18),
     T(0X20),
+    MERGE(0x2e),
     TRAVERSER(0X21),
     BIGDECIMAL(0X22),
     BIGINTEGER(0X23),

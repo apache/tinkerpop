@@ -79,7 +79,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final Map staticParams) {
-        this(traversal, isStart, service, GValue.ofMap(staticParams));
+        this(traversal, isStart, service, GValue.ofMap(null, staticParams));
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final GValue<Map> staticParams) {
@@ -88,7 +88,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final Map staticParams,
                     final Traversal.Admin<S, Map> mapTraversal) {
-        this(traversal, isStart, service, GValue.ofMap(staticParams), mapTraversal);
+        this(traversal, isStart, service, GValue.ofMap(null, staticParams), mapTraversal);
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final GValue<Map> staticParams,

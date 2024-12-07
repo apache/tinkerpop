@@ -22,11 +22,13 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
@@ -168,12 +170,12 @@ public class GremlinLang implements Cloneable, Serializable {
             return gremlinLang.getGremlin("__");
         }
 
-        if (arg instanceof Parameter) {
-            final Parameter param = (Parameter) arg;
-            String key = param.key;
+        if (arg instanceof GValue) {
+            final GValue gValue = (GValue) arg;
+            String key = gValue.getName();
 
             if (key == null) {
-                key = String.format("_%d", paramCount.getAndIncrement());
+                return argAsString(((GValue<?>) arg).get());
             }
 
             if (!SourceVersion.isIdentifier(key)) {
@@ -181,11 +183,11 @@ public class GremlinLang implements Cloneable, Serializable {
             }
 
             if (parameters.containsKey(key)) {
-                if (!Objects.equals(parameters.get(key), param.value)) {
+                if (!Objects.equals(parameters.get(key), gValue.get())) {
                     throw new IllegalArgumentException(String.format("Parameter with name [%s] already defined.", key));
                 }
             } else {
-                parameters.put(key, param.value);
+                parameters.put(key, gValue.get());
             }
             return key;
         }
@@ -469,33 +471,6 @@ public class GremlinLang implements Cloneable, Serializable {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-
-    /**
-     * Parameter to be used in Traversal.
-     */
-    public static class Parameter {
-        private final String key;
-        private final Object value;
-
-        private Parameter(final String key, final Object value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public static Parameter var(final String key, final Object value) {
-            if (key != null && key.startsWith("_")) {
-                throw new IllegalArgumentException(String.format("Invalid parameter name [%s]. Should not start with _.", key));
-            }
-
-            return new Parameter(key, value);
-        }
-
-        public static Parameter value(final Object value) {
-            return new Parameter(null, value);
-        }
-    }
-
-    /////
 
     private Object[] flattenArguments(final Object... arguments) {
         if (arguments == null || arguments.length == 0)
