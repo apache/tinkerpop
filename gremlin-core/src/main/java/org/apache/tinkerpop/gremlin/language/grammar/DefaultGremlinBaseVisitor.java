@@ -1314,6 +1314,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitNullableGenericLiteralMap(final GremlinParser.NullableGenericLiteralMapContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitIntegerLiteral(final GremlinParser.IntegerLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}

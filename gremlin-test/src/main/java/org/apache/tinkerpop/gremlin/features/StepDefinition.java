@@ -43,9 +43,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -230,7 +234,7 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> g.V().has("name", s).next()));
+        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> detachVertex(g.V().has("name", s).next())));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> getEdgeId(g, s)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> getEdgeIdString(g, s)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> getEdge(g, s)));
@@ -247,6 +251,38 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("(true)"), s -> true));
         add(Pair.with(Pattern.compile("(false)"), s -> false));
     }};
+
+    /**
+     * Some implementations of {@link Vertex} are not {@code Serializable} and may lead to test failures when passed as
+     * parameters. One such instance is {@code HadoopVertex}. This method detaches vertices as tests should never
+     * require implementation-specific elements.
+     */
+    private static DetachedVertex detachVertex(final Vertex vertex) {
+        return new DetachedVertex(vertex.id(), vertex.label(),
+                (List<VertexProperty>) IteratorUtils.asList(vertex.properties()).stream()
+                        .map(vp -> detachVertexProperty((VertexProperty) vp)).collect(Collectors.toList()));
+    }
+
+    /**
+     * Some implementations of {@link Edge} are not {@code Serializable} and may lead to test failures when passed as
+     * parameters. One such instance is {@code HadoopEdge}. This method detaches edges as tests should never
+     * require implementation-specific elements.
+     */
+    private static DetachedEdge detachEdge(final Edge edge) {
+        return new DetachedEdge(edge.id(), edge.label(), IteratorUtils.asList(edge.properties()),
+                edge.outVertex().id(), edge.outVertex().label(), edge.inVertex().id(), edge.inVertex().label());
+    }
+
+    /**
+     * Some implementations of {@link VertexProperty} are not {@code Serializable} and may lead to test failures when passed as
+     * parameters. One such instance is {@code HadoopVertexProperty}. This method detaches vertex properties as tests
+     * should never require implementation-specific elements.
+     */
+    private static DetachedVertexProperty detachVertexProperty(final VertexProperty vp) {
+        Map<String, Object> properties = new HashMap<>();
+        vp.properties().forEachRemaining(p -> properties.put(((Property) p).key(), ((Property) p).value()));
+        return new DetachedVertexProperty(vp.id(), vp.label(), vp.value(), properties, vp.element());
+    }
 
     @Inject
     public StepDefinition(final World world) {
@@ -562,8 +598,8 @@ public final class StepDefinition {
         final Triplet<String,String,String> t = getEdgeTriplet(e);
 
         // make this OLAP proof since you can't leave the star graph
-        return g.V().has("name", t.getValue0()).outE(t.getValue1()).toStream().
-                   filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get();
+        return detachEdge(g.V().has("name", t.getValue0()).outE(t.getValue1()).toStream().
+                   filter(edge -> g.V(edge.inVertex().id()).has("name", t.getValue2()).hasNext()).findFirst().get());
     }
 
     /**

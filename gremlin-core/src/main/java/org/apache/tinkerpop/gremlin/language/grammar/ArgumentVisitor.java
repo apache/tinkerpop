@@ -20,11 +20,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Array;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Objects;
 

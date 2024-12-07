@@ -250,7 +250,7 @@ Feature: Step - inject()
       | result |
       | l[d[1].i,d[3].i,d[100].i,d[300].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_3_100_300X_listvar
     Given the modern graph
     And using the parameter xx1 defined as "l[d[1].i,d[3].i,d[100].i,d[300].i]"
@@ -263,7 +263,7 @@ Feature: Step - inject()
       | result |
       | l[d[1].i,d[3].i,d[100].i,d[300].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_3_100_300X_set
     Given the modern graph
     And the traversal of
@@ -275,7 +275,7 @@ Feature: Step - inject()
       | result |
       | s[d[100].i,d[300].i,d[1].i,d[3].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_3_100_300X_setvar
     Given the modern graph
     And using the parameter xx1 defined as "s[d[100].i,d[300].i,d[1].i,d[3].i]"
@@ -288,7 +288,7 @@ Feature: Step - inject()
       | result |
       | s[d[100].i,d[300].i,d[1].i,d[3].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_1X_set
     Given the modern graph
     And the traversal of
@@ -300,7 +300,7 @@ Feature: Step - inject()
       | result |
       | s[d[1].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_1X_setvar
     Given the modern graph
     And using the parameter xx1 defined as "s[d[1].i,d[1].i]"
@@ -313,7 +313,7 @@ Feature: Step - inject()
       | result |
       | s[d[1].i] |
 
-  @GraphComputerVerificationInjectionNotSupported @GremlinLangScriptOnly
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX_set
     Given the modern graph
     And using the parameter xx1 defined as "s[]"

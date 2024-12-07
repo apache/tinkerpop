@@ -74,9 +74,10 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
 
         this.isStart = isStart;
 
+        Object[] idValues = GValue.resolveToValues(this.ids);
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                this.getTraversal().getGraph().get().vertices(GValue.resolveToValues(this.ids)) :
-                this.getTraversal().getGraph().get().edges(GValue.resolveToValues(this.ids)));
+                this.getTraversal().getGraph().get().vertices(idValues) :
+                this.getTraversal().getGraph().get().edges(idValues));
     }
 
     /**
@@ -188,7 +189,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
             // if this is going to OLAP, convert to ids so you don't serialize elements
             for (int i = 0; i < this.ids.length; i++) {
                 final GValue<?> current = this.ids[i];
-                if (current.getType().isElement()) {
+                if (current.get() instanceof Element) {
                     this.ids[i] = GValue.of(current.getName(), ((Element) current.get()).id());
                 }
             }

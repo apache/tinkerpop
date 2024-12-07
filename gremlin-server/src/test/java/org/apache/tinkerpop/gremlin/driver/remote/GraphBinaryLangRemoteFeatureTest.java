@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GraphBinaryLangRemoteFeatureTest.RemoteGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
-//        name= {"g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X"},
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class GraphBinaryLangRemoteFeatureTest extends AbstractFeatureTest {
     public static class RemoteGuiceFactory extends AbstractGuiceFactory {

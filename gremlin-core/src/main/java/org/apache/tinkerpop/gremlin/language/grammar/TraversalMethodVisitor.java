@@ -1246,20 +1246,12 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public Traversal visitTraversalMethod_option_Merge_Map_Cardinality(final GremlinParser.TraversalMethod_option_Merge_Map_CardinalityContext ctx) {
-        if (ctx.genericLiteralMapNullableArgument().nullLiteral() != null) {
+        if (ctx.nullableGenericLiteralMap().nullLiteral() != null) {
             return this.graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()), (Map) null);
         }
-
-        final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralMapNullableArgument(ctx.genericLiteralMapNullableArgument());
-        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
-            return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
-                    (GValue<Map<Object, Object>>) literalOrVar,
-                    TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
-        } else {
-            return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
-                    (Map<Object, Object>) literalOrVar,
-                    TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
-        }
+        return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
+                antlr.genericVisitor.parseMap(ctx.nullableGenericLiteralMap().genericLiteralMap()),
+                TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
     }
 
     /**

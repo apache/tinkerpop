@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph;
+package org.apache.tinkerpop.gremlin.driver.remote;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -30,15 +30,14 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues",
+        tags = "not @RemoteOnly and not @GraphComputerOnly and not @AllowNullPropertyValues and not @GremlinGroovyNotSupported",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class,
+        objectFactory = GraphBinaryGroovyRemoteParameterizedFeatureTest.RemoteGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
-public class TinkerGraphFeatureTest {
-
-    public static class TinkerGraphGuiceFactory extends AbstractGuiceFactory {
-        public TinkerGraphGuiceFactory() {
+public class GraphBinaryGroovyRemoteParameterizedFeatureTest extends AbstractFeatureTest {
+    public static class RemoteGuiceFactory extends AbstractGuiceFactory {
+        public RemoteGuiceFactory() {
             super(Guice.createInjector(Stage.PRODUCTION, CucumberModules.createScenarioModule(), new ServiceModule()));
         }
     }
@@ -46,7 +45,7 @@ public class TinkerGraphFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerWorld.TinkerGraphWorld.class);
+            bind(World.class).to(RemoteWorld.GraphBinaryGroovyParameterizedRemoteWorld.class);
         }
     }
 }

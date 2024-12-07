@@ -180,7 +180,6 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V()"
 
-  @GremlinLangScriptOnly
   Scenario: g_V_mergeE_inlineXemptyX_optionXonCreate_nullX
     Given the empty graph
     And the graph initializer of
@@ -258,7 +257,6 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.E()"
     And the graph should return 2 for count of "g.V()"
 
-  @GremlinLangScriptOnly
   Scenario: g_mergeEXnullX
     Given the empty graph
     And the graph initializer of
@@ -272,6 +270,7 @@ Feature: Step - mergeE()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
+  @GremlinGroovyNotSupported
   Scenario: g_mergeEXnullvarX
     Given the empty graph
     And the graph initializer of
@@ -286,6 +285,7 @@ Feature: Step - mergeE()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
 
+  @GremlinGroovyNotSupported
   Scenario: g_V_limitX1X_mergeEXnullvarX
     Given the empty graph
     And the graph initializer of

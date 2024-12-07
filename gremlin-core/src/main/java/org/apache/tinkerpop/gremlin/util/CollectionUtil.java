@@ -102,11 +102,7 @@ public final class CollectionUtil {
      * element as a new array with just that item in it.
      */
     public static <T> T[] addFirst(final T[] array, final T element, final Class<T> clazz) {
-        if (null == array && null == element) {
-            final T[] singleElementArray = (T[]) Array.newInstance(clazz, 1);
-            singleElementArray[0] = null;
-            return singleElementArray;
-        } else if (null == array) {
+        if (null == array) {
             final T[] singleElementArray = (T[]) Array.newInstance(clazz, 1);
             singleElementArray[0] = element;
             return singleElementArray;

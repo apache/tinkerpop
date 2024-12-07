@@ -26,7 +26,9 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,7 +39,10 @@ public class GTypeTest {
 
     @Test
     public void shouldReturnTrueForNumericTypes() {
+        assertThat(GType.BYTE.isNumeric(), is(true));
+        assertThat(GType.SHORT.isNumeric(), is(true));
         assertThat(GType.INTEGER.isNumeric(), is(true));
+        assertThat(GType.FLOAT.isNumeric(), is(true));
         assertThat(GType.DOUBLE.isNumeric(), is(true));
         assertThat(GType.LONG.isNumeric(), is(true));
         assertThat(GType.BIG_INTEGER.isNumeric(), is(true));
@@ -48,8 +53,14 @@ public class GTypeTest {
     public void shouldReturnFalseForNonNumericTypes() {
         assertThat(GType.STRING.isNumeric(), is(false));
         assertThat(GType.BOOLEAN.isNumeric(), is(false));
-        assertThat(GType.EDGE.isNumeric(), is(false));
         assertThat(GType.VERTEX.isNumeric(), is(false));
+        assertThat(GType.CHARACTER.isNumeric(), is(false));
+        assertThat(GType.DATETIME.isNumeric(), is(false));
+        assertThat(GType.LIST.isNumeric(), is(false));
+        assertThat(GType.MAP.isNumeric(), is(false));
+        assertThat(GType.SET.isNumeric(), is(false));
+        assertThat(GType.UUID.isNumeric(), is(false));
+        assertThat(GType.UNKNOWN.isNumeric(), is(false));
     }
 
     @Test
@@ -63,11 +74,14 @@ public class GTypeTest {
         assertEquals(GType.LIST, GType.getType(Collections.emptyList()));
         assertEquals(GType.SET, GType.getType(Collections.emptySet()));
         assertEquals(GType.VERTEX, GType.getType(mock(Vertex.class)));
-        assertEquals(GType.EDGE, GType.getType(mock(Edge.class)));
-        assertEquals(GType.PATH, GType.getType(mock(Path.class)));
-        assertEquals(GType.PROPERTY, GType.getType(mock(Property.class)));
         assertEquals(GType.BIG_INTEGER, GType.getType(BigInteger.ONE));
         assertEquals(GType.BIG_DECIMAL, GType.getType(BigDecimal.ONE));
+        assertEquals(GType.BYTE, GType.getType((byte) 123));
+        assertEquals(GType.CHARACTER, GType.getType('A'));
+        assertEquals(GType.DATETIME, GType.getType(OffsetDateTime.now()));
+        assertEquals(GType.FLOAT, GType.getType(123.45f));
+        assertEquals(GType.SHORT, GType.getType((short) 123));
+        assertEquals(GType.UUID, GType.getType(UUID.randomUUID()));
     }
 
     @Test

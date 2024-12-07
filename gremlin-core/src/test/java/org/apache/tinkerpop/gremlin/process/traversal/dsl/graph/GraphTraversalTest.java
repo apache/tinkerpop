@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -130,5 +132,24 @@ public class GraphTraversalTest {
                     throw new IllegalStateException(GraphTraversal.class.getSimpleName() + " is missing the following method: " + methodAName + ":" + methodAParameters);
             }
         }
+    }
+
+    @Test
+    public void hasIdShouldUnrollListOfIds() {
+        assertEquals(g.V().hasId(1,2,3,4,5,6,7,8),
+                g.V().hasId(new Integer[]{1, 2, 3}, new Integer[]{4, 5}, Arrays.asList(6, 7), 8));
+    }
+
+    @Test
+    public void hasIdShouldUnrollGValueListOfIds() {
+        assertEquals(
+                g.V().hasId(
+                        GValue.ofInteger(null, 1), GValue.ofInteger(null, 2), GValue.ofInteger(null, 3),
+                        GValue.ofInteger(null, 4), GValue.ofInteger(null, 5), GValue.ofInteger(null, 6),
+                        GValue.ofInteger(null, 7), GValue.ofInteger("d", 8)
+                ),
+                g.V().hasId(
+                        GValue.of("a", new Integer[]{1, 2, 3}), GValue.of("b", new Integer[]{4, 5}),
+                        GValue.of("c", Arrays.asList(6, 7)), GValue.ofInteger("d", 8)));
     }
 }

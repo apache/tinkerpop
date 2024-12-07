@@ -189,10 +189,8 @@ public class Parameters implements Cloneable, Serializable {
     private static <S> Object resolve(final Object object, final Traverser.Admin<S> traverser) {
         if (object instanceof Traversal.Admin) {
             return TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) object);
-        } else if (object instanceof GValue) {
-            return ((GValue) object).get();
         } else {
-            return object;
+            return GValue.valueOf(object);
         }
     }
 

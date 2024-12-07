@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PageRank
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPressureVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
@@ -434,7 +433,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Map the {@link Vertex} to its adjacent vertices given a direction and edge labels. The arguments for the
-     * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for  parameterization.
+     * labels must be either a {@code String} or a {@link GValue<String>}. For internal use for parameterization.
      *
      * @param direction  the direction to traverse from the current vertex
      * @param edgeLabels the edge labels to traverse
@@ -2865,15 +2864,21 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         } else {
             this.asAdmin().getGremlinLang().addStep(Symbols.hasId, id, otherIds);
 
-            // the logic for dealing with hasId([]) is sketchy historically, just trying to maintain what we were
-            // originally testing prior to GValue.
-            if (id instanceof GValue && ((GValue) id).getType().isCollection()) {
-                return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), new P(Contains.within, id)));
-            }
-
             //using ArrayList given P.within() turns all arguments into lists
             final List<Object> ids = new ArrayList<>();
-            if (id instanceof Object[]) {
+
+            if (id instanceof GValue) {
+                // the logic for dealing with hasId([]) is sketchy historically, just trying to maintain what we were
+                // originally testing prior to GValue.
+                Object value = ((GValue) id).get();
+                if (value instanceof Object[]) {
+                    ids.addAll(Arrays.asList(GValue.ensureGValues((Object[]) value)));
+                } else if (value instanceof Collection) {
+                    ids.addAll(Arrays.asList(GValue.ensureGValues(((Collection<?>) value).toArray())));
+                } else {
+                    ids.add(id);
+                }
+            } else if (id instanceof Object[]) {
                 Collections.addAll(ids, (Object[]) id);
             } else if (id instanceof Collection) {
                 // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
@@ -2891,22 +2896,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                     // For example, GValue.of([1, 2]) is processed to [GValue.of(1), GValue.of(2)]
                     if(i instanceof GValue) {
                         Object value = ((GValue) i).get();
-                        if (i instanceof Object[]) {
-                            for (Object o : (Object[]) value) {
-                                if(o instanceof GValue) {
-                                    ids.add(o);
-                                } else {
-                                    ids.add(GValue.of(null, o));
-                                }
-                            }
+                        if (value instanceof Object[]) {
+                            ids.addAll(Arrays.asList(GValue.ensureGValues((Object[]) value)));
                         } else if(value instanceof Collection) {
-                            for (Object o : (Collection<?>) value) {
-                                if(o instanceof GValue) {
-                                    ids.add(o);
-                                } else {
-                                    ids.add(GValue.of(null, o));
-                                }
-                            }
+                            ids.addAll(Arrays.asList(GValue.ensureGValues(((Collection<?>) value).toArray())));
                         } else {
                             ids.add(i);
                         }
@@ -4511,7 +4504,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
-     * @since 3.0.0-incubating
+     * @since 4.0.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final GValue<M> token, final Traversal<?, E2> traversalOption) {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.option, token, traversalOption);
@@ -4532,29 +4525,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with the modulated step
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
-     * @since 3.7.3
+     * @since 4.0.0
      */
     public default <M, E2> GraphTraversal<S, E> option(final M token, final GValue<Map<Object, Object>> m) {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.option, token, m);
         ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
-        return this;
-    }
-
-    /**
-     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
-     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
-     * the documentation of such steps to understand the usage context.
-     *
-     * @param m Provides a {@code Map} as the option which is the same as doing {@code constant(m)}.
-     * @return the traversal with the modulated step
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
-     * @since 3.7.3
-     */
-    public default <M, E2> GraphTraversal<S, E> option(final Merge merge, final GValue<Map<Object, Object>> m, final VertexProperty.Cardinality cardinality) {
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.option, merge, m, cardinality);
-
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());
         return this;
     }
 

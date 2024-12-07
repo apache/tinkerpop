@@ -1788,7 +1788,7 @@ without all the associated structure which can slow the response.
 [[parameterized-scripts]]
 ==== Parameterized Scripts
 
-image:gremlin-parameterized.png[width=150,float=left] If using the standard `GremlinGroovyScriptEngine` in Gremlin
+image:gremlin-parameterized.png[width=150,float=left] If using `GremlinGroovyScriptEngine` in Gremlin
 Server, it is imperative to use script parameterization. Period. There are at least two good
 reasons for doing so: script caching and protection from "Gremlin injection" (conceptually the same as the notion of
 SQL injection).
@@ -1799,7 +1799,7 @@ scripts. This processing is different from the processing performed by Groovy an
 concerns of this section. When considering parameterization, users should also consider the graph database they are
 using to determine if it has native mechanisms that preclude the need for parameterization.
 
-With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a
+With respect to caching, Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the
 hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that
 script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional
 compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and
@@ -1852,21 +1852,14 @@ params.put("nodeId",nodeId);
 client.submit(query, params);
 ----
 
-Gremlin injection should not be possible with `Bytecode` based traversals - only scripts - because `Bytecode`
-traversals will treat all arguments as literal values. There is potential for concern if lambda based steps are
-utilized as they execute arbitrary code, which is string based, but configuring `TraversalSource` instances with
-`LambdaRestrictionStrategy`, which prevents lambdas all together, using a graph that does not allow lambdas at all, or
-configuring appropriate <<script-execution,sandbox options>> in Gremlin Server (or such options available to the graph
-database in use) should each help mitigate problems related to this issue.
-
-Scripts create classes which get loaded to the JVM metaspace and to a `Class` cache. For those using script
+Groovy scripts create classes which get loaded to the JVM metaspace and to a `Class` cache. For those using script
 parameterization, a typical application should not generate an overabundance of pressure on these two components of
 Gremlin Server's memory footprint. On the other hand, it's not too hard to imagine a situation where problems might
 emerge:
 
 * An application use case makes parameterization impossible and therefore all scripts are unique.
 * There is a bug in an applications parameterization code that is actually instead producing unique scripts.
-* A long running Gremln Server takes lots of non-parameterized scripts from Gremlin Console or similar tools.
+* A long running Gremlin Server takes lots of non-parameterized scripts from Gremlin Console or similar tools.
 
 In these sorts of cases, Gremlin Server's performance can be affected adversely as without some additional configuration
 the metaspace will grow indefinitely (possibly along with the general heap) triggering longer and more frequent rounds
@@ -1878,7 +1871,7 @@ such that cache hits will be low there is little need to keep such references ar
 
 Perhaps the more important guards are related to the JVM metaspace. Start by setting the initial size of this space
 with `-XX:MetaspaceSize`. When this value is exceeded it will trigger a GC round - it is essentially a threshold for
-GC. The grow of this value can be capped with `-XX:MaxMetaspaceSize` (this value is unlimited by default). In an ideal
+GC. The growth of this value can be capped with `-XX:MaxMetaspaceSize` (this value is unlimited by default). In an ideal
 situation (i.e. parameterization), the `-XX:MetaspaceSize` should have a large enough setting so as to avoid early GC
 rounds for metaspace, but outside of an ideal world (i.e. non-parameterization) it may not be smart to make this number
 too large. Making the setting too large (and thus the `-XX:MaxMetaspaceSize` even larger) may trigger longer GC rounds
@@ -1900,9 +1893,6 @@ requirement set by `MaxMetaspaceExpansion`. A larger number should reduce the ch
 There really aren't any general guidelines for how to initially set these values. Using profiling tools to examine GC
 trends is likely the best way to understand how a particular workload is affecting the metaspace and its relation to
 GC. Getting these settings "right" however will help ensure much more predictable Gremlin Server operations.
-
-IMPORTANT: A lambda used in a bytecode-based request will be treated as a script, so issues related to raw script-based
-requests apply equally well to lambda-bytecode requests.
 
 ==== Properties of Elements
 

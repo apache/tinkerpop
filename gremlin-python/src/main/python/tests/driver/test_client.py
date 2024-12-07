@@ -265,7 +265,7 @@ def test_client_gremlin_lang_request_options_with_binding(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     # Note that bindings for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
+    request_opts = {'language': 'gremlin-lang', 'params': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3

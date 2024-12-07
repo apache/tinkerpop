@@ -643,7 +643,7 @@ traversalMethod_not
 traversalMethod_option
     : 'option' LPAREN traversalPredicate COMMA nestedTraversal RPAREN #traversalMethod_option_Predicate_Traversal
     | 'option' LPAREN traversalMerge COMMA genericLiteralMapNullableArgument RPAREN #traversalMethod_option_Merge_Map
-    | 'option' LPAREN traversalMerge COMMA genericLiteralMapNullableArgument COMMA traversalCardinality RPAREN #traversalMethod_option_Merge_Map_Cardinality
+    | 'option' LPAREN traversalMerge COMMA nullableGenericLiteralMap COMMA traversalCardinality RPAREN #traversalMethod_option_Merge_Map_Cardinality
     | 'option' LPAREN traversalMerge COMMA nestedTraversal RPAREN #traversalMethod_option_Merge_Traversal
     | 'option' LPAREN genericLiteralArgument COMMA nestedTraversal RPAREN #traversalMethod_option_Object_Traversal
     | 'option' LPAREN nestedTraversal RPAREN #traversalMethod_option_Traversal
@@ -1491,6 +1491,11 @@ genericLiteralMapNullableArgument
     : genericLiteralMap
     | nullLiteral
     | variable
+    ;
+
+nullableGenericLiteralMap
+    : genericLiteralMap
+    | nullLiteral
     ;
 
 structureVertexArgument
