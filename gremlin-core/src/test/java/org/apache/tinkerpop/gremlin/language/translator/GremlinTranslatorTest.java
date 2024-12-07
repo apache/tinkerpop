@@ -48,7 +48,7 @@ public class GremlinTranslatorTest {
         public static Collection<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"g.V(l1)", Collections.singletonList("l1")},
-                    {"g.V().hasLabel('person').has(x, y).as('a').out('knows').as('b').select('a', 'b')", Arrays.asList("x", "y")},
+                    {"g.V().hasLabel('person').has('key', y).as('a').out('knows').as('b').select('a', 'b')", Collections.singletonList("y")},
                     {"g.V(x).map(out(y).count())", Arrays.asList("x", "y")},
             });
         }
@@ -1063,11 +1063,11 @@ public class GremlinTranslatorTest {
                             "g.V().limit(1l)",
                             "g.V().limit(1)",
                             "g.V().limit(long(1))"},
-                    {"g.V().limit(x)",
+                    {"g.V().limit(1)",
                             null,
-                            null,
-                            "g.V().Limit<object>(x)",
-                            "g.V().Limit(x)",
+                            "g.V().limit(number0)",
+                            "g.V().Limit<object>(1)",
+                            "g.V().Limit(1)",
                             null,
                             null,
                             null,

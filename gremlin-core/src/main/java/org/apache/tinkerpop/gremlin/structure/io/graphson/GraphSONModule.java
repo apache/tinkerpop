@@ -166,6 +166,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Tree.class, "Tree");
                     Stream.of(
                             Direction.class,
+                            Merge.class,
                             T.class).forEach(e -> put(e, e.getSimpleName()));
                 }});
 
@@ -202,6 +203,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(BulkSet.class, new TraversalSerializersV4.BulkSetJacksonSerializer());
             Stream.of(
                     Direction.class,
+                    Merge.class,
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV4.EnumJacksonSerializer()));
 
             /////////////////////// DESERIALIZERS ////////////////////////////

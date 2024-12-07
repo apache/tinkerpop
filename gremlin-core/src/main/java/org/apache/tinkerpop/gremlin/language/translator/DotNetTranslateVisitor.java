@@ -318,7 +318,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("((string) ");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(")");
         return null;
     }
@@ -328,7 +328,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericLiteralMapArgument());
@@ -341,7 +341,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(ITraversal) ");
         visit(ctx.nestedTraversal());
@@ -354,7 +354,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericLiteralMapArgument());
@@ -429,7 +429,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("((string) ");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(")");
         return null;
     }
@@ -439,7 +439,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericLiteralMapArgument());
@@ -452,7 +452,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(ITraversal) ");
         visit(ctx.nestedTraversal());
@@ -465,7 +465,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("<object>").append("(");
-        visit(ctx.stringArgument());
+        visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericLiteralMapArgument());
@@ -560,8 +560,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        tryAppendCastToString(ctx.stringNullableArgument());
-        visit(ctx.stringNullableArgument());
+        tryAppendCastToString(ctx.stringNullableLiteral());
+        visit(ctx.stringNullableLiteral());
         sb.append(", ");
         tryAppendCastToObject(ctx.genericLiteralArgument());
         visit(ctx.genericLiteralArgument());
@@ -574,8 +574,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        tryAppendCastToString(ctx.stringNullableArgument());
-        visit(ctx.stringNullableArgument());
+        tryAppendCastToString(ctx.stringNullableLiteral());
+        visit(ctx.stringNullableLiteral());
         sb.append(", ");
         visit(ctx.traversalPredicate());
         sb.append(")");
@@ -587,11 +587,11 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        tryAppendCastToString(ctx.stringNullableArgument(0));
-        visit(ctx.stringNullableArgument(0));
+        tryAppendCastToString(ctx.stringNullableArgument());
+        visit(ctx.stringNullableArgument());
         sb.append(", ");
-        tryAppendCastToString(ctx.stringNullableArgument(1));
-        visit(ctx.stringNullableArgument(1));
+        tryAppendCastToString(ctx.stringNullableLiteral());
+        visit(ctx.stringNullableLiteral());
         sb.append(", ");
         tryAppendCastToObject(ctx.genericLiteralArgument());
         visit(ctx.genericLiteralArgument());
@@ -604,11 +604,11 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        tryAppendCastToString(ctx.stringNullableArgument(0));
-        visit(ctx.stringNullableArgument(0));
+        tryAppendCastToString(ctx.stringNullableArgument());
+        visit(ctx.stringNullableArgument());
         sb.append(", ");
-        tryAppendCastToString(ctx.stringNullableArgument(1));
-        visit(ctx.stringNullableArgument(1));
+        tryAppendCastToString(ctx.stringNullableLiteral());
+        visit(ctx.stringNullableLiteral());
         sb.append(", ");
         visit(ctx.traversalPredicate());
         sb.append(")");
@@ -620,8 +620,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
         sb.append("(");
-        tryAppendCastToString(ctx.stringNullableArgument());
-        visit(ctx.stringNullableArgument());
+        tryAppendCastToString(ctx.stringNullableLiteral());
+        visit(ctx.stringNullableLiteral());
         sb.append(", ");
         visit(ctx.nestedTraversal());
         sb.append(")");
@@ -678,12 +678,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalMethod_hasKey_String_String(final GremlinParser.TraversalMethod_hasKey_String_StringContext ctx) {
         // if there is only one argument then cast to string otherwise it's ambiguous with hasKey(P)
-        if (ctx.stringLiteralVarargs() == null || ctx.stringLiteralVarargs().getChildCount() == 0) {
+        if (ctx.stringLiteralVarargsLiterals() == null || ctx.stringLiteralVarargsLiterals().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
-            tryAppendCastToString(ctx.stringNullableArgument());
-            visit(ctx.stringNullableArgument());
+            tryAppendCastToString(ctx.stringNullableLiteral());
+            visit(ctx.stringNullableLiteral());
             sb.append(")");
             return null;
         } else {
@@ -1198,6 +1198,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     private void tryAppendCastToString(final GremlinParser.StringNullableArgumentContext ctx) {
         if (ctx.variable() != null || ctx.stringNullableLiteral().NullLiteral() != null) {
+            sb.append("(string) ");
+        }
+    }
+
+    private void tryAppendCastToString(final GremlinParser.StringNullableLiteralContext ctx) {
+        if (ctx.NullLiteral() != null) {
             sb.append("(string) ");
         }
     }

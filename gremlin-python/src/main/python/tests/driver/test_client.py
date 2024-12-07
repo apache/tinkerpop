@@ -27,7 +27,7 @@ from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
-from gremlin_python.process.traversal import TraversalStrategies, Parameter
+from gremlin_python.process.traversal import TraversalStrategies, GValue
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
@@ -264,8 +264,8 @@ def test_client_gremlin_lang_options(client):
 def test_client_gremlin_lang_request_options_with_binding(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     # Note that bindings for constructed traversals is done via Parameter only
-    t = g.with_('language', 'gremlin-lang').V(Parameter.var('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'params': {'x': [1, 2, 3]}}
+    t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
+    request_opts = DriverRemoteConnection.extract_request_options(t.gremlin_lang)
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3

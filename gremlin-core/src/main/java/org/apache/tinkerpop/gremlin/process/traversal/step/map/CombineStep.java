@@ -46,7 +46,7 @@ public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implement
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
         } else {
-            parameterItems = values instanceof GValue ? (GValue<Object>) values : GValue.of(values);
+            parameterItems = values instanceof GValue ? (GValue<Object>) values : GValue.of(null, values);
         }
     }
 

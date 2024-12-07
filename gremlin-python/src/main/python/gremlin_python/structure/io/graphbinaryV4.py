@@ -27,7 +27,7 @@ from datetime import datetime, timedelta, timezone
 from struct import pack, unpack
 
 from aenum import Enum
-from gremlin_python.process.traversal import Direction, T
+from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
@@ -62,6 +62,7 @@ class DataType(Enum):
     vertexproperty = 0x12
     direction = 0x18
     t = 0x20
+    merge = 0x2e
     bigdecimal = 0x22
     biginteger = 0x23
     byte = 0x24
@@ -738,6 +739,11 @@ class DirectionIO(_EnumIO):
 class TIO(_EnumIO):
     graphbinary_type = DataType.t
     python_type = T
+
+
+class MergeIO(_EnumIO):
+    graphbinary_type = DataType.merge
+    python_type = Merge
 
 
 class ByteIO(_GraphBinaryTypeIO):

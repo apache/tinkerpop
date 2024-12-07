@@ -167,6 +167,11 @@ public abstract class RemoteWorld implements World {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
              return g.with("language", "gremlin-lang");
         }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
+        }
     }
 
     public static class GraphBinaryLangBulkedRemoteWorld extends RemoteWorld {
@@ -186,6 +191,11 @@ public abstract class RemoteWorld implements World {
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
             return g.with("language", "groovy-test");
+        }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
         }
     }
 
@@ -210,6 +220,11 @@ public abstract class RemoteWorld implements World {
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
             return g.with("language", "gremlin-lang");
+        }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
         }
     }
 

@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
+//        name= {"g_VX1X_outXknowsvar_createdvarX"},
         plugin = {"progress", "junit:target/cucumber.xml"})
 public class TinkerGraphFeatureTest {
 

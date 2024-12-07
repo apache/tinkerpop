@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -84,56 +85,67 @@ public class ArgumentVisitorTest {
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {Boolean.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Boolean.class, "true", true, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", true)))},
-                {Boolean.class, "false", false, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", true)))},
+                {Boolean.class, "true", true, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
+                {Boolean.class, "false", false, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
+                {Boolean.class, "x", GValue.of("x", true), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
                 {Boolean.class, "x", true, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", true)))},
                 {Integer.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Integer.class, "0", 0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100)))},
-                {Integer.class, "0i", 0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100)))},
-                {Integer.class, "0L", 0L, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 100)))},
+                {Integer.class, "0", 0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100)))},
+                {Integer.class, "0i", 0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100)))},
+                {Integer.class, "0L", 0L, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100)))},
+                {Integer.class, "x", GValue.of("x", 0), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 0)))},
+                {Integer.class, "x", GValue.of("x", 0L), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 0L)))},
                 {Integer.class, "x", 0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 0)))},
                 {Integer.class, "x", 0L, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 0L)))},
                 {Float.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Float.class, "0.0d", 0.0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 1000.0)))},
-                {Float.class, "0d", 0.0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 1000.0)))},
-                {Float.class, "0F", 0.0F, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 1000.0F)))},
+                {Float.class, "0.0d", 0.0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 1000.0)))},
+                {Float.class, "0d", 0.0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 1000.0)))},
+                {Float.class, "0F", 0.0F, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 1000.0F)))},
+                {Float.class, "x", GValue.of("x", 0.0), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 0.0)))},
+                {Float.class, "x", GValue.of("x", 0.0F), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 0.0F)))},
                 {Float.class, "x", 0.0, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 0.0)))},
                 {Float.class, "x", 0.0F, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", 0.0F)))},
                 {String.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {String.class, "'test'", "test", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {String.class, "'test'", "test", createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {String.class, "x", GValue.of("x", "test"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "test")))},
+                {String.class, "x", GValue.of("x", "graphson"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", IO.graphson)))},
                 {String.class, "x", "test", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "test")))},
                 {String.class, "x", "graphson", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", IO.graphson)))},
                 {StringNullable.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {StringNullable.class, "null", null, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {StringNullable.class, "null", null, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {StringNullable.class, "x", GValue.of("x", null), createAntlr(new VariableResolver.DefaultVariableResolver(nullMap))},
                 {StringNullable.class, "x", null, createAntlr(new VariableResolver.DirectVariableResolver(nullMap))},
                 {Object.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Object.class, "'test'", "test", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Object.class, "'test'", "test", createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Object.class, "x", GValue.of("x", "test"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "test")))},
+                {Object.class, "x", GValue.of("x", now), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", now)))},
                 {Object.class, "x", "test", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "test")))},
                 {Object.class, "x", now, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", now)))},
-                {Object.class, "[1,2,3]", Arrays.asList(1, 2, 3), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", now)))},
+                {Object.class, "[1,2,3]", Arrays.asList(1, 2, 3), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", now)))},
+                {Object.class, "x", GValue.of("x", P.eq(100)), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
                 {Object.class, "x", P.eq(100), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
-                {Direction.class, "Direction.OUT", Direction.OUT, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Direction.class, "OUT", Direction.OUT, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Vertex.class, "new Vertex(1i,'person')", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", Direction.from)))},
-                {Order.class, "Order.desc", Order.desc, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Scope.class, "Scope.local", Scope.local, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Scope.class, "local", Scope.local, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {T.class, "T.label", T.label, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {T.class, "label", T.label, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {VertexProperty.Cardinality.class, "Cardinality.list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {VertexProperty.Cardinality.class, "list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {DT.class, "DT.hour", DT.hour, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {DT.class, "hour", DT.hour, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Merge.class, "Merge.onMatch", Merge.onMatch, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Merge.class, "onMatch", Merge.onMatch, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Pop.class, "Pop.last", Pop.last, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Pop.class, "last", Pop.last, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Operator.class, "Operator.sum", Operator.sum, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Operator.class, "sum", Operator.sum, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Column.class, "Column.keys", Column.keys, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Column.class, "keys", Column.keys, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Direction.class, "Direction.OUT", Direction.OUT, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Direction.class, "OUT", Direction.OUT, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Vertex.class, "new Vertex(1i,'person')", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", Direction.from)))},
+                {Order.class, "Order.desc", Order.desc, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Scope.class, "Scope.local", Scope.local, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Scope.class, "local", Scope.local, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {T.class, "T.label", T.label, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {T.class, "label", T.label, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {VertexProperty.Cardinality.class, "Cardinality.list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {VertexProperty.Cardinality.class, "list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {DT.class, "DT.hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {DT.class, "hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Merge.class, "Merge.onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Merge.class, "onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Pop.class, "Pop.last", Pop.last, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Pop.class, "last", Pop.last, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Operator.class, "Operator.sum", Operator.sum, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Operator.class, "sum", Operator.sum, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Column.class, "Column.keys", Column.keys, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Column.class, "keys", Column.keys, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
         });
     }
 
@@ -144,32 +156,32 @@ public class ArgumentVisitorTest {
         if (clazz.equals(Boolean.class)) {
             assertParsing(() -> {
                 final GremlinParser.BooleanArgumentContext ctx = parser.booleanArgument();
-                return antlrToLanguage.argumentVisitor.parseBoolean(ctx);
+                return antlrToLanguage.argumentVisitor.visitBooleanArgument(ctx);
             });
         } else if (clazz.equals(Integer.class)) {
             assertParsing(() -> {
                 final GremlinParser.IntegerArgumentContext ctx = parser.integerArgument();
-                return antlrToLanguage.argumentVisitor.parseNumber(ctx);
+                return antlrToLanguage.argumentVisitor.visitIntegerArgument(ctx);
             });
         } else if (clazz.equals(Float.class)) {
             assertParsing(() -> {
                 final GremlinParser.FloatArgumentContext ctx = parser.floatArgument();
-                return antlrToLanguage.argumentVisitor.parseNumber(ctx);
+                return antlrToLanguage.argumentVisitor.visitFloatArgument(ctx);
             });
         } else if (clazz.equals(String.class)) {
             assertParsing(() -> {
                 final GremlinParser.StringArgumentContext ctx = parser.stringArgument();
-                return antlrToLanguage.argumentVisitor.parseString(ctx);
+                return antlrToLanguage.argumentVisitor.visitStringArgument(ctx);
             });
         } else if (clazz.equals(StringNullable.class)) {
             assertParsing(() -> {
                 final GremlinParser.StringNullableArgumentContext ctx = parser.stringNullableArgument();
-                return antlrToLanguage.argumentVisitor.parseString(ctx);
+                return antlrToLanguage.argumentVisitor.visitStringNullableArgument(ctx);
             });
         } else if (clazz.equals(Object.class)) {
             assertParsing(() -> {
                 final GremlinParser.GenericLiteralArgumentContext ctx = parser.genericLiteralArgument();
-                return antlrToLanguage.argumentVisitor.parseObject(ctx);
+                return antlrToLanguage.argumentVisitor.visitGenericLiteralArgument(ctx);
             });
         } else if (clazz.equals(List.class)) {
             assertParsing(() -> {
@@ -181,7 +193,7 @@ public class ArgumentVisitorTest {
         } else if (clazz.equals(Vertex.class)) {
             assertParsing(() -> {
                 final GremlinParser.StructureVertexArgumentContext ctx = parser.structureVertexArgument();
-                return antlrToLanguage.argumentVisitor.parseVertex(ctx);
+                return antlrToLanguage.argumentVisitor.visitStructureVertexArgument(ctx);
             });
         } else if (clazz.equals(Order.class)) {
             assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Order.class, parser.traversalOrder()));

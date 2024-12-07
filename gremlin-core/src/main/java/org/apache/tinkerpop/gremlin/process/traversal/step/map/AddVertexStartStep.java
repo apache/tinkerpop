@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -62,6 +63,12 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         super(traversal);
         this.parameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
         userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    public AddVertexStartStep(final Traversal.Admin traversal, final GValue<String> label) {
+        super(traversal);
+        this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
+        userProvidedLabel = label != null;
     }
 
     public boolean hasUserProvidedLabel() {
