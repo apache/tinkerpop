@@ -356,6 +356,25 @@ available if the driver has been idle for a while.
 The Java driver can currently handle a response that is a maximum of 2^31-1 (`Integer.MAX_VALUE`) bytes in size.
 Queries that return more data will have to be separated into multiple queries that return less data.
 
+==== Introduction of GValue and Update to Parameterization in Gremlin-Lang
+
+A new construct to parameterize traversals called `GValue` has been added to gremlin. A `GValue` wraps a parameter name
+and value, and can be provided as input to parameterizable steps when building a `GraphTraversal`. The following
+examples will produce a gremlin script of `g.V().hasLabel(label)` with a parameter map of `["label": "person"]`:
+
+[source,java]
+----
+g.V().hasLabel(GValue.of("label", "person"));
+----
+
+[source,python]
+----
+g.V().has_label(GValue('label', 'person'))
+----
+
+Use of `GValue` in traversals with repeated patterns may lead to improved performance in certain graphs. Consult the
+documentation for your specific graph provider for recommendations on how to best utilize `GValue` in traversals.
+
 === Upgrading for Providers
 
 ==== Renaming NoneStep to DiscardStep
@@ -366,7 +385,7 @@ no elements matching the predicate.
 ==== Changes to Serialization
 
 The V4 versions of GraphBinary and GraphSON are being introduced. Support for the older versions of GraphBinary (V1)
-and GraphSON (V1-3) is removed. Upon the full release of 4.0, the GLVs will only use GraphBinary, however, the Gremlin 
+and GraphSON (V1-3) is removed. Upon the full release of 4.0, the GLVs will only use GraphBinary, however, the Gremlin
 Server will support both GraphSON and GraphBinary. The following is a list of the major changes to the GraphBinary
 format:
 
@@ -448,6 +467,20 @@ you provide to your users. With the change from WebSockets to HTTP, some of the 
 some of the fields no longer exist. See link:https://tinkerpop.apache.org/docs/4.0.0/reference/#_configuring_2[options]
 for an updated list. One of the most important changes is to the `Channelizer` configuration as only the
 `HttpChannelizer` remains and the rest have been removed.
+
+===== Introduction of GValue and Update to Parameterization in Gremlin-Lang
+
+Parameterization was first added to gremlin-lang in TinkerPop 3.7.0, however was limited in that variables were
+immediately resolved to literals during the compilation of a gremlin script. This direct resolution of variables limited
+providers ability to detect and optimize recurring query patterns.
+
+With this update, a new class `GValue` is introduced which wraps a parameter name and value. Steps which will benefit
+from parameterization have been given overloads to accept GValues. Users can pass GValue's into their traversals to
+inject parameters.
+
+A new `DefaultVariableResolver` has also been introduced with this change. The grammar will now resolve variables into
+`GValue` which are passed to the constructed traversal, instead of directly resolving them to literals. The old variable
+resolution behavior can still be obtained via the `DirectVariableResolver` if desired.
 
 ==== Graph Driver Providers
 

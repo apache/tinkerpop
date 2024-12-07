@@ -167,7 +167,9 @@ public abstract class RemoteWorld implements World {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
              return g.with("language", "gremlin-lang");
         }
+    }
 
+    public static class GraphBinaryLangParameterizedRemoteWorld extends GraphBinaryLangRemoteWorld {
         @Override
         public boolean useParametersLiterally() {
             return false;
@@ -194,6 +196,13 @@ public abstract class RemoteWorld implements World {
         }
     }
 
+    public static class GraphBinaryGroovyParameterizedRemoteWorld extends GraphBinaryGroovyRemoteWorld {
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static class GraphBinaryRemoteComputerWorld extends RemoteComputerWorld {
@@ -216,7 +225,9 @@ public abstract class RemoteWorld implements World {
             final GraphTraversalSource g = super.getGraphTraversalSource(graphData);
             return g.with("language", "gremlin-lang");
         }
+    }
 
+    public static class GraphSONLangParameterizedRemoteWorld extends GraphSONLangRemoteWorld {
         @Override
         public boolean useParametersLiterally() {
             return false;

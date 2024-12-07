@@ -25,9 +25,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * An enum that describes types that are used in the Gremlin language.
@@ -36,17 +38,20 @@ public enum GType {
     BIG_DECIMAL(BigDecimal.class),
     BIG_INTEGER(BigInteger.class),
     BOOLEAN(Boolean.class),
+    BYTE(Byte.class),
+    CHARACTER(Character.class),
+    DATETIME(OffsetDateTime.class),
     DOUBLE(Double.class),
-    EDGE(Edge.class),
+    FLOAT(Float.class),
     INTEGER(Integer.class),
     LIST(List.class),
     LONG(Long.class),
     MAP(Map.class),
-    PATH(Path.class),
-    PROPERTY(Property.class),
     SET(Set.class),
+    SHORT(Short.class),
     STRING(String.class),
     UNKNOWN(null),
+    UUID(UUID.class),
     VERTEX(Vertex.class);
 
     private Class<?> javaType;
@@ -63,7 +68,8 @@ public enum GType {
      * Returns {@code true} if the type is a number.
      */
     public boolean isNumeric() {
-        return this == INTEGER || this == DOUBLE || this == LONG || this == BIG_INTEGER || this == BIG_DECIMAL;
+        return this == BYTE || this == SHORT || this == INTEGER || this == LONG ||
+                 this == FLOAT || this == DOUBLE || this == BIG_INTEGER || this == BIG_DECIMAL;
     }
 
     /**
@@ -74,30 +80,26 @@ public enum GType {
     }
 
     /**
-     * Returns {@code true} if the type is an element.
-     */
-    public boolean isElement() {
-        return this == VERTEX || this == EDGE;
-    }
-
-    /**
      * Convert an object to a matching {@link GType} and if not matched return {@link GType#UNKNOWN}.
      */
     public static GType getType(final Object object) {
         if (object instanceof String) return STRING;
+        else if (object instanceof Byte) return BYTE;
+        else if (object instanceof Short) return SHORT;
+        else if (object instanceof Character) return CHARACTER;
         else if (object instanceof Integer) return INTEGER;
         else if (object instanceof Boolean) return BOOLEAN;
+        else if (object instanceof Float) return FLOAT;
         else if (object instanceof Double) return DOUBLE;
         else if (object instanceof Long) return LONG;
         else if (object instanceof Map) return MAP;
         else if (object instanceof List) return LIST;
         else if (object instanceof Set) return SET;
         else if (object instanceof Vertex) return VERTEX;
-        else if (object instanceof Edge) return EDGE;
-        else if (object instanceof Path) return PATH;
-        else if (object instanceof Property) return PROPERTY;
         else if (object instanceof BigInteger) return BIG_INTEGER;
         else if (object instanceof BigDecimal) return BIG_DECIMAL;
+        else if (object instanceof OffsetDateTime) return DATETIME;
+        else if (object instanceof UUID) return UUID;
         else return UNKNOWN;
     }
 }

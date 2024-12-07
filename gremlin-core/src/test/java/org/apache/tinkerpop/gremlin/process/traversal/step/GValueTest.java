@@ -275,63 +275,6 @@ public class GValueTest {
     }
 
     @Test
-    public void shouldCreateGValueFromEdge() {
-        final Edge edge = mock(Edge.class);
-        final GValue<Edge> gValue = GValue.ofEdge(edge);
-        assertEquals(edge, gValue.get());
-        assertEquals(GType.EDGE, gValue.getType());
-        assertThat(gValue.isVariable(), is(false));
-    }
-
-    @Test
-    public void shouldCreateGValueFromEdgeWithName() {
-        final Edge edge = mock(Edge.class);
-        final GValue<Edge> gValue = GValue.ofEdge("varName", edge);
-        assertEquals(edge, gValue.get());
-        assertEquals(GType.EDGE, gValue.getType());
-        assertEquals("varName", gValue.getName());
-        assertThat(gValue.isVariable(), is(true));
-    }
-
-    @Test
-    public void shouldCreateGValueFromPath() {
-        final Path path = mock(Path.class);
-        final GValue<Path> gValue = GValue.ofPath(path);
-        assertEquals(path, gValue.get());
-        assertEquals(GType.PATH, gValue.getType());
-        assertThat(gValue.isVariable(), is(false));
-    }
-
-    @Test
-    public void shouldCreateGValueFromPathWithName() {
-        final Path path = mock(Path.class);
-        final GValue<Path> gValue = GValue.ofPath("varName", path);
-        assertEquals(path, gValue.get());
-        assertEquals(GType.PATH, gValue.getType());
-        assertEquals("varName", gValue.getName());
-        assertThat(gValue.isVariable(), is(true));
-    }
-
-    @Test
-    public void shouldCreateGValueFromProperty() {
-        final Property property = mock(Property.class);
-        final GValue<Property> gValue = GValue.ofProperty(property);
-        assertEquals(property, gValue.get());
-        assertEquals(GType.PROPERTY, gValue.getType());
-        assertThat(gValue.isVariable(), is(false));
-    }
-
-    @Test
-    public void shouldCreateGValueFromPropertyWithName() {
-        final Property property = mock(Property.class);
-        final GValue<Property> gValue = GValue.ofProperty("varName", property);
-        assertEquals(property, gValue.get());
-        assertEquals(GType.PROPERTY, gValue.getType());
-        assertEquals("varName", gValue.getName());
-        assertThat(gValue.isVariable(), is(true));
-    }
-
-    @Test
     public void shouldBeAnInstanceOf() {
         assertThat(GValue.instanceOf(GValue.of("string"), GType.STRING), is(true));
         assertThat(GValue.instanceOf(GValue.ofInteger(1), GType.INTEGER), is(true));
@@ -381,18 +324,6 @@ public class GValueTest {
     public void shouldNotBeAnInstanceOfNumber() {
         assertThat(GValue.instanceOfNumber(GValue.of("string")), is(false));
         assertThat(GValue.instanceOfNumber(GValue.of(Arrays.asList("string"))), is(false));
-    }
-
-    @Test
-    public void shouldBeAnInstanceOfElement() {
-        assertThat(GValue.instanceOfElement(GValue.ofVertex(mock(Vertex.class))), is(true));
-        assertThat(GValue.instanceOfElement(GValue.ofEdge(mock(Edge.class))), is(true));
-    }
-
-    @Test
-    public void shouldNotBeAnInstanceOfElement() {
-        assertThat(GValue.instanceOfElement(GValue.of("string")), is(false));
-        assertThat(GValue.instanceOfElement(GValue.of(Arrays.asList("string"))), is(false));
     }
 
     @Test
@@ -637,5 +568,29 @@ public class GValueTest {
     @Test(expected = IllegalStateException.class)
     public void numberOfShouldThrowBecauseNullObject() {
         GValue.numberOf(null);
+    }
+
+    @Test
+    public void numberOfShouldAcceptAllNumericTypeLiterals() {
+        assertEquals((byte) 123, GValue.numberOf((byte) 123));
+        assertEquals((short) 123, GValue.numberOf((short) 123));
+        assertEquals(123, GValue.numberOf(123));
+        assertEquals(123l, GValue.numberOf(123l));
+        assertEquals(123.45f, GValue.numberOf(123.45f));
+        assertEquals(123.45, GValue.numberOf(123.45));
+        assertEquals(BigInteger.ONE, GValue.numberOf(BigInteger.ONE));
+        assertEquals(BigDecimal.ONE, GValue.numberOf(BigDecimal.ONE));
+    }
+
+    @Test
+    public void numberOfShouldAcceptAllNumericTypeGValues() {
+        assertEquals((byte) 123, GValue.numberOf(GValue.of((byte) 123)));
+        assertEquals((short) 123, GValue.numberOf((GValue.of((short) 123))));
+        assertEquals(123, GValue.numberOf((GValue.of(123))));
+        assertEquals(123l, GValue.numberOf((GValue.of(123l))));
+        assertEquals(123.45f, GValue.numberOf((GValue.of(123.45f))));
+        assertEquals(123.45, GValue.numberOf((GValue.of(123.45))));
+        assertEquals(BigInteger.ONE, GValue.numberOf((GValue.of(BigInteger.ONE))));
+        assertEquals(BigDecimal.ONE, GValue.numberOf((GValue.of(BigDecimal.ONE))));
     }
 }

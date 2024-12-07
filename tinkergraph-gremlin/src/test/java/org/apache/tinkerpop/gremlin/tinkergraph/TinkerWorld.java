@@ -109,7 +109,9 @@ public abstract class TinkerWorld implements World {
         public AbstractTinkerGraph open(final Configuration configuration) {
             return TinkerGraph.open(configuration);
         }
+    }
 
+    public static class TinkerGraphParameterizedWorld extends TinkerGraphWorld {
         @Override
         public boolean useParametersLiterally() {
             return false;

@@ -41,7 +41,7 @@ import java.util.stream.Stream;
  * the name is not given, the value was provided literally in the traversal. The value of the variable can be any
  * object. The {@code GValue} also includes the {@link GType} that describes the type it contains.
  */
-public class GValue<V> implements Cloneable, Serializable {
+public class GValue<V> implements Serializable {
     private final String name;
     private final GType type;
 
@@ -69,7 +69,7 @@ public class GValue<V> implements Cloneable, Serializable {
     }
 
     /**
-     * Gets the name of the variable if it was defined as such and returns empty if the value was a literal.
+     * Gets the name of the variable if it was defined as such and returns null if the value was a literal.
      */
     public String getName() {
         return this.name;
@@ -101,7 +101,7 @@ public class GValue<V> implements Cloneable, Serializable {
     @Override
     public String toString() {
         return isVariable() ?
-                String.format("%s&%s", name, value) : Objects.toString(value);
+                String.format("%s=%s", name, value) : Objects.toString(value);
     }
 
     @Override
@@ -129,11 +129,12 @@ public class GValue<V> implements Cloneable, Serializable {
     }
 
     /**
-     * Create a new {@code Var} with the specified name and value.. If the argument provide is  already a
-     * {@code GValue} then it is returned as-is.
+     * Create a new {@code Var} with the specified name and value. If the argument provide is already a
+     * {@code GValue} then an IllegalArgumentException is thrown.
      *
      * @param name the name of the variable
      * @param value the value of the variable
+     * @throws IllegalArgumentException if value is already a {@code GValue}
      */
     public static <V> GValue<V> of(final String name, final V value) {
         if (value instanceof GValue) throw new IllegalArgumentException("value cannot be a GValue");
@@ -295,48 +296,6 @@ public class GValue<V> implements Cloneable, Serializable {
     }
 
     /**
-     * Create a new {@code GValue} for an edge value.
-     */
-    static GValue<Edge> ofEdge(final Edge value) {
-        return new GValue<>(GType.EDGE, value);
-    }
-
-    /**
-     * Create a new {@code GValue} for an edge value with a specified name.
-     */
-    public static GValue<Edge> ofEdge(final String name, final Edge value) {
-        return new GValue<>(name, GType.EDGE, value);
-    }
-
-    /**
-     * Create a new {@code GValue} for a path value.
-     */
-    static GValue<Path> ofPath(final Path value) {
-        return new GValue<>(GType.PATH, value);
-    }
-
-    /**
-     * Create a new {@code GValue} for a path value with a specified name.
-     */
-    public static GValue<Path> ofPath(final String name, final Path value) {
-        return new GValue<>(name, GType.PATH, value);
-    }
-
-    /**
-     * Create a new {@code GValue} for a property value.
-     */
-    static GValue<Property> ofProperty(final Property value) {
-        return new GValue<>(GType.PROPERTY, value);
-    }
-
-    /**
-     * Create a new {@code GValue} for a property value with a specified name.
-     */
-    public static GValue<Property> ofProperty(final String name, final Property value) {
-        return new GValue<>(name, GType.PROPERTY, value);
-    }
-
-    /**
      * If the object is a {@code GValue} then get its value, otherwise return the object as-is.
      */
     public static <T> T getFrom(final Object o) {
@@ -383,21 +342,14 @@ public class GValue<V> implements Cloneable, Serializable {
      * Returns {@code true} if the object is a collection or a {@link GValue} that contains a {@link Collection}.
      */
     public static boolean instanceOfCollection(final Object o) {
-        return o instanceof Collection || (o instanceof GValue && ((GValue) o).getType().isCollection());
-    }
-
-    /**
-     * Returns {@code true} if the object is an element or a {@link GValue} that contains an {@link Element}.
-     */
-    public static boolean instanceOfElement(final Object o) {
-        return o instanceof Element || (o instanceof GValue && ((GValue) o).getType().isElement());
+        return o instanceof Collection || valueInstanceOfCollection(o);
     }
 
     /**
      * Returns {@code true} if the object is a number or a {@link GValue} that contains a number.
      */
     public static boolean instanceOfNumber(final Object o) {
-        return o instanceof Number || (o instanceof GValue && ((GValue) o).getType().isNumeric());
+        return o instanceof Number || valueInstanceOfNumeric(o);
     }
 
     /**

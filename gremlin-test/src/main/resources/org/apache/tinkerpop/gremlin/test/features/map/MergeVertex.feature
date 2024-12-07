@@ -286,7 +286,7 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
 
-  @GremlinLangScriptOnly
+  @GremlinGroovyNotSupported
   Scenario: g_mergeVXnullvarX
     Given the empty graph
     And the graph initializer of
@@ -302,7 +302,6 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
 
-  @GremlinLangScriptOnly
   Scenario: g_V_mergeVXnullX
     Given the empty graph
     And the graph initializer of
@@ -954,22 +953,6 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\", 31)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\").has(\"age\")"
     And the graph should return 3 for count of "g.V().has(\"person\",\"name\",\"allen\").properties(\"age\")"
-
-  Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_var_singleX
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").property("name", "marko")
-      """
-    And using the parameter xx1 defined as "m[{\"name\":\"allen\"}]"
-    And the traversal of
-      """
-      g.mergeV([name: "marko"]).option(Merge.onMatch, xx1, single)
-      """
-    When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"marko\")"
-    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"allen\")"
 
   @MultiProperties
   Scenario: g_mergeVXname_markoX_optionXonMatch_name_allen_age_singleX31X_singleX

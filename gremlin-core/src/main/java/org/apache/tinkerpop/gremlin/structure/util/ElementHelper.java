@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -549,12 +550,15 @@ public final class ElementHelper {
     public static boolean idExists(final Object id, final Object... providedIds) {
         if (0 == providedIds.length) return true;
 
+        //unbox any GValues which may be present in providedIds
+        Object[] idValues = GValue.resolveToValues(GValue.ensureGValues(providedIds));
+
         // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
         // enforces the value of id.()toString() to be a first class representation of the identifier
-        if (1 == providedIds.length) {
-            return id != null && providedIds[0] != null && id.toString().equals(providedIds[0].toString());
+        if (1 == idValues.length) {
+            return id != null && idValues[0] != null && id.toString().equals(idValues[0].toString());
         } else {
-            for (final Object temp : providedIds) {
+            for (final Object temp : idValues) {
                 if (id != null && temp != null && temp.toString().equals(id.toString()))
                     return true;
             }
