@@ -15,7 +15,7 @@
     <ProjectReference Include="..\..\src\Gremlin.Net\Gremlin.Net.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="gherkin" Version="29.0.0" />
+    <PackageReference Include="gherkin" Version="30.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
