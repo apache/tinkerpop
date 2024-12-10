@@ -2650,7 +2650,8 @@ JSON Object with required keys: "id", "value", "label", "properties" +
 === BulkSet
 
 JSON Array that contains the expanded entries of the BulkSet.
-Note: BulkSet is serialized to g:List so there is no BulkSet deserializer.
+
+NOTE: BulkSet is serialized to g:List so there is no BulkSet deserializer.
 
 [source,json]
 ----
