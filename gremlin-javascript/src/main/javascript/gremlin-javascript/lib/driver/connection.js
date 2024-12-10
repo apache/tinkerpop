@@ -147,7 +147,7 @@ class Connection extends EventEmitter {
 
     this._ws.addEventListener('open', this.#handleOpen);
     this._ws.addEventListener('error', this.#handleError);
-    this._ws.addEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws.on('unexpected-response', this.#handleUnexpectedResponse);
     this._ws.addEventListener('message', this.#handleMessage);
     this._ws.addEventListener('close', this.#handleClose);
 
@@ -398,7 +398,7 @@ class Connection extends EventEmitter {
     });
     this._ws.removeEventListener('open', this.#handleOpen);
     this._ws.removeEventListener('error', this.#handleError);
-    this._ws.removeEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
     this._ws.removeEventListener('message', this.#handleMessage);
     this._ws.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
