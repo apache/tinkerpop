@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.authz.AllowListAuthorizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -118,6 +119,9 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
             case "shouldFailBytecodeRequestWithAllowAllAuthenticator":
             case "shouldFailStringRequestWithAllowAllAuthenticator":
                 authSettings.authenticator = AllowAllAuthenticator.class.getName();
+                break;
+            case "shouldAuthorizeSessionsWithWebsocketTransport":
+                settings.channelizer = WebSocketChannelizer.class.getName();
                 break;
             case "shouldAuthorizeWithHttpTransport":
             case "shouldFailAuthorizeWithHttpTransport":
@@ -279,6 +283,25 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         } finally {
             cluster.close();
         }
+    }
+    
+    @Test
+    public void shouldAuthorizeSessionsWithWebsocketTransport() throws Exception {
+        final Cluster cluster = TestClientFactory.build().credentials("marko", "rainbow-dash").create();
+        final Client client = cluster.connect("session1");
+
+        try {
+            assertEquals(2, client.submit("a = 4; 1+1").all().get().get(0).getInt());
+            assertEquals(10, client.submit("gclassic.V().count().next() + a").all().get().get(0).getInt());
+            assertEquals(6, client.submit("gmodern.V().map{it.get().value('name')}.count()").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+        
+        Thread.sleep(1000);
+        
+        assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
+                "Encountered an error trying to close connection on session1 .*")), is(false));
     }
 
     @Test
