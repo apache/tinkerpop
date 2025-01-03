@@ -1273,9 +1273,17 @@ NOTE: Installing Ganglia will include `org.acplt:oncrpc`, which is an LGPL licen
 Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
 `org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
 
-* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
-request creates a "session", even a so-called "sessionless request", which is basically a session that will only
-execute within the context of that single request.
+* `channels.paused` - The current number of open channels (HTTP and Websocket) that are have their writes to buffer
+paused when the `writeBufferHighWaterMark` configuration is exceeded.
+* `channels.total` - The current number of open channels (HTTP and Websocket).
+* `channels.write-pauses` - The total number of pauses across all channels (HTTP and Websocket) to buffer writes where
+the `writeBufferHighWaterMark` configuration is exceeded, with mean rate, as well as the 1, 5, and 15-minute rates.
+* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
+session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
+"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
+* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
+requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
+measured under the `UnifiedChannelizer`.
 * `errors` - The number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
 * `op.eval` - The number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
@@ -1283,12 +1291,9 @@ and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th a
 * `op.traversal` - The number of `Traversal` bytecode-based executions, mean rate, 1, 5, and 15 minute rates, minimum,
 maximum, median, mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th
 percentile evaluation times.
-* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
-session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
-"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
-* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
-requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
-measured under the `UnifiedChannelizer`.
+* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
+request creates a "session", even a so-called "sessionless request", which is basically a session that will only
+execute within the context of that single request.
 * `user-agent.*` - Counts the number of connection requests from clients providing a given user agent.
 
 NOTE: Gremlin Server has a limit of 10000 unique user agents to be tracked by metrics. If this cap is exceeded

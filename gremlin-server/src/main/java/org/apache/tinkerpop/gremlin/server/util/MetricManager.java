@@ -408,11 +408,11 @@ public enum MetricManager {
         return getRegistry().counter(MetricRegistry.name(prefix, names));
     }
 
-    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String name) {
+    public <T> Gauge<T> getGauge(final Gauge<T> gauge, final String name) {
         return getRegistry().register(name, gauge);
     }
 
-    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String prefix, final String... names) {
+    public <T> Gauge<T> getGauge(final Gauge<T> gauge, final String prefix, final String... names) {
         return getRegistry().register(MetricRegistry.name(prefix, names), gauge);
     }
 

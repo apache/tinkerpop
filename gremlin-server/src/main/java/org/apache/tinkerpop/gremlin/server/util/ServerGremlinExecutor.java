@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
+import com.codahale.metrics.Gauge;
+import io.netty.channel.Channel;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngine;
-import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
@@ -47,6 +49,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 /**
  * The core of script execution in Gremlin Server.  Given {@link Settings} and optionally other arguments, this
  * class will construct a {@link GremlinExecutor} to be used by Gremlin Server.  A typical usage would be to
@@ -67,8 +71,21 @@ public class ServerGremlinExecutor {
     private final ScheduledExecutorService scheduledExecutorService;
     private final ExecutorService gremlinExecutorService;
     private final GremlinExecutor gremlinExecutor;
+    private final DefaultChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     private final Map<String,Object> hostOptions = new ConcurrentHashMap<>();
+
+    /**
+     * The total number of channels.
+     */
+    public final Gauge channelsTotalGauge = MetricManager.INSTANCE.getGauge(
+            this::getChannelCount, name(GremlinServer.class, "channels", "total"));
+
+    /**
+     * The total number of paused channels.
+     */
+    public final Gauge channelsPausedGauge = MetricManager.INSTANCE.getGauge(
+            this::getPausedChannelCount, name(GremlinServer.class, "channels", "paused"));
 
     /**
      * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
@@ -226,4 +243,26 @@ public class ServerGremlinExecutor {
     public List<LifeCycleHook> getHooks() {
         return hooks;
     }
+
+    /**
+     * Gets all open channels (excluding the {@code ServerSocketChannel}).
+     */
+    public DefaultChannelGroup getChannels() {
+        return channels;
+    }
+
+    /**
+     * Gets the number of open channels currently in a paused state that are not writeable.
+     */
+    public long getPausedChannelCount() {
+        return channels.stream().filter(ch -> !ch.isWritable()).count();
+    }
+
+    /**
+     * Gets the number of open channels.
+     */
+    public long getChannelCount() {
+        return channels.size();
+    }
+
 }

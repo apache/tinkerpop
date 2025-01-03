@@ -76,10 +76,12 @@ public class ProfilingApplication {
     private final int tooSlowThreshold;
     private final boolean exercise;
 
+    private final boolean suppressStackTraces;
+
     private final ExecutorService executor;
 
     public ProfilingApplication(final String executionName, final Cluster cluster, final int requests, final ExecutorService executor,
-                                final String script, final int tooSlowThreshold, final boolean exercise) {
+                                final String script, final int tooSlowThreshold, final boolean exercise, final boolean suppressStackTraces) {
         this.executionName = executionName;
         this.cluster = cluster;
         this.requests = requests;
@@ -87,10 +89,12 @@ public class ProfilingApplication {
         this.script = script;
         this.tooSlowThreshold = tooSlowThreshold;
         this.exercise = exercise;
+        this.suppressStackTraces = suppressStackTraces;
     }
 
     public long executeThroughput() throws Exception {
         final AtomicInteger tooSlow = new AtomicInteger(0);
+        final AtomicInteger errors = new AtomicInteger(0);
 
         final Client client = cluster.connect();
         final String executionId = "[" + executionName + "]";
@@ -107,7 +111,8 @@ public class ProfilingApplication {
                     } catch (TimeoutException ex) {
                         tooSlow.incrementAndGet();
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        errors.incrementAndGet();
+                        if (!suppressStackTraces) ex.printStackTrace();
                     } finally {
                         latch.countDown();
                     }
@@ -122,11 +127,17 @@ public class ProfilingApplication {
             final double totalSeconds = total / 1000000000d;
             final long requestCount = requests;
             final long reqSec = Math.round(requestCount / totalSeconds);
-            System.out.println(String.format(StringUtils.rightPad(executionId, 10) + " requests: %s | time(s): %s | req/sec: %s | too slow: %s", requestCount, StringUtils.rightPad(String.valueOf(totalSeconds), 14), StringUtils.rightPad(String.valueOf(reqSec), 7), exercise ? "N/A" : tooSlow.get()));
+            System.out.println(String.format(StringUtils.rightPad(executionId, 10) + " requests: %s | time(s): %s | req/sec: %s | too slow: %s | errors: %s",
+                    requestCount,
+                    StringUtils.rightPad(String.valueOf(totalSeconds), 14),
+                    StringUtils.rightPad(String.valueOf(reqSec), 7), exercise ? "N/A" : tooSlow.get(),
+                    errors.get()));
             return reqSec;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+            // catch all so that it doesn't tank the whole execution. returning 0 will hose up calculations on
+            // averages, but presumably you'd see the failed executions and be suspicious.
+            System.out.println("Failed Execution: " + executionName + " - " + ex.getMessage());
+            return 0;
         } finally {
             client.close();
         }
@@ -152,12 +163,11 @@ public class ProfilingApplication {
             final long end = System.nanoTime();
             final long total = (end - start);
 
-
             final double totalSeconds = total / 1000000000d;
             System.out.println(String.format(StringUtils.rightPad(executionId, 10) + "time: %s, result count: %s", StringUtils.rightPad(String.valueOf(totalSeconds), 7), StringUtils.rightPad(String.valueOf(size), 10)));
             return totalSeconds;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            if (!suppressStackTraces) ex.printStackTrace();
             throw new RuntimeException(ex);
         } finally {
             client.close();
@@ -196,6 +206,8 @@ public class ProfilingApplication {
         final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
         final String channelizer = options.getOrDefault("channelizer", Channelizer.WebSocketChannelizer.class.getName()).toString();
         final String serializer = options.getOrDefault("serializer", Serializers.GRAPHBINARY_V1.name()).toString();
+        final int pauseBetweenRuns = Integer.parseInt(options.getOrDefault("pauseBetweenRuns", "1000").toString());
+        final boolean suppressStackTraces = Boolean.parseBoolean(options.getOrDefault("suppressStackTraces", "false").toString());
 
         final boolean exercise = Boolean.parseBoolean(options.getOrDefault("exercise", "false").toString());
         final String script = options.getOrDefault("script", "1+1").toString();
@@ -245,9 +257,9 @@ public class ProfilingApplication {
                 final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
                 System.out.println("---------------------------WARMUP CYCLE---------------------------");
                 for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
-                    final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold, exercise).executeThroughput();
-                    meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
-                    TimeUnit.SECONDS.sleep(1); // pause between executions
+                    final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold, exercise, suppressStackTraces).executeThroughput();
+                    meetsRpsExpectation.set(averageRequestsPerSecond >= minExpectedRps);
+                    TimeUnit.MILLISECONDS.sleep(pauseBetweenRuns); // pause between executions
                 }
 
                 final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
@@ -258,9 +270,9 @@ public class ProfilingApplication {
                     final long start = System.nanoTime();
                     System.out.println("----------------------------TEST CYCLE----------------------------");
                     for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                        totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold, exercise).executeThroughput();
+                        totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold, exercise, suppressStackTraces).executeThroughput();
                         exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
-                        TimeUnit.SECONDS.sleep(1); // pause between executions
+                        TimeUnit.MILLISECONDS.sleep(pauseBetweenRuns); // pause between executions
                     }
                 }
 
@@ -275,9 +287,9 @@ public class ProfilingApplication {
                 final AtomicBoolean meetsTimeoutExpectation = new AtomicBoolean(true);
                 System.out.println("---------------------------WARMUP CYCLE---------------------------");
                 for (int ix = 0; ix < warmups && meetsTimeoutExpectation.get(); ix++) {
-                    final double latency = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold, exercise).executeLatency();
+                    final double latency = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold, exercise, suppressStackTraces).executeLatency();
                     meetsTimeoutExpectation.set(latency < timeout);
-                    TimeUnit.SECONDS.sleep(1); // pause between executions
+                    TimeUnit.MILLISECONDS.sleep(pauseBetweenRuns); // pause between executions
                 }
 
                 final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
@@ -288,9 +300,9 @@ public class ProfilingApplication {
                     final long start = System.nanoTime();
                     System.out.println("----------------------------TEST CYCLE----------------------------");
                     for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                        totalTime += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold, exercise).executeLatency();
+                        totalTime += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold, exercise, suppressStackTraces).executeLatency();
                         exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
-                        TimeUnit.SECONDS.sleep(1); // pause between executions
+                        TimeUnit.MILLISECONDS.sleep(pauseBetweenRuns); // pause between executions
                     }
                 }
 

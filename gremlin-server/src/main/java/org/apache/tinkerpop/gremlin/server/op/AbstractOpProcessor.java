@@ -18,8 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
+import com.codahale.metrics.Meter;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -49,6 +53,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 /**
  * A base {@link OpProcessor} implementation that processes an {@code Iterator} of results in a generalized way while
  * ensuring that graph transactions are properly managed.
@@ -57,6 +63,16 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
+
+    /**
+     * Length of time to pause writes in milliseconds when the high watermark is exceeded.
+     */
+    public static final long WRITE_PAUSE_TIME_MS = 10;
+
+    /**
+     * Tracks the rate of pause to writes when the high watermark is exceeded.
+     */
+    public static final Meter writePausesMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "channels", "write-pauses"));
 
     /**
      * When set to {@code true}, transactions are always managed otherwise they can be overridden by the request.
@@ -88,7 +104,11 @@ public abstract class AbstractOpProcessor implements OpProcessor {
         final Settings settings = context.getSettings();
         final MessageSerializer<?> serializer = nettyContext.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = nettyContext.channel().attr(StateKey.USE_BINARY).get();
-        boolean warnOnce = false;
+
+        // used to limit warnings for when netty fills the buffer and hits the high watermark - prevents
+        // over-logging of the same message.
+        long lastWarningTime = 0;
+        int warnCounter = 0;
 
         // sessionless requests are always transaction managed, but in-session requests are configurable.
         final boolean managedTransactionsForRequest = manageTransactions ?
@@ -213,15 +233,28 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     context.writeAndFlush(code, frame);
                 }
             } else {
-                // don't keep triggering this warning over and over again for the same request
-                if (!warnOnce) {
-                    logger.warn("Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up", msg);
-                    warnOnce = true;
+                final long currentTime = System.currentTimeMillis();
+
+                // exponential delay between warnings. don't keep triggering this warning over and over again for the
+                // same request. totalPendingWriteBytes is volatile so it is possible that by the time this warning
+                // hits the log the low watermark may have been hit
+                long interval = (long) Math.pow(2, warnCounter) * 1000;
+                if (currentTime - lastWarningTime >= interval) {
+                    final Channel ch = context.getChannelHandlerContext().channel();
+                    logger.warn("Warning {}: Outbound buffer size={}, pausing response writing as writeBufferHighWaterMark exceeded on request {} for channel {} - writing will continue once client has caught up",
+                            warnCounter,
+                            ch.unsafe().outboundBuffer().totalPendingWriteBytes(),
+                            msg.getRequestId(),
+                            ch.id());
+
+                    lastWarningTime = currentTime;
+                    warnCounter++;
                 }
 
                 // since the client is lagging we can hold here for a period of time for the client to catch up.
                 // this isn't blocking the IO thread - just a worker.
-                TimeUnit.MILLISECONDS.sleep(10);
+                TimeUnit.MILLISECONDS.sleep(WRITE_PAUSE_TIME_MS);
+                writePausesMeter.mark();
             }
         }
     }
