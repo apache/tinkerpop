@@ -80,6 +80,8 @@ import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_COMMIT;
 import static org.apache.tinkerpop.gremlin.process.traversal.GraphOp.TX_ROLLBACK;
+import static org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.WRITE_PAUSE_TIME_MS;
+import static org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.writePausesMeter;
 
 /**
  * A base implementation of {@link Session} which offers some common functionality that matches typical Gremlin Server
@@ -129,7 +131,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
 
         /**
          * The session was interrupted by the channel closing, which can be something initiated by closing the
-         * {@link Client} or might be triggered by the server. This may not be considered an error situation and
+         * {@code Client} or might be triggered by the server. This may not be considered an error situation and
          * depending on context, might be similar to a {@link #EXIT_PROCESSING} termination.
          */
         CHANNEL_CLOSED,
@@ -530,7 +532,11 @@ public abstract class AbstractSession implements Session, AutoCloseable {
         final ChannelHandlerContext nettyContext = sessionTask.getChannelHandlerContext();
         final RequestMessage msg = sessionTask.getRequestMessage();
         final Settings settings = sessionTask.getSettings();
-        boolean warnOnce = false;
+
+        // used to limit warnings for when netty fills the buffer and hits the high watermark - prevents
+        // over-logging of the same message.
+        long lastWarningTime = 0;
+        int warnCounter = 0;
 
         // sessionless requests are always transaction managed, but in-session requests are configurable.
         final boolean managedTransactionsForRequest = transactionManaged ?
@@ -650,15 +656,28 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                     sessionTask.writeAndFlush(code, frame);
                 }
             } else {
-                // don't keep triggering this warning over and over again for the same request
-                if (!warnOnce) {
-                    logger.warn("Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up", msg);
-                    warnOnce = true;
+                final long currentTime = System.currentTimeMillis();
+
+                // exponential delay between warnings. don't keep triggering this warning over and over again for the
+                // same request. totalPendingWriteBytes is volatile so it is possible that by the time this warning
+                // hits the log the low watermark may have been hit
+                long interval = (long) Math.pow(2, warnCounter) * 1000;
+                if (currentTime - lastWarningTime >= interval) {
+                    final Channel ch = nettyContext.channel();
+                    logger.warn("Warning {}: Outbound buffer size={}, pausing response writing as writeBufferHighWaterMark exceeded on request {} for channel {} - writing will continue once client has caught up",
+                            warnCounter,
+                            ch.unsafe().outboundBuffer().totalPendingWriteBytes(),
+                            msg.getRequestId(),
+                            ch.id());
+
+                    lastWarningTime = currentTime;
+                    warnCounter++;
                 }
 
                 // since the client is lagging we can hold here for a period of time for the client to catch up.
                 // this isn't blocking the IO thread - just a worker.
-                TimeUnit.MILLISECONDS.sleep(10);
+                TimeUnit.MILLISECONDS.sleep(WRITE_PAUSE_TIME_MS);
+                writePausesMeter.mark();
             }
         }
     }

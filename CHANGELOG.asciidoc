@@ -23,7 +23,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
-* Add log entry in `WsAndHttpChannelizerHandler`.
+* Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
+* Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
+* Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
+* Added server metrics to help better detect and diagnose write pauses due to the `writeBufferHighWaterMark`: `channels.paused`, `channels.total`, and `channels.write-pauses`.
 * Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
 * Changed Gremlin grammar to make use of `g` to spawn child traversals a syntax error.
 

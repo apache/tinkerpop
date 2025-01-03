@@ -25,6 +25,8 @@ import io.netty.util.AttributeKey;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.server.channel.HttpTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
@@ -697,17 +699,19 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final int resultCountToGenerate = 1000;
-            final int batchSize = 3;
-            final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
-            final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
+            final int resultCountToGenerate = 300;
+            final int batchSize = 1;
+            final String fatty = RandomStringUtils.random(128);
+            final String fattyX = "[x] * " + resultCountToGenerate;
 
             // don't allow the thread to proceed until all results are accounted for
             final CountDownLatch latch = new CountDownLatch(resultCountToGenerate);
             final AtomicBoolean expected = new AtomicBoolean(false);
             final AtomicBoolean faulty = new AtomicBoolean(false);
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(ARGS_EVAL_TIMEOUT, 10 * 60 * 1000)
                     .addArg(Tokens.ARGS_BATCH_SIZE, batchSize)
+                    .addArg(Tokens.ARGS_BINDINGS, new HashMap<String,Object>() {{ put("x", fatty); }})
                     .addArg(Tokens.ARGS_GREMLIN, fattyX).create();
 
             client.submitAsync(request).thenAcceptAsync(r -> {
@@ -730,7 +734,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(expected.get(), is(true));
 
             assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.contains(
-                    "Pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
+                    "pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
         } catch (Exception ex) {
             fail("Shouldn't have tossed an exception");
         } finally {
