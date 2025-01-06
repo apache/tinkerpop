@@ -31,10 +31,11 @@ type Traverser struct {
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph    *Graph
-	Bytecode *Bytecode
-	remote   *DriverRemoteConnection
-	results  ResultSet
+	graph       *Graph
+	Bytecode    *Bytecode
+	GremlinLang *GremlinLang
+	remote      *DriverRemoteConnection
+	results     ResultSet
 }
 
 // ToList returns the result in a list.
@@ -43,7 +44,8 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
-	results, err := t.remote.submitBytecode(t.Bytecode)
+	// TODO update and test when connection is set up
+	results, err := t.remote.submitGremlinLang(t.GremlinLang)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +83,8 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		res, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		res, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			r <- err
 			return
@@ -120,7 +123,8 @@ func (t *Traversal) Next() (*Result, error) {
 // GetResultSet submits the traversal and returns the ResultSet.
 func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
-		results, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		results, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			return nil, err
 		}
