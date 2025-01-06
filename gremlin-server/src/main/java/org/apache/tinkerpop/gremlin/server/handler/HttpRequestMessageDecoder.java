@@ -194,7 +194,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         if (null != gNode) builder.addG(gNode.asText());
 
         final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
-        builder.addLanguage((null == languageNode) ? "gremlin-groovy" : languageNode.asText());
+        builder.addLanguage((null == languageNode) ? "gremlin-lang" : languageNode.asText());
 
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());

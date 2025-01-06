@@ -197,7 +197,7 @@ public class Context {
 
             if (firstElement instanceof Element) {
                 for (int i = 0; i < aggregate.size(); i++)
-                    aggregate.set(i, ReferenceFactory.detach((Element) aggregate.get(i)));
+                    aggregate.set(i, ReferenceFactory.detach(aggregate.get(i)));
             } else if (firstElement instanceof AbstractTraverser) {
                 for (final Object item : aggregate)
                     ((AbstractTraverser) item).detach();

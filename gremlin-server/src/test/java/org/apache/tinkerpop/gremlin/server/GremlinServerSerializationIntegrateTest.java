@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -49,6 +50,10 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     private Cluster cluster = null;
     private Client client = null;
     private GraphTraversalSource g = null;
+
+    private final RequestOptions gmodern = RequestOptions.build().addG("gmodern").create();
+    private final RequestOptions gcrew = RequestOptions.build().addG("gcrew").create();
+
 
     public GremlinServerSerializationIntegrateTest(AbstractMessageSerializer serializer) {
         this.serializer = serializer;
@@ -80,14 +85,14 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldDeserializeVertexPropertiesForScripts() {
-        final Vertex vertex = client.submit("gmodern.V(1)").one().getVertex();
+        final Vertex vertex = client.submit("g.V(1)", gmodern).one().getVertex();
 
         assertVertexWithProperties(vertex);
     }
 
     @Test
     public void shouldSkipVertexPropertiesForScripts() {
-        final Vertex vertex = client.submit("gmodern.with('materializeProperties', 'tokens').V(1)").one().getVertex();
+        final Vertex vertex = client.submit("g.with('materializeProperties', 'tokens').V(1)", gmodern).one().getVertex();
 
         assertVertexWithoutProperties(vertex);
     }
@@ -108,14 +113,14 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldDeserializeEdgePropertiesForScripts() {
-        final Edge edge = client.submit("gmodern.E(7)").one().getEdge();
+        final Edge edge = client.submit("g.E(7)", gmodern).one().getEdge();
 
         assertEdgeWithProperties(edge);
     }
 
     @Test
     public void shouldSkipEdgePropertiesForScripts() {
-        final Edge edge = client.submit("gmodern.with('materializeProperties', 'tokens').E(7)").one().getEdge();
+        final Edge edge = client.submit("g.with('materializeProperties', 'tokens').E(7)", gmodern).one().getEdge();
 
         assertEdgeWithoutProperties(edge);
     }
@@ -136,14 +141,14 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldDeserializeVertexPropertyPropertiesForScripts() {
-        final Vertex vertex = client.submit("gcrew.V(7)").one().getVertex();
+        final Vertex vertex = client.submit("g.V(7)", gcrew).one().getVertex();
 
         assertVertexWithVertexProperties(vertex);
     }
 
     @Test
     public void shouldSkipVertexPropertyPropertiesForScripts() {
-        final Vertex vertex = client.submit("gcrew.with('materializeProperties', 'tokens').V(7)").one().getVertex();
+        final Vertex vertex = client.submit("g.with('materializeProperties', 'tokens').V(7)", gcrew).one().getVertex();
 
         assertVertexWithoutVertexProperties(vertex);
     }

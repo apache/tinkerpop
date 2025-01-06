@@ -71,7 +71,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -89,6 +88,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     private static LogCaptor logCaptor;
     private Level previousLogLevel;
+
+    private static final RequestOptions groovyRequestOptions = RequestOptions.build().language("gremlin-groovy").create();
 
     @BeforeClass
     public static void setupLogCaptor() {
@@ -151,6 +152,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.threadPoolWorker = 1;
                 break;
             case "shouldProcessTraversalInterruption":
+                settings.evaluationTimeout = 100;
+                break;
+            case "shouldProcessTraversalInterruptionGroovy":
             case "shouldProcessEvalInterruption":
                 settings.evaluationTimeout = 1500;
                 break;
@@ -173,7 +177,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
             for (int ix = 0; ix < requestsToMake; ix++) {
-                assertEquals(ix + 1, client.submit(ix + "+1").all().get().get(0).getInt());
+                assertEquals(ix + 1, client.submit(String.format("g.inject(%d)", ix+1)).all().get().get(0).getInt());
             }
         } finally {
             cluster.close();
@@ -198,7 +202,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final Client client = cluster.connect();
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -263,7 +267,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
             for (int ix = 0; ix < requestsToMake; ix++) {
-                final List<Result> result = client.submit(ix + "+1").all().get();
+                final List<Result> result = client.submit(String.format("g.inject(%d)", ix+1)).all().get();
                 assertEquals(ix + 1, result.get(0).getInt());
             }
         } finally {
@@ -283,7 +287,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             try {
                 final Map<String, Object> params = new HashMap<>();
                 params.put("r", Color.RED);
-                client.submit("r", params).all().get();
+                client.submit("g.inject(r)", params).all().get();
                 fail("Should have thrown exception over bad serialization");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
@@ -294,7 +298,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -306,11 +310,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}").all().get();
+            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}", groovyRequestOptions).all().get();
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals("ServerTimeoutExceededException", re.getRemoteException());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldProcessTraversalInterruptionGroovy() {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}", groovyRequestOptions).all().get();
+            fail("Should have timed out");
+        } catch (Exception ex) {
+            final ResponseException re = (ResponseException) ex.getCause();
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals("ServerTimeoutExceededException", re.getRemoteException());
         } finally {
             cluster.close();
         }
@@ -322,11 +344,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("Thread.sleep(5000);'done'").all().get();
+            client.submit("Thread.sleep(5000);'done'", groovyRequestOptions).all().get();
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals("ServerTimeoutExceededException", re.getRemoteException());
         } finally {
             cluster.close();
         }
@@ -341,14 +364,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             try {
-                client.submit("def x = '';(0..<128).each{x = x + '$it'};x").all().get();
+                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
                 fail("Request should have failed because it exceeded the max content length allowed");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root.getMessage(), containsString("Response entity too large"));
             }
 
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
 
         } finally {
             cluster.close();
@@ -372,7 +395,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 }
             });
 
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
 
         } finally {
             cluster.close();
@@ -387,7 +410,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().join().get(0).getInt();
+            client.submit("g.inject(2)").all().join().get(0).getInt();
             fail("Should not have gone through because the server is not running");
         } catch (Exception i) {
             assertThat(i, instanceOf(NoHostAvailableException.class));
@@ -403,7 +426,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         for (int ix = 3; ix < 13; ix++) {
             TimeUnit.SECONDS.sleep(ix);
             try {
-                final int result = client.submit("1+1").all().join().get(0).getInt();
+                final int result = client.submit("g.inject(2)").all().join().get(0).getInt();
                 assertEquals(2, result);
                 break;
             } catch (Exception ignored) {
@@ -424,11 +447,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.init();
 
             // the first host is dead on init.  request should succeed on localhost
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -467,6 +490,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             for (Integer size : sizes) {
                 final Map<String, Object> params = new HashMap<>();
                 params.put("size", size - 1);
+                params.put("language", "gremlin-groovy");
                 final ResultSet results = client.submit(script, params);
 
                 assertEquals(size.intValue(), results.all().get().size());
@@ -483,7 +507,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
 
-            final ResultSet results = client.submit("java.awt.Color.RED");
+            final ResultSet results = client.submit("java.awt.Color.RED", groovyRequestOptions);
 
             try {
                 results.all().join();
@@ -496,7 +520,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -508,13 +532,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
         try {
             try {
-                final ResultSet results = client.submit("1/0");
+                final ResultSet results = client.submit("g.inject(1).math('_/0')");
                 results.all().join();
                 fail("Should have thrown exception over division by zero");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
-                assertThat(inner.getMessage(), endsWith("Division by zero"));
+                assertThat(inner.getMessage(), containsString("Division by zero"));
 
                 final ResponseException rex = (ResponseException) inner;
                 assertEquals("ServerErrorException", rex.getRemoteException());
@@ -522,7 +546,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -534,8 +558,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
 
-            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-            final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'", groovyRequestOptions);
+            final ResultSet rsZero = client.submit("'zero'", groovyRequestOptions);
 
             final CompletableFuture<List<Result>> futureFive = rsFive.all();
             final CompletableFuture<List<Result>> futureZero = rsZero.all();
@@ -562,7 +586,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Client client = cluster.connect();
 
             final AtomicInteger checked = new AtomicInteger(0);
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             while (!results.allItemsAvailable()) {
                 assertTrue(results.getAvailableItemCount() < 10);
                 checked.incrementAndGet();
@@ -582,7 +606,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final AtomicInteger counter = new AtomicInteger(0);
             results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
             assertEquals(9, counter.get());
@@ -601,7 +625,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final Iterator<Result> itty = results.iterator();
             final AtomicInteger counter = new AtomicInteger(0);
             while (itty.hasNext()) {
@@ -625,7 +649,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final CompletableFuture<List<Result>> batch1 = results.some(5);
             final CompletableFuture<List<Result>> batch2 = results.some(5);
             final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
@@ -655,7 +679,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final Result one = results.one();
             final CompletableFuture<List<Result>> batch1 = results.some(4);
             final CompletableFuture<List<Result>> batch2 = results.some(5);
@@ -712,7 +736,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final AtomicReference[] refs = new AtomicReference[requests];
             IntStream.range(0, requests).forEach(ix -> {
                 refs[ix] = new AtomicReference();
-                client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
+                client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]", groovyRequestOptions).thenAccept(rs ->
                         rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
             });
 
@@ -761,10 +785,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             cluster.connect().init();
 
             try {
-                client1.submit("1+1").all().join();
+                client1.submit("g.inject(2)").all().join();
                 fail("Expecting an exception because the server is shut down.");
             } catch (Exception ex) {
-                // ignore the exception
+                assertTrue(ex.getCause() instanceof TimeoutException);
+                assertThat(ex.getMessage(), containsString("waiting for connection"));
             }
 
             assertEquals(0, cluster.availableHosts().size());
@@ -779,7 +804,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
         try {
 
-            final ResultSet results = client.submit("TinkerGraph.open().variables()");
+            final ResultSet results = client.submit("TinkerGraph.open().variables()", groovyRequestOptions);
 
             try {
                 results.all().join();
@@ -788,11 +813,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
                 assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals("ServerSerializationException", ((ResponseException) inner).getRemoteException());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -804,7 +830,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)", groovyRequestOptions).all().join();
             assertEquals(1, r.size());
 
             final Vertex v = r.get(0).get(DetachedVertex.class);
@@ -822,7 +848,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submit("'" + fatty + "'").all().get();
+            client.submit(String.format("g.inject('%s')", fatty)).all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
             final Throwable root = ExceptionHelper.getRootCause(re);
@@ -839,7 +865,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final String fatty = IntStream.range(0, 10000).mapToObj(String::valueOf).collect(Collectors.joining());
-            assertEquals(fatty, client.submit("'" + fatty + "'").all().get().get(0).getString());
+            assertEquals(fatty, client.submit(String.format("g.inject('%s')", fatty)).all().get().get(0).getString());
         } finally {
             cluster.close();
         }
@@ -853,19 +879,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             // this should return "nothing" - there should be no exception
             assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldEvalInGremlinLang() {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        try {
-            final RequestOptions ro = RequestOptions.build().language("gremlin-lang").create();
-            assertEquals(111, client.submit("g.inject(111)", ro).one().getInt());
         } finally {
             cluster.close();
         }
@@ -898,15 +911,17 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         // this line is important because it tests GraphTraversal which has a certain transactional path
-        final Vertex vertexRequest1 = client.submit("g.addV().property(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        final Vertex vertexRequest1 = client.submit("g.addV().property(\"name\",\"stephen\")", groovyRequestOptions)
+                .all().get().get(0).getVertex();
 
-        final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
+        final Vertex vertexRequest2 = client.submit("graph.vertices().next()", groovyRequestOptions)
+                .all().get().get(0).getVertex();
         assertEquals(vertexRequest1.id(), vertexRequest2.id());
 
         // this line is important because it tests the other transactional path
-        client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
+        client.submit("graph.addVertex(\"name\",\"marko\")", groovyRequestOptions).all().get().get(0).getVertex();
 
-        assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
+        assertEquals(2, client.submit("g.V().count()", groovyRequestOptions).all().get().get(0).getLong());
 
         cluster.close();
     }
@@ -918,15 +933,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client2 = cluster.connect();
         final Client client3 = cluster.connect();
 
-        final ResultSet results11 = client1.submit("x = 1");
-        final ResultSet results21 = client2.submit("x = 2");
-        final ResultSet results31 = client3.submit("x = 3");
+        final ResultSet results11 = client1.submit("x = 1", groovyRequestOptions);
+        final ResultSet results21 = client2.submit("x = 2", groovyRequestOptions);
+        final ResultSet results31 = client3.submit("x = 3", groovyRequestOptions);
         assertEquals(1, results11.all().get().get(0).getInt());
         assertEquals(2, results21.all().get().get(0).getInt());
         assertEquals(3, results31.all().get().get(0).getInt());
 
         try {
-            client1.submit("x").all().get();
+            client1.submit("x", groovyRequestOptions).all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -935,7 +950,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            client2.submit("x").all().get();
+            client2.submit("x", groovyRequestOptions).all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -944,7 +959,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            client3.submit("x").all().get();
+            client3.submit("x", groovyRequestOptions).all().get();
             fail("The variable 'x' should not be present on the new request.");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -967,7 +982,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final int otherNum = ix;
             final Thread t = new Thread(()->{
                 try {
-                    results.put(otherNum, client.submit("1000+" + otherNum).all().get().get(0).getInt());
+                    results.put(otherNum, client.submit(String.format("g.inject(%d)", 1000+otherNum)).all().get().get(0).getInt());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -994,7 +1009,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because strict mode is on and no aliasing was performed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1014,7 +1029,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
+            client.submit("g.addVertex('name','stephen');",
+                    groovyRequestOptions).all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1023,7 +1039,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
-            final Vertex v = rebound.submit("g.addVertex(T.label,'person')").all().get().get(0).getVertex();
+            final Vertex v = rebound.submit("g.addVertex(T.label,'person')", groovyRequestOptions)
+                    .all().get().get(0).getVertex();
             assertEquals("person", v.label());
         } finally {
             cluster.close();
@@ -1036,7 +1053,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addVertex(label,'person','name','stephen');").all().get().get(0).getVertex();
+            client.submit("g.addVertex(label,'person','name','stephen');",
+                    groovyRequestOptions).all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1045,7 +1063,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
-            final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')").all().get().get(0).getVertex();
+            final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')", groovyRequestOptions)
+                    .all().get().get(0).getVertex();
             assertEquals("person", v.label());
         } finally {
             cluster.close();
@@ -1085,10 +1104,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client sessionlessThree = cluster.connect();
         final Client sessionlessFour = cluster.connect();
 
-        assertEquals(2, sessionlessOne.submit("1+1").all().get().get(0).getInt());
-        assertEquals(2, session.submit("1+1").all().get().get(0).getInt());
-        assertEquals(2, sessionlessTwo.submit("1+1").all().get().get(0).getInt());
-        assertEquals(2, sessionlessThree.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, sessionlessOne.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, session.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, sessionlessTwo.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, sessionlessThree.submit("g.inject(2)").all().get().get(0).getInt());
         // dont' send anything on the 4th client
 
         // close one of these Clients before the Cluster
@@ -1096,7 +1115,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
 
         try {
-            sessionlessOne.submit("1+1").all().get();
+            sessionlessOne.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1105,7 +1124,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            session.submit("1+1").all().get();
+            session.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1114,7 +1133,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessTwo.submit("1+1").all().get();
+            sessionlessTwo.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1123,7 +1142,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessThree.submit("1+1").all().get();
+            sessionlessThree.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1132,7 +1151,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessFour.submit("1+1").all().get();
+            sessionlessFour.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1172,7 +1191,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         for (int i = 0; i < 3; i++) {
             try {
-                client.submitAsync("Thread.sleep(5000);");
+                client.submitAsync("Thread.sleep(5000);", groovyRequestOptions);
             } catch (Exception e) {
                 final Throwable root = ExceptionHelper.getRootCause(e);
                 assertTrue(root instanceof TimeoutException);
@@ -1205,7 +1224,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(re, instanceOf(NoHostAvailableException.class));
 
             try {
-                client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
+                client.submit("g.inject(2)").all().get(3000, TimeUnit.MILLISECONDS);
                 fail("Should throw exception on the retry");
             } catch (RuntimeException re2) {
                 assertThat(re2.getCause().getCause().getCause(), instanceOf(ConnectException.class));
@@ -1227,7 +1246,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
                 try {
                     logger.info(String.format("Connecting driver to server - attempt # %s. ", 1 + ix));
-                    final List<Result> results = client.submit("1+1").all().get(3000, TimeUnit.MILLISECONDS);
+                    final List<Result> results = client.submit("g.inject(2)").all().get(3000, TimeUnit.MILLISECONDS);
                     assertEquals(1, results.size());
                     assertEquals(2, results.get(0).getInt());
                     logger.info("Connection successful.");

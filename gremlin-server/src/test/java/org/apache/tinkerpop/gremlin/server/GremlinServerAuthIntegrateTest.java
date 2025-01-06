@@ -101,7 +101,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
                 })
                 .create();
         final Client client = cluster.connect();
-        client.submit("1+1").all().get();
+        client.submit("g.inject(2)").all().get();
 
         Map<String, String> headers = httpRequest.get().headers();
         assertNotNull(headers.get("X-Amz-Date"));
@@ -118,7 +118,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
             fail("This should not succeed as the client did not enable SSL");
         } catch (Exception ex) {
             assertThat(ex, instanceOf(ExecutionException.class));
@@ -145,7 +145,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
         final Client client = cluster.connect();
 
-        client.submit("1+1").all().get();
+        client.submit("g.inject(2)").all().get();
 
         assertConnection(cluster, client);
     }
@@ -156,7 +156,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
             fail("This should not succeed as the client did not provide credentials");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -174,7 +174,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
             fail("This should not succeed as the client did not provide valid credentials");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -192,7 +192,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
@@ -204,9 +204,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
     private static void assertConnection(final Cluster cluster, final Client client) throws InterruptedException, ExecutionException {
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+            assertEquals(4, client.submit("g.inject(4)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }

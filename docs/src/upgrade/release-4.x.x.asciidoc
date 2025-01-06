@@ -402,6 +402,12 @@ g.V().has_label(GValue('label', 'person'))
 Use of `GValue` in traversals with repeated patterns may lead to improved performance in certain graphs. Consult the
 documentation for your specific graph provider for recommendations on how to best utilize `GValue` in traversals.
 
+==== Change Default Script Language in Gremlin-Server
+
+`gremlin-lang` is now the default language and script engine in Gremlin-Server, replacing `gremlin-groovy`. Users may
+still explicitly set the `language` field of a request message to `"gremlin-groovy"` in cases where groovy scripts are
+required.
+
 === Upgrading for Providers
 
 ==== Renaming NoneStep to DiscardStep
@@ -508,6 +514,12 @@ inject parameters.
 A new `DefaultVariableResolver` has also been introduced with this change. The grammar will now resolve variables into
 `GValue` which are passed to the constructed traversal, instead of directly resolving them to literals. The old variable
 resolution behavior can still be obtained via the `DirectVariableResolver` if desired.
+
+===== Change Default Script Language in Gremlin-Server
+
+`gremlin-lang` is now the default language and script engine in Gremlin-Server, replacing `gremlin-groovy`. Users may
+still explicitly set the `language` field of a request message to `"gremlin-groovy"` in cases where groovy scripts are
+required.
 
 ==== Graph Driver Providers
 

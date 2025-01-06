@@ -64,9 +64,9 @@ public class Settings {
     private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
     public Settings() {
-        // setup some sensible defaults like gremlin-groovy
+        // setup some sensible defaults like gremlin-lang
         scriptEngines = new HashMap<>();
-        scriptEngines.put("gremlin-groovy", new ScriptEngineSettings());
+        scriptEngines.put("gremlin-lang", new ScriptEngineSettings());
     }
 
     /**

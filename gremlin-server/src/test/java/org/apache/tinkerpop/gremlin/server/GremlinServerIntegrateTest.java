@@ -24,6 +24,7 @@ import io.netty.util.AttributeKey;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -82,7 +83,6 @@ import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -111,6 +111,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }};
 
     private static LogCaptor logCaptor;
+
+    private static final RequestOptions groovyRequestOptions = RequestOptions.build().language("gremlin-groovy").create();
 
     @BeforeClass
     public static void setupLogCaptor() {
@@ -272,16 +274,16 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         // maxWorkQueueSize=1 && gremlinPool=1
         // we should be able to do one request at a time serially
-        assertEquals("test1", client.submit("'test1'").all().get().get(0).getString());
-        assertEquals("test2", client.submit("'test2'").all().get().get(0).getString());
-        assertEquals("test3", client.submit("'test3'").all().get().get(0).getString());
+        assertEquals("test1", client.submit("'test1'", groovyRequestOptions).all().get().get(0).getString());
+        assertEquals("test2", client.submit("'test2'", groovyRequestOptions).all().get().get(0).getString());
+        assertEquals("test3", client.submit("'test3'", groovyRequestOptions).all().get().get(0).getString());
 
         final AtomicBoolean errorTriggered = new AtomicBoolean();
-        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'").get();
+        final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'", groovyRequestOptions).get();
 
         final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
         for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
-            blockers.add(client.submit("'test'").all().exceptionally(t -> {
+            blockers.add(client.submit("'test'", groovyRequestOptions).all().exceptionally(t -> {
                 final ResponseException re = (ResponseException) t.getCause();
                 errorTriggered.compareAndSet(false, HttpResponseStatus.TOO_MANY_REQUESTS == re.getResponseStatusCode());
                 return null;
@@ -295,7 +297,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         blockers.forEach(CompletableFuture::join);
 
         // should be accepting test6 now
-        assertEquals("test6", client.submit("'test6'").all().get().get(0).getString());
+        assertEquals("test6", client.submit("'test6'", groovyRequestOptions).all().get().get(0).getString());
 
         cluster.close();
     }
@@ -404,7 +406,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Note: the range of timeouts is intended to cover the case when the script finishes at about the
         // same time when the timeout occurs. In this situation either a timeout response or a successful
         // response is acceptable, however no other processing errors should occur.
-        // Note: the timeout of 30 ms is generally sufficient for running a simple groovy script, so using longer
+        // Note: the timeout of 30 ms is generally sufficient for running a simple traversal, so using longer
         // timeouts are not likely to results in a success/timeout response collision, which is the purpose
         // of this test.
         // Note: this test may have a false negative result, but a failure  would indicate a real problem.
@@ -413,7 +415,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             overrideEvaluationTimeout(timeout);
 
             try {
-                client.submit("x = 1 + 1").all().get().get(0).getInt();
+                client.submit("g.inject(2)").all().get().get(0).getInt();
                 success = true;
             } catch (Exception ex) {
                 final Throwable t = ex.getCause();
@@ -432,7 +434,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        assertEquals("hello, stephen", client.submit("hello('stephen')").all().get().get(0).getString());
+        assertEquals("hello, stephen", client.submit("hello('stephen')", groovyRequestOptions).all().get().get(0).getString());
 
         cluster.close();
     }
@@ -442,11 +444,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+        assertEquals(2, client.submit("1+1", groovyRequestOptions).all().get().get(0).getInt());
 
         try {
             // this should return "nothing" - there should be no exception
-            client.submit("java.lang.System.exit(0)").all().get();
+            client.submit("java.lang.System.exit(0)", groovyRequestOptions).all().get();
             fail("The above should not have executed in any successful way as sandboxing is enabled");
         } catch (Exception ex) {
             assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
@@ -469,13 +471,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final int resultCountToGenerate = 1000;
             final int batchSize = 3;
             final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
-            final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
+            final String gremlin = String.format("g.inject('%s').repeat(inject('%s').times(%d))", fatty, fatty, resultCountToGenerate-1);
 
             // don't allow the thread to proceed until all results are accounted for
             final CountDownLatch latch = new CountDownLatch(resultCountToGenerate);
             final AtomicBoolean expected = new AtomicBoolean(false);
             final AtomicBoolean faulty = new AtomicBoolean(false);
-            final RequestMessage request = RequestMessage.build(fattyX)
+            final RequestMessage request = RequestMessage.build(gremlin)
                     .addChunkSize(batchSize).create();
 
             client.submitAsync(request).thenAcceptAsync(r -> {
@@ -511,7 +513,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
-            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -530,7 +532,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("id", "123");
-            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -553,7 +555,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 123);
             bindings.put("y", 123);
-            final RequestMessage request = RequestMessage.build("x+y")
+            final RequestMessage request = RequestMessage.build("g.withSideEffect('x', x).inject(y).math('x+_')")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -572,13 +574,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 123);
-            final RequestMessage request = RequestMessage.build("x+123")
+            final RequestMessage request = RequestMessage.build("g.inject(x).math('_+123')")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (HttpResponseStatus.OK == result.getStatus().getCode()) {
-                    pass.set((((int) result.getResult().getData().get(0) == 246)));
+                    pass.set(((double) result.getResult().getData().get(0)) == 246.0);
                     latch.countDown();
                 }
             });
@@ -594,7 +596,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(null, "123");
-            final RequestMessage request = RequestMessage.build("[1,2,3,4,5,6,7,8,9,0]")
+            final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
                     .addBindings(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
@@ -615,7 +617,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldBatchResultsByTwos() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessage request = RequestMessage.build("[0,1,2,3,4,5,6,7,8,9]").create();
+            final RequestMessage request = RequestMessage.build("g.inject(0,1,2,3,4,5,6,7,8,9)").create();
 
             final List<ResponseMessage> msgs = client.submit(request);
             assertEquals(0, (int) msgs.get(0).getResult().getData().get(0));
@@ -640,7 +642,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            final List<Result> results = client.submit("[0,1,2,3,4,5,6,7,8,9]").all().join();
+            final List<Result> results = client.submit("g.inject(0,1,2,3,4,5,6,7,8,9)").all().join();
             for (int ix = 0; ix < results.size(); ix++) {
                 assertEquals(ix, results.get(ix).getInt());
             }
@@ -662,11 +664,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldReceiveFailureTimeOutOnScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            final List<ResponseMessage> responses = client.submit("Thread.sleep(3000);'some-stuff-that-should not return'");
+            final List<ResponseMessage> responses = client.submit(
+                    RequestMessage.build("Thread.sleep(3000);'some-stuff-that-should not return'")
+                            .addLanguage("gremlin-groovy").create()
+                    );
             assertTrue(responses.get(0).getStatus().getMessage().contains("timeout occurred"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("g.inject(2)").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -676,12 +681,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessage msg = RequestMessage.build("Thread.sleep(3000);'some-stuff-that-should not return'")
                     .addTimeoutMillis(100L)
+                    .addLanguage("gremlin-groovy")
                     .create();
             final List<ResponseMessage> responses = client.submit(msg);
             assertThat(responses.get(0).getStatus().getMessage(), containsString("A timeout occurred during traversal evaluation"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("g.inject(2)").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -690,11 +696,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // timeout configured for 1 second so the timed interrupt should trigger prior to the
             // evaluationTimeout which is at 30 seconds by default
-            final List<ResponseMessage> responses = client.submit("while(true){}");
+            final List<ResponseMessage> responses = client.submit(
+                    RequestMessage.build("while(true){}").addLanguage("gremlin-groovy").create()
+            );
             assertThat(responses.get(0).getStatus().getMessage(), startsWith("Timeout during script evaluation triggered by TimedInterruptCustomizerProvider"));
 
             // validate that we can still send messages to the server
-            assertEquals(2, ((Integer) (client.submit("1+1").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit("g.inject(2)").get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -702,7 +710,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @SuppressWarnings("unchecked")
     public void shouldLoadInitScript() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
-            assertEquals(2, ((Integer) (client.submit("addItUp(1,1)").get(0).getResult().getData()).get(0)).intValue());
+            assertEquals(2, ((Integer) (client.submit(
+                    RequestMessage.build("addItUp(1,1)").addLanguage("gremlin-groovy").create()
+            ).get(0).getResult().getData()).get(0)).intValue());
         }
     }
 
@@ -711,16 +721,18 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 
-        assertEquals(2, client.submit("addItUp(1,1)").all().join().get(0).getInt());
-        assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)").all().join().get(0).getInt());
-        assertEquals(0, client.submit("subtract(1,1)").all().join().get(0).getInt());
+        assertEquals(2, client.submit("addItUp(1,1)", groovyRequestOptions).all().join().get(0).getInt());
+        assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)", groovyRequestOptions).all().join().get(0).getInt());
+        assertEquals(0, client.submit("subtract(1,1)", groovyRequestOptions).all().join().get(0).getInt());
 
-        final Map<String, Object> bindings = new HashMap<>();
-        bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM);
-        assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", bindings).all().join().get(0).getInt());
+        RequestOptions options = RequestOptions.build()
+                .addParameter(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM)
+                .language("gremlin-groovy")
+                .create();
+        assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", options).all().join().get(0).getInt());
 
         try {
-            client.submit("multiply(2,2)").all().join().get(0).getInt();
+            client.submit("multiply(2,2)", groovyRequestOptions).all().join().get(0).getInt();
             fail("Should throw an exception since reference is phantom.");
         } catch (RuntimeException ignored) {
 
@@ -737,7 +749,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final String fatty = IntStream.range(0, 1024).mapToObj(String::valueOf).collect(Collectors.joining());
-            final CompletableFuture<ResultSet> result = client.submitAsync("'" + fatty + "';'test'");
+            final CompletableFuture<ResultSet> result = client.submitAsync(String.format("g.inject('%s').constant('test')", fatty));
             final ResultSet resultSet = result.get(10000, TimeUnit.MILLISECONDS);
             resultSet.all().get(10000, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
@@ -754,7 +766,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(root.getMessage(), Matchers.anyOf(is("Request Entity Too Large")));
 
             // validate that we can still send messages to the server
-            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -766,14 +778,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         // ensure that connection to server is good
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
 
         // kill the server which will make the client mark the host as unavailable
         this.stopServer();
 
         try {
             // try to re-issue a request now that the server is down
-            client.submit("g").all().join();
+            client.submit("g.inject(2)").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             // Client would have no active connections to the host, hence it would encounter a timeout
@@ -796,7 +808,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
                 try {
                     // just need to succeed at reconnect one time
-                    final List<Result> results = client.submit("1+1").all().join();
+                    final List<Result> results = client.submit("g.inject(2)").all().join();
                     assertEquals(1, results.size());
                     assertEquals(2, results.get(0).getInt());
                     break;
@@ -813,7 +825,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldNotHavePartialContentWithOneResult() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessage request = RequestMessage.build("10").create();
+            final RequestMessage request = RequestMessage.build("g.inject(10)").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(10, responses.get(0).getResult().getData().get(0));
             for (ResponseMessage resp : responses.subList(1, responses.size())) {
@@ -825,21 +837,28 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessage request = RequestMessage.build("new String[100]").create();
+             final RequestMessage request = RequestMessage.build("g.inject('a').repeat(inject('a')).times(100)").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
 
             // first message have no status
             assertNull(responses.get(0).getStatus());
+            // first message contains data
+            assertFalse(responses.get(0).getResult().getData().isEmpty());
             // second one contains last piece of data
             assertEquals(HttpResponseStatus.OK, responses.get(1).getStatus().getCode());
+            // second message contains data
+            assertFalse(responses.get(1).getResult().getData().isEmpty());
         }
     }
 
     @Test
     public void shouldFailWithBadScriptEval() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-            final RequestMessage request = RequestMessage.build("new String().doNothingAtAllBecauseThis is a syntax error").create();
+            final RequestMessage request = RequestMessage
+                    .build("new String().doNothingAtAllBecauseThis is a syntax error")
+                    .addLanguage("gremlin-groovy")
+                    .create();
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, responses.get(0).getStatus().getCode());
             for (ResponseMessage resp : responses.subList(1, responses.size())) {
@@ -886,23 +905,23 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldProvideBetterExceptionForMethodCodeTooLarge() {
         final int numberOfParameters = 6000;
-        final Map<String,Object> b = new HashMap<>();
+        RequestOptions.Builder optionsBuilder = RequestOptions.build().language("gremlin-groovy");
 
-        // generate a script with a ton of bindings usage to generate a "code too large" exception
+        // generate a script with a ton of parameter usage to generate a "code too large" exception
         String script = "x = 0";
         for (int ix = 0; ix < numberOfParameters; ix++) {
             if (ix > 0 && ix % 100 == 0) {
                 script = script + ";" + System.lineSeparator() + "x = x";
             }
             script = script + " + x" + ix;
-            b.put("x" + ix, ix);
+            optionsBuilder.addParameter("x" + ix, ix);
         }
 
         final Cluster cluster = TestClientFactory.build().maxResponseContentLength(4096000).create();
         final Client client = cluster.connect();
 
         try {
-            client.submit(script, b).all().get();
+            client.submit(script, optionsBuilder.create()).all().get();
             fail("Should have tanked out because of number of parameters used and size of the compile script");
         } catch (Exception ex) {
             assertThat(ex.getMessage(), containsString("The Gremlin statement that was submitted exceeds the maximum compilation size allowed by the JVM"));
@@ -917,7 +936,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addV('person').sideEffect{throw new org.apache.tinkerpop.gremlin.server.util.DefaultTemporaryException('try again!')}").all().get();
+            client.submit("g.addV('person').sideEffect{throw new org.apache.tinkerpop.gremlin.server.util.DefaultTemporaryException('try again!')}", groovyRequestOptions).all().get();
             fail("Should have tanked since we threw an exception out manually");
         } catch (Exception ex) {
             final Throwable t = ex.getCause();

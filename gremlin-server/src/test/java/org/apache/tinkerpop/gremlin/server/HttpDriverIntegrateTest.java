@@ -39,10 +39,8 @@ import org.junit.Test;
 
 import java.awt.Color;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -50,11 +48,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -75,7 +73,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         try {
             final Client client = cluster.connect();
             // default chunk size is 64
-            assertEquals(100, client.submit("new int[100]").all().get().size());
+            assertEquals(100, client.submit("g.inject(0).repeat(inject(0)).times(99)").all().get().size());
         } catch (Exception ex) {
             throw ex;
         } finally {
@@ -106,7 +104,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect();
-            final List r = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]").all().get();
+            final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
+            final List r = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]", ro).all().get();
             assertEquals(200000, ((Result) r.get(0)).getString().length());
             assertEquals(100000, ((Result) r.get(1)).getString().length());
         } catch (Exception ex) {
@@ -187,13 +186,14 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-            final int result = client.submit("Thread.sleep(1000);1").all().get().get(0).getInt();
+            final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
+            final int result = client.submit("Thread.sleep(1000);1", ro).all().get().get(0).getInt();
             assertEquals(1, result);
 
             final AtomicInteger result2 = new AtomicInteger(-1);
             final Thread thread = new Thread(() -> {
                 try {
-                    result2.set(client.submit("2").all().get().get(0).getInt());
+                    result2.set(client.submit("g.inject(2)").all().get().get(0).getInt());
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }
@@ -214,7 +214,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final Client client = cluster.connect("shouldFailToUseSession");
-            client.submit("1+1").all().get();
+            client.submit("g.inject(2)").all().get();
             fail("Can't use session with HTTP");
         } catch (Exception ex) {
             final Throwable t = ExceptionUtils.getRootCause(ex);
@@ -246,9 +246,11 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             final Client client = cluster.connect();
 
             try {
-                final Map<String, Object> params = new HashMap<>();
-                params.put("r", Color.RED);
-                client.submit("r", params).all().get();
+                RequestOptions ro = RequestOptions.build()
+                        .language("gremlin-groovy")
+                        .addParameter("r", Color.RED)
+                        .create();
+                client.submit("r", ro).all().get();
                 fail("Should have thrown exception over bad serialization");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
@@ -259,7 +261,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -272,7 +274,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
         try {
             final Client client = cluster.connect();
-            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}").all().get();
+            final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
+            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}", ro).all().get();
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
@@ -289,7 +292,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
         try {
             final Client client = cluster.connect();
-            client.submit("Thread.sleep(5000);'done'").all().get();
+            final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
+            client.submit("Thread.sleep(5000);'done'", ro).all().get();
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
@@ -304,8 +308,10 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
+        final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
+
         try {
-            final ResultSet results = client.submit("java.awt.Color.RED");
+            final ResultSet results = client.submit("java.awt.Color.RED", ro);
 
             try {
                 results.all().join();
@@ -318,7 +324,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -331,19 +337,19 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
         try {
             try {
-                final ResultSet results = client.submit("1/0");
+                final ResultSet results = client.submit("g.inject(1).math('_/0')");
                 results.all().join();
                 fail("Should have thrown exception over division by zero");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
-                assertThat(inner.getMessage(), endsWith("Division by zero"));
+                assertThat(inner.getMessage(), containsString("Division by zero"));
                 assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -352,11 +358,12 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     @Test
     public void shouldProcessRequestsOutOfOrder() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
+        final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
         try {
             final Client client = cluster.connect();
 
-            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
-            final ResultSet rsZero = client.submit("'zero'");
+            final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'", ro);
+            final ResultSet rsZero = client.submit("'zero'", ro);
 
             final CompletableFuture<List<Result>> futureFive = rsFive.all();
             final CompletableFuture<List<Result>> futureZero = rsZero.all();
@@ -378,7 +385,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             final Client client = cluster.connect();
 
             final AtomicInteger checked = new AtomicInteger(0);
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             while (!results.allItemsAvailable()) {
                 assertTrue(results.getAvailableItemCount() < 10);
                 checked.incrementAndGet();
@@ -398,7 +405,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final AtomicInteger counter = new AtomicInteger(0);
             results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
             assertEquals(9, counter.get());
@@ -417,7 +424,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final Iterator<Result> itty = results.iterator();
             final AtomicInteger counter = new AtomicInteger(0);
             while (itty.hasNext()) {
@@ -441,7 +448,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final CompletableFuture<List<Result>> batch1 = results.some(5);
             final CompletableFuture<List<Result>> batch2 = results.some(5);
             final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
@@ -471,7 +478,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         final Client client = cluster.connect();
 
         try {
-            final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+            final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
             final Result one = results.one();
             final CompletableFuture<List<Result>> batch1 = results.some(4);
             final CompletableFuture<List<Result>> batch2 = results.some(5);
@@ -513,9 +520,10 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     public void shouldFailWithBadServerSideSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
+        final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
         try {
 
-            final ResultSet results = client.submit("TinkerGraph.open().variables()");
+            final ResultSet results = client.submit("TinkerGraph.open().variables()", ro);
 
             try {
                 results.all().join();
@@ -529,7 +537,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
             // from time to time, especially in the console if you're just exploring.
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
