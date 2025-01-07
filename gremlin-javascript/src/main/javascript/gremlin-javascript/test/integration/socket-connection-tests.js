@@ -31,16 +31,16 @@ const testServerPort = 45944;
 const testServer401ResponseBody = 'Invalid credentials provided';
 
 describe('Connection', function () {
-    const server = http.createServer(function(req, res) {
-        const parsedUrl = url.parse(req.url, true);
-        const pathname = parsedUrl.pathname;
-        if(pathname === '/401'){
-            res.statusCode = 401;
-            return res.end(testServer401ResponseBody);
-        }
-        res.statusCode = 404;
-        res.end();
-    });
+  const server = http.createServer(function (req, res) {
+    const parsedUrl = url.parse(req.url, true);
+    const pathname = parsedUrl.pathname;
+    if (pathname === '/401') {
+      res.statusCode = 401;
+      return res.end(testServer401ResponseBody);
+    }
+    res.statusCode = 404;
+    res.end();
+  });
   before(function () {
     return new Promise((resolve) => server.listen(testServerPort, resolve));
   });
@@ -51,27 +51,29 @@ describe('Connection', function () {
   describe('#open()', function () {
     it('should handle unexpected response errors with body', function () {
       const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
-      return connection.open()
-        .then(function() {
-            assert.fail("invalid status codes should throw");
+      return connection
+        .open()
+        .then(function () {
+          assert.fail('invalid status codes should throw');
         })
         .catch(function (err) {
-            assert.ok(err);
-            assert.ok(err.message.indexOf(401) > 0);
-            assert.ok(err.message.indexOf(testServer401ResponseBody) > 0);
-        })
+          assert.ok(err);
+          assert.ok(err.message.indexOf(401) > 0);
+          assert.ok(err.message.indexOf(testServer401ResponseBody) > 0);
+        });
     });
     it('should handle unexpected response errors with no body', function () {
       const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/404`);
-      return connection.open()
-        .then(function() {
-            assert.fail("invalid status codes should throw");
+      return connection
+        .open()
+        .then(function () {
+          assert.fail('invalid status codes should throw');
         })
         .catch(function (err) {
-            assert.ok(err);
-            assert.ok(err.message.indexOf(404) > 0);
-            assert.ok(err.message.indexOf('body') < 0);
-        })
+          assert.ok(err);
+          assert.ok(err.message.indexOf(404) > 0);
+          assert.ok(err.message.indexOf('body') < 0);
+        });
     });
   });
 });
