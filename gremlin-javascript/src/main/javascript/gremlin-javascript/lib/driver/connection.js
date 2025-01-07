@@ -256,7 +256,7 @@ class Connection extends EventEmitter {
         chunks.push(data instanceof Buffer ? data : Buffer.from(data));
       });
       res.on('end', () => {
-        resolve(Buffer.concat(chunks));
+        resolve(chunks.length ? Buffer.concat(chunks) : null);
       });
       res.on('error', reject);
     });
