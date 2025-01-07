@@ -146,6 +146,11 @@ public class GremlinServer {
             b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
                     new WriteBufferWaterMark(settings.writeBufferLowWaterMark, settings.writeBufferHighWaterMark));
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            // Enable TCP Keep-Alive to detect if the remote peer is still reachable.
+            // Keep-Alive sends periodic probes to check if the remote peer is still active.
+            // If the remote peer is unreachable, the connection will be closed, preventing
+            // resource leaks and avoiding the maintenance of stale connections.
+            b.childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // fire off any lifecycle scripts that were provided by the user. hooks get initialized during
             // ServerGremlinExecutor initialization
