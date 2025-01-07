@@ -152,9 +152,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.threadPoolWorker = 1;
                 break;
             case "shouldProcessTraversalInterruption":
-                settings.evaluationTimeout = 100;
-                break;
-            case "shouldProcessTraversalInterruptionGroovy":
             case "shouldProcessEvalInterruption":
                 settings.evaluationTimeout = 1500;
                 break;
@@ -306,23 +303,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldProcessTraversalInterruption() {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        try {
-            client.submit("g.inject(1).sideEffect{Thread.sleep(5000)}", groovyRequestOptions).all().get();
-            fail("Should have timed out");
-        } catch (Exception ex) {
-            final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
-            assertEquals("ServerTimeoutExceededException", re.getRemoteException());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldProcessTraversalInterruptionGroovy() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
 

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -286,10 +287,11 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     @Override
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         // doesn't bother to clear grateful/sink because i don't believe that ever gets mutated - read-only
+        RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
         client.submit("classic.clear();modern.clear();crew.clear();graph.clear();" +
                 "TinkerFactory.generateClassic(classic);" +
                 "TinkerFactory.generateModern(modern);" +
-                "TinkerFactory.generateTheCrew(crew);null").all().get();
+                "TinkerFactory.generateTheCrew(crew);null", ro).all().get();
     }
 
     @Override

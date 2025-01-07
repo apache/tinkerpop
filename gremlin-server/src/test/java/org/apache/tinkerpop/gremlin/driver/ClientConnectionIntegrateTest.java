@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.Request;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -252,7 +253,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         client.hostConnectionPools.forEach((h, pool) -> pool.connectionFactory = connectionFactory);
 
         // get an initial connection which marks the host as available
-        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+        assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
 
         // network is gonna get fishy - ConnectionPool should try to grow during the workload below and when it
         // does some connections will fail to create in the background which should log some errors but not tank
@@ -267,7 +268,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         new Thread(() -> {
             IntStream.range(0, requests).forEach(i -> {
                 try {
-                    client.submitAsync("1 + " + i);
+                    client.submitAsync(String.format("g.inject(%d)", 1+i));
                 } catch (Exception ex) {
                     // we could catch a TimeoutException here in some cases if the jitters cause a borrow of a
                     // connection to take too long. submitAsync() will wrap in a RuntimeException. can't assert
@@ -333,9 +334,10 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 .idleConnectionTimeoutMillis(idleMillis)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
+        final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
 
         try {
-            client.submit("Thread.sleep(" + idleMillis * 3 + ")").all().get();
+            client.submit("Thread.sleep(" + idleMillis * 3 + ")", ro).all().get();
             fail("Expected exception due to idle timeout");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Idle timeout occurred before response could be received from server - consider increasing idleConnectionTimeout"));

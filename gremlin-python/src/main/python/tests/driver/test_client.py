@@ -58,39 +58,35 @@ def test_connection(connection):
 # TODO: revisit after max_content_length definition/implementation is updated
 def test_client_message_too_big(client):
     try:
-        client = Client(test_no_auth_url, 'g', max_content_length=4096)
-        client.submit("\" \"*8000").all().result()
+        client = Client(test_no_auth_url, 'g', max_content_length=1024)
+        client.submit("g.inject(' ').repeat(concat(' ')).times(1234)").all().result()
         assert False
     except Exception as ex:
         assert ex.args[0].startswith('Response size') \
-               and ex.args[0].endswith('exceeds limit 4096 bytes')
+               and ex.args[0].endswith('exceeds limit 1024 bytes')
 
         # confirm the client instance is still usable and not closed
-        assert ["test"] == client.submit("'test'").all().result()
+        assert ["test"] == client.submit("g.inject('test')").all().result()
     finally:
         client.close()
 
 
 def test_client_large_result(client):
-    result_set = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]").all().result()
+    result_set = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]", request_options={'language': 'gremlin-groovy'}).all().result()
     assert len(result_set[0]) == 200000
     assert len(result_set[1]) == 100000
 
 
 def test_client_script_submission(client):
-    assert len(client.submit("new int[100]").all().result()) == 100
-
-
-def test_client_script_submission_inject(client):
-    assert len(client.submit("g.inject(new int[100])").all().result()) == 100
+    assert len(client.submit("g.inject(0).repeat(inject(0)).times(99)").all().result()) == 100
 
 
 def test_client_simple_eval(client):
-    assert client.submit('1 + 1').all().result()[0] == 2
+    assert client.submit('g.inject(2)').all().result()[0] == 2
 
 
 def test_client_simple_eval_bindings(client):
-    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
 
 
 def test_client_eval_traversal(client):
@@ -114,21 +110,21 @@ def test_client_eval_traversal_bindings_request_options_bindings(client):
 def test_client_error(client):
     try:
         # should fire an exception
-        client.submit('1/0').all().result()
+        client.submit('g.inject(1).math("_/0")').all().result()
         assert False
     except GremlinServerError as ex:
-        assert ex.status_message.endswith('Division by zero')
+        assert ex.status_message.endswith('Division by zero!')
         assert ex.status_exception
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
     # still can submit after failure
-    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
 
 
 def test_bad_serialization(client):
     try:
         # should timeout
-        client.submit('java.awt.Color.RED').all().result()
+        client.submit('java.awt.Color.RED', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
     except GremlinServerError as ex:
         assert ex.status_message
@@ -136,7 +132,7 @@ def test_bad_serialization(client):
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
     # still can submit after failure
-    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
 
 
 def test_client_connection_pool_after_error(client):
@@ -145,7 +141,7 @@ def test_client_connection_pool_after_error(client):
 
     try:
         # should fire an exception
-        client.submit('1/0').all().result()
+        client.submit('g.inject(1).math("_/0")').all().result()
         assert False
     except GremlinServerError as gse:
         # expecting the pool size to be 1 again after query returned
@@ -153,15 +149,15 @@ def test_client_connection_pool_after_error(client):
         assert client.available_pool_size == 1
 
     # still can submit after failure
-    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4
 
 
 def test_client_no_hang_if_submit_on_closed(client):
-    assert client.submit('1 + 1').all().result()[0] == 2
+    assert client.submit('g.inject(2)').all().result()[0] == 2
     client.close()
     try:
         # should fail since not hang if closed
-        client.submit('1 + 1').all().result()
+        client.submit('g.inject(2)').all().result()
         assert False
     except Exception as ex:
         assert True
@@ -170,7 +166,7 @@ def test_client_no_hang_if_submit_on_closed(client):
 def test_client_close_all_connection_in_pool(client):
     client = Client(test_no_auth_url, 'g', pool_size=1)
     assert client.available_pool_size == 1
-    client.submit('2+2').all().result()
+    client.submit('g.inject(4)').all().result()
     client.close()
     assert client.available_pool_size == 0
 
@@ -181,14 +177,14 @@ def test_client_side_timeout_set_for_aiohttp(client):
 
     try:
         # should fire an exception
-        client.submit('Thread.sleep(2000);1').all().result()
+        client.submit('Thread.sleep(2000);1', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
     except TimeoutError as err:
         # asyncio TimeoutError has no message.
         assert str(err) == ""
 
     # still can submit after failure
-    assert client.submit('x + x', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
 
 
 async def async_connect(enable):
