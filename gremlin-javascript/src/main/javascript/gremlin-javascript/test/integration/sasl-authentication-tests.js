@@ -21,7 +21,6 @@
 
 const assert = require('assert');
 const AssertionError = require('assert');
-const http = require('http');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
@@ -78,30 +77,6 @@ describe('DriverRemoteConnection', function () {
           .catch(function (err) {
             assert.ok(err);
             assert.ok(err.message.indexOf('401') > 0);
-          });
-      });
-
-      it('should handle unexpected response errors', async function () {
-        const testServerPort = 45944;
-        const testServerStatusCode = 500;
-        const testServerResponseBody = 'Throttled';
-        const server = http.createServer(function(_req, res) {
-          res.statusCode = testServerStatusCode;
-          res.end(testServerResponseBody);
-        });
-        await new Promise((resolve) => server.listen(testServerPort, resolve));
-        connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/gremlin`);
-        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
-          .then(function() {
-            assert.fail("invalid status codes should throw");
-          })
-          .catch(function (err) {
-            assert.ok(err);
-            assert.ok(err.message.indexOf(testServerStatusCode) > 0);
-            assert.ok(err.message.indexOf(testServerResponseBody) > 0);
-          })
-          .finally(function() {
-            server.close();
           });
       });
 

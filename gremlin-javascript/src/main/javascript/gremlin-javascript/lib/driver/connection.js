@@ -260,7 +260,8 @@ class Connection extends EventEmitter {
       });
       res.on('error', reject);
     });
-    const errorMessage = `Unexpected server response code ${res.statusCode} with body:\n${body.toString()}`;
+    const statusCodeErrorMessage = `Unexpected server response code ${res.statusCode}`;
+    const errorMessage = body ? `${statusCodeErrorMessage} with body:\n${body.toString()}` : statusCodeErrorMessage;
     const error = new Error(errorMessage);
     this.#handleError({
       error,
