@@ -112,7 +112,6 @@ public abstract class TinkerWorld implements World {
     }
 
     public static class TinkerGraphParameterizedWorld extends TinkerGraphWorld {
-        @Override
         public boolean useParametersLiterally() {
             return false;
         }
