@@ -32,6 +32,7 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/neo4j-empty.properties}
 scriptEngines: {
+  gremlin-lang: {},
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin: {},
