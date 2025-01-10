@@ -930,6 +930,7 @@ that iterates thousands of results will serialize each of those in memory into a
 quite possible that such a script will generate `OutOfMemoryError` exceptions on the server.  Consider the default
 WebSocket configuration, which supports streaming, if that type of use case is required.
 
+[[server-configuring]]
 === Configuring
 
 The `gremlin-server.sh` file serves multiple purposes.  It can be used to "install" dependencies to the Gremlin
@@ -1062,7 +1063,7 @@ The following table describes the various YAML configuration options that Gremli
 |useEpollEventLoop |Try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
 |useGlobalFunctionCacheForSessions |Enable the global function cache for sessions when using the `UnifiedChannelizer`. When `true` it means that functions created in one request to a session remain available on the next request to that session. This setting is only relevant when `useGlobalFunctionCacheForSessions` is `false`. |true
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
-|writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |65536
+|writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |32768
 |=========================================================
 
 See the <<metrics,Metrics>> section for more information on how to configure Ganglia and Graphite.
@@ -1273,9 +1274,17 @@ NOTE: Installing Ganglia will include `org.acplt:oncrpc`, which is an LGPL licen
 Regardless of the output, the metrics gathered are the same. Each metric is prefixed with
 `org.apache.tinkerpop.gremlin.server.GremlinServer` and the following metrics are reported:
 
-* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
-request creates a "session", even a so-called "sessionless request", which is basically a session that will only
-execute within the context of that single request.
+* `channels.paused` - The current number of open channels (HTTP and Websocket) that have their writes to buffer paused
+when the `writeBufferHighWaterMark` configuration is exceeded.
+* `channels.total` - The current number of open channels (HTTP and Websocket).
+* `channels.write-pauses` - The total number of pauses across all channels (HTTP and Websocket) to buffer writes where
+the `writeBufferHighWaterMark` configuration is exceeded, with mean rate, as well as the 1, 5, and 15-minute rates.
+* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
+session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
+"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
+* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
+requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
+measured under the `UnifiedChannelizer`.
 * `errors` - The number of total errors, mean rate, as well as the 1, 5, and 15-minute error rates.
 * `op.eval` - The number of script evaluations, mean rate, 1, 5, and 15 minute rates, minimum, maximum, median, mean,
 and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th percentile evaluation times
@@ -1283,12 +1292,9 @@ and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th a
 * `op.traversal` - The number of `Traversal` bytecode-based executions, mean rate, 1, 5, and 15 minute rates, minimum,
 maximum, median, mean, and standard deviation evaluation times, as well as the 75th, 95th, 98th, 99th and 99.9th
 percentile evaluation times.
-* `engine-name.session.session-id.*` - Metrics related to different `GremlinScriptEngine` instances configured for
-session-based requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy" and
-"session-id" will be the identifier for the session itself. This metric is not measured under the `UnifiedChannelizer`.
-* `engine-name.sessionless.*` - Metrics related to different `GremlinScriptEngine` instances configured for sessionless
-requests where "engine-name" will be the actual name of the engine, such as "gremlin-groovy". This metric is not
-measured under the `UnifiedChannelizer`.
+* `sessions` - The number of sessions open at the time the metric was last measured. For the `UnifiedChannelizer`, each
+request creates a "session", even a so-called "sessionless request", which is basically a session that will only
+execute within the context of that single request.
 * `user-agent.*` - Counts the number of connection requests from clients providing a given user agent.
 
 NOTE: Gremlin Server has a limit of 10000 unique user agents to be tracked by metrics. If this cap is exceeded
@@ -2103,7 +2109,8 @@ The following sections define best practices for working with Gremlin Server.
 
 ==== Tuning
 
-image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
+image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some
+simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
 * Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.
 Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.conf`.
@@ -2153,6 +2160,35 @@ data that is required. For example, if only two properties of a `Vertex` are nee
 than returning the entire `Vertex` object itself. Even with an entire `Vertex`, it is typically much faster to issue
 the query as `g.V(1).elementMap()` than `g.V(1)`, as the former returns a `Map` of the same data as a `Vertex`, but
 without all the associated structure which can slow the response.
+* Gremlin Server writes responses to a buffer held in direct memory prior to flushing them to the TCP socket. If the
+logs show `OutOfDirectMemoryError`, particularly when the `channels.write-pauses` <<metrics,metric>> is high, it is
+likely caused by this buffer being filled. The buffer can fill when clients are slow to consume results being sent to
+them (e.g. network problems, underpowered client instances, etc.). Gremlin Server will attempt to throttle the speed at
+which the buffer gets filled by pausing writes for any channel that exceeds its allowed buffer space allotment as
+determined by the `writeBufferHighWaterMark` and `writeBufferLowWaterMark` described in the
+<<server-configuring,Server Configuration Section>>. Pauses obviously increase latency, but do so for benefit of
+server stability in continuing to serve channels that have clients without issue consuming the results.
+** Write pauses are generally considered a natural part of server operations, though a continuous amount of pausing
+means that threads used for query execution are tied up and are therefore preventing the processing of other requests.
+As a result, requests may begin to queue which further adds to server load and potential latency. Increasing the
+`writeBufferHighWaterMark` and `writeBufferLowWaterMark` settings could allow the server to delay pauses at the expense
+of direct memory and therefore allow more requests to be handled by freeing those query execution threads.
+** Client applications should be selective in their retries. Quickly resending a query that triggered an
+`OutOfDirectMemoryError` without giving the server time to recover will just further burden a taxed system. Even retry
+systems that use exponential back-off may not be suitable for these cases as early retries may land too quickly and
+therefore just queue another heavy request.
+** Consider the shape of query results as they can have an impact on server performance. The "shape" refers to the form
+of the result given the query. For example, `g.V()` and `g.V().fold()` both return the same results (i.e. all the
+vertices in the graph) but the former returns them one at a time in a stream and the latter collects them all in
+memory in a `List` and then returns the one `List` result. Writing queries in ways that allow results that can stream
+(only applies for websockets) is preferable and will allow the server to perform better. Another aspect of "shape"
+can come into play when returning data of individual graph elements. For example, the `g.V()` form of query will stream,
+but if each `Vertex` returned has lots of properties (e.g. properties with large strings or heavy blobs), this could
+trigger scenarios where each streamed batch immediately exceeds `writeBufferHighWaterMark`. Simply exceeding the
+`writeBufferHighWaterMark` may not trigger a pause as the server may quickly flush the buffer before the next batch, but
+one could see how easily a write pause could be triggered in that state. It could make sense to configure a smaller
+`batchSize` for queries results that have heavy individual objects in them as that would reduce the byte size of the
+batch and allow buffer flushes to happen more often (though that may be a cost in and of itself).
 
 [[parameterized-scripts]]
 ==== Parameterized Scripts

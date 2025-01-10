@@ -30,6 +30,28 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Improved Server Memory Management
+
+A TinkerPop-specific `MessageSizeEstimator` was added to more accurately measure the size of responses being written
+back to the client. With a more accurate measurement, the server is able to better prevent exhaustion of direct memory
+by overly eager channels writing large result sets to slower clients. Overall, this change should help reduce the
+likelihood of the server hitting `OutOfMemoryExceptions` and other performance problems that may appear under certain
+workloads and network conditions.
+
+It is worth noting that logging around the `writeBufferHighWaterMark` has been modified to include a bit more
+information about the pause. This warning formerly was only issued on the first pause per request. Additional pauses
+for that request would not be noted in the logs. The warnings now appear periodically for a request, immediately for
+the first pause and then warnings will continue for subsequent pauses using an exponential backoff.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3124[TINKERPOP-3124]
+
+==== Channel Metrics
+
+Gremlin Server has three new metrics in the `org.apache.tinkerpop.gremlin.server.GremlinServer` space:
+`channels.paused`, `channels.total`, and `channels.write-pauses`. These metrics are designed to provide more insight
+into channel (websocket and http) operations to use as a tool in understanding server memory issues and latency.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.4/reference/#metrics[Reference Documentation - Metrics]
 
 === Upgrading for Providers
 

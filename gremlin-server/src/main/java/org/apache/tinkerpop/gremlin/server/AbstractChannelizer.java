@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -111,6 +112,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
 
+    protected ChannelGroup channels;
+
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
 
@@ -138,6 +141,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         graphManager = serverGremlinExecutor.getGraphManager();
         gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
         scheduledExecutorService = serverGremlinExecutor.getScheduledExecutorService();
+        channels = serverGremlinExecutor.getChannels();
 
         // instantiate and configure the serializers that gremlin server will use - could error out here
         // and fail the server startup
@@ -156,6 +160,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
     }
 
+    /**
+     * It is best not to override this method as it sets up some core parts to the server. Prefer implementing the
+     * {@link #configure(ChannelPipeline)} and {@link #finalize(ChannelPipeline)} methods to alter the pipeline.
+     */
     @Override
     public void initChannel(final SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
@@ -179,6 +187,10 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);
+
+        // track the newly created channel in the channel group
+        channels.add(ch);
+
     }
 
     protected AbstractAuthenticationHandler createAuthenticationHandler(final Settings settings) {
