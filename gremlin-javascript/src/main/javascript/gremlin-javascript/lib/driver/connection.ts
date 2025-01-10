@@ -317,12 +317,14 @@ export default class Connection extends EventEmitter {
         chunks.push(data instanceof Buffer ? data : Buffer.from(data));
       });
       res.on('end', () => {
-        resolve(Buffer.concat(chunks));
+        resolve(chunks.length ? Buffer.concat(chunks) : null);
       });
       res.on('error', reject);
     });
     // @ts-ignore
-    const errorMessage = `Unexpected server response code ${res.statusCode} with body:\n${body.toString()}`;
+    const statusCodeErrorMessage = `Unexpected server response code ${res.statusCode}`;
+    // @ts-ignore
+    const errorMessage = body ? `${statusCodeErrorMessage} with body:\n${body.toString()}` : statusCodeErrorMessage;
     const error = new Error(errorMessage);
     this.#handleError({
       error,
