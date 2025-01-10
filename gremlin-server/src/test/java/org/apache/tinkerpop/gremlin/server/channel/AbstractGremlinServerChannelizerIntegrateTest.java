@@ -103,7 +103,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     public void shouldReturnResult() throws Exception {
         final CombinedTestClient client =  new CombinedTestClient(getProtocol());
         try {
-            client.sendAndAssert("2+2", 4);
+            client.sendAndAssert("g.inject(4)", 4);
         } finally {
             client.close();
         }
@@ -113,7 +113,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     public void shouldWorkWithSSL() throws Exception {
         final CombinedTestClient client =  new CombinedTestClient(getSecureProtocol());
         try {
-            client.sendAndAssert("2+2", 4);
+            client.sendAndAssert("g.inject(4)", 4);
         } finally {
             client.close();
         }
@@ -123,14 +123,14 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     public void shouldWorkWithAuth() throws Exception {
         CombinedTestClient client =  new CombinedTestClient(getProtocol());
         try {
-            client.sendAndAssertUnauthorized("2+2", "stephen", "notpassword");
+            client.sendAndAssertUnauthorized("g.inject(4)", "stephen", "notpassword");
         } finally {
             client.close();
         }
 
         client = new CombinedTestClient(getProtocol());
         try {
-            client.sendAndAssert("2+2", 4, "stephen", "password");
+            client.sendAndAssert("g.inject(4)", 4, "stephen", "password");
         } finally {
             client.close();
         }
@@ -138,7 +138,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
         client = new CombinedTestClient(getProtocol());
         try {
             // Expect exception when try again if the server pipeline is correct
-            client.sendAndAssertUnauthorized("2+2", "stephen", "notpassword");
+            client.sendAndAssertUnauthorized("g.inject(4)", "stephen", "notpassword");
         } finally {
             client.close();
         }
@@ -148,14 +148,14 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
     public void shouldWorkWithSSLAndAuth() throws Exception {
         CombinedTestClient client =  new CombinedTestClient(getSecureProtocol());
         try {
-            client.sendAndAssertUnauthorized("2+2", "stephen", "incorrect-password");
+            client.sendAndAssertUnauthorized("g.inject(4)", "stephen", "incorrect-password");
         } finally {
             client.close();
         }
 
         client = new CombinedTestClient(getSecureProtocol());
         try {
-            client.sendAndAssert("2+2", 4, "stephen", "password");
+            client.sendAndAssert("g.inject(4)", 4, "stephen", "password");
         } finally {
             client.close();
         }
@@ -163,7 +163,7 @@ abstract class AbstractGremlinServerChannelizerIntegrateTest extends AbstractGre
         client = new CombinedTestClient(getSecureProtocol());
         try {
             // Expect exception when try again if the server pipeline is correct
-            client.sendAndAssertUnauthorized("2+2", "stephen", "incorrect-password");
+            client.sendAndAssertUnauthorized("g.inject(4)", "stephen", "incorrect-password");
         } finally {
             client.close();
         }

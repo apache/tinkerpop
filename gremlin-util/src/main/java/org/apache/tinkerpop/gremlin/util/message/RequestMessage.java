@@ -39,8 +39,7 @@ public final class RequestMessage {
         this.gremlin = gremlin;
         this.fields = fields;
 
-        // default language is "gremlin-groovy" for now, will be replaced in following PR's
-        this.fields.putIfAbsent(Tokens.ARGS_LANGUAGE, "gremlin-groovy");
+        this.fields.putIfAbsent(Tokens.ARGS_LANGUAGE, "gremlin-lang");
     }
 
     /**

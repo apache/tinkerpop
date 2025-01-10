@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -50,7 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -93,60 +93,67 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleNullResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().drop().iterate();null");
+        final ResultSet results = client.submit("g.inject(null)");
         assertNull(results.all().get().get(0).getObject());
     }
 
     @Test
     public void shouldHandleVoidResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().drop().iterate()");
+        final ResultSet results = client.submit("g.V().drop().iterate()");
         assertEquals(0, results.all().get().size());
     }
 
     @Test
     public void shouldHandleEmptyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V(100,1000,1000)");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.V(100,1000,1000)", options);
         assertEquals(0, results.all().get().size());
     }
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V(1).next()");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.V(1).next()", options);
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
     }
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().properties('name').next()");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.V().properties('name').next()", options);
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
         assertThat(v, instanceOf(DetachedVertexProperty.class));
     }
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().next()");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.E().next()", options);
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
     }
 
     @Test
     public void shouldHandlePropertyResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.E().properties('weight').next()");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.E().properties('weight').next()", options);
         final Property<Double> p = results.all().get().get(0).getProperty();
         assertThat(p, instanceOf(ReferenceProperty.class));
     }
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().out().path()");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.V().out().path()", options);
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(ReferencePath.class));
     }
 
     @Test
     public void shouldHandleTinkerGraphResult() throws Exception {
-        final ResultSet results = client.submit("modern");
+        RequestOptions options = RequestOptions.build().language("gremlin-groovy").create();
+        final ResultSet results = client.submit("modern", options);
         final Graph graph = results.all().get().get(0).get(TinkerGraph.class);
 
         // test is "lossy for id" because TinkerGraph is configured by default to use the ANY id manager
@@ -157,7 +164,8 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleMapIteratedResult() throws Exception {
-        final ResultSet results = client.submit("gmodern.V().groupCount().by(bothE().count())");
+        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        final ResultSet results = client.submit("g.V().groupCount().by(bothE().count())", options);
         final List<Result> resultList = results.all().get();
         final Map m = resultList.get(0).get(HashMap.class);
         assertEquals(2, m.size());

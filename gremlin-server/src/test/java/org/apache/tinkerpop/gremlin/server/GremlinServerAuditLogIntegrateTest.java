@@ -164,9 +164,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final Client client = cluster.connect();
 
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+            assertEquals(4, client.submit("g.inject(4)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -178,11 +178,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         // WebSocketChannelizer does not add SaslAuthenticationHandler for AllowAllAuthenticator,
         // so no authenticated user log line available
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
-                "User %s with address .+? requested: 1\\+1", AuthenticatedUser.ANONYMOUS_USERNAME))));
+                "User %s with address .+? requested: g.inject\\(2\\)", AuthenticatedUser.ANONYMOUS_USERNAME))));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
-                "User %s with address .+? requested: 1\\+2", AuthenticatedUser.ANONYMOUS_USERNAME))));
+                "User %s with address .+? requested: g.inject\\(3\\)", AuthenticatedUser.ANONYMOUS_USERNAME))));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(String.format(
-                "User %s with address .+? requested: 1\\+3", AuthenticatedUser.ANONYMOUS_USERNAME))));
+                "User %s with address .+? requested: g.inject\\(4\\)", AuthenticatedUser.ANONYMOUS_USERNAME))));
     }
 
     @Test
@@ -194,10 +194,10 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final Client client = cluster.connect();
 
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
-            assertEquals(5, client.submit("1+4").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+            assertEquals(4, client.submit("g.inject(4)").all().get().get(0).getInt());
+            assertEquals(5, client.submit("g.inject(5)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -210,11 +210,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                 String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName))));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+1")));
+                "User stephen with address .+? requested: g.inject\\(2\\)")));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+2")));
+                "User stephen with address .+? requested: g.inject\\(3\\)")));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+3")));
+                "User stephen with address .+? requested: g.inject\\(4\\)")));
     }
 
     @Test
@@ -225,9 +225,9 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final Cluster cluster = TestClientFactory.build(kdcServer.gremlinHostname).auth(basic(username, password)).create();
         final Client client = cluster.connect();
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
-            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+            assertEquals(4, client.submit("g.inject(4)").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -240,11 +240,11 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                 String.format("User %s with address .+? authenticated by %s", username, simpleAuthenticatorName))));
         assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+1")));
+                "User stephen with address .+? requested: g.inject\\(2\\)")));
         assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+2")));
+                "User stephen with address .+? requested: g.inject\\(3\\)")));
         assertFalse(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 1\\+3")));
+                "User stephen with address .+? requested: g.inject\\(4\\)")));
     }
 
     @Test
@@ -252,7 +252,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httpPost = new HttpPost(TestClientFactory.createURLString());
         httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"2-1\"}", Consts.UTF_8));
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(1)\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -270,7 +270,7 @@ public class GremlinServerAuditLogIntegrateTest extends AbstractGremlinServerInt
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
                 String.format("User stephen with address .+? authenticated by %s", authenticatorName))));
         assertTrue(logCaptor.getLogs().stream().anyMatch(m -> m.matches(
-                "User stephen with address .+? requested: 2-1")));
+                "User stephen with address .+? requested: g.inject\\(1\\)")));
     }
 
     @Test

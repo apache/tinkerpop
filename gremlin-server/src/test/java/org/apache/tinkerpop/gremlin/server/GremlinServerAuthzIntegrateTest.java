@@ -28,6 +28,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -127,10 +128,13 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
         final Cluster cluster = TestClientFactory.build().auth(basic("marko", "rainbow-dash")).create();
         final Client client = cluster.connect();
 
+        RequestOptions modern = RequestOptions.build().addG("gmodern").create();
+        RequestOptions classic = RequestOptions.build().addG("gclassic").create();
+
         try {
-            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
-            assertEquals(6, client.submit("gclassic.V().count()").all().get().get(0).getInt());
-            assertEquals(6, client.submit("gmodern.V().map{it.get().value('name')}.count()").all().get().get(0).getInt());
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+            assertEquals(6, client.submit("g.V().count()", classic).all().get().get(0).getInt());
+            assertEquals(6, client.submit("g.V().values('name').count()", modern).all().get().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -140,7 +144,7 @@ public class GremlinServerAuthzIntegrateTest extends AbstractGremlinServerIntegr
     public void shouldAuthorizeWithHttpTransport() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httpPost = new HttpPost(TestClientFactory.createURLString());
-        httpPost.setEntity(new StringEntity("{\"gremlin\":\"2-1\"}", Consts.UTF_8));
+        httpPost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(1)\"}", Consts.UTF_8));
         httpPost.addHeader("Authorization", "Basic " + encoder.encodeToString("marko:rainbow-dash".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpPost)) {
