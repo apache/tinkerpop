@@ -199,8 +199,10 @@ export default class Connection extends EventEmitter {
     this._ws!.addEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws!.addEventListener('error', this.#handleError);
+    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
     // @ts-expect-error
-    this._ws!.addEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws!.on('unexpected-response', this.#handleUnexpectedResponse);
     // @ts-expect-error
     this._ws!.addEventListener('message', this.#handleMessage);
     // @ts-expect-error
@@ -446,8 +448,10 @@ export default class Connection extends EventEmitter {
     this._ws?.removeEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws?.removeEventListener('error', this.#handleError);
+    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
     // @ts-expect-error
-    this._ws?.removeEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws?.off('unexpected-response', this.#handleUnexpectedResponse);
     // @ts-expect-error
     this._ws?.removeEventListener('message', this.#handleMessage);
     // @ts-expect-error
