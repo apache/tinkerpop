@@ -6064,158 +6064,57 @@ example is found on StackOverflow written in Java, but the programming language 
 Fortunately, TinkerPop has developed `Translator` infrastructure that will convert Gremlin from one programming
 language syntax to another.
 
-The functionality relevant to most users is actually a sub-function of `Translator` infrastructure and is more
-specifically a `ScriptTranslator` which takes Gremlin `Bytecode` of a traversal and generates a `String` representation
-of that `Bytecode` in the programming language syntax that the `ScriptTranslator` instance supports. The translation
-therefore allows Gremlin to be converted from the host programming language of the `Translator` to another.
+The `GremlinTranslator` class is capable of translating `gremlin-lang` syntax scripts into any of the following
+gremlin language syntaxes: Java, Python, .Net, Go, JavaScript, Groovy. There is additionally a special anonymizing
+translator which strips out arguments which could potentially contain sensitive information.
 
-The following translators are available, where the first column identifies the host programming language and the
-columns represent the language that Gremlin can be generated in:
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
+import org.apache.tinkerpop.gremlin.language.translator.Translator;
 
-[width="100%",cols="<,^,^,^,^,^,^",options="header"]
-|=========================================================
-| |Java |Groovy |Javascript |.NET |Python |Go
-|*Java* |- |X |X |X |X |X
-|*Groovy* | |X |X | |X |
-|*Javascript* | |X |- | | |
-|*.NET* | |X | |- | |
-|*Python*  | |X | | |- |
-|*Go* | |X | | | |-
-|=========================================================
+// Java
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.JAVA).getTranslated();
+// Returns: "g.V().hasLabel(\"person\", \"software\", \"class\")"
 
-Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
+// Python
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.PYTHON).getTranslated();
+// Returns: "g.V().has_label('person', 'software', 'class')"
 
-WARNING: While `Translator` implementations have been around for some time, they are still in their early stages from
-an interface perspective. API changes may occur in the near future.
+// .Net
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.DOTNET).getTranslated();
+// Returns: "g.V().HasLabel(\"person\", \"software\", \"class\")"
+
+// Go
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.GO).getTranslated();
+// Returns: "g.V().HasLabel(\"person\", \"software\", \"class\")"
+
+// JavaScript
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.JAVASCRIPT).getTranslated();
+// Returns: "g.V().hasLabel(\"person\", \"software\", \"class\")"
+
+// Groovy
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.GROOVY).getTranslated();
+// Returns: "g.V().hasLabel('person', 'software', 'class')"
+
+// Anonymized
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.ANONYMIZED).getTranslated();
+// Returns: "g.V().hasLabel(string0, string1, string2)"
+----
+
+Each GLV is capable of producing a `gremlin-lang` script from a Traversal, which can be fed into `GremlinTranslator` to
+convert into any of the supported syntaxes. Each GLV has a unique interface, but the pattern is quite similar from one
+to the next:
 
 [source,java,tab]
 ----
-// gremlin-core module
-import org.apache.tinkerpop.gremlin.process.traversal.translator.*;
-
-GraphTraversalSource g = ...;
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(in("knows")).
-                                values("age").
-                                map(Lambda.function("it.get() + 1"));
-
-Translator.ScriptTranslator groovyTranslator = GroovyTranslator.of("g");
-System.out.println(groovyTranslator.translate(t).getScript());
-// OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
-
-Translator.ScriptTranslator dotnetTranslator = DotNetTranslator.of("g");
-System.out.println(dotnetTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(Lambda.Groovy("it.get() + 1"))
-
-Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
-System.out.println(pythonTranslator.translate(t).getScript());
-// OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda: "it.get() + 1")
-
-Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
-System.out.println(javascriptTranslator.translate(t).getScript());
-// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
-
-Translator.ScriptTranslator golangTranslator = GolangTranslator.of("g");
-System.out.println(golangTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person", "name", "marko").Where(gremlingo.T__.In("knows")).Values("age").Map(&gremlingo.Lambda{Script:"it.get() + 1", Language:""})
-----
-[source,javascript]
-----
-const g = ...;
-const t = g.V().has("person","name","marko").
-            where(in_("knows")).
-            values("age");
-
-// Groovy
-const translator = new gremlin.process.Translator('g');
-console.log(translator.translate(t));
-// OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+GraphTraversal t = g.V().hasLabel("person");
+String script = t.asAdmin().getGremlinLang().getGremlin();
+// Returns: "g.V().hasLabel(\"person\")"
 ----
 [source,python]
 ----
-from gremlin_python.process.translator import *
-
-g = ...
-t = (g.V().has('person','name','marko').
-          where(__.in_("knows")).
-          values("age"))
-
-# Groovy
-translator = Translator().of('g');
-print(translator.translate(t.bytecode));
-# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+t = g.V().has_label('person')
+script = t.gremlin_lang.get_gremlin()
+# Returns: "g.V().hasLabel('person')"
 ----
-[source,csharp]
-----
-var g = ...;
-var t = g.V().Has("person", "name", "marko").Where(In("knows")).Values<int>("age");
-
-// Groovy
-var translator = GroovyTranslator.Of("g");
-Console.WriteLine(translator.Translate(t));
-// OUTPUT: g.V().has('person', 'name', 'marko').where(__.in('knows')).values('age')
-----
-[source,go]
-----
-g := ...
-t := g.V().Has("person", "name", "marko").
-	Where(T__.In("knows")).
-	Values("age")
-
-// Groovy
-translator := NewTranslator("g")
-print(translator.Translate(t.Bytecode))
-// OUTPUT: g.V().has('person','name','marko').where(in('knows')).values('age')
-----
-
-The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
-identify opportunities to generate an output that would replace constant values with parameters. The parameters would
-then be extracted and returned as part of the `Script` object:
-
-[source,java]
-----
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(__.in("knows")).
-                                values("age");
-// specify true to attempt parameter extraction
-Translator.ScriptTranslator translator = GroovyTranslator.of("g", true);
-Script s = translator.translate(t);
-System.out.println(s.getScript());
-// OUTPUT: g.V().has(_args_0,_args_1,_args_2).where(__.in(_args_3)).values(_args_4)
-System.out.println(s.parameters);
-// OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
-----
-
-The `GroovyTranslator` can take a `TypeTranslator` argument which allows some customization of how types get
-converted to script form. The `DefaultTypeTranslator` is used if a specific implementation is not specified. A built-in
-alternative to this implementation is the `LanguageTypeTranslator` which will prefer use of the Gremlin language
-`datetime()` function rather than the JVM specific `Date` and `Timestamp` conversions. This translator can be helpful
-when generating scripts that will be sent to Gremlin Server or Remote Graph Providers supporting the `datetime()` form.
-
-The `PythonTranslator` can take a `TypeTranslator` argument to disable the syntactic sugar which the default translator
-applies to converted queries. The `DefaultTypeTranslator` is used if a specific implementation is not specified.
-
-[source,java]
-----
-Traversal<Vertex,String> t = g.V().range(0, 10).has("person","name","marko").
-                                limit(2).
-                                values("name");
-// default translator
-Translator.ScriptTranslator translator = PythonTranslator.of("g");
-String defaultQueryTranslation = translator.translate(t)
-System.out.println(defaultQueryTranslation);
-// OUTPUT: g.V()[0:10].has('person','name','marko')[0:2].name
-
-// no synantic sugar translator
-Translator.ScriptTranslator noSugarTranslator = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(false));
-String noSugarTranslation = noSugarTranslator.translate(t)
-System.out.println(noSugarTranslation);
-// OUTPUT: g.V().range_(0,10).has('person','name','marko').limit(2).values('name')
-
-// With parameter extraction
-Translator.ScriptTranslator noSugarTranslatorWithParameters = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(true));
-String noSugarTranslationWithParameters = noSugarTranslatorWithParameters.translate(t)
-System.out.println(noSugarTranslationWithParameters);
-// OUTPUT: g.V().range_(0,10).has(_args_0,_args_1,_args_2).limit(2).values(_args_1)
-----
-
