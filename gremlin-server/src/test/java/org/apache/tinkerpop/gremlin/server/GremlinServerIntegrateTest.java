@@ -24,6 +24,8 @@ import io.netty.util.AttributeKey;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -500,7 +502,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(expected.get(), is(true));
 
             assertThat(logCaptor.getLogs().stream().anyMatch(m -> m.contains(
-                    "Pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
+                    "pausing response writing as writeBufferHighWaterMark exceeded on")), is(true));
         } catch (Exception ex) {
             fail("Shouldn't have tossed an exception");
         } finally {
@@ -1008,7 +1010,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final Edge r2_tokens = g.with("materializeProperties", "tokens").E().next();
         assertFalse(r2_tokens.properties().hasNext());
     }
-	
+
 	@Test
     public void shouldBulkResultsWithClusterOptions() {
         final Cluster cluster = TestClientFactory.build().bulkResults(true).create();

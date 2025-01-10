@@ -25,6 +25,7 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
@@ -408,12 +409,15 @@ public enum MetricManager {
         return getRegistry().counter(MetricRegistry.name(prefix, names));
     }
 
-    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String name) {
-        return getRegistry().register(name, gauge);
+    public <T> Gauge<T> getGauge(final Gauge<T> gauge, final String name) {
+        if (contains(name))
+            return getRegistry().getGauges((s, metric) -> s.equals(name)).values().stream().findFirst().get();
+        else
+            return getRegistry().register(name, gauge);
     }
 
-    public <T> Gauge<T> getGuage(final Gauge<T> gauge, final String prefix, final String... names) {
-        return getRegistry().register(MetricRegistry.name(prefix, names), gauge);
+    public <T> Gauge<T> getGauge(final Gauge<T> gauge, final String prefix, final String... names) {
+        return getGauge(gauge, MetricRegistry.name(prefix, names));
     }
 
     public Meter getMeter(final String name) {

@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -118,6 +120,16 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+
+    /**
+     * Length of time to pause writes in milliseconds when the high watermark is exceeded.
+     */
+    public static final long WRITE_PAUSE_TIME_MS = 10;
+
+    /**
+     * Tracks the rate of pause to writes when the high watermark is exceeded.
+     */
+    public static final Meter writePausesMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "channels", "write-pauses"));
 
     protected static final Set<String> INVALID_BINDINGS_KEYS = new HashSet<>();
 
@@ -383,7 +395,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
-        boolean warnOnce = false;
+
+        // used to limit warnings for when netty fills the buffer and hits the high watermark - prevents
+        // over-logging of the same message.
+        long lastWarningTime = 0;
+        int warnCounter = 0;
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
         if (!itty.hasNext()) {
@@ -489,15 +505,28 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     }
                 }
             } else {
-                // don't keep triggering this warning over and over again for the same request
-                if (!warnOnce) {
-                    logger.warn("Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up", msg);
-                    warnOnce = true;
+                final long currentTime = System.currentTimeMillis();
+
+                // exponential delay between warnings. don't keep triggering this warning over and over again for the
+                // same request. totalPendingWriteBytes is volatile so it is possible that by the time this warning
+                // hits the log the low watermark may have been hit
+                long interval = (long) Math.pow(2, warnCounter) * 1000;
+                if (currentTime - lastWarningTime >= interval) {
+                    final Channel ch = context.getChannelHandlerContext().channel();
+                    logger.warn("Warning {}: Outbound buffer size={}, pausing response writing as writeBufferHighWaterMark exceeded on request {} for channel {} - writing will continue once client has caught up",
+                            warnCounter,
+                            ch.unsafe().outboundBuffer().totalPendingWriteBytes(),
+                            ch.attr(StateKey.REQUEST_ID),
+                            ch.id());
+
+                    lastWarningTime = currentTime;
+                    warnCounter++;
                 }
 
                 // since the client is lagging we can hold here for a period of time for the client to catch up.
                 // this isn't blocking the IO thread - just a worker.
-                TimeUnit.MILLISECONDS.sleep(10);
+                TimeUnit.MILLISECONDS.sleep(WRITE_PAUSE_TIME_MS);
+                writePausesMeter.mark();
             }
         }
     }
