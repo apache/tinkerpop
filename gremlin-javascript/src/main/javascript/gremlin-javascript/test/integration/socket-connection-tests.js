@@ -50,42 +50,42 @@ describe('Connection', function () {
 
   describe('#open()', function () {
     it('should use the ws WebSocket when ws specific options are provided', function () {
-        let globalWebsocketCalls = 0;
-        globalThis.WebSocket = function (){
-            globalWebsocketCalls++;
-        }
-        const domUnsupportedOptions = [
-            'headers',
-            'ca',
-            'cert',
-            'pfx',
-            'rejectUnauthorized',
-            'agent',
-            'perMessageDeflate',
-        ];
-        const allOptionTests = domUnsupportedOptions.map(wsOption => {
-            const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`, {
-                [wsOption]: 'this option is set'
-            });
-            return connection.open()
+      let globalWebsocketCalls = 0;
+      globalThis.WebSocket = function () {
+        globalWebsocketCalls++;
+      };
+      const domUnsupportedOptions = [
+        'headers',
+        'ca',
+        'cert',
+        'pfx',
+        'rejectUnauthorized',
+        'agent',
+        'perMessageDeflate',
+      ];
+      const allOptionTests = domUnsupportedOptions.map((wsOption) => {
+        const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`, {
+          [wsOption]: 'this option is set',
         });
-        Promise.allSettled(allOptionTests).then(function() {
-          if(globalWebsocketCalls != domUnsupportedOptions.length){
-            assert.fail('global WebSocket should be used when no ws specific options are provided');
-          }
-        })
+        return connection.open();
+      });
+      Promise.allSettled(allOptionTests).then(function () {
+        if (globalWebsocketCalls !== domUnsupportedOptions.length) {
+          assert.fail('global WebSocket should be used when no ws specific options are provided');
+        }
+      });
     });
     it('should use the global WebSocket when options are not provided', function () {
-        let globalWebsocketCalls = 0;
-        globalThis.WebSocket = function (){
-            globalWebsocketCalls++;
-        }
-        const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
-        return connection
+      let globalWebsocketCalls = 0;
+      globalThis.WebSocket = function () {
+        globalWebsocketCalls++;
+      };
+      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
+      return connection
         .open()
         .catch(() => {})
         .finally(function () {
-          if(globalWebsocketCalls <= 0){
+          if (globalWebsocketCalls <= 0) {
             assert.fail('global WebSocket should be used when no ws specific options are provided');
           }
         });

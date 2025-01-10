@@ -124,7 +124,7 @@ class Connection extends EventEmitter {
       }
     }
     // All these options are available to the `ws` package's constructor, but not the global WebSocket class available in DOM
-    const domUnsupportedOptions = new Set([
+    const wsSpecificOptions = new Set([
       'headers',
       'ca',
       'cert',
@@ -134,11 +134,11 @@ class Connection extends EventEmitter {
       'perMessageDeflate',
     ]);
     // Check if any `ws` specific options are provided and are non-null / non-undefined
-    const hasDOMUnsupportedOptions = Object.entries(this.options).some(
-      ([key, value]) => domUnsupportedOptions.has(key) && ![null, undefined].includes(value),
+    const hasWsSpecificOptions = Object.entries(this.options).some(
+      ([key, value]) => wsSpecificOptions.has(key) && ![null, undefined].includes(value),
     );
     // Only use the global websocket if we don't have any unsupported options
-    const useGlobalWebSocket = !hasDOMUnsupportedOptions && globalThis.WebSocket;
+    const useGlobalWebSocket = !hasWsSpecificOptions && globalThis.WebSocket;
     const WebSocket = useGlobalWebSocket || (await import('ws')).default;
 
     this._ws = new WebSocket(
