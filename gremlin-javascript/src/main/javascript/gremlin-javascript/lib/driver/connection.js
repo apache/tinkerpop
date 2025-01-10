@@ -147,6 +147,7 @@ class Connection extends EventEmitter {
 
     this._ws.addEventListener('open', this.#handleOpen);
     this._ws.addEventListener('error', this.#handleError);
+    this._ws.on('unexpected-response', this.#handleUnexpectedResponse);
     this._ws.addEventListener('message', this.#handleMessage);
     this._ws.addEventListener('close', this.#handleClose);
 
@@ -242,6 +243,32 @@ class Connection extends EventEmitter {
   #handleOpen = () => {
     this._openPromise.resolve();
     this.isOpen = true;
+  };
+
+  /**
+   * @param {ClientRequest} _req
+   * @param {IncomingMessage} res
+   */
+  #handleUnexpectedResponse = async (_req, res) => {
+    const body = await new Promise((resolve, reject) => {
+      const chunks = [];
+      res.on('data', (data) => {
+        chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+      });
+      res.on('end', () => {
+        resolve(chunks.length ? Buffer.concat(chunks) : null);
+      });
+      res.on('error', reject);
+    });
+    const statusCodeErrorMessage = `Unexpected server response code ${res.statusCode}`;
+    const errorMessage = body ? `${statusCodeErrorMessage} with body:\n${body.toString()}` : statusCodeErrorMessage;
+    const error = new Error(errorMessage);
+    this.#handleError({
+      error,
+      message: errorMessage,
+      type: 'unexpected-response',
+      target: this._ws,
+    });
   };
 
   /**
@@ -372,6 +399,7 @@ class Connection extends EventEmitter {
     });
     this._ws.removeEventListener('open', this.#handleOpen);
     this._ws.removeEventListener('error', this.#handleError);
+    this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
     this._ws.removeEventListener('message', this.#handleMessage);
     this._ws.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
