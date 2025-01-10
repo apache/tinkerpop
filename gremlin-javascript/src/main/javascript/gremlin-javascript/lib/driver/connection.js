@@ -123,7 +123,7 @@ class Connection extends EventEmitter {
         headers[utils.getUserAgentHeader()] = await utils.getUserAgent();
       }
     }
-    // All these options are available to the `ws` package's constructor, but not the global WebSocket class available in DOM
+    // All these options are available to the `ws` package's constructor, but not the global WebSocket class
     const wsSpecificOptions = new Set([
       'headers',
       'ca',
