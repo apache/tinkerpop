@@ -32,6 +32,10 @@ import type {
   WebSocket as NodeWebSocket,
   Event as NodeWebSocketEvent,
 } from 'ws';
+import {
+  ClientRequest,
+  IncomingMessage,
+} from "http";
 import ioc from '../structure/io/binary/GraphBinary.js';
 import * as serializer from '../structure/io/graph-serializer.js';
 import * as utils from '../utils.js';
@@ -196,6 +200,8 @@ export default class Connection extends EventEmitter {
     // @ts-expect-error
     this._ws!.addEventListener('error', this.#handleError);
     // @ts-expect-error
+    this._ws!.addEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    // @ts-expect-error
     this._ws!.addEventListener('message', this.#handleMessage);
     // @ts-expect-error
     this._ws!.addEventListener('close', this.#handleClose);
@@ -301,6 +307,30 @@ export default class Connection extends EventEmitter {
     this.#cleanupWebsocket(error);
     this.emit('socketError', error);
   };
+
+  #handleUnexpectedResponse = async (_: ClientRequest, res: IncomingMessage) => {
+    const body = await new Promise((resolve, reject) => {
+      const chunks: any[] = [];
+      res.on('data', data => {
+        chunks.push(data instanceof Buffer ? data : Buffer.from(data));
+      });
+      res.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      res.on('error', reject);
+    });
+    // @ts-ignore
+    const errorMessage = `Unexpected server response code ${res.statusCode} with body:\n${body.toString()}`;
+    const error = new Error(errorMessage);
+    this.#handleError({
+      error,
+      message: errorMessage,
+      type: 'unexpected-response',
+      target: this._ws
+    } as NodeWebSocketErrorEvent);
+  };
+
+
 
   #handleClose = ({ code, reason }: CloseEvent | NodeWebSocketCloseEvent) => {
     this.emit('log', `ws close code=${code} message=${reason}`);
@@ -416,6 +446,8 @@ export default class Connection extends EventEmitter {
     this._ws?.removeEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws?.removeEventListener('error', this.#handleError);
+    // @ts-expect-error
+    this._ws?.removeEventListener('unexpected-response', this.#handleUnexpectedResponse);
     // @ts-expect-error
     this._ws?.removeEventListener('message', this.#handleMessage);
     // @ts-expect-error
