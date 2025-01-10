@@ -123,12 +123,27 @@ class Connection extends EventEmitter {
         headers[utils.getUserAgentHeader()] = await utils.getUserAgent();
       }
     }
-
-    const WebSocket = globalThis.WebSocket ?? (await import('ws')).default;
+    // All these options are available to the `ws` package's constructor, but not the global WebSocket class
+    const wsSpecificOptions = new Set([
+      'headers',
+      'ca',
+      'cert',
+      'pfx',
+      'rejectUnauthorized',
+      'agent',
+      'perMessageDeflate',
+    ]);
+    // Check if any `ws` specific options are provided and are non-null / non-undefined
+    const hasWsSpecificOptions = Object.entries(this.options).some(
+      ([key, value]) => wsSpecificOptions.has(key) && ![null, undefined].includes(value),
+    );
+    // Only use the global websocket if we don't have any unsupported options
+    const useGlobalWebSocket = !hasWsSpecificOptions && globalThis.WebSocket;
+    const WebSocket = useGlobalWebSocket || (await import('ws')).default;
 
     this._ws = new WebSocket(
       this.url,
-      globalThis.WebSocket === undefined
+      !useGlobalWebSocket
         ? {
             headers: headers,
             ca: this.options.ca,
