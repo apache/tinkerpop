@@ -54,7 +54,7 @@ describe('Connection', function () {
       globalThis.WebSocket = function () {
         globalWebsocketCalls++;
       };
-      const domUnsupportedOptions = [
+      const wsSpecificOptions = [
         'headers',
         'ca',
         'cert',
@@ -63,7 +63,7 @@ describe('Connection', function () {
         'agent',
         'perMessageDeflate',
       ];
-      const allOptionTests = domUnsupportedOptions.map((wsOption) => {
+      const allOptionTests = wsSpecificOptions.map((wsOption) => {
         const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`, {
           [wsOption]: 'this option is set',
         });
