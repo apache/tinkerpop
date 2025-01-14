@@ -31,7 +31,7 @@ import (
 func TestTraversal(t *testing.T) {
 
 	t.Run("Test clone traversal", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), NewGremlinLang(nil), nil)
 		original := g.V().Out("created")
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
@@ -56,7 +56,7 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test traversal with bindings", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), NewGremlinLang(nil), nil)
 		bytecode := g.V((&Bindings{}).Of("a", []int32{1, 2, 3})).
 			Out((&Bindings{}).Of("b", "created")).
 			Where(T__.In((&Bindings{}).Of("c", "created"), (&Bindings{}).Of("d", "knows")).

@@ -399,7 +399,7 @@ func RemoteStrategy(connection DriverRemoteConnection) TraversalStrategy {
 			return
 		}
 
-		rs, err := connection.submitBytecode(g.Bytecode)
+		rs, err := connection.submitGremlinLang(g.GremlinLang)
 		if err != nil {
 			return
 		}

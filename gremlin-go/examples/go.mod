@@ -17,7 +17,7 @@
 
 module example
 
-go 1.22
+go 1.22.0
 
 require github.com/apache/tinkerpop/gremlin-go/v3 v3.7.1
 
