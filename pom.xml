@@ -1950,7 +1950,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>3.0.0</version>
+                        <version>3.5.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
