@@ -37,6 +37,11 @@ public final class Gremlin {
         return gremlinVersion;
     }
 
+    /**
+     * Gets the current major version of tinkerpop.
+     */
+    public static String majorVersion() { return version().split("\\.")[0]; }
+
     public static void main(final String[] arguments) throws IOException {
         System.out.println("gremlin " + version());
     }
