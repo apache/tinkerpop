@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -97,6 +98,31 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
             return (GValue<String>) literalOrVar;
         } else {
             return GValue.ofString(null, (String) literalOrVar);
+        }
+    }
+
+    /**
+     * Alternative to visitIntegerArgument which promotes types to either Long or GValue<Long>
+     */
+    public Object parseLong(final GremlinParser.IntegerArgumentContext ctx) {
+        if (ctx.integerLiteral() != null) {
+            return antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).longValue();
+        } else {
+            Object var = visitVariable(ctx.variable());
+            if (var instanceof Number) {
+                return ((Number) var).longValue();
+            }
+            if (GValue.valueInstanceOf(var, GType.LONG)) {
+                return var;
+            } else if (GValue.valueInstanceOf(var, GType.INTEGER)) {
+                return GValue.ofLong(((GValue<Integer>) var).getName(), ((GValue<Integer>) var).get().longValue());
+            } else if (GValue.valueInstanceOf(var, GType.SHORT)) {
+                return GValue.ofLong(((GValue<Short>) var).getName(), ((GValue<Short>) var).get().longValue());
+            } else if (GValue.valueInstanceOf(var, GType.BYTE)) {
+                return GValue.ofLong(((GValue<Byte>) var).getName(), ((GValue<Byte>) var).get().longValue());
+            } else {
+                throw new GremlinParserException(String.format("Expected variable [%s] to resolve to an integer type, instead found: %s", ctx.variable().Identifier().getSymbol(), var.getClass().getName()));
+            }
         }
     }
 

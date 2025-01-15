@@ -1307,9 +1307,23 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#range(long, long)
+     */
+    public static <A> GraphTraversal<A, A> range(final GValue<Long> low, final GValue<Long> high) {
+        return __.<A>start().range(low, high);
+    }
+
+    /**
      * @see GraphTraversal#range(Scope, long, long)
      */
     public static <A> GraphTraversal<A, A> range(final Scope scope, final long low, final long high) {
+        return __.<A>start().range(scope, low, high);
+    }
+
+    /**
+     * @see GraphTraversal#range(Scope, long, long)
+     */
+    public static <A> GraphTraversal<A, A> range(final Scope scope, final GValue<Long> low, final GValue<Long> high) {
         return __.<A>start().range(scope, low, high);
     }
 
@@ -1321,9 +1335,23 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#limit(long)
+     */
+    public static <A> GraphTraversal<A, A> limit(final GValue<Long> limit) {
+        return __.<A>start().limit(limit);
+    }
+
+    /**
      * @see GraphTraversal#limit(Scope, long)
      */
     public static <A> GraphTraversal<A, A> limit(final Scope scope, final long limit) {
+        return __.<A>start().limit(scope, limit);
+    }
+
+    /**
+     * @see GraphTraversal#limit(Scope, long)
+     */
+    public static <A> GraphTraversal<A, A> limit(final Scope scope, final GValue<Long> limit) {
         return __.<A>start().limit(scope, limit);
     }
 
@@ -1335,9 +1363,23 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#skip(long)
+     */
+    public static <A> GraphTraversal<A, A> skip(final GValue<Long> skip) {
+        return __.<A>start().skip(skip);
+    }
+
+    /**
      * @see GraphTraversal#skip(Scope, long)
      */
     public static <A> GraphTraversal<A, A> skip(final Scope scope, final long skip) {
+        return __.<A>start().skip(scope, skip);
+    }
+
+    /**
+     * @see GraphTraversal#skip(Scope, long)
+     */
+    public static <A> GraphTraversal<A, A> skip(final Scope scope, final GValue<Long> skip) {
         return __.<A>start().skip(scope, skip);
     }
 
@@ -1356,6 +1398,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#tail(long)
+     */
+    public static <A> GraphTraversal<A, A> tail(final GValue<Long> limit) {
+        return __.<A>start().tail(limit);
+    }
+
+    /**
      * @see GraphTraversal#tail(Scope)
      */
     public static <A> GraphTraversal<A, A> tail(final Scope scope) {
@@ -1366,6 +1415,13 @@ public class __ {
      * @see GraphTraversal#tail(Scope, long)
      */
     public static <A> GraphTraversal<A, A> tail(final Scope scope, final long limit) {
+        return __.<A>start().tail(scope, limit);
+    }
+
+    /**
+     * @see GraphTraversal#tail(Scope, long)
+     */
+    public static <A> GraphTraversal<A, A> tail(final Scope scope, final GValue<Long> limit) {
         return __.<A>start().tail(scope, limit);
     }
 
