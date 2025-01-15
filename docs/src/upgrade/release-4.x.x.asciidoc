@@ -128,7 +128,7 @@ remains possible to send scripts directly using a `gremlin-driver` `Client`.
 
 [gremlin-groovy]
 ----
-cluster = Cluster.open('conf/remote-objects.yaml')
+cluster = Cluster.open('conf/remote.yaml')
 client = cluster.connect()
 
 client.submit("g.V()")

@@ -160,7 +160,7 @@ addition to the ones provided by TinkerPop. You can also request help on a speci
 
 [gremlin-groovy]
 ----
-:help :remote
+:help :plugin
 ----
 
 The Gremlin Console can also provide you with code help via auto-complete functionality. Use the `<TAB>` key to
