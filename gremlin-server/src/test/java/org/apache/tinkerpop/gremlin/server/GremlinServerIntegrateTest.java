@@ -874,7 +874,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessage request = RequestMessage
                     .build("g.inject(1, 2, g.V())")
-                    .addLanguage("gremlin-groovy")
                     .create();
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(HttpResponseStatus.BAD_REQUEST, responses.get(0).getStatus().getCode());

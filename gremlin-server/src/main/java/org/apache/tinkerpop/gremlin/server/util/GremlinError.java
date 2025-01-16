@@ -87,7 +87,7 @@ public class GremlinError {
     }
 
     public static GremlinError parsing(final String script) {
-        final String message = String.format("Failed to parse malformed script [%s]",  script);
+        final String message = String.format("Failed to interpret Gremlin query [%s]",  script);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "MalformedQueryException");
     }
 
