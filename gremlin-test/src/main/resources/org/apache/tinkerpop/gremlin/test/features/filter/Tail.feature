@@ -42,6 +42,19 @@ Feature: Step - tail()
       | ripple |
       | vadas |
 
+  Scenario: g_V_valuesXnameX_order_tailX2varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[2].i"
+    And the traversal of
+      """
+      g.V().values("name").order().tail(xx1)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | ripple |
+      | vadas |
+
   Scenario: g_V_valuesXnameX_order_tail
     Given the modern graph
     And the traversal of
@@ -120,6 +133,19 @@ Feature: Step - tail()
     And the traversal of
       """
       g.V().as("a").out().as("b").out().as("c").select("a","b","c").by("name").tail(Scope.local, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"b":"josh","c":"ripple"}] |
+      | m[{"b":"josh","c":"lop"}] |
+
+  Scenario: g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[2].i"
+    And the traversal of
+      """
+      g.V().as("a").out().as("b").out().as("c").select("a","b","c").by("name").tail(Scope.local, xx1)
       """
     When iterated to list
     Then the result should be unordered
