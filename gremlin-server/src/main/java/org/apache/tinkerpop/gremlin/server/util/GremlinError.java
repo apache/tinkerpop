@@ -86,6 +86,11 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
+    public static GremlinError parsing(final String script) {
+        final String message = String.format("Failed to parse malformed script [%s]",  script);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "MalformedQueryException");
+    }
+
     // execution errors
     public static GremlinError timeout(final RequestMessage requestMessage ) {
         final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout",
