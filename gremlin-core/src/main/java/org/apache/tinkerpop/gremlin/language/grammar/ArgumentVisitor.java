@@ -102,7 +102,9 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Alternative to visitIntegerArgument which promotes types to either Long or GValue<Long>
+     * Equivalent to {@link ArgumentVisitor#visitIntegerArgument(GremlinParser.IntegerArgumentContext)} except this
+     * method promotes output types to either Long or GValue<Long>. (visitIntegerArgument() may produce byte, short,
+     * int, or long depending on the input script)
      */
     public Object parseLong(final GremlinParser.IntegerArgumentContext ctx) {
         if (ctx.integerLiteral() != null) {
