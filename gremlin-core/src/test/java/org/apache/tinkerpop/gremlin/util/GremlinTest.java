@@ -43,4 +43,11 @@ public class GremlinTest {
         assertTrue("Minor version should be a positive int", Integer.parseInt(version[1]) >= 0);
         assertTrue("Patch version should be a positive int", Integer.parseInt(version[2]) >= 0);
     }
+
+    @Test
+    public void shouldGetMajorVersion() {
+        String majorVersion = Gremlin.majorVersion();
+
+        assertTrue("Major version should be greater than 3", Integer.parseInt(majorVersion) > 3);
+    }
 }

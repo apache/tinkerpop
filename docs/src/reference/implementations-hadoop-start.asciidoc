@@ -48,7 +48,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -59,7 +59,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -177,7 +177,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -189,7 +189,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
