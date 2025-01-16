@@ -61,16 +61,17 @@ public class ImportGremlinPluginTest {
 
     @Test
     public void shouldImportWildcardMethod() throws Exception {
-        final Method zeroArgs = Gremlin.class.getMethod("version");
+        final Method version = Gremlin.class.getMethod("version");
+        final Method majorVersion = Gremlin.class.getMethod("majorVersion");
         final ImportGremlinPlugin module = ImportGremlinPlugin.build()
                 .methodImports(Collections.singletonList(Gremlin.class.getCanonicalName() + "#*")).create();
 
         final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
-        assertThat(customizer.getMethodImports(), hasItems(zeroArgs));
+        assertThat(customizer.getMethodImports(), hasItems(version, majorVersion));
 
         // will also have the static main() method
-        assertEquals(2, customizer.getMethodImports().size());
+        assertEquals(3, customizer.getMethodImports().size());
     }
 
     @Test

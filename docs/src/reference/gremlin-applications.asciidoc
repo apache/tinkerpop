@@ -78,7 +78,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin loaded: tinkerpop.server
 plugin loaded: tinkerpop.utilities
 plugin loaded: tinkerpop.tinkergraph
@@ -350,7 +350,7 @@ $ bin/gremlin.sh -i init.groovy
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -382,7 +382,7 @@ INFO: Created user preferences directory.
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -440,7 +440,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinServer
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
@@ -599,7 +599,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 gremlin>
 ----
 
@@ -1139,7 +1139,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
 ...
@@ -1172,7 +1172,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-rest-secure.yaml
 [INFO] GremlinServer -
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
 ...
@@ -2125,7 +2125,7 @@ $ docker run tinkerpop/gremlin-server:x.y.z
 [INFO] GremlinServer -
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server.yaml
 ...

@@ -390,7 +390,7 @@ public class GremlinServer {
         builder.append(Gremlin.version() + "\r\n");
         builder.append("         \\,,,/\r\n");
         builder.append("         (o o)\r\n");
-        builder.append("-----oOOo-(3)-oOOo-----\r\n");
+        builder.append("-----oOOo-(" + Gremlin.majorVersion() + ")-oOOo-----\r\n");
         return builder.toString();
     }
 

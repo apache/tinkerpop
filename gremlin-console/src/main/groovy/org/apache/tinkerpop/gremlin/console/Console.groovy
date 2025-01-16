@@ -74,7 +74,7 @@ class Console {
             io.out.println()
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "\\,,,/"))
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "(o o)"))
-            io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(3)-oOOo-----"))
+            io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(" + Gremlin.majorVersion() + ")-oOOo-----"))
         }
 
         final Mediator mediator = new Mediator(this)
