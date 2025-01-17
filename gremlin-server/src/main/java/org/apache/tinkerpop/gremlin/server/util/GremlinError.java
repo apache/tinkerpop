@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.Tokens;
@@ -84,6 +85,10 @@ public class GremlinError {
         final String message = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                 Tokens.ARGS_G, aliased, aliased);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
+
+    public static GremlinError parsing(final GremlinParserException error) {
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, error.getMessage(), "MalformedQueryException");
     }
 
     // execution errors

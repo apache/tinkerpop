@@ -35,6 +35,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -294,6 +295,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             final GremlinError error = GremlinError.longRequest(requestMessage);
             logger.warn(error.getMessage());
             return error;
+        }
+        if (t instanceof GremlinParserException) {
+            return GremlinError.parsing((GremlinParserException) t);
         }
 
         logger.warn(String.format("Exception processing request [%s].", requestMessage));
