@@ -21,18 +21,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 *4.0.0*
 
-== TinkerPop 4.0.0.M1
+== TinkerPop 4.0.0-beta.1
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0/CHANGELOG.asciidoc#release-4-0-0[changelog] for a
 complete list of all the modifications that are part of this release.
 
-NOTE: 4.0.0.M1 is a milestone release. It is for meant as a preview version to try out the new HTTP API features in
-the server and drivers (Java/Python only). As this is a milestone version only, you can expect breaking changes to
-occur in future milestones for 4.0.0 on the way to its General Availability release. Items that have important
-limitations and constraints pertinent to this milestone will be highlighted through the documentation inside an
-"IMPORTANT" box that starts with "4.0 Milestone Release".
+NOTE: 4.0.0-beta.1 is a beta/milestone release. It is for meant as a preview version to try out the new HTTP API
+features in the server and drivers (Java/Python only). As this is a beta version only, you can expect breaking changes to
+occur in future betas for 4.0.0 on the way to its General Availability release. Items that have important
+limitations and constraints pertinent to this beta will be highlighted through the documentation inside an
+"IMPORTANT" box that starts with "4.0 Beta Release".
 
 === Upgrading for Users
 
@@ -360,7 +360,7 @@ available.
 
 ==== Transactions Disabled
 
-IMPORTANT: 4.0 Milestone Release - Transactions are currently disabled and use of `tx()` will return an error.
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled and use of `tx()` will return an error.
 
 ==== Result Bulking Changes
 

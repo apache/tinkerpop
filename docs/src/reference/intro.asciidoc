@@ -422,7 +422,7 @@ has two such formats that it uses with link:https://tinkerpop.apache.org/docs/x.
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Users should prefer GraphBinary when available
 in the programming language being used.
 
-IMPORTANT: 4.0 Milestone Release - There is temporary support for GraphSON in the Java driver which will help with
+IMPORTANT: 4.0.0-beta.1 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
 
 A good example is the `subgraph()`-step which returns a `Graph` instance as its result. The subgraph returned from
@@ -445,7 +445,7 @@ regard. Prefer explicit property key names in Gremlin unless it is completely im
 The third and final point involves transactions. Under this model, one traversal is equivalent to a single transaction
 and there is no way in TinkerPop to string together multiple traversals into the same transaction.
 
-IMPORTANT: 4.0 Milestone Release - Remote transactions are not supported in this milestone.
+IMPORTANT: 4.0.0-beta.1 Release - Remote transactions are not supported in this beta.
 
 [[connecting-rgp]]
 === Remote Gremlin Provider

@@ -28,6 +28,8 @@ outlines new features, how to resolve breaking changes and other information spe
 equally useful to TinkerPop providers, who build libraries and other systems on the core APIs and protocols that
 TinkerPop exposes.
 
+include::release-4.x.x.asciidoc[]
+
 include::release-3.7.x.asciidoc[]
 
 include::release-3.6.x.asciidoc[]

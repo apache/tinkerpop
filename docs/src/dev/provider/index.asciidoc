@@ -659,7 +659,7 @@ Suites will be deprecated and removed.
 
 ==== JVM Test Suite
 
-IMPORTANT: 4.0 Milestone Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
+IMPORTANT: 4.0.0-beta.1 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
 forward providers should focus on implementing the <<gherkin-tests-suite>> as opposed to the JVM suite.
 
 The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. To implement these tests,

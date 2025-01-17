@@ -1286,7 +1286,7 @@ is hardly feasible, because such requests get full access to Gremlin Server's ex
 execution of `GraphFactory.open()` or `GraphTraversalSource.getGraph()` methods without resorting to TinkerPop
 implementation details (that is, internal API's that can change without notice).
 
-IMPORTANT: 4.0 Milestone Release - These authorization mechanisms don't currently apply due to the removal of Bytecode.
+IMPORTANT: 4.0.0-beta.1 Release - These authorization mechanisms don't currently apply due to the removal of Bytecode.
 
 The three mechanisms for authorization each have their merits in terms of simplicity and flexibility. The table below
 gives an overview.
@@ -1319,7 +1319,7 @@ such as read only access can be either applied at authorization time as policy i
 execution time as a result of an applied `Strategy` (denoted as 'hybrid' bytecode analysis in the table). A code
 example pursuing the former option is provided in the <<authz-code-example, next section>>.
 
-IMPORTANT: 4.0 Milestone Release - passive and active authorization mechanisms are not supported in this milestone
+IMPORTANT: 4.0.0-beta.1 Release - passive and active authorization mechanisms are not supported in this beta
 because bytecode has been replaced with GremlinLang.
 
 NOTE: Gremlin Server is not shipped with `Authorizer` implementations, because these would heavily depend on the external

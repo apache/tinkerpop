@@ -54,16 +54,16 @@ with many new features that have been proposed. Here is a rough outline of where
 major breaking features lined for 4.0, and additional features lined up for minor versions.
 Additional details on each feature can be found in the Appendix.
 
-=== 4.0 Milestone Release (2024Q4)
+=== 4.0.0-beta.1 Release (2024Q4)
 As discussed in the link:https://lists.apache.org/thread/hh58k28qy49lb9k7b9j4mnqvpxj0xf85[DISCUSS thread], we are looking
-to release a milestone build of what is done so far to gather feedback.
+to release a beta build of what is done so far to gather feedback.
 
-This milestone would roughly offer the opportunity to try Gremlin Server HTTP with the revised GraphSON and GraphBinary
+This beta would roughly offer the opportunity to try Gremlin Server HTTP with the revised GraphSON and GraphBinary
 serialization formats for TinkerPop 4.0, using Java and Python drivers. These drivers will initially continue to support
 GraphSON as it can help with debugging (given its human-readable format)  and offers wider serialization options for users
 in these early days, we should expect to just have GraphBinary support for drivers in the future for simplicity.
 
-This milestone release would include the following list of features for preview:
+This beta release would include the following list of features for preview:
 
 * <<http-support>>
 ** Replacement of WebSocket with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread])

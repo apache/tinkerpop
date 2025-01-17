@@ -54,7 +54,7 @@ traversal strategies may not function properly.
 
 [[transactions]]
 == Traversal Transactions
-IMPORTANT: 4.0 Milestone Release - Transactions are currently disabled in this Milestone release.
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled in this beta release.
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
 represents a unit of work to execute against the database. A traversals unit of work is affected by usage convention
@@ -277,7 +277,7 @@ Graph API and thus also the transactional model described in the <<tx-embedded,e
 script can have the ability to execute multiple transactions per request with complete control provided to the
 developer to commit or rollback transactions as needed.
 
-IMPORTANT: 4.0 Milestone Release - Transactions are currently disabled in this Milestone release.
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled in this beta release.
 
 There are two methods for sending scripts to Gremlin Server: sessionless and session-based. With sessionless requests
 there will always be an attempt to close the transaction at the end of the request with a commit if there are no errors
@@ -286,7 +286,7 @@ themselves. By default, session-based requests do not have this quality. The tra
 server until the user closes it manually. There is an option to have automatic transaction management for sessions.
 More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section.
 
-IMPORTANT: 4.0 Milestone Release - Sessions have been removed. All scripts are now sessionless.
+IMPORTANT: 4.0.0-beta.1 Release - Sessions have been removed. All scripts are now sessionless.
 
 [[tx-rgp]]
 === Remote Gremlin Providers

@@ -69,7 +69,7 @@ providing more detailed information about usage, configuration and known limitat
 
 [[gremlin-go]]
 == Gremlin-Go
-IMPORTANT: 4.0 Milestone Release - Gremlin-Go is not available in this milestone, please consider testing with Java or
+IMPORTANT: 4.0.0-beta.1 Release - Gremlin-Go is not available in this beta, please consider testing with Java or
 Python.
 
 image:gremlin-go.png[width=130,float=right] Apache TinkerPop's Gremlin-Go implements Gremlin within the link:https://go.dev/[Go] language and can therefore be used on different operating systems. Go's syntax has the similar constructs as Java including
@@ -834,7 +834,7 @@ Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/
 [[gremlin-java-transactions]]
 === Transactions
 
-IMPORTANT: 4.0 Milestone Release - Transactions with Java isn't currently supported.
+IMPORTANT: 4.0.0-beta.1 Release - Transactions with Java isn't currently supported.
 
 [[gremlin-java-serialization]]
 === Serialization
@@ -843,7 +843,7 @@ Remote systems like Gremlin Server and Remote Gremlin Providers respond to reque
 format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
 there is a single option for serialization: GraphBinary.
 
-IMPORTANT: 4.0 Milestone Release - There is temporary support for GraphSON in the Java driver which will help with
+IMPORTANT: 4.0.0-beta.1 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
 
 It is important that the client and server have the same serializers configured in the same way or else one or the
@@ -1295,7 +1295,7 @@ All examples can then be run using your IDE of choice.
 
 [[gremlin-javascript]]
 == Gremlin-JavaScript
-IMPORTANT: 4.0 Milestone Release - Gremlin-JavaScript is not available in this milestone, please consider testing with
+IMPORTANT: 4.0.0-beta.1 Release - Gremlin-JavaScript is not available in this beta, please consider testing with
 Java or Python.
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
@@ -1736,7 +1736,7 @@ node modern-traversals.js
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
-IMPORTANT: 4.0 Milestone Release - Gremlin.Net is not available in this milestone, please consider testing with Java or
+IMPORTANT: 4.0.0-beta.1 Release - Gremlin.Net is not available in this beta, please consider testing with Java or
 Python.
 
 image:gremlin-dotnet-logo.png[width=371,float=right] Apache TinkerPop's Gremlin.Net implements Gremlin within the C#
@@ -2342,7 +2342,7 @@ re-construction machine-side.
 
 [[gremlin-python-transactions]]
 === Transactions
-IMPORTANT: 4.0 Milestone Release - Transactions are currently disabled in this Milestone release.
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled in this beta release.
 
 To get a full understanding of this section, it would be good to start by reading the <<transactions,Transactions>>
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
