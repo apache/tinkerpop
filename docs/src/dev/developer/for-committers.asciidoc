@@ -840,7 +840,7 @@ The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `po
 `pom.xml` file of any module, build `gremlin-driver`, Gremlin Console and Gremlin Server and examine the contents of
 the binary distributions:
 
-* target/gremlin-driver-x.y.z-uber.jar
+* target/gremlin-driver-x.y.z-shaded.jar
 * target/gremlin-console-x.y.z-uber.jar
 * target/apache-tinkerpop-gremlin-console-x.y.z-distribution.zip
 * target/apache-tinkerpop-gremlin-server-x.y.z-distribution.zip
