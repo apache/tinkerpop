@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.Tokens;
@@ -86,8 +87,8 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
-    public static GremlinError parsing(final String script) {
-        final String message = String.format("Failed to interpret Gremlin query [%s]",  script);
+    public static GremlinError parsing(final GremlinParserException error) {
+        final String message = String.format(error.getMessage());
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "MalformedQueryException");
     }
 
