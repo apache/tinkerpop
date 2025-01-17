@@ -588,8 +588,8 @@ traversalMethod_label
     ;
 
 traversalMethod_limit
-    : 'limit' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_limit_Scope_long
-    | 'limit' LPAREN integerLiteral RPAREN #traversalMethod_limit_long
+    : 'limit' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_limit_Scope_long
+    | 'limit' LPAREN integerArgument RPAREN #traversalMethod_limit_long
     ;
 
 traversalMethod_local
@@ -720,8 +720,8 @@ traversalMethod_propertyMap
     ;
 
 traversalMethod_range
-    : 'range' LPAREN traversalScope COMMA integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_Scope_long_long
-    | 'range' LPAREN integerLiteral COMMA integerLiteral RPAREN #traversalMethod_range_long_long
+    : 'range' LPAREN traversalScope COMMA integerArgument COMMA integerArgument RPAREN #traversalMethod_range_Scope_long_long
+    | 'range' LPAREN integerArgument COMMA integerArgument RPAREN #traversalMethod_range_long_long
     ;
 
 traversalMethod_read
@@ -770,8 +770,8 @@ traversalMethod_simplePath
     ;
 
 traversalMethod_skip
-    : 'skip' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_skip_Scope_long
-    | 'skip' LPAREN integerLiteral RPAREN #traversalMethod_skip_long
+    : 'skip' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_skip_Scope_long
+    | 'skip' LPAREN integerArgument RPAREN #traversalMethod_skip_long
     ;
 
 traversalMethod_store
@@ -790,8 +790,8 @@ traversalMethod_sum
 traversalMethod_tail
     : 'tail' LPAREN RPAREN #traversalMethod_tail_Empty
     | 'tail' LPAREN traversalScope RPAREN #traversalMethod_tail_Scope
-    | 'tail' LPAREN traversalScope COMMA integerLiteral RPAREN #traversalMethod_tail_Scope_long
-    | 'tail' LPAREN integerLiteral RPAREN #traversalMethod_tail_long
+    | 'tail' LPAREN traversalScope COMMA integerArgument RPAREN #traversalMethod_tail_Scope_long
+    | 'tail' LPAREN integerArgument RPAREN #traversalMethod_tail_long
     ;
 
 traversalMethod_fail

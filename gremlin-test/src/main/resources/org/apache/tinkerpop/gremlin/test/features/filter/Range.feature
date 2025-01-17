@@ -33,6 +33,22 @@ Feature: Step - range()
       | v[lop] |
     And the result should have a count of 2
 
+  Scenario: g_VX1X_out_limitX2varX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx1 defined as "d[2].i"
+    And the traversal of
+      """
+      g.V(vid1).out().limit(xx1)
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | v[josh] |
+      | v[vadas] |
+      | v[lop] |
+    And the result should have a count of 2
+
   Scenario: g_V_localXoutE_limitX1X_inVX_limitX3X
     Given the modern graph
     And the traversal of
@@ -91,6 +107,23 @@ Feature: Step - range()
       | v[peter] |
     And the result should have a count of 2
 
+  Scenario: g_VX1X_outXcreatedX_inXcreatedX_rangeX1var_3varX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[3].i"
+    And the traversal of
+      """
+      g.V(vid1).out("created").in("created").range(xx1, xx2)
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | v[marko] |
+      | v[josh] |
+      | v[peter] |
+    And the result should have a count of 2
+
   Scenario: g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -135,6 +168,19 @@ Feature: Step - range()
       | m[{"a":"lop","b":"josh"}] |
       | m[{"a":"ripple","b":"josh"}] |
 
+  Scenario: g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[2].i"
+    And the traversal of
+      """
+      g.V().as("a").in().as("b").in().as("c").select("a","b","c").by("name").limit(Scope.local, xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"lop","b":"josh"}] |
+      | m[{"a":"ripple","b":"josh"}] |
+
   Scenario: g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X
     Given the modern graph
     And the traversal of
@@ -152,6 +198,20 @@ Feature: Step - range()
     And the traversal of
       """
       g.V().as("a").out().as("b").out().as("c").select("a","b","c").by("name").range(Scope.local, 1, 3)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"b":"josh","c":"lop"}] |
+      | m[{"b":"josh","c":"ripple"}] |
+
+  Scenario: g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1var_3varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx2 defined as "d[3].i"
+    And the traversal of
+      """
+      g.V().as("a").out().as("b").out().as("c").select("a","b","c").by("name").range(Scope.local, xx1, xx2)
       """
     When iterated to list
     Then the result should be unordered
@@ -184,6 +244,20 @@ Feature: Step - range()
       | josh |
       | peter |
 
+  Scenario: g_V_hasLabelXpersonX_order_byXageX_skipX1varX_valuesXnameX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1].i"
+    And the traversal of
+      """
+      g.V().hasLabel("person").order().by("age").skip(xx1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | peter |
+
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_foldX_rangeXlocal_6_7X
     Given the modern graph
@@ -199,6 +273,18 @@ Feature: Step - range()
     And the traversal of
       """
       g.V().outE().values("weight").fold().order(Scope.local).skip(Scope.local, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[0.4].d,d[0.5].d,d[1.0].d,d[1.0].d] |
+
+  Scenario: g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[2].i"
+    And the traversal of
+      """
+      g.V().outE().values("weight").fold().order(Scope.local).skip(Scope.local, xx1)
       """
     When iterated to list
     Then the result should be unordered

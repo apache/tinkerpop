@@ -5210,6 +5210,7 @@ a comparatively slow script compilation, which makes parameterization essential 
 |<<vertex-steps,in()>> | String...edgeLabels
 |<<vertex-steps,inE()>> | String...edgeLabels
 |<<intersect-step,intersect()>> | Object values
+|<<limit-step,limit()>> | Long limit
 |<<merge-step,merge()>> | Object values
 |<<mergeedge-step,mergeE()>> | Map searchCreate
 |<<mergevertex-step,mergeV()>> | Map searchCreate
@@ -5217,6 +5218,9 @@ a comparatively slow script compilation, which makes parameterization essential 
 |<<vertex-steps,out()>> | String...edgeLabels
 |<<vertex-steps,outE()>> | String...edgeLabels
 |<<product-step,product()>> | Object values
+|<<range-step,range()>> | Long low, Long high
+|<<skip-step,skip()>> | Long limit
+|<<tail-step,tail()>> | Long limit
 |<<to-step,to()>> | String... edgeLabels, Vertex toVertex
 |<<vertex-steps,toE()>> | String...edgeLabels
 |===
