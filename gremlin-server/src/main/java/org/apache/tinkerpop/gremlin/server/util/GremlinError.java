@@ -88,8 +88,7 @@ public class GremlinError {
     }
 
     public static GremlinError parsing(final GremlinParserException error) {
-        final String message = String.format(error.getMessage());
-        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "MalformedQueryException");
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, error.getMessage(), "MalformedQueryException");
     }
 
     // execution errors
