@@ -24,7 +24,7 @@
 
 import * as uuid from 'uuid';
 
-const gremlinVersion = '4.0.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = '4.0.0-beta.1'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 export function toLong(value: number | string) {
   return new Long(value);

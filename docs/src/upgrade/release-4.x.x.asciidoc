@@ -17,15 +17,15 @@ limitations under the License.
 
 = TinkerPop 4.0.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlins-wildest-dreams.png[width=185]
 
-*4.0.0*
+*Gremlin's Wildest Dreams*
 
 == TinkerPop 4.0.0-beta.1
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: January 17, 2025*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0/CHANGELOG.asciidoc#release-4-0-0[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0-beta.1/CHANGELOG.asciidoc#release-4-0-0-beta-1[changelog] for a
 complete list of all the modifications that are part of this release.
 
 NOTE: 4.0.0-beta.1 is a beta/milestone release. It is for meant as a preview version to try out the new HTTP API

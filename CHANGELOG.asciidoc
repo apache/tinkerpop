@@ -16,12 +16,12 @@ limitations under the License.
 ////
 = TinkerPop CHANGELOG
 
-== TinkerPop 4.0.0
+== TinkerPop 4.0.0 (Gremlin's Wildest Dreams)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlins-wildest-dreams.png[width=185]
 
-[[release-4-0-0]]
-=== TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
+[[release-4-0-0-beta-1]]
+=== TinkerPop 4.0.0-beta.1 (January 17, 2025)
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
