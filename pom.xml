@@ -177,6 +177,7 @@ limitations under the License.
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.3.2</spark.version>
+        <awssdk.version>2.29.3</awssdk.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -1638,6 +1639,41 @@ limitations under the License.
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
                                         </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-aws</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-client-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>auth</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>utils</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>protocol-core</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apiguardian</groupId>
+                                            <artifactId>apiguardian-api</artifactId>
+                                            <version>1.1.2</version>
+                                        </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
                             </execution>
@@ -1844,6 +1880,36 @@ limitations under the License.
                                             <groupId>org.yaml</groupId>
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-aws</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-client-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>auth</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>utils</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>protocol-core</artifactId>
+                                            <version>${awssdk.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>

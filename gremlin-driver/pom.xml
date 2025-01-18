@@ -25,9 +25,6 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-driver</artifactId>
     <name>Apache TinkerPop :: Gremlin Driver</name>
-    <properties>
-        <awssdk.version>2.29.3</awssdk.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -56,6 +53,16 @@ limitations under the License.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>http-auth-aws</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-client-spi</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-auth-spi</artifactId>
             <version>${awssdk.version}</version>
         </dependency>
         <dependency>
