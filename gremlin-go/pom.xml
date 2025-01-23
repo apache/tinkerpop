@@ -86,10 +86,9 @@ limitations under the License.
             <id>glv-go</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <!-- TODO re-enable after gremlin-go is implemented -->
-<!--                <file>-->
-<!--                    <exists>.glv</exists>-->
-<!--                </file>-->
+                <file>
+                    <exists>.glv</exists>
+                </file>
             </activation>
             <build>
                 <directory>${basedir}/target</directory>
@@ -124,40 +123,40 @@ limitations under the License.
                                     </arguments>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>shutdown-container</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTests}</skip>
-                                    <!-- don't need to set env variables for container tear down -->
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>compose</argument>
-                                        <argument>down</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>remove-dangling-images</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTests}</skip>
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>image</argument>
-                                        <argument>prune</argument>
-                                        <argument>--filter</argument>
-                                        <argument>label=maintainer=dev@tinkerpop.apache.org</argument>
-                                        <argument>-f</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
+<!--                            <execution>-->
+<!--                                <id>shutdown-container</id>-->
+<!--                                <phase>integration-test</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>exec</goal>-->
+<!--                                </goals>-->
+<!--                                <configuration>-->
+<!--                                    <skip>${skipTests}</skip>-->
+<!--                                    &lt;!&ndash; don't need to set env variables for container tear down &ndash;&gt;-->
+<!--                                    <executable>docker</executable>-->
+<!--                                    <arguments>-->
+<!--                                        <argument>compose</argument>-->
+<!--                                        <argument>down</argument>-->
+<!--                                    </arguments>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
+<!--                            <execution>-->
+<!--                                <id>remove-dangling-images</id>-->
+<!--                                <phase>integration-test</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>exec</goal>-->
+<!--                                </goals>-->
+<!--                                <configuration>-->
+<!--                                    <skip>${skipTests}</skip>-->
+<!--                                    <executable>docker</executable>-->
+<!--                                    <arguments>-->
+<!--                                        <argument>image</argument>-->
+<!--                                        <argument>prune</argument>-->
+<!--                                        <argument>&#45;&#45;filter</argument>-->
+<!--                                        <argument>label=maintainer=dev@tinkerpop.apache.org</argument>-->
+<!--                                        <argument>-f</argument>-->
+<!--                                    </arguments>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
                         </executions>
                     </plugin>
                     <plugin>

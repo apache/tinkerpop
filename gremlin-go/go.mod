@@ -22,7 +22,6 @@ go 1.22.0
 require (
 	github.com/cucumber/godog v0.15.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/websocket v1.5.3
 	github.com/nicksnyder/go-i18n/v2 v2.5.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/text v0.21.0
@@ -39,5 +38,4 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 )

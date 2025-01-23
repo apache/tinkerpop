@@ -234,12 +234,14 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
                         : aggregate;
                 if (data != null) {
                     for (final Object item : (List) data) {
+                        System.out.println("Writing item: " + item);
                         writer.write(item, buffer);
                     }
                 }
             }
 
             if (parts.contains(MessageParts.FOOTER)) {
+                System.out.println("Writing footer");
                 final ResponseStatus status = responseMessage.getStatus();
 
                 // we don't know how much data we have, so need a special object
@@ -254,7 +256,23 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
         } catch (IOException e) {
             throw new SerializationException(e);
         }
+
+        ByteBuf copy = byteBuf.copy();
+        byte[] copyBytes = new byte[copy.readableBytes()];
+        copy.readBytes(copyBytes);
+        System.out.println("Wrote hex str: " + bytesToHex(copyBytes));
         return byteBuf;
+    }
+
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars).toLowerCase();
     }
 
     //////////////// read message methods

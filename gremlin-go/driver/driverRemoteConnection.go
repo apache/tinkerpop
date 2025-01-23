@@ -33,7 +33,6 @@ type DriverRemoteConnectionSettings struct {
 	session string
 
 	TraversalSource          string
-	TransporterType          TransporterType
 	LogVerbosity             LogVerbosity
 	Logger                   Logger
 	Language                 language.Tag
@@ -65,7 +64,7 @@ type DriverRemoteConnection struct {
 
 // NewDriverRemoteConnection creates a new DriverRemoteConnection.
 // If no custom connection settings are passed in, a connection will be created with "g" as the default TraversalSource,
-// Gorilla as the default Transporter, Info as the default LogVerbosity, a default logger struct, and English and as the
+// Info as the default LogVerbosity, a default logger struct, and English and as the
 // default language
 func NewDriverRemoteConnection(
 	url string,
@@ -74,7 +73,6 @@ func NewDriverRemoteConnection(
 		session: "",
 
 		TraversalSource:          "g",
-		TransporterType:          Gorilla,
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
@@ -86,14 +84,12 @@ func NewDriverRemoteConnection(
 		EnableCompression:        false,
 		EnableUserAgentOnConnect: true,
 		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1048576.
-		// If a buffer size is set zero, then the Gorilla websocket 4096 default size is used. The I/O buffer
+		// If a buffer size is set zero, then the default size is used. The I/O buffer
 		// sizes do not limit the size of the messages that can be sent or received.
 		ReadBufferSize:  1048576,
 		WriteBufferSize: 1048576,
 
-		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
-		InitialConcurrentConnections: defaultInitialConcurrentConnections,
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
@@ -117,27 +113,18 @@ func NewDriverRemoteConnection(
 		settings.MaximumConcurrentConnections = 1
 	}
 
-	if settings.InitialConcurrentConnections > settings.MaximumConcurrentConnections {
-		logHandler.logf(Warning, poolInitialExceedsMaximum, settings.InitialConcurrentConnections,
-			settings.MaximumConcurrentConnections, settings.MaximumConcurrentConnections)
-		settings.InitialConcurrentConnections = settings.MaximumConcurrentConnections
-	}
-	pool, err := newLoadBalancingPool(url, logHandler, connSettings, settings.NewConnectionThreshold,
-		settings.MaximumConcurrentConnections, settings.InitialConcurrentConnections)
+	httpProt, err := newHttpProtocol(logHandler, url, connSettings)
 	if err != nil {
-		if err != nil {
-			logHandler.logf(Error, logErrorGeneric, "NewDriverRemoteConnection", err.Error())
-		}
 		return nil, err
 	}
 
 	client := &Client{
-		url:             url,
-		traversalSource: settings.TraversalSource,
-		logHandler:      logHandler,
-		transporterType: settings.TransporterType,
-		connections:     pool,
-		session:         settings.session,
+		url:                url,
+		traversalSource:    settings.TraversalSource,
+		logHandler:         logHandler,
+		connectionSettings: connSettings,
+		session:            settings.session,
+		httpProtocol:       httpProt,
 	}
 
 	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
@@ -216,7 +203,6 @@ func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*Drive
 		}
 		// copy other settings from parent
 		settings.TraversalSource = driver.settings.TraversalSource
-		settings.TransporterType = driver.settings.TransporterType
 		settings.Logger = driver.settings.Logger
 		settings.LogVerbosity = driver.settings.LogVerbosity
 		settings.Language = driver.settings.Language

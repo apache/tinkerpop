@@ -300,7 +300,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             return GremlinError.parsing((GremlinParserException) t);
         }
 
-        logger.warn(String.format("Exception processing request [%s].", requestMessage));
+        logger.warn(String.format("Exception processing request [%s].", requestMessage), t);
         return GremlinError.general(t);
     }
 

@@ -204,7 +204,7 @@ type MatchAlgorithmStrategyConfig struct {
 func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) TraversalStrategy {
 	configMap := map[string]interface{}{
 		"logWarning":     config.LogWarning,
-		"throwException": config.ThrowExcecption,
+		"throwException": config.ThrowException,
 	}
 
 	return &traversalStrategy{name: "EdgeLabelVerificationStrategy", configuration: configMap}
@@ -213,8 +213,8 @@ func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) T
 // EdgeLabelVerificationStrategyConfig provides configuration options for EdgeLabelVerificationStrategy.
 // Zeroed (unset) values are used.
 type EdgeLabelVerificationStrategyConfig struct {
-	LogWarning      bool
-	ThrowExcecption bool
+	LogWarning     bool
+	ThrowException bool
 }
 
 // LambdaRestrictionStrategy does not allow lambdas to be used in a Traversal. The contents of a lambda

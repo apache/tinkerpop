@@ -878,7 +878,7 @@ func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (i
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, listType, false)
+	label, err := readList(data, i, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -957,7 +957,7 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, listType, false)
+	label, err := readList(data, i, 0)
 	if err != nil {
 		return nil, err
 	}

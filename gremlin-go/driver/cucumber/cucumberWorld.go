@@ -68,7 +68,7 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 }
 
 func scenarioUrl() string {
-	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:45940/gremlin")
+	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "http://localhost:45940/gremlin")
 }
 
 func NewCucumberWorld() *CucumberWorld {
