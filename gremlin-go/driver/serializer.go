@@ -228,7 +228,6 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 
 func initSerializers() {
 	serializers = map[dataType]writer{
-		bytecodeType:   bytecodeWriter,
 		stringType:     stringWriter,
 		bigDecimalType: bigDecimalWriter,
 		bigIntegerType: bigIntWriter,
@@ -255,35 +254,20 @@ func initSerializers() {
 			err := binary.Write(buffer, binary.BigEndian, value)
 			return buffer.Bytes(), err
 		},
-		vertexType:            vertexWriter,
-		edgeType:              edgeWriter,
-		propertyType:          propertyWriter,
-		vertexPropertyType:    vertexPropertyWriter,
-		lambdaType:            lambdaWriter,
-		traversalStrategyType: traversalStrategyWriter,
-		pathType:              pathWriter,
-		setType:               setWriter,
-		dateType:              timeWriter,
-		durationType:          durationWriter,
-		cardinalityType:       enumWriter,
-		columnType:            enumWriter,
-		directionType:         enumWriter,
-		dtType:                enumWriter,
-		operatorType:          enumWriter,
-		orderType:             enumWriter,
-		pickType:              enumWriter,
-		popType:               enumWriter,
-		tType:                 enumWriter,
-		barrierType:           enumWriter,
-		scopeType:             enumWriter,
-		mergeType:             enumWriter,
-		pType:                 pWriter,
-		textPType:             textPWriter,
-		bindingType:           bindingWriter,
-		mapType:               mapWriter,
-		listType:              listWriter,
-		byteBuffer:            byteBufferWriter,
-		classType:             classWriter,
+		vertexType:         vertexWriter,
+		edgeType:           edgeWriter,
+		propertyType:       propertyWriter,
+		vertexPropertyType: vertexPropertyWriter,
+		pathType:           pathWriter,
+		setType:            setWriter,
+		datetimeType:       timeWriter,
+		durationType:       durationWriter,
+		directionType:      enumWriter,
+		tType:              enumWriter,
+		mergeType:          enumWriter,
+		mapType:            mapWriter,
+		listType:           listWriter,
+		byteBuffer:         byteBufferWriter,
 	}
 }
 
@@ -302,34 +286,24 @@ func initDeserializers() {
 		stringType:     readString,
 
 		// Composite
-		listType:   readList,
-		mapType:    readMap,
+		//listType:   readList,
+		//mapType:    readMap,
 		setType:    readSet,
 		uuidType:   readUuid,
 		byteBuffer: readByteBuffer,
-		classType:  readClass,
 
 		// Date Time
-		dateType:      timeReader,
-		timestampType: timeReader,
-		durationType:  durationReader,
+		datetimeType: timeReader,
+		durationType: durationReader,
 
 		// Graph
-		traverserType:      traverserReader,
 		vertexType:         vertexReader,
 		edgeType:           edgeReader,
 		propertyType:       propertyReader,
 		vertexPropertyType: vertexPropertyReader,
 		pathType:           pathReader,
-		bulkSetType:        bulkSetReader,
 		tType:              enumReader,
 		directionType:      enumReader,
-		dtType:             enumReader,
-		bindingType:        bindingReader,
-
-		// Metrics
-		metricsType:          metricsReader,
-		traversalMetricsType: traversalMetricsReader,
 
 		// Customer
 		customType: customTypeReader,

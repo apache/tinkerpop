@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/wk8/go-ordered-map/v2"
 	"math"
 	"math/big"
 	"reflect"
@@ -38,54 +39,33 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
-	customType            dataType = 0x00
-	intType               dataType = 0x01
-	longType              dataType = 0x02
-	stringType            dataType = 0x03
-	dateType              dataType = 0x04
-	timestampType         dataType = 0x05
-	classType             dataType = 0x06
-	doubleType            dataType = 0x07
-	floatType             dataType = 0x08
-	listType              dataType = 0x09
-	mapType               dataType = 0x0a
-	setType               dataType = 0x0b
-	uuidType              dataType = 0x0c
-	edgeType              dataType = 0x0d
-	pathType              dataType = 0x0e
-	propertyType          dataType = 0x0f
-	vertexType            dataType = 0x11
-	vertexPropertyType    dataType = 0x12
-	barrierType           dataType = 0x13
-	bindingType           dataType = 0x14
-	cardinalityType       dataType = 0x16
-	bytecodeType          dataType = 0x15
-	columnType            dataType = 0x17
-	directionType         dataType = 0x18
-	operatorType          dataType = 0x19
-	orderType             dataType = 0x1a
-	pickType              dataType = 0x1b
-	popType               dataType = 0x1c
-	lambdaType            dataType = 0x1d
-	pType                 dataType = 0x1e
-	scopeType             dataType = 0x1f
-	tType                 dataType = 0x20
-	traverserType         dataType = 0x21
-	bigDecimalType        dataType = 0x22
-	bigIntegerType        dataType = 0x23
-	byteType              dataType = 0x24
-	byteBuffer            dataType = 0x25
-	shortType             dataType = 0x26
-	booleanType           dataType = 0x27
-	textPType             dataType = 0x28
-	traversalStrategyType dataType = 0x29
-	bulkSetType           dataType = 0x2a
-	mergeType             dataType = 0x2e
-	dtType                dataType = 0x2f
-	metricsType           dataType = 0x2c
-	traversalMetricsType  dataType = 0x2d
-	durationType          dataType = 0x81
-	nullType              dataType = 0xFE
+	customType         dataType = 0x00
+	intType            dataType = 0x01
+	longType           dataType = 0x02
+	stringType         dataType = 0x03
+	datetimeType       dataType = 0x04
+	doubleType         dataType = 0x07
+	floatType          dataType = 0x08
+	listType           dataType = 0x09
+	mapType            dataType = 0x0a
+	setType            dataType = 0x0b
+	uuidType           dataType = 0x0c
+	edgeType           dataType = 0x0d
+	pathType           dataType = 0x0e
+	propertyType       dataType = 0x0f
+	vertexType         dataType = 0x11
+	vertexPropertyType dataType = 0x12
+	directionType      dataType = 0x18
+	tType              dataType = 0x20
+	bigDecimalType     dataType = 0x22
+	bigIntegerType     dataType = 0x23
+	byteType           dataType = 0x24
+	byteBuffer         dataType = 0x25
+	shortType          dataType = 0x26
+	booleanType        dataType = 0x27
+	mergeType          dataType = 0x2e
+	durationType       dataType = 0x81
+	nullType           dataType = 0xFE
 )
 
 var nullBytes = []byte{nullType.getCodeByte(), 0x01}
@@ -168,91 +148,44 @@ func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 		return buffer.Bytes(), nil
 	}
 
-	v := reflect.ValueOf(value)
-	keys := v.MapKeys()
-	err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
-	if err != nil {
-		return nil, err
-	}
-	for _, k := range keys {
-		convKey := k.Convert(v.Type().Key())
-		// serialize k
-		_, err := typeSerializer.write(k.Interface(), buffer)
+	if val, ok := value.(*orderedmap.OrderedMap[interface{}, interface{}]); ok {
+		err := binary.Write(buffer, binary.BigEndian, int32(val.Len()))
 		if err != nil {
 			return nil, err
 		}
-		// serialize v.MapIndex(c_key)
-		val := v.MapIndex(convKey)
-		_, err = typeSerializer.write(val.Interface(), buffer)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buffer.Bytes(), nil
-}
-
-func instructionWriter(instructions []instruction, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) error {
-	// Write {steps_length}, i.e number of steps.
-	err := binary.Write(buffer, binary.BigEndian, int32(len(instructions)))
-	if err != nil {
-		return err
-	}
-
-	// Write {step_0} to {step_n}.
-	for _, instruction := range instructions {
-		// Write {name} of {step_i}.
-		// Note: {name} follows string writing, therefore write string length followed by actual string.
-		_, err = typeSerializer.writeValue(instruction.operator, buffer, false)
-		if err != nil {
-			return err
-		}
-
-		// Write {values_length} of {step_i}.
-		err = binary.Write(buffer, binary.BigEndian, int32(len(instruction.arguments)))
-		if err != nil {
-			return err
-		}
-
-		// Write {values_0} to {values_n}.
-		for _, argument := range instruction.arguments {
-			_, err = typeSerializer.write(argument, buffer)
+		for pair := val.Oldest(); pair != nil; pair = pair.Next() {
+			// serialize k
+			_, err := typeSerializer.write(pair.Key, buffer)
 			if err != nil {
-				return err
+				return nil, err
+			}
+			// serialize v
+			_, err = typeSerializer.write(pair.Value, buffer)
+			if err != nil {
+				return nil, err
 			}
 		}
-	}
-	return nil
-}
-
-// Format: {steps_length}{step_0}…{step_n}{sources_length}{source_0}…{source_n}
-// Where:
-//
-//			{steps_length} is an Int value describing the amount of steps.
-//			{step_i} is composed of {name}{values_length}{value_0}…{value_n}, where:
-//	     {name} is a String. This is also known as the operator.
-//			{values_length} is an Int describing the amount values.
-//			{value_i} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} describing the step argument.
-func bytecodeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var bc Bytecode
-	switch typedVal := value.(type) {
-	case *GraphTraversal:
-		bc = *typedVal.Bytecode
-	case Bytecode:
-		bc = typedVal
-	case *Bytecode:
-		bc = *typedVal
-	default:
-		return nil, newError(err0402BytecodeWriterError)
-	}
-
-	// Write {steps_length} and {step_0} through {step_n}, then {sources_length} and {source_0} through {source_n}
-	err := instructionWriter(bc.stepInstructions, buffer, typeSerializer)
-	if err != nil {
-		return nil, err
-	}
-	err = instructionWriter(bc.sourceInstructions, buffer, typeSerializer)
-	if err != nil {
-		return nil, err
+	} else {
+		v := reflect.ValueOf(value)
+		keys := v.MapKeys()
+		err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
+		if err != nil {
+			return nil, err
+		}
+		for _, k := range keys {
+			convKey := k.Convert(v.Type().Key())
+			// serialize k
+			_, err := typeSerializer.write(k.Interface(), buffer)
+			if err != nil {
+				return nil, err
+			}
+			// serialize v.MapIndex(c_key)
+			val := v.MapIndex(convKey)
+			_, err = typeSerializer.write(val.Interface(), buffer)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	return buffer.Bytes(), nil
 }
@@ -366,16 +299,6 @@ func bigDecimalWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *g
 	return bigIntWriter(v.UnscaledValue, buffer, typeSerializer)
 }
 
-func classWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var v GremlinType
-	if reflect.TypeOf(value).Kind() == reflect.Ptr {
-		v = *(value.(*GremlinType))
-	} else {
-		v = value.(GremlinType)
-	}
-	return stringWriter(v.Fqcn, buffer, typeSerializer)
-}
-
 // Format: {Id}{Label}{properties}
 func vertexWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	v := value.(*Vertex)
@@ -385,7 +308,7 @@ func vertexWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graph
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue(v.Label, buffer, false)
+	_, err = typeSerializer.writeValue([1]string{v.Label}, buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +326,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	}
 
 	// Not fully qualified
-	_, err = typeSerializer.writeValue(e.Label, buffer, false)
+	_, err = typeSerializer.writeValue([1]string{e.Label}, buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +388,7 @@ func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerialize
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue(vp.Label, buffer, false)
+	_, err = typeSerializer.writeValue([1]string{vp.Label}, buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -502,7 +425,29 @@ func setWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 
 func timeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	t := value.(time.Time)
-	err := binary.Write(buffer, binary.BigEndian, t.UnixMilli())
+	err := binary.Write(buffer, binary.BigEndian, int32(t.Year()))
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Month()))
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Day()))
+	if err != nil {
+		return nil, err
+	}
+	// construct time of day in nanoseconds
+	h := t.Hour()
+	m := t.Minute()
+	s := t.Second()
+	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + t.Nanosecond()
+	err = binary.Write(buffer, binary.BigEndian, int64(ns))
+	if err != nil {
+		return nil, err
+	}
+	_, os := t.Zone()
+	err = binary.Write(buffer, binary.BigEndian, int32(os))
 	if err != nil {
 		return nil, err
 	}
@@ -534,32 +479,6 @@ func enumWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	return buffer.Bytes(), err
 }
 
-// Format: {language}{script}{arguments_length}
-func lambdaWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	lambda := value.(*Lambda)
-	if lambda.Language == "" {
-		lambda.Language = "gremlin-groovy"
-	}
-	_, err := typeSerializer.writeValue(lambda.Language, buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = typeSerializer.writeValue(lambda.Script, buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	// It's hard to know how many parameters there are without extensive string parsing.
-	// Instead, we can set -1 which means unknown.
-	err = binary.Write(buffer, binary.BigEndian, int32(-1))
-	if err != nil {
-		return nil, err
-	}
-
-	return buffer.Bytes(), nil
-}
-
 // Format: {strategy_class}{configuration}
 func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	ts := value.(*traversalStrategy)
@@ -572,84 +491,8 @@ func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerial
 	return mapWriter(ts.configuration, buffer, typeSerializer)
 }
 
-func pWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var v p
-	if reflect.TypeOf(value).Kind() == reflect.Ptr {
-		v = *(value.(*p))
-	} else {
-		v = value.(p)
-	}
-	_, err := typeSerializer.writeValue(v.operator, buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	err = binary.Write(buffer, binary.BigEndian, int32(len(v.values)))
-	if err != nil {
-		return nil, err
-	}
-
-	for _, pValue := range v.values {
-		_, err := typeSerializer.write(pValue, buffer)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buffer.Bytes(), err
-}
-
-func textPWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var v textP
-	if reflect.TypeOf(value).Kind() == reflect.Ptr {
-		v = *(value.(*textP))
-	} else {
-		v = value.(textP)
-	}
-	_, err := typeSerializer.writeValue(v.operator, buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	err = binary.Write(buffer, binary.BigEndian, int32(len(v.values)))
-	if err != nil {
-		return nil, err
-	}
-
-	for _, pValue := range v.values {
-		_, err := typeSerializer.write(pValue, buffer)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buffer.Bytes(), err
-}
-
-// Format: {key}{value}
-func bindingWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	var v Binding
-	if reflect.TypeOf(value).Kind() == reflect.Ptr {
-		v = *(value.(*Binding))
-	} else {
-		v = value.(Binding)
-	}
-
-	// Not fully qualified.
-	_, err := typeSerializer.writeValue(v.Key, buffer, false)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = typeSerializer.write(v.Value, buffer)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
-}
-
 func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType, error) {
 	switch val.(type) {
-	case *Bytecode, Bytecode, *GraphTraversal:
-		return bytecodeType, nil
 	case string:
 		return stringType, nil
 	case uint, uint64, *big.Int:
@@ -678,58 +521,26 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return propertyType, nil
 	case *VertexProperty:
 		return vertexPropertyType, nil
-	case *Lambda:
-		return lambdaType, nil
-	case *traversalStrategy:
-		return traversalStrategyType, nil
 	case *Path:
 		return pathType, nil
 	case Set:
 		return setType, nil
 	case time.Time:
-		return dateType, nil
+		return datetimeType, nil
 	case time.Duration:
 		return durationType, nil
-	case cardinality:
-		return cardinalityType, nil
-	case column:
-		return columnType, nil
 	case direction:
 		return directionType, nil
-	case operator:
-		return operatorType, nil
-	case order:
-		return orderType, nil
-	case pick:
-		return pickType, nil
-	case pop:
-		return popType, nil
 	case t:
 		return tType, nil
-	case barrier:
-		return barrierType, nil
-	case scope:
-		return scopeType, nil
 	case merge:
 		return mergeType, nil
-	case dt:
-		return dtType, nil
-	case p, Predicate:
-		return pType, nil
-	case textP, TextPredicate:
-		return textPType, nil
-	case *Binding, Binding:
-		return bindingType, nil
 	case *BigDecimal, BigDecimal:
 		return bigDecimalType, nil
-	case *GremlinType, GremlinType:
-		return classType, nil
-	case *Metrics, Metrics:
-		return metricsType, nil
-	case *TraversalMetrics, TraversalMetrics:
-		return traversalMetricsType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
+	case *orderedmap.OrderedMap[interface{}, interface{}], orderedmap.OrderedMap[interface{}, interface{}]:
+		return mapType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
@@ -926,8 +737,6 @@ func getDefaultValue(dataType dataType) interface{} {
 	switch dataType {
 	case intType, bigIntegerType, longType, shortType, byteType, booleanType, floatType, doubleType:
 		return 0
-	case traverserType, stringType:
-		return ""
 	case uuidType:
 		return uuid.Nil
 	case vertexType:
@@ -942,7 +751,7 @@ func getDefaultValue(dataType dataType) interface{} {
 		return Path{}
 	case setType:
 		return SimpleSet{}
-	case dateType, timestampType:
+	case datetimeType:
 		return time.Time{}
 	case durationType:
 		return time.Duration(0)
@@ -952,15 +761,28 @@ func getDefaultValue(dataType dataType) interface{} {
 }
 
 // Composite
-func readList(data *[]byte, i *int) (interface{}, error) {
+func readList(data *[]byte, i *int, flag byte) (interface{}, error) {
 	sz := readIntSafe(data, i)
 	var valList []interface{}
-	for j := int32(0); j < sz; j++ {
-		val, err := readFullyQualifiedNullable(data, i, true)
-		if err != nil {
-			return nil, err
+	if flag == 0x02 {
+		for j := int32(0); j < sz; j++ {
+			val, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			bulk := readIntSafe(data, i)
+			for k := int32(0); k < bulk; k++ {
+				valList = append(valList, val)
+			}
 		}
-		valList = append(valList, val)
+	} else {
+		for j := int32(0); j < sz; j++ {
+			val, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			valList = append(valList, val)
+		}
 	}
 	return valList, nil
 }
@@ -975,32 +797,59 @@ func readByteBuffer(data *[]byte, i *int) (interface{}, error) {
 	return r, nil
 }
 
-func readMap(data *[]byte, i *int) (interface{}, error) {
+func readMap(data *[]byte, i *int, flag byte) (interface{}, error) {
 	sz := readUint32Safe(data, i)
-	var mapData = make(map[interface{}]interface{})
-	for j := uint32(0); j < sz; j++ {
-		k, err := readFullyQualifiedNullable(data, i, true)
-		if err != nil {
-			return nil, err
-		}
-		v, err := readFullyQualifiedNullable(data, i, true)
-		if err != nil {
-			return nil, err
-		}
-		if k == nil {
-			mapData[nil] = v
-		} else if reflect.TypeOf(k).Comparable() {
-			mapData[k] = v
-		} else {
-			switch reflect.TypeOf(k).Kind() {
-			case reflect.Map:
-				mapData[&k] = v
-			default:
-				mapData[fmt.Sprint(k)] = v
+	if flag == 0x02 {
+		var mapData = orderedmap.New[interface{}, interface{}]()
+		for j := uint32(0); j < sz; j++ {
+			k, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			v, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			if k == nil {
+				mapData.Set(nil, v)
+			} else if reflect.TypeOf(k).Comparable() {
+				mapData.Set(k, v)
+			} else {
+				switch reflect.TypeOf(k).Kind() {
+				case reflect.Map:
+					mapData.Set(&k, v)
+				default:
+					mapData.Set(fmt.Sprint(k), v)
+				}
 			}
 		}
+		return mapData, nil
+	} else {
+		var mapData = make(map[interface{}]interface{})
+		for j := uint32(0); j < sz; j++ {
+			k, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			v, err := readFullyQualifiedNullable(data, i, true)
+			if err != nil {
+				return nil, err
+			}
+			if k == nil {
+				mapData[nil] = v
+			} else if reflect.TypeOf(k).Comparable() {
+				mapData[k] = v
+			} else {
+				switch reflect.TypeOf(k).Kind() {
+				case reflect.Map:
+					mapData[&k] = v
+				default:
+					mapData[fmt.Sprint(k)] = v
+				}
+			}
+		}
+		return mapData, nil
 	}
-	return mapData, nil
 }
 
 func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
@@ -1028,7 +877,8 @@ func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
 }
 
 func readSet(data *[]byte, i *int) (interface{}, error) {
-	list, err := readList(data, i)
+	// TODO placeholder flag
+	list, err := readList(data, i, 0x00)
 	if err != nil {
 		return nil, err
 	}
@@ -1041,7 +891,15 @@ func readUuid(data *[]byte, i *int) (interface{}, error) {
 }
 
 func timeReader(data *[]byte, i *int) (interface{}, error) {
-	return time.UnixMilli(readLongSafe(data, i)), nil
+	year := readIntSafe(data, i)
+	month := readByteSafe(data, i)
+	day := readByteSafe(data, i)
+	ns := readLongSafe(data, i)
+	offset := readIntSafe(data, i)
+	// only way to pass offset info, timezone display is fixed to UTC as consequence (offset is calculated properly)
+	loc := time.FixedZone("UTC", int(offset))
+	datetime := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, int(ns), loc)
+	return datetime, nil
 }
 
 func durationReader(data *[]byte, i *int) (interface{}, error) {
@@ -1063,11 +921,11 @@ func vertexReaderReadingProperties(data *[]byte, i *int, readProperties bool) (i
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, stringType, false)
+	label, err := readUnqualified(data, i, listType, false)
 	if err != nil {
 		return nil, err
 	}
-	v.Label = label.(string)
+	v.Label = label.([]interface{})[0].(string)
 	if readProperties {
 		props, err := readFullyQualifiedNullable(data, i, true)
 		if err != nil {
@@ -1090,11 +948,11 @@ func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, stringType, false)
+	label, err := readUnqualified(data, i, listType, false)
 	if err != nil {
 		return nil, err
 	}
-	e.Label = label.(string)
+	e.Label = label.([]interface{})[0].(string)
 	v, err := vertexReaderReadingProperties(data, i, false)
 	if err != nil {
 		return nil, err
@@ -1142,11 +1000,11 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, stringType, false)
+	label, err := readUnqualified(data, i, listType, false)
 	if err != nil {
 		return nil, err
 	}
-	vp.Label = label.(string)
+	vp.Label = label.([]interface{})[0].(string)
 	vp.Value, err = readFullyQualifiedNullable(data, i, true)
 	if err != nil {
 		return nil, err
@@ -1186,35 +1044,6 @@ func pathReader(data *[]byte, i *int) (interface{}, error) {
 	return path, err
 }
 
-// {bulk int}{fully qualified value}
-func traverserReader(data *[]byte, i *int) (interface{}, error) {
-	var err error
-	traverser := new(Traverser)
-	traverser.bulk = readLongSafe(data, i)
-	traverser.value, err = readFullyQualifiedNullable(data, i, true)
-	if err != nil {
-		return nil, err
-	}
-	return traverser, nil
-}
-
-// {int32 length}{fully qualified item_0}{int64 repetition_0}...{fully qualified item_n}{int64 repetition_n}
-func bulkSetReader(data *[]byte, i *int) (interface{}, error) {
-	sz := int(readIntSafe(data, i))
-	var valList []interface{}
-	for j := 0; j < sz; j++ {
-		val, err := readFullyQualifiedNullable(data, i, true)
-		if err != nil {
-			return nil, err
-		}
-		rep := readLongSafe(data, i)
-		for k := 0; k < int(rep); k++ {
-			valList = append(valList, val)
-		}
-	}
-	return valList, nil
-}
-
 // {type code (always string so ignore)}{nil code (always false so ignore)}{int32 size}{string enum}
 func enumReader(data *[]byte, i *int) (interface{}, error) {
 	typeCode := readDataType(data, i)
@@ -1223,113 +1052,6 @@ func enumReader(data *[]byte, i *int) (interface{}, error) {
 	}
 	*i++
 	return readString(data, i)
-}
-
-// {unqualified key}{fully qualified value}
-func bindingReader(data *[]byte, i *int) (interface{}, error) {
-	b := new(Binding)
-	val, err := readUnqualified(data, i, stringType, false)
-	if err != nil {
-		return nil, err
-	}
-	b.Key = val.(string)
-
-	b.Value, err = readFullyQualifiedNullable(data, i, true)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-// {id}{name}{duration}{counts}{annotations}{nested_metrics}
-func metricsReader(data *[]byte, i *int) (interface{}, error) {
-	metrics := new(Metrics)
-	val, err := readUnqualified(data, i, stringType, false)
-	if err != nil {
-		return nil, err
-	}
-	metrics.Id = val.(string)
-
-	val, err = readUnqualified(data, i, stringType, false)
-	if err != nil {
-		return nil, err
-	}
-	metrics.Name = val.(string)
-
-	dur, err := readLong(data, i)
-	if err != nil {
-		return nil, err
-	}
-	metrics.Duration = dur.(int64)
-
-	counts, err := readMap(data, i)
-	cmap := counts.(map[interface{}]interface{})
-	if err != nil {
-		return nil, err
-	}
-	metrics.Counts = make(map[string]int64, len(cmap))
-	for k := range cmap {
-		metrics.Counts[k.(string)] = cmap[k].(int64)
-	}
-
-	annotations, err := readMap(data, i)
-	if err != nil {
-		return nil, err
-	}
-	amap := annotations.(map[interface{}]interface{})
-	if err != nil {
-		return nil, err
-	}
-	metrics.Annotations = make(map[string]interface{}, len(amap))
-	for k := range amap {
-		metrics.Annotations[k.(string)] = amap[k]
-	}
-
-	nested, err := readList(data, i)
-	if err != nil {
-		return nil, err
-	}
-	list := nested.([]interface{})
-	metrics.NestedMetrics = make([]Metrics, len(list))
-	for i, metric := range list {
-		metrics.NestedMetrics[i] = metric.(Metrics)
-	}
-
-	return metrics, nil
-}
-
-// {id}{name}{duration}{counts}{annotations}{nested_metrics}
-func traversalMetricsReader(data *[]byte, i *int) (interface{}, error) {
-	m := new(TraversalMetrics)
-	dur, err := readLong(data, i)
-	if err != nil {
-		return nil, err
-	}
-	m.Duration = dur.(int64)
-
-	nested, err := readList(data, i)
-	if err != nil {
-		return nil, err
-	}
-	list := nested.([]interface{})
-	m.Metrics = make([]Metrics, len(list))
-	for i, metric := range list {
-		m.Metrics[i] = *metric.(*Metrics)
-	}
-
-	return m, nil
-}
-
-// Format: A String containing the fqcn.
-func readClass(data *[]byte, i *int) (interface{}, error) {
-	gremlinType := new(GremlinType)
-	str, err := readString(data, i)
-	if err != nil {
-		return nil, err
-	}
-	gremlinType.Fqcn = str.(string)
-
-	return gremlinType, nil
 }
 
 func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) (interface{}, error) {
@@ -1351,8 +1073,16 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 		}
 		return nil, nil
 	} else if nullable {
-		if readByteSafe(data, i) == valueFlagNull {
+		flag := readByteSafe(data, i)
+		fmt.Println(flag)
+		if flag == valueFlagNull {
 			return getDefaultValue(dataTyp), nil
+		}
+		if dataTyp == listType {
+			return readList(data, i, flag)
+		}
+		if dataTyp == mapType {
+			return readMap(data, i, flag)
 		}
 	}
 	deserializer, ok := deserializers[dataTyp]
