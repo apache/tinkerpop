@@ -70,7 +70,7 @@ describe('Connection', function () {
         return connection.open();
       });
       Promise.allSettled(allOptionTests).then(function () {
-        if (globalWebsocketCalls !== domUnsupportedOptions.length) {
+        if (globalWebsocketCalls !== 0) {
           assert.fail('global WebSocket should be used when no ws specific options are provided');
         }
       });
