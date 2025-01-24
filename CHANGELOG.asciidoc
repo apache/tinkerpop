@@ -20,6 +20,11 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlins-wildest-dreams.png[width=185]
 
+[[release-4-0-0]]
+=== TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
+
+
+
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)
 
