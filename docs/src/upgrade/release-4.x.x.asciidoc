@@ -362,6 +362,10 @@ available.
 
 IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled and use of `tx()` will return an error.
 
+==== Removal of Sessions
+
+Support for sessions has been removed. All requests are now "sessionless" with no shared state across subsequent requests.
+
 ==== Result Bulking Changes
 
 Previous versions of the Gremlin Server would attempt to "bulk" the result if bytecode was used in the request. This
