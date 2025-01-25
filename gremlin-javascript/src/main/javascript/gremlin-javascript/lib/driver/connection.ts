@@ -199,8 +199,10 @@ export default class Connection extends EventEmitter {
     this._ws!.addEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws!.addEventListener('error', this.#handleError);
+    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
     // @ts-expect-error
-    this._ws!.addEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws!.on('unexpected-response', this.#handleUnexpectedResponse);
     // @ts-expect-error
     this._ws!.addEventListener('message', this.#handleMessage);
     // @ts-expect-error
@@ -315,12 +317,14 @@ export default class Connection extends EventEmitter {
         chunks.push(data instanceof Buffer ? data : Buffer.from(data));
       });
       res.on('end', () => {
-        resolve(Buffer.concat(chunks));
+        resolve(chunks.length ? Buffer.concat(chunks) : null);
       });
       res.on('error', reject);
     });
     // @ts-ignore
-    const errorMessage = `Unexpected server response code ${res.statusCode} with body:\n${body.toString()}`;
+    const statusCodeErrorMessage = `Unexpected server response code ${res.statusCode}`;
+    // @ts-ignore
+    const errorMessage = body ? `${statusCodeErrorMessage} with body:\n${body.toString()}` : statusCodeErrorMessage;
     const error = new Error(errorMessage);
     this.#handleError({
       error,
@@ -446,8 +450,10 @@ export default class Connection extends EventEmitter {
     this._ws?.removeEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws?.removeEventListener('error', this.#handleError);
+    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
     // @ts-expect-error
-    this._ws?.removeEventListener('unexpected-response', this.#handleUnexpectedResponse);
+    this._ws?.off('unexpected-response', this.#handleUnexpectedResponse);
     // @ts-expect-error
     this._ws?.removeEventListener('message', this.#handleMessage);
     // @ts-expect-error
