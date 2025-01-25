@@ -203,7 +203,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             final Set<TinkerElementContainer> readElements = txReadElements.get();
             if (readElements != null)
-                readElements.stream().forEach(e -> e.reset());
+                readElements.stream().forEach(e -> e.commit(txVersion));
 
             txChangedVertices.remove();
             txChangedEdges.remove();

@@ -1457,4 +1457,24 @@ public class TinkerTransactionGraphTest {
 
         countElementsInNewThreadTx(g, 1, 0);
     }
+
+    @Test
+    public void shouldHandleSequenceOfCreateReadDeleteCreateSameVertex() {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+        g.V().next();
+        graph.tx().commit();
+        g.V().drop().iterate();
+        graph.tx().commit();
+
+        assertEquals(false, graph.hasVertex(1));
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+
+        assertEquals(true, graph.hasVertex(1));
+    }
 }

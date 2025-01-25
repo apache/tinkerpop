@@ -197,7 +197,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
                 element.removed = true;
             element = null;
             isDeleted = true;
-        } else {
+        } else if (isModifiedInTx.get()){
             element = transactionUpdatedValue.get();
             element.currentVersion = txVersion;
         }
