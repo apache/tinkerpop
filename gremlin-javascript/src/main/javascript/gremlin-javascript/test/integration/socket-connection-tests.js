@@ -69,10 +69,8 @@ describe('Connection', function () {
         });
         return connection.open();
       });
-      Promise.allSettled(allOptionTests).then(function () {
-        if (globalWebsocketCalls !== 0) {
-          assert.fail('global WebSocket should be used when no ws specific options are provided');
-        }
+      return Promise.allSettled(allOptionTests).then(function () {
+        assert.equal(globalWebsocketCalls, 0, 'global WebSocket should be used when no ws specific options are provided');
       });
     });
     it('should use the global WebSocket when options are not provided', function () {
@@ -85,9 +83,7 @@ describe('Connection', function () {
         .open()
         .catch(() => {})
         .finally(function () {
-          if (globalWebsocketCalls <= 0) {
-            assert.fail('global WebSocket should be used when no ws specific options are provided');
-          }
+          assert.equal(globalWebsocketCalls, 1, 'global WebSocket should be used when no ws specific options are provided');
         });
     });
     it('should handle unexpected response errors with body', function () {
