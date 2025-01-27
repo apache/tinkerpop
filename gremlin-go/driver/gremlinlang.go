@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"fmt"
-	"html"
 	"math"
 	"math/big"
 	"reflect"
@@ -59,15 +58,18 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 	}
 }
 
-func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) {
+func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 	flattenedArgs := gl.flattenArguments(args...)
-	//flattenedArgs := reflect.ValueOf(gl.flattenArguments(args...))
 	if name == "CardinalityValueTraversal" {
 		gl.gremlin.WriteString("Cardinality.")
-		//str0, _ := gl.argAsString(flattenedArgs.Index(0))
-		//str1, _ := gl.argAsString(flattenedArgs.Index(1))
-		str0, _ := gl.argAsString(flattenedArgs[0])
-		str1, _ := gl.argAsString(flattenedArgs[1])
+		str0, err := gl.argAsString(flattenedArgs[0])
+		if err != nil {
+			return err
+		}
+		str1, err := gl.argAsString(flattenedArgs[1])
+		if err != nil {
+			return err
+		}
 		gl.gremlin.WriteString(str0)
 		gl.gremlin.WriteString("(")
 		gl.gremlin.WriteString(str1)
@@ -82,23 +84,30 @@ func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) {
 		if i > 0 {
 			gl.gremlin.WriteString(",")
 		}
-		// TODO handle errors for all these cases
-		convertArg, _ := gl.convertArgument(flattenedArgs[i]) //.Index(i).Interface())
-		argStr, _ := gl.argAsString(convertArg)
+		convertArg, err := gl.convertArgument(flattenedArgs[i]) //.Index(i).Interface())
+		if err != nil {
+			return err
+		}
+		argStr, err := gl.argAsString(convertArg)
+		if err != nil {
+			return err
+		}
 		gl.gremlin.WriteString(argStr)
 	}
 	gl.gremlin.WriteString(")")
+	return nil
 }
 
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
 		return "null", nil
 	}
+	// we are concerned with both single and double quotes and %q in fmt only escapes double quotes
+	escapeQuotes := strings.NewReplacer(`'`, `\'`, `"`, `\"`)
 
 	switch v := arg.(type) {
 	case string:
-		// TODO check escaping & formatting
-		return fmt.Sprintf("\"%s\"", html.EscapeString(v)), nil
+		return fmt.Sprintf("\"%s\"", escapeQuotes.Replace(v)), nil
 	case bool:
 		return strconv.FormatBool(v), nil
 	case uint8:
@@ -146,7 +155,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name[:1])+name[1:], v), nil
 	case *Vertex:
 		id, _ := gl.argAsString(v.Id)
-		return fmt.Sprintf("new ReferenceVertex(%s,\"%s\")", id, v.Label), nil
+		return fmt.Sprintf("new ReferenceVertex(%s,\"%s\")", escapeQuotes.Replace(id), escapeQuotes.Replace(v.Label)), nil
 	case textP:
 		return gl.translateTextPredicate(&v)
 	case *textP:
@@ -420,8 +429,9 @@ func (gl *GremlinLang) buildStrategyArgs(args ...interface{}) string {
 	return sb.String()
 }
 
-func (gl *GremlinLang) AddStep(stepName string, arguments ...interface{}) {
-	gl.addToGremlin(stepName, arguments)
+func (gl *GremlinLang) AddStep(stepName string, arguments ...interface{}) error {
+	err := gl.addToGremlin(stepName, arguments)
+	return err
 }
 
 func (gl *GremlinLang) GetOptionsStrategies() []*traversalStrategy {
@@ -488,6 +498,7 @@ func (gl *GremlinLang) convertArgument(arg interface{}) (interface{}, error) {
 	}
 }
 
+// TODO revisit and remove if necessary
 //var withOptionsMap map[any]string = map[any]string{
 //	WithOptions.Tokens:  "WithOptions.tokens",
 //	WithOptions.None:    "WithOptions.none",

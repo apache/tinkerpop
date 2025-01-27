@@ -182,7 +182,7 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 // TODO test and update when connection is set up
 func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
 	if driver.isClosed {
-		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
+		return nil, newError(err0203SubmitGremlinLangToClosedConnectionError)
 	}
 	return driver.client.submitGremlinLang(gremlinLang)
 }

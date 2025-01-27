@@ -39,9 +39,7 @@ type GraphTraversalSource struct {
 // Graph and DriverRemoteConnection can be set to nil as valid default values.
 func NewGraphTraversalSource(graph *Graph, remoteConnection *DriverRemoteConnection,
 	traversalStrategies ...TraversalStrategy) *GraphTraversalSource {
-	convertedArgs := convertStrategyVarargs(traversalStrategies)
-	bc := NewBytecode(nil)
-	bc.AddSource("withStrategies", convertedArgs...)
+	// TODO: revisit when updating strategies
 	gl := NewGremlinLang(nil)
 	return &GraphTraversalSource{graph: graph, gremlinLang: gl, remoteConnection: remoteConnection}
 }

@@ -78,10 +78,7 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.Bytecode.AddStep("discard"); err != nil {
-			r <- err
-			return
-		}
+		t.GremlinLang.AddStep("discard")
 
 		// TODO update and test when connection is set up
 		res, err := t.remote.submitGremlinLang(t.GremlinLang)

@@ -925,6 +925,7 @@ func (t *Transaction) Begin() (*GraphTraversalSource, error) {
 
 	gts := &GraphTraversalSource{
 		graph:            t.g.graph,
+		gremlinLang:      t.g.gremlinLang,
 		remoteConnection: t.sessionBasedConnection}
 	return gts, nil
 }

@@ -173,7 +173,7 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 // submitGremlinLang submits GremlinLang to the server to execute and returns a ResultSet.
 // TODO test and update when connection is set up
 func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
-	client.logHandler.logf(Debug, submitStartedBytecode, *gremlinLang)
+	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
 	// TODO placeholder
 	requestOptionsBuilder := new(RequestOptionsBuilder)
 	request := makeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, client.session, requestOptionsBuilder.Create())
