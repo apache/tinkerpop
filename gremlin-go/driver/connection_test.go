@@ -606,7 +606,7 @@ func TestConnection(t *testing.T) {
 		assert.True(t, ok)
 		assert.NotNil(t, result)
 
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), NewGremlinLang(nil), nil)
 		b := g.V().Count().Bytecode
 		resultSet, err = client.submitBytecode(b)
 		assert.Nil(t, err)
