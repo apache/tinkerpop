@@ -2078,9 +2078,6 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
            traversalFn := traversalFns[0]
            translationMap[scenarioName] = traversalFns[1:]
            traversal := traversalFn(g, parameters)
-           for key, value := range sideEffects {
-               traversal.Bytecode.AddSource("withSideEffect", key, value)
-           }
            return traversal, nil
        } else {
            return nil, errors.New("scenario for traversal not recognized")

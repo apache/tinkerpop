@@ -354,40 +354,28 @@ jobs:
         run: |
           mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
-#  go:
-#    name: go
-#    timeout-minutes: 20
-#    needs: cache-gremlin-server-docker-image
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v5
-#      - name: Setup Go
-#        uses: actions/setup-go@v5
-#        with:
-#          go-version: '1.25'
-#      - name: Get Cached Server Base Image
-#        uses: actions/cache@v4
-#        id: gremlin-server-test-docker-image
-#        with:
-#          path: |
-#            ./gremlin-server/*
-#            ~/.m2/repository/org/apache/tinkerpop/*
-#          key: ${{ github.sha }}
-#      - name: Load Docker Image
-#        working-directory: ./gremlin-server
-#        run: docker load --input gremlin-server.tar
-#      - name: Build with Maven
-#        working-directory: .
-#        run: |
-#          touch gremlin-go/.glv
-#          EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
-#          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
-#          mvn verify -pl :gremlin-go
-#      - name: Upload to Codecov
-#        uses: codecov/codecov-action@v5
-#        with:
-#          working-directory: ./gremlin-go
-#      - name: Go-Vet
-#        working-directory: ./gremlin-go
-#        run: go vet ./...
+  go:
+    name: go
+    timeout-minutes: 20
+    needs: cache-gremlin-server-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - name: Build with Maven
+        working-directory: .
+        run: |
+          touch gremlin-go/.glv
+          EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+          mvn verify -pl :gremlin-go
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          working-directory: ./gremlin-go
+      - name: Go-Vet
+        working-directory: ./gremlin-go
+        run: go vet ./...

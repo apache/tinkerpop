@@ -21,11 +21,12 @@ package gremlingo
 
 import (
 	"fmt"
-	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
-	"github.com/cucumber/godog"
 	"os"
 	"reflect"
 	"strconv"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+	"github.com/cucumber/godog"
 )
 
 type CucumberWorld struct {
@@ -164,8 +165,11 @@ func getVertices(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Vertex
 
 func getEdges(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Edge {
 	edgeMap := make(map[string]*gremlingo.Edge)
-	resE, err := g.E().Group().By(gremlingo.T__.Project("o", "l", "i").
-		By(gremlingo.T__.OutV().Values("name")).By(gremlingo.T__.Label()).By(gremlingo.T__.InV().Values("name"))).
+	resE, err := g.E().Group().
+		By(gremlingo.T__.Project("o", "l", "i").
+			By(gremlingo.T__.OutV().Values("name")).
+			By(gremlingo.T__.Label()).
+			By(gremlingo.T__.InV().Values("name"))).
 		By(gremlingo.T__.Tail()).Next()
 	if err != nil {
 		return nil
@@ -190,38 +194,44 @@ func getEdgeKey(edgeKeyMap map[interface{}]interface{}) string {
 }
 
 func getVertexProperties(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.VertexProperty {
-	vertexPropertyMap := make(map[string]*gremlingo.VertexProperty)
-	res, err := g.V().Properties().Group().By(&gremlingo.Lambda{
-		Script: "{ it -> \n" +
-			"  def val = it.value()\n" +
-			"  if (val instanceof Integer)\n" +
-			"    val = 'd[' + val + '].i'\n" +
-			"  else if (val instanceof Float)\n" +
-			"    val = 'd[' + val + '].f'\n" +
-			"  else if (val instanceof Double)\n" +
-			"    val = 'd[' + val + '].d'\n" +
-			"  return it.element().value('name') + '-' + it.key() + '->' + val\n" +
-			"}",
-		Language: "",
-	}).By(gremlingo.T__.Tail()).Next()
+	vertexPropsMap := make(map[string]*gremlingo.VertexProperty)
+	res, err := g.V().Properties().Group().
+		By(gremlingo.T__.Project("n", "k", "v").
+			By(gremlingo.T__.Element().Values("name")).
+			By(gremlingo.T__.Key()).
+			By(gremlingo.T__.Value())).
+		By(gremlingo.T__.Tail()).Next()
 	if res == nil {
 		return nil
 	}
 	if err != nil {
 		return nil
 	}
-	v := reflect.ValueOf(res.GetInterface())
-	if v.Kind() != reflect.Map {
-		fmt.Printf("Expecting to get a map as a result, got %v instead.", v.Kind())
+	valMap := reflect.ValueOf(res.GetInterface())
+	if valMap.Kind() != reflect.Map {
+		fmt.Printf("Expecting to get a map as a result, got %v instead.", valMap.Kind())
 		return nil
 	}
-	keys := v.MapKeys()
+	keys := valMap.MapKeys()
 	for _, k := range keys {
-		convKey := k.Convert(v.Type().Key())
-		val := v.MapIndex(convKey)
-		vertexPropertyMap[k.Interface().(string)] = val.Interface().(*gremlingo.VertexProperty)
+		convKey := k.Convert(valMap.Type().Key())
+		val := valMap.MapIndex(convKey)
+		keyMap := reflect.ValueOf(k.Interface()).Elem().Interface().(map[interface{}]interface{})
+		vertexPropsMap[getVPKey(keyMap)] = val.Interface().(*gremlingo.VertexProperty)
 	}
-	return vertexPropertyMap
+	return vertexPropsMap
+}
+
+func getVPKey(vpKeyMap map[interface{}]interface{}) string {
+	k := vpKeyMap["k"]
+	v := vpKeyMap["v"]
+	if k == "weight" {
+		v = fmt.Sprint("d[", v, "].d")
+	} else if k == "age" || k == "since" || k == "skill" {
+		v = fmt.Sprint("d[", v, "].i")
+	}
+	// Format as n-k->v
+	return fmt.Sprint(vpKeyMap["n"], "-", k, "->", v)
 }
 
 // This function is used to isolate connection problems to each scenario, and used in the Before context hook to prevent

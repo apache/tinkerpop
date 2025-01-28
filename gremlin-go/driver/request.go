@@ -77,43 +77,6 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 	}
 }
 
-// MakeBytecodeRequest creates a request from Gremlin bytecode for submission to a Gremlin server.
-//
-// This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
-// to construct properly formatted requests outside the standard WebSocket client. The returned
-// request can then be serialized using SerializeMessage().
-//
-// Parameters:
-//   - bytecodeGremlin: The Gremlin bytecode to execute
-//   - traversalSource: The name of the traversal source (typically "g")
-//
-// Returns:
-//   - request: A request structure ready for serialization
-//
-// Example for alternative transports:
-//
-//	bytecode := g.V().HasLabel("person").Bytecode
-//	req := MakeBytecodeRequest(bytecode, "g")
-//	serializer := newGraphBinarySerializer(nil)
-//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
-//	// Send bytes over gRPC, HTTP/2, etc.
-func MakeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
-	newFields := map[string]interface{}{
-		"gremlin": *bytecodeGremlin,
-		"aliases": map[string]interface{}{
-			"g": traversalSource,
-		},
-	}
-
-	for k, v := range extractReqArgs(bytecodeGremlin) {
-		newFields[k] = v
-	}
-
-	return request{
-		fields: newFields,
-	}
-}
-
 // allowedReqArgs contains the arguments that will be extracted from the
 // bytecode and sent with the request.
 var allowedReqArgs = map[string]bool{
@@ -122,73 +85,4 @@ var allowedReqArgs = map[string]bool{
 	"requestId":             true,
 	"userAgent":             true,
 	"materializeProperties": true,
-}
-
-// extractReqArgs extracts request arguments from the provided bytecode.
-func extractReqArgs(bytecode *Bytecode) map[string]interface{} {
-	args := make(map[string]interface{})
-
-	for _, insn := range bytecode.sourceInstructions {
-		switch insn.operator {
-		case "withStrategies":
-			for k, v := range extractWithStrategiesReqArgs(insn) {
-				args[k] = v
-			}
-		case "with":
-			if k, v := extractWithReqArg(insn); k != "" {
-				args[k] = v
-			}
-		}
-	}
-
-	return args
-}
-
-// extractWithStrategiesReqArgs extracts request arguments from the passed
-// "withStrategies" source instruction. Only OptionsStrategy is considered.
-func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
-	args := make(map[string]interface{})
-
-	for _, strategyInterface := range insn.arguments {
-		strategy, ok := strategyInterface.(*traversalStrategy)
-		if !ok {
-			// (*GraphTraversalSource).WithStrategies accepts
-			// TraversalStrategy parameters only. Thus, this
-			// should be unreachable.
-			continue
-		}
-
-		if strategy.name != decorationNamespace+"OptionsStrategy" {
-			continue
-		}
-
-		for k, v := range strategy.configuration {
-			if allowedReqArgs[k] {
-				args[k] = v
-			}
-		}
-	}
-
-	return args
-}
-
-// extractWithReqArg extracts a request argument from the passed "with" source
-// instruction.
-func extractWithReqArg(insn instruction) (key string, value interface{}) {
-	if len(insn.arguments) != 2 {
-		// (*GraphTraversalSource).With accepts two parameters. Thus,
-		// this should be unreachable.
-		return "", nil
-	}
-
-	key, ok := insn.arguments[0].(string)
-	if !ok {
-		return "", nil
-	}
-
-	if !allowedReqArgs[key] {
-		return "", nil
-	}
-
-	return key, insn.arguments[1]
 }

@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -120,19 +121,12 @@ func TestStrategy(t *testing.T) {
 		assert.Equal(t, int32(0), val)
 	})
 
-	t.Run("Test Bytecode generation for MatchAlgorithmStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
-		defer g.remoteConnection.Close()
+	t.Run("Test GremlinLang generation for MatchAlgorithmStrategy", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
 
 		config := MatchAlgorithmStrategyConfig{MatchAlgorithm: "greedy"}
-		bytecode := g.WithStrategies(MatchAlgorithmStrategy(config)).bytecode
-		assert.Equal(t, 1, len(bytecode.sourceInstructions))
-		assert.Equal(t, 1, len(bytecode.sourceInstructions[0].arguments))
-		assert.Equal(t, "withStrategies", bytecode.sourceInstructions[0].operator)
-		assert.Equal(t, "org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy",
-			bytecode.sourceInstructions[0].arguments[0].(*traversalStrategy).name)
-		assert.Equal(t, map[string]interface{}{"matchAlgorithm": "greedy"},
-			bytecode.sourceInstructions[0].arguments[0].(*traversalStrategy).configuration)
+		gl := g.WithStrategies(MatchAlgorithmStrategy(config)).gremlinLang
+		assert.True(t, strings.Contains(gl.GetGremlin(), "withStrategies(new MatchAlgorithmStrategy(matchAlgorithm:\"greedy\"))"))
 	})
 
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
@@ -427,4 +421,28 @@ func TestStrategy(t *testing.T) {
 		assert.Equal(t, int32(6), val)
 	})
 
+	t.Run("Test GremlinLang generation for simple custom strategies", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+
+		customStrategy := NewTraversalStrategy("CustomSingletonStrategy", nil)
+		gl := g.WithStrategies(customStrategy).gremlinLang
+		assert.True(t, strings.Contains(gl.GetGremlin(), "withStrategies(CustomSingletonStrategy)"))
+	})
+
+	t.Run("Test GremlinLang generation for config custom strategies", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+
+		customStrategy := NewTraversalStrategy("CustomConfigurableStrategy",
+			map[string]interface{}{"stringKey": "string value", "intKey": 5, "booleanKey": true})
+		gl := g.WithStrategies(customStrategy).gremlinLang
+		// Note that config map doesn't guarantee order, so assert individually
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"withStrategies(new CustomConfigurableStrategy("))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"stringKey:\"string value\""))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"intKey:5"))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"booleanKey:true"))
+	})
 }

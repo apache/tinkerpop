@@ -86,10 +86,9 @@ limitations under the License.
             <id>glv-go</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <!-- TODO re-enable after gremlin-go is implemented -->
-<!--                <file>-->
-<!--                    <exists>.glv</exists>-->
-<!--                </file>-->
+                <file>
+                    <exists>.glv</exists>
+                </file>
             </activation>
             <build>
                 <directory>${basedir}/target</directory>

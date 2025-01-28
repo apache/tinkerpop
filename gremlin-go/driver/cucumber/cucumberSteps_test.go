@@ -951,11 +951,8 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
-<<<<<<< HEAD
-=======
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
 	ctx.Step(`^using the side effect (.+) defined as"(.+)"$`, tg.usingTheSideEffectDefined)
->>>>>>> 3.8-dev
 	ctx.Step(`^the traversal will raise an error$`, tg.theTraversalWillRaiseAnError)
 	ctx.Step(`^the traversal will raise an error with message (\w+) text of "(.+)"$`, tg.theTraversalWillRaiseAnErrorWithMessageContainingTextOf)
 }

@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -63,7 +64,7 @@ type Client struct {
 	traversalSource    string
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
-	gremlinClient      *gremlinClient
+	httpProtocol       *httpProtocol
 }
 
 // NewClient creates a Client and configures it with the given parameters.
@@ -104,14 +105,14 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	gc := newGremlinClient(logHandler, url, connSettings)
+	httpProt := newHttpProtocol(logHandler, url, connSettings)
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		gremlinClient:      gc,
+		httpProtocol:       httpProt,
 	}
 
 	return client, nil
@@ -120,8 +121,12 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
+	// TODO check what needs to be closed
 	client.logHandler.logf(Info, closeClient, client.url)
-	client.gremlinClient.close()
+}
+
+func (client *Client) errorCallback() {
+	client.logHandler.log(Error, errorCallback)
 }
 
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
@@ -131,7 +136,7 @@ func (client *Client) SubmitWithOptions(traversalString string, requestOptions R
 
 	// TODO interceptors (ie. auth)
 
-	rs, err := client.gremlinClient.send(&request)
+	rs, err := client.httpProtocol.send(&request)
 	return rs, err
 }
 
@@ -146,9 +151,45 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 	return client.SubmitWithOptions(traversalString, requestOptionsBuilder.Create())
 }
 
-// submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
-func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
-	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := MakeBytecodeRequest(bytecode, client.traversalSource)
-	return client.gremlinClient.send(&request)
+// submitGremlinLang submits GremlinLang to the server to execute and returns a ResultSet.
+// TODO test and update when connection is set up
+func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
+	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
+	// TODO placeholder
+	requestOptionsBuilder := new(RequestOptionsBuilder)
+	if len(gremlinLang.GetParameters()) > 0 {
+		requestOptionsBuilder.SetBindings(gremlinLang.GetParameters())
+	}
+	if len(gremlinLang.optionsStrategies) > 0 {
+		requestOptionsBuilder = applyOptionsConfig(requestOptionsBuilder, gremlinLang.optionsStrategies[0].configuration)
+	}
+
+	request := MakeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
+	return client.httpProtocol.send(&request)
+}
+
+func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interface{}) *RequestOptionsBuilder {
+	builderValue := reflect.ValueOf(builder)
+
+	// Map configuration keys to setter method names
+	setterMap := map[string]string{
+		"requestId":             "SetRequestId",
+		"evaluationTimeout":     "SetEvaluationTimeout",
+		"batchSize":             "SetBatchSize",
+		"userAgent":             "SetUserAgent",
+		"bindings":              "SetBindings",
+		"materializeProperties": "SetMaterializeProperties",
+	}
+
+	for key, value := range config {
+		if methodName, exists := setterMap[key]; exists {
+			method := builderValue.MethodByName(methodName)
+			if method.IsValid() {
+				args := []reflect.Value{reflect.ValueOf(value)}
+				method.Call(args)
+			}
+		}
+	}
+
+	return builder
 }

@@ -337,7 +337,7 @@ type anonymousTraversal struct {
 
 var T__ AnonymousTraversal = &anonymousTraversal{
 	func() *GraphTraversal {
-		return NewGraphTraversal(nil, NewBytecode(nil), nil)
+		return NewGraphTraversal(nil, NewGremlinLang(nil), nil)
 	},
 }
 
