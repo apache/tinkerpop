@@ -26,6 +26,7 @@ import (
 
 func TestGraphTraversalSource(t *testing.T) {
 
+	// TODO update once option strategy application is property updated
 	t.Run("GraphTraversalSource.With tests", func(t *testing.T) {
 		t.Run("Test for single property", func(t *testing.T) {
 			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}

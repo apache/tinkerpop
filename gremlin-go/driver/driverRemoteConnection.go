@@ -178,6 +178,15 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 	return driver.SubmitWithOptions(traversalString, *new(RequestOptions))
 }
 
+// submitGremlinLang sends a GremlinLang traversal to the server.
+// TODO test and update when connection is set up
+func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
+	if driver.isClosed {
+		return nil, newError(err0203SubmitGremlinLangToClosedConnectionError)
+	}
+	return driver.client.submitGremlinLang(gremlinLang)
+}
+
 // submitBytecode sends a Bytecode traversal to the server.
 func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	if driver.isClosed {
