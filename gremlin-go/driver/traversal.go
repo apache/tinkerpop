@@ -32,10 +32,11 @@ type Traverser struct {
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph    *Graph
-	Bytecode *Bytecode
-	remote   *DriverRemoteConnection
-	results  ResultSet
+	graph       *Graph
+	Bytecode    *Bytecode
+	GremlinLang *GremlinLang
+	remote      *DriverRemoteConnection
+	results     ResultSet
 }
 
 // ToList returns the result in a list.
@@ -44,7 +45,8 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
-	results, err := t.remote.submitBytecode(t.Bytecode)
+	// TODO update and test when connection is set up
+	results, err := t.remote.submitGremlinLang(t.GremlinLang)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +79,10 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.Bytecode.AddStep("discard"); err != nil {
-			r <- err
-			return
-		}
+		t.GremlinLang.AddStep("discard")
 
-		res, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		res, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			r <- err
 			return
@@ -125,7 +125,8 @@ func (t *Traversal) Next() (*Result, error) {
 // GetResultSet submits the traversal and returns the ResultSet.
 func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
-		results, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		results, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			return nil, err
 		}
@@ -749,31 +750,32 @@ var IO = ioconfig{
 	Registry: "~tinkerpop.ioconfig.registry",
 }
 
+// TODO pending update/removal
 // Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables
 // the ability to capture explicit metrics for multiple distinct operations. Annotations are used to store
 // miscellaneous notes that might be useful to a developer when examining results, such as index coverage
 // for Steps in a Traversal.
-type Metrics struct {
-	Id   string
-	Name string
-	// the duration in nanoseconds.
-	Duration      int64
-	Counts        map[string]int64
-	Annotations   map[string]interface{}
-	NestedMetrics []Metrics
-}
+//type Metrics struct {
+//	Id   string
+//	Name string
+//	// the duration in nanoseconds.
+//	Duration      int64
+//	Counts        map[string]int64
+//	Annotations   map[string]interface{}
+//	NestedMetrics []Metrics
+//}
 
 // TraversalMetrics contains the Metrics gathered for a Traversal as the result of the .profile()-step.
-type TraversalMetrics struct {
-	// the duration in nanoseconds.
-	Duration int64
-	Metrics  []Metrics
-}
+//type TraversalMetrics struct {
+//	// the duration in nanoseconds.
+//	Duration int64
+//	Metrics  []Metrics
+//}
 
 // GremlinType represents the GraphBinary type Class which can be used to serialize a class.
-type GremlinType struct {
-	Fqcn string
-}
+//type GremlinType struct {
+//	Fqcn string
+//}
 
 // BigDecimal represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer
 // unscaled value and a 32-bit integer scale.

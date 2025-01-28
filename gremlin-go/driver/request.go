@@ -118,7 +118,7 @@ func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
 			continue
 		}
 
-		if strategy.name != decorationNamespace+"OptionsStrategy" {
+		if strategy.name != "OptionsStrategy" {
 			continue
 		}
 

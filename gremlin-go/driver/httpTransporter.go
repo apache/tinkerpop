@@ -22,19 +22,20 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
-	"encoding/json"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 )
 
 // TODO decide channel size when chunked response handling is implemented - for now just set to 1
 const responseChannelSizeDefault = 1
-const contentTypeHeader = "content-type"
 
-// httpTransporter responsible for sending and receiving bytes to/from the server
-type httpTransporter struct {
+// HttpTransporter responsible for sending and receiving bytes to/from the server
+type HttpTransporter struct {
 	url             string
 	isClosed        bool
 	connSettings    *connectionSettings
@@ -44,10 +45,10 @@ type httpTransporter struct {
 	logHandler      *logHandler
 }
 
-func newHttpTransporter(url string, connSettings *connectionSettings, httpClient *http.Client, logHandler *logHandler) *httpTransporter {
+func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient *http.Client, logHandler *logHandler) *HttpTransporter {
 	wg := &sync.WaitGroup{}
 
-	return &httpTransporter{
+	return &HttpTransporter{
 		url:             url,
 		connSettings:    connSettings,
 		responseChannel: make(chan []byte, responseChannelSizeDefault),
@@ -57,102 +58,14 @@ func newHttpTransporter(url string, connSettings *connectionSettings, httpClient
 	}
 }
 
-// write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
-func (transporter *httpTransporter) write(data []byte) error {
-	resp, err := transporter.sendRequest(data)
-	if err != nil {
-		return err
-	}
-
-	respBytes, err := transporter.readResponse(resp)
-	if err != nil {
-		return err
-	}
-
-	// possible to receive graph-binary or json error response bodies
-	if resp.StatusCode != 200 && resp.Header.Get(contentTypeHeader) != graphBinaryMimeType {
-		return transporter.createResponseError(respBytes, resp)
-	}
-
-	transporter.responseChannel <- respBytes
-	return nil
-}
-
-// read reads bytes from the responseChannel
-func (transporter *httpTransporter) read() ([]byte, error) {
-	msg, ok := <-transporter.responseChannel
-	if !ok {
-		return []byte{}, errors.New("failed to read from response channel")
-	}
-	return msg, nil
-}
-
-// close closes the transporter and its corresponding responseChannel
-func (transporter *httpTransporter) close() {
-	if !transporter.isClosed {
-		if transporter.responseChannel != nil {
-			close(transporter.responseChannel)
-		}
-		transporter.isClosed = true
-	}
-}
-
-func (transporter *httpTransporter) createResponseError(respBytes []byte, resp *http.Response) error {
-	contentType := resp.Header.Get(contentTypeHeader)
-	if contentType == "application/json" {
-		var jsonMap map[string]interface{}
-		err := json.Unmarshal(respBytes, &jsonMap)
-		if err != nil {
-			return err
-		}
-		message, exists := jsonMap["message"]
-		if exists {
-			return newError(err0502ResponseHandlerError, message, resp.StatusCode)
-		}
-		return newError(err0502ResponseHandlerError, "Response was not successful", resp.StatusCode)
-	}
-	// unexpected error content type
-	return newError(err0502ResponseHandlerError, "Response was not successful and of unexpected content-type: "+contentType, resp.StatusCode)
-}
-
-// reads bytes from the given response
-func (transporter *httpTransporter) readResponse(resp *http.Response) ([]byte, error) {
-	var reader io.ReadCloser
-	var err error
-
-	if resp.Header.Get("content-encoding") == "deflate" {
-		reader, err = zlib.NewReader(resp.Body)
-		if err != nil {
-			transporter.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-			return nil, err
-		}
-	} else {
-		reader = resp.Body
-	}
-
-	// TODO handle chunked encoding and send chunks to responseChannel
-	all, err := io.ReadAll(reader)
-	if err != nil {
-		transporter.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-		return nil, err
-	}
-	err = reader.Close()
-	if err != nil {
-		return nil, err
-	}
-	transporter.logHandler.log(Debug, receivedResponse)
-	return all, nil
-}
-
-// sends a POST request for the given byte content
-func (transporter *httpTransporter) sendRequest(data []byte) (*http.Response, error) {
-	transporter.logHandler.logf(Debug, creatingRequest)
+// Write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
+func (transporter *HttpTransporter) Write(data []byte) error {
 	req, err := http.NewRequest("POST", transporter.url, bytes.NewBuffer(data))
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToSendRequest, err.Error())
-		return nil, err
+		return err
 	}
-	req.Header.Set(contentTypeHeader, graphBinaryMimeType)
+	req.Header.Set("content-type", graphBinaryMimeType)
 	req.Header.Set("accept", graphBinaryMimeType)
 	if transporter.connSettings.enableUserAgentOnConnect {
 		req.Header.Set(userAgentHeader, userAgent)
@@ -161,11 +74,58 @@ func (transporter *httpTransporter) sendRequest(data []byte) (*http.Response, er
 		req.Header.Set("accept-encoding", "deflate")
 	}
 
-	transporter.logHandler.logf(Debug, writeRequest)
+	fmt.Println("Sending request")
 	resp, err := transporter.httpClient.Do(req)
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToSendRequest, err.Error())
-		return nil, err
+		return err
 	}
-	return resp, nil
+
+	reader := resp.Body
+	if resp.Header.Get("content-encoding") == "deflate" {
+		reader, err = zlib.NewReader(resp.Body)
+		if err != nil {
+			transporter.logHandler.logf(Error, failedToReceiveResponse, err.Error())
+			return err
+		}
+	}
+
+	// TODO handle chunked encoding and send chunks to responseChannel
+	all, err := io.ReadAll(reader)
+	if err != nil {
+		transporter.logHandler.logf(Error, failedToReceiveResponse, err.Error())
+		return err
+	}
+	err = reader.Close()
+	if err != nil {
+		return err
+	}
+
+	str := hex.EncodeToString(all)
+	_, _ = fmt.Fprintf(os.Stdout, "Received response data : %s\n", str)
+
+	fmt.Println("Sending response to responseChannel")
+	transporter.responseChannel <- all
+	return nil
+}
+
+// Read reads bytes from the responseChannel
+func (transporter *HttpTransporter) Read() ([]byte, error) {
+	fmt.Println("Reading from responseChannel")
+	msg, ok := <-transporter.responseChannel
+	if !ok {
+		return []byte{}, errors.New("failed to read from response channel")
+	}
+	return msg, nil
+}
+
+// Close closes the transporter and its corresponding responseChannel
+func (transporter *HttpTransporter) Close() {
+	fmt.Println("Closing http transporter")
+	if !transporter.isClosed {
+		if transporter.responseChannel != nil {
+			close(transporter.responseChannel)
+		}
+		transporter.isClosed = true
+	}
 }
