@@ -23,15 +23,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 	"math/big"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
-func TestGraphBinaryV1(t *testing.T) {
+func TestGraphBinaryV4(t *testing.T) {
 	t.Run("graphBinaryTypeSerializer tests", func(t *testing.T) {
 		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
 
@@ -82,16 +83,6 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err := readString(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, str, res)
-		})
-		t.Run("read-write GremlinType", func(t *testing.T) {
-			pos := 0
-			var buffer bytes.Buffer
-			source := &GremlinType{"test fqcn"}
-			buf, err := classWriter(source, &buffer, nil)
-			assert.Nil(t, err)
-			res, err := readClass(&buf, &pos)
-			assert.Nil(t, err)
-			assert.Equal(t, source, res)
 		})
 		t.Run("read-write bool", func(t *testing.T) {
 			pos := 0
@@ -198,7 +189,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := []interface{}{int32(111), "str"}
 			buf, err := listWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readList(&buf, &pos)
+			res, err := readList(&buf, &pos, 0x00)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
@@ -218,7 +209,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := NewSimpleSet(int32(111), "str")
 			buf, err := setWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readSet(&buf, &pos)
+			res, err := readSet(&buf, &pos, 0x00)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
@@ -306,19 +297,20 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := timeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := timeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
-			assert.Equal(t, source, res)
+			// ISO format
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
 		})
 		t.Run("read-write local datetime", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -327,9 +319,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.UTC)
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -338,9 +330,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 34, 123456789, GetTimezoneFromOffset(-36000))
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -356,4 +348,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
+
+	t.Run("read-write marker", func(t *testing.T) {
+		pos := 0
+		var buffer bytes.Buffer
+		source := EndOfStream()
+		buf, err := markerWriter(source, &buffer, nil)
+		assert.Nil(t, err)
+		res, err := markerReader(&buf, &pos)
+		assert.Nil(t, err)
+		assert.Equal(t, source, res)
+	})
+
 }

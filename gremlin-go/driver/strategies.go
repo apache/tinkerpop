@@ -19,20 +19,6 @@ under the License.
 
 package gremlingo
 
-const (
-	baseNamespace                 = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
-	decorationNamespace           = baseNamespace + "decoration."
-	finalizationNamespace         = baseNamespace + "finalization."
-	optimizationNamespace         = baseNamespace + "optimization."
-	verificationNamespace         = baseNamespace + "verification."
-	computerDecorationNamespace   = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
-	computerVerificationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification."
-	// org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification
-	// org.apache.tinkerpop.gremlin.process.traversal.strategy.verification
-	computerFinalizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization."
-	computerOptimizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization."
-)
-
 type TraversalStrategy interface {
 }
 
@@ -42,12 +28,17 @@ type traversalStrategy struct {
 	apply         func(g GraphTraversal)
 }
 
+// NewTraversalStrategy creates a new strategy with custom name and config
+func NewTraversalStrategy(name string, configuration map[string]interface{}) TraversalStrategy {
+	return &traversalStrategy{name: name, configuration: configuration}
+}
+
 // Decoration strategies
 
 // ConnectiveStrategy rewrites the binary conjunction form of a.And().b into a AndStep of
 // And(a,b) (likewise for OrStep).
 func ConnectiveStrategy() TraversalStrategy {
-	return &traversalStrategy{name: decorationNamespace + "ConnectiveStrategy"}
+	return &traversalStrategy{name: "ConnectiveStrategy"}
 }
 
 // ElementIdStrategy provides a degree of control over element identifier assignment as some Graphs don't provide
@@ -55,7 +46,7 @@ func ConnectiveStrategy() TraversalStrategy {
 // under the hood, thus simulating that capability.
 // By default, when an identifier is not supplied by the user, newly generated identifiers are UUID objects.
 func ElementIdStrategy() TraversalStrategy {
-	return &traversalStrategy{name: decorationNamespace + "ElementIdStrategy"}
+	return &traversalStrategy{name: "ElementIdStrategy"}
 }
 
 func HaltedTraverserStrategy(config ...HaltedTraverserStrategyConfig) TraversalStrategy {
@@ -65,7 +56,7 @@ func HaltedTraverserStrategy(config ...HaltedTraverserStrategyConfig) TraversalS
 			configMap["haltedTraverserFactory"] = config[0].HaltedTraverserFactory
 		}
 	}
-	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: configMap}
+	return &traversalStrategy{name: "HaltedTraverserStrategy", configuration: configMap}
 }
 
 // HaltedTraverserStrategyConfig provides configuration options for HaltedTraverserStrategy.
@@ -83,8 +74,7 @@ func OptionsStrategy(options ...map[string]interface{}) TraversalStrategy {
 	if len(options) > 0 {
 		optsMap = options[0]
 	}
-
-	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: optsMap}
+	return &traversalStrategy{name: "OptionsStrategy", configuration: optsMap}
 }
 
 // PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
@@ -101,7 +91,7 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 	if len(config.ReadPartitions.ToSlice()) != 0 {
 		configMap["readPartitions"] = config.ReadPartitions
 	}
-	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: configMap}
+	return &traversalStrategy{name: "PartitionStrategy", configuration: configMap}
 }
 
 // PartitionStrategyConfig provides configuration options for PartitionStrategy.
@@ -125,8 +115,7 @@ func SeedStrategy(config ...SeedStrategyConfig) TraversalStrategy {
 	if len(config) > 0 {
 		configMap["seed"] = config[0].Seed
 	}
-
-	return &traversalStrategy{name: decorationNamespace + "SeedStrategy", configuration: configMap}
+	return &traversalStrategy{name: "SeedStrategy", configuration: configMap}
 }
 
 // SeedStrategyConfig provides configuration options for SeedStrategy. Zeroed (unset) values are used.
@@ -151,7 +140,7 @@ func SubgraphStrategy(config SubgraphStrategyConfig) TraversalStrategy {
 	if config.CheckAdjacentVertices != nil {
 		configMap["checkAdjacentVertices"] = config.CheckAdjacentVertices.(bool)
 	}
-	return &traversalStrategy{name: decorationNamespace + "SubgraphStrategy", configuration: configMap}
+	return &traversalStrategy{name: "SubgraphStrategy", configuration: configMap}
 }
 
 // SubgraphStrategyConfig provides configuration options for SubgraphStrategy. Zeroed (unset) values are ignored.
@@ -187,8 +176,7 @@ func VertexProgramStrategy(config ...VertexProgramStrategyConfig) TraversalStrat
 			configMap[k] = v
 		}
 	}
-
-	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: configMap}
+	return &traversalStrategy{name: "VertexProgramStrategy", configuration: configMap}
 }
 
 // VertexProgramStrategyConfig provides configuration options for VertexProgramStrategy.
@@ -212,8 +200,7 @@ func MatchAlgorithmStrategy(config ...MatchAlgorithmStrategyConfig) TraversalStr
 			configMap["matchAlgorithm"] = config[0].MatchAlgorithm
 		}
 	}
-
-	return &traversalStrategy{name: finalizationNamespace + "MatchAlgorithmStrategy", configuration: configMap}
+	return &traversalStrategy{name: "MatchAlgorithmStrategy", configuration: configMap}
 }
 
 // MatchAlgorithmStrategyConfig provides configuration options for MatchAlgorithmStrategy.
@@ -222,22 +209,38 @@ type MatchAlgorithmStrategyConfig struct {
 	MatchAlgorithm string
 }
 
-func ReferenceElementStrategy() TraversalStrategy {
-	return &traversalStrategy{name: finalizationNamespace + "ReferenceElementStrategy"}
+func ReferenceElementStrategy(options ...map[string]interface{}) TraversalStrategy {
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ReferenceElementStrategy", configuration: config}
 }
 
-func ComputerFinalizationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerFinalizationNamespace + "ComputerFinalizationStrategy"}
+func ComputerFinalizationStrategy(options ...map[string]interface{}) TraversalStrategy {
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ComputerFinalizationStrategy", configuration: config}
 }
 
-func ProfileStrategy() TraversalStrategy {
-	return &traversalStrategy{name: finalizationNamespace + "ProfileStrategy"}
+func ProfileStrategy(options ...map[string]interface{}) TraversalStrategy {
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ProfileStrategy", configuration: config}
 }
 
 // Verification strategies
 
-func ComputerVerificationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: verificationNamespace + "ComputerVerificationStrategy"}
+func ComputerVerificationStrategy(options ...map[string]interface{}) TraversalStrategy {
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ComputerVerificationStrategy", configuration: config}
 }
 
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
@@ -250,7 +253,7 @@ func EdgeLabelVerificationStrategy(config ...EdgeLabelVerificationStrategyConfig
 		configMap["throwException"] = config[0].ThrowException
 	}
 
-	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: configMap}
+	return &traversalStrategy{name: "EdgeLabelVerificationStrategy", configuration: configMap}
 }
 
 // EdgeLabelVerificationStrategyConfig provides configuration options for EdgeLabelVerificationStrategy.
@@ -265,12 +268,12 @@ type EdgeLabelVerificationStrategyConfig struct {
 // about the traversal. This strategy is not activated by default. However, graph system providers may choose
 // to make this a default strategy in order to ensure their respective strategies are better able to operate.
 func LambdaRestrictionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: verificationNamespace + "LambdaRestrictionStrategy"}
+	return &traversalStrategy{name: "LambdaRestrictionStrategy"}
 }
 
 // ReadOnlyStrategy detects steps marked with Mutating and returns an error if one is found.
 func ReadOnlyStrategy() TraversalStrategy {
-	return &traversalStrategy{name: verificationNamespace + "ReadOnlyStrategy"}
+	return &traversalStrategy{name: "ReadOnlyStrategy"}
 }
 
 // ReservedKeysVerificationStrategy detects property keys that should not be used by the traversal.
@@ -284,7 +287,7 @@ func ReservedKeysVerificationStrategy(config ...ReservedKeysVerificationStrategy
 			configMap["keys"] = config[0].Keys
 		}
 	}
-	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: configMap}
+	return &traversalStrategy{name: "ReservedKeysVerificationStrategy", configuration: configMap}
 }
 
 // ReservedKeysVerificationStrategyConfig provides configuration options for ReservedKeysVerificationStrategy.
@@ -296,11 +299,11 @@ type ReservedKeysVerificationStrategyConfig struct {
 }
 
 func StandardVerificationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: verificationNamespace + "StandardVerificationStrategy"}
+	return &traversalStrategy{name: "StandardVerificationStrategy"}
 }
 
 func VertexProgramRestrictionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerVerificationNamespace + "VertexProgramRestrictionStrategy"}
+	return &traversalStrategy{name: "VertexProgramRestrictionStrategy"}
 }
 
 // Optimization strategies
@@ -313,20 +316,20 @@ func VertexProgramRestrictionStrategy() TraversalStrategy {
 // the Vertex on the other side of an Edge) can be satisfied by trips to incident Graph Elements (e.g. just the Edge
 // itself).
 func AdjacentToIncidentStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "AdjacentToIncidentStrategy"}
+	return &traversalStrategy{name: "AdjacentToIncidentStrategy"}
 }
 
 // ByModulatorOptimizationStrategy looks for standard traversals in By-modulators and replaces them with more
 // optimized traversals (e.g. TokenTraversal) if possible.
 func ByModulatorOptimizationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "ByModulatorOptimizationStrategy"}
+	return &traversalStrategy{name: "ByModulatorOptimizationStrategy"}
 }
 
 // CountStrategy optimizes any occurrence of CountGlobalStep followed by an IsStep The idea is to limit
 // the number of incoming elements in a way that it's enough for the IsStep to decide whether it evaluates
 // true or false. If the traversal already contains a user supplied limit, the strategy won't modify it.
 func CountStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "CountStrategy"}
+	return &traversalStrategy{name: "CountStrategy"}
 }
 
 // EarlyLimitStrategy looks for RangeGlobalSteps that can be moved further left in the traversal and thus be applied
@@ -334,7 +337,7 @@ func CountStrategy() TraversalStrategy {
 // If the logical consequence of one or multiple RangeGlobalSteps is an empty result, the strategy will remove
 // as many steps as possible and add a NoneStep instead.
 func EarlyLimitStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "EarlyLimitStrategy"}
+	return &traversalStrategy{name: "EarlyLimitStrategy"}
 }
 
 // FilterRankingStrategy reorders filter- and order-steps according to their rank. Step ranks are defined within
@@ -342,18 +345,18 @@ func EarlyLimitStrategy() TraversalStrategy {
 // push step labels as far "right" as possible in order to keep Traversers as small and bulkable as possible prior to
 // the absolute need for Path-labeling.
 func FilterRankingStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "FilterRankingStrategy"}
+	return &traversalStrategy{name: "FilterRankingStrategy"}
 }
 
 func GraphFilterStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerOptimizationNamespace + "GraphFilterStrategy"}
+	return &traversalStrategy{name: "GraphFilterStrategy"}
 }
 
 // IdentityRemovalStrategy looks for IdentityStep instances and removes them.
 // If the identity step is labeled, its labels are added to the previous step.
 // If the identity step is labeled and it's the first step in the traversal, it stays.
 func IdentityRemovalStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "IdentityRemovalStrategy"}
+	return &traversalStrategy{name: "IdentityRemovalStrategy"}
 }
 
 // IncidentToAdjacentStrategy looks for .OutE().InV(), .InE().OutV() and .BothE().OtherV()
@@ -364,7 +367,7 @@ func IdentityRemovalStrategy() TraversalStrategy {
 //	the traversal contains a Path step
 //	the traversal contains a Lambda step
 func IncidentToAdjacentStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "IncidentToAdjacentStrategy"}
+	return &traversalStrategy{name: "IncidentToAdjacentStrategy"}
 }
 
 // InlineFilterStrategy analyzes filter-steps with child traversals that themselves are pure filters. If
@@ -373,7 +376,7 @@ func IncidentToAdjacentStrategy() TraversalStrategy {
 // a graph provider may need to reason about when writing their own strategies. As a result, this strategy helps
 // increase the likelihood that a provider's filtering optimization will succeed at re-writing the traversal.
 func InlineFilterStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "InlineFilterStrategy"}
+	return &traversalStrategy{name: "InlineFilterStrategy"}
 }
 
 // LazyBarrierStrategy is an OLTP-only strategy that automatically inserts a NoOpBarrierStep after every
@@ -381,25 +384,29 @@ func InlineFilterStrategy() TraversalStrategy {
 // traversal's last step or a barrier. NoOpBarrierSteps allow Traversers to be bulked, thus this strategy
 // is meant to reduce memory requirements and improve the overall query performance.
 func LazyBarrierStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "LazyBarrierStrategy"}
+	return &traversalStrategy{name: "LazyBarrierStrategy"}
 }
 
 // MatchPredicateStrategy will fold any post-Where() step that maintains a traversal constraint into
 // Match(). MatchStep is intelligent with traversal constraint applications and thus, can more
 // efficiently use the constraint of WhereTraversalStep or WherePredicateStep.
 func MatchPredicateStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "MatchPredicateStrategy"}
+	return &traversalStrategy{name: "MatchPredicateStrategy"}
 }
 
-func MessagePassingReductionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerOptimizationNamespace + "MessagePassingReductionStrategy"}
+func MessagePassingReductionStrategy(options ...map[string]interface{}) TraversalStrategy {
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "MessagePassingReductionStrategy", configuration: config}
 }
 
 // OrderLimitStrategy is an OLAP strategy that folds a RangeGlobalStep into a preceding
 // OrderGlobalStep. This helps to eliminate traversers early in the traversal and can
 // significantly reduce the amount of memory required by the OLAP execution engine.
 func OrderLimitStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "OrderLimitStrategy"}
+	return &traversalStrategy{name: "OrderLimitStrategy"}
 }
 
 // PathProcessorStrategy  is an OLAP strategy that does its best to turn non-local children in Where()
@@ -407,13 +414,13 @@ func OrderLimitStrategy() TraversalStrategy {
 // PathProcessorStrategy helps to ensure that more traversals meet the local child constraint imposed
 // on OLAP traversals.
 func PathProcessorStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "PathProcessorStrategy"}
+	return &traversalStrategy{name: "PathProcessorStrategy"}
 }
 
 // PathRetractionStrategy will remove Paths from the Traversers and increase the likelihood of bulking
 // as Path data is not required after Select('b').
 func PathRetractionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "PathRetractionStrategy"}
+	return &traversalStrategy{name: "PathRetractionStrategy"}
 }
 
 // ProductiveByStrategy takes an argument of By() and wraps it CoalesceStep so that the result is either
@@ -426,7 +433,7 @@ func ProductiveByStrategy(config ...ProductiveByStrategyConfig) TraversalStrateg
 		configMap["productiveKeys"] = config[0].ProductiveKeys
 	}
 
-	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy", configuration: configMap}
+	return &traversalStrategy{name: "ProductiveByStrategy", configuration: configMap}
 }
 
 // ProductiveByStrategyConfig provides configuration options for ProductiveByStrategy.
@@ -443,7 +450,7 @@ type ProductiveByStrategyConfig struct {
 //	LoopsStep
 //	LambdaHolder
 func RepeatUnrollStrategy() TraversalStrategy {
-	return &traversalStrategy{name: optimizationNamespace + "RepeatUnrollStrategy"}
+	return &traversalStrategy{name: "RepeatUnrollStrategy"}
 }
 
 // RemoteStrategy reconstructs a Traversal by appending a RemoteStep to its end. That step will submit the Traversal to
@@ -455,7 +462,7 @@ func RemoteStrategy(connection DriverRemoteConnection) TraversalStrategy {
 			return
 		}
 
-		rs, err := connection.submitBytecode(g.Bytecode)
+		rs, err := connection.submitGremlinLang(g.GremlinLang)
 		if err != nil {
 			return
 		}

@@ -89,7 +89,7 @@ func (d *DynamicAuth) GetHeader() http.Header {
 	return d.fn().GetHeader()
 }
 
-// GetHeader calls the stored function to get basic authentication dynamically.
+// GetBasicAuth calls the stored function to get basic authentication dynamically.
 func (d *DynamicAuth) GetBasicAuth() (bool, string, string) {
 	return d.fn().GetBasicAuth()
 }
