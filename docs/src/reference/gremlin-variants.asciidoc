@@ -464,15 +464,8 @@ fmt.Println(resAnon.GetString())
 [[gremlin-go-differences]]
 === Differences
 
-In situations where Go reserved words and global functions overlap with standard Gremlin steps and tokens, those
-bits of conflicting Gremlin get an underscore appended as a suffix. In addition, all function names start with a
-capital letter in order to be public:
-
-*Steps* - <<and-step,And()>>, <<as-step,As()>>, <<filter-step,Filter()>>, <<from-step,From()>>, <<id-step,Id()>>,
-<<is-step,Is()>>, <<in-step,In()>>, <<max-step,Max()>>, <<min-step,Min()>>, <<not-step,Not()>>, <<or-step,Or()>>,
-<<range-step,Range()>>, <<sum-step,Sum()>>, <<with-step,With()>>
-
-*Tokens* - <<a-note-on-scopes,Scope.Global>>, <<a-note-on-scopes,Scope.Local>>
+All step names start with a capital letter which is consistent with the idiomatic style for Go. This use of Pascal-case
+extends to enums like `Direction`, e.g. `Direction.OUT` is `Direction.Out` in Go.  
 
 [[gremlin-go-aliases]]
 === Aliases
