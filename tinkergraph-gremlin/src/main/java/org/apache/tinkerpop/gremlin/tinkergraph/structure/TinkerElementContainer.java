@@ -133,9 +133,14 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
-     * Used to understand if the element has deleted in the current transaction
+     * Used to understand if the element has been deleted in the current transaction
      */
     public boolean isDeleted() { return isDeleted || isDeletedInTx.get(); }
+
+    /**
+     * Used to understand if the element has been read in the current transaction
+     */
+    public boolean isRead() { return isReadInTx.get(); }
 
     /**
      * Mark element as deleted in the current transaction.
@@ -183,6 +188,13 @@ final class TinkerElementContainer<T extends TinkerElement> {
         final T updatedValue = transactionUpdatedValue.get();
         return isDeleted ||
                 element != null && updatedValue != null && updatedValue.version() != element.version();
+    }
+
+    /**
+     * Used to understand if element is in use by any transaction.
+     */
+    public boolean inUse() {
+        return usesInTransactions.get() > 0;
     }
 
     /**
