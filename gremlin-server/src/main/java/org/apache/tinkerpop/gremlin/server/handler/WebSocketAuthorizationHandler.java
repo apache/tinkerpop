@@ -77,6 +77,9 @@ public class WebSocketAuthorizationHandler extends ChannelInboundHandlerAdapter 
                         authorizer.authorize(user, requestMessage);
                         ctx.fireChannelRead(requestMessage);
                         break;
+                    case Tokens.OPS_CLOSE:
+                        ctx.fireChannelRead(requestMessage);
+                        break;
                     default:
                         throw new AuthorizationException("This AuthorizationHandler only handles requests with OPS_BYTECODE or OPS_EVAL.");
                 }
