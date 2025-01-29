@@ -52,6 +52,10 @@ limitations under the License.
             <version>${hadoop.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>ch.qos.reload4j</groupId>
                     <artifactId>reload4j</artifactId>
                 </exclusion>
@@ -101,6 +105,11 @@ limitations under the License.
         </dependency>
         <!-- hadoop-client conflict resolution -->
         <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>3.22.0</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.reload4j</groupId>
             <artifactId>reload4j</artifactId>
             <version>1.2.19</version>
@@ -128,7 +137,7 @@ limitations under the License.
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.8.1</version>
+            <version>9.30.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
