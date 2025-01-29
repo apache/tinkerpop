@@ -162,21 +162,21 @@ limitations under the License.
         <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>4.0.23</groovy.version>
         <guice.version>4.2.3</guice.version>
-        <hadoop.version>3.3.3</hadoop.version>
+        <hadoop.version>3.4.1</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.13.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <junit.version>4.13.1</junit.version>
-        <kerby.version>2.0.1</kerby.version>
+        <kerby.version>2.0.3</kerby.version>
         <logback.version>1.2.13</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.10.0</mockito.version>
         <netty.version>4.1.101.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spark.version>3.3.2</spark.version>
+        <spark.version>3.5.4</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
