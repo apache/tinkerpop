@@ -41,7 +41,7 @@
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.42.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
     "grunt": "^1.5.3",
     "grunt-cli": "~1.5.0",
