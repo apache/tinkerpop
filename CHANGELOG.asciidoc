@@ -106,6 +106,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
 * Changed Gremlin grammar to make use of `g` to spawn child traversals a syntax error.
 * Added `unexpected-response` handler to `ws` for `gremlin-javascript`
+* Fixed bug in `TinkerTransactionGraph` where a read-only transaction may leave elements trapped in a "zombie transaction".
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)

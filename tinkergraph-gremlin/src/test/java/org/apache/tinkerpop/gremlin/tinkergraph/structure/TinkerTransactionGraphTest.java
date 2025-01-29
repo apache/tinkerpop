@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -1456,5 +1457,50 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, (long) gtx.E().count().next());
 
         countElementsInNewThreadTx(g, 1, 0);
+    }
+
+    @Test
+    public void shouldHandleSequenceOfCreateReadDeleteCreateSameVertex() {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+        g.V().next();
+        graph.tx().commit();
+        g.V().drop().iterate();
+        graph.tx().commit();
+
+        assertEquals(false, graph.hasVertex(1));
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+
+        assertFalse(graph.getVertices().get(1).inUse());
+        assertEquals(true, graph.hasVertex(1));
+    }
+
+    @Test
+    public void shouldHandleCorrectlyHandleCountForChangedAndReadElement() {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+
+        g.addV().property(T.id, 1).next();
+        graph.tx().commit();
+        TinkerElementContainer vertex = graph.getVertices().get(1);
+
+        g.V().next();
+        g.V().property("prop", 5).next();
+        g.V().next();
+        g.V().property("prop2", "foo").next();
+        assertTrue(vertex.isChanged());
+        assertTrue(vertex.isRead());
+        assertTrue(vertex.inUse());
+
+        graph.tx().commit();
+        assertFalse(vertex.isChanged());
+        assertFalse(vertex.isRead());
+
+        assertFalse(vertex.inUse());
     }
 }
