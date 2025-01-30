@@ -178,9 +178,8 @@ limitations under the License.
                             <artifactSet>
                                 <!-- exclude logging stuff from uberjar - shading prevents proper logger initialization -->
                                 <excludes>
-                                    <exclude>ch.qos.logback:logback-classic</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
                                     <exclude>org.slf4j:slf4j-api</exclude>
-                                    <exclude>org.slf4j:jcl-over-slf4j</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>

@@ -30,6 +30,13 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== SLF4j 2.x
+
+TinkerPop has generally upgraded to SLF4j 2.x which brings with it some important changes to log initialization which
+may affect user applications that are upgrading from TinkerPop 3.x. Please see the
+[SLF4j documentation](https://www.slf4j.org/faq.html#changesInVersion200) that explains the differences and how they
+might apply.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
