@@ -21,7 +21,7 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "chai": "~4.5.0",
+    "chai": "~5.1.2",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
     "cross-env": "^7.0.3",
