@@ -141,12 +141,19 @@ class Console {
         }
 
         // if there are active plugins then initialize them in the order that they are listed
+        // if any of the active plugins are invalid or empty, skip over
         activePlugins.each { pluginName ->
             def pluggedIn = mediator.availablePlugins[pluginName]
-            pluggedIn.activate()
 
-            if (!io.quiet)
-                io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
+            if (pluggedIn != null) {
+                pluggedIn.activate()
+
+                if (!io.quiet)
+                    io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
+            } else {
+                if (!io.quiet)
+                    io.out.println(Colorizer.render(Preferences.infoColor, "invalid plugin: " + pluginName))
+            }
         }
 
         // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
