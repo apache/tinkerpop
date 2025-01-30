@@ -72,7 +72,7 @@ class Mediator {
 
     static def readPluginState() {
         def file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
-        return file.exists() ? file.readLines() : []
+        return file.exists() ? file.readLines().findAll {it } : []
     }
 
     def void close() {
