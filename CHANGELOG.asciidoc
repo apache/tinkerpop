@@ -30,17 +30,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
+* Removed old `Translator` infrastructure.
 * Removed grammar support for enums to be used as variables.
 * Changed `valueMap` in grammar to disallow the `boolean` argument as a variable to avoid ambiguous step calls.
 * Added integer overflow checks for `sum()`.
-* Gremlin Server only supports instantiation of `authentication.authenticationHandler` with three-arg constructor.
+* Modified Gremlin Server to only support instantiation of `authentication.authenticationHandler` with three-arg constructor.
 * Removed previously deprecated two-arg constructors for `authentication.authenticationHandler` implementations.
 * Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
-* Replace `gremlin-groovy` with `gremlin-lang` as the default language in `gremlin-server`.
+* Replaced `gremlin-groovy` with `gremlin-lang` as the default language in `gremlin-server`.
 * Changed `sum()` to retain the type common to the stream rather than always promoting to `long` given the need for it to multiple by the `long` bulk value for the traverser.
 * Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
 * Added `Set` syntax in `gremlin-language`.
@@ -59,38 +60,36 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added TypeScript & ECMAScript module support.
 * Improved graph structures type definitions in TypeScript.
 * Removed usage of `Bytecode` for Gremlin Server and Java GLV, script engines and `GremlinExecutor` will not be able to handle `Bytecode`.
-* `Bytecode` - based authorization removed.
+* Removed `Bytecode` based authorization.
 * Added `GremlinLang` which allows to generate gremlin-lang compatible string based on Traversal.
-* `Bindings` replaced with 'Parameter`, it's thread-safe construct which can be used to pass parameters from GLV to server.
-* Feature tests will be performed not only for `GremlinGroovyScriptEngine`, but also for `GremlinLangScriptEngine`.
-* Old translator's removed, new Grammar-based one's will be used.
-* Serialization support removed for `Bindings` and `Bytecode`.
-* `EmbeddedRemoteConnection` will use `Gremlinlang`, not `JavaTranslator`.
-* Java `Client` will no longer support submitting traversals. `DriverRemoteConnection` should be used instead.
+* Removed serialization support for `Bindings` and `Bytecode`.
+* Changed `EmbeddedRemoteConnection` to prefer the grammar-based translator.
+* Removed `Client.submit(Traversal)` as a mechanism for submitting traversal, prefer `DriverRemoteConnection` instead.
 * Removed usage of `Bytecode` from `gremlin-python`.
 * Added `auth` module in `gremlin-python` for pluggable authentication.
 * Fixed `GremlinLangScriptEngine` handling for some strategies.
 * Updated Docker test suite set-up in `gremlin-python` to work with HTTP driver/server.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
-* Remove serializers for datatype removed from GraphBinaryV4 IO spec.
-* Add `DateTime` serializer for Java and Python according to GraphBinaryV4 IO spec.
+* Added `DateTime` serializer for Java and Python according for GraphBinaryV4.
 * Replaced `Date` with `OffsetDateTime` in Java core.
-* Update serializers for `label` as a singleton list of string according to GraphBinaryV4 IO spec.
-* Added `bulked` byte to `Response Message` serialization according to GraphBinaryV4 IO spec.
+* Defined GraphBinaryV4 specification.
+* Defined GraphSONV4 specification.
+* Update serializers for `label` of an `Element` as a singleton list of string for GraphBinaryV4.
+* Added `bulked` byte to `Response Message` serialization for GraphBinaryV4.
 * Added a `bulked` header set by cluster setting, as well as a with `bulked` request option to turn on the bulking of result data.
-* Updated List and BulkSet serializers in Java and Python to implement `bulk` value flag for List according to GraphBinaryV4 IO spec.
-* The `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
-* The `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
-* Add missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
-* Add missing strategies to `strategies.py` in `gremlin-python`.
+* Updated `List` and `BulkSet` serializers to implement `bulk` value flag for `List`.
+* Renamed `maxContentLength` setting for Gremlin Driver to `maxResponseContentLength` and blocked incoming responses that are too large based on total response size.
+* Renamed `maxContentLength` setting for Gremlin Server to `maxRequestContentLength`.
+* Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
+* Added missing strategies to `strategies.py` in `gremlin-python`.
 * Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
 * Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Updated `TraversalStrategyProxy` to utilize strategy names instead of strategy classes
-* Use `TraversalStrategyProxy` in Java, or `TraversalStrategy` in Python to pass custom strategies in traversals
+* Established mechanism for using customer strategies in remote context by using `TraversalStrategyProxy` in Java, or `TraversalStrategy` in GLVs.
 * Removed `minSize` setting for Gremlin Driver connection pool since connections are now short-lived HTTP connections
 * Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
-* Enable TCP Keep-Alive in GremlinServer.
+* Enabled TCP Keep-Alive in GremlinServer.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

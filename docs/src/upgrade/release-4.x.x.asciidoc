@@ -242,7 +242,8 @@ The `none()` step, which was primarily used by `iterate()` to discard traversal 
 renamed to `discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and
 passes lists with no elements matching the predicate.
 
-==== Splitting a string into characters using split()
+==== split() and characters
+
 The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
 [source,groovy]
 ----
@@ -402,11 +403,19 @@ available if the driver has been idle for a while.
 The Java driver can currently handle a response that is a maximum of 2^31-1 (`Integer.MAX_VALUE`) bytes in size.
 Queries that return more data will have to be separated into multiple queries that return less data.
 
-==== Introduction of GValue and Update to Parameterization in Gremlin-Lang
+==== GValue
 
-A new construct to parameterize traversals called `GValue` has been added to gremlin. A `GValue` wraps a parameter name
-and value, and can be provided as input to parameterizable steps when building a `GraphTraversal`. The following
-examples will produce a gremlin script of `g.V().hasLabel(label)` with a parameter map of `["label": "person"]`:
+Parameterization was first added to gremlin-lang in TinkerPop 3.7.0, however was limited in that variables were
+immediately resolved to literals during the compilation of a gremlin script. This direct resolution of variables limited
+providers ability to detect and optimize recurring query patterns.
+
+With this update, a new class `GValue` is introduced which wraps a parameter name and value. Steps which will benefit
+from parameterization have been given overloads to accept GValues. Users can pass GValue's into their traversals to
+inject parameters.
+
+A `GValue` wraps a parameter name and value, and can be provided as input to parameterizable steps when building a
+`GraphTraversal`. The following examples will produce a gremlin script of `g.V().hasLabel(label)` with a parameter map
+of `["label": "person"]`:
 
 [source,java]
 ----
@@ -420,6 +429,10 @@ g.V().has_label(GValue('label', 'person'))
 
 Use of `GValue` in traversals with repeated patterns may lead to improved performance in certain graphs. Consult the
 documentation for your specific graph provider for recommendations on how to best utilize `GValue` in traversals.
+
+A new `DefaultVariableResolver` has also been introduced with this change. The grammar will now resolve variables into
+`GValue` which are passed to the constructed traversal, instead of directly resolving them to literals. The old variable
+resolution behavior can still be obtained via the `DirectVariableResolver` if desired.
 
 ==== Gremlin Server Default Language
 
@@ -519,20 +532,6 @@ you provide to your users. With the change from WebSockets to HTTP, some of the 
 some of the fields no longer exist. See link:https://tinkerpop.apache.org/docs/4.0.0/reference/#_configuring_2[options]
 for an updated list. One of the most important changes is to the `Channelizer` configuration as only the
 `HttpChannelizer` remains and the rest have been removed.
-
-===== Introduction of GValue and Update to Parameterization in Gremlin-Lang
-
-Parameterization was first added to gremlin-lang in TinkerPop 3.7.0, however was limited in that variables were
-immediately resolved to literals during the compilation of a gremlin script. This direct resolution of variables limited
-providers ability to detect and optimize recurring query patterns.
-
-With this update, a new class `GValue` is introduced which wraps a parameter name and value. Steps which will benefit
-from parameterization have been given overloads to accept GValues. Users can pass GValue's into their traversals to
-inject parameters.
-
-A new `DefaultVariableResolver` has also been introduced with this change. The grammar will now resolve variables into
-`GValue` which are passed to the constructed traversal, instead of directly resolving them to literals. The old variable
-resolution behavior can still be obtained via the `DirectVariableResolver` if desired.
 
 ===== Gremlin Server Default Language
 
