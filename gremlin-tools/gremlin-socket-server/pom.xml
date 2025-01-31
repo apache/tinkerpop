@@ -117,7 +117,7 @@
             <plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
-                <version>1.2.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>build-image</id>
