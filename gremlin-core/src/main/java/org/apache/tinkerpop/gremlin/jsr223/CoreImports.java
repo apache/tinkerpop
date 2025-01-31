@@ -30,6 +30,8 @@ import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
+import org.apache.tinkerpop.gremlin.language.translator.Translator;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -323,6 +325,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(java.util.Date.class);
         CLASS_IMPORTS.add(java.sql.Timestamp.class);
         CLASS_IMPORTS.add(java.util.UUID.class);
+        CLASS_IMPORTS.add(GremlinTranslator.class);
+        CLASS_IMPORTS.add(Translator.class);
 
         /////////////
         // METHODS //
