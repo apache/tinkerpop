@@ -36,7 +36,7 @@ const Footer = () => (
   <CenteredContainer>
     <FooterContent>
       <p>Gremlint version: {gremlintVersion}</p>
-      <p>Copyright © 2015-2023 The Apache Software Foundation.</p>
+      <p>Copyright © 2015-2025 The Apache Software Foundation.</p>
     </FooterContent>
   </CenteredContainer>
 );
