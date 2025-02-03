@@ -161,7 +161,7 @@ limitations under the License.
         <commons.text.version>1.10.0</commons.text.version>
         <cucumber.version>6.11.0</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.23</groovy.version>
+        <groovy.version>4.0.25</groovy.version>
         <guice.version>4.2.3</guice.version>
         <hadoop.version>3.3.3</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
