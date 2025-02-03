@@ -40,7 +40,7 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.ivy</groupId>
             <artifactId>ivy</artifactId>
-            <version>2.5.2</version>
+            <version>2.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>
@@ -57,11 +57,6 @@ limitations under the License.
                     <artifactId>asm-util</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-json</artifactId>
-            <version>${groovy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>

@@ -42,12 +42,6 @@
             <version>${groovy.version}</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-json</artifactId>
-            <version>${groovy.version}</version>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 
     <properties>
