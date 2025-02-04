@@ -873,7 +873,7 @@ limitations under the License.
             <dependency>
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
-                <version>3.3</version>
+                <version>3.4</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
