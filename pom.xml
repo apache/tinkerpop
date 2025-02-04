@@ -158,7 +158,7 @@ limitations under the License.
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <commons.text.version>1.10.0</commons.text.version>
+        <commons.text.version>1.13.0</commons.text.version>
         <cucumber.version>6.11.0</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>4.0.25</groovy.version>
