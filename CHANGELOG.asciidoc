@@ -31,7 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed Gremlin grammar to make use of `g` to spawn child traversals a syntax error.
 * Added `unexpected-response` handler to `ws` for `gremlin-javascript`
 * Fixed bug in `TinkerTransactionGraph` where a read-only transaction may leave elements trapped in a "zombie transaction".
-* Added quotations in 'gremlin.sh' to accept directories with spaces in the name
+* Fixed bug in `gremlin.sh` where it couldn't accept a directory name containing spaces.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
