@@ -39,10 +39,6 @@ limitations under the License.
             <artifactId>tinkergraph-gremlin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
         <!-- commons-codec is a dependency of httpclient - excluded in root pom to bring all commons-codec versions inline -->
         <dependency>
             <groupId>commons-codec</groupId>
@@ -235,6 +231,13 @@ limitations under the License.
                                     <shadedPattern>io.shaded.netty</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <!-- exclude jdk21 classes for now -->
+                            <filters>
+                                <filter>
+                                    <artifact>ch.qos.logback:logback-core</artifact>
+                                    <excludes>versions/21/**</excludes>
+                                </filter>
+                            </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"></transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">

@@ -64,6 +64,14 @@ limitations under the License.
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.nimbusds</groupId>
                     <artifactId>nimbus-jose-jwt</artifactId>
                 </exclusion>
@@ -139,6 +147,11 @@ limitations under the License.
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>27.0-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.3.4</version>
         </dependency>
         <!-- use jackson 2.13.5 to fit better with spark where Scala module 2.13.4 requires Jackson Databind version >= 2.13.0 and < 2.14.0 -->
         <dependency>
