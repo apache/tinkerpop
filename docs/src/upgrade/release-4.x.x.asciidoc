@@ -58,6 +58,7 @@ limitations and constraints pertinent to this beta will be highlighted through t
 
 === Upgrading for Users
 
+[[result-bulking-from-server]]
 ==== Result Bulking from Server
 In previous versions, when a traversal is submitted through the DriverRemoteConnection (DRC) via the Bytecode processor,
 the results from the server were bulked as Traverser, which provides a form of result optimization across the wire.
@@ -88,15 +89,32 @@ depending on embedded or remote usage.
 
 For embedded cases, a BulkSet will be returned as before.
 
-For remote cases, BulkSets will now be expanded into Lists upon deserialization with `gremlin-driver`. All other GLVs already expanded BulkSet to List prior to TinkerPop 4.
-Each element in the BulkSet will appear in the list the same number of times as specified by its bulk value.
+For remote cases, BulkSets will now be expanded into Lists upon deserialization with `gremlin-driver`. All other GLVs
+already expanded BulkSet to List prior to TinkerPop 4. Each element in the BulkSet will appear in the list the same
+number of times as specified by its bulk value.
 
 ==== Configuration changes
 This is a placeholder to summarize configuration-related changes.
 
-* `maxContentLength` setting for Gremlin Driver has been renamed to `maxResponseContentLength` and now blocks incoming responses that are too large based on total response size.
-* `maxContentLength` setting for Gremlin Server has been renamed to `maxRequestContentLength`.
-* `enableCompression` setting has been removed.
+* Gremlin Server
+** `maxContentLength` setting has been renamed to `maxRequestContentLength`.
+* Java GLV
+** `enableCompression` setting has been removed.
+** `bulkResults` has been added. See <<result-bulking-from-server, result bulking>> for more details.
+** `maxContentLength` setting has been renamed to `maxResponseContentLength` and now blocks incoming responses that are
+too large based on total response size.
+** `addInterceptorAfter`, `addInterceptorBefore`, `addInterceptor` and `removeInterceptor` have been added.
+See <<java-requestinterceptor, Changes to Java RequestInterceptor>> for more details.
+* Python GLV
+** `enableCompression` setting has been removed.
+** `bulk_results` has been added. See <<result-bulking-from-server, result bulking>> for more details.
+** `interceptors` has been added to the Python GLV to modify HTTP requests. See
+<<python-requestinterceptor, Addition of Python interceptor>> for more details.
+** `message_serializer` setting has been separated into `request_serializer` and `response_serializer`. See
+<<python-requestinterceptor, Addition of Python interceptor>> for more details.
+** `username` and `password` settings for the Python GLV has been replaced with `auth`.
+** `kerberized_service` setting has been removed.
+** `session` setting has been removed.
 
 [[simplified-g-creation]]
 ==== Simplification to g creation
@@ -165,6 +183,7 @@ The Gephi Plugin for `gremlin-console` is no longer supported and has been remov
 any graph visualization tool, however there are a number of community-led alternatives available, many of which are
 listed on the link:https://tinkerpop.apache.org/community.html#powered-by[TinkerPop community page].
 
+[[java-requestinterceptor]]
 ==== Changes to Java RequestInterceptor
 
 Because the underlying transport has been changed from WebSockets to HTTP, the usage of the `RequestInterceptor` has
@@ -186,6 +205,7 @@ that is sent to the endpoint. There is a default interceptor added to every `Clu
 interceptor is responsible for serializing the request body is which what the server normally expects. This is intended
 to be an advanced customization technique that should only be used when needed.
 
+[[python-requestinterceptor]]
 ==== Addition of Python interceptor
 
 HTTP interceptors have been added to `gremlin-python` to enable capability similar to that of Java GLV. These
