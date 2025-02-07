@@ -1298,4 +1298,11 @@ public class TraversalMethodVisitorTest {
     public void shouldParseTraversalMethod_substring_long_long() throws Exception {
         compare(g.V().substring(1, 3), eval("g.V().substring(1, 3)"));
     }
+
+    @Test
+    public void shouldParseTraversalMethod_none_somethingAfter() throws Exception {
+        compare(g.V().none().path(), eval("g.V().none().path()"));
+        compare(g.V().none().E(), eval("g.V().none().E()"));
+        compare(g.V().none().none(), eval("g.V().none().none()"));
+    }
 }

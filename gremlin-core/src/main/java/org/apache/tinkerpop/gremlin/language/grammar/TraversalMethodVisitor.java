@@ -18,14 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import java.util.function.BiFunction;
@@ -1080,6 +1078,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_min_Scope(final GremlinParser.TraversalMethod_min_ScopeContext ctx) {
         return graphTraversal.min(antlr.argumentVisitor.parseScope(ctx.traversalScopeArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_none(final GremlinParser.TraversalMethod_noneContext ctx) {
+        return this.graphTraversal.none();
     }
 
     /**

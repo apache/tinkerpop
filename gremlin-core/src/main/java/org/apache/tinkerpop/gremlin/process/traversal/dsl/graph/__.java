@@ -1061,6 +1061,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#none()
+     */
+    public static <A> GraphTraversal<A, A> none() {
+        return __.<A>start().none();
+    }
+
+    /**
      * @see GraphTraversal#not(Traversal)
      */
     public static <A> GraphTraversal<A, A> not(final Traversal<?, ?> notTraversal) {
