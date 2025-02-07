@@ -562,6 +562,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public Traversal visitTraversalMethod_discard(final GremlinParser.TraversalMethod_discardContext ctx) {
+        return graphTraversal.discard();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_disjunct_Object(final GremlinParser.TraversalMethod_disjunct_ObjectContext ctx) {
         final Object literalOrVar = antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument());
         if (literalOrVar instanceof GValue && ((GValue) literalOrVar).getType().isCollection())

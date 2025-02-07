@@ -961,6 +961,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#discard()
+     */
+    public static <A> GraphTraversal<A, A> discard() {
+        return __.<A>start().discard();
+    }
+
+    /**
      * @see GraphTraversal#disjunct(Object)
      */
     public static <A> GraphTraversal<A, Set<?>> disjunct(final Object values) {
