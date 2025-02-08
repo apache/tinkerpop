@@ -116,4 +116,4 @@ fi
 
 # Start the JVM, execute the application, and return its exit code
 # shellcheck disable=SC2068
-exec $JAVA ${JVM_OPTS[@]} org.apache.tinkerpop.gremlin.console.Console "$@"
+exec $JAVA "${JVM_OPTS[@]}" org.apache.tinkerpop.gremlin.console.Console "$@"
