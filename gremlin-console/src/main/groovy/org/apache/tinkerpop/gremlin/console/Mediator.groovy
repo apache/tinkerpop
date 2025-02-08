@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.console
 
 import java.util.concurrent.atomic.AtomicBoolean
+
+import org.apache.commons.lang3.StringUtils
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -72,7 +75,7 @@ class Mediator {
 
     static def readPluginState() {
         def file = new File(ConsoleFs.PLUGIN_CONFIG_FILE)
-        return file.exists() ? file.readLines() : []
+        return file.exists() ? file.readLines().findAll { StringUtils.isNotEmpty(it) } : []
     }
 
     def void close() {
