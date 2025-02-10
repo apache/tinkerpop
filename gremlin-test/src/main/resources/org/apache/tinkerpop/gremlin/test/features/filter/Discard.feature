@@ -46,4 +46,64 @@ Feature: Step - discard()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_discard
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().discard()
+      """
+    When iterated to list
+    Then the result should be empty
 
+  Scenario: g_V_discard_discard
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().discard().discard()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_discard_fold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().discard().fold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[] |
+
+  Scenario: g_V_discard_fold_discard
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().discard().fold().discard()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_discard_fold_constantX1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().discard().fold().constant(1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  Scenario: g_V_projectXxX_byXcoalesceXage_isXgtX29XX_discardXX_selectXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().project("x").by(__.coalesce(__.values("age").is(P.gt(29)), __.discard())).
+        select("x")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |

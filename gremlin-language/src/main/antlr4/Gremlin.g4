@@ -54,7 +54,6 @@ transactionPart
 rootTraversal
     : traversalSource DOT traversalSourceSpawnMethod
     | traversalSource DOT traversalSourceSpawnMethod DOT chainedTraversal
-    | traversalSource DOT traversalSourceSpawnMethod DOT chainedParentOfGraphTraversal
     ;
 
 traversalSourceSelfMethod
@@ -163,12 +162,6 @@ traversalSourceSpawnMethod_union
 chainedTraversal
     : traversalMethod
     | chainedTraversal DOT traversalMethod
-    | chainedTraversal DOT chainedParentOfGraphTraversal
-    ;
-
-chainedParentOfGraphTraversal
-    : traversalSelfMethod
-    | chainedParentOfGraphTraversal DOT traversalSelfMethod
     ;
 
 nestedTraversal
@@ -209,6 +202,7 @@ traversalMethod
     | traversalMethod_cyclicPath
     | traversalMethod_dedup
     | traversalMethod_difference
+    | traversalMethod_discard
     | traversalMethod_disjunct
     | traversalMethod_drop
     | traversalMethod_elementMap
@@ -452,6 +446,10 @@ traversalMethod_dedup
 
 traversalMethod_difference
     : 'difference' LPAREN genericLiteralArgument RPAREN #traversalMethod_difference_Object
+    ;
+
+traversalMethod_discard
+    : 'discard' LPAREN RPAREN
     ;
 
 traversalMethod_disjunct
@@ -1102,10 +1100,6 @@ traversalSackMethod
     : traversalBarrier
     ;
 
-traversalSelfMethod
-    : traversalSelfMethod_discard
-    ;
-
 // Additional special rules that are derived from above
 // These are used to restrict broad method signatures that accept lambdas
 // to a smaller set.
@@ -1235,10 +1229,6 @@ traversalTerminalMethod_toSet
 
 traversalTerminalMethod_toBulkSet
     : 'toBulkSet' LPAREN RPAREN
-    ;
-
-traversalSelfMethod_discard
-    : 'discard' LPAREN RPAREN
     ;
 
 // Gremlin specific lexer rules

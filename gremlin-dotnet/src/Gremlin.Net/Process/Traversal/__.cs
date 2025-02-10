@@ -471,6 +471,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the discard step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Discard()
+        {
+            return new GraphTraversal<object, object>().Discard();
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the disjunct step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Disjunct(object disjunctObject)

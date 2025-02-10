@@ -146,10 +146,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitChainedParentOfGraphTraversal(final GremlinParser.ChainedParentOfGraphTraversalContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitNestedTraversal(final GremlinParser.NestedTraversalContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -355,7 +351,11 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_difference_Object(final GremlinParser.TraversalMethod_difference_ObjectContext ctx) { notImplemented(ctx); return null; }
-	/**
+    /**
+     * {@inheritDoc}
+     */
+    @Override public T visitTraversalMethod_discard(final GremlinParser.TraversalMethod_discardContext ctx) { notImplemented(ctx); return null; }
+    /**
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalMethod_disjunct_Object(final GremlinParser.TraversalMethod_disjunct_ObjectContext ctx) { notImplemented(ctx); return null; }
@@ -1130,10 +1130,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalSelfMethod(final GremlinParser.TraversalSelfMethodContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitTraversalComparator(final GremlinParser.TraversalComparatorContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1255,10 +1251,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalTerminalMethod_toBulkSet(final GremlinParser.TraversalTerminalMethod_toBulkSetContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalSelfMethod_discard(final GremlinParser.TraversalSelfMethod_discardContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

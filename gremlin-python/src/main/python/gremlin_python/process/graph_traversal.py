@@ -1206,6 +1206,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, GremlinLang()).difference(*args)
 
     @classmethod
+    def discard(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).discard(*args)
+
+    @classmethod
     def disjunct(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).disjunct(*args)
 
@@ -1945,6 +1949,14 @@ def dedup(*args):
     return __.dedup(*args)
 
 
+def discard(*args):
+    return __.discard(*args)
+
+
+def disjunct(*args):
+    return __.disjunct(*args)
+
+
 def drop(*args):
     return __.drop(*args)
 
@@ -2147,6 +2159,10 @@ def merge_v(*args):
 
 def min_(*args):
     return __.min_(*args)
+
+
+def none(*args):
+    return __.none(*args)
 
 
 def not_(*args):
@@ -2435,6 +2451,10 @@ statics.add_static('date_add', date_add)
 
 statics.add_static('date_diff', date_diff)
 
+statics.add_static('discard', discard)
+
+statics.add_static('disjunct', disjunct)
+
 statics.add_static('dedup', dedup)
 
 statics.add_static('drop', drop)
@@ -2536,6 +2556,8 @@ statics.add_static('merge_e', merge_e)
 statics.add_static('merge_v', merge_v)
 
 statics.add_static('min_', min_)
+
+statics.add_static('none', none)
 
 statics.add_static('not_', not_)
 

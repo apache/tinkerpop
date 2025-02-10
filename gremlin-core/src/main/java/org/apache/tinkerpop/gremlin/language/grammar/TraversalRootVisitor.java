@@ -56,9 +56,6 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
     public Traversal visitNestedTraversal(final GremlinParser.NestedTraversalContext ctx) {
         if (ctx.getChild(0) instanceof GremlinParser.RootTraversalContext) {
             return visitChildren(ctx);
-        } else if (ctx.getChild(2) instanceof GremlinParser.ChainedParentOfGraphTraversalContext) {
-            return new TraversalRootVisitor<Traversal>(antlr.createAnonymous.get()).
-                    visitChainedParentOfGraphTraversal(ctx.chainedTraversal().chainedParentOfGraphTraversal());
         } else {
             return new TraversalMethodVisitor(antlr, antlr.createAnonymous.get()).visitChainedTraversal(ctx.chainedTraversal());
         }
@@ -79,50 +76,11 @@ public class TraversalRootVisitor<G extends Traversal> extends DefaultGremlinBas
                 (GremlinParser.TraversalSourceSpawnMethodContext) ctx.getChild(childIndexOfTraversalSourceSpawnMethod));
 
         if (ctx.getChildCount() == 5) {
-            // handle chained traversal
-            final int childIndexOfChainedTraversal = 4;
-
-            if (ctx.getChild(childIndexOfChainedTraversal) instanceof GremlinParser.ChainedParentOfGraphTraversalContext) {
-                final TraversalRootVisitor traversalRootVisitor = new TraversalRootVisitor(traversal);
-                return traversalRootVisitor.visitChainedParentOfGraphTraversal(
-                        (GremlinParser.ChainedParentOfGraphTraversalContext) ctx.getChild(childIndexOfChainedTraversal));
-            } else {
-                final TraversalMethodVisitor traversalMethodVisitor = new TraversalMethodVisitor(antlr, traversal);
-                return traversalMethodVisitor.visitChainedTraversal(
-                        (GremlinParser.ChainedTraversalContext) ctx.getChild(childIndexOfChainedTraversal));
-            }
+            final TraversalMethodVisitor traversalMethodVisitor = new TraversalMethodVisitor(antlr, traversal);
+            return traversalMethodVisitor.visitChainedTraversal(
+                        (GremlinParser.ChainedTraversalContext) ctx.getChild(4));
         } else {
             return traversal;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Traversal visitTraversalSelfMethod(final GremlinParser.TraversalSelfMethodContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Traversal visitTraversalSelfMethod_discard(final GremlinParser.TraversalSelfMethod_discardContext ctx) {
-        this.traversal = traversal.discard();
-        return this.traversal;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Traversal visitChainedParentOfGraphTraversal(final GremlinParser.ChainedParentOfGraphTraversalContext ctx) {
-        if (ctx.getChildCount() == 1) {
-            return visitChildren(ctx);
-        } else {
-            visit(ctx.getChild(0));
-            return visit(ctx.getChild(2));
         }
     }
 
