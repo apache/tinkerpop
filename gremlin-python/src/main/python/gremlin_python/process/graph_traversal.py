@@ -536,11 +536,14 @@ class GraphTraversal(Traversal):
             "gremlin_python.process.GraphTraversalSource.hasKey will be replaced by "
             "gremlin_python.process.GraphTraversalSource.has_key.",
             DeprecationWarning)
-        return self.has_key_(*args)
+        return self.has_key(*args)
 
     def has_key_(self, *args):
-        self.gremlin_lang.add_step("hasKey", *args)
-        return self
+        warnings.warn(
+            "gremlin_python.process.GraphTraversalSource.has_key_ will be replaced by "
+            "gremlin_python.process.GraphTraversalSource.has_key.",
+            DeprecationWarning)
+        return self.has_key(*args)
 
     def has_key(self, *args):
         self.gremlin_lang.add_step("hasKey", *args)
@@ -1303,10 +1306,18 @@ class __(object, metaclass=MagicType):
             "gremlin_python.process.__.hasKey will be replaced by "
             "gremlin_python.process.__.has_key.",
             DeprecationWarning)
-        return cls.has_key_(*args)
+        return cls.has_key(*args)
 
     @classmethod
     def has_key_(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.has_key_ will be replaced by "
+            "gremlin_python.process.__.has_key.",
+            DeprecationWarning)
+        return cls.has_key(*args)
+    
+    @classmethod
+    def has_key (cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).has_key_(*args)
 
     @classmethod
@@ -2026,12 +2037,14 @@ def has_id(*args):
 
 
 def hasKey(*args):
-    return __.has_key_(*args)
+    return __.has_key(*args)
 
 
 def has_key_(*args):
-    return __.has_key_(*args)
+    return __.has_key(*args)
 
+def has_key(*args):
+    return __.has_key(*args)
 
 def hasLabel(*args):
     return __.has_label(*args)
@@ -2493,7 +2506,7 @@ statics.add_static('has_id', has_id)
 
 statics.add_static('hasKey', hasKey)
 
-statics.add_static('has_key', has_key_)
+statics.add_static('has_key', has_key)
 
 statics.add_static('hasLabel', hasLabel)
 
