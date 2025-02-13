@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified grammar to make `none()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
 * Added missing anonymous support for `disjunct()` in Python and Javascript.
 * Fixed bug in 'gremlin-server.sh' to account for spaces in directory names.
+* Deprecated gremlin_python.process.__.has_key_ in favor of gremlin_python.process.__.has_key.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
