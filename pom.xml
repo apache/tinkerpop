@@ -701,7 +701,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>2.1.0</version>
+                    <version>4.1.1</version>
                     <configuration>
                         <targetBytecode>1.8</targetBytecode>
                     </configuration>
