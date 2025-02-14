@@ -112,6 +112,12 @@ and communicating with other members of the community.
 . Fourteen days before release, issue an email to the dev mailing list to remind the community of the pending release.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
+. Prior to the start of code freeze, consider any minor non-breaking dependency updates. The following commands or tools
+may be useful to list available updates:
+- `mvn versions:display-dependency-updates -DallowMajorUpdates=false`
+- `go list -m -u all`
+- `npm-check-updates`
+- `dotnet-check-updates`
 . Seven days before release, announce the code freeze on the dev mailing list to remind the community that the branch
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
