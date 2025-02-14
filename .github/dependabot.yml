@@ -10,6 +10,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "pip"
     directory: "/gremlin-python/src/main/python"
     schedule:
@@ -20,6 +21,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "npm"
     directory: "/gremlin-javascript/src/main/javascript/gremlin-javascript"
     schedule:
@@ -30,6 +32,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: ["version-update:semver-patch", "version-update:semver-minor"]
+        dependency-name: "*"
   - package-ecosystem: "npm"
     directory: "/gremlint"
     schedule:
@@ -40,6 +43,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "npm"
     directory: "/docs/gremlint"
     schedule:
@@ -50,6 +54,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"
     schedule:
@@ -60,6 +65,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
@@ -70,6 +76,7 @@ updates:
       - "dependencies"
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
