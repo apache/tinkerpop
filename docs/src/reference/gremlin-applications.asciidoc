@@ -582,6 +582,22 @@ code written in the native language of use. Obviously, the advantage of the Grem
 are checks (e.g. compile-time, auto-complete and other IDE support, language level checks, etc.) that help validate the
 Gremlin during the development process.
 
+When sending requests to the server, it is important to remember that the results of the request be something that is
+serializable by the server and driver. If the server cannot serialize the result or if what the server serializes is not
+recognized by the serializer used by the driver, there will be an error. The most common cases for seeing serialization
+problems include:
+
+* Connecting to a graph that requires custom serializers, such as the ones JanusGraph provides for its relation
+identifier. Always be take time to get to know the graph database that's been chosen to determine if there are customer
+serializers that need to be registered to the server or the driver.
+* Driver versions that don't match server versions can sometimes create scenarios where serialization failures will
+present themselves. TinkerPop typically does the most testing on drivers and servers of the same version and therefore
+has the greatest confidence where those versions match. When possible, try to align the driver version with the server
+version.
+* Groovy-scripts can return anything since it has full access to the JVM. While a simple non-Gremlin traversal script
+like "1+1" simply returns a number which is perfectly serializable, it is just as easy to send a script like
+"graph.openManagement()" which is a JanusGraph API and returns an object that is not, returning an error.
+
 TinkerPop makes an effort to ensure a high-level of consistency among the drivers and their features, but there are
 differences in capabilities and features as they are each developed independently. The Java driver was the first and
 is therefore the most advanced. Please see the related documentation for the driver of interest for more information
