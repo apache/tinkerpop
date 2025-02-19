@@ -124,16 +124,23 @@ public class MergeVertexStepTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldFailToValidateWithObjectAsLabelValue() {
+    public void shouldFailToValidateWithNullIdValue() {
         final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
-                T.label, new Object());
+                T.id, null);
         MergeVertexStep.validateMapInput(m, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldFailToValidateWithNullIdValue() {
+    public void shouldFailToValidateWithNullMergeValue() {
         final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
-                T.id, null);
+                Merge.inV, null);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldFailToValidateWithObjectAsLabelValue() {
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
+                T.label, new Object());
         MergeVertexStep.validateMapInput(m, false);
     }
 
