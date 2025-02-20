@@ -1039,7 +1039,6 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 		return nil, nil
 	} else if nullable {
 		flag := readByteSafe(data, i)
-		fmt.Println(flag)
 		if flag == valueFlagNull {
 			return getDefaultValue(dataTyp), nil
 		}
