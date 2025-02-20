@@ -24,7 +24,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/wk8/go-ordered-map/v2"
 	"golang.org/x/text/language"
 	"math/big"
 	"reflect"
@@ -209,7 +208,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := NewSimpleSet(int32(111), "str")
 			buf, err := setWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readSet(&buf, &pos)
+			res, err := readSet(&buf, &pos, 0x00)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
@@ -219,22 +218,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := map[interface{}]interface{}{1: "s1", "s2": 2, nil: nil}
 			buf, err := mapWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readMap(&buf, &pos, 0x00)
+			res, err := readMap(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, fmt.Sprintf("%v", source), fmt.Sprintf("%v", res))
-		})
-		t.Run("read-write ordered map", func(t *testing.T) {
-			pos := 0
-			var buffer bytes.Buffer
-			source := orderedmap.New[interface{}, interface{}]()
-			source.Set(int32(1), "s1")
-			source.Set(int32(2), "s2")
-			source.Set(nil, nil)
-			buf, err := mapWriter(source, &buffer, nil)
-			assert.Nil(t, err)
-			res, err := readMap(&buf, &pos, 0x02)
-			assert.Nil(t, err)
-			assert.Equal(t, source, res)
 		})
 		t.Run("read incomparable map: a map value as the key", func(t *testing.T) {
 			// prepare test data
@@ -259,7 +245,7 @@ func TestGraphBinaryV1(t *testing.T) {
 
 			data := buf.Bytes()
 			i := 0
-			result, err := readMap(&data, &i, 0x00)
+			result, err := readMap(&data, &i)
 			if err != nil {
 				t.Fatalf("readMap failed: %v", err)
 			}
@@ -295,7 +281,7 @@ func TestGraphBinaryV1(t *testing.T) {
 
 			data := buf.Bytes()
 			i := 0
-			result, err := readMap(&data, &i, 0x00)
+			result, err := readMap(&data, &i)
 			if err != nil {
 				t.Fatalf("readMap failed: %v", err)
 			}
@@ -328,4 +314,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
+
+	t.Run("read-write marker", func(t *testing.T) {
+		pos := 0
+		var buffer bytes.Buffer
+		source := EndOfStream()
+		buf, err := markerWriter(source, &buffer, nil)
+		assert.Nil(t, err)
+		res, err := markerReader(&buf, &pos)
+		assert.Nil(t, err)
+		assert.Equal(t, source, res)
+	})
+
 }

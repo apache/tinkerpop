@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/wk8/go-ordered-map/v2"
 	"math"
 	"math/big"
 	"reflect"
@@ -65,6 +64,7 @@ const (
 	booleanType        dataType = 0x27
 	mergeType          dataType = 0x2e
 	durationType       dataType = 0x81
+	markerType         dataType = 0xfd
 	nullType           dataType = 0xFE
 )
 
@@ -148,43 +148,24 @@ func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 		return buffer.Bytes(), nil
 	}
 
-	if val, ok := value.(*orderedmap.OrderedMap[interface{}, interface{}]); ok {
-		err := binary.Write(buffer, binary.BigEndian, int32(val.Len()))
+	v := reflect.ValueOf(value)
+	keys := v.MapKeys()
+	err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
+	if err != nil {
+		return nil, err
+	}
+	for _, k := range keys {
+		convKey := k.Convert(v.Type().Key())
+		// serialize k
+		_, err := typeSerializer.write(k.Interface(), buffer)
 		if err != nil {
 			return nil, err
 		}
-		for pair := val.Oldest(); pair != nil; pair = pair.Next() {
-			// serialize k
-			_, err := typeSerializer.write(pair.Key, buffer)
-			if err != nil {
-				return nil, err
-			}
-			// serialize v
-			_, err = typeSerializer.write(pair.Value, buffer)
-			if err != nil {
-				return nil, err
-			}
-		}
-	} else {
-		v := reflect.ValueOf(value)
-		keys := v.MapKeys()
-		err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
+		// serialize v.MapIndex(c_key)
+		val := v.MapIndex(convKey)
+		_, err = typeSerializer.write(val.Interface(), buffer)
 		if err != nil {
 			return nil, err
-		}
-		for _, k := range keys {
-			convKey := k.Convert(v.Type().Key())
-			// serialize k
-			_, err := typeSerializer.write(k.Interface(), buffer)
-			if err != nil {
-				return nil, err
-			}
-			// serialize v.MapIndex(c_key)
-			val := v.MapIndex(convKey)
-			_, err = typeSerializer.write(val.Interface(), buffer)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 	return buffer.Bytes(), nil
@@ -469,13 +450,14 @@ func durationWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeS
 	return buffer.Bytes(), nil
 }
 
-const (
-	valueFlagNull byte = 1
-	valueFlagNone byte = 0
-)
-
 func enumWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 	_, err := typeSerializer.write(reflect.ValueOf(value).String(), buffer)
+	return buffer.Bytes(), err
+}
+
+func markerWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+	m := value.(Marker)
+	err := binary.Write(buffer, binary.BigEndian, m.GetValue())
 	return buffer.Bytes(), err
 }
 
@@ -490,6 +472,11 @@ func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerial
 
 	return mapWriter(ts.configuration, buffer, typeSerializer)
 }
+
+const (
+	valueFlagNull byte = 1
+	valueFlagNone byte = 0
+)
 
 func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType, error) {
 	switch val.(type) {
@@ -539,8 +526,6 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
-	case *orderedmap.OrderedMap[interface{}, interface{}], orderedmap.OrderedMap[interface{}, interface{}]:
-		return mapType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
@@ -797,59 +782,32 @@ func readByteBuffer(data *[]byte, i *int) (interface{}, error) {
 	return r, nil
 }
 
-func readMap(data *[]byte, i *int, flag byte) (interface{}, error) {
+func readMap(data *[]byte, i *int) (interface{}, error) {
 	sz := readUint32Safe(data, i)
-	if flag == 0x02 {
-		var mapData = orderedmap.New[interface{}, interface{}]()
-		for j := uint32(0); j < sz; j++ {
-			k, err := readFullyQualifiedNullable(data, i, true)
-			if err != nil {
-				return nil, err
-			}
-			v, err := readFullyQualifiedNullable(data, i, true)
-			if err != nil {
-				return nil, err
-			}
-			if k == nil {
-				mapData.Set(nil, v)
-			} else if reflect.TypeOf(k).Comparable() {
-				mapData.Set(k, v)
-			} else {
-				switch reflect.TypeOf(k).Kind() {
-				case reflect.Map:
-					mapData.Set(&k, v)
-				default:
-					mapData.Set(fmt.Sprint(k), v)
-				}
+	var mapData = make(map[interface{}]interface{})
+	for j := uint32(0); j < sz; j++ {
+		k, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		v, err := readFullyQualifiedNullable(data, i, true)
+		if err != nil {
+			return nil, err
+		}
+		if k == nil {
+			mapData[nil] = v
+		} else if reflect.TypeOf(k).Comparable() {
+			mapData[k] = v
+		} else {
+			switch reflect.TypeOf(k).Kind() {
+			case reflect.Map:
+				mapData[&k] = v
+			default:
+				mapData[fmt.Sprint(k)] = v
 			}
 		}
-		return mapData, nil
-	} else {
-		var mapData = make(map[interface{}]interface{})
-		for j := uint32(0); j < sz; j++ {
-			k, err := readFullyQualifiedNullable(data, i, true)
-			if err != nil {
-				return nil, err
-			}
-			v, err := readFullyQualifiedNullable(data, i, true)
-			if err != nil {
-				return nil, err
-			}
-			if k == nil {
-				mapData[nil] = v
-			} else if reflect.TypeOf(k).Comparable() {
-				mapData[k] = v
-			} else {
-				switch reflect.TypeOf(k).Kind() {
-				case reflect.Map:
-					mapData[&k] = v
-				default:
-					mapData[fmt.Sprint(k)] = v
-				}
-			}
-		}
-		return mapData, nil
 	}
+	return mapData, nil
 }
 
 func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
@@ -876,9 +834,8 @@ func readMapUnqualified(data *[]byte, i *int) (interface{}, error) {
 	return mapData, nil
 }
 
-func readSet(data *[]byte, i *int) (interface{}, error) {
-	// TODO placeholder flag
-	list, err := readList(data, i, 0x00)
+func readSet(data *[]byte, i *int, flag byte) (interface{}, error) {
+	list, err := readList(data, i, flag)
 	if err != nil {
 		return nil, err
 	}
@@ -1054,6 +1011,14 @@ func enumReader(data *[]byte, i *int) (interface{}, error) {
 	return readString(data, i)
 }
 
+func markerReader(data *[]byte, i *int) (interface{}, error) {
+	m, err := Of(readByteSafe(data, i))
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func readUnqualified(data *[]byte, i *int, dataTyp dataType, nullable bool) (interface{}, error) {
 	if nullable && readByteSafe(data, i) == valueFlagNull {
 		return getDefaultValue(dataTyp), nil
@@ -1081,8 +1046,8 @@ func readFullyQualifiedNullable(data *[]byte, i *int, nullable bool) (interface{
 		if dataTyp == listType {
 			return readList(data, i, flag)
 		}
-		if dataTyp == mapType {
-			return readMap(data, i, flag)
+		if dataTyp == setType {
+			return readSet(data, i, flag)
 		}
 	}
 	deserializer, ok := deserializers[dataTyp]

@@ -259,7 +259,6 @@ func initSerializers() {
 		propertyType:       propertyWriter,
 		vertexPropertyType: vertexPropertyWriter,
 		pathType:           pathWriter,
-		setType:            setWriter,
 		datetimeType:       timeWriter,
 		durationType:       durationWriter,
 		directionType:      enumWriter,
@@ -267,7 +266,9 @@ func initSerializers() {
 		mergeType:          enumWriter,
 		mapType:            mapWriter,
 		listType:           listWriter,
+		setType:            setWriter,
 		byteBuffer:         byteBufferWriter,
+		markerType:         markerWriter,
 	}
 }
 
@@ -287,8 +288,8 @@ func initDeserializers() {
 
 		// Composite
 		//listType:   readList,
-		//mapType:    readMap,
-		setType:    readSet,
+		//setType:    readSet,
+		mapType:    readMap,
 		uuidType:   readUuid,
 		byteBuffer: readByteBuffer,
 
@@ -307,6 +308,8 @@ func initDeserializers() {
 
 		// Customer
 		customType: customTypeReader,
+
+		markerType: markerReader,
 	}
 	customDeserializers = map[string]CustomTypeReader{}
 }
