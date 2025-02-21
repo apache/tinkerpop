@@ -83,16 +83,6 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, str, res)
 		})
-		t.Run("read-write GremlinType", func(t *testing.T) {
-			pos := 0
-			var buffer bytes.Buffer
-			source := &GremlinType{"test fqcn"}
-			buf, err := classWriter(source, &buffer, nil)
-			assert.Nil(t, err)
-			res, err := readClass(&buf, &pos)
-			assert.Nil(t, err)
-			assert.Equal(t, source, res)
-		})
 		t.Run("read-write bool", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
@@ -198,7 +188,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := []interface{}{int32(111), "str"}
 			buf, err := listWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readList(&buf, &pos)
+			res, err := readList(&buf, &pos, 0x00)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
@@ -218,7 +208,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			source := NewSimpleSet(int32(111), "str")
 			buf, err := setWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readSet(&buf, &pos)
+			res, err := readSet(&buf, &pos, 0x00)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
@@ -310,7 +300,8 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			res, err := timeReader(&buf, &pos)
 			assert.Nil(t, err)
-			assert.Equal(t, source, res)
+			// ISO format
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
 		})
 	})
 
@@ -323,4 +314,16 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
+
+	t.Run("read-write marker", func(t *testing.T) {
+		pos := 0
+		var buffer bytes.Buffer
+		source := EndOfStream()
+		buf, err := markerWriter(source, &buffer, nil)
+		assert.Nil(t, err)
+		res, err := markerReader(&buf, &pos)
+		assert.Nil(t, err)
+		assert.Equal(t, source, res)
+	})
+
 }
