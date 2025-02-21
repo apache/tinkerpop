@@ -148,6 +148,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\")"
 
+  @DisallowNullPropertyValues
   Scenario: g_V_hasLabelXpersonX_propertyXname_nullX
     Given the empty graph
     And the graph initializer of

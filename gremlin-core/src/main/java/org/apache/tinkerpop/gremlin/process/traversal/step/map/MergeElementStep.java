@@ -269,10 +269,6 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
             final Object k = e.getKey();
             final Object v = e.getValue();
 
-            if (v == null) {
-                throw new IllegalArgumentException(String.format("%s() does not allow null Map values - check: %s", op, k));
-            }
-
             if (ignoreTokens) {
                 if (!(k instanceof String)) {
                     throw new IllegalArgumentException(String.format("option(onMatch) expects keys in Map to be of String - check: %s", k));
@@ -280,6 +276,11 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                     ElementHelper.validateProperty((String) k, v);
                 }
             } else {
+                // don't allow null values for enums: T, Direction, Merge
+                if (k instanceof Enum && v == null) {
+                    throw new IllegalArgumentException(String.format("%s() does not allow null Map values - check: %s", op, k));
+                }
+
                 if (!(k instanceof String) && !allowedTokens.contains(k)) {
                     throw new IllegalArgumentException(String.format(
                             "%s() and option(onCreate) args expect keys in Map to be either String or %s - check: %s",

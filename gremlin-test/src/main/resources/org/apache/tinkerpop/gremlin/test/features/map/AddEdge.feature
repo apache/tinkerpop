@@ -73,6 +73,7 @@ Feature: Step - addE()
     And the graph should return 4 for count of "g.V(vid1).bothE()"
     And the graph should return 1 for count of "g.V(vid1).inE().has(\"weight\", 2.0d)"
 
+  @DisallowNullPropertyValues
   Scenario: g_V_outE_propertyXweight_nullX
     Given the empty graph
     And the graph initializer of

@@ -563,6 +563,8 @@ tag when one is necessary will cause provider tests to fail:
 
 * `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `true` (meaning that it can store `null` values).
+* `@DisallowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
+`false` (meaning that it cannot store `null` values).
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
@@ -596,7 +598,7 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 Tag filters can be applied to Intellij at execution time by adding a system property of
 `-Dcucumber.filter.tags=<tag-expression>`. In addition, the scenarios that pass the `<tag-expression>` can be further
 filtered by name with `-Dcucumber.filter.name=<scenario-regex>`. Note that these settings will override those
-configured by `CucumberOptions` on "*FeatureTest" setups. 
+configured by `CucumberOptions` on "*FeatureTest" setups.
 
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests

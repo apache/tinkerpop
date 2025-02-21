@@ -111,7 +111,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed issue in `gremlin-console` where it couldn't accept plugin files that included empty lines or invalid plugin names.
 * Modified grammar to make `none()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
 * Added missing anonymous support for `disjunct()` in Python and Javascript.
-* Deprecated gremlin_python.process.__.has_key_ in favor of gremlin_python.process.__.has_key.
+* Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
+* Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
