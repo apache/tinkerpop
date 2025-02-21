@@ -43,7 +43,7 @@ GREMLIN_BIN="$(pwd)"
 
 GREMLIN_CONF=$GREMLIN_BIN/gremlin-server.conf
 
-[[ -r $GREMLIN_CONF ]] && source $GREMLIN_CONF
+[[ -r "$GREMLIN_CONF" ]] && source "$GREMLIN_CONF"
 [[ -n "$DEBUG" ]] && set -x
 
 if [[ -z "$GREMLIN_HOME" ]]; then
@@ -96,7 +96,7 @@ fi
 
 # Build Java CLASSPATH
 CP="$GREMLIN_HOME/conf/"
-CP="$CP":$( echo $GREMLIN_HOME/lib/*.jar . | sed 's/ /:/g')
+CP="$CP":$( find "$GREMLIN_HOME/lib" -name "*.jar" -print | tr '\n' ':' ).
 CP="$CP":$( find -L "$GREMLIN_HOME"/ext -mindepth 1 -maxdepth 1 -type d | \
         sort | sed 's/$/\/plugin\/*/' | tr '\n' ':' )
 
@@ -166,7 +166,7 @@ start() {
       exit 1
     fi
 
-    $JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML" >> "$LOG_FILE" 2>&1 &
+    $JAVA -Dlogback.configurationFile="$LOGBACK_CONF" $JAVA_OPTIONS -cp "$CLASSPATH" "$GREMLIN_SERVER_CMD" "$GREMLIN_YAML" >> "$LOG_FILE" 2>&1 &
     PID=$!
     disown $PID
     echo $PID > "$PID_FILE"
@@ -209,7 +209,7 @@ startForeground() {
   fi
 
   if [[ -z "$RUNAS" ]]; then
-    exec $JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_SERVER_CMD "$GREMLIN_YAML"
+    exec $JAVA -Dlogback.configurationFile="$LOGBACK_CONF" $JAVA_OPTIONS -cp "$CLASSPATH" "$GREMLIN_SERVER_CMD" "$GREMLIN_YAML"
     exit 0
   else
     echo Starting in foreground not supported with RUNAS
@@ -231,7 +231,7 @@ install() {
 
   DEPS="$@"
   if [[ -z "$RUNAS" ]]; then
-    $JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_INSTALL_CMD $DEPS
+    $JAVA -Dlogback.configurationFile="$LOGBACK_CONF" $JAVA_OPTIONS -cp "$CLASSPATH" "$GREMLIN_INSTALL_CMD" $DEPS
   else
     su -c "$JAVA -Dlogback.configurationFile=$LOGBACK_CONF $JAVA_OPTIONS -cp $CLASSPATH $GREMLIN_INSTALL_CMD $DEPS "  "$RUNAS"
   fi
