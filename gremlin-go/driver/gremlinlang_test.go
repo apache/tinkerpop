@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 	"time"
@@ -389,7 +388,7 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",gt(new Date(121,1,1,9,30,0)))",
+			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -485,31 +484,31 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC))
 			},
-			equals: "g.V().has(\"date\",new Date(121,2,22,0,0,0))",
+			equals: "g.V().has(\"date\",datetime(\"2021-02-22T00:00:00Z\"))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Within(time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC), time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",within([new Date(121,2,22,0,0,0),new Date(121,1,1,0,0,0)]))",
+			equals: "g.V().has(\"date\",within([datetime(\"2021-02-22T00:00:00Z\"),datetime(\"2021-01-01T00:00:00Z\")]))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Between(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",between(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))",
+			equals: "g.V().has(\"date\",between(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Inside(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",inside(new Date(121,1,1,0,0,0),new Date(121,2,22,0,0,0)))",
+			equals: "g.V().has(\"date\",inside(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",gt(new Date(121,1,1,9,30,0)))",
+			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -563,7 +562,7 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(ReadOnlyStrategy()).AddV("test")
 			},
-			equals: "g.withStrategies(new ReadOnlyStrategy()).addV(\"test\")",
+			equals: "g.withStrategies(ReadOnlyStrategy).addV(\"test\")",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -590,19 +589,20 @@ func Test_GremlinLang(t *testing.T) {
 				return g.WithStrategies(ReadOnlyStrategy(), SubgraphStrategy(SubgraphStrategyConfig{Vertices: T__.Has("region", "US-TX"), Edges: T__.HasLabel("route")})).V().Count()
 			},
 			containsRandomClassParams: true,
-			equals:                    "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has(\"region\",\"US-TX\"),edges:__.hasLabel(\"route\"))).V().count()",
+			equals:                    "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has(\"region\",\"US-TX\"),edges:__.hasLabel(\"route\"))).V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(ReadOnlyStrategy(), SubgraphStrategy(SubgraphStrategyConfig{Vertices: T__.Has("region", "US-TX")})).V().Count()
 			},
-			equals: "g.withStrategies(new ReadOnlyStrategy(),new SubgraphStrategy(vertices:__.has(\"region\",\"US-TX\"))).V().count()",
+			equals: "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has(\"region\",\"US-TX\"))).V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 500})).V().Count()
 			},
-			equals: "g.withStrategies(new OptionsStrategy(evaluationTimeout:500)).V().count()",
+			// OptionsStrategy are now extracted into request message and is no longer sent with the script
+			equals: "g.V().count()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -615,7 +615,7 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.WithStrategies(VertexProgramStrategy(VertexProgramStrategyConfig{})).V().ShortestPath().With("~tinkerpop.shortestPath.target", T__.Has("name", "peter"))
 			},
-			equals: "g.withStrategies(new VertexProgramStrategy()).V().shortestPath().with(\"~tinkerpop.shortestPath.target\",__.has(\"name\",\"peter\"))",
+			equals: "g.withStrategies(VertexProgramStrategy).V().shortestPath().with(\"~tinkerpop.shortestPath.target\",__.has(\"name\",\"peter\"))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -671,8 +671,6 @@ func Test_GremlinLang(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			g := NewGraphTraversalSource(nil, nil)
 			gremlinLang := tt.assert(g).GremlinLang.GetGremlin()
-			fmt.Println("---gremlin lang???")
-			fmt.Println(gremlinLang)
 			if !tt.containsRandomClassParams && gremlinLang != tt.equals {
 				t.Errorf("GremlinLang = %v, equals %v", gremlinLang, tt.equals)
 			}
