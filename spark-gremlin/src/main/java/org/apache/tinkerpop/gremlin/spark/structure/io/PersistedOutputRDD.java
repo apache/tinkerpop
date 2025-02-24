@@ -51,15 +51,16 @@ public final class PersistedOutputRDD implements OutputRDD, PersistResultGraphAw
         SparkContextStorage.open(configuration).rm(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));  // this might be bad cause it unpersists the job RDD
         // determine which storage level to persist the RDD as with MEMORY_ONLY being the default cache()
         final StorageLevel storageLevel = StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY"));
+        final JavaPairRDD<Object, VertexWritable> javaPairRDD = repartitionJavaPairRDD(configuration.getString(Constants.GREMLIN_SPARK_OUTPUT_REPARTITION), graphRDD);
         if (!configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true))
-            graphRDD.mapValues(vertex -> {
+            javaPairRDD.mapValues(vertex -> {
                 vertex.get().dropEdges(Direction.BOTH);
                 return vertex;
             }).setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel)
                     // call action to eager store rdd
                     .count();
         else
-            graphRDD.setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel)
+            javaPairRDD.setName(Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))).persist(storageLevel)
                     // call action to eager store rdd
                     .count();
         Spark.refresh(); // necessary to do really fast so the Spark GC doesn't clear out the RDD
@@ -73,11 +74,12 @@ public final class PersistedOutputRDD implements OutputRDD, PersistResultGraphAw
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + " to write the persisted RDD to");
         final String memoryRDDName = Constants.getMemoryLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey);
         Spark.removeRDD(memoryRDDName);
-        memoryRDD.setName(memoryRDDName).persist(StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY")))
+        final JavaPairRDD<K, V> javaPairRDD = repartitionJavaPairRDD(configuration.getString(Constants.GREMLIN_SPARK_OUTPUT_REPARTITION), memoryRDD);
+        javaPairRDD.setName(memoryRDDName).persist(StorageLevel.fromString(configuration.getString(Constants.GREMLIN_SPARK_PERSIST_STORAGE_LEVEL, "MEMORY_ONLY")))
                 // call action to eager store rdd
                 .count();
         Spark.refresh(); // necessary to do really fast so the Spark GC doesn't clear out the RDD
-        return IteratorUtils.map(memoryRDD.collect().iterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));
+        return IteratorUtils.map(javaPairRDD.collect().iterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));
     }
 
     @Override

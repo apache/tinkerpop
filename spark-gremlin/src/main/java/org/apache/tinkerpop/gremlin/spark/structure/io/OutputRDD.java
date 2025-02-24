@@ -55,4 +55,17 @@ public interface OutputRDD {
     public default <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(final Configuration configuration, final String memoryKey, final JavaPairRDD<K, V> memoryRDD) {
         return Collections.emptyIterator();
     }
+
+    /**
+     * Allow users to customize the RDD partitions to reduce HDFS small files
+     */
+    public default <K, V> JavaPairRDD<K, V> repartitionJavaPairRDD(final String repartitionString, JavaPairRDD<K, V> graphRDD) {
+        JavaPairRDD<K, V> javaPairRDD = graphRDD;
+        final int repartition = null == repartitionString ? -1 : Integer.parseInt(repartitionString);
+        if (repartition > 0) {
+            javaPairRDD = javaPairRDD.repartition(repartition);
+        }
+        return javaPairRDD;
+    }
+
 }

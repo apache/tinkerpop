@@ -113,6 +113,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added missing anonymous support for `disjunct()` in Python and Javascript.
 * Fixed bug in 'gremlin-server.sh' to account for spaces in directory names.
 * Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
+* Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
 
 [[release-3-7-3]]
