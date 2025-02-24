@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.translator;
 
 import org.apache.commons.configuration2.ConfigurationConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -361,7 +362,7 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
                     // for the first/last P there is no parent to close
                     if (i > 0 && i < list.size() - 1) script.append(")");
 
-                    // add teh connector for all but last P
+                    // add the connector for all but last P
                     if (i < list.size() - 1) {
                         script.append(".").append(connector).append("(");
                     }
@@ -435,7 +436,6 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
     static final class SymbolHelper {
 
         private final static Map<String, String> TO_PYTHON_MAP = new HashMap<>();
-        private final static Map<String, String> FROM_PYTHON_MAP = new HashMap<>();
 
         static {
             TO_PYTHON_MAP.put("global", "global_");
@@ -443,10 +443,6 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("and", "and_");
             TO_PYTHON_MAP.put("any", "any_");
             TO_PYTHON_MAP.put("as", "as_");
-            TO_PYTHON_MAP.put("asString", "as_string");
-            TO_PYTHON_MAP.put("asDate", "as_date");
-            TO_PYTHON_MAP.put("dateAdd", "date_add");
-            TO_PYTHON_MAP.put("dateDiff", "date_diff");
             TO_PYTHON_MAP.put("filter", "filter_");
             TO_PYTHON_MAP.put("format", "format_");
             TO_PYTHON_MAP.put("from", "from_");
@@ -455,23 +451,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
             TO_PYTHON_MAP.put("is", "is_");
             TO_PYTHON_MAP.put("list", "list_");
             TO_PYTHON_MAP.put("max", "max_");
-            TO_PYTHON_MAP.put("mergeE", "merge_e");
-            TO_PYTHON_MAP.put("mergeV", "merge_v");
-            TO_PYTHON_MAP.put("inV", "in_v");
-            TO_PYTHON_MAP.put("outV", "out_v");
-            TO_PYTHON_MAP.put("onCreate", "on_create");
-            TO_PYTHON_MAP.put("onMatch", "on_match");
             TO_PYTHON_MAP.put("min", "min_");
             TO_PYTHON_MAP.put("or", "or_");
             TO_PYTHON_MAP.put("not", "not_");
             TO_PYTHON_MAP.put("range", "range_");
             TO_PYTHON_MAP.put("set", "set_");
             TO_PYTHON_MAP.put("sum", "sum_");
-            TO_PYTHON_MAP.put("toLower", "to_lower");
-            TO_PYTHON_MAP.put("toUpper", "to_upper");
             TO_PYTHON_MAP.put("with", "with_");
-            //
-            TO_PYTHON_MAP.forEach((k, v) -> FROM_PYTHON_MAP.put(v, k));
         }
 
         private SymbolHelper() {
@@ -479,14 +465,18 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         }
 
         public static String toPython(final String symbol) {
-            // at some point we will want a camel to snake case converter here. for now the only step that needs
-            // this conversion is mergeE/V related as the rest still continue use in their deprecated forms.
-            return TO_PYTHON_MAP.getOrDefault(symbol, symbol);
+            return TO_PYTHON_MAP.getOrDefault(symbol, convertCamelCaseToSnakeCase(symbol));
         }
 
-        public static String toJava(final String symbol) {
-            return FROM_PYTHON_MAP.getOrDefault(symbol, symbol);
-        }
+        public static String convertCamelCaseToSnakeCase(final String camelCase) {
+            if (StringUtils.isBlank(camelCase))
+                return camelCase;
 
+            // skip if this is a class/enum indicated by the first letter being upper case
+            if (Character.isUpperCase(camelCase.charAt(0)))
+                return camelCase;
+
+            return camelCase.replaceAll("([A-Z])", "_$1").toLowerCase();
+        }
     }
 }
