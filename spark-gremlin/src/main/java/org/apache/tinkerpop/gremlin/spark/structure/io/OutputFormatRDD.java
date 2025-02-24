@@ -48,7 +48,8 @@ public final class OutputFormatRDD implements OutputRDD {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
-            graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2()))
+            JavaPairRDD<Object, VertexWritable> javaPairRDD = repartitionJavaPairRDD(hadoopConfiguration.get(Constants.GREMLIN_SPARK_OUTPUT_REPARTITION), graphRDD);
+            javaPairRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2()))
                     .saveAsNewAPIHadoopFile(Constants.getGraphLocation(outputLocation),
                             NullWritable.class,
                             VertexWritable.class,
@@ -62,7 +63,8 @@ public final class OutputFormatRDD implements OutputRDD {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a Hadoop stream for output
-            memoryRDD.mapToPair(keyValue -> new Tuple2<>(new ObjectWritable<>(keyValue._1()), new ObjectWritable<>(keyValue._2())))
+            JavaPairRDD<K, V> javaPairRDD = repartitionJavaPairRDD(hadoopConfiguration.get(Constants.GREMLIN_SPARK_OUTPUT_REPARTITION), memoryRDD);
+            javaPairRDD.mapToPair(keyValue -> new Tuple2<>(new ObjectWritable<>(keyValue._1()), new ObjectWritable<>(keyValue._2())))
                     .saveAsNewAPIHadoopFile(Constants.getMemoryLocation(outputLocation, memoryKey),
                             ObjectWritable.class,
                             ObjectWritable.class,
