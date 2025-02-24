@@ -78,7 +78,7 @@ public class PythonTranslatorTest {
     public void shouldTranslateCardinality() {
         final String gremlinAsPython = translator.translate(
                 g.addV("person").property(VertexProperty.Cardinality.list, "name", "marko").asAdmin().getBytecode()).getScript();
-        assertEquals("g.addV('person').property(Cardinality.list_,'name','marko')", gremlinAsPython);
+        assertEquals("g.add_v('person').property(Cardinality.list_,'name','marko')", gremlinAsPython);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class PythonTranslatorTest {
     public void shouldTranslateMultilineStrings() {
         final String gremlinAsPython = translator.translate(
                 g.addV().property("text", "a"+ System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b").asAdmin().getBytecode()).getScript();
-        assertEquals("g.addV().property('text',\"\"\"a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b\"\"\")", gremlinAsPython);
+        assertEquals("g.add_v().property('text',\"\"\"a" + System.lineSeparator() + "\"and\"" + System.lineSeparator() + "b\"\"\")", gremlinAsPython);
     }
 
     @Test
@@ -102,7 +102,7 @@ public class PythonTranslatorTest {
         final String gremlinAsPython = translator.translate(
                 g.V().has("person", "name", "marko").
                   where(outE()).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().has('person','name','marko').where(__.outE())", gremlinAsPython);
+        assertEquals("g.V().has('person','name','marko').where(__.out_e())", gremlinAsPython);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class PythonTranslatorTest {
         final String gremlinAsPython = translator.translate(
                 g.V().has("person", "name", "marko").
                         where(outE().count().is(2).and(__.not(inE().count().is(3)))).asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().has('person','name','marko').where(__.outE().count().is_(2).and_(__.not_(__.inE().count().is_(3))))", gremlinAsPython);
+        assertEquals("g.V().has('person','name','marko').where(__.out_e().count().is_(2).and_(__.not_(__.in_e().count().is_(3))))", gremlinAsPython);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class PythonTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.withStrategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.hasLabel('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
+        assertEquals("g.with_strategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.has_label('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         SeedStrategy.build().seed(999999).create()).
@@ -140,7 +140,7 @@ public class PythonTranslatorTest {
                 .order().by(Lambda.comparator("a,b -> a == b ? 0 : (a > b) ? 1 : -1)", "gremlin-groovy"))
                 .sack(Lambda.biFunction("a,b -> a + b", "gremlin-groovy"))
                 .asAdmin().getBytecode();
-        assertEquals("g.withSideEffect('lengthSum',0).withSack(1).V().filter_(lambda: \"x -> x.get().label() == 'person'\").flatMap(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").sideEffect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
+        assertEquals("g.with_side_effect('lengthSum',0).with_sack(1).V().filter_(lambda: \"x -> x.get().label() == 'person'\").flat_map(lambda: \"it.get().vertices(Direction.OUT)\").map(lambda: \"x -> x : len(x.get().value('name'))\").side_effect(lambda: \"x -> x.sideEffects(\\\"lengthSum\\\", x.sideEffects('lengthSum') + x.get())\").order().by(lambda: \"a,b -> a == b ? 0 : (a > b) ? 1 : -1)\").sack(lambda: \"a,b -> a + b\")",
                 translator.translate(bytecode).getScript());
     }
 
