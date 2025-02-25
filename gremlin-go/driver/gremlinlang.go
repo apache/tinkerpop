@@ -21,12 +21,14 @@ package gremlingo
 
 import (
 	"fmt"
+	"go/token"
 	"math"
 	"math/big"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"time"
 )
 
 type GremlinLang struct {
@@ -150,6 +152,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("%vD", v), nil
 	case *BigDecimal, BigDecimal:
 		return fmt.Sprintf("%vM", v), nil
+	case time.Time:
+		return fmt.Sprintf("datetime(\"%v\")", v.Format(time.RFC3339)), nil
 	case cardinality, column, direction, operator, order, pick, pop, barrier, scope, t, merge:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name[:1])+name[1:], v), nil
@@ -198,6 +202,25 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			gl.parameters[key] = val
 		}
 		return v.GetGremlin("__"), nil
+	case GValue:
+		key := v.Name()
+		if !token.IsIdentifier(key) {
+			panic(fmt.Sprintf("invalid parameter name '%v'.", key))
+		}
+		value := v.Value()
+		if val, ok := gl.parameters[key]; ok {
+			if reflect.TypeOf(val).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Slice ||
+				reflect.TypeOf(val).Kind() == reflect.Map || reflect.TypeOf(value).Kind() == reflect.Map {
+				if !reflect.DeepEqual(val, value) {
+					panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
+				}
+			} else if val != value {
+				panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
+			}
+		} else {
+			gl.parameters[key] = v.Value()
+		}
+		return key, nil
 	default:
 		switch reflect.TypeOf(arg).Kind() {
 		case reflect.Map:
@@ -395,7 +418,7 @@ func (gl *GremlinLang) buildStrategyArgs(args ...interface{}) string {
 			continue
 		}
 		// special handling for OptionsStrategy
-		if strategy.name == decorationNamespace+"OptionsStrategy" {
+		if strategy.name == "OptionsStrategy" {
 			gl.optionsStrategies = append(gl.optionsStrategies, strategy)
 			continue
 		}

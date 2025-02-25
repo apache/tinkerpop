@@ -26,44 +26,31 @@ import (
 
 func TestGraphTraversalSource(t *testing.T) {
 
-	// TODO update once option strategy application is property updated
 	t.Run("GraphTraversalSource.With tests", func(t *testing.T) {
 		t.Run("Test for single property", func(t *testing.T) {
-			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar")
 			assert.NotNil(t, traversal)
-			assert.Equal(t, 1, len(traversal.bytecode.sourceInstructions))
-			instruction := traversal.bytecode.sourceInstructions[0]
-			assert.Equal(t, "withStrategies", instruction.operator)
-			assert.Equal(t, "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy",
-				instruction.arguments[0].(*traversalStrategy).name)
-			config := instruction.arguments[0].(*traversalStrategy).configuration
+			assert.Equal(t, 1, len(traversal.gremlinLang.optionsStrategies))
+			config := traversal.gremlinLang.optionsStrategies[0].configuration
 			assert.Equal(t, map[string]interface{}{"foo": "bar"}, config)
 		})
 
 		t.Run("Test for multiple property", func(t *testing.T) {
-			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar").With("foo2", "bar2")
 			assert.NotNil(t, traversal)
-			assert.Equal(t, 1, len(traversal.bytecode.sourceInstructions))
-			instruction := traversal.bytecode.sourceInstructions[0]
-			assert.Equal(t, "withStrategies", instruction.operator)
-			assert.Equal(t, "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy",
-				instruction.arguments[0].(*traversalStrategy).name)
-			config := instruction.arguments[0].(*traversalStrategy).configuration
+			assert.Equal(t, 1, len(traversal.gremlinLang.optionsStrategies))
+			config := traversal.gremlinLang.optionsStrategies[0].configuration
 			assert.Equal(t, map[string]interface{}{"foo": "bar", "foo2": "bar2"}, config)
 		})
 
 		t.Run("Test for property replacement", func(t *testing.T) {
-			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
 			traversal := g.With("foo", "bar").With("foo", "not bar")
 			assert.NotNil(t, traversal)
-			assert.Equal(t, 1, len(traversal.bytecode.sourceInstructions))
-			instruction := traversal.bytecode.sourceInstructions[0]
-			assert.Equal(t, "withStrategies", instruction.operator)
-			assert.Equal(t, "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy",
-				instruction.arguments[0].(*traversalStrategy).name)
-			config := instruction.arguments[0].(*traversalStrategy).configuration
+			assert.Equal(t, 1, len(traversal.gremlinLang.optionsStrategies))
+			config := traversal.gremlinLang.optionsStrategies[0].configuration
 			assert.Equal(t, map[string]interface{}{"foo": "not bar"}, config)
 		})
 	})

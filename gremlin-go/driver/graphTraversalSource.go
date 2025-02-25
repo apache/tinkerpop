@@ -120,8 +120,11 @@ func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *G
 func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *GraphTraversalSource {
 	source := gts.clone()
 
-	//TODO verify
-	var optionsStrategy TraversalStrategy = gts.gremlinLang.optionsStrategies[0]
+	//TODO verify remote when connection is set-up
+	var optionsStrategy TraversalStrategy = nil
+	if len(gts.gremlinLang.optionsStrategies) != 0 {
+		optionsStrategy = gts.gremlinLang.optionsStrategies[0]
+	}
 
 	if optionsStrategy == nil {
 		optionsStrategy = OptionsStrategy(map[string]interface{}{key.(string): value})
