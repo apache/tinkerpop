@@ -72,10 +72,6 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, resultSet)
 
 		client.Close()
-		pool := client.connections.(*loadBalancingPool)
-		assert.Equal(t, 1, len(pool.connections))
-		assert.True(t, pool.isClosed)
-		assert.Equal(t, closed, pool.connections[0].state)
 	})
 
 	t.Run("Test client.Submit()", func(t *testing.T) {
@@ -265,7 +261,7 @@ func TestClientAgainstSocketServer(t *testing.T) {
 	// Integration test variables.
 	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
 	settings := FromYaml(getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_CONFIG_PATH", "../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml"))
-	testSocketServerUrl := getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_URL", "ws://localhost")
+	testSocketServerUrl := getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_URL", "http://localhost")
 	testSocketServerUrl = fmt.Sprintf("%s:%v/gremlin", testSocketServerUrl, settings.PORT)
 
 	/**
@@ -316,7 +312,7 @@ func TestClientAgainstSocketServer(t *testing.T) {
 	})
 
 	/**
-	 * Tests that no user agent (other than the default one provided by gorilla) is sent to server when
+	 * Tests that no user agent (other than the default one) is sent to server when
 	 * that behaviour is disabled.
 	 */
 	t.Run("Should not include user agent in handshake request if disabled", func(t *testing.T) {

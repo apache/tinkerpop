@@ -39,7 +39,8 @@ const stringProcessor = ""
 func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
-		"gremlin": stringGremlin,
+		"gremlin":  stringGremlin,
+		"language": "gremlin-lang",
 		"aliases": map[string]interface{}{
 			"g": traversalSource,
 		},

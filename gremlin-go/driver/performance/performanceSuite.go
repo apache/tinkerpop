@@ -364,16 +364,14 @@ const threshold = 4 // same as default
 const bufferSize = 314572800
 const poolingBufferSize = 26214400
 
-//
 // createConnection: Creates a connection to a remote endpoint and returns a
 // GraphTraversalSource that can be used to submit Gremlin queries.
-//
 func createConnection(host string, port, poolSize, buffersSize int) (*GraphTraversalSource, *DriverRemoteConnection, error) {
 	var g *GraphTraversalSource
 	var drc *DriverRemoteConnection
 	var err error
 
-	endpoint := fmt.Sprintf("ws://%s:%d/gremlin", host, port)
+	endpoint := fmt.Sprintf("http://%s:%d/gremlin", host, port)
 	log.Println("Attempting to connect to : " + endpoint)
 
 	// Establish a new connection and catch any errors that may occur
@@ -416,9 +414,7 @@ Options:
 `
 )
 
-//
 // main: Program entry point. Create the connection, run performance tests, shutdown.
-//
 func main() {
 	hostPtr := flag.String("host", Host, "Server host, the default is localhost.")
 	portPtr := flag.Int("port", Port, "Server port, the default is 45940.")

@@ -21,19 +21,16 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"math/big"
 	"os"
 	"reflect"
-	"runtime"
 	"sort"
 	"strconv"
 	"sync"
 	"testing"
-	"time"
-
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 )
 
 const personLabel = "Person"
@@ -41,16 +38,17 @@ const testLabel = "Test"
 const nameKey = "name"
 const integrationTestSuiteName = "integration"
 const basicAuthIntegrationTestSuite = "basic authentication integration"
-const validHostInvalidPortValidPath = "ws://localhost:12341253/gremlin"
-const invalidHostValidPortValidPath = "ws://invalidhost:8182/gremlin"
+const validHostInvalidPortValidPath = "http://localhost:12341253/gremlin"
+const invalidHostValidPortValidPath = "http://invalidhost:8182/gremlin"
 const testServerModernGraphAlias = "gmodern"
 const testServerGraphAlias = "gimmutable"
 const testServerCrewGraphAlias = "gcrew"
 const manualTestSuiteName = "manual"
-const nonRoutableIPForConnectionTimeout = "ws://10.255.255.1/"
+const nonRoutableIPForConnectionTimeout = "http://10.255.255.1/"
 
 // transaction is enabled on the same port as no auth url
-const noAuthUrl = "ws://localhost:45940/gremlin"
+const noAuthUrl = "http://localhost:45940/gremlin"
+const noAuthSslUrl = "https://localhost:45941/gremlin"
 const basicAuthWithSsl = "wss://localhost:45941/gremlin"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
@@ -257,10 +255,6 @@ func skipTestsIfNotEnabled(t *testing.T, testSuiteName string, testSuiteEnabled 
 	}
 }
 
-func deferredCleanup(t *testing.T, connection *connection) {
-	assert.Nil(t, connection.close())
-}
-
 func TestConnection(t *testing.T) {
 	// Integration test variables.
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
@@ -275,346 +269,58 @@ func TestConnection(t *testing.T) {
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
 	// Basic authentication integration test variables.
-	// TODO using "wss:" to connect to an auth server without ssl enabled ("ws:") will give an "EOF" error in NewDriverRemoteConnection, bug?
+	// TODO using "wss:" to connect to an auth server without ssl enabled ("http:") will give an "EOF" error in NewDriverRemoteConnection, bug?
 	testBasicAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_BASIC_AUTH_URL", basicAuthWithSsl)
 	testBasicAuthEnable := getEnvOrDefaultBool("RUN_BASIC_AUTH_INTEGRATION_TESTS", false)
 	testBasicAuthAuthInfo := getBasicAuthInfo()
 	testBasicAuthTlsConfig := &tls.Config{InsecureSkipVerify: true}
 
-	testManual := getEnvOrDefaultBool("RUN_MANUAL_TEST", false)
-
-	t.Run("Test createConnection without valid server", func(t *testing.T) {
-		connection, err := createConnection(invalidHostValidPortValidPath, newLogHandler(&defaultLogger{}, Info,
-			language.English), newDefaultConnectionSettings())
-		assert.NotNil(t, err)
-		assert.Nil(t, connection)
-	})
-
-	t.Run("Test createConnection without valid port", func(t *testing.T) {
-		connection, err := createConnection(validHostInvalidPortValidPath, newLogHandler(&defaultLogger{}, Info,
-			language.English), newDefaultConnectionSettings())
-		assert.NotNil(t, err)
-		assert.Nil(t, connection)
-	})
-
-	t.Run("Test createConnection without valid path", func(t *testing.T) {
-		connSettings := newDefaultConnectionSettings()
-		t.Run("Test 1 second timeout", func(t *testing.T) {
-			connSettings.connectionTimeout = 1 * time.Second
-			t1 := time.Now()
-			connection, err := createConnection(nonRoutableIPForConnectionTimeout, newLogHandler(&defaultLogger{}, Info,
-				language.English), connSettings)
-			t2 := time.Since(t1)
-			assert.True(t, t2.Seconds() < 1.5 && t2.Seconds() > 0.5)
-			assert.NotNil(t, err)
-			assert.Nil(t, connection)
-		})
-
-		t.Run("Test 2 second timeout", func(t *testing.T) {
-			connSettings.connectionTimeout = 2 * time.Second
-			t1 := time.Now()
-			connection, err := createConnection(nonRoutableIPForConnectionTimeout, newLogHandler(&defaultLogger{}, Info,
-				language.English), connSettings)
-			t2 := time.Since(t1)
-			assert.True(t, t2.Seconds() < 2.5 && t2.Seconds() > 1.5)
-			assert.NotNil(t, err)
-			assert.Nil(t, connection)
-		})
-
-		t.Run("Test 3 second timeout", func(t *testing.T) {
-			connSettings.connectionTimeout = 3 * time.Second
-			t1 := time.Now()
-			connection, err := createConnection(nonRoutableIPForConnectionTimeout, newLogHandler(&defaultLogger{}, Info,
-				language.English), connSettings)
-			t2 := time.Since(t1)
-			assert.True(t, t2.Seconds() < 3.5 && t2.Seconds() > 2.5)
-			assert.NotNil(t, err)
-			assert.Nil(t, connection)
-		})
-	})
-
-	t.Run("Test DriverRemoteConnection GraphTraversal", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
-		defer g.remoteConnection.Close()
-
-		// Read test data out of the graph and check that it is correct.
-		readTestDataVertexProperties(t, g)
-		readTestDataValues(t, g)
-
-		// Reset Graph
-		resetGraph(t, g)
-	})
-
-	t.Run("Test createConnection", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings())
-		assert.Nil(t, err)
-		assert.NotNil(t, connection)
-		assert.Equal(t, established, connection.state)
-		defer deferredCleanup(t, connection)
-	})
-
-	t.Run("Test createConnection with compression", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		setting := newDefaultConnectionSettings()
-		setting.enableCompression = true
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			setting)
-		assert.Nil(t, err)
-		assert.NotNil(t, connection)
-		assert.Equal(t, established, connection.state)
-		defer deferredCleanup(t, connection)
-	})
-
-	t.Run("Test connection.write() with small buffer size", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		setting := newDefaultConnectionSettings()
-		setting.readBufferSize = 100
-		setting.writeBufferSize = 150
-		setting.connectionTimeout = 1 * time.Second
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			setting)
-		assert.Nil(t, err)
-		assert.NotNil(t, connection)
-		assert.Equal(t, established, connection.state)
-		defer deferredCleanup(t, connection)
-		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
-		resultSet, err := connection.write(&request)
-		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
-	})
-
-	t.Run("Test connection.write()", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings())
-		assert.Nil(t, err)
-		assert.NotNil(t, connection)
-		assert.Equal(t, established, connection.state)
-		defer deferredCleanup(t, connection)
-		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
-		resultSet, err := connection.write(&request)
-		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
-	})
-
-	t.Run("Test connection.close() failure", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings())
-		assert.Equal(t, established, connection.state)
-		assert.Nil(t, err)
-		err = connection.close()
-		assert.Nil(t, err)
-		assert.Equal(t, closed, connection.state)
-		err = connection.close()
-		assert.Equal(t, newError(err0101ConnectionCloseError), err)
-		assert.Equal(t, closed, connection.state)
-		err = connection.close()
-		assert.Equal(t, newError(err0101ConnectionCloseError), err)
-		assert.Equal(t, closed, connection.state)
-	})
-
-	t.Run("Test connection.write() after close() failure", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings())
-		assert.Equal(t, established, connection.state)
-		assert.Nil(t, err)
-		err = connection.close()
-		assert.Nil(t, err)
-		assert.Equal(t, closed, connection.state)
-		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
-		resultSet, err := connection.write(&request)
-		assert.Nil(t, resultSet)
-		assert.Equal(t, newError(err0102WriteConnectionClosedError), err)
-		assert.Equal(t, closed, connection.state)
-	})
-
-	t.Run("Test server closes websocket", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, manualTestSuiteName, testManual)
-		connSettings := newDefaultConnectionSettings()
-		connSettings.keepAliveInterval = 500 * keepAliveIntervalDefault
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			connSettings)
-		assert.Equal(t, established, connection.state)
-		assert.Nil(t, err)
-		time.Sleep(120 * time.Second)
-		request := makeStringRequest("g.V().count()", "g", "", *new(RequestOptions))
-		resultSet, err := connection.write(&request)
-		assert.Nil(t, resultSet)
-		assert.NotNil(t, err)
-	})
-
-	t.Run("Test newLoadBalancingPool", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		newPoolSize := 2
-		pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings(), 4, 4, newPoolSize)
-		assert.Nil(t, err)
-		defer pool.close()
-		assert.Len(t, pool.(*loadBalancingPool).connections, newPoolSize)
-	})
-
-	t.Run("Test loadBalancingPool.newConnection", func(t *testing.T) {
-		newPoolSize := 0
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-		pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings(), 4, 4, newPoolSize)
-		assert.Nil(t, err)
-		defer pool.close()
-		lhp := pool.(*loadBalancingPool)
-		// Pool instantiated with no connections so this will invoke newConnection
-		newConn, err := lhp.getLeastUsedConnection()
-		assert.Nil(t, err)
-		assert.Len(t, lhp.connections, newPoolSize+1)
-		// Workaround for false positive in race condition check
-		found := false
-		for _, conn := range lhp.connections {
-			if conn == newConn {
-				found = true
-			}
-		}
-		assert.True(t, found)
-	})
-
-	t.Run("Test loadBalancingPool.getLeastUsedConnection", func(t *testing.T) {
-		newConnectionThreshold := 2
-		maximumConcurrentConnections := 2
-		logHandler := newLogHandler(&defaultLogger{}, Info, language.English)
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		t.Run("pool is empty", func(t *testing.T) {
-			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections, 0)
-			assert.Nil(t, err)
-			lbp := pool.(*loadBalancingPool)
-			defer lbp.close()
-			conn, err := lbp.getLeastUsedConnection()
-			assert.Nil(t, err)
-			assert.NotNil(t, conn)
-			assert.Len(t, lbp.connections, 1)
-		})
-
-		t.Run("newConcurrentThreshold reached with capacity remaining", func(t *testing.T) {
-			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections, 0)
-			assert.Nil(t, err)
-			lbp := pool.(*loadBalancingPool)
-			defer lbp.close()
-			thresholdReachedResults := &synchronizedMap{
-				internalMap: map[string]ResultSet{},
-				syncLock:    sync.Mutex{},
-			}
-			thresholdReachedResults.store("1", nil)
-			thresholdReachedResults.store("2", nil)
-			fullConnection := &connection{
-				logHandler: logHandler,
-				protocol:   nil,
-				results:    thresholdReachedResults,
-				state:      established,
-			}
-			capacityAvailablePool := make([]*connection, 0, maximumConcurrentConnections)
-			capacityAvailablePool = append(capacityAvailablePool, fullConnection)
-			lbp.connections = capacityAvailablePool
-			conn, err := lbp.getLeastUsedConnection()
-			assert.Nil(t, err)
-			assert.NotNil(t, conn)
-			assert.NotEqual(t, fullConnection, conn)
-			assert.Len(t, lbp.connections, 2)
-		})
-
-		t.Run("newConcurrentThreshold reached with no capacity remaining", func(t *testing.T) {
-			capacityFullConnectionPool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info,
-				language.English), newDefaultConnectionSettings(),
-				1, 1, 1)
-			assert.Nil(t, err)
-			assert.NotNil(t, capacityFullConnectionPool)
-			capacityFullLbp := capacityFullConnectionPool.(*loadBalancingPool)
-			defer capacityFullLbp.close()
-			capacityFullLbp.connections[0].results.store("mockFillCapacity",
-				newChannelResultSet("mockFillCapacity", capacityFullLbp.connections[0].results))
-			conn, err := capacityFullLbp.getLeastUsedConnection()
-			assert.Nil(t, err)
-			assert.NotNil(t, conn)
-			assert.Len(t, capacityFullLbp.connections, 1)
-		})
-
-		t.Run("all connections in pool invalid", func(t *testing.T) {
-			pool, err := newLoadBalancingPool(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-				newDefaultConnectionSettings(),
-				newConnectionThreshold, maximumConcurrentConnections, 0)
-			assert.Nil(t, err)
-			lbp := pool.(*loadBalancingPool)
-			defer lbp.close()
-			invalidConnection1 := &connection{
-				logHandler: logHandler,
-				protocol:   nil,
-				results:    nil,
-				state:      closed,
-			}
-			invalidConnection2 := &connection{
-				logHandler: logHandler,
-				protocol:   nil,
-				results:    nil,
-				state:      closedDueToError,
-			}
-			invalidPool := []*connection{invalidConnection1, invalidConnection2}
-			lbp.connections = invalidPool
-			conn, err := lbp.getLeastUsedConnection()
-			assert.Nil(t, err)
-			assert.NotNil(t, conn)
-			assert.NotEqual(t, invalidConnection1, conn)
-			assert.NotEqual(t, invalidConnection2, conn)
-			assert.Len(t, lbp.connections, 1)
-			assert.NotContains(t, lbp.connections, invalidConnection1)
-			assert.NotContains(t, lbp.connections, invalidConnection2)
-		})
-	})
-
+	// this test is used to test the ws->http POC changes via manual execution with a local TP 4.0 gremlin server running on 8182
 	t.Run("Test client.submit()", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
+		tlsConf := tls.Config{
+			InsecureSkipVerify: true,
+		}
+
 		client, err := NewClient(testNoAuthUrl,
+			//client, err := NewClient(noAuthSslUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.TlsConfig = &tlsConf
 				settings.AuthInfo = testNoAuthAuthInfo
+				settings.WriteBufferSize = 1024
+				settings.EnableCompression = true
 			})
 		assert.Nil(t, err)
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		resultSet, err := client.Submit("g.V().count()")
-		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
+		// synchronous
+		for i := 0; i < 5; i++ {
+			submitCount(i, client, t)
+		}
 
-		g := cloneGraphTraversalSource(&Graph{}, NewGremlinLang(nil), nil)
-		b := g.V().Count().Bytecode
-		resultSet, err = client.submitBytecode(b)
-		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err = resultSet.One()
-		assert.Nil(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
+		// async
+		var wg sync.WaitGroup
+		for i := 0; i < 5; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				submitCount(i, client, t)
+			}(i)
+		}
+		wg.Wait()
+
+		//
+		//g := cloneGraphTraversalSource(&Graph{}, NewGremlinLang(nil), nil)
+		//b := g.V().Count().Bytecode
+		//resultSet, err = client.submitBytecode(b)
+		//assert.Nil(t, err)
+		//assert.NotNil(t, resultSet)
+		//result, ok, err = resultSet.One()
+		//assert.Nil(t, err)
+		//assert.True(t, ok)
+		//assert.NotNil(t, result)
 	})
 
 	t.Run("Test client.submit() on session", func(t *testing.T) {
@@ -1105,28 +811,6 @@ func TestConnection(t *testing.T) {
 		dropGraph(t, g)
 	})
 
-	// This test needs to be run as a standalone since other tests running can cause goroutine count to fluctuate.
-	// If this test is not run manually and isolated it will have floating failures.
-	t.Run("Test connection goroutine cleanup", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, manualTestSuiteName, testManual)
-
-		startCount := runtime.NumGoroutine()
-
-		connection, err := createConnection(testNoAuthUrl, newLogHandler(&defaultLogger{}, Info, language.English),
-			newDefaultConnectionSettings())
-		assert.Nil(t, err)
-		assert.NotNil(t, connection)
-		assert.Equal(t, established, connection.state)
-
-		// Read loop, write loop, this routine.
-		assert.Equal(t, startCount+2, runtime.NumGoroutine())
-
-		assert.Nil(t, connection.close())
-
-		// This routine.
-		assert.Equal(t, startCount, runtime.NumGoroutine())
-	})
-
 	t.Run("Test per-request arguments", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
@@ -1267,4 +951,17 @@ func TestConnection(t *testing.T) {
 			assert.Equal(t, 0, len(properties))
 		}
 	})
+}
+
+func submitCount(i int, client *Client, t *testing.T) {
+	resultSet, err := client.Submit("g.V().count().as('c').math('c + " + strconv.Itoa(i) + "')")
+	assert.Nil(t, err)
+	assert.NotNil(t, resultSet)
+	result, ok, err := resultSet.One()
+	assert.Nil(t, err)
+	assert.True(t, ok)
+	assert.NotNil(t, result)
+	c, err := result.GetInt()
+	assert.Equal(t, 6+i, c)
+	_, _ = fmt.Fprintf(os.Stdout, "Received result : %s\n", result)
 }
