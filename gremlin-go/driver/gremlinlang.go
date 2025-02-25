@@ -33,7 +33,7 @@ import (
 
 type GremlinLang struct {
 	emptyArray        []interface{}
-	gremlin           *strings.Builder
+	gremlin           []string
 	parameters        map[string]interface{}
 	optionsStrategies []*traversalStrategy
 	paramCount        *atomic.Uint64
@@ -41,7 +41,7 @@ type GremlinLang struct {
 
 // NewGremlinLang creates a new GremlinLang to be used in traversals.
 func NewGremlinLang(gl *GremlinLang) *GremlinLang {
-	gremlin := &strings.Builder{}
+	gremlin := make([]string, 0)
 	parameters := make(map[string]interface{})
 	optionsStrategies := make([]*traversalStrategy, 0)
 	paramCount := atomic.Uint64{}
@@ -63,7 +63,7 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 	flattenedArgs := gl.flattenArguments(args...)
 	if name == "CardinalityValueTraversal" {
-		gl.gremlin.WriteString("Cardinality.")
+		gl.gremlin = append(gl.gremlin, "Cardinality.")
 		str0, err := gl.argAsString(flattenedArgs[0])
 		if err != nil {
 			return err
@@ -72,19 +72,19 @@ func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 		if err != nil {
 			return err
 		}
-		gl.gremlin.WriteString(str0)
-		gl.gremlin.WriteString("(")
-		gl.gremlin.WriteString(str1)
-		gl.gremlin.WriteString(")")
+		gl.gremlin = append(gl.gremlin, str0)
+		gl.gremlin = append(gl.gremlin, "(")
+		gl.gremlin = append(gl.gremlin, str1)
+		gl.gremlin = append(gl.gremlin, ")")
 	}
 
-	gl.gremlin.WriteString(".")
-	gl.gremlin.WriteString(name)
-	gl.gremlin.WriteString("(")
+	gl.gremlin = append(gl.gremlin, ".")
+	gl.gremlin = append(gl.gremlin, name)
+	gl.gremlin = append(gl.gremlin, "(")
 
 	for i := 0; i < len(flattenedArgs); i++ {
 		if i > 0 {
-			gl.gremlin.WriteString(",")
+			gl.gremlin = append(gl.gremlin, ",")
 		}
 		convertArg, err := gl.convertArgument(flattenedArgs[i]) //.Index(i).Interface())
 		if err != nil {
@@ -94,9 +94,9 @@ func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 		if err != nil {
 			return err
 		}
-		gl.gremlin.WriteString(argStr)
+		gl.gremlin = append(gl.gremlin, argStr)
 	}
-	gl.gremlin.WriteString(")")
+	gl.gremlin = append(gl.gremlin, ")")
 	return nil
 }
 
@@ -366,14 +366,14 @@ func (gl *GremlinLang) asParameter(arg interface{}) string {
 
 func (gl *GremlinLang) GetGremlin(arg ...string) string {
 	var g string
-	gremlin := gl.gremlin.String()
+	gremlin := strings.Join(gl.gremlin, "")
 	if len(arg) == 0 {
 		g = "g"
 	} else {
 		g = arg[0]
 	}
 	// special handling for CardinalityValueTraversal
-	if gl.gremlin.Len() != 0 && string(gremlin[0]) != "." {
+	if len(gl.gremlin) != 0 && string(gremlin[0]) != "." {
 		return gremlin
 	}
 	return g + gremlin
@@ -396,9 +396,9 @@ func (gl *GremlinLang) AddSource(name string, arguments ...interface{}) {
 		args := gl.buildStrategyArgs(arguments...)
 		// possible to have empty strategies list to send
 		if len(args) != 0 {
-			gl.gremlin.WriteString(".withStrategies(")
-			gl.gremlin.WriteString(args)
-			gl.gremlin.WriteString(")")
+			gl.gremlin = append(gl.gremlin, ".withStrategies(")
+			gl.gremlin = append(gl.gremlin, args)
+			gl.gremlin = append(gl.gremlin, ")")
 		}
 		return
 	}
@@ -462,7 +462,7 @@ func (gl *GremlinLang) GetOptionsStrategies() []*traversalStrategy {
 }
 
 func (gl *GremlinLang) IsEmpty() bool {
-	return gl.gremlin.Len() == 0
+	return len(gl.gremlin) == 0
 }
 
 func (gl *GremlinLang) flattenArguments(arguments ...interface{}) []interface{} {
