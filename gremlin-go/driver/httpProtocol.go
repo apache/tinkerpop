@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sync"
 )
 
 const authenticationFailed = uint16(151)
@@ -61,10 +60,7 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 }
 
 func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
-	// TODO remove need for result set container map
-	results := &synchronizedMap{map[string]ResultSet{}, sync.Mutex{}}
-	rs := newChannelResultSet(request.requestID.String(), results)
-	results.store(request.requestID.String(), rs)
+	rs := newChannelResultSet(request.requestID.String())
 
 	fmt.Println("Serializing request")
 	bytes, err := protocol.serializer.serializeMessage(request)

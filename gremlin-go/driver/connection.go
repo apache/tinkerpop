@@ -71,6 +71,6 @@ func (s *synchronizedMap) closeAll(err error) {
 	defer s.syncLock.Unlock()
 	for _, resultSet := range s.internalMap {
 		resultSet.setError(err)
-		resultSet.unlockedClose()
+		resultSet.Close()
 	}
 }
