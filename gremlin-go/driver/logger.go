@@ -114,11 +114,6 @@ const (
 	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
 	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
-	creatingSessionConnection    errorKey = "CREATING_SESSION_CONNECTION"
-	closeSession                 errorKey = "CLOSE_SESSION"
-	closeSessionRequestError     errorKey = "CLOSE_SESSION_REQUEST_ERROR"
 	closeDriverRemoteConnection  errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
-	closingSpawnedSessions       errorKey = "CLOSING_SPAWNED_SESSIONS"
 	closeClient                  errorKey = "CLOSE_CLIENT"
-	sessionDetected              errorKey = "SESSION_DETECTED"
 )

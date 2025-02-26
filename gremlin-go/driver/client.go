@@ -52,7 +52,6 @@ type Client struct {
 	url                string
 	traversalSource    string
 	logHandler         *logHandler
-	session            string
 	connectionSettings *connectionSettings
 	httpProtocol       *httpProtocol
 }
@@ -107,7 +106,6 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
-		session:            "",
 		connectionSettings: connSettings,
 		httpProtocol:       httpProt,
 	}
@@ -118,11 +116,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
-	// If it is a session, call closeSession
-	if client.session != "" {
-		// TODO remove references to session
-		client.session = ""
-	}
+	// TODO check what needs to be closed
 	client.logHandler.logf(Info, closeClient, client.url)
 }
 
@@ -133,7 +127,7 @@ func (client *Client) errorCallback() {
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, client.session, requestOptions)
+	request := makeStringRequest(traversalString, client.traversalSource, requestOptions)
 
 	rs, err := client.httpProtocol.send(&request)
 	return rs, err
@@ -156,13 +150,13 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
 	// TODO placeholder
 	requestOptionsBuilder := new(RequestOptionsBuilder)
-	request := makeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, client.session, requestOptionsBuilder.Create())
+	request := makeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
 	return client.httpProtocol.send(&request)
 }
 
 // submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
+	request := makeBytecodeRequest(bytecode, client.traversalSource)
 	return client.httpProtocol.send(&request)
 }

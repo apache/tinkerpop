@@ -24,14 +24,11 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/google/uuid"
 	"golang.org/x/text/language"
 )
 
 // DriverRemoteConnectionSettings are used to configure the DriverRemoteConnection.
 type DriverRemoteConnectionSettings struct {
-	session string
-
 	TraversalSource          string
 	LogVerbosity             LogVerbosity
 	Logger                   Logger
@@ -57,7 +54,6 @@ type DriverRemoteConnectionSettings struct {
 // DriverRemoteConnection is a remote connection.
 type DriverRemoteConnection struct {
 	client          *Client
-	spawnedSessions []*DriverRemoteConnection
 	isClosed        bool
 	settings        *DriverRemoteConnectionSettings
 }
@@ -70,8 +66,6 @@ func NewDriverRemoteConnection(
 	url string,
 	configurations ...func(settings *DriverRemoteConnectionSettings)) (*DriverRemoteConnection, error) {
 	settings := &DriverRemoteConnectionSettings{
-		session: "",
-
 		TraversalSource:          "g",
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
@@ -108,10 +102,6 @@ func NewDriverRemoteConnection(
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
-	if settings.session != "" {
-		logHandler.log(Debug, sessionDetected)
-		settings.MaximumConcurrentConnections = 1
-	}
 
 	httpProt, err := newHttpProtocol(logHandler, url, connSettings)
 	if err != nil {
@@ -123,7 +113,6 @@ func NewDriverRemoteConnection(
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		session:            settings.session,
 		httpProtocol:       httpProt,
 	}
 
@@ -133,20 +122,7 @@ func NewDriverRemoteConnection(
 // Close closes the DriverRemoteConnection.
 // Errors if any will be logged
 func (driver *DriverRemoteConnection) Close() {
-	// If DriverRemoteConnection has spawnedSessions then they must be closed as well.
-	if len(driver.spawnedSessions) > 0 {
-		driver.client.logHandler.logf(Debug, closingSpawnedSessions, driver.client.url)
-		for _, session := range driver.spawnedSessions {
-			session.Close()
-		}
-		driver.spawnedSessions = driver.spawnedSessions[:0]
-	}
-
-	if driver.isSession() {
-		driver.client.logHandler.logf(Info, closeSession, driver.client.url, driver.client.session)
-	} else {
-		driver.client.logHandler.logf(Info, closeDriverRemoteConnection, driver.client.url)
-	}
+	driver.client.logHandler.logf(Info, closeDriverRemoteConnection, driver.client.url)
 	driver.client.Close()
 	driver.isClosed = true
 }
@@ -180,52 +156,6 @@ func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (Result
 		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
 	}
 	return driver.client.submitBytecode(bytecode)
-}
-
-func (driver *DriverRemoteConnection) isSession() bool {
-	return driver.client.session != ""
-}
-
-// CreateSession generates a new session. sessionId stores the optional UUID param. It can be used to create a session with a specific UUID.
-func (driver *DriverRemoteConnection) CreateSession(sessionId ...string) (*DriverRemoteConnection, error) {
-	if len(sessionId) > 1 {
-		return nil, newError(err0201CreateSessionMultipleIdsError)
-	} else if driver.isSession() {
-		return nil, newError(err0202CreateSessionFromSessionError)
-	}
-
-	driver.client.logHandler.log(Info, creatingSessionConnection)
-	drc, err := NewDriverRemoteConnection(driver.client.url, func(settings *DriverRemoteConnectionSettings) {
-		if len(sessionId) == 1 {
-			settings.session = sessionId[0]
-		} else {
-			settings.session = uuid.New().String()
-		}
-		// copy other settings from parent
-		settings.TraversalSource = driver.settings.TraversalSource
-		settings.Logger = driver.settings.Logger
-		settings.LogVerbosity = driver.settings.LogVerbosity
-		settings.Language = driver.settings.Language
-		settings.AuthInfo = driver.settings.AuthInfo
-		settings.TlsConfig = driver.settings.TlsConfig
-		settings.KeepAliveInterval = driver.settings.KeepAliveInterval
-		settings.WriteDeadline = driver.settings.WriteDeadline
-		settings.ConnectionTimeout = driver.settings.ConnectionTimeout
-		settings.NewConnectionThreshold = driver.settings.NewConnectionThreshold
-		settings.EnableCompression = driver.settings.EnableCompression
-		settings.ReadBufferSize = driver.settings.ReadBufferSize
-		settings.WriteBufferSize = driver.settings.WriteBufferSize
-		settings.MaximumConcurrentConnections = driver.settings.MaximumConcurrentConnections
-	})
-	if err != nil {
-		return nil, err
-	}
-	driver.spawnedSessions = append(driver.spawnedSessions, drc)
-	return drc, nil
-}
-
-func (driver *DriverRemoteConnection) GetSessionId() string {
-	return driver.client.session
 }
 
 func (driver *DriverRemoteConnection) commit() (ResultSet, error) {

@@ -31,21 +31,15 @@ type request struct {
 	args      map[string]interface{}
 }
 
-const sessionProcessor = "session"
-
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
+func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin":  stringGremlin,
 		"language": "gremlin-lang",
 		"g":        traversalSource,
-	}
-	if sessionId != "" {
-		newProcessor = sessionProcessor
-		newArgs["session"] = sessionId
 	}
 	var requestId uuid.UUID
 	if requestOptions.requestID == uuid.Nil {
@@ -87,17 +81,13 @@ const bytecodeProcessor = "traversal"
 const authOp = "authentication"
 const authProcessor = "traversal"
 
-func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sessionId string) (req request) {
+func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
 	newProcessor := bytecodeProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
 		"aliases": map[string]interface{}{
 			"g": traversalSource,
 		},
-	}
-	if sessionId != "" {
-		newProcessor = sessionProcessor
-		newArgs["session"] = sessionId
 	}
 
 	for k, v := range extractReqArgs(bytecodeGremlin) {
@@ -198,17 +188,6 @@ func makeBasicAuthRequest(auth string) (req request) {
 		processor: authProcessor,
 		args: map[string]interface{}{
 			"sasl": auth,
-		},
-	}
-}
-
-func makeCloseSessionRequest(sessionId string) request {
-	return request{
-		requestID: uuid.New(),
-		op:        "close",
-		processor: "session",
-		args: map[string]interface{}{
-			"session": sessionId,
 		},
 	}
 }

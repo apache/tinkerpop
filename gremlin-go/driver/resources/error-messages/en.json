@@ -5,8 +5,6 @@
   "E0104_CONNECTIONPOOL_INSTANTIATE_FAIL": "E0104: no successful connections could be made: %s",
   "E0105_CONNECTIONPOOL_FULL_NONE_VALID": "E0105: no valid connections found and maximum concurrent connection count reached",
 
-  "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR": "E0201: more than one Session ID specified. Cannot create Session with multiple UUIDs",
-  "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR": "E0202: connection is already bound to a Session - child sessions are not allowed",
   "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR": "E0203: cannot submit bytecode to closed connection",
 
   "E0301_GRAPH_GETPATHOBJECT_UNEQUAL_LABELS_OBJECTS_LENGTH_ERROR": "E0301: path is invalid because it does not contain an equal number of Labels and Objects",

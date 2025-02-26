@@ -37,8 +37,6 @@ const (
 	err0102WriteConnectionClosedError errorCode = "E0102_CONNECTION_WRITE_CLOSED_ERROR"
 
 	// driverRemoteConnection.go errors
-	err0201CreateSessionMultipleIdsError            errorCode = "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR"
-	err0202CreateSessionFromSessionError            errorCode = "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR"
 	err0203SubmitGremlinLangToClosedConnectionError errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITGREMLINLANG_TO_CLOSED_CONNECTION_ERROR"
 	err0203SubmitBytecodeToClosedConnectionError    errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR"
 
