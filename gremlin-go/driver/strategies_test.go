@@ -126,7 +126,7 @@ func TestStrategy(t *testing.T) {
 
 		config := MatchAlgorithmStrategyConfig{MatchAlgorithm: "greedy"}
 		gl := g.WithStrategies(MatchAlgorithmStrategy(config)).gremlinLang
-		assert.True(t, strings.Contains(gl.gremlin.String(), "withStrategies(new MatchAlgorithmStrategy(matchAlgorithm:\"greedy\"))"))
+		assert.True(t, strings.Contains(gl.GetGremlin(), "withStrategies(new MatchAlgorithmStrategy(matchAlgorithm:\"greedy\"))"))
 	})
 
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
@@ -413,7 +413,7 @@ func TestStrategy(t *testing.T) {
 
 		customStrategy := NewTraversalStrategy("CustomSingletonStrategy", nil)
 		gl := g.WithStrategies(customStrategy).gremlinLang
-		assert.True(t, strings.Contains(gl.gremlin.String(), "withStrategies(CustomSingletonStrategy)"))
+		assert.True(t, strings.Contains(gl.GetGremlin(), "withStrategies(CustomSingletonStrategy)"))
 	})
 
 	t.Run("Test GremlinLang generation for config custom strategies", func(t *testing.T) {
@@ -422,7 +422,7 @@ func TestStrategy(t *testing.T) {
 		customStrategy := NewTraversalStrategy("CustomConfigurableStrategy",
 			map[string]interface{}{"stringKey": "string value", "intKey": 5, "booleanKey": true})
 		gl := g.WithStrategies(customStrategy).gremlinLang
-		assert.True(t, strings.Contains(gl.gremlin.String(),
+		assert.True(t, strings.Contains(gl.GetGremlin(),
 			"withStrategies(new CustomConfigurableStrategy(stringKey:\"string value\",intKey:5,booleanKey:true))"))
 	})
 }
