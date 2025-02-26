@@ -755,7 +755,7 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		resultSet, err := client.Submit("x + x", map[string]interface{}{"x": 2})
+		resultSet, err := client.Submit("g.inject(x).math('_+_')", map[string]interface{}{"x": 2})
 		assert.Nil(t, err)
 		assert.NotNil(t, resultSet)
 		result, ok, err := resultSet.One()
