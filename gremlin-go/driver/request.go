@@ -41,9 +41,7 @@ func makeStringRequest(stringGremlin string, traversalSource string, sessionId s
 	newArgs := map[string]interface{}{
 		"gremlin":  stringGremlin,
 		"language": "gremlin-lang",
-		"aliases": map[string]interface{}{
-			"g": traversalSource,
-		},
+		"g":        traversalSource,
 	}
 	if sessionId != "" {
 		newProcessor = sessionProcessor

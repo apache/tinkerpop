@@ -135,15 +135,29 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 		gs.ser.logHandler.log(Error, nullInput)
 		return msg, newError(err0405ReadValueInvalidNullInputError)
 	}
+	results := make([]interface{}, 0)
 
 	//Skip version and nullable byte.
 	i := 2
-	n, err := readFullyQualifiedNullable(&message, &i, true)
-	if err != nil {
-		return msg, err
+	// TODO temp serialization before fully streaming set-up
+	for len(message) > 0 {
+		n, err := readFullyQualifiedNullable(&message, &i, true)
+		if err != nil {
+			return msg, err
+		}
+		_, _ = fmt.Fprintf(os.Stdout, "Deserializing data : %v\n", n)
+		if n == EndOfStream() {
+			break
+		}
+		results = append(results, n)
 	}
-	_, _ = fmt.Fprintf(os.Stdout, "Deserialized data : %s\n", n)
-	msg.responseResult.data = n
+	_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
+	if len(results) == 1 {
+		// unwrap single results
+		msg.responseResult.data = results[0]
+	} else {
+		msg.responseResult.data = results
+	}
 	// TODO deserialize status code from response
 	msg.responseStatus.code = 200
 	msg.responseStatus.message = "OK"
@@ -234,7 +248,7 @@ func initDeserializers() {
 		// Customer
 		customType: customTypeReader,
 
-		markerType: readByte,
+		markerType: markerReader,
 	}
 	customDeserializers = map[string]CustomTypeReader{}
 }
