@@ -158,8 +158,9 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	} else {
 		msg.responseResult.data = results
 	}
-	// TODO deserialize status code from response
-	msg.responseStatus.code = 200
+	code := readUint32Safe(&message, &i)
+	msg.responseStatus.code = code
+	// TODO read status message
 	msg.responseStatus.message = "OK"
 	msg.responseStatus.attributes = map[string]interface{}{}
 	return msg, nil

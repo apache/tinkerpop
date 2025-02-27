@@ -26,7 +26,7 @@ import (
 	"os"
 )
 
-const authenticationFailed = uint16(151)
+const authenticationFailed = uint32(151)
 
 type httpProtocol struct {
 	serializer   serializer
