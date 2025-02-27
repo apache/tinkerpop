@@ -36,7 +36,7 @@ type httpProtocol struct {
 	httpClient   *http.Client
 }
 
-func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSettings) (*httpProtocol, error) {
+func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSettings) *httpProtocol {
 	transport := &http.Transport{
 		TLSClientConfig:    connSettings.tlsConfig,
 		MaxConnsPerHost:    0, // TODO
@@ -56,11 +56,11 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 		connSettings: connSettings,
 		httpClient:   &httpClient,
 	}
-	return httpProt, nil
+	return httpProt
 }
 
 func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
-	rs := newChannelResultSet(request.requestID.String())
+	rs := newChannelResultSet()
 
 	fmt.Println("Serializing request")
 	bytes, err := protocol.serializer.serializeMessage(request)
@@ -68,7 +68,8 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 		return nil, err
 	}
 
-	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient)
+	// one transport per request
+	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient, protocol.logHandler)
 
 	// async send request and wait for response
 	transport.wg.Add(1)
@@ -163,7 +164,7 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 			encoded := base64.StdEncoding.EncodeToString(authBytes)
 			request := makeBasicAuthRequest(encoded)
 			// TODO retry
-			_, err := fmt.Fprintf(os.Stdout, "Skipping retry of failed request : %s\n", request.requestID)
+			_, err := fmt.Fprintf(os.Stdout, "Skipping retry of failed request : %s\n", request)
 			if err != nil {
 				return err
 			}
@@ -189,4 +190,8 @@ func (protocol *httpProtocol) getAuthInfo() AuthInfoProvider {
 
 func (protocol *httpProtocol) errorCallback() {
 	protocol.logHandler.log(Error, errorCallback)
+}
+
+func (protocol *httpProtocol) close() {
+	protocol.httpClient.CloseIdleConnections()
 }

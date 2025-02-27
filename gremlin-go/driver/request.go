@@ -19,13 +19,8 @@ under the License.
 
 package gremlingo
 
-import (
-	"github.com/google/uuid"
-)
-
 // request represents a request to the server.
 type request struct {
-	requestID uuid.UUID
 	op        string
 	processor string
 	args      map[string]interface{}
@@ -40,12 +35,6 @@ func makeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		"gremlin":  stringGremlin,
 		"language": "gremlin-lang",
 		"g":        traversalSource,
-	}
-	var requestId uuid.UUID
-	if requestOptions.requestID == uuid.Nil {
-		requestId = uuid.New()
-	} else {
-		requestId = requestOptions.requestID
 	}
 
 	if requestOptions.bindings != nil {
@@ -69,7 +58,6 @@ func makeStringRequest(stringGremlin string, traversalSource string, requestOpti
 	}
 
 	return request{
-		requestID: requestId,
 		op:        stringOp,
 		processor: newProcessor,
 		args:      newArgs,
@@ -95,7 +83,6 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req
 	}
 
 	return request{
-		requestID: uuid.New(),
 		op:        bytecodeOp,
 		processor: newProcessor,
 		args:      newArgs,
@@ -183,7 +170,6 @@ func extractWithReqArg(insn instruction) (key string, value interface{}) {
 
 func makeBasicAuthRequest(auth string) (req request) {
 	return request{
-		requestID: uuid.New(),
 		op:        authOp,
 		processor: authProcessor,
 		args: map[string]interface{}{

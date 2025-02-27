@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
 )
@@ -34,9 +33,7 @@ const mapDataOrder2 = "[32 97 112 112 108 105 99 97 116 105 111 110 47 118 110 1
 
 func TestSerializer(t *testing.T) {
 	t.Run("test serialized request message", func(t *testing.T) {
-		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
 		testRequest := request{
-			requestID: u,
 			op:        "eval",
 			processor: "",
 			args:      map[string]interface{}{"gremlin": "g.V().count()", "aliases": map[string]interface{}{"g": "g"}},
@@ -80,9 +77,7 @@ func TestSerializer(t *testing.T) {
 
 func TestSerializerFailures(t *testing.T) {
 	t.Run("test convertArgs failure", func(t *testing.T) {
-		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
 		testRequest := request{
-			requestID: u,
 			op:        "traversal",
 			processor: "",
 			// Invalid Input in args, so should fail

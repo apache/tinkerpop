@@ -21,37 +21,29 @@ package gremlingo
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func getSyncMap() *synchronizedMap {
-	return &synchronizedMap{
-		make(map[string]ResultSet),
-		sync.Mutex{},
-	}
-}
-
 func TestChannelResultSet(t *testing.T) {
 	const mockID = "mockID"
 
 	t.Run("Test ResultSet test getter/setters.", func(t *testing.T) {
-		r := newChannelResultSet(mockID)
+		r := newChannelResultSet()
 		testAggregateTo := "test2"
 		r.setAggregateTo(testAggregateTo)
 		assert.Equal(t, r.GetAggregateTo(), testAggregateTo)
 	})
 
 	t.Run("Test ResultSet close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		assert.NotPanics(t, func() { channelResultSet.Close() })
 	})
 
 	t.Run("Test ResultSet one.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		AddResults(channelResultSet, 10)
 		idx := 0
 		for i := 0; i < 10; i++ {
@@ -69,7 +61,7 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet one Paused.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		go AddResultsPause(channelResultSet, 10, 500)
 		idx := 0
 		for i := 0; i < 10; i++ {
@@ -87,12 +79,12 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet one close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		channelResultSet.Close()
 	})
 
 	t.Run("Test ResultSet All.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		AddResults(channelResultSet, 10)
 		go closeAfterTime(500, channelResultSet)
 		results, err := channelResultSet.All()
@@ -103,7 +95,7 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet All close before.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		AddResults(channelResultSet, 10)
 		channelResultSet.Close()
 		results, err := channelResultSet.All()
@@ -115,21 +107,21 @@ func TestChannelResultSet(t *testing.T) {
 	})
 
 	t.Run("Test ResultSet IsEmpty before signal.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		go closeAfterTime(500, channelResultSet)
 		empty := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after signal.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		channelResultSet.Close()
 		empty := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after close.", func(t *testing.T) {
-		channelResultSet := newChannelResultSet(mockID)
+		channelResultSet := newChannelResultSet()
 		go addAfterTime(500, channelResultSet)
 		empty := channelResultSet.IsEmpty()
 		assert.False(t, empty)

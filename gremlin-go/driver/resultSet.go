@@ -30,7 +30,6 @@ const defaultCapacity = 1000
 type ResultSet interface {
 	setAggregateTo(val string)
 	GetAggregateTo() string
-	GetRequestID() string
 	IsEmpty() bool
 	Close()
 	Channel() chan *Result
@@ -43,15 +42,13 @@ type ResultSet interface {
 
 // channelResultSet Channel based implementation of ResultSet.
 type channelResultSet struct {
-	channel          chan *Result
-	requestID        string
-	aggregateTo      string
-	statusAttributes map[string]interface{}
-	closed           bool
-	err              error
-	waitSignal       chan bool
-	channelMutex     sync.Mutex
-	waitSignalMutex  sync.Mutex
+	channel         chan *Result
+	aggregateTo     string
+	closed          bool
+	err             error
+	waitSignal      chan bool
+	channelMutex    sync.Mutex
+	waitSignalMutex sync.Mutex
 }
 
 func (channelResultSet *channelResultSet) sendSignal() {
@@ -125,11 +122,6 @@ func (channelResultSet *channelResultSet) GetAggregateTo() string {
 	return channelResultSet.aggregateTo
 }
 
-// GetRequestID returns requestID for the channelResultSet.
-func (channelResultSet *channelResultSet) GetRequestID() string {
-	return channelResultSet.requestID
-}
-
 // Channel returns channel for the channelResultSet.
 func (channelResultSet *channelResultSet) Channel() chan *Result {
 	return channelResultSet.channel
@@ -177,10 +169,10 @@ func (channelResultSet *channelResultSet) addResult(r *Result) {
 	channelResultSet.sendSignal()
 }
 
-func newChannelResultSetCapacity(requestID string, channelSize int) ResultSet {
-	return &channelResultSet{make(chan *Result, channelSize), requestID, "", nil, false, nil, nil, sync.Mutex{}, sync.Mutex{}}
+func newChannelResultSetCapacity(channelSize int) ResultSet {
+	return &channelResultSet{make(chan *Result, channelSize), "", false, nil, nil, sync.Mutex{}, sync.Mutex{}}
 }
 
-func newChannelResultSet(requestID string) ResultSet {
-	return newChannelResultSetCapacity(requestID, defaultCapacity)
+func newChannelResultSet() ResultSet {
+	return newChannelResultSetCapacity(defaultCapacity)
 }

@@ -26,8 +26,6 @@ import (
 	"os"
 	"reflect"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
@@ -101,14 +99,14 @@ func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	finalMessage, err := gs.buildMessage(request.requestID, byte(len(graphBinaryMimeType)), request.op, request.processor, args)
+	finalMessage, err := gs.buildMessage(args)
 	if err != nil {
 		return nil, err
 	}
 	return finalMessage, nil
 }
 
-func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op string, processor string, args map[string]interface{}) ([]byte, error) {
+func (gs *graphBinarySerializer) buildMessage(args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	// Version

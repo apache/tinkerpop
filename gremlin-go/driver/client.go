@@ -27,6 +27,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+const keepAliveIntervalDefault = 5 * time.Second
+const writeDeadlineDefault = 3 * time.Second
+const connectionTimeoutDefault = 5 * time.Second
+
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
 	TraversalSource   string
@@ -97,10 +101,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt, err := newHttpProtocol(logHandler, url, connSettings)
-	if err != nil {
-		return nil, err
-	}
+	httpProt := newHttpProtocol(logHandler, url, connSettings)
 
 	client := &Client{
 		url:                url,
