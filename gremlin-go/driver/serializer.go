@@ -67,14 +67,14 @@ const versionByte byte = 0x81
 
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	finalMessage, err := gs.buildMessage(request.args)
+	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
 	if err != nil {
 		return nil, err
 	}
 	return finalMessage, nil
 }
 
-func (gs *graphBinarySerializer) buildMessage(args map[string]interface{}) ([]byte, error) {
+func (gs *graphBinarySerializer) buildMessage(gremlin string, args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	// Version
@@ -84,7 +84,6 @@ func (gs *graphBinarySerializer) buildMessage(args map[string]interface{}) ([]by
 	if err != nil {
 		return nil, err
 	}
-	gremlin := args["gremlin"]
 	_, err = gs.ser.writeValue(gremlin, &buffer, false)
 	if err != nil {
 		return nil, err

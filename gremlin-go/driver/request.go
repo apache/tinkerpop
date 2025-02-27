@@ -21,44 +21,44 @@ package gremlingo
 
 // request represents a request to the server.
 type request struct {
-	args map[string]interface{}
+	gremlin string
+	fields 	map[string]interface{}
 }
 
 func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
-	newArgs := map[string]interface{}{
-		"gremlin":  stringGremlin,
+	newFields := map[string]interface{}{
 		"language": "gremlin-lang",
 		"g":        traversalSource,
 	}
 
 	if requestOptions.bindings != nil {
-		newArgs["bindings"] = requestOptions.bindings
+		newFields["bindings"] = requestOptions.bindings
 	}
 
 	if requestOptions.evaluationTimeout != 0 {
-		newArgs["evaluationTimeout"] = requestOptions.evaluationTimeout
+		newFields["evaluationTimeout"] = requestOptions.evaluationTimeout
 	}
 
 	if requestOptions.batchSize != 0 {
-		newArgs["batchSize"] = requestOptions.batchSize
+		newFields["batchSize"] = requestOptions.batchSize
 	}
 
 	if requestOptions.userAgent != "" {
-		newArgs["userAgent"] = requestOptions.userAgent
+		newFields["userAgent"] = requestOptions.userAgent
 	}
 
 	if requestOptions.materializeProperties != "" {
-		newArgs["materializeProperties"] = requestOptions.materializeProperties
+		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
 
 	return request{
-		args: newArgs,
+		gremlin: stringGremlin,
+		fields: newFields,
 	}
 }
 
-
 func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
-	newArgs := map[string]interface{}{
+	newFields := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
 		"aliases": map[string]interface{}{
 			"g": traversalSource,
@@ -66,11 +66,11 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req
 	}
 
 	for k, v := range extractReqArgs(bytecodeGremlin) {
-		newArgs[k] = v
+		newFields[k] = v
 	}
 
 	return request{
-		args: newArgs,
+		fields: newFields,
 	}
 }
 
