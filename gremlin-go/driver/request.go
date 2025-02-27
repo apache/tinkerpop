@@ -21,14 +21,10 @@ package gremlingo
 
 // request represents a request to the server.
 type request struct {
-	processor string
-	args      map[string]interface{}
+	args map[string]interface{}
 }
 
-const stringProcessor = ""
-
 func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
-	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin":  stringGremlin,
 		"language": "gremlin-lang",
@@ -56,16 +52,12 @@ func makeStringRequest(stringGremlin string, traversalSource string, requestOpti
 	}
 
 	return request{
-		processor: newProcessor,
-		args:      newArgs,
+		args: newArgs,
 	}
 }
 
-const bytecodeProcessor = "traversal"
-const authProcessor = "traversal"
 
 func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
-	newProcessor := bytecodeProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
 		"aliases": map[string]interface{}{
@@ -78,8 +70,7 @@ func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req
 	}
 
 	return request{
-		processor: newProcessor,
-		args:      newArgs,
+		args: newArgs,
 	}
 }
 
@@ -160,13 +151,4 @@ func extractWithReqArg(insn instruction) (key string, value interface{}) {
 	}
 
 	return key, insn.arguments[1]
-}
-
-func makeBasicAuthRequest(auth string) (req request) {
-	return request{
-		processor: authProcessor,
-		args: map[string]interface{}{
-			"sasl": auth,
-		},
-	}
 }

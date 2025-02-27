@@ -20,10 +20,8 @@ under the License.
 package gremlingo
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net/http"
-	"os"
 )
 
 const authenticationFailed = uint32(151)
@@ -152,26 +150,8 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 		// Add data to the ResultSet.
 		rs.addResult(&Result{data})
 	} else if statusCode == http.StatusProxyAuthRequired || statusCode == authenticationFailed {
-		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
-		// Server has requested basic auth.
-		authInfo := protocol.getAuthInfo()
-		if ok, username, password := authInfo.GetBasicAuth(); ok {
-			authBytes := make([]byte, 0)
-			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, []byte(username)...)
-			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, []byte(password)...)
-			encoded := base64.StdEncoding.EncodeToString(authBytes)
-			request := makeBasicAuthRequest(encoded)
-			// TODO retry
-			_, err := fmt.Fprintf(os.Stdout, "Skipping retry of failed request : %s\n", request)
-			if err != nil {
-				return err
-			}
-		} else {
-			rs.Close()
-			return newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
-		}
+		rs.Close()
+		return newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
 	} else {
 		newError := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
 		rs.setError(newError)

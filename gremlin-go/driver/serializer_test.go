@@ -34,8 +34,7 @@ const mapDataOrder2 = "[32 97 112 112 108 105 99 97 116 105 111 110 47 118 110 1
 func TestSerializer(t *testing.T) {
 	t.Run("test serialized request message", func(t *testing.T) {
 		testRequest := request{
-			processor: "",
-			args:      map[string]interface{}{"gremlin": "g.V().count()", "aliases": map[string]interface{}{"g": "g"}},
+			args: map[string]interface{}{"gremlin": "g.V().count()", "aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		serialized, _ := serializer.serializeMessage(&testRequest)
@@ -77,7 +76,6 @@ func TestSerializer(t *testing.T) {
 func TestSerializerFailures(t *testing.T) {
 	t.Run("test convertArgs failure", func(t *testing.T) {
 		testRequest := request{
-			processor: "",
 			// Invalid Input in args, so should fail
 			args: map[string]interface{}{"invalidInput": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
 		}

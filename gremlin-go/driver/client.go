@@ -130,6 +130,8 @@ func (client *Client) SubmitWithOptions(traversalString string, requestOptions R
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := makeStringRequest(traversalString, client.traversalSource, requestOptions)
 
+	// TODO interceptors (ie. auth)
+	
 	rs, err := client.httpProtocol.send(&request)
 	return rs, err
 }
