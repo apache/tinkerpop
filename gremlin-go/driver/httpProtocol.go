@@ -145,7 +145,6 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 	} else if statusCode == http.StatusOK {
 		// Add data and status attributes to the ResultSet.
 		rs.addResult(&Result{data})
-		rs.setStatusAttributes(response.responseStatus.attributes)
 		rs.Close()
 		protocol.logHandler.logf(Debug, readComplete, responseIDString)
 	} else if statusCode == http.StatusPartialContent {

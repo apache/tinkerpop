@@ -162,7 +162,6 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	msg.responseStatus.code = code
 	// TODO read status message
 	msg.responseStatus.message = "OK"
-	msg.responseStatus.attributes = map[string]interface{}{}
 	return msg, nil
 }
 
