@@ -40,13 +40,7 @@ func TestChannelResultSet(t *testing.T) {
 
 	t.Run("Test ResultSet test getter/setters.", func(t *testing.T) {
 		r := newChannelResultSet(mockID)
-		testStatusAttribute := map[string]interface{}{
-			"1": 1234,
-			"2": "foo",
-		}
 		testAggregateTo := "test2"
-		r.setStatusAttributes(testStatusAttribute)
-		assert.Equal(t, r.GetStatusAttributes(), testStatusAttribute)
 		r.setAggregateTo(testAggregateTo)
 		assert.Equal(t, r.GetAggregateTo(), testAggregateTo)
 	})
