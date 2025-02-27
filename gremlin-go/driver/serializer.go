@@ -24,7 +24,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
 )
 
@@ -66,40 +65,9 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 
 const versionByte byte = 0x81
 
-func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
-	if request.op != bytecodeProcessor {
-		return request.args, nil
-	}
-
-	// Convert to format:
-	// args["gremlin"]: <serialized args["gremlin"]>
-	gremlin := request.args["gremlin"]
-	switch gremlin.(type) {
-	case GremlinLang:
-		buffer := bytes.Buffer{}
-		gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
-		if err != nil {
-			return nil, err
-		}
-		request.args["gremlin"] = gremlinBuffer
-		return request.args, nil
-	default:
-		var typeName string
-		if gremlin != nil {
-			typeName = reflect.TypeOf(gremlin).Name()
-		}
-
-		return nil, newError(err0704ConvertArgsNoSerializerError, typeName)
-	}
-}
-
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	args, err := convertArgs(request, gs)
-	if err != nil {
-		return nil, err
-	}
-	finalMessage, err := gs.buildMessage(args)
+	finalMessage, err := gs.buildMessage(request.args)
 	if err != nil {
 		return nil, err
 	}

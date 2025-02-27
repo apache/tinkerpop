@@ -22,9 +22,12 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 )
 
