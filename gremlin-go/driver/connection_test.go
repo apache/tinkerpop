@@ -289,6 +289,7 @@ func TestConnection(t *testing.T) {
 				settings.AuthInfo = testNoAuthAuthInfo
 				settings.WriteBufferSize = 1024
 				settings.EnableCompression = true
+				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
 		assert.NotNil(t, client)

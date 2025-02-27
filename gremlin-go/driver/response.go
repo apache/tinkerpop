@@ -23,8 +23,9 @@ import "github.com/google/uuid"
 
 // responseStatus contains the status info of the response.
 type responseStatus struct {
-	code    uint32
-	message string
+	code    	uint32
+	message 	string
+	exception 	string
 }
 
 // responseResult contains the result info of the response.

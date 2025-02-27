@@ -162,6 +162,20 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	msg.responseStatus.code = code
 	// TODO read status message
 	msg.responseStatus.message = "OK"
+	statusMsg, err := readUnqualified(&message, &i, stringType, true)
+	if err != nil {
+		return msg, err
+	}
+	if statusMsg != nil {
+		msg.responseStatus.message = statusMsg.(string)
+	}
+	exception, err := readUnqualified(&message, &i, stringType, true)
+	if err != nil {
+		return msg, err
+	}
+	if exception != nil {
+		msg.responseStatus.exception = exception.(string)
+	}
 	return msg, nil
 }
 
