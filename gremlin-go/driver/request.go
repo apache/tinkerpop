@@ -22,7 +22,7 @@ package gremlingo
 // request represents a request to the server.
 type request struct {
 	gremlin string
-	fields 	map[string]interface{}
+	fields  map[string]interface{}
 }
 
 func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
@@ -53,7 +53,7 @@ func makeStringRequest(stringGremlin string, traversalSource string, requestOpti
 
 	return request{
 		gremlin: stringGremlin,
-		fields: newFields,
+		fields:  newFields,
 	}
 }
 
@@ -118,7 +118,7 @@ func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
 			continue
 		}
 
-		if strategy.name != "OptionsStrategy" {
+		if strategy.name != decorationNamespace+"OptionsStrategy" {
 			continue
 		}
 

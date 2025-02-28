@@ -32,13 +32,8 @@ import (
 type errorCode string
 
 const (
-	// connection.go errors
-	err0101ConnectionCloseError       errorCode = "E0101_CONNECTION_CLOSE_ERROR"
-	err0102WriteConnectionClosedError errorCode = "E0102_CONNECTION_WRITE_CLOSED_ERROR"
-
 	// driverRemoteConnection.go errors
-	err0203SubmitGremlinLangToClosedConnectionError errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITGREMLINLANG_TO_CLOSED_CONNECTION_ERROR"
-	err0203SubmitBytecodeToClosedConnectionError    errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR"
+	err0203SubmitBytecodeToClosedConnectionError errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR"
 
 	// graph.go errors
 	err0301GetPathObjectInvalidPathUnequalLengthsError errorCode = "E0301_GRAPH_GETPATHOBJECT_UNEQUAL_LABELS_OBJECTS_LENGTH_ERROR"

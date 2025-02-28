@@ -117,12 +117,8 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
-	// TODO check what needs to be closed
 	client.logHandler.logf(Info, closeClient, client.url)
-}
-
-func (client *Client) errorCallback() {
-	client.logHandler.log(Error, errorCallback)
+	client.httpProtocol.close()
 }
 
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
