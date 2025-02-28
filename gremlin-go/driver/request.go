@@ -19,97 +19,58 @@ under the License.
 
 package gremlingo
 
-import (
-	"github.com/google/uuid"
-)
-
 // request represents a request to the server.
 type request struct {
-	requestID uuid.UUID
-	op        string
-	processor string
-	args      map[string]interface{}
+	gremlin string
+	fields 	map[string]interface{}
 }
 
-const sessionProcessor = "session"
-
-const stringOp = "eval"
-const stringProcessor = ""
-
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
-	newProcessor := stringProcessor
-	newArgs := map[string]interface{}{
-		"gremlin": stringGremlin,
-		"aliases": map[string]interface{}{
-			"g": traversalSource,
-		},
-	}
-	if sessionId != "" {
-		newProcessor = sessionProcessor
-		newArgs["session"] = sessionId
-	}
-	var requestId uuid.UUID
-	if requestOptions.requestID == uuid.Nil {
-		requestId = uuid.New()
-	} else {
-		requestId = requestOptions.requestID
+func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
+	newFields := map[string]interface{}{
+		"language": "gremlin-lang",
+		"g":        traversalSource,
 	}
 
 	if requestOptions.bindings != nil {
-		newArgs["bindings"] = requestOptions.bindings
+		newFields["bindings"] = requestOptions.bindings
 	}
 
 	if requestOptions.evaluationTimeout != 0 {
-		newArgs["evaluationTimeout"] = requestOptions.evaluationTimeout
+		newFields["evaluationTimeout"] = requestOptions.evaluationTimeout
 	}
 
 	if requestOptions.batchSize != 0 {
-		newArgs["batchSize"] = requestOptions.batchSize
+		newFields["batchSize"] = requestOptions.batchSize
 	}
 
 	if requestOptions.userAgent != "" {
-		newArgs["userAgent"] = requestOptions.userAgent
+		newFields["userAgent"] = requestOptions.userAgent
 	}
 
 	if requestOptions.materializeProperties != "" {
-		newArgs["materializeProperties"] = requestOptions.materializeProperties
+		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
 
 	return request{
-		requestID: requestId,
-		op:        stringOp,
-		processor: newProcessor,
-		args:      newArgs,
+		gremlin: stringGremlin,
+		fields: newFields,
 	}
 }
 
-const bytecodeOp = "bytecode"
-const bytecodeProcessor = "traversal"
-const authOp = "authentication"
-const authProcessor = "traversal"
-
-func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sessionId string) (req request) {
-	newProcessor := bytecodeProcessor
-	newArgs := map[string]interface{}{
+func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
+	newFields := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
 		"aliases": map[string]interface{}{
 			"g": traversalSource,
 		},
 	}
-	if sessionId != "" {
-		newProcessor = sessionProcessor
-		newArgs["session"] = sessionId
-	}
 
 	for k, v := range extractReqArgs(bytecodeGremlin) {
-		newArgs[k] = v
+		newFields[k] = v
 	}
 
 	return request{
-		requestID: uuid.New(),
-		op:        bytecodeOp,
-		processor: newProcessor,
-		args:      newArgs,
+		fields: newFields,
 	}
 }
 
@@ -157,7 +118,7 @@ func extractWithStrategiesReqArgs(insn instruction) map[string]interface{} {
 			continue
 		}
 
-		if strategy.name != decorationNamespace+"OptionsStrategy" {
+		if strategy.name != "OptionsStrategy" {
 			continue
 		}
 
@@ -190,26 +151,4 @@ func extractWithReqArg(insn instruction) (key string, value interface{}) {
 	}
 
 	return key, insn.arguments[1]
-}
-
-func makeBasicAuthRequest(auth string) (req request) {
-	return request{
-		requestID: uuid.New(),
-		op:        authOp,
-		processor: authProcessor,
-		args: map[string]interface{}{
-			"sasl": auth,
-		},
-	}
-}
-
-func makeCloseSessionRequest(sessionId string) request {
-	return request{
-		requestID: uuid.New(),
-		op:        "close",
-		processor: "session",
-		args: map[string]interface{}{
-			"session": sessionId,
-		},
-	}
 }
