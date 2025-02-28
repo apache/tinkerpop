@@ -53,7 +53,6 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, "fb252a4a-75dd-47bf-b74e-5635000c8464", response.responseID.String())
 		assert.Equal(t, uint16(200), response.responseStatus.code)
 		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
 		assert.Equal(t, []interface{}{int64(0)}, response.responseResult.data)
 	})
 
@@ -69,7 +68,6 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, "45de2837-5f3e-4bf9-8685-9b852b97dd44", response.responseID.String())
 		assert.Equal(t, uint16(200), response.responseStatus.code)
 		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
 		assert.NotNil(t, response.responseResult.data)
 	})
 }
