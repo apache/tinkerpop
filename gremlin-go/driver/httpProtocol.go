@@ -20,15 +20,11 @@ under the License.
 package gremlingo
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net/http"
-	"os"
-	"sync"
 )
 
-const authenticationFailed = uint16(151)
-
+// responsible for serializing and sending requests and then receiving and deserializing responses
 type httpProtocol struct {
 	serializer   serializer
 	logHandler   *logHandler
@@ -37,7 +33,7 @@ type httpProtocol struct {
 	httpClient   *http.Client
 }
 
-func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSettings) (*httpProtocol, error) {
+func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSettings) *httpProtocol {
 	transport := &http.Transport{
 		TLSClientConfig:    connSettings.tlsConfig,
 		MaxConnsPerHost:    0, // TODO
@@ -57,24 +53,24 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 		connSettings: connSettings,
 		httpClient:   &httpClient,
 	}
-	return httpProt, nil
+	return httpProt
 }
 
+// sends a query request and returns a ResultSet that can be used to obtain query results
 func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
-	// TODO remove need for result set container map
-	results := &synchronizedMap{map[string]ResultSet{}, sync.Mutex{}}
-	rs := newChannelResultSet(request.requestID.String(), results)
-	results.store(request.requestID.String(), rs)
-
+	rs := newChannelResultSet()
 	fmt.Println("Serializing request")
 	bytes, err := protocol.serializer.serializeMessage(request)
 	if err != nil {
-		return nil, err
+		rs.setError(err)
+		rs.Close()
+		return rs, err
 	}
 
-	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient)
+	// one transport per request
+	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient, protocol.logHandler)
 
-	// async send request and wait for response
+	// async send request
 	transport.wg.Add(1)
 	go func() {
 		defer transport.wg.Done()
@@ -82,12 +78,10 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 		if err != nil {
 			rs.setError(err)
 			rs.Close()
-			protocol.errorCallback()
-			err = transport.Close()
 		}
 	}()
 
-	// async receive response msg data
+	// async receive response
 	transport.wg.Add(1)
 	go func() {
 		defer transport.wg.Done()
@@ -95,25 +89,23 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 		if err != nil {
 			rs.setError(err)
 			rs.Close()
-			protocol.errorCallback()
-			err = transport.Close()
 		} else {
-			protocol.receive(rs, msg, protocol.errorCallback)
+			err = protocol.receive(rs, msg)
 		}
-		rs.Close()
-		err = transport.Close()
+		transport.Close()
 	}()
 
 	return rs, err
 }
 
-func (protocol *httpProtocol) receive(rs ResultSet, msg []byte, errorCallback func()) {
+// receives a binary response message, deserializes, and adds results to the ResultSet
+func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
 	fmt.Println("Deserializing response")
 	resp, err := protocol.serializer.deserializeMessage(msg)
 	if err != nil {
 		protocol.logHandler.logf(Error, logErrorGeneric, "receive()", err.Error())
 		rs.Close()
-		return
+		return err
 	}
 
 	fmt.Println("Handling response")
@@ -121,77 +113,42 @@ func (protocol *httpProtocol) receive(rs ResultSet, msg []byte, errorCallback fu
 	if err != nil {
 		protocol.logHandler.logf(Error, logErrorGeneric, "receive()", err.Error())
 		rs.Close()
-		errorCallback()
-		return
-	}
-}
-
-func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
-	fmt.Println("Handling response")
-
-	// TODO http specific response handling - below is just copy-pasted from web socket implementation for now
-
-	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
-		response.responseResult.meta, response.responseResult.data
-	responseIDString := responseID.String()
-	if rs == nil {
-		return newError(err0501ResponseHandlerResultSetNotCreatedError)
-	}
-	if aggregateTo, ok := metadata["aggregateTo"]; ok {
-		rs.setAggregateTo(aggregateTo.(string))
-	}
-
-	// Handle status codes appropriately. If status code is http.StatusPartialContent, we need to re-read data.
-	if statusCode == http.StatusNoContent {
-		rs.addResult(&Result{make([]interface{}, 0)})
-		rs.Close()
-		protocol.logHandler.logf(Debug, readComplete, responseIDString)
-	} else if statusCode == http.StatusOK {
-		// Add data and status attributes to the ResultSet.
-		rs.addResult(&Result{data})
-		rs.setStatusAttributes(response.responseStatus.attributes)
-		rs.Close()
-		protocol.logHandler.logf(Debug, readComplete, responseIDString)
-	} else if statusCode == http.StatusPartialContent {
-		// Add data to the ResultSet.
-		rs.addResult(&Result{data})
-	} else if statusCode == http.StatusProxyAuthRequired || statusCode == authenticationFailed {
-		// http status code 151 is not defined here, but corresponds with 403, i.e. authentication has failed.
-		// Server has requested basic auth.
-		authInfo := protocol.getAuthInfo()
-		if ok, username, password := authInfo.GetBasicAuth(); ok {
-			authBytes := make([]byte, 0)
-			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, []byte(username)...)
-			authBytes = append(authBytes, 0)
-			authBytes = append(authBytes, []byte(password)...)
-			encoded := base64.StdEncoding.EncodeToString(authBytes)
-			request := makeBasicAuthRequest(encoded)
-			// TODO retry
-			_, err := fmt.Fprintf(os.Stdout, "Skipping retry of failed request : %s\n", request.requestID)
-			if err != nil {
-				return err
-			}
-		} else {
-			rs.Close()
-			return newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
-		}
-	} else {
-		newError := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
-		rs.setError(newError)
-		rs.Close()
-		protocol.logHandler.logf(Error, logErrorGeneric, "httpProtocol.responseHandler()", newError.Error())
+		return err
 	}
 	return nil
 }
 
-func (protocol *httpProtocol) getAuthInfo() AuthInfoProvider {
-	if protocol.connSettings.authInfo == nil {
-		return NoopAuthInfo
+// processes a deserialized response and attempts to add results to the ResultSet
+func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
+	fmt.Println("Handling response")
+
+	statusCode, data := response.responseStatus.code, response.responseResult.data
+	if rs == nil {
+		return newError(err0501ResponseHandlerResultSetNotCreatedError)
 	}
-	return protocol.connSettings.authInfo
+
+	if statusCode == http.StatusNoContent {
+		rs.addResult(&Result{make([]interface{}, 0)})
+		rs.Close()
+		protocol.logHandler.logf(Debug, readComplete)
+	} else if statusCode == http.StatusOK {
+		rs.addResult(&Result{data})
+		rs.Close()
+		protocol.logHandler.logf(Debug, readComplete)
+	} else if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+		rs.Close()
+		err := newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
+		rs.setError(err)
+		return err
+	} else {
+		rs.Close()
+		err := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
+		rs.setError(err)
+		return err
+	}
+	return nil
 }
 
-func (protocol *httpProtocol) errorCallback() {
-	protocol.logHandler.log(Error, errorCallback)
+func (protocol *httpProtocol) close() {
+	protocol.httpClient.CloseIdleConnections()
 }

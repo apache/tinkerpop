@@ -24,10 +24,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"reflect"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
@@ -68,47 +65,16 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 
 const versionByte byte = 0x81
 
-func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
-	if request.op != bytecodeProcessor {
-		return request.args, nil
-	}
-
-	// Convert to format:
-	// args["gremlin"]: <serialized args["gremlin"]>
-	gremlin := request.args["gremlin"]
-	switch gremlin.(type) {
-	case Bytecode:
-		buffer := bytes.Buffer{}
-		gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
-		if err != nil {
-			return nil, err
-		}
-		request.args["gremlin"] = gremlinBuffer
-		return request.args, nil
-	default:
-		var typeName string
-		if gremlin != nil {
-			typeName = reflect.TypeOf(gremlin).Name()
-		}
-
-		return nil, newError(err0704ConvertArgsNoSerializerError, typeName)
-	}
-}
-
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	args, err := convertArgs(request, gs)
-	if err != nil {
-		return nil, err
-	}
-	finalMessage, err := gs.buildMessage(request.requestID, byte(len(graphBinaryMimeType)), request.op, request.processor, args)
+	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
 	if err != nil {
 		return nil, err
 	}
 	return finalMessage, nil
 }
 
-func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op string, processor string, args map[string]interface{}) ([]byte, error) {
+func (gs *graphBinarySerializer) buildMessage(gremlin string, args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	// Version
@@ -118,7 +84,6 @@ func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op str
 	if err != nil {
 		return nil, err
 	}
-	gremlin := args["gremlin"]
 	_, err = gs.ser.writeValue(gremlin, &buffer, false)
 	if err != nil {
 		return nil, err
@@ -158,10 +123,24 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	} else {
 		msg.responseResult.data = results
 	}
-	// TODO deserialize status code from response
-	msg.responseStatus.code = 200
+	code := readUint32Safe(&message, &i)
+	msg.responseStatus.code = code
+	// TODO read status message
 	msg.responseStatus.message = "OK"
-	msg.responseStatus.attributes = map[string]interface{}{}
+	statusMsg, err := readUnqualified(&message, &i, stringType, true)
+	if err != nil {
+		return msg, err
+	}
+	if statusMsg != nil {
+		msg.responseStatus.message = statusMsg.(string)
+	}
+	exception, err := readUnqualified(&message, &i, stringType, true)
+	if err != nil {
+		return msg, err
+	}
+	if exception != nil {
+		msg.responseStatus.exception = exception.(string)
+	}
 	return msg, nil
 }
 

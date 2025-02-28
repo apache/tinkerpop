@@ -30,12 +30,8 @@ const defaultCapacity = 1000
 type ResultSet interface {
 	setAggregateTo(val string)
 	GetAggregateTo() string
-	setStatusAttributes(statusAttributes map[string]interface{})
-	GetStatusAttributes() map[string]interface{}
-	GetRequestID() string
 	IsEmpty() bool
 	Close()
-	unlockedClose()
 	Channel() chan *Result
 	addResult(result *Result)
 	One() (*Result, bool, error)
@@ -46,16 +42,13 @@ type ResultSet interface {
 
 // channelResultSet Channel based implementation of ResultSet.
 type channelResultSet struct {
-	channel          chan *Result
-	requestID        string
-	container        *synchronizedMap
-	aggregateTo      string
-	statusAttributes map[string]interface{}
-	closed           bool
-	err              error
-	waitSignal       chan bool
-	channelMutex     sync.Mutex
-	waitSignalMutex  sync.Mutex
+	channel         chan *Result
+	aggregateTo     string
+	closed          bool
+	err             error
+	waitSignal      chan bool
+	channelMutex    sync.Mutex
+	waitSignalMutex sync.Mutex
 }
 
 func (channelResultSet *channelResultSet) sendSignal() {
@@ -114,20 +107,6 @@ func (channelResultSet *channelResultSet) Close() {
 	if !channelResultSet.closed {
 		channelResultSet.channelMutex.Lock()
 		channelResultSet.closed = true
-		channelResultSet.container.delete(channelResultSet.requestID)
-		close(channelResultSet.channel)
-		channelResultSet.channelMutex.Unlock()
-		channelResultSet.sendSignal()
-	}
-}
-
-// Close and remove from the channelResultSet from the container without locking container. Meant for use when calling
-// function already locks the container.
-func (channelResultSet *channelResultSet) unlockedClose() {
-	if !channelResultSet.closed {
-		channelResultSet.channelMutex.Lock()
-		channelResultSet.closed = true
-		delete(channelResultSet.container.internalMap, channelResultSet.requestID)
 		close(channelResultSet.channel)
 		channelResultSet.channelMutex.Unlock()
 		channelResultSet.sendSignal()
@@ -141,20 +120,6 @@ func (channelResultSet *channelResultSet) setAggregateTo(val string) {
 // GetAggregateTo returns aggregateTo for the channelResultSet.
 func (channelResultSet *channelResultSet) GetAggregateTo() string {
 	return channelResultSet.aggregateTo
-}
-
-func (channelResultSet *channelResultSet) setStatusAttributes(val map[string]interface{}) {
-	channelResultSet.statusAttributes = val
-}
-
-// GetStatusAttributes returns statusAttributes for the channelResultSet.
-func (channelResultSet *channelResultSet) GetStatusAttributes() map[string]interface{} {
-	return channelResultSet.statusAttributes
-}
-
-// GetRequestID returns requestID for the channelResultSet.
-func (channelResultSet *channelResultSet) GetRequestID() string {
-	return channelResultSet.requestID
 }
 
 // Channel returns channel for the channelResultSet.
@@ -204,10 +169,10 @@ func (channelResultSet *channelResultSet) addResult(r *Result) {
 	channelResultSet.sendSignal()
 }
 
-func newChannelResultSetCapacity(requestID string, container *synchronizedMap, channelSize int) ResultSet {
-	return &channelResultSet{make(chan *Result, channelSize), requestID, container, "", nil, false, nil, nil, sync.Mutex{}, sync.Mutex{}}
+func newChannelResultSetCapacity(channelSize int) ResultSet {
+	return &channelResultSet{make(chan *Result, channelSize), "", false, nil, nil, sync.Mutex{}, sync.Mutex{}}
 }
 
-func newChannelResultSet(requestID string, container *synchronizedMap) ResultSet {
-	return newChannelResultSetCapacity(requestID, container, defaultCapacity)
+func newChannelResultSet() ResultSet {
+	return newChannelResultSetCapacity(defaultCapacity)
 }

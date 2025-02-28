@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"sync"
 	"time"
 )
 
@@ -35,42 +34,4 @@ type connectionSettings struct {
 	readBufferSize           int
 	writeBufferSize          int
 	enableUserAgentOnConnect bool
-}
-
-type synchronizedMap struct {
-	internalMap map[string]ResultSet
-	syncLock    sync.Mutex
-}
-
-func (s *synchronizedMap) store(key string, value ResultSet) {
-	s.syncLock.Lock()
-	defer s.syncLock.Unlock()
-	s.internalMap[key] = value
-}
-
-func (s *synchronizedMap) load(key string) ResultSet {
-	s.syncLock.Lock()
-	defer s.syncLock.Unlock()
-	return s.internalMap[key]
-}
-
-func (s *synchronizedMap) delete(key string) {
-	s.syncLock.Lock()
-	defer s.syncLock.Unlock()
-	delete(s.internalMap, key)
-}
-
-func (s *synchronizedMap) size() int {
-	s.syncLock.Lock()
-	defer s.syncLock.Unlock()
-	return len(s.internalMap)
-}
-
-func (s *synchronizedMap) closeAll(err error) {
-	s.syncLock.Lock()
-	defer s.syncLock.Unlock()
-	for _, resultSet := range s.internalMap {
-		resultSet.setError(err)
-		resultSet.unlockedClose()
-	}
 }
