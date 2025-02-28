@@ -122,8 +122,7 @@ func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
 func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
 	fmt.Println("Handling response")
 
-	statusCode, data := response.responseStatus.code,
-		response.responseResult.data
+	statusCode, data := response.responseStatus.code, response.responseResult.data
 	if rs == nil {
 		return newError(err0501ResponseHandlerResultSetNotCreatedError)
 	}
