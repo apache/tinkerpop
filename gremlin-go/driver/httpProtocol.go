@@ -24,8 +24,6 @@ import (
 	"net/http"
 )
 
-const authenticationFailed = uint32(151)
-
 // responsible for serializing and sending requests and then receiving and deserializing responses
 type httpProtocol struct {
 	serializer   serializer
@@ -71,7 +69,7 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 
 	// one transport per request
 	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient, protocol.logHandler)
-	
+
 	// async send request
 	transport.wg.Add(1)
 	go func() {
@@ -124,8 +122,6 @@ func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
 func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
 	fmt.Println("Handling response")
 
-	// TODO http specific response handling - below is just copy-pasted from web socket implementation for now
-
 	statusCode, metadata, data := response.responseStatus.code,
 		response.responseResult.meta, response.responseResult.data
 	if rs == nil {
@@ -135,7 +131,6 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 		rs.setAggregateTo(aggregateTo.(string))
 	}
 
-	// Handle status codes appropriately. If status code is http.StatusPartialContent, we need to re-read data.
 	if statusCode == http.StatusNoContent {
 		rs.addResult(&Result{make([]interface{}, 0)})
 		rs.Close()
@@ -144,10 +139,7 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 		rs.addResult(&Result{data})
 		rs.Close()
 		protocol.logHandler.logf(Debug, readComplete)
-	} else if statusCode == http.StatusPartialContent {
-		// TODO do we expect partial content?
-		rs.addResult(&Result{data})
-	} else if statusCode == http.StatusProxyAuthRequired || statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
+	} else if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
 		rs.Close()
 		err := newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
 		rs.setError(err)
@@ -159,13 +151,6 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 		return err
 	}
 	return nil
-}
-
-func (protocol *httpProtocol) getAuthInfo() AuthInfoProvider {
-	if protocol.connSettings.authInfo == nil {
-		return NoopAuthInfo
-	}
-	return protocol.connSettings.authInfo
 }
 
 func (protocol *httpProtocol) close() {

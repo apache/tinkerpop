@@ -34,11 +34,12 @@ import (
 // TODO decide channel size when chunked response handling is implemented - for now just set to 1
 const responseChannelSizeDefault = 1
 
+// HttpTransporter responsible for sending and receiving bytes to/from the server
 type HttpTransporter struct {
 	url             string
 	isClosed        bool
 	connSettings    *connectionSettings
-	responseChannel chan []byte
+	responseChannel chan []byte // receives response bytes from the server
 	httpClient      *http.Client
 	wg              *sync.WaitGroup
 	logHandler      *logHandler
@@ -57,6 +58,7 @@ func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient
 	}
 }
 
+// Write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
 func (transporter *HttpTransporter) Write(data []byte) error {
 	req, err := http.NewRequest("POST", transporter.url, bytes.NewBuffer(data))
 	if err != nil {
@@ -107,6 +109,7 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 	return nil
 }
 
+// Read reads bytes from the responseChannel
 func (transporter *HttpTransporter) Read() ([]byte, error) {
 	fmt.Println("Reading from responseChannel")
 	msg, ok := <-transporter.responseChannel
@@ -116,6 +119,7 @@ func (transporter *HttpTransporter) Read() ([]byte, error) {
 	return msg, nil
 }
 
+// Close closes the transporter and its corresponding responseChannel
 func (transporter *HttpTransporter) Close() {
 	fmt.Println("Closing http transporter")
 	if !transporter.isClosed {
