@@ -27,14 +27,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Option
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GoTranslateVisitor extends AbstractTranslateVisitor {
     private final static String GO_PACKAGE_NAME = "gremlingo.";
+    private final static List<String> STRATEGY_WITH_MAP_OPTS = Collections.unmodifiableList(Arrays.asList(
+            "OptionsStrategy",
+            "ReferenceElementStrategy", "ComputerFinalizationStrategy", "ProfileStrategy",
+            "ComputerVerificationStrategy", "StandardVerificationStrategy", "VertexProgramRestrictionStrategy"));
+    private final static List<String> STRATEGY_WITH_STRING_SLICE = Collections.unmodifiableList(Arrays.asList(
+            "ReservedKeysVerificationStrategy", "ProductiveByStrategy"));
 
     public GoTranslateVisitor() {
         super("g");
@@ -197,58 +206,52 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         else {
             String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
             sb.append(GO_PACKAGE_NAME).append(strategyName).append("(");
+            if (!STRATEGY_WITH_MAP_OPTS.contains(strategyName)) { // omit strategies which use plain map instead of Config struct
+                sb.append(GO_PACKAGE_NAME).append(strategyName).append("Config{");
+            }
 
             // get a list of all the arguments to the strategy - i.e. anything not a terminal node
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
 
-            if (configs.size() > 0 && ctx.children.stream().anyMatch(t -> t.getText().equals(OptionsStrategy.class.getSimpleName()))) {
-                sb.append("map[string]interface{}{");
-                for (int ix = 0; ix < configs.size(); ix++) {
-                    sb.append("\"").append(configs.get(ix).getChild(0).getText()).append("\":");
-                    visit(configs.get(ix).getChild(2));
-                    if (ix < configs.size() - 1)
-                        sb.append(", ");
-                }
-                sb.append("}");
-            } else {
-                // the rest are the arguments to the strategy
-                sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
-                for (int ix = 0; ix < configs.size(); ix++) {
-                    visit(configs.get(ix));
-                    if (ix < configs.size() - 1)
-                        sb.append(", ");
-                }
-                sb.append("}");
+            // the rest are the arguments to the strategy
+            for (int ix = 0; ix < configs.size(); ix++) {
+                visit(configs.get(ix));
+                if (ix < configs.size() - 1)
+                    sb.append(", ");
             }
 
+            if (!Objects.equals(strategyName, "OptionsStrategy")) {
+                sb.append("}");
+            }
             sb.append(")");
         }
-
-        return null;
-    }
-
-    @Override
-    public Void visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) {
-        sb.append("WithoutStrategies(");
-        sb.append(GO_PACKAGE_NAME).append(ctx.classType().getText());
-
-        if (ctx.classTypeList() != null && ctx.classTypeList().classTypeExpr() != null) {
-            for (GremlinParser.ClassTypeContext classTypeContext : ctx.classTypeList().classTypeExpr().classType()) {
-                sb.append(", ").append(GO_PACKAGE_NAME).append(classTypeContext.getText());
-            }
-        }
-
-        sb.append(")");
         return null;
     }
 
     @Override
     public Void visitConfiguration(final GremlinParser.ConfigurationContext ctx) {
-        // form of three tokens of key:value to become key=value
-        sb.append(SymbolHelper.toGo(ctx.getChild(0).getText()));
-        sb.append(": ");
-        visit(ctx.getChild(2));
+        String parent = ctx.getParent().getText();
+        String parentName = parent.startsWith("new") ? parent.substring(3, parent.indexOf('(')) : parent.substring(0, parent.indexOf('('));
+        if (STRATEGY_WITH_MAP_OPTS.contains(parentName)) { // handle strategies which use plain map instead of Config struct
+            sb.append("map[string]interface{}{\"");
+            sb.append(ctx.getChild(0).getText());
+            sb.append("\": ");
+            visit(ctx.getChild(2));
+            sb.append("}");
+        } else {
+            // form of three tokens of key:value to become key=value
+            sb.append(SymbolHelper.toGo(ctx.getChild(0).getText()));
+            sb.append(": ");
+            visit(ctx.getChild(2));
+            // handles strategies that takes string slices as config
+            if (STRATEGY_WITH_STRING_SLICE.contains(parentName)) {
+                final int ix = sb.lastIndexOf("[]interface{}");
+                if (ix > 0) {
+                    sb.replace(ix, ix +"[]interface{}".length(), "[]string");
+                }
+            }
+        }
 
         // need to convert List to Set for readPartitions until TINKERPOP-3032
         if (ctx.getChild(0).getText().equals("readPartitions")) {
@@ -261,6 +264,21 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
         }
 
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) {
+        sb.append("WithoutStrategies(");
+        sb.append(GO_PACKAGE_NAME).append(ctx.classType().getText()).append("()");
+
+        if (ctx.classTypeList() != null && ctx.classTypeList().classTypeExpr() != null) {
+            for (GremlinParser.ClassTypeContext classTypeContext : ctx.classTypeList().classTypeExpr().classType()) {
+                sb.append(", ").append(GO_PACKAGE_NAME).append(classTypeContext.getText()).append("()");
+            }
+        }
+
+        sb.append(")");
         return null;
     }
 

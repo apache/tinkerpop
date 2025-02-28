@@ -27,6 +27,8 @@ const (
 	verificationNamespace         = baseNamespace + "verification."
 	computerDecorationNamespace   = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
 	computerVerificationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification."
+	// org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification
+	// org.apache.tinkerpop.gremlin.process.traversal.strategy.verification
 	computerFinalizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization."
 	computerOptimizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization."
 )
@@ -56,10 +58,12 @@ func ElementIdStrategy() TraversalStrategy {
 	return &traversalStrategy{name: decorationNamespace + "ElementIdStrategy"}
 }
 
-func HaltedTraverserStrategy(config HaltedTraverserStrategyConfig) TraversalStrategy {
+func HaltedTraverserStrategy(config ...HaltedTraverserStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
-	if config.HaltedTraverserFactory != "" {
-		configMap["haltedTraverserFactory"] = config.HaltedTraverserFactory
+	if len(config) > 0 {
+		if config[0].HaltedTraverserFactory != "" {
+			configMap["haltedTraverserFactory"] = config[0].HaltedTraverserFactory
+		}
 	}
 	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: configMap}
 }
@@ -75,14 +79,12 @@ type HaltedTraverserStrategyConfig struct {
 // essentially a way for users to provide Traversal level configuration options that can be used in various ways
 // by different Graph providers.
 func OptionsStrategy(options ...map[string]interface{}) TraversalStrategy {
-	var opts map[string]interface{}
+	optsMap := make(map[string]interface{})
 	if len(options) > 0 {
-		opts = options[0]
-	} else {
-		opts = make(map[string]interface{})
+		optsMap = options[0]
 	}
 
-	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: opts}
+	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: optsMap}
 }
 
 // PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
@@ -118,8 +120,12 @@ type PartitionStrategyConfig struct {
 // of results but not necessarily the same ones. The same problem can occur in OLAP-based Taversals where
 // iteration order is not explicitly guaranteed. The only way to ensure completely deterministic results in that
 // sense is to apply some form of order() in these cases.
-func SeedStrategy(config SeedStrategyConfig) TraversalStrategy {
-	configMap := map[string]interface{}{"seed": config.Seed}
+func SeedStrategy(config ...SeedStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if len(config) > 0 {
+		configMap["seed"] = config[0].Seed
+	}
+
 	return &traversalStrategy{name: decorationNamespace + "SeedStrategy", configuration: configMap}
 }
 
@@ -157,33 +163,31 @@ type SubgraphStrategyConfig struct {
 }
 
 func VertexProgramStrategy(config ...VertexProgramStrategyConfig) TraversalStrategy {
-	var cfg VertexProgramStrategyConfig
+	configMap := make(map[string]interface{})
 	if len(config) > 0 {
-		cfg = config[0]
+		if config[0].GraphComputer != "" {
+			configMap["graphComputer"] = config[0].GraphComputer
+		}
+		if config[0].Workers != 0 {
+			configMap["workers"] = config[0].Workers
+		}
+		if config[0].Persist != "" {
+			configMap["persist"] = config[0].Persist
+		}
+		if config[0].Result != "" {
+			configMap["result"] = config[0].Result
+		}
+		if config[0].Vertices != nil {
+			configMap["vertices"] = config[0].Vertices
+		}
+		if config[0].Edges != nil {
+			configMap["edges"] = config[0].Edges
+		}
+		for k, v := range config[0].Configuration {
+			configMap[k] = v
+		}
 	}
 
-	configMap := make(map[string]interface{})
-	if cfg.GraphComputer != "" {
-		configMap["graphComputer"] = cfg.GraphComputer
-	}
-	if cfg.Workers != 0 {
-		configMap["workers"] = cfg.Workers
-	}
-	if cfg.Persist != "" {
-		configMap["persist"] = cfg.Persist
-	}
-	if cfg.Result != "" {
-		configMap["result"] = cfg.Result
-	}
-	if cfg.Vertices != nil {
-		configMap["vertices"] = cfg.Vertices
-	}
-	if cfg.Edges != nil {
-		configMap["edges"] = cfg.Edges
-	}
-	for k, v := range cfg.Configuration {
-		configMap[k] = v
-	}
 	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: configMap}
 }
 
@@ -199,45 +203,16 @@ type VertexProgramStrategyConfig struct {
 	Configuration map[string]interface{}
 }
 
-func ProfileStrategy() TraversalStrategy {
-	return &traversalStrategy{name: finalizationNamespace + "ProfileStrategy"}
-}
-
-func ReferenceElementStrategy() TraversalStrategy {
-	return &traversalStrategy{name: finalizationNamespace + "ReferenceElementStrategy"}
-}
-
-func StandardVerificationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: finalizationNamespace + "StandardVerificationStrategy"}
-}
-
-func ComputerFinalizationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerFinalizationNamespace + "ComputerFinalizationStrategy"}
-}
-
-func ComputerVerificationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerVerificationNamespace + "ComputerVerificationStrategy"}
-}
-
-func VertexProgramRestrictionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerVerificationNamespace + "VertexProgramRestrictionStrategy"}
-}
-
-func GraphFilterStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerOptimizationNamespace + "GraphFilterStrategy"}
-}
-
-func MessagePassingReductionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: computerOptimizationNamespace + "MessagePassingReductionStrategy"}
-}
-
 // Finalization strategies
 
-func MatchAlgorithmStrategy(config MatchAlgorithmStrategyConfig) TraversalStrategy {
+func MatchAlgorithmStrategy(config ...MatchAlgorithmStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
-	if config.MatchAlgorithm != "" {
-		configMap["matchAlgorithm"] = config.MatchAlgorithm
+	if len(config) > 0 {
+		if config[0].MatchAlgorithm != "" {
+			configMap["matchAlgorithm"] = config[0].MatchAlgorithm
+		}
 	}
+
 	return &traversalStrategy{name: finalizationNamespace + "MatchAlgorithmStrategy", configuration: configMap}
 }
 
@@ -247,15 +222,32 @@ type MatchAlgorithmStrategyConfig struct {
 	MatchAlgorithm string
 }
 
+func ReferenceElementStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "ReferenceElementStrategy"}
+}
+
+func ComputerFinalizationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerFinalizationNamespace + "ComputerFinalizationStrategy"}
+}
+
+func ProfileStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "ProfileStrategy"}
+}
+
 // Verification strategies
+
+func ComputerVerificationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: verificationNamespace + "ComputerVerificationStrategy"}
+}
 
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
 // Providing one or more labels is considered to be a best practice, however, TinkerPop will not force
 // the specification of Edge labels; instead, providers or users will have to enable this strategy explicitly.
-func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) TraversalStrategy {
-	configMap := map[string]interface{}{
-		"logWarning":     config.LogWarning,
-		"throwException": config.ThrowException,
+func EdgeLabelVerificationStrategy(config ...EdgeLabelVerificationStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if len(config) > 0 {
+		configMap["logWarning"] = config[0].LogWarning
+		configMap["throwException"] = config[0].ThrowException
 	}
 
 	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: configMap}
@@ -283,13 +275,14 @@ func ReadOnlyStrategy() TraversalStrategy {
 
 // ReservedKeysVerificationStrategy detects property keys that should not be used by the traversal.
 // A term may be reserved by a particular graph implementation or as a convention given best practices.
-func ReservedKeysVerificationStrategy(config ReservedKeysVerificationStrategyConfig) TraversalStrategy {
-	configMap := map[string]interface{}{
-		"logWarning":     config.LogWarning,
-		"throwException": config.ThrowException,
-	}
-	if len(config.Keys.ToSlice()) != 0 {
-		configMap["keys"] = config.Keys
+func ReservedKeysVerificationStrategy(config ...ReservedKeysVerificationStrategyConfig) TraversalStrategy {
+	configMap := make(map[string]interface{})
+	if len(config) > 0 {
+		configMap["logWarning"] = config[0].LogWarning
+		configMap["throwException"] = config[0].ThrowException
+		if config[0].Keys != nil && len(config[0].Keys.ToSlice()) != 0 {
+			configMap["keys"] = config[0].Keys
+		}
 	}
 	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: configMap}
 }
@@ -300,6 +293,14 @@ type ReservedKeysVerificationStrategyConfig struct {
 	LogWarning     bool
 	ThrowException bool
 	Keys           Set
+}
+
+func StandardVerificationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: verificationNamespace + "StandardVerificationStrategy"}
+}
+
+func VertexProgramRestrictionStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerVerificationNamespace + "VertexProgramRestrictionStrategy"}
 }
 
 // Optimization strategies
@@ -344,6 +345,10 @@ func FilterRankingStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "FilterRankingStrategy"}
 }
 
+func GraphFilterStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerOptimizationNamespace + "GraphFilterStrategy"}
+}
+
 // IdentityRemovalStrategy looks for IdentityStep instances and removes them.
 // If the identity step is labeled, its labels are added to the previous step.
 // If the identity step is labeled and it's the first step in the traversal, it stays.
@@ -386,6 +391,10 @@ func MatchPredicateStrategy() TraversalStrategy {
 	return &traversalStrategy{name: optimizationNamespace + "MatchPredicateStrategy"}
 }
 
+func MessagePassingReductionStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerOptimizationNamespace + "MessagePassingReductionStrategy"}
+}
+
 // OrderLimitStrategy is an OLAP strategy that folds a RangeGlobalStep into a preceding
 // OrderGlobalStep. This helps to eliminate traversers early in the traversal and can
 // significantly reduce the amount of memory required by the OLAP execution engine.
@@ -413,7 +422,7 @@ func PathRetractionStrategy() TraversalStrategy {
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
 func ProductiveByStrategy(config ...ProductiveByStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
-	if len(config) == 1 {
+	if len(config) > 0 {
 		configMap["productiveKeys"] = config[0].ProductiveKeys
 	}
 

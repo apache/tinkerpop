@@ -42,9 +42,10 @@ Feature: Step - ReservedKeysVerificationStrategy
     Given the empty graph
     And the traversal of
       """
-      g.withoutStrategies(ReservedKeysVerificationStrategy).addV("person").property("id", 123).property("name", "marko")
+      g.withoutStrategies(ReservedKeysVerificationStrategy).addV("person").property("id", 123).property("name", "marko").values()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[marko] |
+      | marko |
+      | d[123].i |

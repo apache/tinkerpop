@@ -413,4 +413,18 @@ func TestStrategy(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, int32(6), val)
 	})
+
+	t.Run("Test without strategies MessagePassingReductionStrategy", func(t *testing.T) {
+		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		count, err := g.WithoutStrategies(MessagePassingReductionStrategy()).V().Count().ToList()
+		assert.Nil(t, err)
+		assert.NotNil(t, count)
+		assert.Equal(t, 1, len(count))
+		val, err := count[0].GetInt32()
+		assert.Nil(t, err)
+		assert.Equal(t, int32(6), val)
+	})
+
 }
