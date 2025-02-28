@@ -31,8 +31,8 @@ import (
 	"sync"
 )
 
-// TODO decide best default
-const writeChannelSizeDefault = 100
+// TODO decide channel size when chunked response handling is implemented - for now just set to 1
+const responseChannelSizeDefault = 1
 
 type HttpTransporter struct {
 	url             string
@@ -50,7 +50,7 @@ func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient
 	return &HttpTransporter{
 		url:             url,
 		connSettings:    connSettings,
-		responseChannel: make(chan []byte, writeChannelSizeDefault),
+		responseChannel: make(chan []byte, responseChannelSizeDefault),
 		httpClient:      httpClient,
 		wg:              wg,
 		logHandler:      logHandler,
@@ -72,6 +72,7 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 		req.Header.Set("accept-encoding", "deflate")
 	}
 
+	fmt.Println("Sending request")
 	resp, err := transporter.httpClient.Do(req)
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToSendRequest, err.Error())
@@ -87,7 +88,7 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 		}
 	}
 
-	// TODO handle chunked encoding
+	// TODO handle chunked encoding and send chunks to responseChannel
 	all, err := io.ReadAll(reader)
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToReceiveResponse, err.Error())
@@ -115,7 +116,7 @@ func (transporter *HttpTransporter) Read() ([]byte, error) {
 	return msg, nil
 }
 
-func (transporter *HttpTransporter) Close() (err error) {
+func (transporter *HttpTransporter) Close() {
 	fmt.Println("Closing http transporter")
 	if !transporter.isClosed {
 		if transporter.responseChannel != nil {
@@ -123,5 +124,4 @@ func (transporter *HttpTransporter) Close() (err error) {
 		}
 		transporter.isClosed = true
 	}
-	return
 }
