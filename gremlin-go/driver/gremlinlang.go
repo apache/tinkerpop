@@ -150,6 +150,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "-Infinity", nil
 		}
 		return fmt.Sprintf("%vD", v), nil
+	case *SimpleSet:
+		return gl.translateSlice(v.ToSlice())
 	case *BigDecimal, BigDecimal:
 		return fmt.Sprintf("%vM", v), nil
 	case time.Time:

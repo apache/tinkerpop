@@ -23,18 +23,23 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GoTranslateVisitor extends AbstractTranslateVisitor {
     private final static String GO_PACKAGE_NAME = "gremlingo.";
+    private final static List<String> STRATEGY_WITH_MAP_OPTS = Collections.unmodifiableList(Arrays.asList(
+            "OptionsStrategy",
+            "ReferenceElementStrategy", "ComputerFinalizationStrategy", "ProfileStrategy",
+            "ComputerVerificationStrategy", "StandardVerificationStrategy", "VertexProgramRestrictionStrategy",
+            "MessagePassingReductionStrategy"));
+    private final static List<String> STRATEGY_WITH_STRING_SLICE = Collections.unmodifiableList(Arrays.asList(
+            "ReservedKeysVerificationStrategy", "ProductiveByStrategy"));
 
     public GoTranslateVisitor() {
         super("g");
@@ -42,6 +47,13 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     public GoTranslateVisitor(final String graphTraversalSourceName) {
         super(graphTraversalSourceName);
+    }
+
+    // go - temp fix for withoutStrategies, needs TINKERPOP-3055
+    @Override
+    public Void visitClassType(final GremlinParser.ClassTypeContext ctx) {
+        sb.append(GO_PACKAGE_NAME).append(ctx.getText());
+        return null;
     }
 
     @Override
@@ -198,7 +210,9 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         else {
             String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
             sb.append(GO_PACKAGE_NAME).append(strategyName).append("(");
-            sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
+            if (!STRATEGY_WITH_MAP_OPTS.contains(strategyName)) { // omit strategies which use plain map instead of Config struct
+                sb.append(GO_PACKAGE_NAME).append(strategyName).append("Config{");
+            }
 
             // get a list of all the arguments to the strategy - i.e. anything not a terminal node
             final List<ParseTree> configs = ctx.children.stream().
@@ -211,18 +225,37 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
                     sb.append(", ");
             }
 
-            sb.append("})");
+            if (!Objects.equals(strategyName, "OptionsStrategy")) {
+                sb.append("}");
+            }
+            sb.append(")");
         }
-
         return null;
     }
 
     @Override
     public Void visitConfiguration(final GremlinParser.ConfigurationContext ctx) {
-        // form of three tokens of key:value to become key=value
-        sb.append(SymbolHelper.toGo(ctx.getChild(0).getText()));
-        sb.append(": ");
-        visit(ctx.getChild(2));
+        String parent = ctx.getParent().getText();
+        String parentName = parent.startsWith("new") ? parent.substring(3, parent.indexOf('(')) : parent.substring(0, parent.indexOf('('));
+        if (STRATEGY_WITH_MAP_OPTS.contains(parentName)) { // handle strategies which use plain map instead of Config struct
+            sb.append("map[string]interface{}{\"");
+            sb.append(ctx.getChild(0).getText());
+            sb.append("\": ");
+            visit(ctx.getChild(2));
+            sb.append("}");
+        } else {
+            // form of three tokens of key:value to become key=value
+            sb.append(SymbolHelper.toGo(ctx.getChild(0).getText()));
+            sb.append(": ");
+            visit(ctx.getChild(2));
+            // handles strategies that takes string slices as config
+            if (STRATEGY_WITH_STRING_SLICE.contains(parentName)) {
+                final int ix = sb.lastIndexOf("[]interface{}");
+                if (ix > 0) {
+                    sb.replace(ix, ix +"[]interface{}".length(), "[]string");
+                }
+            }
+        }
 
         // need to convert List to Set for readPartitions until TINKERPOP-3032
         if (ctx.getChild(0).getText().equals("readPartitions")) {

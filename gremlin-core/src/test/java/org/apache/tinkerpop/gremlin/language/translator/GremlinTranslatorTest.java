@@ -653,16 +653,36 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             "g.WithoutStrategies(typeof(ReadOnlyStrategy))",
-                            "g.WithoutStrategies(ReadOnlyStrategy)", // go - needs TINKERPOP-3055
+                            "g.WithoutStrategies(gremlingo.ReadOnlyStrategy)", // go - needs TINKERPOP-3055
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy)",  // javascript needs TINKERPOP-3055
                             "g.without_strategies(ReadOnlyStrategy)"},
+                    {"g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: [\"age\"])).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
+                            "g.withStrategies(ReservedKeysVerificationStrategy(throwException:true, keys:[\"age\"])).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
+                            "g.withStrategies(ReservedKeysVerificationStrategy(throwException:boolean0, keys:list0)).addV(string0).property(string1, number0).property(string2, string3)",
+                            "g.WithStrategies(new ReservedKeysVerificationStrategy(throwException: true, keys: new List<object> { \"age\" })).AddV(\"person\").Property(\"age\", 29).Property(\"name\", \"marko\")",
+                            "g.WithStrategies(gremlingo.ReservedKeysVerificationStrategy(gremlingo.ReservedKeysVerificationStrategyConfig{ThrowException: true, Keys: []string{\"age\"}})).AddV(\"person\").Property(\"age\", 29).Property(\"name\", \"marko\")",
+                            "g.withStrategies(new ReservedKeysVerificationStrategy(throwException:true, keys:[\"age\"])).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
+                            "g.withStrategies(ReservedKeysVerificationStrategy.build().throwException(true).keys(new ArrayList<Object>() {{ add(\"age\"); }}).create()).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
+                            "g.withStrategies(new ReservedKeysVerificationStrategy({throwException: true, keys: [\"age\"]})).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
+                            "g.with_strategies(ReservedKeysVerificationStrategy(throw_exception=True, keys=['age'])).add_v('person').property('age', 29).property('name', 'marko')"
+                    },
+                    {"g.withStrategies(OptionsStrategy(myVar: \"myValue\")).V()",
+                            "g.withStrategies(OptionsStrategy(myVar:\"myValue\")).V()",
+                            "g.withStrategies(OptionsStrategy(myVar:string0)).V()",
+                            "g.WithStrategies(new OptionsStrategy(myVar: \"myValue\")).V()",
+                            "g.WithStrategies(gremlingo.OptionsStrategy(map[string]interface{}{\"myVar\": \"myValue\"})).V()",
+                            "g.withStrategies(new OptionsStrategy(myVar:\"myValue\")).V()",
+                            "g.withStrategies(OptionsStrategy.build().myVar(\"myValue\").create()).V()",
+                            "g.withStrategies(new OptionsStrategy({myVar: \"myValue\"})).V()",
+                            "g.with_strategies(OptionsStrategy(my_var='myValue')).V()"
+                    },
                     {"g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",
                             null,
                             null,
                             "g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(PathRetractionStrategy), typeof(FilterRankingStrategy))",
-                            "g.WithoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)", // go - needs TINKERPOP-3055
+                            "g.WithoutStrategies(gremlingo.ReadOnlyStrategy, gremlingo.PathRetractionStrategy, gremlingo.FilterRankingStrategy)", // go - needs TINKERPOP-3055
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class, PathRetractionStrategy.class, FilterRankingStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",  // javascript - needs TINKERPOP-3055
