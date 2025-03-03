@@ -1,0 +1,86 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+== Proposal 5 - Compatibility Guidelines
+
+=== Status
+
+Open for discussion.
+
+=== Motivation
+
+Although not explicitly stated in the documentation, there is a common understanding that drivers and servers from
+different major versions can be incompatible as breaking changes are allowed between major versions. This can be
+frustating for users in cases where a change could have been made in a "non-breaking" way. The objective of this
+proposal is to establish a set of guidelines that contributors should adhere to in order to increase the chance of an
+older driver working with a new server (which will be referred to in the document simply as compatibility).
+
+=== Assumptions
+
+* There is a flexible version of GraphBinary/GraphSON.
+
+=== Types of Changes
+
+Before we move further with how to make changes in a "non-breaking" way, we should first discuss the types of changes
+that are likely to cause compatibility issues and the ones that will attempt to be addressed in this proposal. The
+changes to the following areas are the ones that are most likely to cause compatibility issues:
+
+* Language changes to the grammar, parser, Step implementations/semantics, and Traversal API
+* Protocol changes including to the TinkerPop 4 HTTP API
+* Serialization format changes to GraphBinary or GraphSON
+* Graph structure changes and Graph API changes
+
+Committers reviewing pull requests should keep the following guidelines in mind when reviewing changes to the above
+areas.
+
+=== Guidelines for making changes
+
+==== Language changes
+
+Additions to the language or steps are largely compatible. Modifications to steps, however, can cause a few issues.
+Because there is no versioning of the language, if the change is to a fundamental step, then consider creating a Step
+with a new name. This needs to be done sparingly as there aren't that many synonyms and we can't just add numbers as it
+would make it awkward to use the language. Not to mention that it bloats the language and lowers discoverability.
+For less frequently used steps, this will have to just be done between major versions and users will have to accept any
+compatibility issues. Of course, as always, these breaking changes should be highlighted in the upgrade documentation.
+
+Parts of the language or steps can be deprecated, but at least two major versions should pass before it is considered
+for deletion.
+
+==== Protocol changes
+
+The two main messages in the HTTP API is the RequestMessage and the ResponseMessage. Because these two types need to be
+serializable, the advice in the <<serialization, serialization changes>> section should be followed. Any change to
+either of these formats should cause the HTTP API version to get incremented.
+
+[[serialization]]
+==== Serialization changes
+
+Additional types can be made compatible by having deserializers handle unknown types. The user should be able to choose
+whether the deserializer just skips the unknown types or throws an exception. This same handling will apply to new
+fields for complex types. The new field can be skipped or an exception can be thrown. No modification can be made to
+simple types and no modifications can be made to existing fields of complex types. To emulate making a modification, a
+new type can be added and the previous type marked deprecated. To change a field, you can add a new field with a
+similar name. Reasonable values should then be provided for the deprecated fields. After deprecation, a type should
+still be kept for at least two version upgrades before it can be considered for removal.
+
+==== Type support
+
+Adding an additional type that can be stored in the graph is fine. Additional fields of a complex type are fine.
+However, no modification can be done as changing the data model is a major change. Since these are fundamental types,
+if any of these types needed replacing, it would likely lead to language changes as well. These are large scale changes
+that need to be done with extreme care. In most cases, the server should disallow older drivers to attempt to query the
+data. The major version of TinkerPop must be incremented in this case.
