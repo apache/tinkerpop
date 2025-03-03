@@ -22,12 +22,9 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -60,6 +57,7 @@ func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient
 
 // Write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
 func (transporter *HttpTransporter) Write(data []byte) error {
+	transporter.logHandler.logf(Debug, creatingRequest)
 	req, err := http.NewRequest("POST", transporter.url, bytes.NewBuffer(data))
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToSendRequest, err.Error())
@@ -74,7 +72,7 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 		req.Header.Set("accept-encoding", "deflate")
 	}
 
-	fmt.Println("Sending request")
+	transporter.logHandler.logf(Debug, writeRequest)
 	resp, err := transporter.httpClient.Do(req)
 	if err != nil {
 		transporter.logHandler.logf(Error, failedToSendRequest, err.Error())
@@ -101,17 +99,13 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 		return err
 	}
 
-	str := hex.EncodeToString(all)
-	_, _ = fmt.Fprintf(os.Stdout, "Received response data : %s\n", str)
-
-	fmt.Println("Sending response to responseChannel")
+	transporter.logHandler.log(Debug, receivedResponse)
 	transporter.responseChannel <- all
 	return nil
 }
 
 // Read reads bytes from the responseChannel
 func (transporter *HttpTransporter) Read() ([]byte, error) {
-	fmt.Println("Reading from responseChannel")
 	msg, ok := <-transporter.responseChannel
 	if !ok {
 		return []byte{}, errors.New("failed to read from response channel")
@@ -121,7 +115,6 @@ func (transporter *HttpTransporter) Read() ([]byte, error) {
 
 // Close closes the transporter and its corresponding responseChannel
 func (transporter *HttpTransporter) Close() {
-	fmt.Println("Closing http transporter")
 	if !transporter.isClosed {
 		if transporter.responseChannel != nil {
 			close(transporter.responseChannel)

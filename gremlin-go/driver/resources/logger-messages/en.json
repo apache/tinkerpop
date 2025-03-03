@@ -8,14 +8,14 @@
   "OPENING_CONNECTION": "Connecting.",
   "WRITE_REQUEST": "Writing request.",
   "READ_LOOP_ERROR": "Read loop error '%s', closing read loop.",
-  "CREATING_REQUEST": "Created request with id '%s'",
+  "CREATING_REQUEST": "Creating request",
   "READ_COMPLETE": "Read complete for response",
   "SUBMIT_STARTED_STRING": "Client invoked Submit with string argument: %s",
   "SUBMIT_STARTED_BYTECODE": "Client invoked Submit with bytecode argument: %+v\n",
-  "FAILED_TO_WRITE_MESSAGE": "Failed to write message type: '%s', error: '%s'",
   "LOG_ERROR_GENERIC": "Error occurred during operation %s: '%s'",
   "CLOSE_DRIVER_REMOTE_CONNECTION": "Closing DriverRemoteConnection with url '%s'",
   "CLOSE_CLIENT": "Closing Client with url '%s'",
   "FAILED_TO_RECEIVE_RESPONSE": "Failed to receive response: %s",
-  "FAILED_TO_SEND_REQUEST": "Failed to send request: %s"
+  "FAILED_TO_SEND_REQUEST": "Failed to send request: %s",
+  "RECEIVED_RESPONSE": "Received response data"
 }

@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -59,7 +58,6 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 // sends a query request and returns a ResultSet that can be used to obtain query results
 func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 	rs := newChannelResultSet()
-	fmt.Println("Serializing request")
 	bytes, err := protocol.serializer.serializeMessage(request)
 	if err != nil {
 		rs.setError(err)
@@ -100,18 +98,16 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 
 // receives a binary response message, deserializes, and adds results to the ResultSet
 func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
-	fmt.Println("Deserializing response")
 	resp, err := protocol.serializer.deserializeMessage(msg)
 	if err != nil {
-		protocol.logHandler.logf(Error, logErrorGeneric, "receive()", err.Error())
+		protocol.logHandler.logf(Error, logErrorGeneric, "deserializeMessage()", err.Error())
 		rs.Close()
 		return err
 	}
 
-	fmt.Println("Handling response")
 	err = protocol.handleResponse(rs, resp)
 	if err != nil {
-		protocol.logHandler.logf(Error, logErrorGeneric, "receive()", err.Error())
+		protocol.logHandler.logf(Error, logErrorGeneric, "handleResponse()", err.Error())
 		rs.Close()
 		return err
 	}
@@ -120,8 +116,6 @@ func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
 
 // processes a deserialized response and attempts to add results to the ResultSet
 func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
-	fmt.Println("Handling response")
-
 	statusCode, data := response.responseStatus.code, response.responseResult.data
 	if rs == nil {
 		return newError(err0501ResponseHandlerResultSetNotCreatedError)
