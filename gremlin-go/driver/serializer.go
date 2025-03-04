@@ -63,6 +63,7 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 	return graphBinarySerializer{&serializer}
 }
 
+// TODO change for graph binary 4.0 version is finalized
 const versionByte byte = 0x81
 
 // serializeMessage serializes a request message into GraphBinary.
@@ -117,12 +118,7 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 		results = append(results, n)
 	}
 	_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
-	if len(results) == 1 {
-		// unwrap single results
-		msg.responseResult.data = results[0]
-	} else {
-		msg.responseResult.data = results
-	}
+	msg.responseResult.data = results
 	code := readUint32Safe(&message, &i)
 	msg.responseStatus.code = code
 	// TODO read status message
