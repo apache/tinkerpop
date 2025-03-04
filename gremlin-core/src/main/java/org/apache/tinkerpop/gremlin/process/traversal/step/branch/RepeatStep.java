@@ -182,6 +182,9 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         int result = super.hashCode();
         result ^= Boolean.hashCode(this.untilFirst);
         result ^= Boolean.hashCode(this.emitFirst) << 1;
+
+        // not a normal state, but prevents NPE during strategy application allowing the better
+        // user-friendly error message to show up at iteration
         if (this.repeatTraversal != null)
             result ^= this.repeatTraversal.hashCode();
         if (this.loopName != null)
