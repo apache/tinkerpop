@@ -80,7 +80,6 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
 
     @Override
     protected void decode(final ChannelHandlerContext ctx, final FullHttpRequest req, final List<Object> objects) throws Exception {
-        System.out.println("Received FullHttpRequest " + req.method() + " " + req.uri());
         ctx.channel().attr(StateKey.REQUEST_HEADERS).set(req.headers());
 
         final String acceptMime = Optional.ofNullable(req.headers().get(HttpHeaderNames.ACCEPT)).orElse("application/json");
@@ -161,9 +160,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
             final ByteBuf buffer = request.content();
 
             try {
-                RequestMessage requestMessage = serializer.deserializeBinaryRequest(buffer);
-                System.out.println("Deserialized " + requestMessage);
-                return requestMessage;
+                return serializer.deserializeBinaryRequest(buffer);
             } catch (Exception e) {
                 throw new SerializationException("Unable to deserialize request using: " + serializer.getClass().getSimpleName(), e);
             }
