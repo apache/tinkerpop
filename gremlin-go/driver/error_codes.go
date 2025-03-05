@@ -51,9 +51,9 @@ const (
 	err0408GetSerializerToReadUnknownTypeError       errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
 	err0409GetSerializerToReadUnknownCustomTypeError errorCode = "E0409_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_CUSTOM_TYPE_ERROR"
 
-	// protocol.go errors
+	// response handling errors
 	err0501ResponseHandlerResultSetNotCreatedError errorCode = "E0501_PROTOCOL_RESPONSEHANDLER_NO_RESULTSET_ON_DATA_RECEIVE"
-	err0502ResponseHandlerReadLoopError            errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_READ_LOOP_ERROR"
+	err0502ResponseHandlerError                    errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_ERROR"
 	err0503ResponseHandlerAuthError                errorCode = "E0503_PROTOCOL_RESPONSEHANDLER_AUTH_ERROR"
 
 	// result.go errors

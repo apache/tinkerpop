@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -100,6 +101,26 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 	}
 
 	transporter.logHandler.log(Debug, receivedResponse)
+
+	// possible to receive graph-binary or json error response bodies
+	contentType := resp.Header.Get("content-type")
+	if resp.StatusCode != 200 && contentType != graphBinaryMimeType {
+		if contentType == "application/json" {
+			var jsonMap map[string]interface{}
+			err = json.Unmarshal(all, &jsonMap)
+			if err != nil {
+				return err
+			}
+			message, exists := jsonMap["message"]
+			if exists {
+				return newError(err0502ResponseHandlerError, message, resp.StatusCode)
+			}
+			return newError(err0502ResponseHandlerError, "Response was not successful", resp.StatusCode)
+		}
+		// unexpected error content type
+		return newError(err0502ResponseHandlerError, "Response was not successful and of unexpected content-type: "+contentType, resp.StatusCode)
+	}
+
 	transporter.responseChannel <- all
 	return nil
 }

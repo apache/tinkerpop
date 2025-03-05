@@ -693,7 +693,7 @@ func TestConnection(t *testing.T) {
 		// Add vertices and edges to graph.
 		rs, err := g.AddV("person").Property("id", T__.Unfold().Property().AddV()).ToList()
 		assert.Nil(t, rs)
-		assert.True(t, isSameErrorCode(newError(err0502ResponseHandlerReadLoopError), err))
+		assert.True(t, isSameErrorCode(newError(err0502ResponseHandlerError), err))
 
 		rs, err = g.V().Count().ToList()
 		assert.NotNil(t, rs)

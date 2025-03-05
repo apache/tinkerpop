@@ -136,7 +136,7 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 		return err
 	} else {
 		rs.Close()
-		err := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
+		err := newError(err0502ResponseHandlerError, response.responseStatus, statusCode)
 		rs.setError(err)
 		return err
 	}
