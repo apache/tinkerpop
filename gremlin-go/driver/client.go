@@ -57,7 +57,7 @@ type Client struct {
 	traversalSource    string
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
-	httpProtocol       *httpProtocol
+	gremlinClient      *gremlinClient
 }
 
 // NewClient creates a Client and configures it with the given parameters.
@@ -101,14 +101,14 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt := newHttpProtocol(logHandler, url, connSettings)
+	gc := newGremlinClient(logHandler, url, connSettings)
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		httpProtocol:       httpProt,
+		gremlinClient:      gc,
 	}
 
 	return client, nil
@@ -118,7 +118,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
 	client.logHandler.logf(Info, closeClient, client.url)
-	client.httpProtocol.close()
+	client.gremlinClient.close()
 }
 
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
@@ -128,7 +128,7 @@ func (client *Client) SubmitWithOptions(traversalString string, requestOptions R
 
 	// TODO interceptors (ie. auth)
 
-	rs, err := client.httpProtocol.send(&request)
+	rs, err := client.gremlinClient.send(&request)
 	return rs, err
 }
 
@@ -147,5 +147,5 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
 	request := makeBytecodeRequest(bytecode, client.traversalSource)
-	return client.httpProtocol.send(&request)
+	return client.gremlinClient.send(&request)
 }

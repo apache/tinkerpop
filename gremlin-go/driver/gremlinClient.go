@@ -24,7 +24,7 @@ import (
 )
 
 // responsible for serializing and sending requests and then receiving and deserializing responses
-type httpProtocol struct {
+type gremlinClient struct {
 	serializer   serializer
 	logHandler   *logHandler
 	url          string
@@ -32,7 +32,7 @@ type httpProtocol struct {
 	httpClient   *http.Client
 }
 
-func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSettings) *httpProtocol {
+func newGremlinClient(handler *logHandler, url string, connSettings *connectionSettings) *gremlinClient {
 	transport := &http.Transport{
 		TLSClientConfig:    connSettings.tlsConfig,
 		MaxConnsPerHost:    0, // TODO
@@ -45,7 +45,7 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 		Timeout:   connSettings.connectionTimeout,
 	}
 
-	httpProt := &httpProtocol{
+	httpProt := &gremlinClient{
 		serializer:   newGraphBinarySerializer(handler),
 		logHandler:   handler,
 		url:          url,
@@ -56,9 +56,9 @@ func newHttpProtocol(handler *logHandler, url string, connSettings *connectionSe
 }
 
 // sends a query request and returns a ResultSet that can be used to obtain query results
-func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
+func (client *gremlinClient) send(request *request) (ResultSet, error) {
 	rs := newChannelResultSet()
-	bytes, err := protocol.serializer.serializeMessage(request)
+	bytes, err := client.serializer.serializeMessage(request)
 	if err != nil {
 		rs.setError(err)
 		rs.Close()
@@ -66,7 +66,7 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 	}
 
 	// one transport per request
-	transport := NewHttpTransporter(protocol.url, protocol.connSettings, protocol.httpClient, protocol.logHandler)
+	transport := NewHttpTransporter(client.url, client.connSettings, client.httpClient, client.logHandler)
 
 	// async send request
 	transport.wg.Add(1)
@@ -88,7 +88,7 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 			rs.setError(err)
 			rs.Close()
 		} else {
-			err = protocol.receive(rs, msg)
+			err = client.receive(rs, msg)
 		}
 		transport.Close()
 	}()
@@ -97,17 +97,17 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 }
 
 // receives a binary response message, deserializes, and adds results to the ResultSet
-func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
-	resp, err := protocol.serializer.deserializeMessage(msg)
+func (client *gremlinClient) receive(rs ResultSet, msg []byte) error {
+	resp, err := client.serializer.deserializeMessage(msg)
 	if err != nil {
-		protocol.logHandler.logf(Error, logErrorGeneric, "deserializeMessage()", err.Error())
+		client.logHandler.logf(Error, logErrorGeneric, "deserializeMessage()", err.Error())
 		rs.Close()
 		return err
 	}
 
-	err = protocol.handleResponse(rs, resp)
+	err = client.handleResponse(rs, resp)
 	if err != nil {
-		protocol.logHandler.logf(Error, logErrorGeneric, "handleResponse()", err.Error())
+		client.logHandler.logf(Error, logErrorGeneric, "handleResponse()", err.Error())
 		rs.Close()
 		return err
 	}
@@ -115,7 +115,7 @@ func (protocol *httpProtocol) receive(rs ResultSet, msg []byte) error {
 }
 
 // processes a deserialized response and attempts to add results to the ResultSet
-func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) error {
+func (client *gremlinClient) handleResponse(rs ResultSet, response response) error {
 	statusCode, data := response.responseStatus.code, response.responseResult.data
 	if rs == nil {
 		return newError(err0501ResponseHandlerResultSetNotCreatedError)
@@ -124,11 +124,11 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 	if statusCode == http.StatusNoContent {
 		rs.addResult(&Result{make([]interface{}, 0)})
 		rs.Close()
-		protocol.logHandler.logf(Debug, readComplete)
+		client.logHandler.logf(Debug, readComplete)
 	} else if statusCode == http.StatusOK {
 		rs.addResult(&Result{data})
 		rs.Close()
-		protocol.logHandler.logf(Debug, readComplete)
+		client.logHandler.logf(Debug, readComplete)
 	} else if statusCode == http.StatusUnauthorized || statusCode == http.StatusForbidden {
 		rs.Close()
 		err := newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
@@ -143,6 +143,6 @@ func (protocol *httpProtocol) handleResponse(rs ResultSet, response response) er
 	return nil
 }
 
-func (protocol *httpProtocol) close() {
-	protocol.httpClient.CloseIdleConnections()
+func (client *gremlinClient) close() {
+	client.httpClient.CloseIdleConnections()
 }

@@ -53,9 +53,9 @@ type DriverRemoteConnectionSettings struct {
 
 // DriverRemoteConnection is a remote connection.
 type DriverRemoteConnection struct {
-	client          *Client
-	isClosed        bool
-	settings        *DriverRemoteConnectionSettings
+	client   *Client
+	isClosed bool
+	settings *DriverRemoteConnectionSettings
 }
 
 // NewDriverRemoteConnection creates a new DriverRemoteConnection.
@@ -103,14 +103,14 @@ func NewDriverRemoteConnection(
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt := newHttpProtocol(logHandler, url, connSettings)
+	httpProt := newGremlinClient(logHandler, url, connSettings)
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		httpProtocol:       httpProt,
+		gremlinClient:      httpProt,
 	}
 
 	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
