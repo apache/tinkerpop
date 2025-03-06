@@ -40,6 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
 * Improved error message for when `emit()` is used without `repeat()`.
+* Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)

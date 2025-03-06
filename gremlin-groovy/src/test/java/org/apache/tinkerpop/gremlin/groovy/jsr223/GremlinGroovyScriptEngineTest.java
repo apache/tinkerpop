@@ -515,7 +515,7 @@ public class GremlinGroovyScriptEngineTest {
         assertThat(bytecodeBindings.containsKey("two"), is(true));
         assertThat(bytecodeBindings.containsKey("three"), is(true));
 
-        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).merge_v(__.identity()).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.outE().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
+        assertEquals("g.V(v1Id).has('person','age',29).has('person','active',x).in_('knows').merge_e(m1).merge_v(m2).option(Merge.on_create,m3).merge_v(__.identity()).choose(__.out().count()).option(two,__.name).option(three,__.age).filter_(__.out_e().count().is_(y)).map(l).order().by('name',o)", gremlinAsPython);
     }
 
     @Test
