@@ -66,13 +66,13 @@ func (client *gremlinClient) send(request *request) (ResultSet, error) {
 	}
 
 	// one transport per request
-	transport := NewHttpTransporter(client.url, client.connSettings, client.httpClient, client.logHandler)
+	transport := newHttpTransporter(client.url, client.connSettings, client.httpClient, client.logHandler)
 
 	// async send request
 	transport.wg.Add(1)
 	go func() {
 		defer transport.wg.Done()
-		err := transport.Write(bytes)
+		err := transport.write(bytes)
 		if err != nil {
 			rs.setError(err)
 			rs.Close()
@@ -83,14 +83,14 @@ func (client *gremlinClient) send(request *request) (ResultSet, error) {
 	transport.wg.Add(1)
 	go func() {
 		defer transport.wg.Done()
-		msg, err := transport.Read()
+		msg, err := transport.read()
 		if err != nil {
 			rs.setError(err)
 			rs.Close()
 		} else {
 			err = client.receive(rs, msg)
 		}
-		transport.Close()
+		transport.close()
 	}()
 
 	return rs, err

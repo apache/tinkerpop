@@ -32,8 +32,8 @@ import (
 // TODO decide channel size when chunked response handling is implemented - for now just set to 1
 const responseChannelSizeDefault = 1
 
-// HttpTransporter responsible for sending and receiving bytes to/from the server
-type HttpTransporter struct {
+// httpTransporter responsible for sending and receiving bytes to/from the server
+type httpTransporter struct {
 	url             string
 	isClosed        bool
 	connSettings    *connectionSettings
@@ -43,10 +43,10 @@ type HttpTransporter struct {
 	logHandler      *logHandler
 }
 
-func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient *http.Client, logHandler *logHandler) *HttpTransporter {
+func newHttpTransporter(url string, connSettings *connectionSettings, httpClient *http.Client, logHandler *logHandler) *httpTransporter {
 	wg := &sync.WaitGroup{}
 
-	return &HttpTransporter{
+	return &httpTransporter{
 		url:             url,
 		connSettings:    connSettings,
 		responseChannel: make(chan []byte, responseChannelSizeDefault),
@@ -56,8 +56,8 @@ func NewHttpTransporter(url string, connSettings *connectionSettings, httpClient
 	}
 }
 
-// Write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
-func (transporter *HttpTransporter) Write(data []byte) error {
+// write sends bytes to the server as a POST request and sends received response bytes to the responseChannel
+func (transporter *httpTransporter) write(data []byte) error {
 	transporter.logHandler.logf(Debug, creatingRequest)
 	req, err := http.NewRequest("POST", transporter.url, bytes.NewBuffer(data))
 	if err != nil {
@@ -125,8 +125,8 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 	return nil
 }
 
-// Read reads bytes from the responseChannel
-func (transporter *HttpTransporter) Read() ([]byte, error) {
+// read reads bytes from the responseChannel
+func (transporter *httpTransporter) read() ([]byte, error) {
 	msg, ok := <-transporter.responseChannel
 	if !ok {
 		return []byte{}, errors.New("failed to read from response channel")
@@ -134,8 +134,8 @@ func (transporter *HttpTransporter) Read() ([]byte, error) {
 	return msg, nil
 }
 
-// Close closes the transporter and its corresponding responseChannel
-func (transporter *HttpTransporter) Close() {
+// close closes the transporter and its corresponding responseChannel
+func (transporter *httpTransporter) close() {
 	if !transporter.isClosed {
 		if transporter.responseChannel != nil {
 			close(transporter.responseChannel)
