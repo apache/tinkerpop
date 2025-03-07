@@ -993,7 +993,7 @@ public class __ {
     /**
      * @see GraphTraversal#hasId(P)
      */
-    public static <A> GraphTraversal<A, A> hasId(final P<Object> predicate) {
+    public static <A> GraphTraversal<A, A> hasId(final P<?> predicate) {
         return __.<A>start().hasId(predicate);
     }
 
@@ -1021,7 +1021,7 @@ public class __ {
     /**
      * @see GraphTraversal#hasValue(P)
      */
-    public static <A> GraphTraversal<A, A> hasValue(final P<Object> predicate) {
+    public static <A> GraphTraversal<A, A> hasValue(final P<?> predicate) {
         return __.<A>start().hasValue(predicate);
     }
 
