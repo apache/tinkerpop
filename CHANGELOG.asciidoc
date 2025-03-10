@@ -115,6 +115,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
 * Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
+* Change signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
 * Improved error message for when `emit()` is used without `repeat()`.
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 
