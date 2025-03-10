@@ -2381,7 +2381,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> hasId(final Object id, final Object... otherIds) {
         if (id instanceof P) {
-            return this.hasId((P) id);
+            return this.hasId((P<?>) id);
         }
         else {
             this.asAdmin().getBytecode().addStep(Symbols.hasId, id, otherIds);
@@ -2424,7 +2424,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.4
      */
-    public default GraphTraversal<S, E> hasId(final P<Object> predicate) {
+    public default GraphTraversal<S, E> hasId(final P<?> predicate) {
         if (null == predicate)
             return hasId((Object) null);
 
@@ -2485,7 +2485,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> hasValue(final Object value, final Object... otherValues) {
         if (value instanceof P)
-            return this.hasValue((P) value);
+            return this.hasValue((P<?>) value);
         else {
             this.asAdmin().getBytecode().addStep(Symbols.hasValue, value, otherValues);
             final List<Object> values = new ArrayList<>();
@@ -2519,7 +2519,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.2.4
      */
-    public default GraphTraversal<S, E> hasValue(final P<Object> predicate) {
+    public default GraphTraversal<S, E> hasValue(final P<?> predicate) {
         // if calling hasValue(null), the likely use the caller is going for is not a "no predicate" but a eq(null)
         if (null == predicate) {
             return hasValue((String) null);
