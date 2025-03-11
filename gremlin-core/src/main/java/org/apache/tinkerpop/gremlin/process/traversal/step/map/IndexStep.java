@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.io.Serializable;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
@@ -78,24 +79,6 @@ public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalPar
         return super.hashCode() ^ this.indexer.hashCode();
     }
 
-    private static List<List<Object>> indexedList(final Iterator<?> iterator) {
-        final List<List<Object>> list = new ArrayList<>();
-        int i = 0;
-        while (iterator.hasNext()) {
-            list.add(Arrays.asList(iterator.next(), i++));
-        }
-        return Collections.unmodifiableList(list);
-    }
-
-    private static Map<Integer, Object> indexedMap(final Iterator<?> iterator) {
-        final Map<Integer, Object> map = new LinkedHashMap<>();
-        int i = 0;
-        while (iterator.hasNext()) {
-            map.put(i++, iterator.next());
-        }
-        return Collections.unmodifiableMap(map);
-    }
-
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
@@ -112,10 +95,10 @@ public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalPar
             }
             if (indexer == WithOptions.list) {
                 this.indexerType = IndexerType.LIST;
-                this.indexer = IndexStep::indexedList;
+                this.indexer = ListIndexFunction.instance();
             } else if (indexer == WithOptions.map) {
                 this.indexerType = IndexerType.MAP;
-                this.indexer = IndexStep::indexedMap;
+                this.indexer = MapIndexFunction.instance();
             } else {
                 throw INVALID_CONFIGURATION_EXCEPTION;
             }
@@ -143,6 +126,40 @@ public class IndexStep<S, E> extends ScalarMapStep<S, E> implements TraversalPar
 
         public int getType() {
             return type;
+        }
+    }
+    
+    public static final class ListIndexFunction implements Function<Iterator<?>, Object>, Serializable {
+        private static final ListIndexFunction INSTANCE = new ListIndexFunction();
+        private ListIndexFunction() {}
+        public List<List<Object>> apply(final Iterator<?> iterator) {
+            final List<List<Object>> list = new ArrayList<>();
+            int i = 0;
+            while (iterator.hasNext()) {
+                list.add(Arrays.asList(iterator.next(), i++));
+            }
+            return Collections.unmodifiableList(list);
+        }
+
+        public static ListIndexFunction instance() {
+            return INSTANCE;
+        }
+    }
+
+    public static final class MapIndexFunction implements Function<Iterator<?>, Object>, Serializable {
+        private static final MapIndexFunction INSTANCE = new MapIndexFunction();
+        private MapIndexFunction() {}
+        public Map<Integer, Object> apply(final Iterator<?> iterator) {
+            final Map<Integer, Object> map = new LinkedHashMap<>();
+            int i = 0;
+            while (iterator.hasNext()) {
+                map.put(i++, iterator.next());
+            }
+            return Collections.unmodifiableMap(map);
+        }
+
+        public static MapIndexFunction instance() {
+            return INSTANCE;
         }
     }
 }

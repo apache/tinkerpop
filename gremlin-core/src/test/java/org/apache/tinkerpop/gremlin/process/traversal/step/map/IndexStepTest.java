@@ -18,16 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
+import java.util.List;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -45,5 +47,31 @@ public class IndexStepTest extends StepTest {
     @Test
     public void testDefault() {
         assertEquals(__.index(), __.index().with(WithOptions.indexer, WithOptions.list));
+    }
+
+    @Test
+    public void testListIndexerSerializationDeserializationRoundTrip() {
+        // serialization and deserialization should not throw exception
+        byte[] serialized = SerializationUtils.serialize(__.index().with(WithOptions.indexer, WithOptions.list));
+        Object deserialized = SerializationUtils.deserialize(serialized);
+
+        DefaultTraversal<Object, Object> gtr = (DefaultTraversal<Object, Object>) deserialized;
+        assertEquals(1, gtr.getSteps().size());
+        IndexStep<Object, Object> step = (IndexStep<Object, Object>) gtr.getSteps().get(0);
+        assertEquals(IndexStep.IndexerType.LIST, step.getIndexerType());
+        assertTrue(step.getIndexer() instanceof IndexStep.ListIndexFunction);
+    }
+
+    @Test
+    public void testMapIndexerSerializationDeserializationRoundTrip() {
+        // serialization and deserialization should not throw exception
+        byte[] serialized = SerializationUtils.serialize(__.index().with(WithOptions.indexer, WithOptions.map));
+        Object deserialized = SerializationUtils.deserialize(serialized);
+
+        DefaultTraversal<Object, Object> gtr = (DefaultTraversal<Object, Object>) deserialized;
+        assertEquals(1, gtr.getSteps().size());
+        IndexStep<Object, Object> step = (IndexStep<Object, Object>) gtr.getSteps().get(0);
+        assertEquals(IndexStep.IndexerType.MAP, step.getIndexerType());
+        assertTrue(step.getIndexer() instanceof IndexStep.MapIndexFunction);
     }
 }
