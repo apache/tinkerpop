@@ -42,6 +42,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Change signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
 * Improved error message for when `emit()` is used without `repeat()`.
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
+* Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
