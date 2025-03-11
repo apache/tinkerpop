@@ -62,6 +62,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
 import static org.hamcrest.core.StringEndsWith.endsWithIgnoringCase;
 import static org.hamcrest.core.StringStartsWith.startsWithIgnoringCase;
+import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -588,7 +589,7 @@ public final class StepDefinition {
     }
 
     /**
-     * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path}.
+     * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
     public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(T... items) {
@@ -596,7 +597,7 @@ public final class StepDefinition {
     }
 
     /**
-     * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path}.
+     * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
     public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(T... items) {
@@ -627,6 +628,9 @@ public final class StepDefinition {
             // part of the gherkin syntax)
             if (item instanceof Path) {
                 matchers.add((org.hamcrest.Matcher<? super T>) new IsPathEqualToMatcher((Path) item));
+            } else if (item instanceof Double && Double.isFinite((Double) item)) {
+               // Allow for minor rounding errors with Double
+               matchers.add((org.hamcrest.Matcher<? super T>) closeTo((Double) item, 0.000000000000001));
             } else {
                 matchers.add(IsEqual.equalTo(item));
             }
