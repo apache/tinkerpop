@@ -938,9 +938,10 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
 * <<cyclicpath-step, `cyclicPath()`>>: filter if the traverser's path is cyclic given `by()`-modulation.
 * <<dedup-step, `dedup()`>>: dedup on the results of a `by()`-modulation.
+* <<format-step, `format()`>>: transform a traverser provided to the step by way of the `by()` modulator before it is processed by it.
 * <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
 * <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
-* <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it processed by it.
+* <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it is processed by it.
 * <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
 * <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
 * <<project-step, `project()`>>: project a map of results given various `by()`-modulations off the current object.
@@ -966,7 +967,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`by(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by(org.apache.tinkerpop.gremlin.process.traversal.Traversal,java.util.Comparator)++[`by(Traversal,Comparator)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`],
+<<a-note-on-maps>>
 
 [[call-step]]
 === Call Step
@@ -4282,7 +4284,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`select(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select(org.apache.tinkerpop.gremlin.process.traversal.Pop,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`select(Pop,Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Column.html++[`Column`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`],
+<<a-note-on-maps>>
 
 [[shortestpath-step]]
 === ShortestPath step
@@ -5240,6 +5243,79 @@ binding, not to the explicit string value.
 ----
 g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+[[a-note-on-maps]]
+== A Note on Maps
+
+Many steps in Gremlin return `Map`-based results. Commonly used steps like <<project-step, `project()`>>,
+<<group-step, 'group()'>>, and <<select-step, `select()`>> are just some examples of steps that fall into this category.
+When working with `Map` results there are a couple of important things to know.
+
+First, it is important to recognize that there is a bit of a difference in behavior that occurs when using
+<<unfold-step,unfold()>> on a `Map` in embedded contexts versus remote contexts. In embedded contexts, an unfolded `Map`
+becomes its composite `Map.Entry` objects as is typical in Java. The following example demonstrates the basic name/value
+pairs that returned:
+
+[groovy,modern]
+----
+g.V().valueMap('name','age').unfold()
+----
+
+In remote contexts, an unfolded `Map` becomes `Map.Entry` on the server as in the embedded case, but is returned to the
+application as a `Map` with one entry. The slight difference in notation in Gremlin Console is shown in the following
+remote example:
+
+[source,text]
+----
+gremlin> g.V().valueMap('name','age').unfold()
+==>[name:[marko]]
+==>[age:[29]]
+==>[name:[vadas]]
+==>[age:[27]]
+==>[name:[lop]]
+==>[name:[josh]]
+==>[age:[32]]
+==>[name:[ripple]]
+==>[name:[peter]]
+==>[age:[35]]
+----
+
+The primary reason for this difference lies in the fact that Gremlin Language Variants, like Python and Go, do not have
+a native `Map.Entry` concept that can be used. The most universal data structure across programming languages is the
+`Map` itself. It is important to note that this transformation from `Map.Entry` to `Map` only applies to results
+received on the client-side. In other words, if a step was to follow `unfold()` in the prior example, it would be
+dealing with `Map.Entry` and not a `Map`, so Gremlin semantics should remain consistent on the server side.
+
+The second issues to consider with steps that return a `Map` is that access keys on a `Map` is not always as consistent
+as expected. The issue is best demonstrated in some examples:
+
+[source,text]
+----
+// note that elements can be grouped by(id), but that same pattern can't be applied to get
+// a T.id in a Map
+gremlin> g.V().hasLabel('person').both().group().by(id)
+==>[1:[v[1],v[1]],2:[v[2]],3:[v[3],v[3],v[3]],4:[v[4]],5:[v[5]]]
+gremlin> g.V().hasLabel('person').both().elementMap().group().by(id)
+TokenTraversal support of java.util.LinkedHashMap does not allow selection by id
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+
+// note that select() can't be used if the key is a non-string
+gremlin> g.V().hasLabel('person').both().group().by('age').select(32)
+No signature of method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.select() is applicable for argument types: (Integer) values: [32]
+Possible solutions: reset(), collect(), sleep(long), collect(groovy.lang.Closure), inject(groovy.lang.Closure), split(groovy.lang.Closure)
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+While this problem might be solved in future versions, the workaround for both cases is to use
+<<constant-step,constant()>> as shown in the following example:
+
+[groovy,modern]
+----
+g.V().hasLabel('person').both().group().by(constant(id))
+g.V().hasLabel('person').both().group().by('age').select(constant(32))
 ----
 
 [[a-note-on-barrier-steps]]
