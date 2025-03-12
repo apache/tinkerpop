@@ -73,6 +73,11 @@ g.inject("Hello").split("")
 ----
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
+==== Gremlin Lang Float Literals Default to Double
+The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
+or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
+`GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

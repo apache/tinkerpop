@@ -461,7 +461,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             // parse D/d suffix as Double
             return new Double(floatLiteral);
         } else {
-            return new BigDecimal(floatLiteral);
+            return new Double(floatLiteral);
         }
     }
 
