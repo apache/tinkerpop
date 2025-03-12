@@ -16,6 +16,17 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
+== TinkerPop 3.8.0 (NOT OFFICIALLY NAMED YET)
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+
+[[release-3-8.0]]
+=== TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
+
+*
+
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
