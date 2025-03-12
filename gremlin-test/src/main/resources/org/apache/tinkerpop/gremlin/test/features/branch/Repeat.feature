@@ -371,3 +371,30 @@ Feature: Step - repeat()
     Then the result should be unordered
       | result |
       | josh |
+
+  Scenario: g_V_emit
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
+
+  Scenario: g_V_untilXidentityX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().until(__.identity())
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
+
+  Scenario: g_V_timesX5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().times(5)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
