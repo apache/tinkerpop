@@ -160,6 +160,9 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     public RepeatStep<S> clone() {
+        if (null == this.repeatTraversal)
+            throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
+
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone();
         if (null != this.untilTraversal)

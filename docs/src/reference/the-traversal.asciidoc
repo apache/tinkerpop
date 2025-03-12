@@ -3981,8 +3981,8 @@ an adjacent vertex's properties or edges.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`]
-
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`],
+<<emit-step, emit>>, <<times-step, times()>>, <<until-step,until()>>,
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
 [[replace-step]]
@@ -4741,6 +4741,17 @@ yield `false`.
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#timeLimit(long)++[`timeLimit(long)`]
+
+[[times-step]]
+=== Times Step
+
+The `times`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
+documentation on the `times()` there).
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#times(int)++[`until(Predicate)`],
+`<<emit-step,emit()>>`, `<<repeat-step,repeat()>>`, `<<until-step,until()>>`
 
 [[to-step]]
 === To Step
