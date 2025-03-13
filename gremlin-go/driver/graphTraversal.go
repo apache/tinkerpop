@@ -898,11 +898,10 @@ func int32Args(args []interface{}) []interface{} {
 }
 
 type Transaction struct {
-	g                      *GraphTraversalSource
-	sessionBasedConnection *DriverRemoteConnection
-	remoteConnection       *DriverRemoteConnection
-	isOpen                 bool
-	mutex                  sync.Mutex
+	g                *GraphTraversalSource
+	remoteConnection *DriverRemoteConnection
+	isOpen           bool
+	mutex            sync.Mutex
 }
 
 func (t *Transaction) Begin() (*GraphTraversalSource, error) {
@@ -913,17 +912,9 @@ func (t *Transaction) Begin() (*GraphTraversalSource, error) {
 		return nil, err
 	}
 
-	sc, err := t.remoteConnection.CreateSession()
-	if err != nil {
-		return nil, err
-	}
-	t.sessionBasedConnection = sc
-	t.isOpen = true
-
 	gts := &GraphTraversalSource{
-		graph:            t.g.graph,
-		bytecode:         t.g.bytecode,
-		remoteConnection: t.sessionBasedConnection}
+		graph:    t.g.graph,
+		bytecode: t.g.bytecode}
 	return gts, nil
 }
 
@@ -935,7 +926,8 @@ func (t *Transaction) Rollback() error {
 		return err
 	}
 
-	return t.closeSession(t.sessionBasedConnection.rollback())
+	t.close()
+	return nil
 }
 
 func (t *Transaction) Commit() error {
@@ -946,7 +938,8 @@ func (t *Transaction) Commit() error {
 		return err
 	}
 
-	return t.closeSession(t.sessionBasedConnection.commit())
+	t.close()
+	return nil
 }
 
 func (t *Transaction) Close() error {
@@ -957,13 +950,11 @@ func (t *Transaction) Close() error {
 		return err
 	}
 
-	return t.closeSession(nil, nil)
+	t.close()
+	return nil
 }
 
 func (t *Transaction) IsOpen() bool {
-	if t.sessionBasedConnection != nil && t.sessionBasedConnection.isClosed {
-		t.isOpen = false
-	}
 	return t.isOpen
 }
 
@@ -974,31 +965,6 @@ func (t *Transaction) verifyTransactionState(state bool, err error) error {
 	return nil
 }
 
-func (t *Transaction) closeSession(rs ResultSet, err error) error {
-	defer t.closeConnection()
-	if err != nil {
-		return err
-	}
-	if rs == nil {
-		return nil
-	}
-	_, e := rs.All()
-	return e
-}
-
-func (t *Transaction) closeConnection() {
-	t.sessionBasedConnection.Close()
-
-	// remove session based connection from spawnedSessions
-	connectionCount := len(t.remoteConnection.spawnedSessions)
-	if connectionCount > 0 {
-		for i, x := range t.remoteConnection.spawnedSessions {
-			if x == t.sessionBasedConnection {
-				t.remoteConnection.spawnedSessions[i] = t.remoteConnection.spawnedSessions[connectionCount-1]
-				t.remoteConnection.spawnedSessions = t.remoteConnection.spawnedSessions[:connectionCount-1]
-				break
-			}
-		}
-	}
+func (t *Transaction) close() {
 	t.isOpen = false
 }

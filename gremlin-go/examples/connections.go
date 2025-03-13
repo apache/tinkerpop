@@ -30,7 +30,7 @@ func main() {
 
 func withRemote() {
 	// Creating the connection to the server
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin")
 
 	// Error handling
 	if err != nil {
@@ -56,7 +56,7 @@ func withRemote() {
 
 func withConfigs() {
 	// Connecting to the server with customized configurations
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin",
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
 			settings.TraversalSource = "g"
 			settings.NewConnectionThreshold = 4

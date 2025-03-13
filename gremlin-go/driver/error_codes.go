@@ -32,18 +32,7 @@ import (
 type errorCode string
 
 const (
-	// connection.go errors
-	err0101ConnectionCloseError       errorCode = "E0101_CONNECTION_CLOSE_ERROR"
-	err0102WriteConnectionClosedError errorCode = "E0102_CONNECTION_WRITE_CLOSED_ERROR"
-
-	// connectionPool.go errors
-	err0103ConnectionPoolClosedError      errorCode = "E0103_CONNECTIONPOOL_CLOSED_ERROR"
-	err0104ConnectionPoolInstantiateFail  errorCode = "E0104_CONNECTIONPOOL_INSTANTIATE_FAIL"
-	err0105ConnectionPoolFullButNoneValid errorCode = "E0105_CONNECTIONPOOL_FULL_NONE_VALID"
-
 	// driverRemoteConnection.go errors
-	err0201CreateSessionMultipleIdsError         errorCode = "E0201_DRIVER_REMOTE_CONNECTION_CREATESESSION_MULTIPLE_UUIDS_ERROR"
-	err0202CreateSessionFromSessionError         errorCode = "E0202_DRIVER_REMOTE_CONNECTION_CREATESESSION_SESSION_FROM_SESSION_ERROR"
 	err0203SubmitBytecodeToClosedConnectionError errorCode = "E0203_DRIVER_REMOTE_CONNECTION_SUBMITBYTECODE_TO_CLOSED_CONNECTION_ERROR"
 
 	// graph.go errors
@@ -62,9 +51,9 @@ const (
 	err0408GetSerializerToReadUnknownTypeError       errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
 	err0409GetSerializerToReadUnknownCustomTypeError errorCode = "E0409_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_CUSTOM_TYPE_ERROR"
 
-	// protocol.go errors
+	// response handling errors
 	err0501ResponseHandlerResultSetNotCreatedError errorCode = "E0501_PROTOCOL_RESPONSEHANDLER_NO_RESULTSET_ON_DATA_RECEIVE"
-	err0502ResponseHandlerReadLoopError            errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_READ_LOOP_ERROR"
+	err0502ResponseHandlerError                    errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_ERROR"
 	err0503ResponseHandlerAuthError                errorCode = "E0503_PROTOCOL_RESPONSEHANDLER_AUTH_ERROR"
 
 	// result.go errors
@@ -82,9 +71,6 @@ const (
 	err0703ReadMapNonStringKeyError     errorCode = "E0703_SERIALIZER_READMAP_NON_STRING_KEY_ERROR"
 	err0704ConvertArgsNoSerializerError errorCode = "E0704_SERIALIZER_CONVERTARGS_NO_SERIALIZER_ERROR"
 
-	// transporterFactory.go errors
-	err0801GetTransportLayerNoTypeError errorCode = "E0801_TRANSPORTERFACTORY_GETTRANSPORTLAYER_NO_TYPE_ERROR"
-
 	// traversal.go errors
 	err0901ToListAnonTraversalError  errorCode = "E0901_TRAVERSAL_TOLIST_ANON_TRAVERSAL_ERROR"
 	err0902IterateAnonTraversalError errorCode = "E0902_TRAVERSAL_ITERATE_ANON_TRAVERSAL_ERROR"
@@ -98,9 +84,6 @@ const (
 	err1102TransactionRollbackNotOpenedError errorCode = "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR"
 	err1103TransactionCommitNotOpenedError   errorCode = "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR"
 	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"
-
-	// gorillaTransporter.go errors
-	err1201RequestSizeExceedsWriteBufferError errorCode = "E1201_REQUEST_SIZE_EXCEEDS_WRITE_BUFFER_ERROR"
 )
 
 var localizer *i18n.Localizer

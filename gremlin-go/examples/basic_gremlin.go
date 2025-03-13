@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin")
 	if err != nil {
 		fmt.Println(err)
 		return

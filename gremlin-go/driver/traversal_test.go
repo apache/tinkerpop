@@ -173,9 +173,6 @@ func TestTraversal(t *testing.T) {
 		err = tx.Rollback()
 		assert.Nil(t, err)
 		assert.False(t, tx.IsOpen())
-
-		// sessions should be removed when transaction closed
-		assert.Equal(t, 0, len(remote.spawnedSessions))
 	})
 
 	t.Run("Test multi commit Transaction", func(t *testing.T) {

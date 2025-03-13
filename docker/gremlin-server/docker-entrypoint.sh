@@ -43,9 +43,9 @@ echo "##########################################################################
 echo IP is $IP
 echo
 echo Available Gremlin Server instances:
-echo "ws://${IP}:45940/gremlin with anonymous access"
-echo "ws://${IP}:45941/gremlin with basic authentication (stephen/password)"
-echo "ws://${IP}:45942/gremlin with kerberos authentication (stephen/password)"
+echo "http://${IP}:45940/gremlin with anonymous access"
+echo "http://${IP}:45941/gremlin with basic authentication (stephen/password)"
+echo "http://${IP}:45942/gremlin with kerberos authentication (stephen/password)"
 echo
 echo "See docker/gremlin-server/docker-entrypoints.sh for transcripts per GLV."
 echo "#############################################################################"

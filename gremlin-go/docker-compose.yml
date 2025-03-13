@@ -35,31 +35,26 @@ services:
       - ${HOME}/.m2:/root/.m2
       - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
     healthcheck:
-      test: [ "CMD-SHELL", "apk add curl && curl -f http://localhost:45940?gremlin=100-1" ]
+      test: [ "CMD-SHELL", "apk add curl && curl -X POST -d '{\"gremlin\":\"g.inject(1)\"}' http://localhost:45940" ]
       interval: 30s
       timeout: 10s
       retries: 30
       start_period: 30s
-    depends_on:
-      - gremlin-socket-server
 
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
-    image: golang:1.21
+    image: golang:1.22
     volumes:
       - .:/go_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
       - ../docker/gremlin-test-server:/go_app/gremlin-test-server
-      - ../gremlin-tools/gremlin-socket-server/conf:/go_app/gremlin-socket-server/conf/
     environment:
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
-      - GREMLIN_SERVER_URL=ws://gremlin-server-test:45940/gremlin
-      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test:45941/gremlin
+      - GREMLIN_SERVER_URL=http://gremlin-server-test:45940/gremlin
+      - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test:45941/gremlin
       - RUN_INTEGRATION_TESTS=true
       - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
-      - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-go
-      - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/go_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
     working_dir: /go_app
     command: >
       bash -c "go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
@@ -67,9 +62,3 @@ services:
     depends_on:
       gremlin-server-test:
         condition: service_healthy
-
-  gremlin-socket-server:
-    container_name: gremlin-socket-server-go
-    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
-    ports:
-      - "45943:45943"

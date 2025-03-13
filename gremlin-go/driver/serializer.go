@@ -22,15 +22,10 @@ package gremlingo
 import (
 	"bytes"
 	"encoding/binary"
-	"math/big"
-	"reflect"
-	"strings"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
-const graphBinaryMimeType = "application/vnd.graphbinary-v1.0"
+const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
 // serializer interface for serializers.
 type serializer interface {
@@ -68,120 +63,31 @@ func newGraphBinarySerializer(handler *logHandler) serializer {
 
 const versionByte byte = 0x81
 
-func convertArgs(request *request, gs graphBinarySerializer) (map[string]interface{}, error) {
-	if request.op != bytecodeProcessor {
-		return request.args, nil
-	}
-
-	// Convert to format:
-	// args["gremlin"]: <serialized args["gremlin"]>
-	gremlin := request.args["gremlin"]
-	switch gremlin.(type) {
-	case Bytecode:
-		buffer := bytes.Buffer{}
-		gremlinBuffer, err := gs.ser.write(gremlin, &buffer)
-		if err != nil {
-			return nil, err
-		}
-		request.args["gremlin"] = gremlinBuffer
-		return request.args, nil
-	default:
-		var typeName string
-		if gremlin != nil {
-			typeName = reflect.TypeOf(gremlin).Name()
-		}
-
-		return nil, newError(err0704ConvertArgsNoSerializerError, typeName)
-	}
-}
-
 // serializeMessage serializes a request message into GraphBinary.
 func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
-	args, err := convertArgs(request, gs)
-	if err != nil {
-		return nil, err
-	}
-	finalMessage, err := gs.buildMessage(request.requestID, byte(len(graphBinaryMimeType)), request.op, request.processor, args)
+	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
 	if err != nil {
 		return nil, err
 	}
 	return finalMessage, nil
 }
 
-func (gs *graphBinarySerializer) buildMessage(id uuid.UUID, mimeLen byte, op string, processor string, args map[string]interface{}) ([]byte, error) {
+func (gs *graphBinarySerializer) buildMessage(gremlin string, args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
-
-	// mime header
-	buffer.WriteByte(mimeLen)
-	buffer.WriteString(graphBinaryMimeType)
 
 	// Version
 	buffer.WriteByte(versionByte)
 
-	// Request uuid
-	bigIntUUID := uuidToBigInt(id)
-	lower := bigIntUUID.Uint64()
-	upperBigInt := bigIntUUID.Rsh(&bigIntUUID, 64)
-	upper := upperBigInt.Uint64()
-	err := binary.Write(&buffer, binary.BigEndian, upper)
+	_, err := gs.ser.writeValue(args, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
-	err = binary.Write(&buffer, binary.BigEndian, lower)
+	_, err = gs.ser.writeValue(gremlin, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
 
-	// op
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(op)))
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = buffer.WriteString(op)
-	if err != nil {
-		return nil, err
-	}
-
-	// processor
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(processor)))
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = buffer.WriteString(processor)
-	if err != nil {
-		return nil, err
-	}
-
-	// args
-	err = binary.Write(&buffer, binary.BigEndian, uint32(len(args)))
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range args {
-		_, err = gs.ser.write(k, &buffer)
-		if err != nil {
-			return nil, err
-		}
-
-		switch t := v.(type) {
-		case []byte:
-			_, err = buffer.Write(t)
-		default:
-			_, err = gs.ser.write(t, &buffer)
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
 	return buffer.Bytes(), nil
-}
-
-func uuidToBigInt(requestID uuid.UUID) big.Int {
-	var bigInt big.Int
-	bigInt.SetString(strings.Replace(requestID.String(), "-", "", 4), 16)
-	return bigInt
 }
 
 // deserializeMessage deserializes a response message.
@@ -192,36 +98,39 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 		gs.ser.logHandler.log(Error, nullInput)
 		return msg, newError(err0405ReadValueInvalidNullInputError)
 	}
+	results := make([]interface{}, 0)
 
-	// Skip version and nullable byte.
+	//Skip version and nullable byte.
 	i := 2
-	id, err := readUuid(&message, &i)
-	if err != nil {
-		return msg, err
-	}
-	msg.responseID = id.(uuid.UUID)
-	msg.responseStatus.code = uint16(readUint32Safe(&message, &i) & 0xFF)
-	isMessageValid := readByteSafe(&message, &i)
-	if isMessageValid == 0 {
-		message, err := readString(&message, &i)
+	// TODO temp serialization before fully streaming set-up
+	for len(message) > 0 {
+		n, err := readFullyQualifiedNullable(&message, &i, true)
 		if err != nil {
 			return msg, err
 		}
-		msg.responseStatus.message = message.(string)
+		results = append(results, n)
 	}
-	attr, err := readMapUnqualified(&message, &i)
+	if len(results) == 1 {
+		// unwrap single results
+		msg.responseResult.data = results[0]
+	} else {
+		msg.responseResult.data = results
+	}
+	code := readUint32Safe(&message, &i)
+	msg.responseStatus.code = code
+	statusMsg, err := readUnqualified(&message, &i, stringType, true)
 	if err != nil {
 		return msg, err
 	}
-	msg.responseStatus.attributes = attr.(map[string]interface{})
-	meta, err := readMapUnqualified(&message, &i)
+	if statusMsg != nil {
+		msg.responseStatus.message = statusMsg.(string)
+	}
+	exception, err := readUnqualified(&message, &i, stringType, true)
 	if err != nil {
 		return msg, err
 	}
-	msg.responseResult.meta = meta.(map[string]interface{})
-	msg.responseResult.data, err = readFullyQualifiedNullable(&message, &i, true)
-	if err != nil {
-		return msg, err
+	if exception != nil {
+		msg.responseStatus.exception = exception.(string)
 	}
 	return msg, nil
 }

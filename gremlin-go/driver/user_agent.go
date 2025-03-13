@@ -27,7 +27,7 @@ import (
 )
 
 /**
- * User Agent body to be sent in web socket handshake
+ * User Agent header to be sent in the http request
  * Has the form of:
  * [Application Name] [GLV Name]/[Version] [Language Runtime Version] [OS]/[Version] [CPU Architecture]
  * Note: Go does not have any builtin functionality to detect the OS version, therefore OS version will always be
