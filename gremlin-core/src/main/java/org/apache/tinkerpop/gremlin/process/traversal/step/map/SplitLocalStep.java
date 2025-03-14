@@ -18,17 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.StringLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import org.apache.tinkerpop.gremlin.util.StringUtil;
 
 /**
  * Reference implementation for substring step, a mid-traversal step which returns a list of strings created by
@@ -50,7 +43,7 @@ public final class SplitLocalStep<S, E> extends StringLocalStep<S, E> implements
 
     @Override
     protected E applyStringOperation(String item) {
-        return (E) Arrays.asList((StringUtils.splitByWholeSeparator(item, this.separator)));
+        return (E) StringUtil.split(item, this.separator);
     }
 
     @Override

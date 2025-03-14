@@ -4485,8 +4485,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[split-step]]
 === Split Step
 The `split()`-step (*map*) returns a list of strings created by splitting the incoming string traverser around the
-matches of the given separator. A null separator will split the string by whitespaces. Null values from the incoming
-traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
+matches of the given separator. A null separator will split the string by whitespaces. An empty string separator will split on each character.
+Null values from the incoming traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
 IllegalArgumentException will be thrown.
 
 [gremlin-groovy,modern]
@@ -4494,12 +4494,14 @@ IllegalArgumentException will be thrown.
 g.inject("that", "this", "test", null).split("h") <1>
 g.V().hasLabel("person").values("name").split("a") <2>
 g.inject("helloworld", "hello world", "hello   world").split(null) <3>
-g.V().hasLabel("person").values("name").fold().split(local, "a") <4>
+g.inject("hello", "world", null).split("") <4>
+g.V().hasLabel("person").values("name").fold().split(local, "a") <5>
 ----
 <1> Split the strings by "h".
 <2> Split person names by "a".
 <3> Splitting by null will split by whitespaces.
-<4> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list of results.
+<4> Splitting by "" will split by each character.
+<5> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list of results.
 
 *Additional References*
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(java.lang.String)++[`split(String)`]

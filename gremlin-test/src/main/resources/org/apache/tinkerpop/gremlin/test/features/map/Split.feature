@@ -46,6 +46,21 @@ Feature: Step - split()
       | l[hello,world] |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXthat_this_test_nullX_splitXemptyX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("that", "this", "test", null).split("")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[t,h,a,t] |
+      | l[t,h,i,s] |
+      | l[t,e,s,t] |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_splitXa_bX
     Given the empty graph
     And using the parameter xx1 defined as "l[a,b]"
@@ -83,3 +98,17 @@ Feature: Step - split()
       | l[m,rko] |
       | l[peter] |
       | l[v,d,s] |
+
+  Scenario: g_V_hasLabelXpersonX_valueXnameX_order_fold_splitXlocal_emptyX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("name").order().fold().split(Scope.local, "").unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[j,o,s,h] |
+      | l[m,a,r,k,o] |
+      | l[p,e,t,e,r] |
+      | l[v,a,d,a,s] |
