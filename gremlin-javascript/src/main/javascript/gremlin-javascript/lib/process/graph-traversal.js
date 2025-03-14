@@ -24,7 +24,6 @@
 
 const { Traversal, cardinality } = require('./traversal');
 const { Transaction } = require('./transaction');
-const remote = require('../driver/remote-connection');
 const Bytecode = require('./bytecode');
 const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } = require('./traversal-strategy');
 
@@ -46,28 +45,8 @@ class GraphTraversalSource {
     this.bytecode = bytecode || new Bytecode();
     this.graphTraversalSourceClass = graphTraversalSourceClass || GraphTraversalSource;
     this.graphTraversalClass = graphTraversalClass || GraphTraversal;
-
-    // in order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
-    // TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
-    // TODO: refactor this to be nicer in 3.6.0 when we can take a breaking change
     const strat = traversalStrategies.strategies.find((ts) => ts.fqcn === 'js:RemoteStrategy');
     this.remoteConnection = strat !== undefined ? strat.connection : undefined;
-  }
-
-  /**
-   * @param {RemoteConnection} remoteConnection
-   * @returns {GraphTraversalSource}
-   */
-  withRemote(remoteConnection) {
-    const traversalStrategy = new TraversalStrategies(this.traversalStrategies);
-    traversalStrategy.addStrategy(new remote.RemoteStrategy(remoteConnection));
-    return new this.graphTraversalSourceClass(
-      this.graph,
-      traversalStrategy,
-      new Bytecode(this.bytecode),
-      this.graphTraversalSourceClass,
-      this.graphTraversalClass,
-    );
   }
 
   /**

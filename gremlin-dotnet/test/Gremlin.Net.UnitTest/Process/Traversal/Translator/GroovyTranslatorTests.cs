@@ -35,8 +35,8 @@ namespace Gremlin.Net.UnitTest.Process.Traversal.Translator;
 
 public class GroovyTranslatorTests
 {
-    private readonly GraphTraversalSource _g = AnonymousTraversalSource.Traversal();
-
+    private readonly GraphTraversalSource _g = AnonymousTraversalSource.Traversal().With(null);
+    
     [Fact]
     public void ShouldTranslateStepsWithSingleArguments()
     {

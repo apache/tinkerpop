@@ -262,6 +262,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     <see cref="GraphTraversal{SType, EType}" />.
         /// </param>
         /// <returns>A <see cref="GraphTraversalSource" /> configured to use the provided <see cref="IRemoteConnection" />.</returns>
+        [Obsolete("Prefer use of AnonymousTraversalSource.with().", false)]
         public GraphTraversalSource WithRemote(IRemoteConnection remoteConnection) =>
             new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                 new Bytecode(Bytecode), remoteConnection);

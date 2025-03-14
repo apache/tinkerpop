@@ -43,7 +43,7 @@ test_no_auth_url = gremlin_server_url.format(45940)
 class TestDriverRemoteConnection(object):
     def test_traversals(self, remote_connection):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection)
+        g = traversal().with_(remote_connection)
 
         assert long(6) == g.V().count().toList()[0]
         # #
@@ -131,7 +131,7 @@ class TestDriverRemoteConnection(object):
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())
         assert "remoteconnection[{},gmodern]".format(test_no_auth_url) == str(remote_connection)
-        g = traversal().withRemote(remote_connection)
+        g = traversal().with_(remote_connection)
 
         assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
         assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"), lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
@@ -141,7 +141,7 @@ class TestDriverRemoteConnection(object):
 
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection)
+        g = traversal().with_(remote_connection)
 
         t = g.V().count()
         assert t.hasNext()
@@ -178,7 +178,7 @@ class TestDriverRemoteConnection(object):
 
     def test_strategies(self, remote_connection):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection). \
+        g = traversal().with_(remote_connection). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.hasLabel("person"),
                                               "edges": __.hasLabel("created")},
@@ -189,14 +189,14 @@ class TestDriverRemoteConnection(object):
         assert 4 == g.V().filter_(lambda: ("x -> true", "gremlin-groovy")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = traversal().withRemote(remote_connection). \
+        g = traversal().with_(remote_connection). \
             withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = traversal().withRemote(remote_connection). \
+        g = traversal().with_(remote_connection). \
             withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
@@ -210,17 +210,17 @@ class TestDriverRemoteConnection(object):
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
         #
-        g = traversal().withRemote(remote_connection).withComputer()
+        g = traversal().with_(remote_connection).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
         #
-        g = traversal().withRemote(remote_connection).withStrategies(SeedStrategy(12345))
+        g = traversal().with_(remote_connection).withStrategies(SeedStrategy(12345))
         shuffledResult = g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         #
-        g = traversal().withRemote(remote_connection). \
+        g = traversal().with_(remote_connection). \
             withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
         try:
             g.addV("person").property("id", "please-don't-use-id").iterate()
@@ -228,7 +228,7 @@ class TestDriverRemoteConnection(object):
         except GremlinServerError as gse:
             assert gse.status_code == 500
         #
-        g = traversal().withRemote(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
+        g = traversal().with_(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
         try:
             g.inject(1).sideEffect(lambda: ("Thread.sleep(1000)", "gremlin-groovy")).iterate()
             assert False
@@ -236,7 +236,7 @@ class TestDriverRemoteConnection(object):
             assert gse.status_code == 598
 
     def test_close_sessions(self, remote_transaction_connection):
-        g = traversal().withRemote(remote_transaction_connection)
+        g = traversal().with_(remote_transaction_connection)
         tx = g.tx()
         gtx = tx.begin()
         # session created for new transaction
@@ -278,7 +278,7 @@ class TestDriverRemoteConnection(object):
             assert "Cannot rollback a transaction that is not started." == str(ex)
 
     def test_clone(self, remote_connection):
-        g = traversal().withRemote(remote_connection)
+        g = traversal().with_(remote_connection)
         t = g.V().both()
         assert 12 == len(t.toList())
         assert 5 == t.clone().limit(5).count().next()
@@ -286,7 +286,7 @@ class TestDriverRemoteConnection(object):
 
     def test_authenticated(self, remote_connection_authenticated):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection_authenticated)
+        g = traversal().with_(remote_connection_authenticated)
 
         assert long(6) == g.V().count().toList()[0]
 

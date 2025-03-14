@@ -21,7 +21,12 @@ package gremlingo
 
 // AnonymousTraversalSource interface for generating anonymous traversals.
 type AnonymousTraversalSource interface {
+	// With used to set the DriverRemoteConnection within the AnonymousTraversalSource
+	With(drc *DriverRemoteConnection) *GraphTraversalSource
+
 	// WithRemote used to set the DriverRemoteConnection within the AnonymousTraversalSource
+	//
+	// Deprecated: WithRemote replaced by With
 	WithRemote(drc *DriverRemoteConnection) *GraphTraversalSource
 }
 
@@ -31,7 +36,14 @@ type anonymousTraversalSource struct {
 
 var traversalSource = &anonymousTraversalSource{}
 
+// With used to set the DriverRemoteConnection within the AnonymousTraversalSource.
+func (ats *anonymousTraversalSource) With(drc *DriverRemoteConnection) *GraphTraversalSource {
+	return NewDefaultGraphTraversalSource().WithRemote(drc)
+}
+
 // WithRemote used to set the DriverRemoteConnection within the AnonymousTraversalSource.
+//
+// Deprecated: WithRemote replaced by With
 func (ats *anonymousTraversalSource) WithRemote(drc *DriverRemoteConnection) *GraphTraversalSource {
 	return NewDefaultGraphTraversalSource().WithRemote(drc)
 }

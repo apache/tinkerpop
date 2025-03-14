@@ -105,7 +105,7 @@ describe('DriverRemoteConnection', function () {
           rejectUnauthorized: false
         });
 
-        const g = traversal().withRemote(connection);
+        const g = traversal().with_(connection);
         return g.V().toList().then(function() {
           assert.fail("server is running TLS and trying to connect with ws:// so this should result in error thrown");
         }).catch(function(err) {

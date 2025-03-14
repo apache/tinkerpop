@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_Count()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var count = g.V().Count().Next();
 
@@ -54,7 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_Has_Count()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var b = Bindings.Instance;
             var count = g.V().Has("person", "age", b.Of("x", P.Lt(30))).Count().Next();
@@ -66,7 +66,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_Count_Clone()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var t = g.V().Count();
 
@@ -79,7 +79,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_VX1X_Next()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.V(1).Next();
 
@@ -91,7 +91,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_VX1X_NextTraverser()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var traverser = g.V(1).NextTraverser();
 
@@ -102,7 +102,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_VX1X_ToList()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var list = g.V(1).ToList();
 
@@ -113,7 +113,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_RepeatXBothX_TimesX5X_NextX10X()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var result = g.V().Repeat(__.Both()).Times(5).Next(10);
 
@@ -124,7 +124,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_RepeatXOutX_TimesX2X_ValuesXNameX()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var t = g.V().Repeat(__.Out()).Times(2).Values<string>("name");
             var names = t.ToList();
@@ -138,7 +138,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShortestPathTest()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var shortestPath =
                 g.V(5).Repeat(__.Both().SimplePath()).Until(__.HasId(6)).Limit<Vertex>(1).Path().Next();
@@ -151,7 +151,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ValueMapTest()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var result = g.V(1).ValueMap<string, IList<object>>().Next();
             Assert.Equal(
@@ -167,7 +167,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ValueMapWithListConversionTest()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var result = g.V(1).ValueMap<string, IList<int>>("age").Next();
             Assert.Equal(new Dictionary<string, IList<int>>
@@ -180,7 +180,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void GroupedEdgePropertyConversionTest()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var result = g.V().HasLabel("software").Group<string, double>().By("name")
                           .By(__.BothE().Values<double>("weight").Mean<double>()).Next();
             Assert.Equal(new Dictionary<string, double>
@@ -194,7 +194,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUseBindingsInTraversal()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var b = new Bindings();
             var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
@@ -211,7 +211,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
                 {"x", "test"},
                 {"y", true}
             };
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             
             var countWithStrategy = g.WithStrategies(new OptionsStrategy(options)).V().Count().Next();
             Assert.Equal(6, countWithStrategy);
@@ -227,7 +227,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUseSeedStrategyToReturnDeterministicResults()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection).WithStrategies(new SeedStrategy(664664));
+            var g = AnonymousTraversalSource.Traversal().With(connection).WithStrategies(new SeedStrategy(664664));
 
             var shuffledResults = g.V().Values<string>("name").Order().By(Order.Shuffle).ToList();
             Assert.Equal(shuffledResults, g.V().Values<string>("name").Order().By(Order.Shuffle).ToList());
@@ -241,7 +241,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldExecuteAsynchronouslyWhenPromiseIsCalled()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var count = await g.V().Count().Promise(t => t.Next());
 
@@ -252,7 +252,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldSupportCancellationForPromise()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () =>
                 await g.V().Promise(t => t.Iterate(), new CancellationToken(true)));
@@ -262,7 +262,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldSupportFurtherTraversalsAfterOneWasCancelled()
         {
             var connection = _connectionFactory.CreateRemoteConnection(connectionPoolSize: 1);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var cts = new CancellationTokenSource();
             
             var cancelledTask = g.V().Promise(t => t.Iterate(), cts.Token);
@@ -276,7 +276,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldThrowExceptionOnCommitWhenGraphNotSupportTx()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var tx = g.Tx();
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.CommitAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
@@ -286,7 +286,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldThrowExceptionOnRollbackWhenGraphNotSupportTx()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var tx = g.Tx();
             var exception = await Assert.ThrowsAsync<ResponseException>(async () => await tx.RollbackAsync());
             Assert.Equal("ServerError: Graph does not support transactions", exception.Message);
@@ -296,7 +296,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void shouldUseMaterializedPropertiesTokenInV()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var vertices = g.With("materializeProperties", "tokens").V().ToList();
             foreach (var v in vertices)
             {
@@ -310,7 +310,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void shouldUseMaterializedPropertiesTokenInE()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var edges = g.With("materializeProperties", "tokens").E().ToList();
             foreach (var e in edges)
             {
@@ -324,7 +324,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void shouldUseMaterializedPropertiesTokenInVP()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var vps = g.With("materializeProperties", "tokens").V().Properties<VertexProperty>().ToList();
             foreach (var vp in vps)
             {

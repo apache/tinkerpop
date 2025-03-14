@@ -44,7 +44,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldDeserializeVertexPropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.V(1).Next();
 
@@ -56,7 +56,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldRespectMaterializePropertiesTokensForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.With(Tokens.ArgMaterializeProperties, "tokens").V(1).Next();
 
@@ -68,7 +68,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldRespectMaterializePropertiesAllForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.With(Tokens.ArgMaterializeProperties, "all").V(1).Next();
 
@@ -80,7 +80,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldHandleEmptyVertexPropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gimmutable", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.AddV("test").Next();
 
@@ -136,7 +136,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldDeserializeEdgePropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gmodern", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var edge = g.E(7).Next();
 
@@ -148,7 +148,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldHandleEmptyEdgePropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gimmutable", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var v1 = g.AddV("v1").Next();
             var v2 = g.AddV("v2").Next();
@@ -185,7 +185,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldHandleMultiplePropertiesWithSameNameForVertex(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gimmutable", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.AddV()
                 .Property(Cardinality.List, "test", "value1")
@@ -209,7 +209,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public void ShouldDeserializeVertexVertexPropertiesForBytecode(IMessageSerializer serializer)
         {
             var connection = _connectionFactory.CreateRemoteConnection("gcrew", 2, serializer);
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var vertex = g.V(7).Next();
 

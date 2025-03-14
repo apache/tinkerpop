@@ -42,7 +42,7 @@ namespace Gremlin.Net.Template
             });
             using var connection = new DriverRemoteConnection(new GremlinClient(
                 new GremlinServer(GremlinServerHostname, GremlinServerPort), loggerFactory: loggerFactory));
-            var g = Traversal().WithRemote(connection);
+            var g = Traversal().With(connection);
             var service = new Service(g);
             var creators = service.FindCreatorsOfSoftware("lop");
             foreach (var c in creators)

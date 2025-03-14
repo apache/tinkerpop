@@ -36,7 +36,7 @@ namespace Gremlin.Net.UnitTest.Process.Remote
         public void ShouldNotAllowBeginMoreThanOnce()
         {
             var g = AnonymousTraversalSource.Traversal()
-                .WithRemote(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
+                .With(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
             var tx = g.Tx();
             tx.Begin();
 
@@ -47,7 +47,7 @@ namespace Gremlin.Net.UnitTest.Process.Remote
         public void ShouldNotSupportChildTransactions()
         {
             var g = AnonymousTraversalSource.Traversal()
-                .WithRemote(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
+                .With(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
             var tx = g.Tx();
             
             var gtx = tx.Begin();

@@ -20,8 +20,11 @@
 'use strict';
 
 const graphTraversalModule = require('./graph-traversal');
+const remote = require('../driver/remote-connection');
 const TraversalStrategies = require('./traversal-strategy').TraversalStrategies;
 const GraphTraversalSource = graphTraversalModule.GraphTraversalSource;
+const GraphTraversal = graphTraversalModule.GraphTraversal;
+const Bytecode = require('./bytecode');
 const Graph = require('../structure/graph').Graph;
 
 /**
@@ -33,19 +36,40 @@ class AnonymousTraversalSource {
   /**
    * Creates a new instance of {@code AnonymousTraversalSource}.
    * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
+   * @param {Function} [traversalClass] Optional {@code GraphTraversal} constructor.
    */
-  constructor(traversalSourceClass) {
+  constructor(traversalSourceClass, traversalClass) {
     this.traversalSourceClass = traversalSourceClass;
+    this.traversalClass = traversalClass;
   }
 
   /**
    * Constructs an {@code AnonymousTraversalSource} which will then be configured to spawn a
    * {@link GraphTraversalSource}.
    * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
+   * @param {Function} [traversalClass] Optional {@code GraphTraversalSource} constructor.
    * @returns {AnonymousTraversalSource}.
    */
-  static traversal(traversalSourceClass) {
-    return new AnonymousTraversalSource(traversalSourceClass || GraphTraversalSource);
+  static traversal(traversalSourceClass, traversalClass) {
+    return new AnonymousTraversalSource(traversalSourceClass || GraphTraversalSource, traversalClass || GraphTraversal);
+  }
+
+  /**
+   * Creates a {@link GraphTraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
+   * reference so that traversals spawned from it will execute over that reference.
+   * @param {RemoteConnection} connection
+   * @return {GraphTraversalSource}
+   */
+  with_(connection) {
+    const traversalStrategies = new TraversalStrategies();
+    traversalStrategies.addStrategy(new remote.RemoteStrategy(connection));
+    return new this.traversalSourceClass(
+      new Graph(),
+      traversalStrategies,
+      new Bytecode(),
+      this.traversalSourceClass,
+      this.traversalClass,
+    );
   }
 
   /**
@@ -53,24 +77,10 @@ class AnonymousTraversalSource {
    * reference so that traversals spawned from it will execute over that reference.
    * @param {RemoteConnection} remoteConnection
    * @return {GraphTraversalSource}
+   * @deprecated As of release 4.0.0, prefer {@link with_}.
    */
   withRemote(remoteConnection) {
-    return this.withGraph(new Graph()).withRemote(remoteConnection);
-  }
-
-  /**
-   * Creates the specified {@link GraphTraversalSource} binding an embedded {@link Graph} as its reference such that
-   * traversals spawned from it will execute over that reference. As there are no "embedded Graph" instances in
-   * gremlin-javascript as there on the JVM, the {@link GraphTraversalSource} can only ever be constructed as "empty"
-   * with a {@link Graph} instance (which is only a reference to a graph and is not capable of holding data). As a
-   * result, the {@link GraphTraversalSource} will do nothing unless a "remote" is then assigned to it later.
-   * @param {Graph} graph
-   * @return {GraphTraversalSource}
-   * @deprecated As of release 3.4.9, prefer {@link withRemote} until some form of "embedded graph" becomes available
-   * at which point there will be support for {@code withEmbedded} which is part of the canonical Java API.
-   */
-  withGraph(graph) {
-    return new this.traversalSourceClass(graph, new TraversalStrategies());
+    return this.with_(remoteConnection);
   }
 }
 

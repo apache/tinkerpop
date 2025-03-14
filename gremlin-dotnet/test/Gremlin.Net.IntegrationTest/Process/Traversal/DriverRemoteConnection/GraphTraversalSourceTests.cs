@@ -35,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUseSideEffectSpecifiedInWithSideEffect()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var results = g.WithSideEffect("a", new List<string> {"josh", "peter"})
                 .V(1)
@@ -54,7 +54,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldHandleLambdasInWithSack()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             Assert.Equal(24.0, g.WithSack(1.0, (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());                        
             Assert.Equal(24.0, g.WithSack((ISupplier) Lambda.Groovy("{1.0d}"), (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());

@@ -19,14 +19,14 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from gremlin_python.structure.graph import Graph
+from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.process.graph_traversal import __
 
 
 class TestTraversalStrategies(object):
     def test_singletons(self):
-        g = Graph().traversal()
+        g = traversal().with_(None)
         bytecode = g.withStrategies(ReadOnlyStrategy()).bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])
@@ -78,7 +78,7 @@ class TestTraversalStrategies(object):
         assert 1 == len(bytecode.step_instructions)
         assert "V" == bytecode.step_instructions[0][0]
         ###
-        g = Graph().traversal()
+        g = traversal().with_(None)
         bytecode = g.with_("x", "test").with_("y").bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])
@@ -90,7 +90,7 @@ class TestTraversalStrategies(object):
         assert strategy.configuration["y"]
 
     def test_configurable(self):
-        g = Graph().traversal()
+        g = traversal().with_(None)
         bytecode = g.withStrategies(MatchAlgorithmStrategy("greedy")).bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])

@@ -18,8 +18,6 @@
  */
 package ${package};
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -28,6 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class App {
 
@@ -40,7 +41,7 @@ public class App {
         // Create a GraphTraversalSource instance that is used to query the data in the Graph instance. This variable
         // is typically denoted as "g".  In TinkerPop documentation you can always count on references to "g" as
         // being a object of this type.
-        GraphTraversalSource g = graph.traversal();
+        GraphTraversalSource g = traversal().with(graph);
 
         Vertex fromNode = findByName(g, "marko");
         Vertex toNode = findByName(g, "peter");

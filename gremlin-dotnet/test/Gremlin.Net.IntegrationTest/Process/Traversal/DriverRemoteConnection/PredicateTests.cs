@@ -35,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUsePredicatesCombinedWithPAndInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var count = g.V().Has("age", P.Gt(30).And(P.Lt(35))).Count().Next();
 
@@ -46,7 +46,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUsePWithinInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var count = g.V().Has("name", P.Within("josh", "vadas")).Count().Next();
 
@@ -57,7 +57,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void ShouldUsePWithinWithListArgumentInHasStep()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var names = new List<string> {"josh", "vadas"};
 
             var count = g.V().Has("name", P.Within(names)).Count().Next();

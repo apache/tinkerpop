@@ -59,7 +59,7 @@ func main() {
 	defer driverRemoteConnection.Close()
 
 	// Create an anonymous traversal source with remote
-	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
+	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
 	// Add a vertex with properties to the graph with the terminal step Iterate()
 	promise := g.AddV("gremlin").Property("language", "go").Iterate()

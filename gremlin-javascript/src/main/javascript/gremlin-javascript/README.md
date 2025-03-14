@@ -44,7 +44,7 @@ const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 
-const g = traversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = traversal().with_(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ```
 
 Once "g" has been created using a connection, it is then possible to start writing Gremlin traversals to query the 

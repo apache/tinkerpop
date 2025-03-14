@@ -38,7 +38,7 @@ describe('Traversal', function () {
 
   describe('#getByteCode()', function () {
     it('should add steps for with a string parameter', function () {
-      const g = anon.traversal().withGraph(new graph.Graph());
+      const g = anon.traversal().with_(new graph.Graph());
       const bytecode = g.V().out('created').getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
@@ -49,7 +49,7 @@ describe('Traversal', function () {
     });
 
     it('should add steps with an enum value', function () {
-      const g = anon.traversal().withGraph(new graph.Graph());
+      const g = anon.traversal().with_(new graph.Graph());
       const bytecode = g.V().order().by('age', t.order.desc).getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
@@ -64,7 +64,7 @@ describe('Traversal', function () {
     });
 
     it('should add steps with Direction aliases from_ and to properly mapped to OUT and IN', function () {
-      const g = anon.traversal().withGraph(new graph.Graph());
+      const g = anon.traversal().with_(new graph.Graph());
       const bytecode = g.V().to(t.direction.from_, 'knows').to(t.direction.in, 'created').getBytecode();
       assert.ok(bytecode);
       assert.strictEqual(bytecode.sourceInstructions.length, 0);
@@ -253,7 +253,7 @@ describe('Traversal', function () {
 
   describe("build", function() {
     it('should only allow anonymous child traversals', function() {
-      const g = anon.traversal().withGraph(new graph.Graph());
+      const g = anon.traversal().with_(new graph.Graph());
       assert.doesNotThrow(function() {
         g.V(0).addE("self").to(V(1))
       });
@@ -266,7 +266,7 @@ describe('Traversal', function () {
 
   describe('child transactions', function() {
     it('should not support child transactions', function() {
-      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const g = anon.traversal().with_(new MockRemoteConnection());
       const tx = g.tx();
       assert.throws(function() {
         tx.begin().tx();
@@ -299,7 +299,7 @@ describe('Traversal', function () {
 
   describe('tx#begin()', function() {
     it("should not allow a transaction to begin more than once", function() {
-      const g = anon.traversal().withRemote(new MockRemoteConnection());
+      const g = anon.traversal().with_(new MockRemoteConnection());
       const tx = g.tx();
       tx.begin();
       assert.throws(function () {

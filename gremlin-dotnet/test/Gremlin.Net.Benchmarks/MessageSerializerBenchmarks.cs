@@ -41,7 +41,7 @@ namespace Gremlin.Net.Benchmarks
     {
         private static readonly Bytecode EmptyBytecode = new Bytecode();
 
-        private static readonly Bytecode SomeBytecode = Traversal().WithComputer().V().
+        private static readonly Bytecode SomeBytecode = Traversal().With(null).WithComputer().V().
             Has("Name", "marko").
             Where(
                 Out("knows").

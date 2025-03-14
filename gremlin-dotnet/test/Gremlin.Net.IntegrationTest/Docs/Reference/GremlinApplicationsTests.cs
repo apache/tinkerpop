@@ -53,7 +53,7 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
 // bytecode
 using (var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182)))
 {
-    var g = Traversal().WithRemote(new DriverRemoteConnection(gremlinClient));
+    var g = Traversal().With(new DriverRemoteConnection(gremlinClient));
     var list = g.V().Has("person", "name", "marko").Out("knows").ToList();
 }
 // end::connectingViaDrivers[]
