@@ -36,7 +36,7 @@ namespace Gremlin.Net.IntegrationTest.Docs.Upgrade
         {
 // tag::graphBinary[]
 var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinaryMessageSerializer());
-var g = Traversal().WithRemote(new DriverRemoteConnection(client));
+var g = Traversal().With(new DriverRemoteConnection(client));
 // end::graphBinary[]
         }
     }

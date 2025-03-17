@@ -120,7 +120,7 @@ It can be instantiated in the console this way:
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 ----
 
 The first command creates a `Graph` instance named `graph`, which thus provides a reference to the data you want
@@ -221,7 +221,7 @@ as an example. First, you need to create this graph:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 v1 = g.addV("person").property(id, 1).property("name", "marko").property("age", 29).next()
 v2 = g.addV("software").property(id, 3).property("name", "lop").property("lang", "java").next()
 g.addE("created").from(v1).to(v2).property(id, 9).property("weight", 0.4)
@@ -237,7 +237,7 @@ that static importing you would instead have to write:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 v1 = g.addV("person").property(T.id, 1).property("name", "marko").property("age", 29).next()
 v2 = g.addV("software").property(T.id, 3).property("name", "lop").property("lang", "java").next()
 g.addE("created").from(v1).to(v2).property(T.id, 9).property("weight", 0.4)
@@ -284,7 +284,7 @@ g.V().has('name','marko')
 ----
 
 NOTE: The variable `g` is the `TraversalSource`, which was introduced in the "The First Five Minutes". The
-`TraversalSource` is created with `traversal().withEmbedded(graph)` and is the object used to spawn new traversals.
+`TraversalSource` is created with `traversal().with(graph)` and is the object used to spawn new traversals.
 
 This bit of Gremlin can be improved and made more
 link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#unspecified-label-in-global-vertex-lookup[idiomatically pleasing]
@@ -364,7 +364,7 @@ the "First Five Minutes" section. Recall that you can create this `Graph` and es
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 ----
 
 Earlier we'd used the `has()`-step to tell Gremlin how to find the "marko" vertex. Let's look at some other ways to
@@ -536,7 +536,7 @@ TinkerGraph:
 graph = TinkerGraph.open()
 graph.createIndex('userId', Vertex.class) <1>
 
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 
 getOrCreate = { id ->
   g.V().has('user','userId', id).

@@ -109,7 +109,7 @@ The "toy" graph provides a way to get started with Gremlin quickly.
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(TinkerFactory.createModern())
+g = traversal().with(TinkerFactory.createModern())
 g.V()
 g.V().values('name')
 g.V().has('name','marko').out('knows').values('name')
@@ -315,7 +315,7 @@ from the command line.  Consider the following file named `gremlin.groovy`:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.V().each { println it }
 ----
 
@@ -341,7 +341,7 @@ to system out:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.V().has('name',args[0]).each { println it }
 ----
 
@@ -381,7 +381,7 @@ graph might create a script called `init.groovy` like:
 [source,groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 ----
 
 and then start Gremlin Console as follows:
@@ -569,7 +569,7 @@ params.put("name","marko");
 List<Result> list = client.submit("g.V().has('person','name',name).out('knows')", params).all().get();
 
 // bytecode
-GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"));
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using("localhost",8182,"g"));
 List<Vertex> list = g.V().has("person","name","marko").out("knows").toList();
 ----
 [source,groovy]
@@ -580,7 +580,7 @@ def client = cluster.connect()
 def list = client.submit("g.V().has('person','name',name).out('knows')", [name: "marko"]).all().get();
 
 // bytecode
-def g = traversal().withRemote(DriverRemoteConnection.using("localhost",8182,"g"))
+def g = traversal().with(DriverRemoteConnection.using("localhost",8182,"g"))
 def list = g.V().has('person','name','marko').out('knows').toList()
 ----
 [source,csharp]
@@ -595,7 +595,7 @@ const conn = client.open();
 const list = conn.submit("g.V().has('person','name',name).out('knows')",{name: 'marko'}).then(function (response) { ... });
 
 // bytecode
-const g = gtraversal().withRemote(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+const g = gtraversal().with(new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 const list = g.V().has("person","name","marko").out("knows").toList();
 ----
 [source,python]
@@ -605,7 +605,7 @@ client = Client('ws://localhost:8182/gremlin', 'g')
 list = client.submit("g.V().has('person','name',name).out('knows')",{'name': 'marko'}).all()
 
 # bytecode
-g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
+g = traversal().with(DriverRemoteConnection('ws://localhost:8182/gremlin','g'))
 list = g.V().has("person","name","marko").out("knows").toList()
 ----
 [source,go]
@@ -618,7 +618,7 @@ result, err := resultSet.All()
 
 // bytecode
 remote, err := NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := Traversal_().WithRemote(remote)
+g := Traversal_().With(remote)
 list, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
@@ -1131,7 +1131,7 @@ method for processing script evaluation requests.
 [[traversalopprocessor]]
 ===== TraversalOpProcessor
 
-The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,withRemote()>>.
+The `TraversalOpProcessor` provides a way to accept traversals configured via <<connecting-via-drivers,with()>>.
 It has no special configuration settings.
 
 ==== Serialization
@@ -1543,7 +1543,7 @@ Please see the example usage as follows:
 ----
 graph = TinkerGraph.open()
 graph.createIndex("username",Vertex.class)
-credentials = traversal(CredentialTraversalSource.class).withEmbedded(graph)
+credentials = traversal(CredentialTraversalSource.class).with(graph)
 credentials.user("stephen","password")
 credentials.user("daniel","better-password")
 credentials.user("marko","rainbow-dash")
@@ -2365,7 +2365,7 @@ included. The relevant configuration from the Gremlin Server initialization scri
 
 [source,groovy]
 ----
-globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
+globals << [g : traversal().with(graph).withStrategies(ReferenceElementStrategy)]
 ----
 
 This configuration is global to Gremlin Server and therefore all methods of connection will always return elements
@@ -2382,7 +2382,7 @@ Cluster cluster = Cluster.open();
 Client client = cluster.connect();
 ResultSet results = client.submit("g.V().hasLabel('person').elementMap('name')");
 
-GraphTraversalSource g = traversal().withRemote('conf/remote-graph.properties');
+GraphTraversalSource g = traversal().with('conf/remote-graph.properties');
 List<Vertex> results = g.V().hasLabel("person").elementMap('name').toList();
 ----
 

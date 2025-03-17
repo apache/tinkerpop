@@ -75,7 +75,7 @@ def prepare_traversal_source(scenario):
     remote = __create_remote("ggraph")
     scenario.context.remote_conn["empty"] = remote
     scenario.context.traversals = world.gremlins.get(scenario.sentence, None)
-    g = traversal().withRemote(remote)
+    g = traversal().with_(remote)
     g.V().drop().iterate()
 
 

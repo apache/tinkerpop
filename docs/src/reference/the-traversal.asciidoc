@@ -63,9 +63,9 @@ demonstrated as follows:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withEmbedded(graph);
+GraphTraversalSource g = traversal().with(graph);
 // or
-GraphTraversalSource g = traversal().withRemote(conn);
+GraphTraversalSource g = traversal().with(conn);
 
 Transaction tx = g.tx();
 
@@ -93,7 +93,7 @@ instances that are bound to the same transaction, therefore:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote(conn);
+GraphTraversalSource g = traversal().with(conn);
 Transaction tx1 = g.tx();
 Transaction tx2 = g.tx();
 
@@ -220,7 +220,7 @@ using this method.
 ----
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g = traversal().withEmbedded(graph)
+gremlin> g = traversal().with(graph)
 ==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
 gremlin> graph.features()
 ==>FEATURES
@@ -852,9 +852,9 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
-g = traversal().withEmbedded(graph).withoutStrategies(LazyBarrierStrategy) <1>
+g = traversal().with(graph).withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
 clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <4>
@@ -875,7 +875,7 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)  <1>
+g = traversal().with(graph)  <1>
 g.io('data/grateful-dead.xml').read().iterate()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
@@ -1245,7 +1245,7 @@ that supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().
   connectedComponent().
     with(ConnectedComponent.propertyName, 'component').
@@ -2512,7 +2512,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
@@ -3410,7 +3410,7 @@ supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
@@ -3428,7 +3428,7 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
@@ -3549,7 +3549,7 @@ IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, ca
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
@@ -3741,7 +3741,7 @@ Finally, an example is provided using `PageRankVertexProgram` which doesn't use 
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().hasLabel('person').
   program(PageRankVertexProgram.build().property('rank').create(graph)).
     order().by('rank', asc).
@@ -4228,7 +4228,7 @@ ranking.
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
@@ -4242,7 +4242,7 @@ Similarly, for extracting the values from a path or map.
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
@@ -4520,7 +4520,7 @@ The following example demonstrates how to produce the "knows" subgraph:
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = traversal().withEmbedded(subGraph)
+sg = traversal().with(subGraph)
 sg.E() <2>
 ----
 
@@ -4532,7 +4532,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = traversal().withEmbedded(subGraph)
+sg = traversal().with(subGraph)
 sg.E()
 ----
 
@@ -4553,8 +4553,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-traversal().withEmbedded(t.sideEffects.get('knowsG')).E()
-traversal().withEmbedded(t.sideEffects.get('createdG')).E()
+traversal().with(t.sideEffects.get('knowsG')).E()
+traversal().with(t.sideEffects.get('createdG')).E()
 ----
 
 TinkerGraph is the ideal (and default) `Graph` into which a subgraph is extracted as it's fast, in-memory, and supports
@@ -5716,7 +5716,7 @@ allow specification of custom identifiers when creating elements:
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(TinkerGraph.open())
+g = traversal().with(TinkerGraph.open())
 v = g.addV().property(id,'42a').next()
 g.V('42a')
 ----
@@ -5729,7 +5729,7 @@ under the hood.
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = traversal().withEmbedded(graph).withStrategies(strategy)
+g = traversal().with(graph).withStrategies(strategy)
 g.addV().property(id, '42a').id()
 ----
 
@@ -5764,7 +5764,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*
 graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
-g = traversal().withEmbedded(graph).withStrategies(strategy)
+g = traversal().with(graph).withStrategies(strategy)
 g.addV().property('name','stephen')
 g.V().has('name','stephen').
   property(list, 'location', 'centreville', 'startTime', 1990, 'endTime', 2000).
@@ -5820,9 +5820,9 @@ The best way to understand `PartitionStrategy` is via example.
 graph = TinkerFactory.createModern()
 strategyA = new PartitionStrategy(partitionKey: "_partition", writePartition: "a", readPartitions: ["a"])
 strategyB = new PartitionStrategy(partitionKey: "_partition", writePartition: "b", readPartitions: ["b"])
-gA = traversal().withEmbedded(graph).withStrategies(strategyA)
+gA = traversal().with(graph).withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
-gB = traversal().withEmbedded(graph).withStrategies(strategyB)
+gB = traversal().with(graph).withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
@@ -5981,7 +5981,7 @@ these steps that make use of randomness to return results.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.V().as('a').values('location').as('b').  <1>
   select('a','b').by('name').by()
 g = g.withStrategies(new SubgraphStrategy(vertexProperties: hasNot('endTime'))) <2>
@@ -6024,7 +6024,7 @@ non-location property.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = traversal().withEmbedded(graph).withStrategies(SubgraphStrategy.build().
+g = traversal().with(graph).withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())

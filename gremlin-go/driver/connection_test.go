@@ -101,7 +101,7 @@ func getTestGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Conf
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
-	g := Traversal_().WithRemote(remote)
+	g := Traversal_().With(remote)
 
 	return g
 }
@@ -816,7 +816,7 @@ func TestConnection(t *testing.T) {
 		// Close remote connection.
 		defer remote.Close()
 
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 
 		// Drop the graph and check that it is empty.
 		dropGraph(t, g)
@@ -936,7 +936,7 @@ func TestConnection(t *testing.T) {
 		assert.NotNil(t, remote)
 		defer remote.Close()
 
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 
 		r, err := g.V().Count().ToList()
 		assert.Nil(t, err)
@@ -1069,7 +1069,7 @@ func TestConnection(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, remote)
 		defer remote.Close()
-		g := Traversal_().WithRemote(remote)
+		g := Traversal_().With(remote)
 
 		r, err := g.V((&Bindings{}).Of("x", 1)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
 		assert.Nil(t, err)

@@ -24,7 +24,7 @@ from radish import pick
 
 @pick
 def create_lookup_v(remote):
-    g = traversal().withRemote(remote)
+    g = traversal().with_(remote)
 
     # hold a map of name/vertex for use in asserting results
     return g.V().group().by('name').by(__.tail()).next()
@@ -32,7 +32,7 @@ def create_lookup_v(remote):
 
 @pick
 def create_lookup_e(remote):
-    g = traversal().withRemote(remote)
+    g = traversal().with_(remote)
 
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
@@ -43,7 +43,7 @@ def create_lookup_e(remote):
 
 @pick
 def create_lookup_vp(remote):
-    g = traversal().withRemote(remote)
+    g = traversal().with_(remote)
 
     # hold a map of the "name"/vertexproperty for use in asserting results - "name" in this context is in the form of
     # vertexName-propName->propVal where the propVal must be typed according to the gherkin spec. note that the toy

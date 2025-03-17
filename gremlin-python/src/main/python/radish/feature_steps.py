@@ -41,7 +41,7 @@ ignores = []
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
     step.context.graph_name = graph_name
-    step.context.g = traversal().withRemote(step.context.remote_conn[graph_name])
+    step.context.g = traversal().with_(step.context.remote_conn[graph_name])
 
 
 @given("the graph initializer of")

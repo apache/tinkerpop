@@ -580,7 +580,7 @@ include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Pr
 ==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[with()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
 step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.
@@ -1251,7 +1251,7 @@ To demonstrate consider this example:
 cluster = Cluster.open()
 client = cluster.connect()
 aliased = client.alias("g")
-g = traversal().withEmbedded(org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance())     <1>
+g = traversal().with(org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance())     <1>
 rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
 aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
 rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>

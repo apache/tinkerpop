@@ -139,7 +139,7 @@ Given(/^the (.+) graph$/, function (graphName) {
   }
   this.graphName = graphName;
   const data = this.getData();
-  this.g = traversal().withRemote(data.connection);
+  this.g = traversal().with_(data.connection);
 
   if (this.isGraphComputer) {
     this.g = this.g.withComputer();

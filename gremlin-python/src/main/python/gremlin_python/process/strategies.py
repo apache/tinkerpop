@@ -19,7 +19,7 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from gremlin_python.process.traversal import TraversalStrategy
+from .traversal import TraversalStrategy
 
 base_namespace = 'org.apache.tinkerpop.gremlin.process.traversal.strategy.'
 decoration_namespace = base_namespace + 'decoration.'

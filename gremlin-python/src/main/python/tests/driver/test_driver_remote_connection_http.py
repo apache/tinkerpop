@@ -39,7 +39,7 @@ test_no_auth_http_url = gremlin_server_url_http.format(45940)
 class TestDriverRemoteConnectionHttp(object):
     def test_traversals(self, remote_connection_http):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection_http)
+        g = traversal().with_(remote_connection_http)
 
         assert long(6) == g.V().count().toList()[0]
         # #
@@ -114,7 +114,7 @@ class TestDriverRemoteConnectionHttp(object):
 
     def test_iteration(self, remote_connection_http):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection_http)
+        g = traversal().with_(remote_connection_http)
 
         t = g.V().count()
         assert t.hasNext()
@@ -152,7 +152,7 @@ class TestDriverRemoteConnectionHttp(object):
     def test_lambda_traversals(self, remote_connection_http):
         statics.load_statics(globals())
         assert "remoteconnection[{},gmodern]".format(test_no_auth_http_url) == str(remote_connection_http)
-        g = traversal().withRemote(remote_connection_http)
+        g = traversal().with_(remote_connection_http)
 
         assert 24.0 == g.withSack(1.0, lambda: ("x -> x + 1", "gremlin-groovy")).V().both().sack().sum_().next()
         assert 24.0 == g.withSack(lambda: ("{1.0d}", "gremlin-groovy"),
@@ -164,7 +164,7 @@ class TestDriverRemoteConnectionHttp(object):
 
     def test_strategies(self, remote_connection_http):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection_http). \
+        g = traversal().with_(remote_connection_http). \
             withStrategies(TraversalStrategy("SubgraphStrategy",
                                              {"vertices": __.hasLabel("person"),
                                               "edges": __.hasLabel("created")},
@@ -175,14 +175,14 @@ class TestDriverRemoteConnectionHttp(object):
         assert 4 == g.V().filter_(lambda: ("x -> true", "gremlin-groovy")).count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = traversal().withRemote(remote_connection_http). \
+        g = traversal().with_(remote_connection_http). \
             withStrategies(SubgraphStrategy(vertices=__.hasLabel("person"), edges=__.hasLabel("created")))
         assert 4 == g.V().count().next()
         assert 0 == g.E().count().next()
         assert 1 == g.V().label().dedup().count().next()
         assert "person" == g.V().label().dedup().next()
         #
-        g = traversal().withRemote(remote_connection_http). \
+        g = traversal().with_(remote_connection_http). \
             withStrategies(SubgraphStrategy(edges=__.hasLabel("created")))
         assert 6 == g.V().count().next()
         assert 4 == g.E().count().next()
@@ -196,18 +196,18 @@ class TestDriverRemoteConnectionHttp(object):
         assert "person" == g.V().label().next()
         assert "marko" == g.V().name.next()
         #
-        g = traversal().withRemote(remote_connection_http).withComputer()
+        g = traversal().with_(remote_connection_http).withComputer()
         assert 6 == g.V().count().next()
         assert 6 == g.E().count().next()
         #
-        g = traversal().withRemote(remote_connection_http).withStrategies(SeedStrategy(12345))
+        g = traversal().with_(remote_connection_http).withStrategies(SeedStrategy(12345))
         shuffledResult = g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
 
     def test_clone(self, remote_connection_http):
-        g = traversal().withRemote(remote_connection_http)
+        g = traversal().with_(remote_connection_http)
         t = g.V().both()
         assert 12 == len(t.toList())
         assert 5 == t.clone().limit(5).count().next()
@@ -229,7 +229,7 @@ class TestDriverRemoteConnectionHttp(object):
     
     def test_authenticated(self, remote_connection_http_authenticated):
         statics.load_statics(globals())
-        g = traversal().withRemote(remote_connection_http_authenticated)
+        g = traversal().with_(remote_connection_http_authenticated)
 
         assert long(6) == g.V().count().toList()[0]
     """

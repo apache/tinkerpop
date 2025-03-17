@@ -31,7 +31,7 @@ from datetime import datetime
 class TestTranslator(object):
 
     def test_translations(self):
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
 
         tests = list()
         # 0
@@ -450,7 +450,7 @@ class TestTranslator(object):
 
     def test_constructor(self):
         tlr = Translator().of('g')
-        g = traversal().withGraph(Graph())
+        g = traversal().with_(None)
         assert tlr.translate(g.V().bytecode) == "g.V()"
 
     def test_source_name(self):

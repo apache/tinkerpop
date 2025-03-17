@@ -399,7 +399,7 @@ func (tg *tinkerPopGraph) nothingShouldHappenBecause(arg1 *godog.DocString) erro
 func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 	tg.graphName = graphName
 	data := tg.graphDataMap[graphName]
-	tg.g = gremlingo.Traversal_().WithRemote(data.connection)
+	tg.g = gremlingo.Traversal_().With(data.connection)
 	if graphName == "empty" {
 		err := tg.cleanEmptyDataGraph(tg.g)
 		if err != nil {

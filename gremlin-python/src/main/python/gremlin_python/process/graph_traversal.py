@@ -35,7 +35,7 @@ __author__ = 'Stephen Mallette (http://stephen.genoprime.com), Lyndon Bauto (lyn
 
 
 class GraphTraversalSource(object):
-    def __init__(self, graph, traversal_strategies, bytecode=None):
+    def __init__(self, graph, traversal_strategies, bytecode=None, remote_connection=None):
         log.info("Creating GraphTraversalSource.")
         self.graph = graph
         self.traversal_strategies = traversal_strategies
@@ -43,7 +43,9 @@ class GraphTraversalSource(object):
             bytecode = Bytecode()
         self.bytecode = bytecode
         self.graph_traversal = GraphTraversal
-        self.remote_connection = None
+        if remote_connection:
+            self.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+        self.remote_connection = remote_connection
 
     def __repr__(self):
         return "graphtraversalsource[" + str(self.graph) + "]"
@@ -138,19 +140,6 @@ class GraphTraversalSource(object):
         else:
             options_strategy[1].configuration[k] = val
 
-        return source
-
-    def withRemote(self, remote_connection):
-        warnings.warn(
-            "gremlin_python.process.GraphTraversalSource.withRemote will be replaced by "
-            "gremlin_python.process.GraphTraversalSource.with_remote.",
-            DeprecationWarning)
-        return self.with_remote(remote_connection)
-
-    def with_remote(self, remote_connection):
-        source = self.get_graph_traversal_source()
-        source.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
-        self.remote_connection = remote_connection
         return source
 
     def tx(self):
