@@ -82,8 +82,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
 
     gremlins.each { k,v ->
         // skipping lambdas until we decide for sure that they are out in 4.x
-        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
-            writer.writeLine("    \"${k}\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return nil}},  // skipping as it contains a lambda")
+        if (v.any { it.contains('l1')} || v.any { it.contains('l2')} || v.any { it.contains('c1')} || v.any { it.contains('c2')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
         } else if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {

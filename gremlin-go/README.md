@@ -49,7 +49,7 @@ import (
 
 func main() {
 	// Creating the connection to the server with default settings.
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin")
 	// Handle error
 	if err != nil {
 		fmt.Println(err)
