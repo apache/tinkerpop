@@ -1484,7 +1484,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 *Arguments:*
 
 * `separator` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
-whitespaces.
+whitespaces. An empty string separator will split on each character.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
