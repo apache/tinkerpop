@@ -48,7 +48,7 @@ public class SplitGlobalStepTest extends StepTest {
         assertArrayEquals(new String[]{"helloworld"}, __.__("helloworld").split(null).next().toArray());
         assertArrayEquals(new String[]{"hello", "world"}, __.__("hello world").split(null).next().toArray());
         assertArrayEquals(new String[]{"hello", "world"}, __.__("hello   world").split(null).next().toArray());
-        assertArrayEquals(new String[]{"hello", "world"}, __.__("hello world").split("").next().toArray());
+        assertArrayEquals(new String[]{"h","e","l","l","o"," ", "w","o","r","l","d"}, __.__("hello world").split("").next().toArray());
         assertArrayEquals(new String[]{"hello", "world"}, __.__("hello world").split(" ").next().toArray());
         assertArrayEquals(new String[]{"hello world"}, __.__("hello world").split("  ").next().toArray());
 

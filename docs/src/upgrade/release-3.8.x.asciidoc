@@ -30,6 +30,19 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Splitting a string into characters using split()
+The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
+[source,groovy]
+----
+// previous implementation
+g.inject("Hello").split("")
+==>[Hello]
+// new implementation
+g.inject("Hello").split("")
+==>[H,e,l,l,o]
+----
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
