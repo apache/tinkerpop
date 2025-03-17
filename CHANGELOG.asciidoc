@@ -38,8 +38,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified Gremlin Server to only support instantiation of `authentication.authenticationHandler` with three-arg constructor.
 * Removed previously deprecated two-arg constructors for `authentication.authenticationHandler` implementations.
 * Removed previously deprecated one-arg constructor for `AbstractAuthenticationHandler`.
-* Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
-* Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Renamed the traversal discarding `none()` step to `discard()`.
 * Added new list filtering step `none()`.
 * Replaced `gremlin-groovy` with `gremlin-lang` as the default language in `gremlin-server`.
@@ -49,7 +47,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified RequestInterceptor to be a `UnaryOperator<HttpRequest>` to abstract the underlying implementation.
 * Renamed `MergeStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `TraversalMergeStep` of `merge()` to `MergeStep` for consistency.
-* Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
 * Made `mergeE()` and `mergeV()` consistent in their use as a start step and as mid-traversal by always promoting the currently created or matched `Element` to the `onCreate` or `onMatch` child traversal.
@@ -70,7 +67,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `auth` module in `gremlin-python` for pluggable authentication.
 * Fixed `GremlinLangScriptEngine` handling for some strategies.
 * Updated Docker test suite set-up in `gremlin-python` to work with HTTP driver/server.
-* Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 * Added `DateTime` serializer for Java and Python according for GraphBinaryV4.
 * Replaced `Date` with `OffsetDateTime` in Java core.
 * Defined GraphBinaryV4 specification.
@@ -91,6 +87,20 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `minSize` setting for Gremlin Driver connection pool since connections are now short-lived HTTP connections
 * Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
 * Enabled TCP Keep-Alive in GremlinServer.
+
+== TinkerPop 3.8.0 (NOT OFFICIALLY NAMED YET)
+
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+
+[[release-3-8.0]]
+=== TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
+
+* Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
+* Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
+* Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
+* Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

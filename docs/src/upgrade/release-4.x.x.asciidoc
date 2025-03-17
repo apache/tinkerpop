@@ -116,47 +116,6 @@ See <<java-requestinterceptor, Changes to Java RequestInterceptor>> for more det
 ** `kerberized_service` setting has been removed.
 ** `session` setting has been removed.
 
-[[simplified-g-creation]]
-==== Simplification to g creation
-
-The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
-long recommended the use of the anonymous `traversal()` function for this creation.
-
-[source,groovy]
-----
-// for embedded cases
-graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)
-
-// for remote cases
-g = traversal().withRemote(DriverRemoteConnection.using(...)))
-----
-
-As of this release, those two methods have been deprecated in favor of just `with()` which means you could simply write:
-
-[source,groovy]
-----
-// for embedded cases
-graph = TinkerGraph.open()
-g = traversal().with(graph)
-
-// for remote cases
-g = traversal().with(DriverRemoteConnection.using(...)))
-----
-
-That's a bit less to type, but also removes need to programmatically decide which function to call which hopefully
-strengthens the abstraction further. To demonstrate this further consider this next example:
-
-[source,groovy]
-----
-g = traversal().with("config.properties")
-----
-
-The properties file in the above example can either point to a remote configuration or an embedded configuration allowing
-"g" to be switched as needed without code changes.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
-
 ==== Removal of :remote and :submit Console Commands
 
 The `:remote` and `:submit` commands, used to establish connections and send scripts to a remote `gremlin-server`, are
@@ -268,21 +227,6 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
 The `none()` step, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been
 renamed to `discard()`. In its place is a new list filtering step `none()`, which takes a predicate as an argument and
 passes lists with no elements matching the predicate.
-
-==== split() and characters
-
-The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
-[source,groovy]
-----
-// previous implementation
-g.inject("Hello").split("")
-==>[Hello]
-
-// new implementation
-g.inject("Hello").split("")
-==>[H,e,l,l,o]
-----
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
 ==== Improved handling of integer overflows
 
