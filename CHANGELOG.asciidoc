@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
+* Changed `GremlinLangScriptEngine` via `GenericLiteralVisitor` to treat floating-point literals as `Double` by default instead of `BigDecimal` for better alignment with common programming language conventions.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
