@@ -51,9 +51,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
 * Made `mergeE()` and `mergeV()` consistent in their use as a start step and as mid-traversal by always promoting the currently created or matched `Element` to the `onCreate` or `onMatch` child traversal.
-* Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
-* Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
-* Made `new` keyword optional in the Gremlin grammar.
 * Switched to HTTP protocol in `gremlin-python` and replaced GraphSONV2, GraphSONV2 & GraphBinaryV1 with GraphBinaryV4
 * Added support for chunked transfer in `gremlin-python`
 * Added TypeScript & ECMAScript module support.
@@ -102,6 +99,9 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
+* Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
+* Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
+* Made `new` keyword optional in the Gremlin grammar.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

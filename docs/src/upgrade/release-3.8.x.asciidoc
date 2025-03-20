@@ -72,6 +72,47 @@ g.inject("Hello").split("")
 ==>[H,e,l,l,o]
 ----
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
+==== Changes to deserialization for gremlin-javascript
+
+Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
+these were deserialized into arrays.
+
+==== Gremlin Grammar Changes
+
+A number of changes have been introduce to the Gremlin grammar to help make it be more consistent and easier to use.
+
+*`new` keyword is now optional*
+
+The `new` keyword is now optional in all cases where it was previously used. Both of the following examples are now
+valid syntax with the second being the preferred form going forward:
+
+[source,groovy]
+----
+g.V().withStrategies(new SubgraphStrategy(vertices: __.hasLabel('person')))
+
+g.V().withStrategies(SubgraphStrategy(vertices: __.hasLabel('person')))
+----
+
+In a future version, it is likely that the `new` keyword will be removed entirely from the grammar.
+
+*Supports withoutStrategies()*
+
+The `withoutStrategies()` configuration step is now supported syntax for the grammar. While this option is not commonly
+used it is still a part of the Gremlin language and there are times where it is helpful to have this fine grained
+control over how a traversal works.
+
+[source,groovy]
+----
+g.V().withoutStrategies(CountStrategy)
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
+
+==== Improved handling of integer overflows
+
+Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
+skipped with incorrect result.
 
 === Upgrading for Providers
 
