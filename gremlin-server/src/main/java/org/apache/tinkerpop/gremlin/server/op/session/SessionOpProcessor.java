@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -422,6 +423,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                     Throwable t = ex;
                     if (ex instanceof UndeclaredThrowableException)
                         t = t.getCause();
+
+                    CloseableIterator.closeIterator(traversal);
 
                     // if any exception in the chain is TemporaryException or Failure then we should respond with the
                     // right error code so that the client knows to retry

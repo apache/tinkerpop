@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -268,6 +269,8 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                         graphManager.onQuerySuccess(msg);
                     } catch (Exception ex) {
                         if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
+
+                        CloseableIterator.closeIterator(itty);
 
                         // wrap up the exception and rethrow. the error will be written to the client by the evalFuture
                         // as it will completeExceptionally in the GremlinExecutor
