@@ -109,6 +109,65 @@ g.V().withoutStrategies(CountStrategy)
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
 
+==== SeedStrategy Construction
+
+The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
+to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed in a consistent manner.
+
+==== Improved Translators
+
+The various Java `Translator` implementations allowing conversion of Gremlin traversals to string forms in various
+languages have been modified considerably. First, they have been moved from to the
+`org.apache.tinkerpop.gremlin.language.translator` package, because they now depend on the ANTLR grammar in
+`gremlin-language` to handled the translation process. Making this change allowed for a more accurate translation of
+Gremlin that doesn't need to rely on reflection and positional arguments to determine which step was intended for use.
+
+Another important change was the introduction of specific translators for Groovy and Java. While Groovy translation
+tends to work for most Java cases, there is syntax specific to Groovy where it does not. With a specific Java
+translator, the translation process can be more accurate and less error prone.
+
+The syntax for the translators has simplified as well. The translator function now takes a Gremlin string and a target
+language to translate to. Consider the following example:
+
+[source,text]
+----
+gremlin> GremlinTranslator.translate("g.V().out('knows')", Translator.GO)
+==>g.V().Out("knows")
+----
+
+Further note that Gremlin language variants produce `gremlin-language` compliant strings directly since bytecode was
+removed. As a result, all translators in .NET, Python, Go and Javascript have been removed.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
+
+==== Change to `OptionsStrategy` in `gremlin-python`
+
+The `\\__init__()` syntax has been updated to be both more pythonic and more aligned to the `gremlin-lang` syntax.
+Previously, `OptionsStrategy()` took a single argument `options` which was a `dict` of all options to be set.
+Now, all options should be set directly as keyword arguments.
+
+For example:
+
+[source,python]
+----
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options={'key1': 'value1', 'key2': True}))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(key1='value1', key2=True))
+
+myOptions = {'key1': 'value1', 'key2': True}
+# 3.7 and before:
+g.with_strategies(OptionsStrategy(options=myOptions))
+# 4.x and newer:
+g.with_strategies(OptionsStrategy(**myOptions))
+----
+
+==== Changes to Serialization
+
+The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option
+that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
+types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
+
 ==== Improved handling of integer overflows
 
 Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
