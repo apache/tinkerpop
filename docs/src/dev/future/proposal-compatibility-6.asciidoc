@@ -1,0 +1,130 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+== Proposal 6 - Compatibility Guidelines
+
+=== Status
+
+Open for discussion.
+
+=== Motivation
+
+As stated in current link:https://tinkerpop.apache.org/docs/3.7.3/dev/developer/#versioning[developer documentation],
+"A client with specific EPOCH.MAJOR will be backward compatible with the EPOCH.MAJOR version of the server". Starting
+in TinkerPop 4, this is slightly amended to "A client with specific MAJOR will be backward compatible with the MAJOR
+version of the server". This rule can be frustating for users in cases where a change could have been made in a
+"non-breaking" way. The objective of this proposal is to establish a set of guidelines that contributors should adhere
+to in order to make certain that breaking changes are only made when absolutely necessary. The guidelines also includes
+actions that should be taken if a breaking change is made. These principles were developed with compatibility between
+Graph Language Variants (GLV) and Remote Gremlin Providers (RGP) as its main focus.
+
+=== Types of Changes
+
+Before we move further with how to make changes in a non-breaking way, we should first discuss the types of changes
+that are likely to cause compatibility issues and the ones that will attempt to be addressed in this proposal. The
+changes to the following areas are the ones that are most likely to cause compatibility issues:
+
+* Language changes to the grammar and Traversal API
+* Step implementation/semantic changes
+* Protocol changes including to the TinkerPop 4 HTTP API
+* Serialization format changes to GraphBinary or GraphSON
+* Graph structure changes
+
+Committers reviewing pull requests should keep the following guidelines in mind when reviewing changes to the above
+areas.
+
+=== Guidelines for making changes
+
+==== Language/Traversal API changes
+
+For the purposes of this section, a step consists of a step name and a parameter list. So, `hasId(Predicate)` is
+distinct from `hasId(String, String)`. Also, any mention of the language refers to both the grammar as well as any
+equivalent step defined in the Traversal API.
+
+New steps are mostly compatible and can be added in any version. Parts of the language can be deprecated, but at least
+two major versions should pass before it is considered for deletion. Popular steps should remain even longer. Renaming
+a step is effectively the same as adding and removing a step, so treat these the same as you would with a step deprecation.
+
+==== Step implementation or semantic changes
+
+Modifications to steps can cause a few issues. Because there is no versioning of the language, an implementation change
+is likely a breaking change. To prevent this, a contributor should attempt to create a new step instead. However, the
+new step must have a reasonable name that accurately describes what the step does in order to not bloat the language.
+A number should not be added to version the step (e.g. hasId2()) as it makes the language unwieldy. If there is no such
+candidate for a new step then this change should occur in new major version. Should this change be to a widely used
+step (e.g. V(), E(), has(), project(), group(), where()) then the server compatibility mechanism can be used to warn
+the user that their language version is incompatible with the server's version.
+
+An exception to this principle is if the change can be considered a bug fix or added functionality. An example of added
+functionality could be a step that only worked on String traversers but now also supports Number traversers. Such a
+case may have thrown an IllegalArgumentException or equivalent exception before. In these cases, the change may go into
+any version, though it would still be preferable for it to be a major one.
+
+==== Protocol changes
+
+The HTTP API mainly includes the headers and body for the request and response. Additions to the header or body should
+be fine. However, changes or deletions are breaking so they will require a version bump. A version bump in the HTTP API
+doesn't require a major version change for TinkerPop as they are versioned separately and a RGP should support at a
+minimum the two latest versions of the HTTP API.
+
+Because RequestMessage and ResponseMessage need to be serializable, the advice in the
+<<serialization, serialization changes>> section should be followed. 
+
+[[serialization]]
+==== Serialization changes
+
+Any type changes or additions will cause a major version bump to the serializers. Although additions are likely to be
+compatible, increasing the version of the serializer gives the RGP an opportunity to decide how to treat the response.
+If it encounters a type that the older serializer won't be able to deserialize, it can throw a clear error that
+contains the type that it can't serialize. If the version wasn't increased, then the RGP would just serialize the newly
+added type, but the deserializer wouldn't be able to continue and can throw a generic couldn't parse error. Although
+this affects GraphSON less than it affects GraphBinary, for the sake of consistency, this principle should be applied
+to all serializers.
+
+Because any change will lead to a version change of the serializer, all changes will be allowed including modification.
+Deletions, however, aren't allowed and because there is no real way to deprecate a type in serializer, most types
+should stay around even if they aren't used in newer versions of the data model.
+
+For example, let's say the current version of GraphBinary is v5, and there is a need to support a new type `A`. In
+order to support `A`, the GraphBinary version should be incremented to v6. If the user attempts a query that contains
+an `A` in the result, and the requested serializer was GraphBinary5, then the RGP should throw an exception.
+
+==== Graph structure changes
+
+This section is for graph structure changes. Graph structure includes anything that makes up the graph including
+elements and properties. Because elements are defined by the Element interface, changes to that interface are
+effectively the same as changes to the underlying element. Any type that can be stored as a property is included as
+well.
+
+New types can be safely added provided that the relevant instructions are followed for serialization and language
+additions. A type can have a new field added to it, but, no other type changes or deletions can be made. A change to
+one of these types would break the serializers as the serializers have no way of identifying different versions of the
+same type. This would prevent an RGP from having older versions of the serializers as those serializers may not work on
+a changed type. Another issue is that a new version of the type can make it hard to integrate with existing graphs. If
+the graph extensively uses that type already, it is not clear whether modifications turn it into the new version of the
+type or would it stay as the old version. Should this need to happen, RGPs must be notified and its own warning section
+must be added to the UPGRADE documentation. RGPs should realize that they can't upgrade their users to this version and
+their users should start a new Graph from scratch if they use a type that has been changed. The driver and server
+version negotation mechanism should be used to disallow users from trying to connect an older driver to this new
+version of the server.
+
+For example, if a new type `A` is added and is manipulated by a new step like `Astep`, then the serializers would need
+to be updated with a new major version.
+
+If the Vertex API changed to include a new method called `getVectorEmbedding()` that returns a `List<Double>`, then
+that would be fine as well aas long as the serializers were updated to a new version. However, if the `id()` method was
+removed then that would constitute as a major breaking change and the server compatibility mechanism should be used to
+prevent any older driver from attempting to use this new version.
