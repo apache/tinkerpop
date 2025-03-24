@@ -307,6 +307,10 @@ public final class StepDefinition {
 
     @When("iterated to list")
     public void iteratedToList() {
+        if (null == traversal) {
+            return; // Error must have occurred during traversal construction. Skip to prevent NPE.
+        }
+
         try {
             result = traversal.toList();
         } catch (Exception ex) {

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -37,6 +38,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Cole Greer (https://github.com/Cole-Greer)
@@ -178,6 +182,17 @@ public class TinkerShuffleGraphTest {
         assertThat(resultRegular, containsInAnyOrder(resultShuffle));
         //Assert order is shuffled
         assertThat(resultRegular, not(contains(resultShuffle)));
+    }
+
+    @Test
+    public void shouldThrowForPropertyMapTraversalWithMultipleBy() {
+        final GraphTraversalSource gShuff = createShuffleModern();
+        try {
+            gShuff.V().valueMap("name", "age").by().by(__.unfold());
+            fail("Should have thrown exception");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains(""));
+        }
     }
 
     private GraphTraversalSource createShuffleModern() {

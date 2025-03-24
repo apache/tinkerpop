@@ -221,4 +221,26 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
 
 ==== Graph System Providers
 
+===== Semantics change for valueMap()
+
+The semantics have changed for the handling of by modulators to the `valueMap()` step. Providers will now have two
+different options. If map entries are iterated in the same order as the keys given argument list, then nothing has
+changed and the by modulators should be applied in a round robin fashion. If the map entries aren't iterated in, then
+only one by modulator is required to be accepted and an exception should be thrown when there are more than one by()
+modulators. The exception thrown should contain the following: "valueMap() step only accepts one by() modulator which
+has already been set"
+
+The reference implementation of `valueMap()` in `gremlin-core` has been updated to handle this. In particular, it makes
+use of a new Graph Feature to determine what should be done. See the next section for more information.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
+
+===== New Graph Features for ordering
+
+`supportsOrderedProperties()` has been added to `ElementFeatures` to allow providers to advertise whether or not they
+are able to return properties in the order that they are specified in
+`Iterator<? extends Property<V>> properties(final String... propertyKeys)`. If the `Iterator` returned by
+`properties(String...)` will yield results in the exact order provided by the `String...` argument then the provider
+should return `true`.
+
 ==== Graph Driver Providers
