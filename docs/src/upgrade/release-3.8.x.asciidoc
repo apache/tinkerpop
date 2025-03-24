@@ -173,6 +173,11 @@ types. This should lead to increased performance for users upgrading from any ve
 Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
 skipped with incorrect result.
 
+==== Gremlin Lang Float Literals Default to Double
+The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
+or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
+`GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

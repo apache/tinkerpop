@@ -22,11 +22,12 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+import java.math.BigDecimal;
 import nl.altindag.log.LogCaptor;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.server.channel.HttpTestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.TestChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
@@ -1401,5 +1402,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(r2.properties().next(), r2.properties().next());
         final Edge r2_tokens = g.with("materializeProperties", "tokens").E().next();
         assertFalse(r2_tokens.properties().hasNext());
+    }
+
+    @Test
+    public void shouldParseFloatLiteralWithoutSuffixDependingOnLanguage() {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        // gremlin-lang defaults to double
+        final RequestOptions gremlinLang = new RequestOptions.Builder().language("gremlin-lang").create();
+        assertEquals(1.0d, (Double) client.submit("g.inject(1.0)", gremlinLang).one().getObject(), 0.0000001);
+        assertEquals(-123.456d, (Double) client.submit("g.inject(-123.456)", gremlinLang).one().getObject(), 0.0000001);
+
+        // gremlin-groovy defaults to big decimal
+        RequestOptions gremlinGroovy = new RequestOptions.Builder().language("gremlin-groovy").create();
+        assertEquals(new BigDecimal("1.0"), client.submit("g.inject(1.0)", gremlinGroovy).one().getObject());
+        assertEquals(new BigDecimal("-123.456"), client.submit("g.inject(-123.456)", gremlinGroovy).one().getObject());
     }
 }
