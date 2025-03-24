@@ -35,6 +35,12 @@ namespace Gremlin.Net.Process.Traversal
             public const String propertyName = "~tinkerpop.pageRank.propertyName";
         
             public const String times = "~tinkerpop.pageRank.times";
+
+            public const String Edges = "~tinkerpop.pageRank.edges";
+
+            public const String PropertyName = "~tinkerpop.pageRank.propertyName";
+
+            public const String Times = "~tinkerpop.pageRank.times";
         
     }
 

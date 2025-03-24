@@ -127,8 +127,8 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         test(SparkStarBarrierInterceptor.class, 6l, g.V().as("a").count());
         test(SparkStarBarrierInterceptor.class, 1l, g.V().has("name", "marko").as("a").values("name").as("b").count());
         test(SparkStarBarrierInterceptor.class, 4l, g.V().has(T.label, P.not(P.within("robot", "android")).and(P.within("person", "software"))).hasLabel("person").has("age").out("created").count());
-        test(SparkStarBarrierInterceptor.class, 123l, g.V().has("age").values("age").sum());
-        test(SparkStarBarrierInterceptor.class, 67l, g.V().has("age").has("age", P.gt(30)).values("age").sum());
+        test(SparkStarBarrierInterceptor.class, 123, g.V().has("age").values("age").sum());
+        test(SparkStarBarrierInterceptor.class, 67, g.V().has("age").has("age", P.gt(30)).values("age").sum());
         test(SparkStarBarrierInterceptor.class, 27, g.V().hasLabel("person").values("age").min());
         test(SparkStarBarrierInterceptor.class, 35, g.V().hasLabel("person").values("age").max());
         test(SparkStarBarrierInterceptor.class, new HashMap<String, Long>() {{

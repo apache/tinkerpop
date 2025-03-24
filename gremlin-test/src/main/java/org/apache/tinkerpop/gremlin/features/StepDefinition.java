@@ -32,6 +32,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinLexer;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
+import org.apache.tinkerpop.gremlin.language.translator.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -379,13 +381,6 @@ public final class StepDefinition {
         assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
     }
 
-    @Then("debug the graph should return {int} for count of {string}")
-    public void debugTheGraphShouldReturnForCountOf(final Integer count, final String gremlin) {
-        assertThatNoErrorWasThrown();
-
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applyParameters(gremlin))).count().next());
-    }
-
     @Then("the result should be empty")
     public void theResultShouldBeEmpty() {
         assertThatNoErrorWasThrown();
@@ -448,7 +443,11 @@ public final class StepDefinition {
     }
 
     private Traversal parseGremlin(final String script) {
-        final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+        // tests the normalizer by running the script from the feature file first
+        final String normalizedGremlin = GremlinTranslator.translate(script, Translator.LANGUAGE).getTranslated();
+
+        // parse the Gremlin to a Traversal
+        final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(normalizedGremlin));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
         final GremlinParser.QueryContext ctx = parser.query();
         return (Traversal) new GremlinAntlrToJava(g).visitQuery(ctx);
@@ -592,7 +591,7 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code containsInAnyOrder} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> containsInAnyOrder(final T... items) {
         return new IsIterableContainingInAnyOrder(getMatchers(items));
     }
 
@@ -600,25 +599,25 @@ public final class StepDefinition {
      * TinkerPop version of Hamcrest's {code contains} that can use our custom assertions for {@link Path} and {@link Double}.
      */
     @SafeVarargs
-    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(T... items) {
+    public static <T> org.hamcrest.Matcher<Iterable<? extends T>> contains(final T... items) {
         return new IsIterableContainingInOrder(getMatchers(items));
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(Collection<T> collection) {
+    public static <T> org.hamcrest.Matcher<T> in(final Collection<T> collection) {
         return new IsInMatcher(collection);
     }
 
     /**
      * TinkerPop version of Hamcrest's {code in} that can use our custom assertions for {@link Path}.
      */
-    public static <T> org.hamcrest.Matcher<T> in(T[] elements) {
+    public static <T> org.hamcrest.Matcher<T> in(final T[] elements) {
         return new IsInMatcher(elements);
     }
 
-    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(T[] items) {
+    private static <T> List<org.hamcrest.Matcher<? super T>> getMatchers(final T[] items) {
         final List<org.hamcrest.Matcher<? super T>> matchers = new ArrayList<>();
 
         for (int ix = 0; ix < items.length; ix++) {

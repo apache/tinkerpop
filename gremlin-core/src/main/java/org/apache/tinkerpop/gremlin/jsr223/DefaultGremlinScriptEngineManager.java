@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * This class is based quite heavily on the workings of the {@code ScriptEngineManager} supplied in the
  * {@code javax.script} packages, but adds some additional features that are specific to Gremlin and TinkerPop.
  * Unfortunately, it's not easily possible to extend {@code ScriptEngineManager} directly as there certain behaviors
- * don't appear to be be straightforward to implement and member variables are all private. It is important to note
+ * don't appear to be straightforward to implement and member variables are all private. It is important to note
  * that this class is designed to provide support for "Gremlin-enabled" {@code ScriptEngine} instances (i.e. those
  * that extend from {@link GremlinScriptEngine}) and is not meant to manage just any {@code ScriptEngine} instance
  * that may be on the path.

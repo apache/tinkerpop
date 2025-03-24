@@ -397,7 +397,7 @@ describe('GraphBinary.AnySerializer', () => {
       // SET
       // TODO: Is it still okay to follow GraphSON where Set and List are usual JS ArrayS?
       { v:null,                                   b:[0x0B,0x01] },
-      { v:[],                                     b:[0x0B,0x00, 0x00,0x00,0x00,0x00] },
+      { v:new Set(),                                  b:[0x0B,0x00, 0x00,0x00,0x00,0x00] },
 
       // UUID
       { v:null,                                   b:[0x0C,0x01] },

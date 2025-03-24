@@ -1163,7 +1163,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).iterate();
         g.addV("person").property("age", 10).iterate();
-        assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
+        assertEquals(50, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().next());
         g.close();
     }
 
@@ -1172,7 +1172,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         final GraphTraversalSource g = traversal().withRemote(conf);
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
         g.addV("person").property("age", 10).promise(Traversal::iterate).join();
-        assertEquals(50L, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());
+        assertEquals(50, g.V().hasLabel("person").map(Lambda.function("it.get().value('age') + 10")).sum().promise(t -> t.next()).join());
         g.addV("person").property("age", 20).promise(Traversal::iterate).join();
 
         final Traversal<Vertex,Integer> traversal = g.V().hasLabel("person").has("age", 20).values("age");

@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTra
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -202,6 +203,11 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         });
 
         try {
+            // special case zero-arg OptionStrategy
+            if (strategyClass == OptionsStrategy.class && map.isEmpty()) {
+                return OptionsStrategy.EMPTY;
+            }
+
             return map.isEmpty() ?
                     methodCache.get("instance").invoke(null) :
                     methodCache.get("create").invoke(null, new MapConfiguration(map));

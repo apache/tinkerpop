@@ -1258,26 +1258,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalStrategyArgs_PartitionStrategy(final GremlinParser.TraversalStrategyArgs_PartitionStrategyContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalStrategyArgs_EdgeLabelVerificationStrategy(final GremlinParser.TraversalStrategyArgs_EdgeLabelVerificationStrategyContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalStrategyArgs_ReservedKeysVerificationStrategy(final GremlinParser.TraversalStrategyArgs_ReservedKeysVerificationStrategyContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalStrategyArgs_SubgraphStrategy(final GremlinParser.TraversalStrategyArgs_SubgraphStrategyContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalStrategyArgs_ProductiveByStrategy(final GremlinParser.TraversalStrategyArgs_ProductiveByStrategyContext ctx) { return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1685,35 +1665,60 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalDTArgument(final GremlinParser.TraversalDTArgumentContext ctx) { notImplemented(ctx); return null; }
-
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalSackMethodArgument(final GremlinParser.TraversalSackMethodArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalSackMethodArgument(final GremlinParser.TraversalSackMethodArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitGenericLiteralVarargs(final GremlinParser.GenericLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericLiteralVarargs(final GremlinParser.GenericLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitGenericLiteralMapArgument(final GremlinParser.GenericLiteralMapArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericLiteralMapArgument(final GremlinParser.GenericLiteralMapArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitGenericLiteralMapNullableArgument(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericLiteralMapNullableArgument(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitTraversalMethod_option_Merge_Map_Cardinality(final GremlinParser.TraversalMethod_option_Merge_Map_CardinalityContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_option_Merge_Map_Cardinality(final GremlinParser.TraversalMethod_option_Merge_Map_CardinalityContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitClassTypeList(final GremlinParser.ClassTypeListContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitClassTypeExpr(final GremlinParser.ClassTypeExprContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitClassType(final GremlinParser.ClassTypeContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitConfiguration(final GremlinParser.ConfigurationContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitKeyword(final GremlinParser.KeywordContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalBarrier(final GremlinParser.TraversalBarrierContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) { notImplemented(ctx); return null; }
 }

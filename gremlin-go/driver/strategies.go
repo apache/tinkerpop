@@ -364,9 +364,11 @@ func PathRetractionStrategy() TraversalStrategy {
 // the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
-func ProductiveByStrategy(config ProductiveByStrategyConfig) TraversalStrategy {
+func ProductiveByStrategy(config ...ProductiveByStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
-	configMap["productiveKeys"] = config.ProductiveKeys
+	if len(config) == 1 {
+		configMap["productiveKeys"] = config[0].ProductiveKeys
+	}
 
 	return &traversalStrategy{name: optimizationNamespace + "ProductiveByStrategy", configuration: configMap}
 }

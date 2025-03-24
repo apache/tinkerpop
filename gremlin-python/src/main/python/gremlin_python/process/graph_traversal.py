@@ -135,7 +135,7 @@ class GraphTraversalSource(object):
 
         val = True if v is None else v
         if options_strategy is None:
-            options_strategy = OptionsStrategy({k: val})
+            options_strategy = OptionsStrategy(**{k: val})
             source = self.with_strategies(options_strategy)
         else:
             options_strategy[1].configuration[k] = val
@@ -540,6 +540,10 @@ class GraphTraversal(Traversal):
             DeprecationWarning)
         return self.has_key(*args)
     
+    def has_key(self, *args):
+        self.bytecode.add_step("hasKey", *args)
+        return self
+
     def has_key(self, *args):
         self.bytecode.add_step("hasKey", *args)
         return self
@@ -1430,7 +1434,7 @@ class __(object, metaclass=MagicType):
             "gremlin_python.process.__.l_trim.",
             DeprecationWarning)
         return cls.l_trim(*args)
-    
+
     @classmethod
     def l_trim(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).l_trim(*args)

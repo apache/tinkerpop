@@ -23,12 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.coerceTo;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 
 /**
@@ -68,7 +70,12 @@ public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
     @Override
     public S projectTraverser(final Traverser.Admin<S> traverser) {
-        return (S) mul(traverser.get(), traverser.bulk());
+        final S value = traverser.get();
+        final long bulk = traverser.bulk();
+
+        // force the bulk to the type of the value so that mul doesn't arbitrarily widen the type of the Number
+        final Class<? extends Number> clazz = null == value ? Long.class : value.getClass();
+        return (S) mul(value, coerceTo(bulk, clazz));
     }
 
     @Override

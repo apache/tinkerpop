@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Process.Traversal.Step.Util;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Gremlin.Net.Process.Traversal.Translator;
@@ -421,7 +420,7 @@ public class GroovyTranslatorTests
             { _g.V("44").OutE().ElementMap<object>(), "g.V('44').outE().elementMap()" },
             { _g.V("44").ValueMap<object, object>().By(__.Unfold<object>()), "g.V('44').valueMap().by(__.unfold())" },
             {
-                _g.V().Property(new Dictionary<string, object> { { "name", "test" }, { "age", 30 } }),
+                _g.V().Property(new Dictionary<object, object> { { "name", "test" }, { "age", 30 } }),
                 "g.V().property(['name': 'test', 'age': 30])"
             },
             { _g.V().E("1"), "g.V().E('1')" },

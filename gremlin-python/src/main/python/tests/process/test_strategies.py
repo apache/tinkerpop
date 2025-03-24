@@ -110,7 +110,7 @@ class TestTraversalStrategies(object):
         assert 1 == len(strategy.configuration)
         assert __.has("name","marko") == strategy.configuration["vertices"]
         ###
-        bytecode = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).bytecode
+        bytecode = g.withStrategies(OptionsStrategy(x="test", y=True)).bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])
         assert "withStrategies" == bytecode.source_instructions[0][0]

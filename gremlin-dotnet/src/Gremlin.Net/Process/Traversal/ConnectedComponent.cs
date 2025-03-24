@@ -29,12 +29,18 @@ namespace Gremlin.Net.Process.Traversal
 
     public class ConnectedComponent
     {
-        
+
             public const String component = "gremlin.connectedComponentVertexProgram.component";
-        
+
             public const String edges = "~tinkerpop.connectedComponent.edges";
-        
+
             public const String propertyName = "~tinkerpop.connectedComponent.propertyName";
+
+            public const String Component = "gremlin.connectedComponentVertexProgram.component";
+
+            public const String Edges = "~tinkerpop.connectedComponent.edges";
+
+            public const String PropertyName = "~tinkerpop.connectedComponent.propertyName";
         
     }
 

@@ -82,7 +82,7 @@ public class OptionsStrategy extends AbstractTraversalStrategy<TraversalStrategy
         private final Map<String, Object> options = new HashMap<>();
 
         /**
-         * Adds an key to the configuration with the value of {@code true}.
+         * Adds a key to the configuration with the value of {@code true}.
          */
         public Builder with(final String key) {
             return with(key, true);

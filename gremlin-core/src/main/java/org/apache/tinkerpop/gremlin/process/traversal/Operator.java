@@ -202,7 +202,7 @@ public enum Operator implements BinaryOperator<Object> {
      */
     sumLong {
         public Object apply(final Object a, final Object b) {
-            return (long) a + (long) b;
+            return NumberHelper.add((long) a, (long) b);
         }
     };
 }

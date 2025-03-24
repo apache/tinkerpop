@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
@@ -57,20 +58,24 @@ public class TraversalStrategyVisitorTest {
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {"ReadOnlyStrategy", ReadOnlyStrategy.instance()},
-                {"new SeedStrategy(seed: 999999)", new SeedStrategy(999999)},
                 {"new SeedStrategy(seed: 999999)", SeedStrategy.build().seed(999999).create()},
+                {"SeedStrategy(seed: 999999)", SeedStrategy.build().seed(999999).create()},
                 {"new PartitionStrategy(partitionKey: 'k', includeMetaProperties: true)", PartitionStrategy.build().partitionKey("k").includeMetaProperties(true).create()},
                 {"new PartitionStrategy(partitionKey: 'k', writePartition: 'p', readPartitions: ['p','x','y'])", PartitionStrategy.build().partitionKey("k").writePartition("p").readPartitions("p", "x", "y").create()},
                 {"ProductiveByStrategy", ProductiveByStrategy.instance()},
                 {"new ProductiveByStrategy(productiveKeys: ['a','b'])", ProductiveByStrategy.build().productiveKeys("a", "b").create()},
                 {"new EdgeLabelVerificationStrategy()", EdgeLabelVerificationStrategy.build().create()},
+                {"EdgeLabelVerificationStrategy", EdgeLabelVerificationStrategy.build().create()},
                 {"new EdgeLabelVerificationStrategy(logWarning: true, throwException: true)", EdgeLabelVerificationStrategy.build().logWarning(true).throwException(true).create()},
                 {"new ReservedKeysVerificationStrategy()", ReservedKeysVerificationStrategy.build().create()},
                 {"new ReservedKeysVerificationStrategy(logWarning: true, throwException: true)", ReservedKeysVerificationStrategy.build().logWarning(true).throwException(true).create()},
+                {"ReservedKeysVerificationStrategy(logWarning: true, throwException: true)", ReservedKeysVerificationStrategy.build().logWarning(true).throwException(true).create()},
                 {"new ReservedKeysVerificationStrategy(logWarning: true, throwException: false)", ReservedKeysVerificationStrategy.build().logWarning(true).create()},
                 {"new ReservedKeysVerificationStrategy(keys: ['a','b'])", ReservedKeysVerificationStrategy.build().reservedKeys(new LinkedHashSet<>(Arrays.asList("a", "b"))).create()},
                 {"new SubgraphStrategy(vertices: hasLabel('person'))", SubgraphStrategy.build().vertices(hasLabel("person")).create()},
+                {"SubgraphStrategy(vertices: hasLabel('person'))", SubgraphStrategy.build().vertices(hasLabel("person")).create()},
                 {"new SubgraphStrategy(vertices: hasLabel('person'), edges: hasLabel('knows'), vertexProperties: has('time', between(1234, 4321)), checkAdjacentVertices: true)", SubgraphStrategy.build().vertices(hasLabel("person")).edges(hasLabel("knows")).vertexProperties(has("time", P.between(1234, 4321))).checkAdjacentVertices(true).create()},
+                {"CountStrategy", CountStrategy.instance()},
         });
     }
 
