@@ -184,8 +184,6 @@ Feature: Step - valueMap()
       | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
       | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |
 
-# NOTE: Insertion order is required for this test due to TINKERPOP-2974.
-# This annotation should be removed once the bug is fixed
   @MultiProperties @MetaProperties @InsertionOrderingRequired
   Scenario: g_VX1X_valueMapXname_locationX_byXunfoldX_by
     Given the crew graph
@@ -215,8 +213,6 @@ Feature: Step - valueMap()
       | m[{"name": ["lop"]}] |
       | m[{"name": ["ripple"]}] |
 
-# NOTE: Insertion order is required for this test due to TINKERPOP-2974.
-# This annotation should be removed once the bug is fixed
   @InsertionOrderingRequired
   Scenario: g_V_valueMapXname_ageX_byXisXxXXbyXunfoldX
     Given the modern graph

@@ -24,6 +24,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,6 +34,8 @@ import java.util.List;
  * @author Cole Greer (https://github.com/Cole-Greer)
  */
 public class TinkerShuffleGraph extends TinkerGraph {
+
+    private final TinkerShuffleGraphFeatures features = new TinkerShuffleGraphFeatures();
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerShuffleGraph.class.getName());
@@ -61,6 +64,11 @@ public class TinkerShuffleGraph extends TinkerGraph {
     }
 
     @Override
+    public Features features() {
+        return features;
+    }
+
+    @Override
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         return new TinkerShuffleVertex(id, label, graph);
     }
@@ -83,4 +91,24 @@ public class TinkerShuffleGraph extends TinkerGraph {
         return list.iterator();
     }
 
+    public class TinkerShuffleGraphFeatures extends TinkerGraphFeatures {
+        protected TinkerShuffleGraphFeatures() {
+            vertexFeatures = new TinkerShuffleGraphVertexFeatures();
+            edgeFeatures = new TinkerShuffleGraphEdgeFeatures();
+        }
+    }
+
+    public class TinkerShuffleGraphVertexFeatures extends TinkerGraphVertexFeatures {
+        @Override
+        public boolean supportsOrderedProperties() {
+            return false;
+        }
+    }
+
+    public class TinkerShuffleGraphEdgeFeatures extends TinkerGraphEdgeFeatures {
+        @Override
+        public boolean supportsOrderedProperties() {
+            return false;
+        }
+    }
 }

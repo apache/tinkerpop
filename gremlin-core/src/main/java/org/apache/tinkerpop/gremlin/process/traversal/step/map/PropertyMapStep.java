@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -123,7 +124,14 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> selectTraversal) {
-        this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
+        final boolean supportsMultipleBy = traversal.getGraph().isPresent()
+                ? ((Graph) traversal.getGraph().get()).features().vertex().supportsOrderedProperties() : true;
+
+        if (traversalRing.isEmpty() || supportsMultipleBy) {
+            this.traversalRing.addTraversal(this.integrateChild(selectTraversal));
+        } else {
+            throw new IllegalArgumentException("valueMap() step only accepts one by() modulator which has already been set.");
+        }
     }
 
     public void setPropertyTraversal(final Traversal.Admin<Element, ? extends Property> propertyTraversal) {

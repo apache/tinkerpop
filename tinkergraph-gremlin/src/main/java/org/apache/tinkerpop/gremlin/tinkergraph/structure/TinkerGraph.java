@@ -316,12 +316,11 @@ public class TinkerGraph extends AbstractTinkerGraph {
     }
 
     public class TinkerGraphFeatures implements Features {
+        protected final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
+        protected TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
+        protected TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
 
-        private final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
-        private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
-        private final TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
-
-        private TinkerGraphFeatures() {
+        protected TinkerGraphFeatures() {
         }
 
         @Override

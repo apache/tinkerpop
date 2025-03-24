@@ -714,6 +714,7 @@ public interface Graph extends AutoCloseable, Host {
         interface ElementFeatures extends FeatureSet {
             String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
             String FEATURE_NUMERIC_IDS = "NumericIds";
+            String FEATURE_ORDERED_PROPERTIES = "OrderedProperties";
             String FEATURE_STRING_IDS = "StringIds";
             String FEATURE_UUID_IDS = "UuidIds";
             String FEATURE_CUSTOM_IDS = "CustomIds";
@@ -771,6 +772,16 @@ public interface Graph extends AutoCloseable, Host {
              */
             @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
             default boolean supportsNumericIds() {
+                return true;
+            }
+
+            /**
+             * Determines if an {@link Element} will return properties in the order specified. In other words, if the
+             * Iterator returned by {@link Element#properties(String...)} will yield results in the exact order provided
+             * by the {@code String...} argument then this method should return {@code true}.
+             */
+            @FeatureDescriptor(name = FEATURE_ORDERED_PROPERTIES)
+            default boolean supportsOrderedProperties() {
                 return true;
             }
 
