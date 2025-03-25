@@ -666,11 +666,11 @@ public class GeneralLiteralVisitorTest {
 
             assertThat(genericLiterals.contains("world"), Matchers.is(true));
             assertThat(genericLiterals.contains(165), Matchers.is(true));
-            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(14.5), Matchers.is(true));
             assertThat(genericLiterals.contains(new HashSet<Object>() {{
                 add(12L);
                 add(10);
-                add(new BigDecimal(14.5));
+                add(14.5);
                 add("hello");
             }}), Matchers.is(true));
         }
@@ -691,11 +691,11 @@ public class GeneralLiteralVisitorTest {
 
             assertThat(genericLiterals.contains("world"), Matchers.is(true));
             assertThat(genericLiterals.contains(165), Matchers.is(true));
-            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(14.5), Matchers.is(true));
             assertThat(genericLiterals.contains(new ArrayList<Object>() {{
                 add(12L);
                 add(10);
-                add(new BigDecimal(14.5));
+                add(14.5);
                 add("hello");
             }}), Matchers.is(true));
         }
