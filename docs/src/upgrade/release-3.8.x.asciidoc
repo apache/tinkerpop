@@ -174,9 +174,41 @@ Integer overflows caused by addition and multiplication operations will throw an
 skipped with incorrect result.
 
 ==== Gremlin Lang Float Literals Default to Double
+
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
 or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
 `GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
+
+==== group() Value Traversal Semantics
+
+The `group()` step takes two `by()` modulators. The first defines the key for the grouping and the second acts upon the
+values that were grouped to each key. The latter is referred to as the "value traversal". In earlier versions of
+TinkerPop, using `order()` in the value traversal could produce an unexpected result if combined with a step like
+`fold()`.
+
+[source,text]
+----
+gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().fold())
+==>[v[2]:[],v[6]:[v[3]]]
+gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order().fold())
+==>[v[6]:[v[3]]]
+----
+
+The example above shows that `v[2]` gets filtered away when `order()` is included. Obviously, this was not expected
+behavior. The problem can be more generally explained as an issue where a `Barrier` like `order()` can return an empty
+result. If this step is followed by another `Barrier` that always produces an output like `sum()`, `count()` or `fold()`
+then the empty result would not feed through to that following step. This issue has now been fixed and the two
+traversals from the previous example now return the same results.
+
+[source,text]
+----
+gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().fold())
+==>[v[2]:[],v[6]:[v[3]]]
+gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order().fold())
+==>[v[2]:[],v[6]:[v[3]]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2971[TINKERPOP-2971]
 
 === Upgrading for Providers
 

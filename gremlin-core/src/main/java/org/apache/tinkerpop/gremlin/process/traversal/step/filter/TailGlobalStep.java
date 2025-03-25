@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, Barrier<TraverserSet<S>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
@@ -135,6 +135,11 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
     @Override
     public void processAllStarts() {
 
+    }
+
+    @Override
+    public TraverserSet<S> getEmptyBarrier() {
+        return new TraverserSet<>();
     }
 
     @Override

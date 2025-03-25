@@ -72,6 +72,12 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     }
 
     @Override
+    public Boolean getEmptyBarrier() {
+        // if the barrier is empty then it must be "done"
+        return true;
+    }
+
+    @Override
     protected E supply() {
         if (null == this.sideEffectCapableSteps) {
             this.sideEffectCapableSteps = new HashMap<>();

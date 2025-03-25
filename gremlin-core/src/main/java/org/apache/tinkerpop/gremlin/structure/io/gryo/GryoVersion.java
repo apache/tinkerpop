@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -302,6 +303,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReferencePath.class, 85));
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
+            // skipping 199,200 given GValue,GType in 4.x
+            add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
+            add(GryoTypeReg.of(ComputerGraph.class, 202));
+            add(GryoTypeReg.of(ComputerGraph.State.class, 203));
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV3.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV3.VertexSerializer()));
@@ -324,7 +330,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Bytecode.class, 122, new GryoSerializersV3.BytecodeSerializer()));
             add(GryoTypeReg.of(P.class, 124, new GryoSerializersV3.PSerializer()));
             add(GryoTypeReg.of(TextP.class, 186, new GryoSerializersV3.TextPSerializer()));
-            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));                                       // ***LAST ID***
+            add(GryoTypeReg.of(Text.RegexPredicate.class, 197));
             add(GryoTypeReg.of(Lambda.class, 125, new GryoSerializersV3.LambdaSerializer()));
             add(GryoTypeReg.of(Bytecode.Binding.class, 126, new GryoSerializersV3.BindingSerializer()));
             add(GryoTypeReg.of(Order.class, 127));
@@ -506,6 +512,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReferencePath.class, 85));
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
+            // skipping 199,200 given GValue,GType in 4.x 
+            add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
+            add(GryoTypeReg.of(ComputerGraph.class, 202));
+            add(GryoTypeReg.of(ComputerGraph.State.class, 203));
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV1.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV1.VertexSerializer()));
@@ -537,7 +548,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pop.class, 133));
             add(GryoTypeReg.of(SackFunctions.Barrier.class, 135));
             add(GryoTypeReg.of(Pick.class, 137));
-            add(GryoTypeReg.of(DT.class, 198));     // ***LAST ID***
+            add(GryoTypeReg.of(DT.class, 198));
             add(GryoTypeReg.of(Merge.class, 196));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));

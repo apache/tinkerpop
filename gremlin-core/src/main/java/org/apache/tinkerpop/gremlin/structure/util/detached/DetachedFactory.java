@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -45,7 +46,10 @@ public class DetachedFactory {
     }
 
     public static DetachedVertex detach(final Vertex vertex, final boolean withProperties) {
-        return vertex instanceof DetachedVertex ? (DetachedVertex) vertex : new DetachedVertex(vertex, withProperties);
+        // ComputerAdjacentVertex doesn't have properties, but we still want to detach them. force to false for
+        // grabbing properties in this case.
+        return vertex instanceof DetachedVertex ? (DetachedVertex) vertex :
+                new DetachedVertex(vertex, withProperties && !(vertex instanceof ComputerGraph.ComputerAdjacentVertex));
     }
 
     public static DetachedEdge detach(final Edge edge, final boolean withProperties) {

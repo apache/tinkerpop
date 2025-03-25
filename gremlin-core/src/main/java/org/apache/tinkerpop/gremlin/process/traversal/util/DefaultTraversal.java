@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Grouping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -131,6 +132,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 TraversalHelper.applyTraversalRecursively(strategy::apply, this);
             }
         }
+
+        // Grouping steps potentially have barriers. those barriers need to get reset after strategies are applied
+        // or else they can old incorrect references if those barriers are rewritten by strategies.
+        steps.stream().filter(s -> s instanceof Grouping).forEach(
+                step -> ((Grouping<?, ?, ?>) step).resetBarrierFromValueTraversal());
 
         // lock the traversal and its children for execution, finalizing the copy of any data from parent to child
         // as needed

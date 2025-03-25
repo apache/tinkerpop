@@ -23,14 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -53,7 +52,8 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, GraphComputing, Barrier<Map<Object, Traverser.Admin<S>>>, ByModulating, PathProcessor {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, GraphComputing,
+        FilteringBarrier<Map<Object, Traverser.Admin<S>>>, ByModulating, PathProcessor {
 
     private Traversal.Admin<S, Object> dedupTraversal = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -189,6 +189,11 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public void processAllStarts() {
 
+    }
+
+    @Override
+    public Map<Object, Traverser.Admin<S>> getEmptyBarrier() {
+        return new HashMap<>();
     }
 
     @Override

@@ -57,6 +57,13 @@ public interface Grouping<S, K, V> {
     }
 
     /**
+     * The first non-local {@link Barrier} step ascertained by calls to {@link #determineBarrierStep(Traversal.Admin)}
+     * is cached for a {@code Grouping}. After strategy application it is important that the cache be reset to ensure
+     * that any modifications to the child traversal are accounted for.
+     */
+    public void resetBarrierFromValueTraversal();
+
+    /**
      * Determines the first non-local {@link Barrier} step in the provided traversal. This method is used by {@link GroupStep}
      * and {@link GroupSideEffectStep} to ultimately determine the reducing bi-operator.
      *

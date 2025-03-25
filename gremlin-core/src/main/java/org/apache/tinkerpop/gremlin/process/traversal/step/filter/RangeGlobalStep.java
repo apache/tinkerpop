@@ -21,13 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -42,7 +41,7 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, Barrier<TraverserSet<S>> {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>> {
 
     private long low;
     private final long high;
@@ -153,6 +152,11 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     @Override
     public void processAllStarts() {
 
+    }
+
+    @Override
+    public TraverserSet<S> getEmptyBarrier() {
+        return new TraverserSet<>();
     }
 
     @Override

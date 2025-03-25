@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  */
 public final class ComputerGraph implements Graph {
 
-    private enum State {VERTEX_PROGRAM, MAP_REDUCE}
+    public enum State {VERTEX_PROGRAM, MAP_REDUCE}
 
     private ComputerVertex starVertex;
     private final Set<String> computeKeys;
