@@ -409,11 +409,12 @@ public class GeneralLiteralVisitorTest {
         @Parameterized.Parameters()
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
-                    {"1.1", "1.1", "java.math.BigDecimal"},
-                    {"-0.1", "-0.1", "java.math.BigDecimal"},
-                    {"1.0E+12", "1.0E12", "java.math.BigDecimal"},
-                    {"-0.1E-12", "-0.1E-12", "java.math.BigDecimal"},
-                    {"1E12", "1E12", "java.math.BigDecimal"},
+                    // default
+                    {"1.1", "1.1", "java.lang.Double"},
+                    {"-0.1", "-0.1", "java.lang.Double"},
+                    {"1.0E+12", "1.0E12", "java.lang.Double"},
+                    {"-0.1E-12", "-0.1E-12", "java.lang.Double"},
+                    {"1E12", "1E12", "java.lang.Double"},
                     // float
                     {"1.1f", "1.1", "java.lang.Float"},
                     {"-0.1F", "-0.1", "java.lang.Float"},
@@ -442,7 +443,14 @@ public class GeneralLiteralVisitorTest {
             final Constructor<?> ctor = clazz.getConstructor(String.class);
             final Object expectedValue = ctor.newInstance(expected);
 
-            assertEquals(expectedValue, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitFloatLiteral(ctx));
+            Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitFloatLiteral(ctx);
+            if (expectedValue instanceof Double) {
+                assertEquals((Double) expectedValue, (Double) result, 0.00000001);
+            } else if (expectedValue instanceof Float) {
+                assertEquals((Float) expectedValue, (Float) result, 0.00000001);
+            } else {
+                assertEquals(expectedValue, result);
+            }
         }
     }
 
@@ -614,7 +622,7 @@ public class GeneralLiteralVisitorTest {
             assertEquals(10, genericLiterals.get(1));
 
             // verify 3rd element
-            assertEquals(new BigDecimal(14.5), genericLiterals.get(2));
+            assertEquals(new Double(14.5), genericLiterals.get(2));
 
             // verify 4th element
             assertEquals("hello", genericLiterals.get(3));
@@ -657,11 +665,11 @@ public class GeneralLiteralVisitorTest {
 
             assertThat(genericLiterals.contains("world"), Matchers.is(true));
             assertThat(genericLiterals.contains(165), Matchers.is(true));
-            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(14.5), Matchers.is(true));
             assertThat(genericLiterals.contains(new HashSet<Object>() {{
                 add(12L);
                 add(10);
-                add(new BigDecimal(14.5));
+                add(14.5);
                 add("hello");
             }}), Matchers.is(true));
         }
@@ -682,11 +690,11 @@ public class GeneralLiteralVisitorTest {
 
             assertThat(genericLiterals.contains("world"), Matchers.is(true));
             assertThat(genericLiterals.contains(165), Matchers.is(true));
-            assertThat(genericLiterals.contains(new BigDecimal(14.5)), Matchers.is(true));
+            assertThat(genericLiterals.contains(14.5), Matchers.is(true));
             assertThat(genericLiterals.contains(new ArrayList<Object>() {{
                 add(12L);
                 add(10);
-                add(new BigDecimal(14.5));
+                add(14.5);
                 add("hello");
             }}), Matchers.is(true));
         }
