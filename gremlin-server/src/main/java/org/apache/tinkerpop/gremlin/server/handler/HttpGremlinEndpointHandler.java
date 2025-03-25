@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.TemporaryException;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
@@ -339,12 +340,26 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                         Objects.equals(bulkingSetting, "true")) :
                 false;
 
-        if (bulking) {
-            // optimization for driver requests
-            ((Traversal.Admin<?, ?>) result).applyStrategies();
-            handleIterator(context, new TraverserIterator((Traversal.Admin<?, ?>) result), serializer, true);
-        } else {
-            handleIterator(context, IteratorUtils.asIterator(result), serializer, false);
+        Iterator itty = null;
+        try {
+            if (bulking) {
+                // optimization for driver requests
+                ((Traversal.Admin<?, ?>) result).applyStrategies();
+                itty = new TraverserIterator((Traversal.Admin<?, ?>) result);
+                handleIterator(context, itty, serializer, true);
+            } else {
+                itty = IteratorUtils.asIterator(result);
+                handleIterator(context, itty, serializer, false);
+            }
+        } catch (Exception ex) {
+            // TINKERPOP-3144 ensure Traversals are closed when exception thrown.
+            if (itty instanceof TraverserIterator) {
+                CloseableIterator.closeIterator(((TraverserIterator) itty).getTraversal());
+            } else if (itty != null) {
+                CloseableIterator.closeIterator(itty);
+            }
+
+            throw ex;
         }
     }
 
