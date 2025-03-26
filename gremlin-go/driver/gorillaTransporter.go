@@ -33,6 +33,12 @@ const writeDeadlineDefault = 3 * time.Second
 const writeChannelSizeDefault = 100
 const connectionTimeoutDefault = 5 * time.Second
 
+// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1048576.
+// If a buffer size is set zero, then the Gorilla websocket 4096 default size is used. The I/O buffer
+// sizes do not limit the size of the messages that can be sent or received.
+const readBufferSizeDefault = 1048576
+const writeBufferSizeDefault = 1048576
+
 // Transport layer that uses gorilla/websocket: https://github.com/gorilla/websocket
 // Gorilla WebSocket is a widely used and stable Go implementation of the WebSocket protocol.
 type gorillaTransporter struct {
