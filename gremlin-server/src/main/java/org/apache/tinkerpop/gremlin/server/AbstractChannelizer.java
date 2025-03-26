@@ -20,10 +20,12 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
+import nl.altindag.ssl.SSLFactory;
+import nl.altindag.ssl.exception.GenericSecurityException;
+import nl.altindag.ssl.netty.util.NettySslUtils;
+import nl.altindag.ssl.util.SSLFactoryUtils;
+import org.apache.tinkerpop.gremlin.server.util.SSLStoreFilesModificationWatcher;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -44,19 +46,12 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,6 +60,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
@@ -90,7 +86,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     protected Settings settings;
     protected GremlinExecutor gremlinExecutor;
-    protected Optional<SslContext> sslContext;
+    protected Optional<SSLFactory> sslFactory;
     protected GraphManager graphManager;
     protected ExecutorService gremlinExecutorService;
     protected ScheduledExecutorService scheduledExecutorService;
@@ -148,9 +144,25 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         configureSerializers();
 
         // configure ssl if present
-        sslContext = settings.optionalSsl().isPresent() && settings.ssl.enabled ?
-                Optional.ofNullable(createSSLContext(settings)) : Optional.empty();
-        if (sslContext.isPresent()) logger.info("SSL enabled");
+        sslFactory = settings.optionalSsl().isPresent() && settings.ssl.enabled ?
+                Optional.ofNullable(createSSLFactoryBuilder(settings).withSwappableTrustMaterial().withSwappableIdentityMaterial().build()) : Optional.empty();
+
+        if (sslFactory.isPresent()) {
+            logger.info("SSL enabled");
+            // Every minute, check if keyStore/trustStore were modified, and if they were,
+            // reload the SSLFactory which will reload the underlying KeyManager/TrustManager that Netty SSLHandler uses.
+            scheduledExecutorService.schedule(
+                    new SSLStoreFilesModificationWatcher(settings.ssl.keyStore, settings.ssl.trustStore, () -> {
+                        SSLFactory newSslFactory = createSSLFactoryBuilder(settings).build();
+                        try {
+                            SSLFactoryUtils.reload(sslFactory.get(), newSslFactory);
+                        } catch (RuntimeException e) {
+                            logger.error("Failed to reload SSLFactory", e);
+                        }
+                    }),
+                    1, TimeUnit.MINUTES
+            );
+        }
 
         authenticator = createAuthenticator(settings.authentication);
         authorizer = createAuthorizer(settings.authorization);
@@ -168,7 +180,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public void initChannel(final SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
 
-        sslContext.ifPresent(sslContext -> pipeline.addLast(PIPELINE_SSL, sslContext.newHandler(ch.alloc())));
+        if (sslFactory.isPresent()) {
+            pipeline.addLast(PIPELINE_SSL, NettySslUtils.forServer(sslFactory.get()).build().newHandler(ch.alloc()));
+        }
 
         // checks for no activity on a channel and triggers an event that is consumed by the OpSelectorHandler
         // and either closes the connection or sends a ping to see if the client is still alive
@@ -307,77 +321,54 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         }
     }
 
-    private SslContext createSSLContext(final Settings settings) {
+    private SSLFactory.Builder createSSLFactoryBuilder(final Settings settings) {
         final Settings.SslSettings sslSettings = settings.ssl;
 
-        if (sslSettings.getSslContext().isPresent()) {
-            logger.info("Using the SslContext override");
-            return sslSettings.getSslContext().get();
-        }
-
-        final SslProvider provider = SslProvider.JDK;
-
-        final SslContextBuilder builder;
-
-        // Build JSSE SSLContext
+        final SSLFactory.Builder builder = SSLFactory.builder();
         try {
-            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-
-            // Load private key and signed cert
             if (null != sslSettings.keyStore) {
                 final String keyStoreType = null == sslSettings.keyStoreType ? KeyStore.getDefaultType() : sslSettings.keyStoreType;
-                final KeyStore keystore = KeyStore.getInstance(keyStoreType);
-                final char[] password = null == sslSettings.keyStorePassword ? null : sslSettings.keyStorePassword.toCharArray();
+                final char[] keyStorePassword = null == sslSettings.keyStorePassword ? null : sslSettings.keyStorePassword.toCharArray();
                 try (final InputStream in = new FileInputStream(sslSettings.keyStore)) {
-                    keystore.load(in, password);
+                    builder.withIdentityMaterial(in, keyStorePassword, keyStoreType);
                 }
-                kmf.init(keystore, password);
             } else {
                 throw new IllegalStateException("keyStore must be configured when SSL is enabled.");
             }
 
-            builder = SslContextBuilder.forServer(kmf);
-
             // Load custom truststore for client auth certs
             if (null != sslSettings.trustStore) {
                 final String trustStoreType = null != sslSettings.trustStoreType ? sslSettings.trustStoreType
-                            : sslSettings.keyStoreType != null ? sslSettings.keyStoreType : KeyStore.getDefaultType();
-
-                final KeyStore truststore = KeyStore.getInstance(trustStoreType);
-                final char[] password = null == sslSettings.trustStorePassword ? null : sslSettings.trustStorePassword.toCharArray();
+                        : sslSettings.keyStoreType != null ? sslSettings.keyStoreType : KeyStore.getDefaultType();
+                final char[] trustStorePassword = null == sslSettings.trustStorePassword ? null : sslSettings.trustStorePassword.toCharArray();
                 try (final InputStream in = new FileInputStream(sslSettings.trustStore)) {
-                    truststore.load(in, password);
+                    builder.withTrustMaterial(in, trustStorePassword, trustStoreType);
                 }
-                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(truststore);
-                builder.trustManager(tmf);
             }
-
-        } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+        } catch (GenericSecurityException | IOException e) {
             logger.error(e.getMessage());
             throw new RuntimeException("There was an error enabling SSL.", e);
         }
 
         if (null != sslSettings.sslCipherSuites && !sslSettings.sslCipherSuites.isEmpty()) {
-            builder.ciphers(sslSettings.sslCipherSuites);
+            builder.withCiphers(sslSettings.sslCipherSuites.toArray(new String[] {}));
         }
 
         if (null != sslSettings.sslEnabledProtocols && !sslSettings.sslEnabledProtocols.isEmpty()) {
-            builder.protocols(sslSettings.sslEnabledProtocols.toArray(new String[] {}));
+            builder.withProtocols(sslSettings.sslEnabledProtocols.toArray(new String[] {}));
         }
-        
+
         if (null != sslSettings.needClientAuth && ClientAuth.OPTIONAL == sslSettings.needClientAuth) {
             logger.warn("needClientAuth = OPTIONAL is not a secure configuration. Setting to REQUIRE.");
             sslSettings.needClientAuth = ClientAuth.REQUIRE;
         }
 
-        builder.clientAuth(sslSettings.needClientAuth).sslProvider(provider);
-
-        try {
-            return builder.build();
-        } catch (SSLException ssle) {
-            logger.error(ssle.getMessage());
-            throw new RuntimeException("There was an error enabling SSL.", ssle);
+        if (sslSettings.needClientAuth == ClientAuth.REQUIRE) {
+            builder.withNeedClientAuthentication(true);
         }
+
+        // The SSL provider will default to SslProvider.OPEN_SSL if available or SslProvider.JDK if not (see SslContext#defaultProvider)
+
+        return builder;
     }
 }
