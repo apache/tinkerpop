@@ -60,8 +60,8 @@ func newDefaultConnectionSettings() *connectionSettings {
 		connectionTimeout:        connectionTimeoutDefault,
 		enableCompression:        false,
 		enableUserAgentOnConnect: true,
-		readBufferSize:           0,
-		writeBufferSize:          0,
+		readBufferSize:           readBufferSizeDefault,
+		writeBufferSize:          writeBufferSizeDefault,
 	}
 }
 

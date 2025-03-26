@@ -31,6 +31,12 @@ const keepAliveIntervalDefault = 5 * time.Second
 const writeDeadlineDefault = 3 * time.Second
 const connectionTimeoutDefault = 5 * time.Second
 
+// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1MB.
+// If a buffer size is set zero, then the transporter default size is used. The I/O buffer
+// sizes do not limit the size of the messages that can be sent or received.
+const readBufferSizeDefault = 1048576
+const writeBufferSizeDefault = 1048576
+
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
 	TraversalSource   string
@@ -75,11 +81,8 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		ConnectionTimeout:        connectionTimeoutDefault,
 		EnableCompression:        false,
 		EnableUserAgentOnConnect: true,
-		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
-		// size is zero, then a useful default size is used. The I/O buffer sizes
-		// do not limit the size of the messages that can be sent or received.
-		ReadBufferSize:  0,
-		WriteBufferSize: 0,
+		ReadBufferSize:           readBufferSizeDefault,
+		WriteBufferSize:          writeBufferSizeDefault,
 
 		MaximumConcurrentConnections: runtime.NumCPU(),
 	}
